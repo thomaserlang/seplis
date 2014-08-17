@@ -1,0 +1,1 @@
+from seplis.config import config as seplis_config, load as seplis_load

@@ -1,10 +1,8 @@
-from seplis.config import config
-Config.load()
 import sys
 import inspect
 from seplis.api import models
 from seplis.api import elasticcreate
-from seplis.connections import database
+from seplis.connections import database, Database
 from seplis.decorators import new_session
 from sqlalchemy import func
 from datetime import datetime
@@ -30,17 +28,8 @@ class Rebuild_cache(object):
             shows = session.query(models.Show).all()
             pipe = database.redis.pipeline()
             for show in shows:
-                if not show.data:
-                    continue
-                Show.cache(
-                    pipe=pipe,
-                    show_id=show.data['id'],
-                    data=show.data,
-                )
-                Show.to_elasticsearch(
-                    show_id=show.data['id'],
-                    data=show.data
-                )
+                s = Show._format_from_row(show)
+                s.save(session, pipe)
             pipe.execute()
 
     def rebuild_follow(self):
@@ -57,26 +46,10 @@ class Rebuild_cache(object):
         from seplis.api.base.show import Episode
         with new_session() as session:
             episodes = session.query(models.Episode).all()
-            pipe = database.redis.pipeline()
-            episodes_data = []
+            #pipe = database.redis.pipeline()
             for episode in episodes:
-                if not episode.data:
-                    continue
-                episodes_data.append(episode.data)
-                Episode.cache(
-                    pipe=pipe,
-                    show_id=episode.show_id,
-                    number=episode.number,
-                    data=episode.data,
-                )
-                episode.data['id'] = '{}-{}'.format(episode.data['show_id'], episode.data['number'])
-            pipe.execute()
-            if episodes_data:
-                database.es.bulk(
-                    body=episodes_data,
-                    index='episodes',
-                    doc_type='episode',
-                )
+                e = Episode._format_from_row(episode)
+                e.save(episode.show_id, session)
 
     def rebuild_tags(self):
         from seplis.api.base.tag import Tag
@@ -127,5 +100,5 @@ class Rebuild_cache(object):
                 )
             pipe.execute()
 
-if __name__ == '__main__':
+def main():    
     Rebuild_cache().rebuild()

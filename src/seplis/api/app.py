@@ -53,9 +53,9 @@ class Application(tornado.web.Application):
         tornado.web.Application.__init__(self, urls, **settings)
 
 def main():
-    logger.set_logger('api-{}.log'.format(config['web']['port']))
+    logger.set_logger('api-{}.log'.format(config['api']['port']))
     http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(config['web']['port'])
+    http_server.listen(config['api']['port'])
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':

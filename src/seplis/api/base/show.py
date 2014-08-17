@@ -82,6 +82,27 @@ class Show(object):
         self.to_elasticsearch()
 
     @classmethod
+    def _format_from_row(cls, row):
+        if not row:
+            return None
+        return cls(
+            id=row.id,
+            title=row.title,
+            description=Description(
+                text=row.description_text,
+                title=row.description_title,
+                url=row.description_url,
+            ),
+            premiered=row.premiered,
+            ended=row.ended,
+            indices={
+                'info': row.index_info,
+                'episodes': row.index_episodes,
+            },
+            externals=row.externals if row.externals else {},
+        )
+
+    @classmethod
     def get(cls, id_, session=None):
         '''
 
@@ -104,22 +125,7 @@ class Show(object):
         ).first()
         if not show:
             return None
-        return Show(
-            id=show.id,
-            title=show.title,
-            description=Description(
-                text=show.description_text,
-                title=show.description_title,
-                url=show.description_url,
-            ),
-            premiered=show.premiered,
-            ended=show.ended,
-            indices={
-                'info': show.index_info,
-                'episodes': show.index_episodes,
-            },
-            externals=show.externals if show.externals else {},
-        )
+        return cls._format_from_row(show)
 
     @classmethod
     def create(cls, session=None):

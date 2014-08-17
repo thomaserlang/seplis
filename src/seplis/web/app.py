@@ -2,14 +2,14 @@ from seplis.config import config
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
-import handlers.signin
-import handlers.settings
-import handlers.show
-import handlers.tag
-import handlers.suggest
-import modules.menu
-import modules.follow_button
-import modules.tags
+import seplis.web.handlers.signin
+import seplis.web.handlers.settings
+import seplis.web.handlers.show
+import seplis.web.handlers.tag
+import seplis.web.handlers.suggest
+import seplis.web.modules.menu
+import seplis.web.modules.follow_button
+import seplis.web.modules.tags
 import os
 from seplis.logger import logger
 from tornado.options import define, options
@@ -28,9 +28,9 @@ class Application(tornado.web.Application):
             cookie_secret=config['web']['cookie_secret'],
             login_url='/signin',
             ui_modules=dict(
-                menu=modules.menu.Module,
-                follow_button=modules.follow_button.Module,
-                tags=modules.tags.Module,
+                menu=seplis.web.modules.menu.Module,
+                follow_button=seplis.web.modules.follow_button.Module,
+                tags=seplis.web.modules.tags.Module,
             )
         )
         urls = [
@@ -38,16 +38,16 @@ class Application(tornado.web.Application):
             tornado.web.URLSpec(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
 
             # (r'/signup', handlers.signup.Handler),
-            tornado.web.URLSpec(r'/signin', handlers.signin.Handler),
-            tornado.web.URLSpec(r'/settings', handlers.settings.Handler),
+            tornado.web.URLSpec(r'/signin', seplis.web.handlers.signin.Handler),
+            tornado.web.URLSpec(r'/settings', seplis.web.handlers.settings.Handler),
 
-            tornado.web.URLSpec(r'/shows/([0-9]+)', handlers.show.Handler),
-            tornado.web.URLSpec(r'/follow', handlers.show.Follow_handler),
+            tornado.web.URLSpec(r'/shows/([0-9]+)', seplis.web.handlers.show.Handler),
+            tornado.web.URLSpec(r'/follow', seplis.web.handlers.show.Follow_handler),
 
-            tornado.web.URLSpec(r'/suggest', handlers.suggest.Handler),
+            tornado.web.URLSpec(r'/suggest', seplis.web.handlers.suggest.Handler),
 
-            tornado.web.URLSpec(r'/user-tags', handlers.tag.Relation_handler),
-            tornado.web.URLSpec(r'/users/([0-9]+)/tags/shows', handlers.tag.Shows_handler, name='user_tagged_shows'),
+            tornado.web.URLSpec(r'/user-tags', seplis.web.handlers.tag.Relation_handler),
+            tornado.web.URLSpec(r'/users/([0-9]+)/tags/shows', seplis.web.handlers.tag.Shows_handler, name='user_tagged_shows'),
 
         ]
         tornado.web.Application.__init__(self, urls, **settings)
