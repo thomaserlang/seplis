@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block body %}
+    <show>
+        <div class="row">   
+            <div class="col-xs-12">         
+                <h1 style="margin-top:0;">{{ escape(show.get('title')) }}</h1> {% module follow_button(show) %}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-6">
+                <div class="lifespan">
+                    {{ escape(show.get('premiered') if show.get('premiered') else '') }} - 
+                    {{ escape(show.get('ended') if show.get('ended') else '') }}
+                </div>
+                {% if show.get('description') %}
+                    <div class="description">
+                        {{ escape(show['description']['text']) }}
+                        <source>
+                            <p><a href="{{ escape(show['description']['source_url']) }}" target="_blank">
+                                {{ escape(show['description']['source_title']) }}
+                            </a></p>
+                        <source> 
+                    </div>
+                {% end %}
+            </div>
+        </div>
+        {% if 'seasons' in show %}
+            <div class="panel panel-primary">
+                <div class="panel-heading">Seasons</div>
+                <div class="row panel-body">
+                    <div class="col-xs-2">
+                        <ul class="nav nav-pills nav-stacked">
+                            {% for season in reversed(show['seasons']) %}
+                                <li class="{{ 'active' if season.get('season') == selected_season else '' }}">
+                                    <a href="/shows/{{ show['id'] }}?season={{ season.get('season') }}">
+                                        Season {{ '{0:0>2}'.format(season['season']) }}
+                                    </a>
+                                </li>
+                            {% end %}
+                        </ul>
+                    </div>
+                    <div class="col-xs-10">
+                        <div class="episodes">
+                            {% for episode in reversed(episodes) %}
+                                <div class="episode">
+                                    <episode>{{ '{0:0>2}'.format(episode.get('episode', episode.get('number'))) }}.</episode> 
+                                    <name>{{ escape(episode['title']) if episode.get('title') else escape('<no title>')  }}</name>
+                                </div>
+                            {% end %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% end %}
+    </show>
+{% end %}

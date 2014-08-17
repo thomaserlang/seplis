@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+    <head>
+        <title>{{ title }}</title>        
+        <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="/static/css/vendor/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/css/base.css">
+        <link rel="stylesheet" href="/static/css/show.css">
+        <link rel="stylesheet" href="/static/css/signin.css">
+        <link rel="stylesheet" href="/static/css/suggest.css">
+        <link rel="stylesheet" href="/static/css/follow_button.css">
+        <link rel="stylesheet" href="/static/css/progress.css">
+
+        <script type="text/javascript" src="/static/js/vendor/jquery-2.1.0.min.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                api = new Api();
+                api.loader_gif = '/static/img/loader.gif';
+                template = new Template();
+                current_user = {{ json_dumps(current_user) }};
+
+                var engine = new Bloodhound({
+                  name: 'suggest',
+                  remote: '/suggest?q=%QUERY',
+                  datumTokenizer: function(d) {
+                    return Bloodhound.tokenizers.whitespace(d.val);
+                  },
+                  queryTokenizer: Bloodhound.tokenizers.whitespace
+                });
+                engine.initialize()
+                $('.typeahead').typeahead(
+                    {
+                      hint: true,
+                      highlight: true,
+                      minLength: 1
+                    },
+                    {
+                      name: 'suggest',
+                      displayKey: 'title',
+                      source: engine.ttAdapter(),
+                      templates: {
+                        suggestion: _.template('<p><a href="/shows/<%=id %>"><%-title %></a></p>')
+                      }
+                    }
+                );
+                {% block jsready %}{% end %}
+                $(document).ajaxStart(function() {
+                    if ($("#progress").length === 0) {
+                        $("body").append($("<div><dt/><dd/></div>").attr("id", "progress"));
+                        $("#progress").width((50 + Math.random() * 30) + "%");
+                    }
+                });
+
+                $(document).ajaxComplete(function() {
+                    $("#progress").width("101%").delay(200).fadeOut(400, function() {
+                        $(this).remove();
+                    });
+                });
+            });
+        </script>
+        {% block head %}{% end %}
+    </head>
+    <body>
+        {% block menu %}
+            {% module menu() %}
+        {% end %}
+        <div class="container">
+            {% block body %}{% end %}
+        </div>
+        <script type="text/javascript" src="/static/js/vendor/multiline.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/underscore-min.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/bootstrap.min.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/typeahead.bundle.js"></script>
+        <script type="text/javascript" src="/static/js/api.js"></script>
+        <script type="text/javascript" src="/static/js/template.js"></script>
+        <script type="text/javascript" src="/static/js/signin.js"></script>
+        <script type="text/javascript" src="/static/js/tag.js"></script>
+        <script type="text/javascript" src="/static/js/follow_button.js"></script>
+    </body>
+</html>

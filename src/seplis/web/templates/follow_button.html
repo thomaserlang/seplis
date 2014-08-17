@@ -1,0 +1,6 @@
+<div class="follow-button btn-group">
+    <button class="btn btn-default {{ 'btn-follow' if not show['following'] else 'btn-unfollow' }}" show-id="{{ show['id'] }}">{{ 'Follow' if not show['following'] else 'Unfollow' }}</button>
+    <button class="btn btn-default btn-follow-count" title="{{ show.get('followers', 0) }} follows this show">
+        {{ show.get('followers', 0) }}
+    </button>
+</div>

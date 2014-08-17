@@ -1,0 +1,35 @@
+.typeahead,
+.tt-query,
+.tt-hint {
+}
+
+.typeahead {
+  background-color: #fff;
+}
+
+.tt-query {
+
+}
+
+.tt-hint {
+  color: #999
+}
+
+.tt-dropdown-menu {
+  width:177px;
+  background-color:#fff;
+  border-radius: 4px;
+  border:1px solid gray;
+}
+
+.tt-suggestion {
+  font-size: 14px;
+  height:34px;
+  line-height: 34px;
+  margin-left:12px;
+  margin-right:12px;
+}
+
+.tt-suggestion.tt-cursor {
+  background-color: #fff;
+}

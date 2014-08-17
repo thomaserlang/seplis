@@ -1,0 +1,21 @@
+.container{
+    min-width:1024px;
+    width:1024px;
+}
+
+.navbar-seplis{
+    background-color: #fff;
+    background-color: #428bca;
+}
+
+.navbar-seplis a{
+    color:#fff;
+}
+
+*{
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+h1, h2, h3{
+    margin-top:0;
+}

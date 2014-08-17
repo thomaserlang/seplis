@@ -1,0 +1,219 @@
+# coding=UTF-8
+import nose
+import mock
+from unittest import TestCase
+from seplis.indexer.show.thetvdb import Thetvdb
+from seplis.schemas import Show_schema
+
+def mock_tvrage(url):
+    if '72108' in url:
+        return mock.Mock(
+            content='''<?xml version="1.0" encoding="UTF-8" ?>
+            <Data><Series>
+              <id>72108</id>
+              <Actors>|Mark Harmon|Michael Weatherly|Cote de Pablo|Lauren Holly|Sean Murray|Sasha Alexander|Pauley Perrette|David McCallum|Brian Dietzen|Rocky Carroll|</Actors>
+              <Airs_DayOfWeek>Tuesday</Airs_DayOfWeek>
+              <Airs_Time>8:00 PM</Airs_Time>
+              <ContentRating>TV-14</ContentRating>
+              <FirstAired>2003-09-23</FirstAired>
+              <Genre>|Action|Adventure|Drama|</Genre>
+              <IMDB_ID>tt0364845</IMDB_ID>
+              <Language>en</Language>
+              <Network>CBS</Network>
+              <NetworkID></NetworkID>
+              <Overview>Explore the inner workings of the government agency that investigates all crimes involving Navy and Marine Corps personnel, regardless of rank or position.  Leading this team is NCIS Special Agent Leroy Jethro Gibbs, a skilled investigator and interrogator who is smart, tough and willing to bend the rules to get the job done.</Overview>
+              <Rating>9.1</Rating>
+              <RatingCount>293</RatingCount>
+              <Runtime>60</Runtime>
+              <SeriesID>16772</SeriesID>
+              <SeriesName>NCIS</SeriesName>
+              <Status>Continuing</Status>
+              <added></added>
+              <addedBy></addedBy>
+              <banner>graphical/72108-g12.jpg</banner>
+              <fanart>fanart/original/72108-1.jpg</fanart>
+              <lastupdated>1379846552</lastupdated>
+              <poster>posters/72108-5.jpg</poster>
+              <tms_wanted>1</tms_wanted>
+              <zap2it_id>EP00681911</zap2it_id>
+            </Series>
+            <Episode>
+              <id>4636146</id>
+              <Combined_episodenumber>0</Combined_episodenumber>
+              <Combined_season>1</Combined_season>
+              <DVD_chapter></DVD_chapter>
+              <DVD_discid></DVD_discid>
+              <DVD_episodenumber></DVD_episodenumber>
+              <DVD_season></DVD_season>
+              <Director></Director>
+              <EpImgFlag></EpImgFlag>
+              <EpisodeName>æøå</EpisodeName>
+              <EpisodeNumber>1</EpisodeNumber>
+              <FirstAired></FirstAired>
+              <GuestStars></GuestStars>
+              <IMDB_ID></IMDB_ID>
+              <Language>en</Language>
+              <Overview></Overview>
+              <ProductionCode></ProductionCode>
+              <Rating></Rating>
+              <RatingCount>0</RatingCount>
+              <SeasonNumber>0</SeasonNumber>
+              <Writer></Writer>
+              <absolute_number></absolute_number>
+              <airsafter_season></airsafter_season>
+              <airsbefore_episode></airsbefore_episode>
+              <airsbefore_season></airsbefore_season>
+              <filename></filename>
+              <lastupdated>1376789683</lastupdated>
+              <seasonid>19575</seasonid>
+              <seriesid>72108</seriesid>
+              <thumb_added></thumb_added>
+              <thumb_height></thumb_height>
+              <thumb_width></thumb_width>
+              <tms_export>0</tms_export>
+              <tms_review_blurry>0</tms_review_blurry>
+              <tms_review_by></tms_review_by>
+              <tms_review_dark>0</tms_review_dark>
+              <tms_review_date></tms_review_date>
+              <tms_review_logo>0</tms_review_logo>
+              <tms_review_other>0</tms_review_other>
+              <tms_review_unsure>0</tms_review_unsure>
+            </Episode>
+            <Episode>
+              <id>74097</id>
+              <Combined_episodenumber>1</Combined_episodenumber>
+              <Combined_season>1</Combined_season>
+              <DVD_chapter></DVD_chapter>
+              <DVD_discid></DVD_discid>
+              <DVD_episodenumber></DVD_episodenumber>
+              <DVD_season></DVD_season>
+              <Director></Director>
+              <EpImgFlag>2</EpImgFlag>
+              <EpisodeName>Navy NCIS: The Beginning (1)</EpisodeName>
+              <EpisodeNumber>1</EpisodeNumber>
+              <FirstAired>2003-04-22</FirstAired>
+              <GuestStars></GuestStars>
+              <IMDB_ID></IMDB_ID>
+              <Language>en</Language>
+              <Overview>The pilot that aired a few weeks after the show's premiere, and called &quot;Navy NCIS: The Beginning&quot;. It was originally aired as a JAG episode known as S08E20 &quot;Ice Queen (1)&quot;</Overview>
+              <ProductionCode></ProductionCode>
+              <Rating>8.0</Rating>
+              <RatingCount>8</RatingCount>
+              <SeasonNumber>1</SeasonNumber>
+              <Writer>|Donald P. Bellisario|Don McGill|</Writer>
+              <absolute_number></absolute_number>
+              <airsafter_season></airsafter_season>
+              <airsbefore_episode>1</airsbefore_episode>
+              <airsbefore_season>1</airsbefore_season>
+              <filename>episodes/72108/74097.jpg</filename>
+              <lastupdated>1376029848</lastupdated>
+              <seasonid>19575</seasonid>
+              <seriesid>72108</seriesid>
+              <thumb_added></thumb_added>
+              <thumb_height>225</thumb_height>
+              <thumb_width>400</thumb_width>
+              <tms_export>1</tms_export>
+              <tms_review_blurry>0</tms_review_blurry>
+              <tms_review_by></tms_review_by>
+              <tms_review_dark>0</tms_review_dark>
+              <tms_review_date></tms_review_date>
+              <tms_review_logo>0</tms_review_logo>
+              <tms_review_other>0</tms_review_other>
+              <tms_review_unsure>0</tms_review_unsure>
+            </Episode>
+            </Data>
+                ''',
+            status_code=200,
+        )
+    elif '123' in url:# test with one episode
+        return mock.Mock(
+            content='''<?xml version="1.0" encoding="UTF-8" ?>
+            <Data><Series>
+              <id>72108</id>
+              <Actors>|Mark Harmon|Michael Weatherly|Cote de Pablo|Lauren Holly|Sean Murray|Sasha Alexander|Pauley Perrette|David McCallum|Brian Dietzen|Rocky Carroll|</Actors>
+              <Airs_DayOfWeek>Tuesday</Airs_DayOfWeek>
+              <Airs_Time>8:00 PM</Airs_Time>
+              <ContentRating>TV-14</ContentRating>
+              <FirstAired>2003-09-23</FirstAired>
+              <Genre>|Action|Adventure|Drama|</Genre>
+              <IMDB_ID>tt0364845</IMDB_ID>
+              <Language>en</Language>
+              <Network>CBS</Network>
+              <NetworkID></NetworkID>
+              <Overview>Explore the inner workings of the government agency that investigates all crimes involving Navy and Marine Corps personnel, regardless of rank or position.  Leading this team is NCIS Special Agent Leroy Jethro Gibbs, a skilled investigator and interrogator who is smart, tough and willing to bend the rules to get the job done.</Overview>
+              <Rating>9.1</Rating>
+              <RatingCount>293</RatingCount>
+              <Runtime>60</Runtime>
+              <SeriesID>16772</SeriesID>
+              <SeriesName>NCIS</SeriesName>
+              <Status>Continuing</Status>
+              <added></added>
+              <addedBy></addedBy>
+              <banner>graphical/72108-g12.jpg</banner>
+              <fanart>fanart/original/72108-1.jpg</fanart>
+              <lastupdated>1379846552</lastupdated>
+              <poster>posters/72108-5.jpg</poster>
+              <tms_wanted>1</tms_wanted>
+              <zap2it_id>EP00681911</zap2it_id>
+            </Series>
+            <Episode>
+              <id>4636146</id>
+              <Combined_episodenumber>0</Combined_episodenumber>
+              <Combined_season>0</Combined_season>
+              <DVD_chapter></DVD_chapter>
+              <DVD_discid></DVD_discid>
+              <DVD_episodenumber></DVD_episodenumber>
+              <DVD_season></DVD_season>
+              <Director></Director>
+              <EpImgFlag></EpImgFlag>
+              <EpisodeName></EpisodeName>
+              <EpisodeNumber>0</EpisodeNumber>
+              <FirstAired></FirstAired>
+              <GuestStars></GuestStars>
+              <IMDB_ID></IMDB_ID>
+              <Language>en</Language>
+              <Overview></Overview>
+              <ProductionCode></ProductionCode>
+              <Rating></Rating>
+              <RatingCount>0</RatingCount>
+              <SeasonNumber>1</SeasonNumber>
+              <Writer></Writer>
+              <absolute_number></absolute_number>
+              <airsafter_season></airsafter_season>
+              <airsbefore_episode></airsbefore_episode>
+              <airsbefore_season></airsbefore_season>
+              <filename></filename>
+              <lastupdated>1376789683</lastupdated>
+              <seasonid>19575</seasonid>
+              <seriesid>72108</seriesid>
+              <thumb_added></thumb_added>
+              <thumb_height></thumb_height>
+              <thumb_width></thumb_width>
+              <tms_export>0</tms_export>
+              <tms_review_blurry>0</tms_review_blurry>
+              <tms_review_by></tms_review_by>
+              <tms_review_dark>0</tms_review_dark>
+              <tms_review_date></tms_review_date>
+              <tms_review_logo>0</tms_review_logo>
+              <tms_review_other>0</tms_review_other>
+              <tms_review_unsure>0</tms_review_unsure>
+            </Episode>
+            </Data>
+                ''',
+            status_code=200,
+        )
+
+class test_thetvdb(TestCase):
+    
+    @mock.patch('requests.get', mock_tvrage)
+    def test(self):
+
+        thetvdb = Thetvdb('apikey')
+        ids = [72108, 123]
+        for id_ in ids:
+            show = thetvdb.get_show(id_)
+            Show_schema(show)
+            self.assertTrue(show['episodes'])
+
+if __name__ == '__main__':
+    nose.run(defaultTest=__name__)

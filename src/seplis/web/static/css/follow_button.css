@@ -1,0 +1,11 @@
+.btn-unfollow {
+    color: #fff;
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+
+.btn-unfollow:hover, .btn-unfollow:focus, .btn-unfollow:active, .btn-unfollow.active {
+    color: #fff;
+    background-color: #47a447;
+    border-color: #398439;
+}

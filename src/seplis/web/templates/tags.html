@@ -1,0 +1,34 @@
+<div id="tags-{{ relation_id }}" class="btn-group">
+    <div class="dropdown btn-group">
+        <button class="btn btn-primary btn-add-tag" data-toggle="dropdown">
+            <span class="glyphicon glyphicon-plus"></span>
+        </button>
+        <div class="dropdown-menu" role="menu">
+            <div style="margin-left:3px;margin-right:3px;">
+                <form class="form-tag">
+                    <div class="form-group" style="margin-bottom:3px;">
+                        <input class="form-control input-add-tag" type="text" name="name" value="" placeholder="tag name. Eg. fan">
+                    </div>
+                    <div class="pull-right">
+                        <span class="api_request_loader"></span>
+                        <button type="submit" class="btn btn-success">Add</button>
+                    </div>
+                    <input type="hidden" class="tag-method" name="method" value="add">
+                    <input type="hidden" class="tag-relation-id" name="relation_id" value="{{ relation_id }}">
+                    <input type="hidden" name="type" class="tag-type" value="{{ tag_type }}">
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function(){
+            var tags = {{ json_dumps(tags) }};
+            show_tags(
+                $('#tags-{{ relation_id }}'),
+                tags,
+                {{ relation_id }}
+            )
+        });
+    </script>
+</div>

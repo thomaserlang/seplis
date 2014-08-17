@@ -1,0 +1,16 @@
+#signin-form{
+    width:500px;
+    margin:0 auto;
+}
+#signin-form .alert strong{
+    display:block;
+}
+#signin-form .alert strong:first-letter{
+    text-transform: capitalize;
+}
+.page-header{
+    border-bottom:1px solid #2b4663;
+}
+.logo{
+    color:#2b4663;
+}
