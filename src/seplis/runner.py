@@ -44,5 +44,8 @@ def rebuild_cache(config):
     import seplis.api.rebuild_cache
     seplis.api.rebuild_cache.main()
 
-if __name__ == "__main__":
+def main():
     app.run()
+
+if __name__ == "__main__":
+    main()
