@@ -34,7 +34,7 @@ redirect_stderr=true
 user=seplis
 
 [program:seplis-api]
-process_name = seplis-web-%(process_num)s
+process_name = seplis-api-%(process_num)s
 directory=/home/te/virtualenv/seplis/
 command=/home/te/virtualenv/seplis/bin/seplis --config=/etc/seplis_conf.yml api --port=%(process_num)s
 numprocs=8
@@ -56,7 +56,7 @@ Create a database user and give it access to the schema:
 ```
 CREATE USER 'seplis'@'localhost' IDENTIFIED BY 'mypass';
 
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE ON seplis.* TO 'seplis'@'localhost';
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER ON seplis.* TO 'seplis'@'localhost';
 ```
 
 Create a user for seplis to run as:
