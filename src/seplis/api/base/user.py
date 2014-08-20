@@ -130,14 +130,16 @@ class User(object):
             user.level = int(user_token['user_level'])
             return user
 
-class Token(object):
+class 
+Token(object):
 
     @classmethod
     def cache(cls, user_id, user_level, token, expire_days, pipe=None):
         _pipe = pipe if pipe else database.redis.pipeline()
         _pipe.hset('tokens:{}'.format(token), 'user_id', user_id)
         _pipe.hset('tokens:{}'.format(token), 'user_level', user_level)
-        _pipe.expire('tokens:{}'.format(token), timedelta(days=expire_days))
+        if expire_days:
+            _pipe.expire('tokens:{}'.format(token), timedelta(days=expire_days))
         if not pipe:
             _pipe.execute()
 
