@@ -130,8 +130,7 @@ class User(object):
             user.level = int(user_token['user_level'])
             return user
 
-class 
-Token(object):
+class Token(object):
 
     @classmethod
     def cache(cls, user_id, user_level, token, expire_days, pipe=None):
