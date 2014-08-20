@@ -3,7 +3,7 @@ import nose
 import mock
 from unittest import TestCase
 from seplis.indexer.show.tvrage import Tvrage
-from seplis.schemas import Show_schema
+from seplis import schemas
 
 def mock_tvrage(url):
     if 'showinfo.php' in url:
@@ -330,8 +330,7 @@ class test_tvrage(TestCase):
         tvrage_ids = [4628, 2445, 5613, 20370, 3140, 5294, 25923]
         for id_ in tvrage_ids:
             show = Tvrage.get_show(id_)
-            print(show)
-            Show_schema(show)
+            schemas.validate(schemas.Show_schema, show)
             self.assertTrue(show['episodes'])
             
 if __name__ == '__main__':

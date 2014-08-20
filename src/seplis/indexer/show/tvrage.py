@@ -37,7 +37,7 @@ class Tvrage:
                 'premiered':cls.parse_date(show_info.get('startdate')),
                 'ended':cls.parse_date(show_info.get('ended')),
                 'episodes':cls.parse_episode_list(show_id, episode_list),
-                'external': {
+                'externals': {
                     'tvrage': str(show_id),
                 }
             }

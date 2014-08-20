@@ -3,7 +3,7 @@ import nose
 import mock
 from unittest import TestCase
 from seplis.indexer.show.thetvdb import Thetvdb
-from seplis.schemas import Show_schema
+from seplis import schemas
 
 def mock_tvrage(url):
     if '72108' in url:
@@ -211,8 +211,8 @@ class test_thetvdb(TestCase):
         thetvdb = Thetvdb('apikey')
         ids = [72108, 123]
         for id_ in ids:
-            show = thetvdb.get_show(id_)
-            Show_schema(show)
+            show = thetvdb.get_show(id_)            
+            schemas.validate(schemas.Show_schema, show)
             self.assertTrue(show['episodes'])
 
 if __name__ == '__main__':

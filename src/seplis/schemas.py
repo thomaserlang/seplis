@@ -4,6 +4,11 @@ from voluptuous import Schema, Any, Required, Length, All, Match, Invalid, Range
 from datetime import datetime
 from dateutil import parser
 
+def validate(schema, d, *arg, **args):
+    if not isinstance(schema, Schema):            
+        schema = Schema(schema, *arg, **args)    
+    schema(d)   
+
 def iso8601():
     def f(v):    
         try:

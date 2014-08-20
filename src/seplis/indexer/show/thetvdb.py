@@ -25,8 +25,8 @@ class Thetvdb:
             if 'Overview' in data['Data']['Series'] and data['Data']['Series']['Overview']:
                 description = {
                     'text': data['Data']['Series']['Overview'],
-                    'source_title': 'TheTVDB',
-                    'source_url': self._source_url.format(id=id_), 
+                    'title': 'TheTVDB',
+                    'url': self._source_url.format(id=id_), 
                 }
             episodes = []
             if 'Episode' in data['Data']:
@@ -37,7 +37,7 @@ class Thetvdb:
                 'premiered': self.parse_date(data['Data']['Series']['FirstAired']),
                 'ended': None,
                 'episodes': episodes,                
-                'external': {
+                'externals': {
                     'thetvdb': str(id_),
                 }
             }
@@ -63,8 +63,8 @@ class Thetvdb:
         if 'Overview' in episode and episode['Overview']:
             description = {
                 'text': episode['Overview'],
-                'source_title': 'TheTVDB',
-                'source_url': self._source_url.format(id=episode['seriesid']),
+                'title': 'TheTVDB',
+                'url': self._source_url.format(id=episode['seriesid']),
             }
         return {
             'title': episode['EpisodeName'],
@@ -108,7 +108,7 @@ class Thetvdb:
         Returns the shows description in the format:
             {
                 text: 'Some text',
-                source_name: 'TheTVDB',
+                title: 'TheTVDB',
                 source_url: 'http://...'
             }
         :returns: dict
@@ -127,7 +127,7 @@ class Thetvdb:
             if show.get('Overview'):
                 return {
                     'text': show['Overview'],
-                    'source_name': 'TheTVDB',
-                    'source_url': self._source_url.format(id=id_),
+                    'title': 'TheTVDB',
+                    'url': self._source_url.format(id=id_),
                 }
         return None
