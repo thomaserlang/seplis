@@ -69,7 +69,7 @@ class Handler(tornado.web.RequestHandler):
 
     def write_pagination(self, pagination):
         links = pagination.links_header_format(
-            urljoin(config['api']['url'],self.request.path), 
+            urljoin(config['api']['url'], self.request.path), 
             self.request.query_arguments,
         )
         if links:

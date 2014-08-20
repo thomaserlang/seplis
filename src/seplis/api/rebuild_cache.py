@@ -4,7 +4,7 @@ from seplis.api import models
 from seplis.api import elasticcreate
 from seplis.connections import database, Database
 from seplis.decorators import new_session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from datetime import datetime
 
 class Rebuild_cache(object):
@@ -88,17 +88,21 @@ class Rebuild_cache(object):
         from seplis.api.base.user import Token
         with new_session() as session:
             tokens = session.query(models.Token).filter(
-                models.Token.expires >= datetime.now()
+                or_(
+                    models.Token.expires >= datetime.now(),
+                    models.Token.expires == None,
+                )
             ).all()
             pipe = database.redis.pipeline()
             for token in tokens:
                 Token.cache(
                     user_id=token.user_id,
                     token=token.token,
-                    expire_days=abs((datetime.now()-token.expires).days),
+                    expire_days=abs((datetime.now()-token.expires).days) if token.expires else None,
                     pipe=pipe,
+                    user_level=token.user_level,
                 )
             pipe.execute()
 
-def main():    
+def main():
     Rebuild_cache().rebuild()

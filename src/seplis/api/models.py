@@ -93,6 +93,7 @@ class Token(base):
     app_id = Column(Integer)
     token = Column(String(45), primary_key=True)
     expires = Column(DateTime)
+    user_level = Column(Integer)
 
 class Show_follow(base):
     __tablename__ = 'show_followers'

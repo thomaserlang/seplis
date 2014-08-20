@@ -38,6 +38,7 @@ def load(path=None):
         './seplis_conf.yaml',
         '~/seplis_conf.yaml',
         '/etc/seplis/seplis_conf.yaml',
+        '/etc/seplis_conf.yaml',
     ]
     if not path:
         path = os.environ.get('SEPLIS_CONFIG', None)

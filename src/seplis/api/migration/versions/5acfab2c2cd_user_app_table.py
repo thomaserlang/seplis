@@ -57,8 +57,8 @@ def upgrade():
 
     models.base.bind = op.get_bind()
     user = User.new(
-        name='root',
-        email='root@root.com',
+        name='seplis',
+        email='bot@seplis.net',
         password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',# 123456
         level=constants.app_level_root,
     )
@@ -89,6 +89,7 @@ def upgrade():
         sa.Column('app_id', sa.Integer, sa.ForeignKey('apps.id', onupdate='cascade', ondelete='cascade')),
         sa.Column('token', sa.String(100), primary_key=True),
         sa.Column('expires', sa.DateTime),
+        sa.Column('user_level', sa.Integer),
     )
 
 def downgrade():

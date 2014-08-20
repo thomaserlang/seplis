@@ -124,24 +124,29 @@ class User(object):
 
     @classmethod
     def get_from_token(cls, token):
-        user_id = database.redis.get('tokens:{}'.format(token))
-        if user_id:
-            return cls.get(user_id)
+        user_token = database.redis.hgetall('tokens:{}'.format(token))
+        if user_token:
+            user = cls.get(user_token['user_id'])
+            user.level = int(user_token['user_level'])
+            return user
 
 class Token(object):
 
     @classmethod
-    def cache(cls, user_id, token, expire_days, pipe=None):
+    def cache(cls, user_id, user_level, token, expire_days, pipe=None):
         _pipe = pipe if pipe else database.redis.pipeline()
-        _pipe.set('tokens:{}'.format(token), user_id)
+        _pipe.hset('tokens:{}'.format(token), 'user_id', user_id)
+        _pipe.hset('tokens:{}'.format(token), 'user_level', user_level)
         _pipe.expire('tokens:{}'.format(token), timedelta(days=expire_days))
         if not pipe:
             _pipe.execute()
 
     @classmethod
-    def new(cls, user_id, app_id):
+    def new(cls, user_id, user_level, app_id):
         '''
+
         :param user_id: int
+        :param user_level: int
         :param app_id: int
         :returns: str
             access_token
@@ -149,6 +154,7 @@ class Token(object):
         with new_session() as session:
             token = models.Token(
                 user_id=user_id,
+                user_level=user_level,
                 app_id=app_id,
                 token=random_key(),
                 expires=datetime.utcnow() + timedelta(days=365),
@@ -157,6 +163,7 @@ class Token(object):
             session.commit()
             cls.cache(
                 user_id=user_id,
+                user_level=user_level,
                 token=token.token,
                 expire_days=365,
             )

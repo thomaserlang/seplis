@@ -100,6 +100,7 @@ class Testbase(AsyncHTTPTestCase):
         )
         self.access_token = Token.new(
             user_id=self.current_user.id, 
+            user_level=self.current_user.level,
             app_id=self.current_app.id,
         )
 

@@ -2,7 +2,7 @@ import alembic.config
 import logging
 import os
 from alembic import context
-from seplis.config import config
+from seplis.config import config, load
 from alembic import command
 
 def get_config():
@@ -16,5 +16,5 @@ def upgrade():
     command.upgrade(cfg, 'head')
 
 if __name__ == '__main__':
-    Config.load()
+    load()
     upgrade()

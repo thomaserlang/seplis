@@ -48,7 +48,8 @@ class Handler(seplis.api.handlers.base.Handler):
         if not user:
             raise exceptions.User_unknown()
         user = user.to_dict()
-        if (self.current_user.id != user_id) and (self.current_user.level < constants.level_user_email):
+        if (self.current_user.id != user_id) and \
+            (self.current_user.level < constants.level_user_email):
             user.pop('email', None)
         self.write_object(user)
 
@@ -60,16 +61,22 @@ class Token_handler(seplis.api.handlers.base.Handler):
         if self.request.body['grant_type'] == 'password':
             yield self.grant_type_password()
         else:
-            raise exceptions.OAuth_unsuported_grant_type_exception(self.request.body['grant_type'])
+            raise exceptions.OAuth_unsuported_grant_type_exception(
+                self.request.body['grant_type']
+            )
 
     @run_on_executor
     def grant_type_password(self):
         self.validate(schemas.Token_type_password)
         app = App.get_by_client_id(client_id=self.request.body['client_id'])
         if not app:
-            raise exceptions.OAuth_unknown_client_id_exception(self.request.body['client_id'])
+            raise exceptions.OAuth_unknown_client_id_exception(
+                self.request.body['client_id']
+            )
         if app.level != constants.app_level_root:
-            raise exceptions.OAuth_unauthorized_grant_type_level_request_exception(constants.app_level_root, app.level)
+            raise exceptions.OAuth_unauthorized_grant_type_level_request_exception(
+                constants.app_level_root, app.level
+            )
         user = User.login(
             email=self.request.body['email'],
             password=self.request.body['password'],
@@ -78,5 +85,6 @@ class Token_handler(seplis.api.handlers.base.Handler):
             raise exceptions.Wrong_email_or_password_exception()
         self.write_object({'access_token': Token.new(
             user_id=user.id,
+            user_level=user.level,
             app_id=app.id,
         )})
