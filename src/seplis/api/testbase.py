@@ -1,10 +1,10 @@
 import os
 import redis
+from seplis import config, config_load
 from seplis.utils import json_dumps, json_loads
 from urllib.parse import urlencode
 from tornado.httpclient import HTTPRequest
 from tornado.testing import AsyncHTTPTestCase
-from seplis.config import config
 from seplis.connections import database
 from seplis.logger import logger
 from sqlalchemy import create_engine
@@ -25,8 +25,7 @@ class Testbase(AsyncHTTPTestCase):
 
     def setUp(self):
         super(Testbase, self).setUp()
-        import seplis.config
-        seplis.config.load()
+        config_load()
         config['logging']['path'] = None
         logger.set_logger('test.log')
         engine = create_engine(config['database'], convert_unicode=True, echo=False)

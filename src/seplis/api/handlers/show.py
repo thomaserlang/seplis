@@ -40,14 +40,18 @@ class Handler(base.Handler):
     @authenticated(0)
     def put(self, show_id):
         self.validate(schemas.Show_schema, required=True)
-        show = Show(
-            id=show_id,
-            title=self.request.body['title'],
-            description=Description(
+        if self.request.body['description']:
+            description = Description(
                 text=self.request.body['description']['text'] if self.request.body['description'] else None,
                 url=self.request.body['description'].get('url') if self.request.body['description'] else None,
                 title=self.request.body['description'].get('title') if self.request.body['description'] else None,
-            ),
+            )
+        else:
+            description = Description(None)
+        show = Show(
+            id=show_id,
+            title=self.request.body['title'],
+            description=description,
             premiered=self.request.body['premiered'],
             ended=self.request.body['ended'],
             externals=self.request.body['externals'],
@@ -118,9 +122,10 @@ class Handler(base.Handler):
             req = {
                 'from': [((page - 1) * per_page)],
                 'size': [constants.per_page],
+                'sort': ['id'],
             }
             if q != None:
-                req['q'] = q
+                req['q'] = [q]
             response = yield http_client.fetch(
                 'http://{}/shows/show/_search?{}'.format(
                     config['elasticsearch'],
@@ -145,15 +150,19 @@ class Handler(base.Handler):
         '''
         episodes = []
         for episode in episodes_dict:
+            if 'description' in episode and episode['description']:
+                description = Description(
+                    text=episode['description']['text'],
+                    url=episode['description'].get('url'),
+                    title=episode['description'].get('title'),
+                )
+            else:
+                description = Description(None)
             episodes.append(Episode(
                 number=episode['number'],
                 title=episode['title'],
                 air_date=episode['air_date'],
-                description=Description(
-                    text=episode['description']['text'],
-                    url=episode['description'].get('url'),
-                    title=episode['description'].get('title'),
-                ),
+                description=description,
                 season=episode.get('season'),
                 episode=episode.get('episode'),
             ))

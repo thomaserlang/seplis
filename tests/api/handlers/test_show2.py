@@ -244,7 +244,32 @@ class test_show(Testbase):
         self.assertEqual(len(shows), 1)
         self.assertEqual(shows[0]['title'], 'This is a test show')
 
-
+    def test_description(self):
+        self.login(0)
+        response = self.post('/1/shows', {
+            'title': 'NCIS',
+            'description': None,
+            'premiered': '2003-01-01',
+            'ended': None,
+            'indices': {
+                'info': 'imdb',
+                'episodes': 'imdb',
+            },
+            'externals': {
+                'imdb': 'tt0364845',
+            },
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 1',
+                    'air_date': '2014-01-01',
+                    'description': None,
+                }
+            ]
+        })        
+        self.assertEqual(response.code, 201, response.body)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['title'], 'NCIS')
 
 
 if __name__ == '__main__':

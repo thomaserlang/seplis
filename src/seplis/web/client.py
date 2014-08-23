@@ -1,4 +1,5 @@
 import logging
+import json
 from tornado import httpclient, gen, ioloop, web
 from urllib.parse import urljoin, urlencode
 from seplis import utils
@@ -6,7 +7,7 @@ from functools import partial
 
 class Async_client(object):
 
-    def __init__(self, url, client_id, client_secret=None, 
+    def __init__(self, url, client_id=None, client_secret=None, 
                  access_token=None, version='1', io_loop=None):
         self.url = urljoin(url, str(version))
         self.client_id = client_id
@@ -26,8 +27,10 @@ class Async_client(object):
         if ('Authorization' not in headers) and self.access_token:
             headers['Authorization'] = 'Bearer {}'.format(self.access_token)
         try:
+            if not uri.startswith('/'):
+                uri = '/'+uri
             response = yield self._client.fetch(httpclient.HTTPRequest(
-                urljoin(self.url, uri), 
+                self.url+uri, 
                 method=method,
                 body=utils.json_dumps(body) if body or {} == body else None, 
                 headers=headers,
@@ -41,7 +44,7 @@ class Async_client(object):
                     message='Timeout',
                 )
         data = None
-        if response.body:
+        if response.body and response.code != 404:
             data = utils.json_loads(response.body)
             if 400 <= response.code <= 600:
                 raise Api_error(status_code=response.code, **data)
@@ -74,18 +77,40 @@ class Async_client(object):
 class Client(Async_client):
 
     def get(self, uri, data=None, headers=None):
-        return self.io_loop.run_sync(
-            partial(Async_client.get, self, uri, data=data, headers=headers)
-        )    
+        return self.io_loop.run_sync(partial(
+            Async_client.get, 
+            self, 
+            uri, 
+            data=data, 
+            headers=headers
+        ))    
 
     def delete(self, uri, headers=None):
-        return self.io_loop.run_sync(self._fetch('DELETE', uri, headers=headers))
+        return self.io_loop.run_sync(partial(
+            self._fetch, 
+            'DELETE', 
+            uri, 
+            headers=
+            headers
+        ))
 
     def post(self, uri, body={}, headers=None):
-        return self.io_loop.run_sync(self._fetch('POST', uri, body, headers=headers))
+        return self.io_loop.run_sync(partial(
+            self._fetch, 
+            'POST', 
+            uri, 
+            body, 
+            headers=headers
+        ))
 
     def put(self, uri, body={}, headers=None):
-        return self.io_loop.run_sync(self._fetch('PUT', uri, body, headers=headers))
+        return self.io_loop.run_sync(partial(
+            self._fetch, 
+            'PUT', 
+            uri, 
+            body, 
+            headers=headers
+        ))
 
 class Api_error(web.HTTPError):
 
@@ -96,3 +121,21 @@ class Api_error(web.HTTPError):
         self.errors = errors
         self.message = message
         self.extra = extra
+
+    def __str__(self):
+        result = '{} ({})'.format(self.message, self.code)
+        if self.errors:
+            result += '\n\nErrors:\n'
+            result += json.dumps(
+                self.errors,
+                indent=4, 
+                separators=(',', ': ')
+            )
+        if self.extra:
+            result += '\n\nExtra:\n'
+            result += json.dumps(
+                self.extra,
+                indent=4, 
+                separators=(',', ': ')
+            )
+        return result

@@ -1,2 +1,3 @@
-from seplis.config import config as seplis_config, load as seplis_load
+from seplis.config import config, load as config_load
 from seplis.web.client import Client, Async_client
+from seplis.indexer import Show_indexer

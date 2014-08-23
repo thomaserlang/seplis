@@ -42,7 +42,6 @@ class Handler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Credentials', 'true')
 
     def write_error(self, status_code, **kwargs):
-        logging.info('sup')
         if 'exc_info' in kwargs:
             if isinstance(kwargs['exc_info'][1], exceptions.API_exception):
                 self.write_object({

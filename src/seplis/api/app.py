@@ -1,4 +1,4 @@
-from seplis.config import config
+import seplis
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
@@ -16,7 +16,7 @@ class Application(tornado.web.Application):
 
     def __init__(self, **args):
         settings = dict(
-            debug=config['debug'],
+            debug=seplis.config['debug'],
             autoescape=None,
             xsrf_cookies=False,
         )
@@ -53,17 +53,17 @@ class Application(tornado.web.Application):
         ]
 
         self.executor = ThreadPoolExecutor(
-            max_workers=config['api']['max_workers']
+            max_workers=seplis.config['api']['max_workers']
         )
         tornado.web.Application.__init__(self, urls, **settings)
 
 def main():
-    logger.set_logger('api-{}.log'.format(config['api']['port']))
+    logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
     http_server = tornado.httpserver.HTTPServer(Application())
-    http_server.listen(config['api']['port'])
+    http_server.listen(seplis.config['api']['port'])
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
-    import seplis.config
-    seplis.config.load()
+    import seplis
+    seplis.config_load()
     main()

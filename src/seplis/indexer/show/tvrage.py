@@ -39,7 +39,8 @@ class Tvrage:
                 'episodes':cls.parse_episode_list(show_id, episode_list),
                 'externals': {
                     'tvrage': str(show_id),
-                }
+                },
+                'description': None,
             }
         return None
 
