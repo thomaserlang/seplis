@@ -38,7 +38,7 @@ class Async_client(object):
         except httpclient.HTTPError as e:
             response = e.response
             if not response and (e.code == 599):
-                raise Api_error(
+                raise API_error(
                     status_code=e.code,
                     code=e.code,
                     message='Timeout',
@@ -47,7 +47,7 @@ class Async_client(object):
         if response.body and response.code != 404:
             data = utils.json_loads(response.body)
             if 400 <= response.code <= 600:
-                raise Api_error(status_code=response.code, **data)
+                raise API_error(status_code=response.code, **data)
         raise gen.Return(data)
 
     @gen.coroutine
@@ -112,7 +112,7 @@ class Client(Async_client):
             headers=headers
         ))
 
-class Api_error(web.HTTPError):
+class API_error(web.HTTPError):
 
     def __init__(self, status_code, code, message, errors=None, extra=None):
         web.HTTPError.__init__(self, status_code, message)

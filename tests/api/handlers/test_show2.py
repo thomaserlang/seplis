@@ -12,13 +12,6 @@ class test_show(Testbase):
     def test_post(self):
         self.login(0)
 
-        # test with missing required fields
-        response = self.post('/1/shows', {
-            'title': 'test'
-        })
-        self.assertEqual(response.code, 400, response.body)
-
-
         # Creating a new show without any data is OK.
         response = self.post('/1/shows')
         self.assertEqual(response.code, 201, response.body)

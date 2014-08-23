@@ -31,7 +31,7 @@ class Handler(base.Handler):
         show_id = Show.create()
         self.set_status(201)
         if self.request.body:
-            self.put(show_id)
+            self.patch(show_id)
         else:
             self.write_object({
                 'id': show_id,
@@ -86,12 +86,13 @@ class Handler(base.Handler):
             show.indices.update(self.request.body['indices'])
         if 'description' in self.request.body:
             desc = self.request.body['description']
-            if 'text' in desc:
-                show.description.text = desc['text']
-            if 'title' in desc:
-                show.description.title = desc['title']
-            if 'url' in desc:
-                show.description.url = desc['url']
+            if desc:
+                if 'text' in desc:
+                    show.description.text = desc['text']
+                if 'title' in desc:
+                    show.description.title = desc['title']
+                if 'url' in desc:
+                    show.description.url = desc['url']
         if 'episodes' in self.request.body:
             self.put_episodes(
                 show_id,
