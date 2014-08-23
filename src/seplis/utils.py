@@ -51,9 +51,9 @@ def json_dumps(obj, **kwargs):
         **kwargs
     ).replace("</", "<\\/")
 
-def json_loads(s):
+def json_loads(s, charset='utf-8'):
     if isinstance(s, bytes):
-        s = s.decode('utf-8')
+        s = s.decode(charset)
     return json.loads(s)
 
 _punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')

@@ -2,6 +2,7 @@ import requests
 import os.path
 import getpass
 from seplis.utils import json_dumps
+from urllib.parse import urljoin
 from seplis.indexer.show.tvrage import Tvrage
 from seplis.indexer.show.thetvdb import Thetvdb
 from seplis.config import config
@@ -22,26 +23,17 @@ class Show_indexer(object):
 
     @property
     def external_thetvdb(self):
-        return Thetvdb('2B59B7BD2F822FB6')
+        return Thetvdb(config['client']['thetvdb'])
 
     def base_api_url(self, req):
-        return '{}1/{}'.format(config['api']['url'], req)
+        return urljoin(config['api']['url'], '/1/{}'.format(req))
 
     def login(self):
         try:
            with open('filename'):
                pass
         except IOError:
-            print('No valid token was found, please login with your email and password')
-            #email = input('Email: ')
-            #password = getpass.getpass()
-        response = requests.post('http://localhost:8002/1/token', data=json_dumps({
-            'grant_type': 'password',
-            'client_id': 'yZpRAvr0X3Wyyn/QZgkRRbJ1GLEDG4vBNm0I/90F',
-            'email': 'root@root.com',
-            'password': '123456',
-        }))
-        self.token = response.json()['access_token']
+            print('No valid token was found.')
 
     def new(self, external_name, external_id):
         '''
@@ -55,7 +47,7 @@ class Show_indexer(object):
         show_data['index']['info'] = external_name
         show_data['index']['episodes'] = external_name
         response = requests.get(
-            '{base}/external/{external_name}/{id}'.format(
+            '{base}/externals/{external_name}/{id}'.format(
                 base=self.base_api_url('shows'), 
                 external_name=external_name,
                 id=external_id,

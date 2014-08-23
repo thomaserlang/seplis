@@ -2,6 +2,7 @@ from seplis.config import config
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
+import seplis.api.handlers.base
 import seplis.api.handlers.show
 import seplis.api.handlers.user
 import seplis.api.handlers.app
@@ -46,10 +47,14 @@ class Application(tornado.web.Application):
 
             (r'/1/apps', seplis.api.handlers.app.Handler),
             (r'/1/apps/([0-9]+)', seplis.api.handlers.app.Handler),
-            (r'/1/token', seplis.api.handlers.user.Token_handler),               
+            (r'/1/token', seplis.api.handlers.user.Token_handler),
+
+            (r'.*', seplis.api.handlers.base.Handler),      
         ]
 
-        self.executor = ThreadPoolExecutor(max_workers=config['api']['max_workers'])
+        self.executor = ThreadPoolExecutor(
+            max_workers=config['api']['max_workers']
+        )
         tornado.web.Application.__init__(self, urls, **settings)
 
 def main():

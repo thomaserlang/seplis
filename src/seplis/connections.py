@@ -7,7 +7,7 @@ from elasticsearch import Elasticsearch
 class Database:
     def __init__(self):
         self.engine = create_engine(
-            config['database']['url'],
+            config['database'],
             convert_unicode=True,
             echo=False,
             pool_recycle=3600,

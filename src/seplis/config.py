@@ -5,18 +5,14 @@ from seplis.utils import json_loads
 
 config = {
     'debug': False,
-    'database': {
-        'url': 'sqlite:///seplis.db',
-    },
+    'database': 'sqlite:///seplis.db',
     'web': {
-        'url': 'http://localhost:8001/',
+        'url': 'https://seplis.net',
         'cookie_secret': 'CHANGE_ME',
         'port': 8001,
-        'api_url': 'http://localhost:8002/1',
-        'client_id': 'CHANGE_ME',
     },
     'api': {
-        'url': 'http://localhost:8002/',
+        'url': 'https://api.seplis.net',
         'port': 8002,
         'max_workers': 5,
     },
@@ -31,6 +27,11 @@ config = {
         'num_backups': 10,
     },
     'elasticsearch': 'localhost:9200',
+    'client': {
+        'access_token': None,
+        'thetvdb': None,
+        'id': 'CHANGE_ME',
+    },
 }
 
 def load(path=None):

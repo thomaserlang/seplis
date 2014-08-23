@@ -1,16 +1,19 @@
 import logging
 from tornado import httpclient, gen, ioloop, web
+from urllib.parse import urljoin, urlencode
 from seplis import utils
+from functools import partial
 
 class Async_client(object):
 
-    def __init__(self, url, client_id, client_secret=None, io_loop=None):
-        self.url = url
+    def __init__(self, url, client_id, client_secret=None, 
+                 access_token=None, version='1', io_loop=None):
+        self.url = urljoin(url, str(version))
         self.client_id = client_id
         self.client_secret = client_secret
         self.io_loop = io_loop or ioloop.IOLoop.instance()
         self._client = httpclient.AsyncHTTPClient(self.io_loop)
-        self.access_token = None
+        self.access_token = access_token
 
     @gen.coroutine
     def _fetch(self, method, uri, body=None, headers=None):
@@ -24,7 +27,7 @@ class Async_client(object):
             headers['Authorization'] = 'Bearer {}'.format(self.access_token)
         try:
             response = yield self._client.fetch(httpclient.HTTPRequest(
-                self.url + uri, 
+                urljoin(self.url, uri), 
                 method=method,
                 body=utils.json_dumps(body) if body or {} == body else None, 
                 headers=headers,
@@ -39,13 +42,17 @@ class Async_client(object):
                 )
         data = None
         if response.body:
-            data = utils.json_loads(response.body.decode('utf-8'))
+            data = utils.json_loads(response.body)
             if 400 <= response.code <= 600:
                 raise Api_error(status_code=response.code, **data)
         raise gen.Return(data)
 
     @gen.coroutine
-    def get(self, uri, headers=None):
+    def get(self, uri, data=None, headers=None):     
+        if data != None:
+            if isinstance(data, dict):
+                data = urlencode(data, True)
+            uri += '{}{}'.format('&' if '?' in uri else '?', data)
         r = yield self._fetch('GET', uri, headers=headers)
         raise gen.Return(r)
 
@@ -63,6 +70,22 @@ class Async_client(object):
     def put(self, uri, body={}, headers=None):
         r = yield self._fetch('PUT', uri, body, headers=headers)
         raise gen.Return(r)
+
+class Client(Async_client):
+
+    def get(self, uri, data=None, headers=None):
+        return self.io_loop.run_sync(
+            partial(Async_client.get, self, uri, data=data, headers=headers)
+        )    
+
+    def delete(self, uri, headers=None):
+        return self.io_loop.run_sync(self._fetch('DELETE', uri, headers=headers))
+
+    def post(self, uri, body={}, headers=None):
+        return self.io_loop.run_sync(self._fetch('POST', uri, body, headers=headers))
+
+    def put(self, uri, body={}, headers=None):
+        return self.io_loop.run_sync(self._fetch('PUT', uri, body, headers=headers))
 
 class Api_error(web.HTTPError):
 

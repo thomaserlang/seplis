@@ -52,8 +52,8 @@ class Application(tornado.web.Application):
         ]
         tornado.web.Application.__init__(self, urls, **settings)
         self.client = Async_client(
-            url=config['web']['api_url'],
-            client_id=config['web']['client_id'],
+            url=config['api']['url'],
+            client_id=config['client']['id'],
         )
 
 def main():

@@ -48,7 +48,7 @@ def run_migrations_online():
 
     """
     alembic_config = config.get_section(config.config_ini_section)
-    alembic_config['sqlalchemy.url'] = seplis_config['database']['url']
+    alembic_config['sqlalchemy.url'] = seplis_config['database']
     engine = engine_from_config(
                 alembic_config,
                 prefix='sqlalchemy.',

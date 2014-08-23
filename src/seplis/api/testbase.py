@@ -29,7 +29,7 @@ class Testbase(AsyncHTTPTestCase):
         seplis.config.load()
         config['logging']['path'] = None
         logger.set_logger('test.log')
-        engine = create_engine(config['database']['url'], convert_unicode=True, echo=False)
+        engine = create_engine(config['database'], convert_unicode=True, echo=False)
         connection = engine.connect()
         self.trans = connection.begin()
         database.session = sessionmaker(bind=connection)
@@ -63,13 +63,13 @@ class Testbase(AsyncHTTPTestCase):
         return self.wait()
 
     def get(self, url, data={}, headers=None):
-        if data is not None:
+        if data != None:
             if isinstance(data, dict):
                 data = urlencode(data, True)
-            if '?' in url:
-                url += '&%s' % data
-            else:
-                url += '?%s' % data
+            url += '{}{}'.format(
+                '&' if '?' in url else '?', 
+                data
+            )
         return self._fetch(url, 'GET', headers=headers)
 
     def post(self, url, data='', headers=None):
