@@ -112,17 +112,19 @@ class Handler(base.Handler):
                 result['_source']
             )
         else:
-            q = self.get_argument('q')
+            q = self.get_argument('q', None)
             per_page = int(self.get_argument('per_page', constants.per_page))
             page = int(self.get_argument('page', 1))
+            req = {
+                'from': [((page - 1) * per_page)],
+                'size': [constants.per_page],
+            }
+            if q != None:
+                req['q'] = q
             response = yield http_client.fetch(
                 'http://{}/shows/show/_search?{}'.format(
                     config['elasticsearch'],
-                    utils.url_encode_tornado_arguments({
-                        'from': [((page - 1) * per_page)],
-                        'size': [constants.per_page],
-                        'q': [q],
-                    })
+                    utils.url_encode_tornado_arguments(req)
                 ),
             )
             result = utils.json_loads(response.body)

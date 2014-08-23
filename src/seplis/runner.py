@@ -33,7 +33,6 @@ def api(config, port, rebuild_cache):
 @app.cmd()
 def upgrade(config):
     seplis_load(config)
-    logger.set_logger('upgrade.log')
     import seplis.api.migrate
     seplis.api.migrate.upgrade()
 
