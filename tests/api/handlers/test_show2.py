@@ -188,7 +188,7 @@ class test_show(Testbase):
         response = self.get('/1/shows/externals/seplis_old/1234')
         self.assertEqual(response.code, 200)
 
-    def test_post_externals(self):
+    def test_externals_int_id(self):
         self.login(0)
         response = self.post('/1/shows', {
             'externals': {
@@ -200,9 +200,7 @@ class test_show(Testbase):
                 'episodes': 'seplis_old',
             }
         })
-        self.assertEqual(response.code, 201, response.body)
-
-
+        self.assertEqual(response.code, 400, response.body)
 
     def test_episodes(self):
         show_id = self.new_show()
