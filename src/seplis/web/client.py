@@ -74,6 +74,11 @@ class Async_client(object):
         r = yield self._fetch('PUT', uri, body, headers=headers)
         raise gen.Return(r)
 
+    @gen.coroutine
+    def patch(self, uri, body={}, headers=None):
+        r = yield self._fetch('PATCH', uri, body, headers=headers)
+        raise gen.Return(r)
+
 class Client(Async_client):
 
     def get(self, uri, data=None, headers=None):
