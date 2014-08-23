@@ -10,12 +10,12 @@ class Thetvdb:
     def __init__(self, apikey):
         self.apikey = apikey
 
-    def get_show(self, id_):
+    def get_show(self, show_id):
         r = requests.get(
             self._url.format(
                 apikey=self.apikey,
-                id=id_,
-                type='all/en.xml',
+                id=show_id,
+                type='en.xml',
             )
         )
         if r.status_code == 200:
@@ -26,21 +26,32 @@ class Thetvdb:
                 description = {
                     'text': data['Data']['Series']['Overview'],
                     'title': 'TheTVDB',
-                    'url': self._source_url.format(id=id_), 
+                    'url': self._source_url.format(id=show_id), 
                 }
-            episodes = []
-            if 'Episode' in data['Data']:
-                episodes = self.parse_episodes(data['Data']['Episode'])
             return {
                 'title': data['Data']['Series']['SeriesName'],
                 'description': description,
                 'premiered': self.parse_date(data['Data']['Series']['FirstAired']),
-                'ended': None,
-                'episodes': episodes,                
+                'ended': None,               
                 'externals': {
-                    'thetvdb': str(id_),
+                    'thetvdb': str(show_id),
                 }
             }
+
+    def get_episodes(self, show_id):
+        r = requests.get(
+            self._url.format(
+                apikey=self.apikey,
+                id=show_id,
+                type='all/en.xml',
+            )
+        )
+        if r.status_code == 200:
+            data = xmltodict.parse(r.content)
+            episodes = []
+            if 'Episode' in data['Data']:
+                episodes = self.parse_episodes(data['Data']['Episode'])
+            return episodes
 
     def parse_episodes(self, episodes):
         _episodes = []
@@ -82,14 +93,14 @@ class Thetvdb:
             logging.exception('Parsing date "{}" faild with error: {}'.format(date))
         return None
 
-    def get_show_photos_urls(self, id_):
+    def get_show_photos_urls(self, show_id):
         '''
         :returns: list of urls
         '''
         r = requests.get(
             self._url.format(
                 apikey=self.apikey,
-                id=id_,
+                id=show_id,
                 type='banners.xml',
             )
         )
@@ -103,7 +114,7 @@ class Thetvdb:
                 banners.append('http://thetvdb.com/banners/{}'.format(data['Banners']['Banner']['BannerPath']))
         return banners
 
-    def get_show_description(self, id_):
+    def get_show_description(self, show_id):
         '''
         Returns the shows description in the format:
             {
@@ -116,7 +127,7 @@ class Thetvdb:
         r = requests.get(
             self._url.format(
                 apikey=self.apikey,
-                id=id_,
+                id=show_id,
                 type='en.xml',
             )
         )
@@ -128,6 +139,6 @@ class Thetvdb:
                 return {
                     'text': show['Overview'],
                     'title': 'TheTVDB',
-                    'url': self._source_url.format(id=id_),
+                    'url': self._source_url.format(id=show_id),
                 }
         return None

@@ -330,6 +330,7 @@ class test_tvrage(TestCase):
         tvrage_ids = [4628, 2445, 5613, 20370, 3140, 5294, 25923]
         for id_ in tvrage_ids:
             show = Tvrage.get_show(id_)
+            show['episodes'] = Tvrage.get_episodes(id_)
             schemas.validate(schemas.Show_schema, show)
             self.assertTrue(show['episodes'])
             

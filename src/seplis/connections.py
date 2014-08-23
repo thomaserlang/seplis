@@ -11,6 +11,7 @@ class Database:
             convert_unicode=True,
             echo=False,
             pool_recycle=3600,
+            encoding='UTF-8',
         )
         self.session = sessionmaker(
             bind=self.engine,

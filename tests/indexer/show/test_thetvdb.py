@@ -211,9 +211,9 @@ class test_thetvdb(TestCase):
         thetvdb = Thetvdb('apikey')
         ids = [72108, 123]
         for id_ in ids:
-            show = thetvdb.get_show(id_)            
+            show = thetvdb.get_show(id_)
+            show['episodes'] = thetvdb.get_episodes(id_)
             schemas.validate(schemas.Show_schema, show)
-            self.assertTrue(show['episodes'])
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

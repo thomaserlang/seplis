@@ -25,24 +25,31 @@ class Tvrage:
             )
             show_info = show_info['Showinfo']
             logging.debug('({}) Show XML parsed successfully.'.format(show_id))
-            episode_list = xmltodict.parse(
-                requests.get(
-                    url=cls._url_episode_list.format(show_id=show_id)
-                ).content
-            )
-            logging.debug('({}) Episode XML parsed successfully.'.format(show_id))
             logging.debug('({}) Creating ShowIndexed object.'.format(show_id))
             return {
-                'title':show_info.get('showname'),
-                'premiered':cls.parse_date(show_info.get('startdate')),
-                'ended':cls.parse_date(show_info.get('ended')),
-                'episodes':cls.parse_episode_list(show_id, episode_list),
+                'title': show_info.get('showname'),
+                'premiered': cls.parse_date(show_info.get('startdate')),
+                'ended': cls.parse_date(show_info.get('ended')),
                 'externals': {
                     'tvrage': str(show_id),
                 },
                 'description': None,
             }
         return None
+
+    @classmethod
+    def get_episodes(cls, show_id):
+        logging.debug('({}) Retrieving episode info.'.format(show_id))
+        episode_list = xmltodict.parse(
+            requests.get(
+                url=cls._url_episode_list.format(show_id=show_id)
+            ).content
+        )
+        logging.debug('({}) Episode XML parsed successfully.'.format(show_id))
+        return cls.parse_episode_list(
+            show_id, 
+            episode_list,
+        )
 
     @classmethod
     def parse_episode_list(cls, show_id, episode_list):
