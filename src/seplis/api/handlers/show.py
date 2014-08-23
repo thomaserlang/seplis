@@ -124,7 +124,6 @@ class Handler(base.Handler):
             req = {
                 'from': [((page - 1) * per_page)],
                 'size': [constants.per_page],
-                'sort': ['id'],
             }
             if q != None:
                 req['q'] = [q]
