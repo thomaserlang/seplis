@@ -76,6 +76,7 @@ Install SEPLIS:
 
     pip install https://github.com/thomaserlang/seplis/archive/master.zip --upgrade
     
+
 Create the log directory:
 
 ```
@@ -83,28 +84,27 @@ sudo mkdir /var/log/seplis
 sudo chown -R seplis:seplis /var/log/seplis
 ```
     
+
 Add the config to `/etc/seplis_conf.yml`. Example:
 
 ```yml
 web:
-    url: "http://example.net"
-    api_url: "http://api.example.net/1"
-    client_id: "client_id"
-    cookie_secret: "secret"
+    url: http://example.net
+    cookie_secret: CHANGE ME
 api:
-    url: "http://api.example.net"
-database:
-    url: "mysql+pymysql://seplis:mypass@127.0.0.1/seplis"
+    url: http://api.example.net
+database: mysql+pymysql://seplis:mypass@127.0.0.1/seplis
 redis:
     ip: localhost
     port: 6379
 logging:
     level: info
     path: /var/log/seplis
-debug: true
+client:
+    id: client id
 elasticsearch: localhost:9200
 ```
     
 Upgrade the database:
 
-    seplis --config=/etc/seplis_conf.yml upgrade
+    seplis upgrade
