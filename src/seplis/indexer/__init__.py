@@ -6,6 +6,7 @@ from urllib.parse import urljoin
 from seplis.indexer.show.tvrage import Tvrage
 from seplis.indexer.show.thetvdb import Thetvdb
 from seplis.config import config
+from seplis import Client
 
 class Show_indexer(object):
 
@@ -70,12 +71,4 @@ class Show_indexer(object):
                 },
             )
             return response.json()
-        return None 
-
-if __name__ == '__main__':
-    Config.load()
-    show_indexer = Show_indexer()
-    show_indexer.login()
-    for i in range(72107, 72108+200):
-        print(i)
-        print(show_indexer.new('thetvdb', i))
+        return None

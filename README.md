@@ -25,7 +25,7 @@ Supervisor config:
 [program:seplis-web]
 process_name = seplis-web-%(process_num)s
 directory=/home/te/virtualenv/seplis/
-command=/home/te/virtualenv/seplis/bin/seplis --config=/etc/seplis_conf.yml web --port=%(process_num)s
+command=/home/te/virtualenv/seplis/bin/seplis web --port=%(process_num)s
 numprocs=2
 numprocs_start=8000
 autostart=true
@@ -36,7 +36,7 @@ user=seplis
 [program:seplis-api]
 process_name = seplis-api-%(process_num)s
 directory=/home/te/virtualenv/seplis/
-command=/home/te/virtualenv/seplis/bin/seplis --config=/etc/seplis_conf.yml api --port=%(process_num)s
+command=/home/te/virtualenv/seplis/bin/seplis api --port=%(process_num)s
 numprocs=8
 numprocs_start=9000
 autostart=true
@@ -85,7 +85,7 @@ sudo chown -R seplis:seplis /var/log/seplis
 ```
     
 
-Add the config to `/etc/seplis_conf.yml`. Example:
+Add the config to `/etc/seplis_conf.yaml`. Example:
 
 ```yml
 web:
