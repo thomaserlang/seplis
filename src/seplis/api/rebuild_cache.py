@@ -25,7 +25,9 @@ class Rebuild_cache(object):
     def rebuild_shows(self):
         from seplis.api.base.show import Show
         with new_session() as session:
-            shows = session.query(models.Show).all()
+            shows = session.query(models.Show).filter(
+                models.Show.status>0,
+            ).all()
             pipe = database.redis.pipeline()
             for show in shows:
                 s = Show._format_from_row(show)

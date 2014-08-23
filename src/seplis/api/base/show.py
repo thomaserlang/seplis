@@ -15,7 +15,7 @@ from sqlalchemy import asc
 class Show(object):
 
     def __init__(self, id, title, description, premiered, ended, 
-                 externals, indices):
+                 externals, indices, status, updated=None):
         '''
 
         :param id: int
@@ -31,6 +31,8 @@ class Show(object):
             {
                 'index': 'value'
             }
+        :param updates: datetime
+        :param status: int
         '''
         self.id = id
         self.title = title
@@ -43,6 +45,8 @@ class Show(object):
         if not indices:
             indices = {}
         self.indices = indices
+        self.updated = updated
+        self.status = status
 
     def save(self, session=None, pipe=None):
         _pipe = pipe
@@ -73,6 +77,8 @@ class Show(object):
             'index_info': self.indices.get('info') if self.indices else None,
             'index_episodes': self.indices.get('episodes') if self.indices else None,
             'externals': self.externals,
+            'status': self.status,
+            'updated': datetime.utcnow(),
         })
         self.update_external(
             pipe=pipe,
@@ -100,6 +106,8 @@ class Show(object):
                 'episodes': row.index_episodes,
             },
             externals=row.externals if row.externals else {},
+            status=row.status,
+            updated=row.updated,
         )
 
     @classmethod
