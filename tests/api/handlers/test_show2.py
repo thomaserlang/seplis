@@ -157,7 +157,6 @@ class test_show(Testbase):
 
         response = self.get('/1/shows/externals/imdb/tt1234')
         self.assertEqual(response.code, 200)
-        print(response.body)
         show = utils.json_loads(response.body)
         self.assertEqual(show['id'], show_id)
 
@@ -188,6 +187,22 @@ class test_show(Testbase):
         # to get the show.
         response = self.get('/1/shows/externals/seplis_old/1234')
         self.assertEqual(response.code, 200)
+
+    def test_post_externals(self):
+        self.login(0)
+        response = self.post('/1/shows', {
+            'externals': {
+                'imdb': 'tt1234',
+                'seplis_old': 1234,
+            },            
+            'indices': {
+                'info': 'imdb',
+                'episodes': 'seplis_old',
+            }
+        })
+        self.assertEqual(response.code, 201, response.body)
+
+
 
     def test_episodes(self):
         show_id = self.new_show()

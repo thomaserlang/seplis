@@ -53,11 +53,11 @@ Episode_schema = {
     'description': Any(None, Description_schema)
 }
 External_schema = Schema({
-    All(Length(min=1, max=45)):Any(None, All(Length(min=1, max=45)))
+    All(Length(min=1, max=45)):Any(None, int, All(str, Length(min=1, max=45)))
 })
 Index_schema = Schema({
-    'info': Any(None, All(str, Length(min=1, max=45))),
-    'episodes': Any(None, All(str, Length(min=1, max=45))), 
+    'info': Any(None, int, All(str, Length(min=1, max=45))),
+    'episodes': Any(None, int, All(str, Length(min=1, max=45))), 
 })
 Show_schema = {
     'title': str,
