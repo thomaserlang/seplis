@@ -35,10 +35,11 @@ class Handler(base.Handler):
             q = self.get_argument('q', None)
             per_page = int(self.get_argument('per_page', constants.per_page))
             page = int(self.get_argument('page', 1))
+            sort = self.get_argument('sort', 'number:asc')
             req = {
                 'from': [((page - 1) * per_page)],
                 'size': [per_page],
-                'sort': ['number'],
+                'sort': [sort],
             }
             if q != None:
                 req['q'] = [q]

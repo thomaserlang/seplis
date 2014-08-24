@@ -123,12 +123,15 @@ class Handler(base.Handler):
             q = self.get_argument('q', None)
             per_page = int(self.get_argument('per_page', constants.per_page))
             page = int(self.get_argument('page', 1))
+            sort = self.get_argument('sort', None)
             req = {
                 'from': [((page - 1) * per_page)],
                 'size': [per_page],
             }
             if q != None:
                 req['q'] = [q]
+            if sort:
+                req['sort'] = [sort]
             response = yield http_client.fetch(
                 'http://{}/shows/show/_search?{}'.format(
                     config['elasticsearch'],
