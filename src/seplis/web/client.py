@@ -7,7 +7,8 @@ from functools import partial
 
 class HTTPData(object):
 
-    def __init__(self, response):
+    def __init__(self, client, response):
+        self.client = client
         self.data = utils.json_loads(response.body)
         self.link = {}
 
@@ -28,8 +29,18 @@ class HTTPData(object):
         if 'X-Total-Pages' in response.headers:
             self.pages = int(response.headers['X-Total-Pages'])
 
+    def all(self):
+        s = self
+        while True:
+            for d in s.data:
+                yield d
+            if not s.next:
+                break
+            s = s.client.get(s.next)
+
     def __iter__(self):
-        return self.data
+        for d in self.data:
+            yield d
 
     def __str__(self):
         return utils.json_dumps(self.data)
@@ -84,7 +95,7 @@ class Async_client(object):
             if 400 <= response.code <= 600:
                 data = utils.json_loads(response.body)
                 raise API_error(status_code=response.code, **data)
-            data = HTTPData(response)
+            data = HTTPData(self, response)
         raise gen.Return(data)
 
     @gen.coroutine
@@ -149,6 +160,15 @@ class Client(Async_client):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'PUT', 
+            uri, 
+            body, 
+            headers=headers
+        ))
+
+    def patch(self, uri, body={}, headers=None):
+        return self.io_loop.run_sync(partial(
+            self._fetch, 
+            'PATCH', 
             uri, 
             body, 
             headers=headers

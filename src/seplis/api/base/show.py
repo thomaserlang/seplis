@@ -63,6 +63,7 @@ class Show(object):
 
     def _save(self, session, pipe):
         self._check_index()
+        self.updated = datetime.utcnow()
         session.query(
             models.Show,
         ).filter(
@@ -78,7 +79,7 @@ class Show(object):
             'index_episodes': self.indices.get('episodes') if self.indices else None,
             'externals': self.externals,
             'status': self.status,
-            'updated': datetime.utcnow(),
+            'updated': self.updated,
         })
         self.update_external(
             pipe=pipe,

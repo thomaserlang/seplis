@@ -6,7 +6,6 @@ from dateutil import parser
 class Thetvdb:
     _url = 'http://thetvdb.com/api/{apikey}/series/{id}/{type}'
     _source_url = 'http://thetvdb.com/?tab=series&id={id}'
-    _by_imdb = 'http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={}'
 
     def __init__(self, apikey):
         self.apikey = apikey
