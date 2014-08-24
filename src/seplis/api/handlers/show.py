@@ -56,7 +56,7 @@ class Handler(base.Handler):
             ended=self.request.body['ended'],
             externals=self.request.body['externals'],
             indices=self.request.body['indices'],
-            status=1,
+            status=self.request.body['status'],
         )
         if 'episodes' in self.request.body:
             self.put_episodes(
@@ -98,7 +98,8 @@ class Handler(base.Handler):
                 show_id,
                 self.request.body['episodes'],
             )
-        show.status = 1
+        if 'status' in self.request.body:
+            show.status = self.request.body['status']
         show.save()
         self.write_object(
             show

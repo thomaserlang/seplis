@@ -67,6 +67,7 @@ Show_schema = {
     Optional('episodes'): Any([Episode_schema]),
     'externals': Any(None, External_schema),
     'indices': Any(None, Index_schema),
+    'status': int,
 }
 
 User_schema = Schema({
