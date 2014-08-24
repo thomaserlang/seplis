@@ -20,7 +20,7 @@ class test_show(Testbase):
         response = self.post('/1/shows', {
             'title': 'NCIS',
             'description': {
-                'text': 'The cases of the Naval Criminal Investigative Service.',
+                'text': 'The cases of the Naval Criminal Investigative Service. \_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ',
                 'title': 'IMDb',
                 'url': 'http://www.imdb.com/title/tt0364845/',
             },
@@ -38,7 +38,7 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         self.assertEqual(show['title'], 'NCIS')
         self.assertEqual(show['description'], {
-            'text': 'The cases of the Naval Criminal Investigative Service.',
+            'text': 'The cases of the Naval Criminal Investigative Service. \_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ',
             'title': 'IMDb',
             'url': 'http://www.imdb.com/title/tt0364845/',
         })

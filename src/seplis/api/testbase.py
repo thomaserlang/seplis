@@ -28,7 +28,12 @@ class Testbase(AsyncHTTPTestCase):
         config_load()
         config['logging']['path'] = None
         logger.set_logger('test.log')
-        engine = create_engine(config['database'], convert_unicode=True, echo=False)
+        engine = create_engine(
+            config['database'], 
+            convert_unicode=True, 
+            echo=False, 
+            connect_args={'charset': 'utf8'},
+        )
         connection = engine.connect()
         self.trans = connection.begin()
         database.session = sessionmaker(bind=connection)
