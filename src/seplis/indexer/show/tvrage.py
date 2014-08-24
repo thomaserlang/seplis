@@ -26,14 +26,16 @@ class Tvrage:
             show_info = show_info['Showinfo']
             logging.debug('({}) Show XML parsed successfully.'.format(show_id))
             logging.debug('({}) Creating ShowIndexed object.'.format(show_id))
+            ended = cls.parse_date(show_info.get('ended'))
             return {
                 'title': show_info.get('showname'),
                 'premiered': cls.parse_date(show_info.get('startdate')),
-                'ended': cls.parse_date(show_info.get('ended')),
+                'ended': ended,
                 'externals': {
                     'tvrage': str(show_id),
                 },
                 'description': None,
+                'status': 1 if not ended else 2,
             }
         return None
 

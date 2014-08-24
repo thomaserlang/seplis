@@ -6,6 +6,7 @@ from dateutil import parser
 class Thetvdb:
     _url = 'http://thetvdb.com/api/{apikey}/series/{id}/{type}'
     _source_url = 'http://thetvdb.com/?tab=series&id={id}'
+    _by_imdb = 'http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={}'
 
     def __init__(self, apikey):
         self.apikey = apikey
@@ -35,7 +36,8 @@ class Thetvdb:
                 'ended': None,               
                 'externals': {
                     'thetvdb': str(show_id),
-                }
+                },
+                'status': self.parse_status(data['Data']['Series']['Status']),
             }
 
     def get_episodes(self, show_id):
@@ -52,6 +54,13 @@ class Thetvdb:
             if 'Episode' in data['Data']:
                 episodes = self.parse_episodes(data['Data']['Episode'])
             return episodes
+
+    def parse_status(self, status_str):
+        if status_str == 'Ended':
+            return 2
+        elif status_str == 'Continuing':
+            return 1
+        return 1
 
     def parse_episodes(self, episodes):
         _episodes = []
@@ -142,3 +151,4 @@ class Thetvdb:
                     'url': self._source_url.format(id=show_id),
                 }
         return None
+        

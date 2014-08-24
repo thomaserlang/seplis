@@ -5,6 +5,38 @@ from urllib.parse import urljoin, urlencode
 from seplis import utils
 from functools import partial
 
+class HTTPData(object):
+
+    def __init__(self, response):
+        self.data = utils.json_loads(response.body)
+        self.link = {}
+
+        links = {}
+        if 'Link' in response.headers:
+            links = utils.parse_link_header(
+                response.headers['Link']
+            )
+        self.next = links.get('next')
+        self.prev = links.get('prev')
+        self.first = links.get('first')
+        self.last = links.get('last')
+
+        self.count = None
+        if 'X-Total-Count' in response.headers:
+            self.count = int(response.headers['X-Total-Count'])
+        self.pages = None
+        if 'X-Total-Pages' in response.headers:
+            self.pages = int(response.headers['X-Total-Pages'])
+
+    def __iter__(self):
+        return self.data
+
+    def __str__(self):
+        return utils.json_dumps(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
 class Async_client(object):
 
     def __init__(self, url, client_id=None, client_secret=None, 
@@ -27,10 +59,14 @@ class Async_client(object):
         if ('Authorization' not in headers) and self.access_token:
             headers['Authorization'] = 'Bearer {}'.format(self.access_token)
         try:
-            if not uri.startswith('/'):
-                uri = '/'+uri
+            if uri.startswith('http'):
+                url = uri
+            else:
+                if not uri.startswith('/'):
+                    uri = '/'+uri
+                url = self.url+uri
             response = yield self._client.fetch(httpclient.HTTPRequest(
-                self.url+uri, 
+                url, 
                 method=method,
                 body=utils.json_dumps(body) if body or {} == body else None, 
                 headers=headers,
@@ -45,9 +81,10 @@ class Async_client(object):
                 )
         data = None
         if response.body and response.code != 404:
-            data = utils.json_loads(response.body)
             if 400 <= response.code <= 600:
+                data = utils.json_loads(response.body)
                 raise API_error(status_code=response.code, **data)
+            data = HTTPData(response)
         raise gen.Return(data)
 
     @gen.coroutine

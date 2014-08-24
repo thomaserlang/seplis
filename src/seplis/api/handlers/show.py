@@ -125,7 +125,7 @@ class Handler(base.Handler):
             page = int(self.get_argument('page', 1))
             req = {
                 'from': [((page - 1) * per_page)],
-                'size': [constants.per_page],
+                'size': [per_page],
             }
             if q != None:
                 req['q'] = [q]
