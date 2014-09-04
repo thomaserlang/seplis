@@ -196,13 +196,13 @@ def mock_tvrage(url):
                 <Episodelist>
                 <Season no="1">
                 <episode><epnum>1</epnum><seasonnum>01</seasonnum><prodnum>101</prodnum><airdate>2003-09-23</airdate><link>http://www.tvrage.com/NCIS/episodes/123486</link><title>Yankee White</title></episode>
-                <episode><epnum>2</epnum><seasonnum>02</seasonnum><prodnum>102</prodnum><airdate>2003-09-30</airdate><link>http://www.tvrage.com/NCIS/episodes/123487</link><title>Hung Out to Dry</title></episode>
+                <episode><epnum>2</epnum><seasonnum>02</seasonnum><prodnum>102</prodnum><airdate>0000-00-00</airdate><link>http://www.tvrage.com/NCIS/episodes/123487</link><title>Hung Out to Dry</title></episode>
                 </Season>
                 <Season no="2">
                 <episode><epnum>24</epnum><seasonnum>01</seasonnum><prodnum>201</prodnum><airdate>2004-09-28</airdate><link>http://www.tvrage.com/NCIS/episodes/123509</link><title>See No Evil</title></episode>
                 </Season>
                 <Season no="3">
-                <episode><epnum>47</epnum><seasonnum>01</seasonnum><prodnum>302</prodnum><airdate>2005-09-20</airdate><link>http://www.tvrage.com/NCIS/episodes/123532</link><title>Kill Ari (Part I)</title></episode>
+                <episode><epnum>47</epnum><seasonnum>01</seasonnum><prodnum>302</prodnum><airdate>0000-00-00</airdate><link>http://www.tvrage.com/NCIS/episodes/123532</link><title>Kill Ari (Part I)</title></episode>
                 </Season>
                 </Episodelist>
                 </Show>

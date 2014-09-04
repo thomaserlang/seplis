@@ -109,7 +109,7 @@ class Handler(base.Handler):
     def get(self, show_id=None):   
         http_client = AsyncHTTPClient()
         if show_id:
-            try:
+            tr
                 response = yield http_client.fetch('http://{}/shows/show/{}'.format(
                     config['elasticsearch'],
                     show_id,
@@ -122,7 +122,7 @@ class Handler(base.Handler):
                 )
             except HTTPError as e:
                 if e.code == 404:
-                    raise exceptions.Show_unknown()                    
+                    raise exceptions.Episode_unknown()                    
                 else:
                     raise
         else:
@@ -164,16 +164,16 @@ class Handler(base.Handler):
         for episode in episodes_dict:
             if 'description' in episode and episode['description']:
                 description = Description(
-                    text=episode['description']['text'],
+                    text=episode['description'].get('text'),
                     url=episode['description'].get('url'),
                     title=episode['description'].get('title'),
                 )
             else:
                 description = Description(None)
             episodes.append(Episode(
-                number=episode['number'],
-                title=episode['title'],
-                air_date=episode['air_date'],
+                number=episode.get('number'),
+                title=episode.get('title'),
+                air_date=episode.get('air_date',
                 description=description,
                 season=episode.get('season'),
                 episode=episode.get('episode'),
