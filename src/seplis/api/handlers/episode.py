@@ -11,7 +11,7 @@ from seplis.config import config
 from seplis.api.base.pagination import Pagination
 from datetime import datetime
 from sqlalchemy import asc, desc
-from tornado.httpclient import AsyncHTTPClient
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado import gen 
 
 class Handler(base.Handler):
@@ -20,17 +20,23 @@ class Handler(base.Handler):
     def get(self, show_id, number=None):
         http_client = AsyncHTTPClient()
         if number:
-            response = yield http_client.fetch('http://{}/episodes/{}/{}'.format(
-                config['elasticsearch'],
-                show_id,
-                number,
-            ))
-            result = utils.json_loads(response.body)        
-            if not result['found']:
-                raise exceptions.Episode_unknown()
-            self.write_object(
-                result['_source']
-            )
+            try:
+                response = yield http_client.fetch('http://{}/episodes/{}/{}'.format(
+                    config['elasticsearch'],
+                    show_id,
+                    number,
+                ))
+                result = utils.json_loads(response.body)        
+                if not result['found']:
+                    raise exceptions.Episode_unknown()
+                self.write_object(
+                    result['_source']
+                )
+            except HTTPError as e:
+                if e.code == 404:
+                    raise exceptions.Episode_unknown()                    
+                else:
+                    raise
         else:
             q = self.get_argument('q', None)
             per_page = int(self.get_argument('per_page', constants.per_page))
@@ -43,21 +49,33 @@ class Handler(base.Handler):
             }
             if q != None:
                 req['q'] = [q]
-            response = yield http_client.fetch(
-                'http://{}/episodes/{}/_search?{}'.format(
-                    config['elasticsearch'],
-                    show_id,
-                    utils.url_encode_tornado_arguments(req)
-                ),
-            )
-            result = utils.json_loads(response.body)
-            p = Pagination(
-                page=page,
-                per_page=per_page,
-                total=result['hits']['total'],
-                records=[show['_source'] for show in result['hits']['hits']],
-            )
-            self.write_pagination(p)
+            try:
+                response = yield http_client.fetch(
+                    'http://{}/episodes/{}/_search?{}'.format(
+                        config['elasticsearch'],
+                        show_id,
+                        utils.url_encode_tornado_arguments(req)
+                    ),
+                )
+                result = utils.json_loads(response.body)
+                p = Pagination(
+                    page=page,
+                    per_page=per_page,
+                    total=result['hits']['total'],
+                    records=[show['_source'] for show in result['hits']['hits']],
+                )
+                self.write_pagination(p)
+            except HTTPError as e:
+                if e.code == 404:
+                    p = Pagination(
+                        page=page,
+                        per_page=per_page,
+                        total=0,
+                        records=[],
+                    )
+                    self.write_pagination(p)
+                else:
+                    raise
 
     def put(self, show_id, number=None):
         if not number:

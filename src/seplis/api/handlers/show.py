@@ -17,7 +17,7 @@ from seplis.api.base.tag import Tags
 from seplis.api.base.description import Description
 from seplis.connections import database
 from seplis.config import config
-from tornado.httpclient import AsyncHTTPClient
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado import gen 
 from datetime import datetime
 from sqlalchemy import asc, desc, and_
@@ -109,16 +109,22 @@ class Handler(base.Handler):
     def get(self, show_id=None):   
         http_client = AsyncHTTPClient()
         if show_id:
-            response = yield http_client.fetch('http://{}/shows/show/{}'.format(
-                config['elasticsearch'],
-                show_id,
-            ))
-            result = utils.json_loads(response.body)        
-            if not result['found']:
-                raise exceptions.Show_unknown()
-            self.write_object(
-                result['_source']
-            )
+            try:
+                response = yield http_client.fetch('http://{}/shows/show/{}'.format(
+                    config['elasticsearch'],
+                    show_id,
+                ))
+                result = utils.json_loads(response.body)        
+                if not result['found']:
+                    raise exceptions.Show_unknown()
+                self.write_object(
+                    result['_source']
+                )
+            except HTTPError as e:
+                if e.code == 404:
+                    raise exceptions.Show_unknown()                    
+                else:
+                    raise
         else:
             q = self.get_argument('q', None)
             per_page = int(self.get_argument('per_page', constants.per_page))

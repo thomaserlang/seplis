@@ -277,6 +277,11 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         self.assertEqual(show['title'], 'NCIS')
 
+    def test_unknown_show(self):
+        self.login(0)
+        response = self.get('/1/shows/999999')
+        self.assertEqual(response.code, 404)
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
