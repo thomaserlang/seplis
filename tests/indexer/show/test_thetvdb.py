@@ -4,69 +4,9 @@ import mock
 from unittest import TestCase
 from seplis.indexer.show.thetvdb import Thetvdb
 from seplis import schemas
-import xmltodict
 
 def mock_tvrage(url):
-    if 'Updates.php' in url:
-        return mock.Mock(
-            content='''<Items>
-            <Time>1409485893</Time>
-            <Series>72108</Series>
-            <Series>123</Series>
-            <Episode>74097</Episode>
-            </Items>
-            ''',
-            status_code=200,
-        )
-    elif 'episodes/' in url:
-        return mock.Mock(
-            content='''<Data>
-            <Episode>
-              <id>74097</id>
-              <Combined_episodenumber>1</Combined_episodenumber>
-              <Combined_season>1</Combined_season>
-              <DVD_chapter></DVD_chapter>
-              <DVD_discid></DVD_discid>
-              <DVD_episodenumber></DVD_episodenumber>
-              <DVD_season></DVD_season>
-              <Director></Director>
-              <EpImgFlag>2</EpImgFlag>
-              <EpisodeName>Navy NCIS: The Beginning (1)</EpisodeName>
-              <EpisodeNumber>1</EpisodeNumber>
-              <FirstAired>2003-04-22</FirstAired>
-              <GuestStars></GuestStars>
-              <IMDB_ID></IMDB_ID>
-              <Language>en</Language>
-              <Overview>The pilot that aired a few weeks after the show's premiere, and called &quot;Navy NCIS: The Beginning&quot;. It was originally aired as a JAG episode known as S08E20 &quot;Ice Queen (1)&quot;</Overview>
-              <ProductionCode></ProductionCode>
-              <Rating>8.0</Rating>
-              <RatingCount>8</RatingCount>
-              <SeasonNumber>1</SeasonNumber>
-              <Writer>|Donald P. Bellisario|Don McGill|</Writer>
-              <absolute_number></absolute_number>
-              <airsafter_season></airsafter_season>
-              <airsbefore_episode>1</airsbefore_episode>
-              <airsbefore_season>1</airsbefore_season>
-              <filename>episodes/72108/74097.jpg</filename>
-              <lastupdated>1376029848</lastupdated>
-              <seasonid>19575</seasonid>
-              <seriesid>987</seriesid>
-              <thumb_added></thumb_added>
-              <thumb_height>225</thumb_height>
-              <thumb_width>400</thumb_width>
-              <tms_export>1</tms_export>
-              <tms_review_blurry>0</tms_review_blurry>
-              <tms_review_by></tms_review_by>
-              <tms_review_dark>0</tms_review_dark>
-              <tms_review_date></tms_review_date>
-              <tms_review_logo>0</tms_review_logo>
-              <tms_review_other>0</tms_review_other>
-              <tms_review_unsure>0</tms_review_unsure>
-            </Episode>
-            </Data>''',
-            status_code=200,
-        )
-    elif '72108' in url or '987' in url:
+    if '72108' in url:
         return mock.Mock(
             content='''<?xml version="1.0" encoding="UTF-8" ?>
             <Data><Series>
@@ -267,23 +207,13 @@ class test_thetvdb(TestCase):
     
     @mock.patch('requests.get', mock_tvrage)
     def test(self):
+
         thetvdb = Thetvdb('apikey')
         ids = [72108, 123]
         for id_ in ids:
             show = thetvdb.get_show(id_)
             show['episodes'] = thetvdb.get_episodes(id_)
             schemas.validate(schemas.Show_schema, show)
-
-    @mock.patch('requests.get', mock_tvrage)
-    def test_updates(self):
-        thetvdb = Thetvdb('apikey')
-        ids = thetvdb.get_updates(
-            store_latest_timestamp=False,
-        )
-        self.assertEqual(len(ids), 3)
-        self.assertEqual(ids[0], 72108)
-        self.assertEqual(ids[1], 123)
-        self.assertEqual(ids[2], 987)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
