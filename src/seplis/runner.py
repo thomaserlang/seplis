@@ -1,7 +1,6 @@
 import logging
 import sys
 import aaargh
-import seplis
 from seplis.logger import logger
 
 app = aaargh.App(description='SEPLIS')
@@ -41,11 +40,21 @@ def upgrade(config):
 
 @app.cmd()
 def rebuild_cache(config):
-    import seplis
     seplis.config_load(config)
     logger.set_logger('rebuild_cache.log')
     import seplis.api.rebuild_cache
     seplis.api.rebuild_cache.main()
+
+@app.cmd()
+def indexer_update(config):
+    import seplis
+    seplis.config_load(config)
+    logger.set_logger('indexer_update.log')
+    import seplis.indexer
+    indexer = seplis.indexer.Show_indexer(
+        seplis.config['api']['url']
+    )
+    indexer.update()  
 
 def main():
     app.run()

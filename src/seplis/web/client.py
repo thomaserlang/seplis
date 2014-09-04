@@ -48,6 +48,9 @@ class HTTPData(object):
     def __len__(self):
         return len(self.data)
 
+    def __getitem__(self, key):
+        return self.data[key]
+
 class Async_client(object):
 
     def __init__(self, url, client_id=None, client_secret=None, 
