@@ -109,7 +109,7 @@ class Handler(base.Handler):
     def get(self, show_id=None):   
         http_client = AsyncHTTPClient()
         if show_id:
-            tr
+            try:
                 response = yield http_client.fetch('http://{}/shows/show/{}'.format(
                     config['elasticsearch'],
                     show_id,
@@ -122,7 +122,7 @@ class Handler(base.Handler):
                 )
             except HTTPError as e:
                 if e.code == 404:
-                    raise exceptions.Episode_unknown()                    
+                    raise exceptions.Show_unknown()                    
                 else:
                     raise
         else:
@@ -170,15 +170,15 @@ class Handler(base.Handler):
                 )
             else:
                 description = Description(None)
-            episodes.append(Episode(
-                number=episode.get('number'),
-                title=episode.get('title'),
-                air_date=episode.get('air_date',
-                description=description,
-                season=episode.get('season'),
-                episode=episode.get('episode'),
-            ))
-        return Episodes.save(show_id, episodes)
+                episodes.append(Episode(
+                    number=episode.get('number'),
+                    title=episode.get('title'),
+                    air_date=episode.get('air_date'),
+                    description=description,
+                    season=episode.get('season'),
+                    episode=episode.get('episode'),
+                ))
+            return Episodes.save(show_id, episodes)
 
 
 class Multi_handler(base.Handler):
