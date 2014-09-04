@@ -1,1 +1,0 @@
-from seplis.indexer.indexer import *

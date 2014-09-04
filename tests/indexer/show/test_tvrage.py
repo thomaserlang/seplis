@@ -6,23 +6,7 @@ from seplis.indexer.show.tvrage import Tvrage
 from seplis import schemas
 
 def mock_tvrage(url):
-    if 'last_updates.php' in url:
-        return mock.Mock(
-            content='''<updates at="1409709081" found="398" sorting="latest_updates" showing="Last 24H">
-                    <show>
-                    <id>4628</id>
-                    <last>-29</last>
-                    <lastepisode>817620</lastepisode>
-                    </show>
-                    <show>
-                    <id>2445</id>
-                    <last>-28</last>
-                    <lastepisode>3314898</lastepisode>
-                    </show>
-                    </updates>''',
-            status_code=200,
-        )
-    elif 'showinfo.php' in url:
+    if 'showinfo.php' in url:
         if '4628' in url:
             return mock.Mock(
                 content='''<?xml version="1.0" encoding="UTF-8" ?>
@@ -337,33 +321,18 @@ def mock_tvrage(url):
                 ''',
                 status_code=200,
             )
-    return mock.Mock(
-        content=None,
-        status_code=404,
-    )
 
 class test_tvrage(TestCase):
     
     @mock.patch('requests.get', mock_tvrage)
     def test(self):
-        tvrage = Tvrage()
+
         tvrage_ids = [4628, 2445, 5613, 20370, 3140, 5294, 25923]
         for id_ in tvrage_ids:
-            show = tvrage.get_show(id_)
-            show['episodes'] = tvrage.get_episodes(id_)
+            show = Tvrage.get_show(id_)
+            show['episodes'] = Tvrage.get_episodes(id_)
             schemas.validate(schemas.Show_schema, show)
             self.assertTrue(show['episodes'])
             
-    @mock.patch('requests.get', mock_tvrage)
-    def test_updates(self):
-        thetvdb = Tvrage()
-        ids = thetvdb.get_updates(
-            store_latest_timestamp=False,
-        )
-        self.assertEqual(len(ids), 2)
-        self.assertEqual(ids[0], 4628)
-        self.assertEqual(ids[1], 2445)
-
-
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
