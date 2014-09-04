@@ -52,7 +52,8 @@ def indexer_update(config):
     logger.set_logger('indexer_update.log')
     import seplis.indexer
     indexer = seplis.indexer.Show_indexer(
-        seplis.config['api']['url']
+        seplis.config['api']['url'],
+        access_token=seplis.config['client']['access_token'],
     )
     indexer.update()  
 
