@@ -66,7 +66,7 @@ class Handler(base.Handler):
                 )
                 self.write_pagination(p)
             except HTTPError as e:
-                if e.code == 404:
+                if e.code in [404, 400]:
                     p = Pagination(
                         page=page,
                         per_page=per_page,
