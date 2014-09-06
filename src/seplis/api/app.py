@@ -11,6 +11,7 @@ import seplis.api.handlers.episode
 from seplis.logger import logger
 from tornado.options import define, options
 from concurrent.futures import ThreadPoolExecutor
+from raven.contrib.tornado import AsyncSentryClient
 
 class Application(tornado.web.Application):
 
@@ -54,6 +55,9 @@ class Application(tornado.web.Application):
 
         self.executor = ThreadPoolExecutor(
             max_workers=seplis.config['api']['max_workers']
+        )
+        self.sentry_client = AsyncSentryClient(
+            seplis.config['api']['sentry_url'],
         )
         tornado.web.Application.__init__(self, urls, **settings)
 

@@ -151,10 +151,12 @@ class Thetvdb(Show_indexer_base):
     def parse_date(self, date):
         if not date:
             return None
+        if date == '0000-00-00':
+            return None
         try:
             return parser.parse(date).strftime('%Y-%m-%d')
         except ValueError as e:
-            logging.exception('Parsing date "{}" faild with error: {}'.format(date))
+            logging.exception('Parsing date "{}"'.format(date))
         return None
 
     def get_show_photos_urls(self, show_id):

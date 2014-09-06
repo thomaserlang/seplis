@@ -18,8 +18,9 @@ from seplis.connections import database
 from seplis.api.decorators import authenticated
 from seplis.config import config
 from seplis import schemas
+from raven.contrib.tornado import SentryMixin
 
-class Handler(tornado.web.RequestHandler):
+class Handler(SentryMixin, tornado.web.RequestHandler):
 
     def initialize(self):
         if self.request.body:
@@ -115,6 +116,14 @@ class Handler(tornado.web.RequestHandler):
                     'message': error.msg,
                 })
             raise exceptions.Validation_exception(errors=data)
+
+
+    def get_sentry_user_info(self):
+        if self.current_user:
+            return {
+                'sentry.interfaces.User': self.current_user.to_dict(),
+            }
+        return {}
 
     def options(self, *args, **kwargs):
         pass

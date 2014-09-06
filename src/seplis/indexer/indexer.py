@@ -119,7 +119,9 @@ class Show_indexer(Client):
                     episodes,
                     external_episodes,
                 )
-        if show_data and (show_data != {'episodes': []}):
+        if show_data == {'episodes': []}:
+            show_data = {}
+        if show_data:
             show = self.patch(
                 'shows/{}'.format(show['id']), 
                 show_data,
