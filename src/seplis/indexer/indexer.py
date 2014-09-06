@@ -26,7 +26,7 @@ class Show_indexer(Client):
 
     def update(self):
         external_names = [
-            #'tvrage',
+            'tvrage',
             'thetvdb',
         ]
         logging.info('Checking for updates from external sources...')
@@ -64,8 +64,7 @@ class Show_indexer(Client):
                     show,
                     update_episodes=True,
                 )
-                if show_data:
-                    updated_shows[show['id']] = show_data
+                updated_shows[str(id_)] = show_data
             indexer.set_latest_update_timestamp()
         return updated_shows
 
@@ -96,7 +95,7 @@ class Show_indexer(Client):
             return None
         show_data = {}
         show_indexer = self.get_indexer(show['indices'].get('info', ''))
-        if show_indexer:                
+        if show_indexer:               
             external_show = show_indexer.get_show(
                 show['externals'][show['indices']['info']]
             )
@@ -121,7 +120,7 @@ class Show_indexer(Client):
         print(json_dumps(show_data))
         if show_data:
             show = self.patch('shows/{}'.format(show['id']), show_data)
-        return show
+        return show_data
 
     def new(self, external_name, external_id, get_episodes=True):
         '''
@@ -129,7 +128,6 @@ class Show_indexer(Client):
         '''
         indexer = self.get_indexer(external_name)
         show_data = indexer.get_show(external_id)
-        print(show_data)
         if not get_episodes:
             show_data.pop('episodes')
         if not show_data:
@@ -162,6 +160,8 @@ def show_info_changes(show, show_new):
             s == 'indices':
             continue
         if s in show and s in show_new:
+            if show[s] == None and isinstance(show_new[s], dict):
+                continue
             if show[s] != show_new[s]:
                 changes[s] = show_new[s]
         elif s not in show and s in show_new:
@@ -170,11 +170,11 @@ def show_info_changes(show, show_new):
 
 def show_episode_changes(episodes, episodes_new):
     changes = []
-    prev = {episode['number']: episode for episode in episodes}
+    current = {episode['number']: episode for episode in episodes}
     for episode in episodes_new:
         data = {}
-        prev_episode = prev[episode['number']] if episode['number'] in prev else episode 
-        if episode['number'] not in prev:
+        current_episode = current[episode['number']] if episode['number'] in current else episode 
+        if episode['number'] not in current:
             changes.append(episode)
             continue
         for s in schemas.Episode_schema:
@@ -182,10 +182,12 @@ def show_episode_changes(episodes, episodes_new):
             if s == 'number':
                 data[s] = episode[s]
                 continue
-            if s in episode and s in prev_episode:
-                if episode[s] != prev_episode[s]:
+            if s in episode and s in current_episode:
+                if episode[s] == None and isinstance(current_episode[s], dict):
+                    continue
+                if episode[s] != current_episode[s]:
                     data[s] = episode[s]
-            elif s not in prev_episode and s in episode:
+            elif s not in current_episode and s in episode:
                 data[s] = episode[s]
         if data != {} and len(data) > 1:
             changes.append(data)

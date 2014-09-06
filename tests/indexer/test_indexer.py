@@ -40,7 +40,10 @@ def mock_show_patch(self, request, callback=None, **kwargs):
                         'indices': {
                             'info': 'tvrage',
                             'episodes': 'tvrage',
-                        }
+                        },
+                        'externals': {
+                            'tvrage': '4628'
+                        },
                     }),
                     code=200,
                 )
@@ -53,7 +56,10 @@ def mock_show_patch(self, request, callback=None, **kwargs):
                         'indices': {
                             'info': 'tvrage',
                             'episodes': 'tvrage',
-                        }
+                        },
+                        'externals': {
+                            'tvrage': '2445'
+                        },
                     }),
                     code=200,
                 )
@@ -67,7 +73,10 @@ def mock_show_patch(self, request, callback=None, **kwargs):
                         'indices': {
                             'info': 'tvrage',
                             'episodes': 'tvrage',
-                        }
+                        },
+                        'externals': {
+                            'tvrage': '4628'
+                        },
                     }),
                     code=200,
                 )        
@@ -80,7 +89,10 @@ def mock_show_patch(self, request, callback=None, **kwargs):
                         'indices': {
                             'info': 'tvrage',
                             'episodes': 'tvrage',
-                        }
+                        },
+                        'externals': {
+                            'tvrage': '2445'
+                        },
                     }),
                     code=200,
                 )
@@ -92,6 +104,7 @@ class test_indexer(TestCase):
         with mock.patch('tornado.httpclient.AsyncHTTPClient.fetch', mock_show_patch) as m:
             indexer = Show_indexer('http://example.org')
             updated_shows = indexer.update()
+
             self.assertTrue('2445' in updated_shows)
             self.assertEqual(len(updated_shows['2445']['episodes']), 4)
             self.assertTrue('4628' in updated_shows)
@@ -188,5 +201,33 @@ class test_episode_changes(TestCase):
         changes = show_episode_changes([episode], [episode])
         self.assertEqual(len(changes), 0)
 
+        # test None description
+        episode = {
+            'number': 1,
+            'title': 'Episode 1',
+            'description': {
+                'text': 'this is a description',
+                'url': 'http://example.org',
+                'title': 'Example',
+            },
+            'air_date': date(2014, 9, 3),
+            'season': 1,
+        }
+        episodes_changed = [
+            {   
+                'number': 1,
+                'title': 'Episode 1 (new title)',
+                'description': None,
+                'air_date': date(2014, 9, 4),
+                'episode': 1,
+            },
+        ]        
+        changes = show_episode_changes([episode], episodes_changed)
+        self.assertEqual(changes[0], {   
+            'number': 1,
+            'title': 'Episode 1 (new title)',
+            'air_date': date(2014, 9, 4),
+            'episode': 1,
+        })
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
