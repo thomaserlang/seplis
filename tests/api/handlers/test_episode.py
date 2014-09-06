@@ -58,8 +58,7 @@ class Test_episode(Testbase):
             1
         ))
         self.assertEqual(response.code, 200, response.body)
-        episode = utils.json_loads(response.body)
-        print(response.body)        
+        episode = utils.json_loads(response.body)  
         self.assertEqual(episode['number'], 1)
         self.assertEqual(episode['title'], 'Episode 1')
         self.assertEqual(episode['description'], {
