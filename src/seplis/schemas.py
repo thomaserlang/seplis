@@ -40,7 +40,7 @@ def validate_email(email):
     return email
 
 Description_schema = Schema({
-    Required('text'): str,
+    'text': str,
     'title': Any(None, str),
     'url':  Any(None, str),
 })

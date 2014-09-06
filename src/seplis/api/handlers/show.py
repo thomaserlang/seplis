@@ -71,7 +71,7 @@ class Handler(base.Handler):
     @authenticated(0)
     def patch(self, show_id):
         self.validate(schemas.Show_schema)
-        show = Show.get(show_id)        
+        show = Show.get(show_id)
         if not show:
             raise exceptions.Show_unknown()
         if 'title' in self.request.body:
@@ -94,7 +94,7 @@ class Handler(base.Handler):
                 if 'url' in desc:
                     show.description.url = desc['url']
         if 'episodes' in self.request.body:
-            self.put_episodes(
+            self.patch_episodes(
                 show_id,
                 self.request.body['episodes'],
             )
@@ -162,24 +162,63 @@ class Handler(base.Handler):
         '''
         episodes = []
         for episode in episodes_dict:
-            if 'description' in episode and episode['description']:
-                description = Description(
-                    text=episode['description'].get('text'),
-                    url=episode['description'].get('url'),
-                    title=episode['description'].get('title'),
-                )
-            else:
-                description = Description(None)
-            episodes.append(Episode(
-                number=episode.get('number'),
-                title=episode.get('title'),
-                air_date=episode.get('air_date'),
-                description=description,
-                season=episode.get('season'),
-                episode=episode.get('episode'),
-            ))
+            episodes.append(
+                self._new_episode(episode)
+            )
         return Episodes.save(show_id, episodes)
 
+    def _new_episode(self, episode):
+        if 'description' in episode and episode['description']:
+            description = Description(
+                text=episode['description'].get('text'),
+                url=episode['description'].get('url'),
+                title=episode['description'].get('title'),
+            )
+        else:
+            description = Description(None)
+        return Episode(
+            number=episode.get('number'),
+            title=episode.get('title'),
+            air_date=episode.get('air_date'),
+            description=description,
+            season=episode.get('season'),
+            episode=episode.get('episode'),
+        )
+
+    def patch_episodes(self, show_id, episodes_dict):        
+        '''
+
+        :param show_id: int
+        :param episodes_dict: dict
+        :returns boolean
+        '''
+        episodes = []
+        for episode_data in episodes_dict:
+            episode = Episode.get(show_id, episode_data['number'])
+            if not episode:
+                episodes.append(
+                    self._new_episode(episode_data)
+                )
+                continue
+            if 'description' in episode_data:
+                desc = episode_data['description']
+                if desc:
+                    if 'text' in desc:
+                        episode.description.text = desc['text']
+                    if 'title' in desc:
+                        episode.description.title = desc['title']
+                    if 'url' in desc:
+                        episode.description.url = desc['url']
+            if 'title' in episode_data:
+                episode.title = episode_data['title']
+            if 'air_date' in episode_data:
+                episode.air_date = episode_data['air_date']
+            if 'season' in episode_data:
+                episode.season = episode_data['season']
+            if 'episode' in episode_data:
+                episode.episode = episode_data['episode']
+            episodes.append(episode)
+        return Episodes.save(show_id, episodes)
 
 class Multi_handler(base.Handler):
 

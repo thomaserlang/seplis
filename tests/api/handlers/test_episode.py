@@ -33,7 +33,44 @@ class Test_episode(Testbase):
         self.assertEqual(response.code, 200, response.body)
         episode = utils.json_loads(response.body)
         self.assertEqual(episode['number'], 1)
+        self.assertEqual(episode['title'], 'Episode 1')
+        self.assertEqual(episode['description'], {
+            'text': 'Test description.',
+            'url': None,
+            'title': None,
+            
+        })
 
+        # test that we can patch the description        
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'description': {
+                        'title': 'Test',
+                    }
+                }
+            ]
+        })
+        self.assertEqual(response.code, 200, response.body)
+        response = self.get('/1/shows/{}/episodes/{}'.format(
+            show_id,
+            1
+        ))
+        self.assertEqual(response.code, 200, response.body)
+        episode = utils.json_loads(response.body)
+        print(response.body)        
+        self.assertEqual(episode['number'], 1)
+        self.assertEqual(episode['title'], 'Episode 1')
+        self.assertEqual(episode['description'], {
+            'text': 'Test description.',
+            'url': None,
+            'title': 'Test',
+            
+        })
+
+
+        # test search
         self.get('http://{}/episodes/_refresh'.format(
             config['elasticsearch']
         ))
