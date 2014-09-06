@@ -34,6 +34,8 @@ class Show_indexer(Client):
         for name in external_names:
             logging.info('Checking external source: {}'.format(name))
             indexer = self.get_indexer(name)
+            if not indexer:
+                continue
             ids = indexer.get_updates()
             if not ids: 
                 logging.info('No updates from external source: {}'.format(name))
