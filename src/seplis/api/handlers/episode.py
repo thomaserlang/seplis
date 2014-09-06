@@ -54,9 +54,10 @@ class Handler(base.Handler):
                     'http://{}/episodes/{}/_search?{}'.format(
                         config['elasticsearch'],
                         show_id,
-                        utils.url_encode_tornado_arguments(req)
+                        utils.url_encode_tornado_arguments(req),
                     ),
                 )
+                print(response.body)
                 result = utils.json_loads(response.body)
                 p = Pagination(
                     page=page,
@@ -66,7 +67,8 @@ class Handler(base.Handler):
                 )
                 self.write_pagination(p)
             except HTTPError as e:
-                if e.code in [404, 400]:
+                print(e.response.body)
+                if e.code in [404]:
                     p = Pagination(
                         page=page,
                         per_page=per_page,

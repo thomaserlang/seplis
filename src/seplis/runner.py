@@ -46,7 +46,7 @@ def rebuild_cache(config):
     seplis.api.rebuild_cache.main()
 
 @app.cmd()
-def indexer_update(config):
+def update_shows(config):
     import seplis
     seplis.config_load(config)
     logger.set_logger('indexer_update.log')
@@ -55,7 +55,20 @@ def indexer_update(config):
         seplis.config['api']['url'],
         access_token=seplis.config['client']['access_token'],
     )
-    indexer.update()  
+    indexer.update()
+
+@app.cmd()
+@app.cmd_arg('-id', '--show_id', type=int, help='The id of the show')
+def update_show(config, show_id):
+    import seplis
+    seplis.config_load(config)
+    logger.set_logger('indexer_update.log')
+    import seplis.indexer
+    indexer = seplis.indexer.Show_indexer(
+        seplis.config['api']['url'],
+        access_token=seplis.config['client']['access_token'],
+    )
+    indexer.update_show(show_id)
 
 def main():
     app.run()

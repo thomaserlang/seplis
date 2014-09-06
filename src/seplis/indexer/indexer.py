@@ -13,7 +13,7 @@ class Show_indexer(Client):
     def get_indexer(self, external_name):
         obj = getattr(self, 'external_{}'.format(external_name))
         if not obj:
-            raise Exception('No indexer found for external name: {}'.format(external_name))
+            return None
         return obj
 
     @property
@@ -26,7 +26,7 @@ class Show_indexer(Client):
 
     def update(self):
         external_names = [
-            'tvrage', 
+            #'tvrage',
             'thetvdb',
         ]
         logging.info('Checking for updates from external sources...')
@@ -36,7 +36,10 @@ class Show_indexer(Client):
             indexer = self.get_indexer(name)
             ids = indexer.get_updates()
             if not ids: 
+                logging.info('No updates from external source: {}'.format(name))
                 continue
+
+            logging.info('Found {} updates from external source: {}'.format(len(ids), name))
             for id_ in ids:
                 logging.info('Looking for a external show: {} with id: {}'.format(
                     name,
@@ -57,24 +60,13 @@ class Show_indexer(Client):
                     id_,
                     show['id'],
                 ))
-                show_data = {}
-                if 'indices' in show:
-                    if show['indices']['info'] == name:
-                        show_data = indexer.get_show(id_)
-                        if show_data:
-                            show_data = show_info_changes(show, show_data)
-                    if show['indices']['episodes'] == name:
-                        episodes = indexer.get_episodes(id_)
-                        if episodes: 
-                            current_episodes = self.get(
-                                'shows/{}/episodes?per_page=100'.format(show['id'])
-                            ).all()
-                            show_data['episodes'] = show_episode_changes(
-                                current_episodes,
-                                episodes,
-                            )
-                    self.patch('shows/{}'.format(show['id']), show_data)
+                show_data = self._update_show(
+                    show,
+                    update_episodes=True,
+                )
+                if show_data:
                     updated_shows[show['id']] = show_data
+            indexer.set_latest_update_timestamp()
         return updated_shows
 
     def login(self):
@@ -83,6 +75,53 @@ class Show_indexer(Client):
                pass
         except IOError:
             print('No valid token was found.')
+
+    def update_show(self, show_id):
+        show = self.get('/shows/{}'.format(show_id))
+        if not show:
+            raise Exception('Show not found')
+        show_data = self._update_show(
+            show,
+            update_episodes=True,
+        )
+        return show_data
+
+    def _update_show(self, show, update_episodes=True):
+        '''
+
+        :param show: dict
+        :param update_episodes: bool
+        '''
+        if 'indices' not in show:
+            return None
+        show_data = {}
+        show_indexer = self.get_indexer(show['indices'].get('info', ''))
+        if show_indexer:                
+            external_show = show_indexer.get_show(
+                show['externals'][show['indices']['info']]
+            )
+            if external_show:
+                show_data = show_info_changes(
+                    show, 
+                    external_show,
+                )
+        episode_indexer = self.get_indexer(show['indices'].get('episodes'))
+        if episode_indexer and update_episodes:
+            external_episodes = show_indexer.get_episodes(
+                show['externals'][show['indices']['episodes']]
+            )
+            if external_episodes:
+                episodes = self.get(
+                    '/shows/{}/episodes?per_page=100'.format(show['id'])
+                ).all()
+                show_data['episodes'] = show_episode_changes(
+                    episodes,
+                    external_episodes,
+                )
+        print(json_dumps(show_data))
+        if show_data:
+            show = self.patch('shows/{}'.format(show['id']), show_data)
+        return show
 
     def new(self, external_name, external_id, get_episodes=True):
         '''

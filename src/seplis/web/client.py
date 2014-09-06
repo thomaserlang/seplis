@@ -9,7 +9,7 @@ class HTTPData(object):
 
     def __init__(self, client, response):
         self.client = client
-        self.data = utils.json_loads(response.body)
+        self.data = utils.json_loads(response.body) if response.body != None else None
         self.link = {}
 
         links = {}
@@ -94,12 +94,14 @@ class Async_client(object):
                     message='Timeout',
                 )
         data = None
-        if response.body and response.code != 404:
+        if response.code != 404:
             if 400 <= response.code <= 600:
-                data = utils.json_loads(response.body)
-                raise API_error(status_code=response.code, **data)
+                if response.headers.get('Content-Type') == 'application/json':
+                    data = utils.json_loads(response.body)
+                    raise API_error(status_code=response.code, **data)
+                raise Exception(response.body)
             data = HTTPData(self, response)
-        raise gen.Return(data)
+        return data
 
     @gen.coroutine
     def get(self, uri, data=None, headers=None):     
@@ -108,27 +110,27 @@ class Async_client(object):
                 data = urlencode(data, True)
             uri += '{}{}'.format('&' if '?' in uri else '?', data)
         r = yield self._fetch('GET', uri, headers=headers)
-        raise gen.Return(r)
+        return r
 
     @gen.coroutine
     def delete(self, uri, headers=None):
         r = yield self._fetch('DELETE', uri, headers=headers)
-        raise gen.Return(r)
+        return r
 
     @gen.coroutine
     def post(self, uri, body={}, headers=None):
         r = yield self._fetch('POST', uri, body, headers=headers)
-        raise gen.Return(r)
+        return r
 
     @gen.coroutine
     def put(self, uri, body={}, headers=None):
         r = yield self._fetch('PUT', uri, body, headers=headers)
-        raise gen.Return(r)
+        return r
 
     @gen.coroutine
     def patch(self, uri, body={}, headers=None):
         r = yield self._fetch('PATCH', uri, body, headers=headers)
-        raise gen.Return(r)
+        return r
 
 class Client(Async_client):
 
@@ -169,6 +171,7 @@ class Client(Async_client):
         ))
 
     def patch(self, uri, body={}, headers=None):
+        print('patch it !')
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'PATCH', 
@@ -176,6 +179,7 @@ class Client(Async_client):
             body, 
             headers=headers
         ))
+        print('patch ended')
 
 class API_error(web.HTTPError):
 

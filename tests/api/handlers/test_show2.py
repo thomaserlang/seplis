@@ -218,6 +218,14 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200, response.body)
 
+        self.get('http://{}/episodes/_refresh'.format(
+            config['elasticsearch']
+        ))
+        response = self.get('/1/shows/{}/episodes'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        episodes = utils.json_loads(response.body)
+        self.assertEqual(len(episodes), 1, response.body)
+
     def test_search(self):
         show_id1 = self.new_show()
         response = self.patch('/1/shows/{}'.format(show_id1), {

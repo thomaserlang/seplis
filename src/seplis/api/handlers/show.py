@@ -170,15 +170,15 @@ class Handler(base.Handler):
                 )
             else:
                 description = Description(None)
-                episodes.append(Episode(
-                    number=episode.get('number'),
-                    title=episode.get('title'),
-                    air_date=episode.get('air_date'),
-                    description=description,
-                    season=episode.get('season'),
-                    episode=episode.get('episode'),
-                ))
-            return Episodes.save(show_id, episodes)
+            episodes.append(Episode(
+                number=episode.get('number'),
+                title=episode.get('title'),
+                air_date=episode.get('air_date'),
+                description=description,
+                season=episode.get('season'),
+                episode=episode.get('episode'),
+            ))
+        return Episodes.save(show_id, episodes)
 
 
 class Multi_handler(base.Handler):

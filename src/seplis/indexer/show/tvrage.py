@@ -141,10 +141,12 @@ class Tvrage(Show_indexer_base):
     def parse_date(self, date):
         if date:
             if date[-2:] == '00':
-                date = date[:-2] + '01'
+                return None
+            if date[5:-3] == '00':
+                return None
             if date.count('/') == 1:
                 date = '01/'+date
-            if date == '0000-00-01':
+            if date == '0000-00-00':
                 return None
             try:
                 return parser.parse(date).strftime('%Y-%m-%d')

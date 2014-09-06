@@ -126,12 +126,13 @@ class Episodes(object):
                 session.commit()
                 return True
         else:
-            cls._save(show_id, episodes, session)
+            return cls._save(show_id, episodes, session)
 
     @classmethod
     def _save(cls, show_id, episodes, session):
         for episode in episodes:
             episode.save(show_id, session)
+        return True
 
     @classmethod
     def get(cls, show_id, from_, to, loop_prevent=False):

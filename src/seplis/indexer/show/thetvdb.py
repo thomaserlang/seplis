@@ -60,21 +60,21 @@ class Thetvdb(Show_indexer_base):
                 episodes = self.parse_episodes(data['Data']['Episode'])
             return episodes
 
-    def get_updates(self, store_latest_timestamp=True):
+    def get_updates(self):
         data = self.get_update_data()
         if not data:
             return
         ids = []
         for id_ in data['Series']:
             ids.append(id_)
+        '''
         for id_ in data['Episode']:
             ids.append(
                 self.episode_id_to_show_id(
                     id_,
                 )
             )
-        if store_latest_timestamp:
-            self.set_latest_update_timestamp()
+        '''
         return ids
 
     def get_update_data(self):
@@ -151,6 +151,8 @@ class Thetvdb(Show_indexer_base):
         }
 
     def parse_date(self, date):
+        if not date:
+            return None
         try:
             return parser.parse(date).strftime('%Y-%m-%d')
         except ValueError as e:
