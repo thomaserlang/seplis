@@ -63,7 +63,7 @@ class Async_client(object):
         self.access_token = access_token
 
     @gen.coroutine
-    def _fetch(self, method, uri, body=None, headers=None):
+    def _fetch(self, method, uri, body=None, headers=None, timeout=5):
         if not headers:
             headers = {}
         if 'Content-Type' not in headers:
@@ -84,6 +84,8 @@ class Async_client(object):
                 method=method,
                 body=utils.json_dumps(body) if body or {} == body else None, 
                 headers=headers,
+                connect_timeout=timeout,
+                request_timeout=timeout,
             ))
         except httpclient.HTTPError as e:
             response = e.response
@@ -104,79 +106,111 @@ class Async_client(object):
         return data
 
     @gen.coroutine
-    def get(self, uri, data=None, headers=None):     
+    def get(self, uri, data=None, headers=None, timeout=5):     
         if data != None:
             if isinstance(data, dict):
                 data = urlencode(data, True)
             uri += '{}{}'.format('&' if '?' in uri else '?', data)
-        r = yield self._fetch('GET', uri, headers=headers)
+        r = yield self._fetch(
+            'GET', 
+            uri, 
+            headers=headers,
+            timeout=timeout,
+        )
         return r
 
     @gen.coroutine
-    def delete(self, uri, headers=None):
-        r = yield self._fetch('DELETE', uri, headers=headers)
+    def delete(self, uri, headers=None, timeout=5):
+        r = yield self._fetch(
+            'DELETE', 
+            uri, 
+            headers=headers,
+            timeout=timeout,
+        )
         return r
 
     @gen.coroutine
-    def post(self, uri, body={}, headers=None):
-        r = yield self._fetch('POST', uri, body, headers=headers)
+    def post(self, uri, body={}, headers=None, timeout=5):
+        r = yield self._fetch(
+            'POST', 
+            uri, 
+            body, 
+            headers=headers,
+            timeout=timeout,
+        )
         return r
 
     @gen.coroutine
-    def put(self, uri, body={}, headers=None):
-        r = yield self._fetch('PUT', uri, body, headers=headers)
+    def put(self, uri, body={}, headers=None, timeout=5):
+        r = yield self._fetch(
+            'PUT', 
+            uri, 
+            body, 
+            headers=headers,
+            timeout=timeout,
+        )
         return r
 
     @gen.coroutine
-    def patch(self, uri, body={}, headers=None):
-        r = yield self._fetch('PATCH', uri, body, headers=headers)
+    def patch(self, uri, body={}, headers=None, timeout=5):
+        r = yield self._fetch(
+            'PATCH', 
+            uri, 
+            body, 
+            headers=headers,
+            timeout=timeout,
+        )
         return r
 
 class Client(Async_client):
 
-    def get(self, uri, data=None, headers=None):
+    def get(self, uri, data=None, headers=None, timeout=5):
         return self.io_loop.run_sync(partial(
             Async_client.get, 
             self, 
             uri, 
             data=data, 
-            headers=headers
+            headers=headers,
+            timeout=timeout,
         ))    
 
-    def delete(self, uri, headers=None):
+    def delete(self, uri, headers=None, timeout=5):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'DELETE', 
             uri, 
-            headers=
-            headers
+            headers=headers,
+            timeout=timeout,
         ))
 
-    def post(self, uri, body={}, headers=None):
+    def post(self, uri, body={}, headers=None, timeout=5):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'POST', 
             uri, 
             body, 
-            headers=headers
+            headers=headers,
+            timeout=timeout,
         ))
 
-    def put(self, uri, body={}, headers=None):
+    def put(self, uri, body={}, headers=None, timeout=5):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'PUT', 
             uri, 
             body, 
-            headers=headers
+            headers=headers,
+            timeout=timeout,
         ))
 
-    def patch(self, uri, body={}, headers=None):
+    def patch(self, uri, body={}, headers=None, timeout=5):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'PATCH', 
             uri, 
             body, 
-            headers=headers
+            headers=headers,
+            timeout=timeout,
         ))
 
 class API_error(web.HTTPError):

@@ -11,7 +11,7 @@ from seplis import Client, schemas
 class Show_indexer(Client):
 
     def get_indexer(self, external_name):
-        obj = getattr(self, 'external_{}'.format(external_name))
+        obj = getattr(self, 'external_{}'.format(external_name), None)
         if not obj:
             return None
         return obj
@@ -118,7 +118,11 @@ class Show_indexer(Client):
                     external_episodes,
                 )
         if show_data and (show_data != {'episodes': []}):
-            show = self.patch('shows/{}'.format(show['id']), show_data)
+            show = self.patch(
+                'shows/{}'.format(show['id']), 
+                show_data,
+                timeout=120
+            )
         return show_data
 
     def new(self, external_name, external_id, get_episodes=True):

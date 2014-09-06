@@ -67,14 +67,12 @@ class Thetvdb(Show_indexer_base):
         ids = []
         for id_ in data['Series']:
             ids.append(id_)
-        '''
         for id_ in data['Episode']:
             ids.append(
                 self.episode_id_to_show_id(
                     id_,
                 )
             )
-        '''
         return ids
 
     def get_update_data(self):

@@ -18,27 +18,36 @@ from seplis.api.base.description import Description
 from seplis.connections import database
 from seplis.config import config
 from tornado.httpclient import AsyncHTTPClient, HTTPError
-from tornado import gen 
+from tornado import gen, concurrent
 from datetime import datetime
 from sqlalchemy import asc, desc, and_
 
 class Handler(base.Handler):
 
     @authenticated(0)
+    @gen.coroutine    
     def post(self, show_id=None):
         if show_id:
             raise exceptions.Parameter_must_not_be_set_exception('show_id must not be set when creating a new one')
         show_id = Show.create()
         self.set_status(201)
         if self.request.body:
-            self.patch(show_id)
+            yield self.patch(show_id)
         else:
             self.write_object({
                 'id': show_id,
             })
 
     @authenticated(0)
-    def put(self, show_id):
+    @gen.coroutine
+    def put(self, show_id):        
+        show = yield self.put(show_id)
+        self.write_object(
+            show,
+        )
+
+    @concurrent.run_on_executor
+    def _put(self, show_id):
         self.validate(schemas.Show_schema, required=True)
         if self.request.body['description']:
             description = Description(
@@ -64,12 +73,18 @@ class Handler(base.Handler):
                 self.request.body['episodes'],
             )
         show.save()
-        self.write_object(
-            show,
-        )
+        return show
 
     @authenticated(0)
+    @gen.coroutine
     def patch(self, show_id):
+        show = yield self._patch(show_id)
+        self.write_object(
+            show
+        )
+
+    @concurrent.run_on_executor
+    def _patch(self, show_id):
         self.validate(schemas.Show_schema)
         show = Show.get(show_id)
         if not show:
@@ -101,9 +116,7 @@ class Handler(base.Handler):
         if 'status' in self.request.body:
             show.status = self.request.body['status']
         show.save()
-        self.write_object(
-            show
-        )
+        return show
 
     @gen.coroutine
     def get(self, show_id=None):   
@@ -269,11 +282,13 @@ class External_handler(Handler):
     def get(self, title, value):
         yield Handler.get(self, self._get(title, value))
 
+    @gen.coroutine
     def put(self, title, value): 
-        Handler.put(self, self._get(title, value))
+        yield Handler.put(self, self._get(title, value))
 
+    @gen.coroutine
     def patch(self, title, value): 
-        Handler.patch(self, self._get(title, value))
+        yield Handler.patch(self, self._get(title, value))
 
     def post(self, show_id=None):
         raise HTTPError(405)
