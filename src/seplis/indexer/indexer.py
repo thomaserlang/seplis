@@ -117,8 +117,7 @@ class Show_indexer(Client):
                     episodes,
                     external_episodes,
                 )
-        print(json_dumps(show_data))
-        if show_data:
+        if show_data and (show_data != {'episodes': []}):
             show = self.patch('shows/{}'.format(show['id']), show_data)
         return show_data
 

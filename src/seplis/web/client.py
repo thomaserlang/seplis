@@ -171,7 +171,6 @@ class Client(Async_client):
         ))
 
     def patch(self, uri, body={}, headers=None):
-        print('patch it !')
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'PATCH', 
@@ -179,7 +178,6 @@ class Client(Async_client):
             body, 
             headers=headers
         ))
-        print('patch ended')
 
 class API_error(web.HTTPError):
 
