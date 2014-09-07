@@ -22,20 +22,28 @@ from tornado import gen, concurrent
 from datetime import datetime
 from sqlalchemy import asc, desc, and_
 
+
 class Handler(base.Handler):
 
+    @authenticated(0)
     @gen.coroutine    
     def post(self, show_id=None):
+        yield self._post()
         if show_id:
             raise exceptions.Parameter_must_not_be_set_exception('show_id must not be set when creating a new one')
         show_id = Show.create()
         self.set_status(201)
         if self.request.body:
-            yield self.patch(show_id)
+            show = yield self._patch(show_id)
+            self.write_object(show)
         else:
             self.write_object({
                 'id': show_id,
             })
+
+    @concurrent.run_on_executor
+    def _post(self):
+        self.validate(schemas.Show_schema)
 
     @authenticated(0)
     @gen.coroutine
@@ -74,6 +82,7 @@ class Handler(base.Handler):
         show.save()
         return show
 
+    @authenticated(0)
     @gen.coroutine
     def patch(self, show_id):
         show = yield self._patch(show_id)
@@ -82,8 +91,9 @@ class Handler(base.Handler):
         )
 
     @concurrent.run_on_executor
-    def _patch(self, show_id):
-        self.validate(schemas.Show_schema)
+    def _patch(self, show_id, validate_show=True):
+        if validate_show:
+            self.validate(schemas.Show_schema)
         show = Show.get(show_id)
         if not show:
             raise exceptions.Show_unknown()

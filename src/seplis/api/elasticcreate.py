@@ -47,8 +47,31 @@ def create_indices():
                     'title': {
                         'type': 'string',
                         'index_analyzer': 'nGram_analyzer',
-                        'search_analyzer': 'whitespace_analyzer'
-                    }
+                        'search_analyzer': 'whitespace_analyzer',
+                    },
+                    'id': { 'type': 'integer' },
+                    'description': {
+                        'dynamic' : False,
+                        'properties' : {
+                            'text': { 'type': 'string' },
+                            'url': { 'type': 'string' },
+                            'title': { 'type': 'string' },
+                        }
+                    },
+                    'premiered': { 'type': 'date' },
+                    'ended': { 'type': 'date' },
+                    'externals': {
+                        'dynamic' : True,
+                        'type': 'object',
+                    },
+                    'indices': {
+                        'dynamic': False,
+                        'properties': {
+                            'info': { 'type': 'string' },
+                            'episodes': { 'type': 'string' },
+                            'images': { 'type': 'string' },
+                        },
+                    },
                 }
             }
         }
@@ -62,10 +85,23 @@ def create_indices():
                     'title': {
                         'type': 'string',
                         'index_analyzer': 'nGram_analyzer',
-                        'search_analyzer': 'whitespace_analyzer'
-                    }
-                }     
-            }   
+                        'search_analyzer': 'whitespace_analyzer',
+                    },
+                    'number': { 'type': 'integer' },
+                    'air_date': { 'type': 'date' },
+                    'description': {
+                        "dynamic" : False,
+                        'properties' : {
+                            'text': { 'type': 'string' },
+                            'url': { 'type': 'string' },
+                            'title': { 'type': 'string' },
+                        },
+                    },
+                    'season': { 'type': 'integer' },
+                    'episode': { 'type': 'integer' },
+                    'show_id': { 'type': 'integer' },
+                },
+            }
         }
     })
 

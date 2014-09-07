@@ -53,6 +53,8 @@ class HTTPData(object):
         return utils.json_dumps(self.data)
 
     def __len__(self):
+        if not self.data:
+            return 0
         return len(self.data)
 
     def __getitem__(self, key):
