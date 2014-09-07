@@ -5,9 +5,10 @@ import http.client
 import sys
 import logging
 import redis
+from tornado import gen
 from urllib.parse import urljoin
 from datetime import datetime
-from seplis import utils
+from seplis import utils, schemas
 from seplis.api import models
 from seplis.decorators import new_session
 from seplis.api import exceptions
@@ -17,10 +18,10 @@ from sqlalchemy import or_
 from seplis.connections import database
 from seplis.api.decorators import authenticated
 from seplis.config import config
-from seplis import schemas
 from raven.contrib.tornado import SentryMixin
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 
-class Handler(SentryMixin, tornado.web.RequestHandler):
+class Handler(tornado.web.RequestHandler, SentryMixin):
 
     def initialize(self):
         if self.request.body:
@@ -87,9 +88,32 @@ class Handler(SentryMixin, tornado.web.RequestHandler):
     def redis(self):
         return database.redis
 
-    @property
-    def es(self):
-        return database.es
+    @gen.coroutine
+    def es(self, url, **kwargs):
+        http_client = AsyncHTTPClient()         
+        if not url.startswith('/'):
+            url = '/'+url
+        for arg in kwargs:
+            if not isinstance(kwargs[arg], list):
+                kwargs[arg] = [kwargs[arg]]
+        try:
+            response = yield http_client.fetch(
+                'http://{}{}?{}'.format(
+                    config['elasticsearch'],
+                    url,
+                    utils.url_encode_tornado_arguments(kwargs) if kwargs else '',
+                ),
+            )
+            return utils.json_loads(response.body)
+        except HTTPError as e:
+            try:
+                extra = utils.json_loads(e.response.body)
+            except:
+                extra = {'error': e.response.body.decode('utf-8')}
+            raise exceptions.Elasticsearch_exception(
+                e.code,
+                extra,
+            )
 
     def get_current_user(self):
         auth = self.request.headers.get('Authorization', None)
@@ -117,13 +141,33 @@ class Handler(SentryMixin, tornado.web.RequestHandler):
                 })
             raise exceptions.Validation_exception(errors=data)
 
+    @gen.coroutine
+    def log_exception(self, typ, value, tb):
+        try:            
+            tornado.web.RequestHandler.log_exception(self, typ, value, tb)
+            if isinstance(value, exceptions.Elasticsearch_exception) and \
+                value.status_code != 404:
+                pass
+            elif isinstance(value, tornado.web.HTTPError) and value.status_code < 500:
+                return
+
+            yield gen.Task(
+                self.captureException,
+                exc_info=(typ, value, tb),
+                data=[value.extra] if isinstance(value, exceptions.API_exception) and \
+                    value.extra else None,
+                
+            )
+        except:
+            logging.error('Sentry log error')
 
     def get_sentry_user_info(self):
-        if self.current_user:
-            return {
-                'sentry.interfaces.User': self.current_user.to_dict(),
+        return {
+            'user': {
+                'is_authenticated': True if self.current_user else False,
+                'info': self.current_user.to_dict() if self.current_user else None,
             }
-        return {}
+        }
 
     def options(self, *args, **kwargs):
         pass

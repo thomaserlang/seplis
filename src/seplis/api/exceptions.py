@@ -20,6 +20,16 @@ class API_exception(HTTPError):
         self.message = message
         self.extra = extra
 
+class Not_found(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(self,
+            status_code=404,
+            code=500, 
+            message='the requested item was not found',
+            errors=None,
+        )
+
 class Wrong_email_or_password_exception(API_exception):
 
     def __init__(self):
@@ -215,3 +225,14 @@ class Episode_unknown(API_exception):
             code=6000,
             message='unknown episode',
         )
+
+class Elasticsearch_exception(API_exception):
+
+    def __init__(self, status_code, extra):
+        API_exception.__init__(
+            self,
+            status_code=status_code,
+            code=7000,
+            message='search error',
+            extra=extra
+        ) 

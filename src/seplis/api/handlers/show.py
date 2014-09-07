@@ -119,45 +119,31 @@ class Handler(base.Handler):
         return show
 
     @gen.coroutine
-    def get(self, show_id=None):   
-        http_client = AsyncHTTPClient()
+    def get(self, show_id=None):
         if show_id:
-            try:
-                response = yield http_client.fetch('http://{}/shows/show/{}'.format(
-                    config['elasticsearch'],
-                    show_id,
-                ))
-                result = utils.json_loads(response.body)        
-                if not result['found']:
-                    raise exceptions.Show_unknown()
-                self.write_object(
-                    result['_source']
-                )
-            except HTTPError as e:
-                if e.code == 404:
-                    raise exceptions.Show_unknown()                    
-                else:
-                    raise
+            result = yield self.es('/shows/show/{}'.format(show_id))                
+            if not result['found']:
+                raise exceptions.Show_unknown()
+            self.write_object(
+                result['_source']
+            )
         else:
             q = self.get_argument('q', None)
             per_page = int(self.get_argument('per_page', constants.per_page))
             page = int(self.get_argument('page', 1))
             sort = self.get_argument('sort', None)
             req = {
-                'from': [((page - 1) * per_page)],
-                'size': [per_page],
+                'from': ((page - 1) * per_page),
+                'size': per_page,
             }
             if q != None:
-                req['q'] = [q]
+                req['q'] = q
             if sort:
-                req['sort'] = [sort]
-            response = yield http_client.fetch(
-                'http://{}/shows/show/_search?{}'.format(
-                    config['elasticsearch'],
-                    utils.url_encode_tornado_arguments(req)
-                ),
+                req['sort'] = sort
+            result = yield self.es(
+                '/shows/show/_search',
+                **req
             )
-            result = utils.json_loads(response.body)
             p = Pagination(
                 page=page,
                 per_page=per_page,

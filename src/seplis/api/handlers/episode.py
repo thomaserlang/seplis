@@ -18,68 +18,39 @@ class Handler(base.Handler):
 
     @gen.coroutine
     def get(self, show_id, number=None):
-        http_client = AsyncHTTPClient()
         if number:
-            try:
-                response = yield http_client.fetch('http://{}/episodes/{}/{}'.format(
-                    config['elasticsearch'],
-                    show_id,
-                    number,
-                ))
-                result = utils.json_loads(response.body)        
-                if not result['found']:
-                    raise exceptions.Episode_unknown()
-                self.write_object(
-                    result['_source']
-                )
-            except HTTPError as e:
-                if e.code == 404:
-                    raise exceptions.Episode_unknown()                    
-                else:
-                    raise
+            result = yield self.es('/episodes/{}/{}'.format(
+                show_id,
+                number,
+            ))
+            if not result['found']:
+                raise exceptions.Episode_unknown()
+            self.write_object(
+                result['_source']
+            )
         else:
             q = self.get_argument('q', None)
             per_page = int(self.get_argument('per_page', constants.per_page))
             page = int(self.get_argument('page', 1))
             sort = self.get_argument('sort', 'number:asc')
             req = {
-                'from': [((page - 1) * per_page)],
-                'size': [per_page],
-                'sort': [sort],
+                'from': ((page - 1) * per_page),
+                'size': per_page,
+                'sort': sort,
             }
             if q != None:
-                req['q'] = [q]
-            try:
-                response = yield http_client.fetch(
-                    'http://{}/episodes/{}/_search?{}'.format(
-                        config['elasticsearch'],
-                        show_id,
-                        utils.url_encode_tornado_arguments(req),
-                    ),
-                )
-                result = utils.json_loads(response.body)
-                p = Pagination(
-                    page=page,
-                    per_page=per_page,
-                    total=result['hits']['total'],
-                    records=[show['_source'] for show in result['hits']['hits']],
-                )
-                self.write_pagination(p)
-            except HTTPError as e:
-                if e.code in [404]:
-                    p = Pagination(
-                        page=page,
-                        per_page=per_page,
-                        total=0,
-                        records=[],
-                    )
-                    self.write_pagination(p)
-                else:
-                    raise
-
-    def put(self, show_id, number=None):
-        if not number:
-            self.put_multi(show_id, self.request.body)
+                req['q'] = q
+            result = yield self.es(
+                '/episodes/{}/_search'.format(show_id),
+                **req
+            )
+            p = Pagination(
+                page=page,
+                per_page=per_page,
+                total=result['hits']['total'],
+                records=[show['_source'] for show in result['hits']['hits']],
+            )
+            self.write_pagination(p)
 
 class Watched_handler(base.Handler):
 

@@ -249,7 +249,6 @@ class test_show(Testbase):
             config['elasticsearch']
         ))
  
-
         response = self.get('/1/shows', {
             'q': 'this is a',
         })
@@ -257,6 +256,14 @@ class test_show(Testbase):
         shows = utils.json_loads(response.body)
         self.assertEqual(len(shows), 1)
         self.assertEqual(shows[0]['title'], 'This is a test show')
+
+    def test_search_errors(self):
+        # there is no shows
+        response = self.get('/1/shows/999999')
+        self.assertEqual(response.code, 503, response.body)
+        # wrong sort
+        response = self.get('/1/shows?sort=a')
+        self.assertEqual(response.code, 400, response.body)
 
     def test_description(self):
         self.login(0)
