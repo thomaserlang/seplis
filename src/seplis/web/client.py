@@ -9,9 +9,19 @@ class HTTPData(object):
 
     def __init__(self, client, response):
         self.client = client
-        self.data = utils.json_loads(response.body) if response.body != None else None
+        self.data = utils.json_loads(response.body) if \
+            response and response.body != None \
+                else None
         self.link = {}
+        self.next = None
+        self.prev = None
+        self.first = None
+        self.last = None
+        self.count = None
+        self.pages = None
 
+        if not response:
+            return
         links = {}
         if 'Link' in response.headers:
             links = utils.parse_link_header(
@@ -21,11 +31,8 @@ class HTTPData(object):
         self.prev = links.get('prev')
         self.first = links.get('first')
         self.last = links.get('last')
-
-        self.count = None
         if 'X-Total-Count' in response.headers:
             self.count = int(response.headers['X-Total-Count'])
-        self.pages = None
         if 'X-Total-Pages' in response.headers:
             self.pages = int(response.headers['X-Total-Pages'])
 
@@ -103,6 +110,8 @@ class Async_client(object):
                     raise API_error(status_code=response.code, **data)
                 raise Exception(response.body)
             data = HTTPData(self, response)
+        if data is None:
+            data = HTTPData(self, None)
         return data
 
     @gen.coroutine

@@ -113,8 +113,10 @@ class Show_indexer(Client):
             )
             if external_episodes:
                 episodes = self.get(
-                    '/shows/{}/episodes?per_page=100'.format(show['id'])
+                    '/shows/{}/episodes?per_page=500'.format(show['id'])
                 ).all()
+                if not episodes:
+                    episodes = []
                 show_data['episodes'] = show_episode_changes(
                     episodes,
                     external_episodes,

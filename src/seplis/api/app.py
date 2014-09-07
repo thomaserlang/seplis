@@ -1,3 +1,4 @@
+
 import seplis
 import tornado.web
 import tornado.httpserver
@@ -58,6 +59,7 @@ class Application(tornado.web.Application):
         )
         self.sentry_client = AsyncSentryClient(
             seplis.config['api']['sentry_url'],
+            raise_send_errors=True
         )
         tornado.web.Application.__init__(self, urls, **settings)
 

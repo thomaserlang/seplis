@@ -19,7 +19,7 @@ class Handler(base.Handler):
     @gen.coroutine
     def get(self, show_id, number=None):
         if number:
-            result = yield self.es('/episodes/{}/{}'.format(
+            result = yield self.es('/episodes/episode/{}-{}'.format(
                 show_id,
                 number,
             ))
@@ -37,11 +37,12 @@ class Handler(base.Handler):
                 'from': ((page - 1) * per_page),
                 'size': per_page,
                 'sort': sort,
+                'q': 'show_id:{}'.format(show_id)
             }
             if q != None:
-                req['q'] = q
+                req['q'] += ' AND {}'.format(q)
             result = yield self.es(
-                '/episodes/{}/_search'.format(show_id),
+                '/episodes/episode/_search',
                 **req
             )
             p = Pagination(

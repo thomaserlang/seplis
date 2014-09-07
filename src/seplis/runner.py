@@ -40,6 +40,7 @@ def upgrade(config):
 
 @app.cmd()
 def rebuild_cache(config):
+    import seplis
     seplis.config_load(config)
     logger.set_logger('rebuild_cache.log')
     import seplis.api.rebuild_cache

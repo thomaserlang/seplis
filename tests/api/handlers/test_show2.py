@@ -260,7 +260,7 @@ class test_show(Testbase):
     def test_search_errors(self):
         # there is no shows
         response = self.get('/1/shows/999999')
-        self.assertEqual(response.code, 503, response.body)
+        self.assertEqual(response.code, 404, response.body)
         # wrong sort
         response = self.get('/1/shows?sort=a')
         self.assertEqual(response.code, 400, response.body)

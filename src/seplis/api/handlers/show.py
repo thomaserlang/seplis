@@ -24,7 +24,6 @@ from sqlalchemy import asc, desc, and_
 
 class Handler(base.Handler):
 
-    @authenticated(0)
     @gen.coroutine    
     def post(self, show_id=None):
         if show_id:
@@ -75,7 +74,6 @@ class Handler(base.Handler):
         show.save()
         return show
 
-    @authenticated(0)
     @gen.coroutine
     def patch(self, show_id):
         show = yield self._patch(show_id)

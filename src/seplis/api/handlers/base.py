@@ -142,30 +142,38 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             raise exceptions.Validation_exception(errors=data)
 
     @gen.coroutine
-    def log_exception(self, typ, value, tb):
-        try:            
-            tornado.web.RequestHandler.log_exception(self, typ, value, tb)
-            if isinstance(value, exceptions.Elasticsearch_exception) and \
-                value.status_code != 404:
-                pass
-            elif isinstance(value, tornado.web.HTTPError) and value.status_code < 500:
-                return
+    def log_exception(self, typ, value, tb):        
+        tornado.web.RequestHandler.log_exception(self, typ, value, tb)
+        if isinstance(value, exceptions.Elasticsearch_exception) and \
+            value.status_code != 404:
+            pass
+        elif isinstance(value, tornado.web.HTTPError) and value.status_code < 500:
+            return
+        yield gen.Task(
+            self.captureException,
+            exc_info=(typ, value, tb),
+            data=[value.extra] if isinstance(value, exceptions.API_exception) and \
+                value.extra else None,
+            
+        )
 
-            yield gen.Task(
-                self.captureException,
-                exc_info=(typ, value, tb),
-                data=[value.extra] if isinstance(value, exceptions.API_exception) and \
-                    value.extra else None,
-                
-            )
-        except:
-            logging.error('Sentry log error')
 
     def get_sentry_user_info(self):
         return {
             'user': {
                 'is_authenticated': True if self.current_user else False,
                 'info': self.current_user.to_dict() if self.current_user else None,
+            }
+        }
+
+    def get_sentry_data_from_request(self):
+        return {
+            'request': {
+                'url': self.request.full_url(),
+                'method': self.request.method,
+                'query_string': self.request.query,
+                'cookies': self.request.headers.get('Cookie', None),
+                'headers': dict(self.request.headers),
             }
         }
 

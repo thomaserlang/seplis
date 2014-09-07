@@ -62,12 +62,14 @@ class Episode(object):
         self.to_elasticsearch(show_id)
 
     def to_elasticsearch(self, show_id):
+        self.show_id = show_id
         database.es.index(
             index='episodes',
-            doc_type=str(show_id),
-            id=self.number,
+            doc_type='episode',
+            id='{}-{}'.format(show_id, self.number),
             body=utils.json_dumps(self),
         )
+        self.__dict__.pop('show_id')
 
     @classmethod
     def _format_from_row(cls, row):

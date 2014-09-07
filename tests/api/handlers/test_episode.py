@@ -84,7 +84,7 @@ class Test_episode(Testbase):
     def test_empty_episode_get(self):
         show_id = self.new_show()
         response = self.get('/1/shows/{}/episodes'.format(show_id))
-        self.assertEqual(response.code, 404, response.body)
+        self.assertEqual(response.code, 400, response.body)
         
         response = self.get('/1/shows/{}/episodes/1'.format(show_id))
         self.assertEqual(response.code, 404, response.body)
