@@ -2,7 +2,7 @@ import urllib.parse
 import logging
 import copy
 import time
-from seplis.decorators import new_session
+from seplis.decorators import new_session, auto_session
 from seplis.connections import database
 from seplis import utils
 from seplis.api.base.pagination import Pagination
@@ -15,7 +15,8 @@ from sqlalchemy import asc
 class Show(object):
 
     def __init__(self, id, title, description, premiered, ended, 
-                 externals, indices, status, updated=None):
+                 externals, indices, status, runtime, genres,
+                 alternate_titles, seasons, updated=None):
         '''
 
         :param id: int
@@ -31,8 +32,12 @@ class Show(object):
             {
                 'index': 'value'
             }
-        :param updates: datetime
         :param status: int
+        :param runtime: int
+        :param genres: list of str
+        :param alternate_titles: list of str
+        :param seasons: list of dict
+        :param updated: datetime
         '''
         self.id = id
         self.title = title
@@ -45,8 +50,12 @@ class Show(object):
         if not indices:
             indices = {}
         self.indices = indices
-        self.updated = updated
         self.status = status
+        self.runtime = runtime
+        self.genres = genres
+        self.alternate_titles = alternate_titles
+        self.seasons = seasons
+        self.updated = updated
 
     def save(self, session=None, pipe=None):
         _pipe = pipe
@@ -79,6 +88,10 @@ class Show(object):
             'index_episodes': self.indices.get('episodes') if self.indices else None,
             'externals': self.externals,
             'status': self.status,
+            'runtime': self.runtime,
+            'genres': self.genres,
+            'alternate_titles': self.alternate_titles,
+            'seasons': self.seasons,
             'updated': self.updated,
         })
         self.update_external(
@@ -108,6 +121,10 @@ class Show(object):
             },
             externals=row.externals if row.externals else {},
             status=row.status,
+            runtime=row.runtime,
+            genres=row.genres,
+            alternate_titles=row.alternate_titles,
+            seasons=row.seasons,
             updated=row.updated,
         )
 
@@ -137,24 +154,17 @@ class Show(object):
         return cls._format_from_row(show)
 
     @classmethod
-    def create(cls, session=None):
+    @auto_session
+    def create(cls, session):        
         '''
         Creates a new show and returns the id.
 
         :param session: sqlalchemy session
         :returns: int
         '''
-        if not session:
-            with new_session() as session:
-                show_id = cls._create(session)
-                session.commit()
-                return show_id
-        else:
-            return cls._create(session)
-
-    @classmethod
-    def _create(cls, session):
-        show = models.Show()
+        show = models.Show(
+            created=datetime.utcnow(),
+        )
         session.add(show)
         session.flush()
         return show.id

@@ -30,6 +30,8 @@ class Tvrage(Show_indexer_base):
             logging.debug('({}) Show XML parsed successfully.'.format(show_id))
             logging.debug('({}) Creating ShowIndexed object.'.format(show_id))
             show_info = show_info['Showinfo']
+            if not show_info:
+                return None
             ended = self.parse_date(show_info.get('ended'))
             return {
                 'title': show_info.get('showname'),
@@ -40,6 +42,8 @@ class Tvrage(Show_indexer_base):
                 },
                 'description': None,
                 'status': 1 if not ended else 2,
+                'runtime': int(show_info.get('runtime')) if show_info.get('runtime') else None,
+                'genres': self.parse_genres(show_info.get('genres')),
             }
         return None
 
@@ -78,6 +82,16 @@ class Tvrage(Show_indexer_base):
             self.set_latest_update_timestamp()
         return show_ids
 
+
+    def parse_genres(self, genres):
+        if not genres:
+            return []
+        if not genres.get('genre'):
+            return []
+        genres = genres['genre']
+        if not isinstance(genres, list):
+            genres = [genres]
+        return genres
 
     def parse_episode_list(self, show_id, episode_list):
         logging.debug('({}) Episode indexing started.'.format(show_id))
@@ -154,12 +168,6 @@ class Tvrage(Show_indexer_base):
                 logging.exception('Parsing failed for date "{}"'.format(date))
                 raise
         return None
-
-    def parse_genres(self, show):
-        if show:
-            if 'genres' in show:
-                return show['genres']['genre']
-        return []
 
     def parse_airtime(self, airtime, timezone):
         if not airtime:

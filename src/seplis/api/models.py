@@ -42,6 +42,9 @@ class Show(base):
     index_info = Column(String(45))
     index_episodes = Column(String(45))
     seasons = Column(JSONEncodedDict())
+    runtime = Column(Integer)
+    genres = Column(JSONEncodedDict())
+    alternate_titles = Column(JSONEncodedDict())
 
 class Episode(base):
     __tablename__ = 'episodes'
@@ -55,6 +58,7 @@ class Episode(base):
     description_url = Column(String(200))
     season = Column(Integer)
     episode = Column(Integer)
+    runtime = Column(Integer)
 
 class Show_external(base):
     __tablename__ = 'show_externals'

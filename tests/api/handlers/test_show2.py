@@ -33,6 +33,15 @@ class test_show(Testbase):
             'externals': {
                 'imdb': 'tt0364845',
             },
+            'genres': [
+                'Action',
+                'Thriller',
+            ],
+            'alternate_titles': [
+                'NCIS 2',
+                'NCIS 3',
+            ],
+            'runtime': 40,
         })
         self.assertEqual(response.code, 201, response.body)
         show = utils.json_loads(response.body)
@@ -51,6 +60,15 @@ class test_show(Testbase):
         self.assertEqual(show['externals'], {
             'imdb': 'tt0364845',
         })
+        self.assertEqual(show['genres'], [
+            'Action',
+            'Thriller',
+        ])
+        self.assertEqual(show['alternate_titles'], [
+            'NCIS 2',
+            'NCIS 3',
+        ])
+        self.assertEqual(show['runtime'], 40)
 
     def test_patch(self):
         show_id = self.new_show()
@@ -286,7 +304,7 @@ class test_show(Testbase):
                     'air_date': '2014-01-01',
                     'description': None,
                 }
-            ]
+            ],
         })        
         self.assertEqual(response.code, 201, response.body)
         show = utils.json_loads(response.body)

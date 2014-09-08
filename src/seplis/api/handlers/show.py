@@ -30,11 +30,16 @@ class Handler(base.Handler):
     def post(self, show_id=None):
         yield self._post()
         if show_id:
-            raise exceptions.Parameter_must_not_be_set_exception('show_id must not be set when creating a new one')
+            raise exceptions.Parameter_must_not_be_set_exception(
+                'show_id must not be set when creating a new one'
+            )
         show_id = Show.create()
         self.set_status(201)
         if self.request.body:
-            show = yield self._patch(show_id)
+            show = yield self._patch(
+                show_id, 
+                validate_show=False
+            )
             self.write_object(show)
         else:
             self.write_object({
@@ -47,48 +52,23 @@ class Handler(base.Handler):
 
     @authenticated(0)
     @gen.coroutine
-    def put(self, show_id):        
-        show = yield self.put(show_id)
-        self.write_object(
-            show,
-        )
-
-    @concurrent.run_on_executor
-    def _put(self, show_id):
-        self.validate(schemas.Show_schema, required=True)
-        if self.request.body['description']:
-            description = Description(
-                text=self.request.body['description']['text'] if self.request.body['description'] else None,
-                url=self.request.body['description'].get('url') if self.request.body['description'] else None,
-                title=self.request.body['description'].get('title') if self.request.body['description'] else None,
-            )
-        else:
-            description = Description(None)
-        show = Show(
-            id=show_id,
-            title=self.request.body['title'],
-            description=description,
-            premiered=self.request.body['premiered'],
-            ended=self.request.body['ended'],
-            externals=self.request.body['externals'],
-            indices=self.request.body['indices'],
-            status=self.request.body['status'],
-        )
-        if 'episodes' in self.request.body:
-            self.put_episodes(
-                show_id,
-                self.request.body['episodes'],
-            )
-        show.save()
-        return show
-
-    @authenticated(0)
-    @gen.coroutine
     def patch(self, show_id):
         show = yield self._patch(show_id)
         self.write_object(
             show
         )
+
+    update_keys = [
+        'title',
+        'premiered',
+        'ended',
+        'externals',
+        'indices',
+        'status',
+        'runtime',
+        'genres',
+        'alternate_titles',
+    ]
 
     @concurrent.run_on_executor
     def _patch(self, show_id, validate_show=True):
@@ -97,16 +77,11 @@ class Handler(base.Handler):
         show = Show.get(show_id)
         if not show:
             raise exceptions.Show_unknown()
-        if 'title' in self.request.body:
-            show.title = self.request.body['title']
-        if 'premiered' in self.request.body:
-            show.premiered = self.request.body['premiered']
-        if 'ended' in self.request.body:
-            show.ended = self.request.body['ended']
-        if 'externals' in self.request.body:
-            show.externals.update(self.request.body['externals'])
-        if 'indices' in self.request.body:
-            show.indices.update(self.request.body['indices'])
+        self._update_keys(
+            keys=self.update_keys,
+            data=show.__dict__,
+            new_data=self.request.body,
+        )
         if 'description' in self.request.body:
             desc = self.request.body['description']
             if desc:
@@ -121,10 +96,75 @@ class Handler(base.Handler):
                 show_id,
                 self.request.body['episodes'],
             )
-        if 'status' in self.request.body:
-            show.status = self.request.body['status']
         show.save()
         return show
+
+    update_episode_keys = [
+        'title',
+        'air_date',
+        'season',
+        'episode',
+        'runtime',
+    ]
+
+    def patch_episodes(self, show_id, episodes_dict):        
+        '''
+
+        :param show_id: int
+        :param episodes_dict: dict
+        :returns boolean
+        '''
+        episodes = []
+        for episode_data in episodes_dict:
+            episode = Episode.get(show_id, episode_data['number'])
+            if not episode:
+                episodes.append(
+                    self._new_episode(episode_data)
+                )
+                continue
+            self._update_keys(
+                keys=self.update_episode_keys,
+                data=episode.__dict__,
+                new_data=episode_data,
+            )
+            if 'description' in episode_data:
+                desc = episode_data['description']
+                if desc:
+                    if 'text' in desc:
+                        episode.description.text = desc['text']
+                    if 'title' in desc:
+                        episode.description.title = desc['title']
+                    if 'url' in desc:
+                        episode.description.url = desc['url']
+            episodes.append(episode)
+        return Episodes.save(show_id, episodes)
+
+    def _new_episode(self, episode):
+        if 'description' in episode and episode['description']:
+            description = Description(
+                text=episode['description'].get('text'),
+                url=episode['description'].get('url'),
+                title=episode['description'].get('title'),
+            )
+        else:
+            description = Description(None)
+        return Episode(
+            number=episode.get('number'),
+            title=episode.get('title'),
+            air_date=episode.get('air_date'),
+            description=description,
+            season=episode.get('season'),
+            episode=episode.get('episode'),
+            runtime=episode.get('runtime'),
+        )
+
+    def _update_keys(self, keys, data, new_data):
+        for key in keys:
+            if key in new_data:
+                if isinstance(new_data[key], dict):
+                    data[key].update(new_data[key])
+                else:
+                    data[key] = new_data[key]
 
     @gen.coroutine
     def get(self, show_id=None):
@@ -160,73 +200,6 @@ class Handler(base.Handler):
             )
             self.write_pagination(p)
 
-    def put_episodes(self, show_id, episodes_dict):
-        '''
-
-        :param show_id: int
-        :param episodes_dict: dict
-        :returns boolean
-        '''
-        episodes = []
-        for episode in episodes_dict:
-            episodes.append(
-                self._new_episode(episode)
-            )
-        return Episodes.save(show_id, episodes)
-
-    def _new_episode(self, episode):
-        if 'description' in episode and episode['description']:
-            description = Description(
-                text=episode['description'].get('text'),
-                url=episode['description'].get('url'),
-                title=episode['description'].get('title'),
-            )
-        else:
-            description = Description(None)
-        return Episode(
-            number=episode.get('number'),
-            title=episode.get('title'),
-            air_date=episode.get('air_date'),
-            description=description,
-            season=episode.get('season'),
-            episode=episode.get('episode'),
-        )
-
-    def patch_episodes(self, show_id, episodes_dict):        
-        '''
-
-        :param show_id: int
-        :param episodes_dict: dict
-        :returns boolean
-        '''
-        episodes = []
-        for episode_data in episodes_dict:
-            episode = Episode.get(show_id, episode_data['number'])
-            if not episode:
-                episodes.append(
-                    self._new_episode(episode_data)
-                )
-                continue
-            if 'description' in episode_data:
-                desc = episode_data['description']
-                if desc:
-                    if 'text' in desc:
-                        episode.description.text = desc['text']
-                    if 'title' in desc:
-                        episode.description.title = desc['title']
-                    if 'url' in desc:
-                        episode.description.url = desc['url']
-            if 'title' in episode_data:
-                episode.title = episode_data['title']
-            if 'air_date' in episode_data:
-                episode.air_date = episode_data['air_date']
-            if 'season' in episode_data:
-                episode.season = episode_data['season']
-            if 'episode' in episode_data:
-                episode.episode = episode_data['episode']
-            episodes.append(episode)
-        return Episodes.save(show_id, episodes)
-
 class Multi_handler(base.Handler):
 
     def get(self, show_ids):
@@ -252,17 +225,6 @@ class Suggest_handler(base.Handler):
 
         self.write_object(shows)
 
-class Episodes_handler(base.Handler):
-
-    def get(self, show_id):
-        episodes = Episodes.get(
-            show_id,
-            from_=int(self.get_argument('from')),
-            to=int(self.get_argument('to')),
-        )
-        if episodes == None:
-            raise exceptions.Show_unknown()
-        self.write_object(episodes)
 
 class External_handler(Handler):
 
@@ -288,81 +250,7 @@ class External_handler(Handler):
         raise HTTPError(405)
 
     def delete(self, title, value): 
-        raise HTTPError(405)
-
-class Episode_handler(Handler):
-
-    def get(self, show_id, episode_number):
-        episode = self.get_episode(show_id, episode_number)
-        if not episode:
-            raise exceptions.Not_found_exception('episode number {} not found for show id {}'.format(episode_number, show_id))    
-        self.write(episode)            
-
-    def post(self):
-        raise HTTPError(405)
-
-    @authenticated(0)
-    def put(self, show_id, episode_number):
-        if 'number' not in self.request.body:
-            self.request.body['number'] = int(episode_number)
-        self.validate(Episode_schema)
-        current_episode = self.get_episode(show_id, episode_number)
-        if current_episode:
-            current_episode = current_episode
-        else:
-            current_episode = {}     
-        episode = dict_update(
-            current_episode, 
-            self.request.body
-        )    
-        with new_session() as session:
-            with self.redis.pipeline() as pipe:
-                Show.update_episodes(session, pipe, show_id, [episode])
-                pipe.execute()
-            session.commit()
-        self.write(episode)
-
-    @authenticated(0)
-    def delete(self, show_id, episode_number):
-        episode = self.get_episode(show_id, episode_number)
-        if not episode:
-            raise exceptions.Not_found_exception('episode number: {} not found for show id: {}'.format(episode_number, show_id))    
-        with new_session() as session:
-            session.query(
-                models.Episode,
-            ).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number == episode_number,
-            ).delete()
-            session.commit()
-            self.set_status(204)
-            self.finish()
-
-    def get_episode(self, show_id, episode_number):
-        '''
-        Returns none if the episode was not found.
-
-        :param show_id: int
-        :param episode_number: int
-        :returns: str 
-            json format
-        :raises: `tornado.web.HTTPError`
-        '''
-        if not show_id or not episode_number:
-            raise exceptions.Parameter_missing_exception('missing show_id and/or episode_number')
-        with new_session() as session:
-            episode = session.query(
-                models.Episode,
-            ).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number == episode_number,
-            ).first()
-            if not episode:
-                return None
-            if episode.data:
-                return episode.data
-            else:
-                return '{}'        
+        raise HTTPError(405)     
 
 class Follow_handler(Handler):
 

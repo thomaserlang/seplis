@@ -9,7 +9,15 @@ indexer = seplis.Show_indexer(
 
 shows = indexer.get('/shows?sort=id&per_page=500')
 for show in shows.all():
-    if show['id'] < 358:
+    if show['id'] < 660:
         continue
-    indexer.update_show(show['id'])
-    logging.error('updated show {}'.format(show['id']))
+    def index():
+        try:
+            indexer.update_show(show['id'])
+            logging.error('updated show {}'.format(show['id']))
+        except KeyboardInterrupt:
+            raise
+        except:
+            logging.exception('error')
+            index()
+    index()

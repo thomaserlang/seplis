@@ -72,6 +72,24 @@ def create_indices():
                             'images': { 'type': 'string' },
                         },
                     },
+                    'status': { 'type': 'integer' },
+                    'runtime': { 'type': 'integer' },
+                    'seasons': {
+                        'properties': {
+                            'season': { 'type': 'integer' },
+                            'from': { 'type': 'integer' },
+                            'to': { 'type': 'integer' },
+                            'total': { 'type': 'integer' },
+                        },
+                    },
+                    'alternate_titles': {
+                        'type': 'string',
+                        'index_name': 'alternate_title',
+                    },
+                    'genres': {
+                        'type': 'string',
+                        'index_name': 'genre',
+                    },
                 }
             }
         }
@@ -100,6 +118,7 @@ def create_indices():
                     'season': { 'type': 'integer' },
                     'episode': { 'type': 'integer' },
                     'show_id': { 'type': 'integer' },
+                    'runtime': { 'type': 'integer' },
                 },
             }
         }

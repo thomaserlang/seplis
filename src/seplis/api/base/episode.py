@@ -1,5 +1,5 @@
 import logging
-from seplis.decorators import new_session
+from seplis.decorators import new_session, auto_session
 from seplis.connections import database
 from seplis.api.base.pagination import Pagination
 from seplis.api.base.description import Description
@@ -10,7 +10,8 @@ from sqlalchemy import asc
 class Episode(object):
 
     def __init__(self, number, title=None, air_date=None, 
-                 description=None, season=None, episode=None):
+                 description=None, season=None, episode=None,
+                 runtime=None):
         '''
 
         :param title: str
@@ -19,6 +20,7 @@ class Episode(object):
         :param description: `seplis.api.base.description.Description()`
         :param season: int
         :param episode: int
+        :param runtime: int
         '''
         self.number = number
         self.title = title
@@ -26,27 +28,19 @@ class Episode(object):
         self.description = description
         self.season = season
         self.episode = episode
+        self.runtime = runtime
 
     def to_dict(self):
         return self.__dict__
 
-    def save(self, show_id, session=None):
+    @auto_session
+    def save(self, show_id, session=None):        
         '''
 
         :param show_id: int
         :param session: SQLAlchemy session
         :returns: boolean
         '''
-        if not session:
-            with new_session() as session:
-                self._save(show_id, session)
-                session.commit()
-                return True
-        else:
-            self._save(show_id, session)
-            return True
-
-    def _save(self, show_id, session):
         episode = models.Episode(
             show_id=show_id,
             number=self.number,
@@ -86,17 +80,12 @@ class Episode(object):
             ),
             season=row.season,
             episode=row.episode,
+            runtime=row.runtime,
         )
 
     @classmethod
-    def get(cls, show_id, number, session=None):
-        if not session:
-            with new_session() as session:
-                return cls._get(show_id, number, session)
-        return cls._get(show_id, number, session)
-
-    @classmethod
-    def _get(cls, show_id, number, session):
+    @auto_session
+    def get(cls, show_id, number, session):
         episode = session.query(
             models.Episode,
         ).filter(
@@ -109,12 +98,11 @@ class Episode(object):
             episode
         )
 
-
-
 class Episodes(object):
 
     @classmethod
-    def save(cls, show_id, episodes, session=None):        
+    @auto_session
+    def save(cls, show_id, episodes, session=None):
         '''
         Save a list of episodes.
 
@@ -122,72 +110,7 @@ class Episodes(object):
         :param episodes: [`Episode()`]
         :returns boolean
         '''
-        if not session:
-            with new_session() as session:
-                cls._save(show_id, episodes, session)
-                session.commit()
-                return True
-        else:
-            return cls._save(show_id, episodes, session)
-
-    @classmethod
-    def _save(cls, show_id, episodes, session):
         for episode in episodes:
+            print(type(session))
             episode.save(show_id, session)
         return True
-
-    @classmethod
-    def get(cls, show_id, from_, to, loop_prevent=False):
-        key = 'shows:{}:episodes'.format(show_id)
-        episodes_ids = database.redis.zrange(
-            name=key,
-            start=from_ - 1,
-            end=to - 1,
-        )
-        if utils.not_redis_none(episodes_ids):
-            episode_ids = [
-                'episodes:{}'.format(id_) 
-                for id_ in episodes_ids
-            ]
-            episodes = []
-            if episode_ids:
-                episodes = [
-                    utils.json_loads(episode) 
-                    for episode in database.redis.mget(episode_ids)
-                    if episode
-                ]
-            return episodes
-        if database.redis.exists(key) or loop_prevent:
-            return None
-        # no episodes was found, gotta "cache" 'em all and run it again!
-        cls.recache(show_id)        
-        return cls.get(show_id, from_, to, True)
-
-
-    @classmethod
-    def recache(cls, show_id):
-        with new_session() as session:
-            episodes = session.query(
-                models.Episode,
-            ).filter(
-                models.Episode.show_id==show_id,
-            ).order_by(
-                asc(models.Episode.number),
-            ).all()
-            if not episodes:
-                database.redis.set(key, None)
-                return None
-            with database.redis.pipeline() as pipe:
-                for episode in episodes:
-                    Episode.cache(
-                        pipe=pipe, 
-                        show_id=show_id, 
-                        number=episode.number, 
-                        data=episode.data,
-                    )
-                    Episode.to_elasticsearch(
-                        show_id, 
-                        episode.number,
-                        episode.data,
-                    )
-                pipe.execute()

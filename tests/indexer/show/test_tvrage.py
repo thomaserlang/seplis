@@ -349,10 +349,18 @@ class test_tvrage(TestCase):
         tvrage = Tvrage()
         tvrage_ids = [4628, 2445, 5613, 20370, 3140, 5294, 25923]
         for id_ in tvrage_ids:
+            print(id_)
             show = tvrage.get_show(id_)
             show['episodes'] = tvrage.get_episodes(id_)
             schemas.validate(schemas.Show_schema, show)
             self.assertTrue(show['episodes'])
+            if id_ == 4628:
+                self.assertEqual(show['genres'], [
+                    'Action',
+                    'Crime',
+                    'Drama',
+                    'Military/War',
+                ])
             
     @mock.patch('requests.get', mock_tvrage)
     def test_updates(self):

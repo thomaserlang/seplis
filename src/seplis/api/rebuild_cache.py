@@ -51,7 +51,7 @@ class Rebuild_cache(object):
             #pipe = database.redis.pipeline()
             for episode in episodes:
                 e = Episode._format_from_row(episode)
-                e.save(episode.show_id, session)
+                e.to_elasticsearch(episode.show_id, session)
 
     def rebuild_tags(self):
         from seplis.api.base.tag import Tag

@@ -271,15 +271,20 @@ class test_thetvdb(TestCase):
         ids = [72108, 123]
         for id_ in ids:
             show = thetvdb.get_show(id_)
+            print(show['genres'])
             show['episodes'] = thetvdb.get_episodes(id_)
             schemas.validate(schemas.Show_schema, show)
+            if id_ == 72108:
+                self.assertEqual(show['genres'], [
+                    'Action',
+                    'Adventure',
+                    'Drama',
+                ])
 
     @mock.patch('requests.get', mock_tvrage)
     def test_updates(self):
         thetvdb = Thetvdb('apikey')
-        ids = thetvdb.get_updates(
-            store_latest_timestamp=False,
-        )
+        ids = thetvdb.get_updates()
         self.assertEqual(len(ids), 3)
         self.assertEqual(ids[0], 72108)
         self.assertEqual(ids[1], 123)

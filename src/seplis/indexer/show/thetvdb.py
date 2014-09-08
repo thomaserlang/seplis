@@ -43,6 +43,8 @@ class Thetvdb(Show_indexer_base):
                     'thetvdb': str(show_id),
                 },
                 'status': self.parse_status(data['Data']['Series']['Status']),
+                'runtime': int(data['Data']['Series']['Runtime']) if data['Data']['Series']['Runtime'] else None,
+                'genres': self.parse_genres(data['Data']['Series']['Genre']),
             }
 
     def get_episodes(self, show_id):
@@ -147,6 +149,11 @@ class Thetvdb(Show_indexer_base):
             'episode': int(episode['EpisodeNumber']),
             'air_date': self.parse_date(episode['FirstAired']) if episode['FirstAired'] else None,
         }
+
+    def parse_genres(self, genres):
+        if genres:
+            return [genre for genre in genres.split('|') if genre]
+        return []
 
     def parse_date(self, date):
         if not date:

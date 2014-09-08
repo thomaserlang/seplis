@@ -50,7 +50,8 @@ Episode_schema = {
     Optional('season'): Any(int, None),
     Optional('episode'): Any(int, None),
     'air_date': Any(None, datetime, date_()),
-    'description': Any(None, Description_schema)
+    'description': Any(None, Description_schema),
+    'runtime': Any(int, None),
 }
 External_schema = Schema({
     All(Length(min=1, max=45)):Any(None, All(str, Length(min=1, max=45)))
@@ -68,6 +69,9 @@ Show_schema = {
     'externals': Any(None, External_schema),
     'indices': Any(None, Index_schema),
     'status': int,
+    'runtime': Any(int, None),
+    'genres': [str],
+    'alternate_titles': [str],
 }
 
 User_schema = Schema({

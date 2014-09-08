@@ -1,5 +1,27 @@
+import functools
+import sqlalchemy.orm.session
 from contextlib import contextmanager
 from seplis.connections import database
+
+def auto_session(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        for arg in args:
+            if isinstance(arg, sqlalchemy.orm.session.Session):
+                kwargs['session'] = arg
+                args = list(args)
+                args.remove(arg)
+                args = tuple(args)
+                break        
+        if ('session' in kwargs) and (kwargs['session'] != None):
+            return method(self, *args, **kwargs)
+        else:
+            with new_session() as session:
+                kwargs['session'] = session
+                result = method(self, *args, **kwargs)
+                session.commit()
+                return result
+    return wrapper
 
 @contextmanager
 def new_session():
