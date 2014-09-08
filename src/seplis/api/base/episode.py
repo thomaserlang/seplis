@@ -111,6 +111,5 @@ class Episodes(object):
         :returns boolean
         '''
         for episode in episodes:
-            print(type(session))
             episode.save(show_id, session)
         return True
