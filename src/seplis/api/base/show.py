@@ -2,7 +2,7 @@ import urllib.parse
 import logging
 import copy
 import time
-from seplis.decorators import new_session, auto_session
+from seplis.decorators import new_session, auto_session, auto_pipe
 from seplis.connections import database
 from seplis import utils
 from seplis.api.base.pagination import Pagination
@@ -57,20 +57,9 @@ class Show(object):
         self.seasons = seasons
         self.updated = updated
 
+    @auto_session
+    @auto_pipe
     def save(self, session=None, pipe=None):
-        _pipe = pipe
-        if not pipe:
-            _pipe = database.redis.pipeline()
-        if not session:
-            with new_session() as session:
-                self._save(session, _pipe)
-                session.commit()
-        else:            
-            self._save(session, _pipe)
-        if not pipe:
-            _pipe.execute()
-
-    def _save(self, session, pipe):
         self._check_index()
         self.updated = datetime.utcnow()
         session.query(
@@ -93,6 +82,7 @@ class Show(object):
             'alternate_titles': self.alternate_titles,
             'seasons': self.seasons,
             'updated': self.updated,
+            'seasons': self._count_season_episodes(),
         })
         self.update_external(
             pipe=pipe,
@@ -203,64 +193,36 @@ class Show(object):
                     self.indices[key]
                 )
 
-    @classmethod
-    def _count_season_episodes(cls, session, show_id):
+    @auto_session
+    def _count_season_episodes(self, session=None):
         '''
         Registers `from` and `to` episode numbers per season.
         '''
-        episodes = session.query(
-            models.Episode,
-        ).filter(
-            models.Episode.show_id == show_id,
-        ).order_by(
-            asc(models.Episode.number)
-        ).all()
-        if not episodes:
-            return []
+        rows = session.execute('''
+            SELECT 
+                season,
+                min(number) as `from`,
+                max(number) as `to`,
+                count(number) as total
+            FROM
+                episodes
+            WHERE
+                show_id = :show_id
+            GROUP BY season;
+        ''', {
+            'show_id': self.id,
+        })
         seasons = []
-        last_season = 1
-        episode_start = 1
-        episode_end = 1
-        def update_season():
+        for row in rows:
+            if not row['season']:
+                continue
             seasons.append({
-                'season': last_season,
-                'from': episode_start,
-                'to': episode_end,
-                'total': (episode_end + 1) - episode_start,
+                'season': row['season'],
+                'from': row['from'],
+                'to': row['to'],
+                'total': row['total'],
             })
-        for episode in episodes:
-            season = episode.data.get('season', 1)
-            if season != last_season:
-                update_season()
-                last_season = season
-                episode_start = episode_end + 1
-            episode_end = episode.data['number']
-        update_season()
         return seasons
-
-    @classmethod
-    def update_episodes(cls, session, pipe, show_id, episodes, overwrite=False):
-        '''
-        
-        :param show_id: int
-        :param episodes: list of Episode
-        '''
-        ids = []
-        if overwrite:
-            pipe.delete('shows:{}:episodes'.format(show_id))
-            session.query(
-                models.Episode,
-            ).filter(
-                models.Episode.show_id == show_id,
-            ).delete()
-        for episode in episodes:
-            Episode.update_with_session(
-                session=session,
-                pipe=pipe,
-                show_id=show_id,
-                **episode
-            )
-            ids.append(episode['number'])
 
     def update_external(self, session, pipe, overwrite=False):
         '''

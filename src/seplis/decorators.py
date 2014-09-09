@@ -23,6 +23,18 @@ def auto_session(method):
                 return result
     return wrapper
 
+def auto_pipe(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):     
+        if ('pipe' in kwargs) and (kwargs['pipe'] != None):
+            return method(self, *args, **kwargs)
+        else:                
+            kwargs['pipe'] = database.redis.pipeline()
+            result = method(self, *args, **kwargs)
+            kwargs['pipe'].execute()
+            return result
+    return wrapper
+
 @contextmanager
 def new_session():
     '''

@@ -271,7 +271,6 @@ class test_thetvdb(TestCase):
         ids = [72108, 123]
         for id_ in ids:
             show = thetvdb.get_show(id_)
-            print(show['genres'])
             show['episodes'] = thetvdb.get_episodes(id_)
             schemas.validate(schemas.Show_schema, show)
             if id_ == 72108:
