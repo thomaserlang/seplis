@@ -60,14 +60,10 @@ class test_show(Testbase):
         self.assertEqual(show['externals'], {
             'imdb': 'tt0364845',
         })
-        self.assertEqual(show['genres'], [
-            'Action',
-            'Thriller',
-        ])
-        self.assertEqual(show['alternate_titles'], [
-            'NCIS 2',
-            'NCIS 3',
-        ])
+        self.assertTrue('Action' in show['genres'])
+        self.assertTrue('Thriller' in show['genres'])
+        self.assertTrue('NCIS 2' in show['alternate_titles'])
+        self.assertTrue('NCIS 3' in show['alternate_titles'])
         self.assertEqual(show['runtime'], 40)
 
     def test_patch(self):
@@ -314,6 +310,85 @@ class test_show(Testbase):
         self.login(0)
         response = self.get('/1/shows/999999')
         self.assertEqual(response.code, 404)
+
+    def test_season_count(self):
+        show_id = self.new_show()
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 1',
+                    'air_date': '2014-01-01',
+                    'description': {
+                        'text': 'Test description.'
+                    }
+                }
+            ]
+        })
+        self.assertEqual(response.code, 200, response.body)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['seasons'], [])
+
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'season': 1,
+                    'episode': 1,
+                },
+                {
+                    'number': 2,
+                    'season': 1,
+                    'episode': 2,
+                },
+                {
+                    'number': 3,
+                    'season': 2,
+                    'episode': 1,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 200, response.body)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['seasons'], [
+            {'total': 2, 'season': 1, 'to': 2, 'from': 1}, 
+            {'total': 1, 'season': 2, 'to': 3, 'from': 3},
+        ])
+
+    def test_item_list_updates(self):
+        show_id = self.new_show()
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'alternate_titles': [
+                'test',
+            ],
+        })
+        self.assertEqual(response.code, 200, response.body)
+        show = utils.json_loads(response.body)
+        self.assertTrue('test' in show['alternate_titles'])
+
+        # append and duplicate
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'alternate_titles': [
+                'test',
+                'test2'
+            ],
+        })
+        self.assertEqual(response.code, 200, response.body)
+        show = utils.json_loads(response.body)
+        self.assertTrue('test' in show['alternate_titles'])
+        self.assertTrue('test2' in show['alternate_titles'])        
+
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'alternate_titles': [
+                'test',
+                'test',
+                'test2'
+            ],
+        })
+        self.assertEqual(response.code, 200, response.body)
+        show = utils.json_loads(response.body)
+        self.assertTrue('test' in show['alternate_titles'])
+        self.assertTrue('test2' in show['alternate_titles'])
 
 
 if __name__ == '__main__':

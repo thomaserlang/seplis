@@ -62,6 +62,7 @@ class Show(object):
     def save(self, session=None, pipe=None):
         self._check_index()
         self.updated = datetime.utcnow()
+        self.seasons = self._count_season_episodes(session)
         session.query(
             models.Show,
         ).filter(
@@ -80,9 +81,8 @@ class Show(object):
             'runtime': self.runtime,
             'genres': self.genres,
             'alternate_titles': self.alternate_titles,
-            'seasons': self.seasons,
             'updated': self.updated,
-            'seasons': self._count_season_episodes(),
+            'seasons': self.seasons,
         })
         self.update_external(
             pipe=pipe,
@@ -112,13 +112,14 @@ class Show(object):
             externals=row.externals if row.externals else {},
             status=row.status,
             runtime=row.runtime,
-            genres=row.genres,
-            alternate_titles=row.alternate_titles,
-            seasons=row.seasons,
+            genres=row.genres if row.genres else [],
+            alternate_titles=row.alternate_titles if row.alternate_titles else [],
+            seasons=row.seasons if row.seasons else [],
             updated=row.updated,
         )
 
     @classmethod
+    @auto_session
     def get(cls, id_, session=None):
         '''
 
@@ -126,14 +127,6 @@ class Show(object):
         :param session: SQLAlchemy session
         :returns: `Show()`
         '''
-        if not session:
-            with new_session() as session:
-                return cls._get(id_, session)
-        else:
-            return cls._get(id_, session)
-
-    @classmethod
-    def _get(cls, id_, session):
         show = session.query(
             models.Show,
         ).filter(

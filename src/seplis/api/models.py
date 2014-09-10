@@ -11,8 +11,8 @@ import logging
 class JSONEncodedDict(TypeDecorator):  
     impl = Text  
   
-    def process_bind_param(self, value, dialect):  
-        if not value:  
+    def process_bind_param(self, value, dialect):
+        if value is None:  
             return None
         if isinstance(value, str):
             return value

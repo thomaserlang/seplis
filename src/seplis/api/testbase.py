@@ -113,5 +113,8 @@ class Testbase(AsyncHTTPTestCase):
         response = self.post('/1/shows')
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
-        self.assertTrue(show['id'] > 0)
+        self.assertTrue(show['id'] > 0)        
+        self.get('http://{}/_refresh'.format(
+            config['elasticsearch']
+        ))
         return show['id']

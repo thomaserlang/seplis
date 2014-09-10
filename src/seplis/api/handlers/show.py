@@ -163,6 +163,8 @@ class Handler(base.Handler):
             if key in new_data:
                 if isinstance(new_data[key], dict):
                     data[key].update(new_data[key])
+                elif isinstance(new_data[key], list):
+                    data[key] = list(set(data[key] + new_data[key]))
                 else:
                     data[key] = new_data[key]
 
