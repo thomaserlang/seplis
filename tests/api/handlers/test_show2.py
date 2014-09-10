@@ -390,6 +390,22 @@ class test_show(Testbase):
         self.assertTrue('test' in show['alternate_titles'])
         self.assertTrue('test2' in show['alternate_titles'])
 
+    def test_empty_lists(self):
+        self.login(0) 
+        show_id = self.new_show()
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'title': 'test'
+        })
+        self.assertEqual(response.code, 200, response.body)
+        
+        response = self.get('/1/shows/{}'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['genres'], [])
+        self.assertEqual(show['alternate_titles'], [])
+        self.assertEqual(show['seasons'], [])
+
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
