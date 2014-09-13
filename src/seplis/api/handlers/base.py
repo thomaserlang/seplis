@@ -5,21 +5,21 @@ import http.client
 import sys
 import logging
 import redis
+from sqlalchemy import or_
+from voluptuous import MultipleInvalid
 from tornado import gen
 from urllib.parse import urljoin
 from datetime import datetime
-from seplis import utils, schemas
-from seplis.api import models
-from seplis.decorators import new_session
-from seplis.api import exceptions
-from voluptuous import MultipleInvalid
-from seplis.api.base.user import User
-from sqlalchemy import or_
-from seplis.connections import database
-from seplis.api.decorators import authenticated
-from seplis.config import config
 from raven.contrib.tornado import SentryMixin
 from tornado.httpclient import AsyncHTTPClient, HTTPError
+from seplis import utils, schemas
+from seplis.decorators import new_session
+from seplis.connections import database
+from seplis.config import config
+from seplis.api import models, exceptions, constants
+from seplis.api.base.user import User
+from seplis.api.base.pagination import Pagination
+from seplis.api.decorators import authenticated
 
 class Handler(tornado.web.RequestHandler, SentryMixin):
 
@@ -44,15 +44,23 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         self.set_header('Access-Control-Allow-Credentials', 'true')
 
     def write_error(self, status_code, **kwargs):
-        if 'exc_info' in kwargs:
-            if isinstance(kwargs['exc_info'][1], exceptions.API_exception):
-                self.write_object({
-                    'code': kwargs['exc_info'][1].code,
-                    'message': kwargs['exc_info'][1].message,
-                    'errors': kwargs['exc_info'][1].errors,
-                    'extra':  kwargs['exc_info'][1].extra,
-                })
-                return 
+        if isinstance(kwargs['exc_info'][1], exceptions.API_exception):
+            self.write_object({
+                'code': kwargs['exc_info'][1].code,
+                'message': kwargs['exc_info'][1].message,
+                'errors': kwargs['exc_info'][1].errors,
+                'extra':  kwargs['exc_info'][1].extra,
+            })
+            return 
+        elif isinstance(kwargs['exc_info'][1], TypeError):
+            self.set_status(400)
+            self.write_object({
+                'code': None,
+                'message': str(kwargs['exc_info'][1]),
+                'errors': None,
+                'extra':  None,
+            })
+            return
         if hasattr(kwargs['exc_info'][1], 'log_message') and kwargs['exc_info'][1].log_message:
             msg = kwargs['exc_info'][1].log_message
         else:
@@ -65,6 +73,9 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         })
 
     def write_object(self, obj):
+        if isinstance(obj, Pagination):
+            self.write_pagination(obj)
+            return
         self.write(
             utils.json_dumps(obj, indent=4),
         )
@@ -154,9 +165,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             exc_info=(typ, value, tb),
             data=[value.extra] if isinstance(value, exceptions.API_exception) and \
                 value.extra else None,
-            
         )
-
 
     def get_sentry_user_info(self):
         return {
@@ -180,6 +189,6 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
     def options(self, *args, **kwargs):
         pass
 
-    @authenticated(3)
+    @authenticated(constants.LEVEL_EDIT_USER)
     def check_edit_another_user_right(self):
         pass

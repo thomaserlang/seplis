@@ -25,14 +25,16 @@ class Handler(seplis.api.handlers.base.Handler):
     @tornado.gen.coroutine
     def post(self, user_id=None):
         if user_id: 
-            raise exceptions.Parameter_must_not_be_set_exception('user_id must not be set.')
+            raise exceptions.Parameter_must_not_be_set_exception(
+                'user_id must not be set.'
+            )
         self.validate(schemas.User_schema)
         password = yield self.encrypt_password(self.request.body['password'])
         user = User.new(
             name=self.request.body['name'],   
             email=self.request.body['email'],
             password=password,
-        )
+        ).to_dict(user_level=constants.LEVEL_SHOW_USER_EMAIL)
         self.set_status(201)
         self.write_object(user)
 
@@ -47,10 +49,10 @@ class Handler(seplis.api.handlers.base.Handler):
         user = User.get(user_id)
         if not user:
             raise exceptions.User_unknown()
-        user = user.to_dict()
-        if (self.current_user.id != user_id) and \
-            (self.current_user.level < constants.level_user_email):
-            user.pop('email', None)
+        user = user.to_dict(
+            user_level=user.level if self.current_user.id != user_id else \
+                constants.LEVEL_SHOW_USER_EMAIL,
+        )
         self.write_object(user)
 
 class Token_handler(seplis.api.handlers.base.Handler):
@@ -73,9 +75,9 @@ class Token_handler(seplis.api.handlers.base.Handler):
             raise exceptions.OAuth_unknown_client_id_exception(
                 self.request.body['client_id']
             )
-        if app.level != constants.app_level_root:
+        if app.level != constants.LEVEL_GOD:
             raise exceptions.OAuth_unauthorized_grant_type_level_request_exception(
-                constants.app_level_root, app.level
+                constants.LEVEL_GOD, app.level
             )
         user = User.login(
             email=self.request.body['email'],

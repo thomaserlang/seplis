@@ -1,7 +1,7 @@
 import pickle
 import hashlib
-from seplis.decorators import new_session
-from seplis.api import models
+from seplis.decorators import new_session, auto_pipe
+from seplis.api import models, constants
 from datetime import datetime
 from passlib.hash import pbkdf2_sha256
 from seplis.utils import random_key
@@ -10,8 +10,17 @@ from seplis.connections import database
 
 class User(object):
 
-    def to_dict(self):
-        return self.__dict__
+    def to_dict(self, user_level=0):
+        user = {
+            'id': self.id,
+            'name': self.name,
+            'created': self.created,
+            'level': self.level,
+            'fan_of': self.fan_of,   
+        }
+        if user_level >= constants.LEVEL_SHOW_USER_EMAIL:
+            user['email'] = self.email
+        return user
 
     @classmethod
     def _format_from_query(cls, query):
@@ -23,7 +32,7 @@ class User(object):
         user.email = query.email
         user.created = query.created.isoformat()+'Z'
         user.level = query.level
-        user.follows = 0
+        user.fan_of = query.fan_of
         return user
 
     @classmethod
@@ -78,6 +87,18 @@ class User(object):
             return cls._format_from_query(user)
 
     @classmethod
+    def _format_from_redis(cls, user):
+        if not user:
+            return
+        if user:
+            u = User()
+            u.__dict__.update(user)
+            u.level = int(u.level)
+            u.fan_of = int(u.fan_of)
+            u.id = int(u.id)
+            return u
+
+    @classmethod
     def get(cls, id_):
         '''
         
@@ -86,12 +107,7 @@ class User(object):
         '''
         user = database.redis.hgetall('users:{}'.format(id_))
         if user:
-            u = User()
-            u.__dict__.update(user)
-            u.level = int(u.level)
-            u.follows = int(u.follows)
-            u.id = int(u.id)
-            return u
+            return cls._format_from_redis(user)
         with new_session() as session:
             user = session.query(
                 models.User,
@@ -129,6 +145,21 @@ class User(object):
             user = cls.get(user_token['user_id'])
             user.level = int(user_token['user_level'])
             return user
+
+class Users(object):
+
+    @classmethod
+    def get(cls, ids):
+        pipe = database.redis.pipeline()
+        for id_ in ids:            
+            pipe.hgetall('users:{}'.format(id_))
+        result = pipe.execute()
+        users = []
+        for user in result:
+            users.append(
+                User._format_from_redis(user)
+            )
+        return users
 
 class Token(object):
 

@@ -51,7 +51,7 @@ class Relations_handler(seplis.api.handlers.base.Handler):
     @authenticated(0)
     def get(self, user_id, tag_id=None):
         page = int(self.get_argument('page', 1))
-        per_page = int(self.get_argument('per_page', constants.per_page))
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         self.write_object(
             User_tag_relation.get_relation_data(
                 user_id=user_id,

@@ -1,5 +1,6 @@
 import math
 from seplis import utils
+from sqlalchemy import func
 
 class Pagination(object):
 
@@ -42,3 +43,57 @@ class Pagination(object):
 
     def to_dict(self):
         return self.__dict__
+
+    @classmethod
+    def from_query(cls, query, count_field, page, per_page):
+        '''
+        Counts the total records.
+        Returns a `Pagination()` object with page, per_page, total
+        prefilled. Fill records afterwards.
+
+        Example:
+
+            query = session.query(
+                models.Shows,
+            ).filter(
+                models.Show_fan.user_id == user_id,
+                models.Show.id == models.Show_fan.show_id,
+            )
+            pagination = Pagination.from_query(
+                query,
+                count_field=models.Show_fan.show_id,
+                page=page,
+                per_page=per_page,
+            )
+            query = query.limit(
+                int(per_page),
+            ).offset(
+                int(page-1) * int(per_page),
+            )
+            rows = query.all()
+            shows = []
+            for show in rows:
+                shows.append(
+                    Show._format_from_row(show)
+                )
+            pagination.records = shows
+            return pagination
+
+
+        :param query: SQLAlchemy query
+        :param count_field: The SQLalchemy field that should be used count
+                            the total number of results.
+        :param page: int
+        :param per_page: int
+        '''
+        total = query.with_entities(
+            func.count(
+                count_field
+            ).label('count')
+        ).first()
+        return cls(
+            page=page,
+            per_page=per_page,
+            total=total.count,
+            records=None,
+        )

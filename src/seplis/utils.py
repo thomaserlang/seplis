@@ -32,7 +32,7 @@ def _iso_datetime(value):
     Otherwise, return None.
     """
     if isinstance(value, datetime.datetime):
-        return value.isoformat()+'Z'
+        return value.replace(microsecond=0).isoformat()+'Z'
     elif isinstance(value, datetime.time):
         return value.strftime('%H:%M:%S')
     elif isinstance(value, datetime.date):

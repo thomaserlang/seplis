@@ -4,13 +4,14 @@ import nose
 from seplis.api.testbase import Testbase
 from seplis import utils
 from seplis.config import config
+from seplis.api import constants
 from datetime import datetime, date
 import time
 
 class test_show(Testbase):
 
     def test_post(self):
-        self.login(0)
+        self.login(constants.LEVEL_EDIT_SHOW)
 
         # Creating a new show without any data is OK.
         response = self.post('/1/shows')
@@ -179,7 +180,7 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         self.assertEqual(show['id'], show_id)
 
-        # lets try to get a show that does not have a
+        # Let's try to get a show that does not have a
         # external id associated with it.
         response = self.get('/1/shows/externals/imdb/404')
         self.assertEqual(response.code, 404)
@@ -203,7 +204,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200)
 
     def test_externals_int_id(self):
-        self.login(0)
+        self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
             'externals': {
                 'imdb': 'tt1234',
@@ -280,7 +281,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 400, response.body)
 
     def test_description(self):
-        self.login(0)
+        self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
             'title': 'NCIS',
             'description': None,
@@ -307,7 +308,7 @@ class test_show(Testbase):
         self.assertEqual(show['title'], 'NCIS')
 
     def test_unknown_show(self):
-        self.login(0)
+        self.login(constants.LEVEL_EDIT_SHOW)
         response = self.get('/1/shows/999999')
         self.assertEqual(response.code, 404)
 
@@ -391,7 +392,7 @@ class test_show(Testbase):
         self.assertTrue('test2' in show['alternate_titles'])
 
     def test_empty_lists(self):
-        self.login(0) 
+        self.login(constants.LEVEL_EDIT_SHOW) 
         show_id = self.new_show()
         response = self.patch('/1/shows/{}'.format(show_id), {
             'title': 'test'
@@ -405,7 +406,43 @@ class test_show(Testbase):
         self.assertEqual(show['alternate_titles'], [])
         self.assertEqual(show['seasons'], [])
 
+    def test_fan(self):
+        show_id = self.new_show()
 
+        # Let's become a fan of the show
+        for i in [1,2]:
+            response = self.put('/1/shows/{}/fans/{}'.format(show_id, self.current_user.id))
+            self.assertEqual(response.code, 200, response.body)
+            response = self.get('/1/shows/{}'.format(show_id))
+            self.assertEqual(response.code, 200)
+            show = utils.json_loads(response.body)
+            self.assertEqual(show['fans'], 1)
+
+        # Let's check that we can find the user in the shows fan
+        # list.
+        response = self.get('/1/shows/{}/fans'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        fans = utils.json_loads(response.body)
+        self.assertEqual(fans[0]['id'], self.current_user.id)
+
+        # Let's check that we can find the show in the users
+        # fan of list.
+        response = self.get('/1/users/{}/fan-of'.format(self.current_user.id))
+        self.assertEqual(response.code, 200, response.body)
+        fan_of = utils.json_loads(response.body)
+        self.assertEqual(fan_of[0]['id'], show_id)
+
+        # Now unfan the show
+        for i in [1,2]:
+            response = self.delete('/1/shows/{}/fans/{}'.format(
+                show_id,
+                self.current_user.id
+            ))
+            self.assertEqual(response.code, 200, response.body)        
+            response = self.get('/1/shows/{}'.format(show_id))
+            self.assertEqual(response.code, 200)
+            show = utils.json_loads(response.body)
+            self.assertEqual(show['fans'], 0)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

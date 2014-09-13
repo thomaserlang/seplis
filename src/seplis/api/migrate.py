@@ -15,6 +15,10 @@ def upgrade():
     cfg = get_config()
     command.upgrade(cfg, 'head')
 
+def downgrade():
+    cfg = get_config()
+    command.downgrade(cfg, 'head')
+
 if __name__ == '__main__':
     load()
     upgrade()

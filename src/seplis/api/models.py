@@ -1,12 +1,73 @@
+import logging
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, Time, Numeric, \
     ForeignKey, event, TIMESTAMP, Date, SmallInteger, CHAR, TypeDecorator, VARCHAR
 from sqlalchemy.orm import validates, relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import types
 from sqlalchemy.dialects import postgresql
+from sqlalchemy import asc, desc, and_
+from sqlalchemy.orm import relationship, remote, deferred
 from seplis.utils import json_dumps, json_loads
+from seplis.api import exceptions
+
 base = declarative_base()
-import logging
+
+def sort_parser(sort, sort_lookup, sort_list=None):
+    '''
+    Parses a list of string sort types to SQLAlchemy field sorts.
+
+    Example:
+
+        sort_lookup = {
+            'journal_entry_id': models.Journal_entry.id,
+            'patient': {
+                'first_name': models.Patient.first_name,
+            }
+        }
+
+        sort = sort_parser(
+            'patient.first_name, -journal_entry_id',
+            sort_lookup
+        )
+
+        session.query(
+            models.Patient,
+            models.Journal_entry,
+        ).order_by(
+            *sort
+        )
+
+    :param sort: [`str`]
+    :param sort_lookup: [`SQLAlchemy model field`]
+    :returns: [`SQLAlchemy model sort field`]
+    '''
+    if sort_list == None:
+        sort_list = []
+    sort = filter(None, sort.split(','))
+    for s in sort:
+        if '.' in s:
+            sub = s.split('.', 1)
+            key = sub[0]
+            if not isinstance(sort_lookup[key], dict):
+                continue
+            if len(sub) == 2:
+                sort_parser(sub[1], sort_lookup[key], sort_list)
+            continue
+        sort_type = asc
+        s = s.strip()
+        if s.endswith(':desc'):
+            sort_type = desc
+            s = s[:-5]
+        elif s.endswith(':asc'):
+            s = s[:-4]
+        if s not in sort_lookup or isinstance(sort_lookup[s], dict):
+            raise exceptions.Sort_not_allowed(s)
+        sort_list.append(
+            sort_type(
+                sort_lookup[s]
+            )
+        )
+    return sort_list
 
 class JSONEncodedDict(TypeDecorator):  
     impl = Text  
@@ -31,6 +92,7 @@ class Show(base):
     created = Column(DateTime)
     updated = Column(DateTime)
     status = Column(Integer, server_default='0', nullable=False)
+    fans = Column(Integer, server_default='0')
 
     title = Column(String(200), unique=True)
     description_text = Column(Text)
@@ -77,6 +139,9 @@ class User(base):
     created = Column(DateTime)
     level = Column(Integer)
 
+    fan_of = Column(Integer, server_default='0')
+    watched = Column(Integer, server_default='0')
+
 class App(base):
     __tablename__ = 'apps'
 
@@ -99,8 +164,8 @@ class Token(base):
     expires = Column(DateTime)
     user_level = Column(Integer)
 
-class Show_follow(base):
-    __tablename__ = 'show_followers'
+class Show_fan(base):
+    __tablename__ = 'show_fans'
 
     show_id = Column(Integer, primary_key=True, autoincrement=False)
     user_id = Column(Integer, primary_key=True, autoincrement=False)

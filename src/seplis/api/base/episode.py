@@ -3,9 +3,11 @@ from seplis.decorators import new_session, auto_session
 from seplis.connections import database
 from seplis.api.base.pagination import Pagination
 from seplis.api.base.description import Description
+from seplis.api.base.show import Show
 from seplis.api import exceptions, constants, models
 from seplis import utils
 from sqlalchemy import asc
+from datetime import datetime, timedelta
 
 class Episode(object):
 
@@ -113,3 +115,37 @@ class Episodes(object):
         for episode in episodes:
             episode.save(show_id, session)
         return True
+
+    @classmethod
+    @auto_session
+    def get_user_air_dates(cls, user_id, offset_days=1, days=7, 
+        page=1, per_page=constants.PER_PAGE, session=None):
+        query = session.query(
+            models.Show,
+            models.Episode,
+        ).filter(
+            models.Show_fan.user_id == user_id,
+            models.Episode.show_id == models.Show_fan.show_id,
+            models.Episode.air_date >= (datetime.utcnow().date() - timedelta(days=offset_days)),
+            models.Episode.air_date <= (datetime.utcnow().date() + timedelta(days=days)),
+            models.Show.id == models.Episode.show_id,
+        )
+        pagination = Pagination.from_query(
+            query,
+            count_field=models.Episode.show_id,
+            page=page,
+            per_page=per_page,
+        )
+        query = query.limit(
+            int(per_page),
+        ).offset(
+            int(page-1) * int(per_page),
+        )
+        episodes = []
+        for row in query.all():
+            episodes.append({
+                'show': Show._format_from_row(row.Show),
+                'episode': Episode._format_from_row(row.Episode),
+            })
+        pagination.records = episodes
+        return pagination

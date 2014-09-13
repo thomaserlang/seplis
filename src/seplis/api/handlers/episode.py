@@ -30,7 +30,7 @@ class Handler(base.Handler):
             )
         else:
             q = self.get_argument('q', None)
-            per_page = int(self.get_argument('per_page', constants.per_page))
+            per_page = int(self.get_argument('per_page', constants.PER_PAGE))
             page = int(self.get_argument('page', 1))
             sort = self.get_argument('sort', 'number:asc')
             req = {
@@ -198,3 +198,21 @@ class Watched_handler(base.Handler):
                 self.get_last_watched_episode(session, user_id, show_id)
             )
             session.commit()
+
+
+class Air_dates_handler(Handler):
+
+    def get(self, user_id):        
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        offset_days = int(self.get_argument('offset_days', 1))
+        days = int(self.get_argument('days', 7))
+        self.write_object(
+            Episodes.get_user_air_dates(
+                user_id=user_id,
+                per_page=per_page,
+                page=page,
+                offset_days=offset_days,
+                days=days,
+            )
+        )

@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker
 from seplis.api.app import Application
 from seplis.api.base.app import App
 from seplis.api.base.user import User, Token
-from seplis.api import elasticcreate
+from seplis.api import elasticcreate, constants
 from elasticsearch import Elasticsearch
 
 class Testbase(AsyncHTTPTestCase):
@@ -109,8 +109,10 @@ class Testbase(AsyncHTTPTestCase):
         )
 
     def new_show(self):
-        self.login(0)
-        response = self.post('/1/shows')
+        self.login(constants.LEVEL_EDIT_SHOW)
+        response = self.post('/1/shows', {
+            'status': 1,
+        })
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
         self.assertTrue(show['id'] > 0)        

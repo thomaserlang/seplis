@@ -1,4 +1,3 @@
-
 import seplis
 import tornado.web
 import tornado.httpserver
@@ -30,15 +29,21 @@ class Application(tornado.web.Application):
             (r'/1/shows/([0-9,]+)', seplis.api.handlers.show.Multi_handler),
             (r'/1/shows/([0-9]+)/episodes', seplis.api.handlers.episode.Handler),
             (r'/1/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Handler),
-            (r'/1/shows/([0-9]+)/follow', seplis.api.handlers.show.Follow_handler),
+
+            (r'/1/shows/([0-9]+)/fans', seplis.api.handlers.show.Fans_handler),
+            (r'/1/shows/([0-9]+)/fans/([0-9]+)', seplis.api.handlers.show.Fans_handler),
 
             (r'/1/suggest-shows', seplis.api.handlers.show.Suggest_handler),
 
             (r'/1/users', seplis.api.handlers.user.Handler),
             (r'/1/users/current', seplis.api.handlers.user.Handler),
             (r'/1/users/([0-9]+)', seplis.api.handlers.user.Handler),
-            
-            (r'/1/users/([0-9]+)/follows', seplis.api.handlers.show.Follows_handler),
+        
+            (r'/1/users/([0-9]+)/fan-of', seplis.api.handlers.show.Fan_of_handler),
+            (r'/1/users/([0-9]+)/fan-of/([0-9]+)', seplis.api.handlers.show.Fan_of_handler),
+        
+            (r'/1/users/([0-9]+)/air-dates', seplis.api.handlers.episode.Air_dates_handler),
+        
             (r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Watched_handler),
 
             (r'/1/users/([0-9]+)/tags', seplis.api.handlers.tag.User_types_handler),

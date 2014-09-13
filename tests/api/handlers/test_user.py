@@ -4,7 +4,7 @@ import json
 from seplis.api.testbase import Testbase
 from seplis.api.base.app import App
 from seplis.api import constants
-
+from seplis import utils
 class test_user(Testbase):
 
     def test_post(self):
@@ -14,7 +14,7 @@ class test_user(Testbase):
             'password': 'hej',
         })
         self.assertEqual(response.code, 400)
-        error = json.loads(response.body.decode('utf-8'))
+        error = utils.json_loads(response.body)
         for error in error['errors']:
             if error['message'] == 'required key not provided':
                 continue
@@ -31,7 +31,7 @@ class test_user(Testbase):
             'password': '123456',
         })
         self.assertEqual(response.code, 201)
-        user = json.loads(response.body.decode('utf-8'))
+        user = utils.json_loads(response.body)
         self.assertEqual(user['name'], 'test')
         self.assertEqual(user['email'], 'test@email.com')
         self.assertTrue('password' not in user)
@@ -45,7 +45,7 @@ class test_user(Testbase):
             'password': '123456',
         })
         self.assertEqual(response.code, 201)
-        user = json.loads(response.body.decode('utf-8'))
+        user = utils.json_loads(response.body)
 
         # we should not be able to retrieve any users without being logged in
         response = self.get('/1/users/{}'.format(user['id']))
@@ -57,7 +57,7 @@ class test_user(Testbase):
         self.login(user_level=2)
         response = self.get('/1/users/{}'.format(user['id']))
         self.assertEqual(response.code, 200)
-        user2 = json.loads(response.body.decode('utf-8'))
+        user2 = utils.json_loads(response.body)
         self.assertEqual(user2['name'], 'test')
         self.assertFalse('email' in user2)
         user.pop('email')
@@ -68,7 +68,7 @@ class test_user(Testbase):
         # should be visible.
         response = self.get('/1/users/current')
         self.assertEqual(response.code, 200)
-        user3 = json.loads(response.body.decode('utf-8'))
+        user3 = utils.json_loads(response.body)
         self.assertEqual(user3['email'], self.current_user.email)
 
     def test_token(self):
@@ -78,7 +78,7 @@ class test_user(Testbase):
             'password': '123456',
         })
         self.assertEqual(response.code, 201)
-        user = json.loads(response.body.decode('utf-8'))
+        user = utils.json_loads(response.body)
 
         # test wrong grant type
         response = self.post('/1/token', {
@@ -114,7 +114,7 @@ class test_user(Testbase):
             user_id=user['id'],
             name='test app',
             redirect_uri='',
-            level=constants.app_level_root, # system
+            level=constants.LEVEL_GOD, # system
         )
         # test wrong password
         response = self.post('/1/token', {
@@ -134,7 +134,7 @@ class test_user(Testbase):
         })
         self.assertEqual(response.code, 200)
 
-        token = json.loads(response.body.decode('utf-8'))
+        token = utils.json_loads(response.body)
         self.assertTrue('access_token' in token)
 
 if __name__ == '__main__':

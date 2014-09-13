@@ -6,17 +6,17 @@ from seplis.decorators import new_session, auto_session, auto_pipe
 from seplis.connections import database
 from seplis import utils
 from seplis.api.base.pagination import Pagination
-from seplis.api.base.episode import Episode
 from seplis.api.base.description import Description
+from seplis.api.base.user import Users
 from seplis.api import exceptions, constants, models
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy import asc
 
 class Show(object):
 
     def __init__(self, id, title, description, premiered, ended, 
                  externals, indices, status, runtime, genres,
-                 alternate_titles, seasons, updated=None):
+                 alternate_titles, seasons, fans, updated=None):
         '''
 
         :param id: int
@@ -37,6 +37,7 @@ class Show(object):
         :param genres: list of str
         :param alternate_titles: list of str
         :param seasons: list of dict
+        :param fans: int
         :param updated: datetime
         '''
         self.id = id
@@ -56,6 +57,7 @@ class Show(object):
         self.alternate_titles = alternate_titles
         self.seasons = seasons
         self.updated = updated
+        self.fans = fans
 
     @auto_session
     @auto_pipe
@@ -115,6 +117,7 @@ class Show(object):
             genres=row.genres if row.genres else [],
             alternate_titles=row.alternate_titles if row.alternate_titles else [],
             seasons=row.seasons if row.seasons else [],
+            fans=row.fans,
             updated=row.updated,
         )
 
@@ -217,6 +220,117 @@ class Show(object):
             })
         return seasons
 
+    @auto_pipe
+    @auto_session
+    def become_fan(self, user_id, session=None, pipe=None):
+        '''
+
+        :param user_id: int or list of int
+        :returns: boolean
+        '''
+        fan = session.query(
+            models.Show_fan,
+        ).filter(
+            models.Show_fan.show_id == self.id,
+            models.Show_fan.user_id == user_id,
+        ).first()
+        if fan:
+            return
+        fan = models.Show_fan(
+            show_id=self.id,
+            user_id=user_id,
+        )
+        session.add(fan)
+        self._incr_fan(
+            user_id=user_id,
+            incr=1,
+            session=session,
+            pipe=pipe,
+        )
+        self.cache_fan(
+            show_id=self.id,
+            user_id=user_id,
+            pipe=pipe,
+            incr_count=False,
+        )
+        return True
+
+    @classmethod
+    def cache_fan(cls, show_id, user_id, pipe, incr_count=True):
+        pipe.sadd(
+            'users:{}:fan_of'.format(user_id), 
+            show_id,
+        )
+        pipe.sadd(
+            'shows:{}:fans'.format(show_id), 
+            user_id,
+        )
+        if incr_count:
+            pipe.hincrby('shows:{}'.format(show_id), 'fans', 1)
+            pipe.hincrby('users:{}'.format(user_id), 'fan_of', 1)
+
+    @auto_pipe
+    @auto_session
+    def _incr_fan(self, user_id, incr, 
+                 session=None, pipe=None):
+        session.query(
+            models.User,
+        ).filter(
+            models.User.id == user_id,
+        ).update({
+            'fan_of': models.User.fan_of + incr,
+        })                
+        show = session.query(
+            models.Show,
+        ).filter(
+            models.Show.id == self.id,
+        ).update({
+            'fans': models.Show.fans + incr,
+        })            
+        self.fans += incr
+        database.es.index(
+            index='shows',
+            doc_type='show',
+            id=self.id,
+            body={
+                'fans': self.fans,
+            },
+        )
+        pipe.hincrby('shows:{}'.format(self.id), 'fans', incr)
+        pipe.hincrby('users:{}'.format(user_id), 'fan_of', incr)
+
+    @auto_pipe
+    @auto_session
+    def unfan(self, user_id, session=None, pipe=None):        
+        '''
+
+        :param user_id: int or list of int
+        :returns: boolean
+        '''        
+        deleted = session.query(
+            models.Show_fan,
+        ).filter(
+            models.Show_fan.show_id == self.id,
+            models.Show_fan.user_id == user_id,
+        ).delete()
+        if not deleted:
+            return False
+        self._incr_fan(
+            user_id=user_id,
+            incr=-1,
+            session=session,
+            pipe=pipe,
+        )
+        pipe.srem(
+            'users:{}:fan_of'.format(user_id), 
+            self.id,
+        )
+        pipe.srem(
+            'shows:{}:fans'.format(self.id), 
+            user_id,
+        )
+        return True
+
     def update_external(self, session, pipe, overwrite=False):
         '''
 
@@ -258,6 +372,28 @@ class Show(object):
             )
             session.merge(external)
 
+    def get_fans(self, page=1, per_page=constants.PER_PAGE):
+        '''
+
+        :returns: list of `seplis.api.base.pagination.Pagination()`
+        '''
+        pipe = database.redis.pipeline()
+        name = 'shows:{}:fans'.format(self.id)
+        pipe.scard(name)
+        pipe.sort(
+            name=name,
+            start=(page - 1) * per_page,
+            num=per_page,
+            by='nosort',
+        )
+        total_count, user_ids = pipe.execute()
+        return Pagination(
+            page=page,
+            per_page=per_page,
+            total=total_count,
+            records=Users.get(user_ids),
+        )
+
     @classmethod
     def cache_external(cls, pipe, external_title, external_id, show_id):
         if not external_id or not external_title:
@@ -286,135 +422,48 @@ class Show(object):
             return
         return int(show_id)
 
-    @classmethod
-    def following(cls, show_id, user_id):
-        '''
-        Checks if a user is following a show.
-
-        :param show_id: int
-        :param user_id: int
-        :returns: boolean
-        '''
-        return database.redis.sismember(
-            name='users:{}:follows'.format(user_id),
-            value=show_id,
-        )
-    
 class Shows(object):
 
-    @classmethod
-    def get(cls, ids):
-        pipe = database.redis.pipeline()
-        for id_ in ids:
-            pipe.get('shows:{}:data'.format(id_))
-            pipe.hget('shows:{}'.format(id_), 'followers')
-        items = pipe.execute()
-        items = zip(
-            items[::2], # show data
-            items[1::2], # followers
-        )
-        shows = []
-        for show, followers in items:
-            show = utils.json_loads(show)
-            show['followers'] = int(followers) if followers else 0
-            shows.append(show)
-        return shows
+    sort_lookup = {
+        'id': models.Show.id,
+        'updated': models.Show.updated,
+        'status': models.Show.status,
+        'fans': models.Show.fans,
+        'title': models.Show.title,
+        'premiered': models.Show.premiered,
+        'ended': models.Show.ended,
+        'runtime': models.Show.runtime,
+    }
 
     @classmethod
-    def follows(cls, user_id, page=1, per_page=constants.per_page):
-        name = 'users:{}:follows'.format(user_id)
-        pipe = database.redis.pipeline()
-        pipe.scard(name)
-        pipe.sort(
-            name=name,
-            start=(page - 1) * per_page,
-            num=per_page,
-            by='shows:*->title',
-            alpha=True,
+    @auto_session
+    def get_fan_of(cls, user_id, per_page=constants.PER_PAGE, 
+                   page=1, sort='title:asc', session=None):
+        sort = models.sort_parser(sort, cls.sort_lookup)
+        query = session.query(
+            models.Show,
+        ).filter(
+            models.Show_fan.user_id == user_id,
+            models.Show.id == models.Show_fan.show_id,
         )
-        total_count, show_ids = pipe.execute()
-        return Pagination(
+        pagination = Pagination.from_query(
+            query,
+            count_field=models.Show_fan.show_id,
             page=page,
             per_page=per_page,
-            total=total_count,
-            records=cls.get(show_ids),
         )
-
-class Follow(object):
-
-    @classmethod
-    def cache(cls, show_id, user_id):
-        '''
-        Returns `true` if the data did not exist in the cache.
-
-        :param show_id: int
-        :param user_id: int
-        :returns: boolean
-        '''        
-        user_id = int(user_id)
-        show_id = int(show_id)
-        pipe = database.redis.pipeline()
-        pipe.zadd('shows:{}:followers'.format(show_id), time.time(), user_id)
-        pipe.sadd('users:{}:follows'.format(user_id), show_id)
-        response = pipe.execute()
-        changed = True if response[1] else False
-        if not changed:
-            return changed
-        pipe.hincrby('shows:{}'.format(show_id), 'followers', 1)
-        pipe.hincrby('users:{}'.format(show_id), 'follows', 1)
-        pipe.execute()
-        return True
-
-    @classmethod
-    def follow(cls, show_id, user_id):
-        if not cls.cache(show_id, user_id):
-            return True
-        with new_session() as session:
-            follow = models.Show_follow(
-                show_id=show_id,
-                user_id=user_id,
+        query = query.order_by(
+            *sort
+        )
+        query = query.limit(
+            int(per_page),
+        ).offset(
+            int(page-1) * int(per_page),
+        )
+        shows = []
+        for show in query.all():
+            shows.append(
+                Show._format_from_row(show)
             )
-            session.merge(follow)
-            session.commit()
-        return True
-
-class Unfollow(object):
-
-    @classmethod
-    def cache(cls, show_id, user_id):
-        '''
-        Returns `true` if the data did not exist in the cache.
-
-        :param show_id: int
-        :param user_id: int
-        :returns: boolean
-        '''        
-        user_id = int(user_id)
-        show_id = int(show_id)
-        pipe = database.redis.pipeline()
-        pipe.zrem('shows:{}:followers'.format(show_id), user_id)
-        pipe.srem('users:{}:follows'.format(user_id), show_id)
-        response = pipe.execute()
-        changed = True if response[0] or response[1] else False
-        if not changed:
-            return changed
-        if response[0]:
-            pipe.hincrby('shows:{}'.format(show_id), 'followers', -1)
-        if response[1]:
-            pipe.hincrby('users:{}'.format(show_id), 'follows', -1)
-        pipe.execute()
-        return True
-
-    @classmethod
-    def unfollow(cls, show_id, user_id):
-        if not cls.cache(show_id, user_id):
-            return True
-        with new_session() as session:
-            follow = session.query(
-                models.Show_follow,
-            ).filter(
-                models.Show_follow.show_id == show_id,
-                models.Show_follow.user_id == user_id,
-            ).delete()
-            session.commit()
-        return True
+        pagination.records = shows
+        return pagination

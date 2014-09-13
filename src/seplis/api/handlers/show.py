@@ -4,14 +4,12 @@ import sqlalchemy.exc
 from seplis.api.handlers import base
 from tornado import gen, httpclient
 from seplis.utils import json_dumps, json_loads, slugify, dict_update
+from seplis.api import constants, models, exceptions
 from seplis import schemas, utils
-from seplis.api import constants
-from seplis.api import models
 from seplis.decorators import new_session
-from seplis.api import exceptions
 from seplis.api.decorators import authenticated
 from seplis.api.base.pagination import Pagination
-from seplis.api.base.show import Shows, Show, Follow, Unfollow
+from seplis.api.base.show import Show, Shows
 from seplis.api.base.episode import Episode, Episodes
 from seplis.api.base.tag import Tags
 from seplis.api.base.description import Description
@@ -25,7 +23,7 @@ from sqlalchemy import asc, desc, and_
 
 class Handler(base.Handler):
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine    
     def post(self, show_id=None):
         yield self._post()
@@ -50,7 +48,7 @@ class Handler(base.Handler):
     def _post(self):
         self.validate(schemas.Show_schema)
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
     def patch(self, show_id):
         show = yield self._patch(show_id)
@@ -179,7 +177,7 @@ class Handler(base.Handler):
             )
         else:
             q = self.get_argument('q', None)
-            per_page = int(self.get_argument('per_page', constants.per_page))
+            per_page = int(self.get_argument('per_page', constants.PER_PAGE))
             page = int(self.get_argument('page', 1))
             sort = self.get_argument('sort', None)
             req = {
@@ -254,28 +252,75 @@ class External_handler(Handler):
     def delete(self, title, value): 
         raise HTTPError(405)     
 
-class Follow_handler(Handler):
 
-    @authenticated(0)
-    def put(self, show_id):
-        Follow.follow(show_id, self.current_user.id)
-        self.set_status(204)
+class Fans_handler(Handler):
 
-    @authenticated(0)
-    def delete(self, show_id):
-        Unfollow.unfollow(show_id, self.current_user.id)
-        self.set_status(204)
+    def get(self, show_id):
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        show = Show.get(show_id)
+        if not show:
+            raise exceptions.Show_unknown()
+        self.write_object(
+            show.get_fans(page=page, per_page=per_page)
+        )
 
-class Follows_handler(Handler):
+    @authenticated(constants.LEVEL_USER)
+    def put(self, show_id, user_id):        
+        if int(user_id) != self.current_user.id:
+            self.check_edit_another_user_right()
+        show = Show.get(show_id)
+        if not show:
+            raise exceptions.Show_unknown()
+        show.become_fan(
+            user_id,
+        )
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_USER)
+    def delete(self, show_id, user_id):            
+        if int(user_id) != self.current_user.id:
+            self.check_edit_another_user_right()
+        show = Show.get(show_id)
+        if not show:
+            raise exceptions.Show_unknown()
+        show.unfan(
+            user_id
+        )
+        
+class Fan_of_handler(Handler):
+
     def get(self, user_id):
-        per_page = self.get_argument('per_page', None)
-        page = self.get_argument('page', None)        
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', 'title:asc')
+
         self.write_pagination(
-            Shows.follows(
+            Shows.get_fan_of(
                 user_id=user_id,
-                per_page=int(per_page) if per_page else constants.per_page,
-                page=int(page) if page else 1,
+                per_page=per_page,
+                page=page,
+                sort=sort,
             )
+        )
+
+    @authenticated(constants.LEVEL_USER)
+    def put(self, user_id, show_id):        
+        if int(user_id) != self.current_user.id:
+            self.check_edit_another_user_right()
+        show = Show.get(show_id)
+        if not show:
+            raise exceptions.Show_unknown()
+        show.become_fan(
+            user_id,
+        )
+
+    @authenticated(constants.LEVEL_USER)
+    def delete(self, user_id, show_id):            
+        if int(user_id) != self.current_user.id:
+            self.check_edit_another_user_right()
+        show = Show.get(show_id)
+        if not show:
+            raise exceptions.Show_unknown()
+        show.unfan(
+            user_id
         )

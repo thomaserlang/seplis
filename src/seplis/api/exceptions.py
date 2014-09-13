@@ -236,3 +236,12 @@ class Elasticsearch_exception(API_exception):
             message='search error',
             extra=extra
         ) 
+
+class Sort_not_allowed(API_exception):
+    def __init__(self, sort):
+        API_exception.__init__(self,
+            status_code=400,
+            code=8000,
+            message='Sort by: "{}" is not allowed'.format(sort),
+            extra=[sort],
+        )

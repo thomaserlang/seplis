@@ -39,6 +39,13 @@ def upgrade(config):
     seplis.api.migrate.upgrade()
 
 @app.cmd()
+def downgrade(config):
+    import seplis
+    seplis.config_load(config)
+    import seplis.api.migrate
+    seplis.api.migrate.downgrade()
+
+@app.cmd()
 def rebuild_cache(config):
     import seplis
     seplis.config_load(config)

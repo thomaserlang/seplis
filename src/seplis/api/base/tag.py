@@ -138,7 +138,8 @@ class Tags(object):
 class User_tag_relation(object):
 
     @classmethod
-    def get_relation_data(cls, user_id, tag_type, order_field='title', tag_id=None, page=1, per_page=constants.per_page):
+    def get_relation_data(cls, user_id, tag_type, order_field='title', 
+        tag_id=None, page=1, per_page=constants.PER_PAGE):
         '''
         Returns a list of relation data for a specific tag type tagged by the user.
 

@@ -1,24 +1,12 @@
 import re
 
-index_types_names = (
-    'tvrage',
-    'thetvdb',
-)
+LEVEL_USER = 0
 
-index_types = [
-    {
-        'name': index_types_names[0],
-        'match': re.compile('^[0-9]+$'),
-    },
-    {
-        'name': index_types_names[1],
-        'match': re.compile('^[0-9]+$'),
-    }
-]
+LEVEL_EDIT_SHOW = 2
 
-app_level_root = 6
-app_level_min = 0
+LEVEL_EDIT_USER = 3
+LEVEL_SHOW_USER_EMAIL = LEVEL_EDIT_USER
 
-level_user_email = 3
+LEVEL_GOD = 6
 
-per_page = 25
+PER_PAGE = 25

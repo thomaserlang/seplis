@@ -60,7 +60,7 @@ def upgrade():
         name='seplis',
         email='bot@seplis.net',
         password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',# 123456
-        level=constants.app_level_root,
+        level=constants.LEVEL_GOD,
     )
 
     op.create_table(
@@ -80,7 +80,7 @@ def upgrade():
         user_id=user.id,
         name='SEPLIS',
         redirect_uri=None,
-        level=constants.app_level_root,
+        level=constants.LEVEL_GOD,
     )
 
     op.create_table(
