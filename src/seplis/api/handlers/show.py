@@ -56,7 +56,7 @@ class Handler(base.Handler):
             show
         )
 
-    update_keys = [
+    update_keys = (
         'title',
         'premiered',
         'ended',
@@ -66,7 +66,7 @@ class Handler(base.Handler):
         'runtime',
         'genres',
         'alternate_titles',
-    ]
+    )
 
     @concurrent.run_on_executor
     def _patch(self, show_id, validate_show=True):
@@ -97,13 +97,13 @@ class Handler(base.Handler):
         show.save()
         return show
 
-    update_episode_keys = [
+    update_episode_keys = (
         'title',
         'air_date',
         'season',
         'episode',
         'runtime',
-    ]
+    )
 
     def patch_episodes(self, show_id, episodes_dict):        
         '''

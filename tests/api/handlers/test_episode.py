@@ -93,9 +93,8 @@ class Test_episode_watched(Testbase):
 
     def test(self):
         show_id = self.new_show()
-        response = self.put(
-            '/1/shows/{}'.format(show_id), 
-            json_dumps({
+        response = self.patch('/1/shows/{}'.format(show_id), 
+            {
                 'episodes': [
                     {
                         'air_date': date(2003, 9, 23), 
@@ -105,25 +104,31 @@ class Test_episode_watched(Testbase):
                         'episode': 1
                     },
                 ]
-            }),
+            }
         )
+        self.assertEqual(response.code, 200)
 
         # mark the episode as watched
-        response = response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id, 1))
+        response = response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+            self.current_user.id, 
+            show_id, 
+            1)
+        )
         self.assertEqual(response.code, 200, response.body)
-        watched = json_loads(response.body)
-        self.assertEqual(watched['times'], 1)
+
         # check that duplicating a watched episode works.
-        response = response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id, 1), {
+        response = response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+                self.current_user.id, 
+                show_id, 
+                1
+            ), {
             'times': 100,
         })
         self.assertEqual(response.code, 200)
-        watched = json_loads(response.body)
-        self.assertEqual(watched['times'], 101)
 
         # check that the list of latest watched shows works.
         show_id_2 = self.new_show()
-        response = self.put(
+        response = self.patch(
             '/1/shows/{}'.format(show_id_2), 
             json_dumps({
                 'episodes': [
@@ -140,14 +145,6 @@ class Test_episode_watched(Testbase):
         response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id_2, 1))
         self.assertEqual(response.code, 200)
 
-        '''
-        response = self.get('/1/users/{}/watched/shows'.format(self.current_user.id))
-        self.assertEqual(response.code, 200)
-        shows = json_loads(response.body)
-        self.assertEqual(len(shows), 2)   
-        self.assertEqual(shows[0]['id'], show_id_2, response.body)  
-        self.assertEqual(shows[1]['id'], show_id, response.body)   
-        '''
 
         # check that the watched episode can be deleted
         response = self.delete('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id, 1))
@@ -229,7 +226,6 @@ class test_air_dates(Testbase):
                 'user_id': self.current_user.id,
             })        
             self.assertEqual(response.code, 200, response.body)
-
 
         # Let's get our air dates calendar.
         response = self.get('/1/users/{}/air-dates?per_page=5'.format(self.current_user.id))
