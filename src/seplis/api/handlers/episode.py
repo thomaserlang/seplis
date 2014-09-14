@@ -91,7 +91,8 @@ class Watched_handler(base.Handler):
         set the times to 0.
         '''
         if int(user_id) != self.current_user.id:
-            self.check_user_right()
+            self.check_edit_another_user_right()
+        self.validate(schemas.Episode_watched)
         with new_session() as session:
             # per show, episode
             ew = session.query(

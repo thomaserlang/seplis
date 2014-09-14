@@ -91,7 +91,7 @@ class Tvrage(Show_indexer_base):
         genres = genres['genre']
         if not isinstance(genres, list):
             genres = [genres]
-        return genres
+        return [genre for genre in genres if genre]
 
     def parse_episode_list(self, show_id, episode_list):
         logging.debug('({}) Episode indexing started.'.format(show_id))

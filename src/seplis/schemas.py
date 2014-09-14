@@ -102,8 +102,6 @@ User_tag_relation_schema = Schema({
 }, required=True)
 
 Episode_watched = Schema({
-    'show_id': int,
-    'episode_number': int,
     Optional('times'): int,
     Optional('position'): int,
-}, required=True)
+})

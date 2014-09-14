@@ -406,8 +406,19 @@ class test_show(Testbase):
         self.assertEqual(show['alternate_titles'], [])
         self.assertEqual(show['seasons'], [])
 
-    def test_fan(self):
-        show_id = self.new_show()
+    def test_fan(self):        
+        self.login(constants.LEVEL_EDIT_SHOW)
+        response = self.post('/1/shows', {
+            'status': 1,
+            'episodes': [
+                {
+                    'number': 1,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 201)
+        show = utils.json_loads(response.body)
+        show_id = show['id']
 
         # Let's become a fan of the show
         for i in [1,2]:
@@ -431,6 +442,25 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200, response.body)
         fan_of = utils.json_loads(response.body)
         self.assertEqual(fan_of[0]['id'], show_id)
+        self.assertEqual(fan_of[0]['user_watching'], None)
+
+        # Let's watch part of an episode and see if it shows up
+        # in the user_watching field.
+        response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+            self.current_user.id,
+            show_id,
+            1
+        ), {
+            'position': 120,
+            'times': 0,
+        })
+        self.assertEqual(response.code, 200)        
+        response = self.get('/1/users/{}/fan-of'.format(self.current_user.id))
+        self.assertEqual(response.code, 200, response.body)
+        fan_of = utils.json_loads(response.body)
+        self.assertEqual(fan_of[0]['id'], show_id)
+        self.assertEqual(fan_of[0]['user_watching']['position'], 120)
+        self.assertEqual(fan_of[0]['user_watching']['episode']['number'], 1)
 
         # Now unfan the show
         for i in [1,2]:

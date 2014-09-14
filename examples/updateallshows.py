@@ -9,9 +9,8 @@ indexer = seplis.Show_indexer(
 
 shows = indexer.get('/shows?sort=id&per_page=500')
 for show in shows.all():
-    if show['id'] < 660:
-        continue
-    def index():
+    retries = 0
+    def index(retries):
         try:
             indexer.update_show(show['id'])
             logging.error('updated show {}'.format(show['id']))
@@ -19,5 +18,7 @@ for show in shows.all():
             raise
         except:
             logging.exception('error')
-            index()
-    index()
+            if retries <= 5:
+                retries += 1
+                index(retries)
+    index(retries)

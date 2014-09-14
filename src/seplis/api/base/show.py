@@ -10,7 +10,7 @@ from seplis.api.base.description import Description
 from seplis.api.base.user import Users
 from seplis.api import exceptions, constants, models
 from datetime import datetime, timedelta
-from sqlalchemy import asc
+from sqlalchemy import asc, and_
 
 class Show(object):
 
@@ -97,7 +97,7 @@ class Show(object):
     def _format_from_row(cls, row):
         if not row:
             return None
-        return cls(
+        obj = cls(
             id=row.id,
             title=row.title,
             description=Description(
@@ -120,6 +120,7 @@ class Show(object):
             fans=row.fans,
             updated=row.updated,
         )
+        return obj
 
     @classmethod
     @auto_session
@@ -433,6 +434,10 @@ class Shows(object):
         'premiered': models.Show.premiered,
         'ended': models.Show.ended,
         'runtime': models.Show.runtime,
+        'user_watching': {
+            'datetime': models.Show_watched.datetime,
+            'position': models.Show_watched.position,
+        }
     }
 
     @classmethod
@@ -441,7 +446,7 @@ class Shows(object):
                    page=1, sort='title:asc', session=None):
         sort = models.sort_parser(sort, cls.sort_lookup)
         query = session.query(
-            models.Show,
+            models.Show_fan,
         ).filter(
             models.Show_fan.user_id == user_id,
             models.Show.id == models.Show_fan.show_id,
@@ -452,6 +457,21 @@ class Shows(object):
             page=page,
             per_page=per_page,
         )
+        query = query.with_entities(
+            models.Show_fan,
+            models.Show,
+            models.Show_watched,
+            models.Episode,
+        ).outerjoin(
+            (models.Show_watched, and_(
+                models.Show_watched.show_id == models.Show_fan.show_id,
+                models.Show_watched.user_id == models.Show_fan.user_id,
+            )),
+            (models.Episode, and_(
+                models.Episode.show_id == models.Show_watched.show_id,
+                models.Episode.number == models.Show_watched.episode_number,
+            )),
+        )
         query = query.order_by(
             *sort
         )
@@ -461,9 +481,20 @@ class Shows(object):
             int(page-1) * int(per_page),
         )
         shows = []
-        for show in query.all():
+        for row in query.all():
+            show = Show._format_from_row(
+                row.Show,
+            )
+            show.user_watching = None
+            if row.Show_watched and row.Episode:
+                from seplis.api.base.episode import Episode
+                show.user_watching = {
+                    'datetime': row.Show_watched.datetime,
+                    'position': row.Show_watched.position,
+                    'episode': Episode._format_from_row(row.Episode),
+                }
             shows.append(
-                Show._format_from_row(show)
+                show
             )
         pagination.records = shows
         return pagination

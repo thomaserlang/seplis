@@ -5,13 +5,16 @@ from urllib.parse import urljoin, urlencode
 from seplis import utils
 from functools import partial
 
+TIMEOUT = 60 # seconds
+
 class HTTPData(object):
 
-    def __init__(self, client, response):
+    def __init__(self, client, response, timeout=TIMEOUT):
         self.client = client
         self.data = utils.json_loads(response.body) if \
             response and response.body != None \
                 else None
+        self.timeout = timeout
         self.link = {}
         self.next = None
         self.prev = None
@@ -43,7 +46,7 @@ class HTTPData(object):
                 yield d
             if not s.next:
                 break
-            s = s.client.get(s.next)
+            s = s.client.get(s.next, timeout=self.timeout)
 
     def __iter__(self):
         for d in self.data:
@@ -72,7 +75,7 @@ class Async_client(object):
         self.access_token = access_token
 
     @gen.coroutine
-    def _fetch(self, method, uri, body=None, headers=None, timeout=5):
+    def _fetch(self, method, uri, body=None, headers=None, timeout=TIMEOUT):
         if not headers:
             headers = {}
         if 'Content-Type' not in headers:
@@ -111,13 +114,13 @@ class Async_client(object):
                     data = utils.json_loads(response.body)
                     raise API_error(status_code=response.code, **data)
                 raise Exception(response.body)
-            data = HTTPData(self, response)
+            data = HTTPData(self, response, timeout=timeout)
         if data is None:
-            data = HTTPData(self, None)
+            data = HTTPData(self, None, timeout=timeout)
         return data
 
     @gen.coroutine
-    def get(self, uri, data=None, headers=None, timeout=5):     
+    def get(self, uri, data=None, headers=None, timeout=TIMEOUT):     
         if data != None:
             if isinstance(data, dict):
                 data = urlencode(data, True)
@@ -131,7 +134,7 @@ class Async_client(object):
         return r
 
     @gen.coroutine
-    def delete(self, uri, headers=None, timeout=5):
+    def delete(self, uri, headers=None, timeout=TIMEOUT):
         r = yield self._fetch(
             'DELETE', 
             uri, 
@@ -141,7 +144,7 @@ class Async_client(object):
         return r
 
     @gen.coroutine
-    def post(self, uri, body={}, headers=None, timeout=5):
+    def post(self, uri, body={}, headers=None, timeout=TIMEOUT):
         r = yield self._fetch(
             'POST', 
             uri, 
@@ -152,7 +155,7 @@ class Async_client(object):
         return r
 
     @gen.coroutine
-    def put(self, uri, body={}, headers=None, timeout=5):
+    def put(self, uri, body={}, headers=None, timeout=TIMEOUT):
         r = yield self._fetch(
             'PUT', 
             uri, 
@@ -163,7 +166,7 @@ class Async_client(object):
         return r
 
     @gen.coroutine
-    def patch(self, uri, body={}, headers=None, timeout=5):
+    def patch(self, uri, body={}, headers=None, timeout=TIMEOUT):
         r = yield self._fetch(
             'PATCH', 
             uri, 
@@ -175,7 +178,7 @@ class Async_client(object):
 
 class Client(Async_client):
 
-    def get(self, uri, data=None, headers=None, timeout=5):
+    def get(self, uri, data=None, headers=None, timeout=TIMEOUT):
         return self.io_loop.run_sync(partial(
             Async_client.get, 
             self, 
@@ -185,7 +188,7 @@ class Client(Async_client):
             timeout=timeout,
         ))    
 
-    def delete(self, uri, headers=None, timeout=5):
+    def delete(self, uri, headers=None, timeout=TIMEOUT):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'DELETE', 
@@ -194,7 +197,7 @@ class Client(Async_client):
             timeout=timeout,
         ))
 
-    def post(self, uri, body={}, headers=None, timeout=5):
+    def post(self, uri, body={}, headers=None, timeout=TIMEOUT):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'POST', 
@@ -204,7 +207,7 @@ class Client(Async_client):
             timeout=timeout,
         ))
 
-    def put(self, uri, body={}, headers=None, timeout=5):
+    def put(self, uri, body={}, headers=None, timeout=TIMEOUT):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'PUT', 
@@ -214,7 +217,7 @@ class Client(Async_client):
             timeout=timeout,
         ))
 
-    def patch(self, uri, body={}, headers=None, timeout=5):
+    def patch(self, uri, body={}, headers=None, timeout=TIMEOUT):
         return self.io_loop.run_sync(partial(
             self._fetch, 
             'PATCH', 
