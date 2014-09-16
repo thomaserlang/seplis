@@ -3,7 +3,7 @@ import inspect
 from seplis.api import models
 from seplis.api import elasticcreate
 from seplis.connections import database, Database
-from seplis.decorators import new_session
+from seplis.decorators import new_session, auto_pipe
 from sqlalchemy import func, or_
 from datetime import datetime
 
@@ -105,6 +105,23 @@ class Rebuild_cache(object):
                     user_level=token.user_level,
                 )
             pipe.execute()
+
+    @auto_session
+    @auto_pipe
+    def rebuild_watched(self, session, pipe):
+        from seplis.api.base.episode import Watched
+        rows = session.query(
+            models.Episode_watched,
+        ).all()
+        for row in rows:
+            Watched.cache(
+                user_id=row.user_id,
+                show_id=row.show_id,
+                number=row.number,
+                times=row.times,
+                datetime=row.datetime,
+                pipe=pipe,
+            )
 
 def main():
     Rebuild_cache().rebuild()

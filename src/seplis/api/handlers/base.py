@@ -192,3 +192,19 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
     @authenticated(constants.LEVEL_EDIT_USER)
     def check_edit_another_user_right(self):
         pass
+
+    @authenticated(constants.LEVEL_USER)
+    def is_logged_in(self):
+        pass
+
+    def get_append_fields(self, allowed_append_fields):
+        append_fields = list(
+            filter(None, self.get_argument('append', '').split(','))
+        )
+        not_allowed = []
+        for a in append_fields:
+            if a not in allowed_append_fields:
+                not_allowed.append(a)
+        if not_allowed:
+            raise exceptions.Append_fields_not_allowed(not_allowed)
+        return append_fields

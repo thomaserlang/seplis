@@ -188,7 +188,7 @@ class Show_watched(base):
 
     show_id = Column(Integer, primary_key=True, autoincrement=False)
     user_id = Column(Integer, primary_key=True, autoincrement=False)
-    episode_number = Column(Integer, primary_key=True, autoincrement=False)
+    episode_number = Column(Integer, autoincrement=False)
     position = Column(Integer)
     datetime = Column(DateTime)
 

@@ -245,3 +245,12 @@ class Sort_not_allowed(API_exception):
             message='Sort by: "{}" is not allowed'.format(sort),
             extra=[sort],
         )
+
+class Append_fields_not_allowed(API_exception):
+    def __init__(self, fields):
+        API_exception.__init__(self,
+            status_code=400,
+            code=9000,
+            message='Append fields: "{}" are not allowed'.format(','.join(fields)),
+            extra=[fields],
+        )

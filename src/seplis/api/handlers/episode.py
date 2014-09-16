@@ -3,7 +3,7 @@ from seplis.api.handlers import base
 from seplis.api import constants, models, exceptions
 from seplis import schemas, utils
 from seplis.api.decorators import authenticated
-from seplis.api.base.episode import Episode, Episodes
+from seplis.api.base.episode import Episode, Episodes, Watched
 from seplis.connections import database
 from seplis.api import models
 from seplis.decorators import new_session
@@ -16,67 +16,82 @@ from tornado import gen
 
 class Handler(base.Handler):
 
+    allowed_append_fields = (
+        'user_watching'
+    )
+
     @gen.coroutine
     def get(self, show_id, number=None):
+        self.append_fields = self.get_append_fields(self.allowed_append_fields)
         if number:
-            result = yield self.es('/episodes/episode/{}-{}'.format(
-                show_id,
-                number,
-            ))
-            if not result['found']:
-                raise exceptions.Episode_unknown()
-            self.write_object(
-                result['_source']
-            )
+            yield self.get_episode(show_id, number)
         else:
-            q = self.get_argument('q', None)
-            per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-            page = int(self.get_argument('page', 1))
-            sort = self.get_argument('sort', 'number:asc')
-            req = {
-                'from': ((page - 1) * per_page),
-                'size': per_page,
-                'sort': sort,
-                'q': 'show_id:{}'.format(show_id)
-            }
-            if q != None:
-                req['q'] += ' AND {}'.format(q)
-            result = yield self.es(
-                '/episodes/episode/_search',
-                **req
+            yield self.get_episodes(show_id)
+
+    @gen.coroutine
+    def get_episode(self, show_id, number):
+        result = yield self.es('/episodes/episode/{}-{}'.format(
+            show_id,
+            number,
+        ))
+        if not result['found']:
+            raise exceptions.Episode_unknown()
+        print(self.append_fields)
+        if 'user_watching' in self.append_fields:
+            print('hmm')
+            self.is_logged_in()
+            result['_source']['user_watching'] = Watched.get(
+                user_id=self.current_user.id,
+                show_id=show_id,
+                number=number,
             )
-            p = Pagination(
-                page=page,
-                per_page=per_page,
-                total=result['hits']['total'],
-                records=[show['_source'] for show in result['hits']['hits']],
+        self.write_object(
+            result['_source']
+        )
+
+    @gen.coroutine
+    def get_episodes(self, show_id):
+        q = self.get_argument('q', None)
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', 'number:asc')
+        req = {
+            'from': ((page - 1) * per_page),
+            'size': per_page,
+            'sort': sort,
+            'q': 'show_id:{}'.format(show_id)
+        }
+        if q != None:
+            req['q'] += ' AND {}'.format(q)
+        result = yield self.es(
+            '/episodes/episode/_search',
+            **req
+        )
+
+        episodes = {}
+        for episode in result['hits']['hits']:
+            episodes[episode['_source']['number']] = episode['_source']
+
+        if 'user_watching' in self.append_fields:
+            self.is_logged_in()
+            numbers = list(episodes.keys())
+            watched = Watched.get(
+                user_id=self.current_user.id,
+                show_id=show_id,
+                number=numbers,
             )
-            self.write_pagination(p)
+            for w, number in zip(watched, numbers):
+                episodes[number]['user_watching'] = w
+
+        p = Pagination(
+            page=page,
+            per_page=per_page,
+            total=result['hits']['total'],
+            records=list(episodes.values()),
+        )
+        self.write_object(p)
 
 class Watched_handler(base.Handler):
-
-    @authenticated(0)
-    def get(self, user_id, show_id=None, episode_number=None):
-        self.get_shows_watched(user_id)
-
-    def get_shows_watched(self, user_id):
-        with new_session() as session:
-            results = session.query(
-                models.Show,
-            ).filter(
-                models.Show_watched.user_id == user_id,
-                models.Show.id == models.Show_watched.show_id,
-            ).order_by(
-                desc(models.Show_watched.datetime),
-                desc(models.Show.id)
-            ).all()
-            shows = []
-            for show in results:
-                if show.data:
-                    shows.append(show.data)
-            self.write_object(
-                shows
-            )
 
     @authenticated(0)
     def put(self, user_id, show_id, episode_number):        
@@ -89,7 +104,7 @@ class Watched_handler(base.Handler):
         episode.watched(
             user_id, 
             show_id,
-            times=self.request.body.get('times', 0),
+            times=self.request.body.get('times', 1),
             position=self.request.body.get('position', 0),
         )
 

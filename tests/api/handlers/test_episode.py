@@ -144,6 +144,9 @@ class Test_episode_watched(Testbase):
         )
         response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id_2, 1))
         self.assertEqual(response.code, 200)
+        # test for duplicate error
+        response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id_2, 1))
+        self.assertEqual(response.code, 200)
 
 
         # check that the watched episode can be deleted
@@ -154,7 +157,71 @@ class Test_episode_watched(Testbase):
         self.assertEqual(response.code, 400)
 
 
-class test_air_dates(Testbase):
+class Test_episode_append_fields(Testbase):
+
+    def test_user_watching(self):
+        show_id = self.new_show()
+        response = self.patch('/1/shows/{}'.format(show_id), 
+            {
+                'episodes': [
+                    {
+                        'air_date': date(2003, 9, 23), 
+                        'title': 'Yankee White', 
+                        'season': 1, 
+                        'number': 1, 
+                        'episode': 1
+                    },
+                    {
+                        'air_date': date(2003, 9, 24), 
+                        'title': 'Yankee White 2', 
+                        'season': 1, 
+                        'number': 2, 
+                        'episode': 2
+                    },
+                ]
+            }
+        )
+        self.assertEqual(response.code, 200)
+
+        # we haven't watched any episodes so user_watching should be None
+
+        # test single episode
+        response = self.get('/1/shows/{}/episodes/1?append=user_watching'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        episode = utils.json_loads(response.body)
+        self.assertTrue('user_watching' in episode)
+        self.assertEqual(episode['user_watching'], None)
+
+        # test multi episodes
+        response = self.get('/1/shows/{}/episodes?append=user_watching'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        episodes = utils.json_loads(response.body)
+        for episode in episodes:
+            self.assertTrue('user_watching' in episode)
+            self.assertEqual(episode['user_watching'], None)
+
+        # Let's watch some episodes
+        for number in [1,2]:
+            response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id, number))
+            self.assertEqual(response.code, 200)
+
+
+        # test single episode
+        response = self.get('/1/shows/{}/episodes/1?append=user_watching'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        episode = utils.json_loads(response.body)
+        self.assertTrue('user_watching' in episode)
+        self.assertEqual(episode['user_watching']['times'], 1)
+
+        # test multi episodes
+        response = self.get('/1/shows/{}/episodes?append=user_watching'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        episodes = utils.json_loads(response.body)
+        for episode in episodes:
+            self.assertTrue('user_watching' in episode)
+            self.assertEqual(episode['user_watching']['times'], 1)
+
+class Test_air_dates(Testbase):
 
     def test_air_dates(self):
         self.login(constants.LEVEL_EDIT_SHOW)
@@ -166,7 +233,7 @@ class test_air_dates(Testbase):
         # Show 2's first episode will air today and
         # the second episode will air tomorrow.
 
-        # Therefor the end result should be 3 episodes in the air dates.
+        # Therefore the end result should be 3 episodes in the air dates.
         # Since we only ask for air dates in the next 7 days.
 
         response = self.post('/1/shows', {
