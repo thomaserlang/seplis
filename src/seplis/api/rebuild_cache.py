@@ -25,18 +25,20 @@ class Rebuild_cache(object):
     @auto_pipe
     def rebuild_shows(self, session, pipe):
         from seplis.api.base.show import Show
+        print('... ... Loading shows')
+        sys.stdout.flush()
         shows = session.query(models.Show).filter(
             models.Show.status>0,
         ).all()        
         total = len(shows)
-        i = 0   
-        print('... ... {}/{}'.format(i, total))
+        i = 0
         for show in shows:
             i += 1
-            print('... ... {}/{}'.format(i, total))
+            sys.stdout.write('... ... {}/{}'.format(i, total))
             s = Show._format_from_row(show)
             s.save(session=session, pipe=pipe)
             sys.stdout.flush()
+        print('')
 
     @auto_session
     @auto_pipe
@@ -53,16 +55,18 @@ class Rebuild_cache(object):
     @auto_session
     def rebuild_episodes(self, session):
         from seplis.api.base.episode import Episode
+        print('... ... Loading episodes')
+        sys.stdout.flush()
         episodes = session.query(models.Episode).all()
         total = len(episodes)
         i = 0
-        print('... ... {}/{}'.format(i, total))
         for episode in episodes:
             i += 1
-            print('\r... ... {}/{}'.format(i, total))
+            sys.stdout.write('\r... ... {}/{}'.format(i, total))
             e = Episode._format_from_row(episode)
             e.to_elasticsearch(episode.show_id)
             sys.stdout.flush()
+        print('')
 
     def rebuild_tags(self):
         from seplis.api.base.tag import Tag
