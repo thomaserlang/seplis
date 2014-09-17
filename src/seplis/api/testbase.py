@@ -45,7 +45,6 @@ class Testbase(AsyncHTTPTestCase):
         )
         database.redis.flushdb()
         database.es = Elasticsearch(config['elasticsearch'])
-        database.es.indices.delete(index='_all')
         elasticcreate.create_indices()
 
     def tearDown(self):

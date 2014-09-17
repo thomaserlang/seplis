@@ -3,7 +3,7 @@ import inspect
 from seplis.api import models
 from seplis.api import elasticcreate
 from seplis.connections import database, Database
-from seplis.decorators import new_session, auto_pipe
+from seplis.decorators import new_session, auto_pipe, auto_session
 from sqlalchemy import func, or_
 from datetime import datetime
 
@@ -13,8 +13,6 @@ class Rebuild_cache(object):
         print('Rebuilding cache/search data for:')
         sys.stdout.flush()
         database.redis.flushdb()
-        database.es.indices.delete(index='shows')
-        database.es.indices.delete(index='episodes')
         elasticcreate.create_indices()
         for name, method in inspect.getmembers(self, predicate=inspect.ismethod):
             if name[:8] == 'rebuild_':
