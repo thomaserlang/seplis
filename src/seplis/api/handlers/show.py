@@ -10,7 +10,7 @@ from seplis.decorators import new_session
 from seplis.api.decorators import authenticated
 from seplis.api.base.pagination import Pagination
 from seplis.api.base.show import Show, Shows
-from seplis.api.base.episode import Episode, Episodes
+from seplis.api.base.episode import Episode, Episodes, Watching
 from seplis.api.base.tag import Tags
 from seplis.api.base.description import Description
 from seplis.connections import database
@@ -166,39 +166,72 @@ class Handler(base.Handler):
                 else:
                     data[key] = new_data[key]
 
+    allowed_append_fields = (
+        'is-fan'
+    )
+
     @gen.coroutine
     def get(self, show_id=None):
+        self.append_fields = self.get_append_fields(self.allowed_append_fields)
         if show_id:
-            result = yield self.es('/shows/show/{}'.format(show_id))                
-            if not result['found']:
-                raise exceptions.Show_unknown()
-            self.write_object(
-                result['_source']
-            )
+            yield self.get_show(show_id)
         else:
-            q = self.get_argument('q', None)
-            per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-            page = int(self.get_argument('page', 1))
-            sort = self.get_argument('sort', None)
-            req = {
-                'from': ((page - 1) * per_page),
-                'size': per_page,
-            }
-            if q != None:
-                req['q'] = q
-            if sort:
-                req['sort'] = sort
-            result = yield self.es(
-                '/shows/show/_search',
-                **req
+            yield self.get_shows()
+
+    @gen.coroutine
+    def get_show(self, show_id):
+        result = yield self.es('/shows/show/{}'.format(show_id))                
+        if not result['found']:
+            raise exceptions.Show_unknown()
+        if 'is-fan' in self.append_fields:
+            self.is_logged_in()
+            result['_source']['is_fan'] = Show.is_fan(
+                user_id=self.current_user.id,
+                id_=show_id,
             )
-            p = Pagination(
-                page=page,
-                per_page=per_page,
-                total=result['hits']['total'],
-                records=[show['_source'] for show in result['hits']['hits']],
+        self.write_object(
+            result['_source']
+        )
+
+    @gen.coroutine
+    def get_shows(self):
+        q = self.get_argument('q', None)
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', None)
+        req = {
+            'from': ((page - 1) * per_page),
+            'size': per_page,
+        }
+        if q != None:
+            req['q'] = q
+        if sort:
+            req['sort'] = sort
+        result = yield self.es(
+            '/shows/show/_search',
+            **req
+        )
+        shows = {}
+        for show in result['hits']['hits']:
+            shows[show['_source']['id']] = show['_source']
+
+        if 'is-fan' in self.append_fields:
+            self.is_logged_in()
+            show_ids = list(shows.keys())
+            is_fan = Shows.is_fan(
+                user_id=self.current_user.id,
+                ids=show_ids,
             )
-            self.write_pagination(p)
+            for f, id_ in zip(is_fan, show_ids):
+                shows[id_]['is_fan'] = f
+
+        p = Pagination(
+            page=page,
+            per_page=per_page,
+            total=result['hits']['total'],
+            records=list(shows.values()),
+        )
+        self.write_object(p)
 
 class Multi_handler(base.Handler):
 

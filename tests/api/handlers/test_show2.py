@@ -409,6 +409,7 @@ class test_show(Testbase):
     def test_fan(self):        
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
+            'title': 'test show',
             'status': 1,
             'episodes': [
                 {
@@ -419,15 +420,18 @@ class test_show(Testbase):
         self.assertEqual(response.code, 201)
         show = utils.json_loads(response.body)
         show_id = show['id']
-
+        self.get('http://{}/shows/_refresh'.format(
+            config['elasticsearch']
+        ))
         # Let's become a fan of the show
         for i in [1,2]:
             response = self.put('/1/shows/{}/fans/{}'.format(show_id, self.current_user.id))
             self.assertEqual(response.code, 200, response.body)
-            response = self.get('/1/shows/{}'.format(show_id))
+            response = self.get('/1/shows/{}?append=is-fan'.format(show_id))
             self.assertEqual(response.code, 200)
             show = utils.json_loads(response.body)
             self.assertEqual(show['fans'], 1)
+            self.assertEqual(show['is_fan'], True)
 
         # Let's check that we can find the user in the shows fan
         # list.
@@ -443,6 +447,13 @@ class test_show(Testbase):
         fan_of = utils.json_loads(response.body)
         self.assertEqual(fan_of[0]['id'], show_id)
         self.assertEqual(fan_of[0]['user_watching'], None)
+
+        # When searching for fans we should be able to append the is_fan field.
+        response = self.get('/1/shows?q=id:{}&append=is-fan'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        shows = utils.json_loads(response.body)
+        self.assertEqual(shows[0]['id'], show_id)
+        self.assertEqual(shows[0]['is_fan'], True)
 
         # Let's watch a part of an episode and see if it shows up
         # in the user_watching field.

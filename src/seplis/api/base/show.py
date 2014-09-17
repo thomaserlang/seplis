@@ -423,6 +423,11 @@ class Show(object):
             return
         return int(show_id)
 
+    @classmethod
+    def is_fan(cls, user_id, id_):
+        name = 'users:{}:fan_of'.format(user_id)
+        return database.redis.sismember(name, id_)
+
 class Shows(object):
 
     sort_lookup = {
@@ -439,6 +444,14 @@ class Shows(object):
             'position': models.Show_watched.position,
         }
     }
+
+    @classmethod
+    def is_fan(cls, user_id, ids):
+        name = 'users:{}:fan_of'.format(user_id)
+        pipe = database.redis.pipeline()
+        for id_ in ids:
+            pipe.sismember(name, id_)
+        return pipe.execute()
 
     @classmethod
     @auto_session

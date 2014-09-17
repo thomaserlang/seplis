@@ -63,6 +63,6 @@ def main():
     tornado.ioloop.IOLoop.instance().start()
 
 if __name__ == '__main__':
-    import seplis.config
-    seplis.config.load()
+    import seplis
+    seplis.config_load()
     main()

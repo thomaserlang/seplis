@@ -1,7 +1,7 @@
 import http
 import logging
 from seplis import utils
-from seplis.web.client import Api_error
+from seplis.web.client import API_error
 from tornado import web, gen, ioloop
 
 class Handler(web.RequestHandler):
@@ -27,7 +27,7 @@ class Handler(web.RequestHandler):
     
     def write_error(self, status_code, **kwargs):
         if 'exc_info' in kwargs:
-            if isinstance(kwargs['exc_info'][1], Api_error):
+            if isinstance(kwargs['exc_info'][1], API_error):
                 self.write_object({
                     'code': kwargs['exc_info'][1].code,
                     'message': kwargs['exc_info'][1].message,
@@ -55,6 +55,6 @@ class Handler_authenticated(Handler):
             self.access_token = self.access_token.decode('utf-8')
         try:
             self.current_user = yield self.client.get('/users/current')
-        except Api_error as e:
+        except API_error as e:
             if e.code != 1009: # not signed in
                 raise
