@@ -34,7 +34,7 @@ class Rebuild_cache(object):
         i = 0
         for show in shows:
             i += 1
-            sys.stdout.write('... ... {}/{}'.format(i, total))
+            sys.stdout.write('\r... ... {}/{}'.format(i, total))
             s = Show._format_from_row(show)
             s.save(session=session, pipe=pipe)
             sys.stdout.flush()
