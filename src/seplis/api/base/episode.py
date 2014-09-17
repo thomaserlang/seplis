@@ -230,9 +230,9 @@ class Watched(object):
         cls._set_currently_watching(
             user_id,
             show_id,
-            number,
             ew,
             session=session,
+            pipe=pipe,
         )
         cls.cache_watched(
             user_id=user_id,
@@ -269,13 +269,13 @@ class Watched(object):
         cls._set_currently_watching(
             user_id,
             show_id,
-            number,
             cls._get_latest_watched(
                 user_id, 
                 show_id, 
                 session=session
             ),
             session=session,
+            pipe=pipe,
         )
         pipe.delete('users:{}:watched:{}-{}'.format(user_id, show_id, number))
         return True
@@ -293,7 +293,7 @@ class Watched(object):
         pipe.hset(
             name,
             'position',
-            times,
+            position,
         )
         pipe.hset(
             name,
@@ -307,7 +307,7 @@ class Watched(object):
 
         :param user_id: int
         :param show_id: int
-        :returns: SQLAlchemy query
+        :returns: `models.Episode_watched()`
         '''
         ew = session.query(
             models.Episode_watched,
@@ -320,8 +320,8 @@ class Watched(object):
         return ew
 
     @classmethod
-    def _set_currently_watching(cls, user_id, show_id, number, 
-        episode_watched_query, session):
+    def _set_currently_watching(cls, user_id, show_id, 
+        episode_watched_query, session, pipe):
         '''
         Sets the episode as currently watching for the show.
 
@@ -329,7 +329,6 @@ class Watched(object):
         :param show_id: int
         :param episode_watched_query: SQLAlchemy query
         '''
-        print(user_id, show_id, number)
         sw = session.query(
             models.Show_watched,
         ).filter(
@@ -337,12 +336,13 @@ class Watched(object):
             models.Show_watched.user_id == user_id,
         )
         if not episode_watched_query:
+            pipe.delete('users:{}:watching:{}'.format(user_id, show_id))
             sw.delete()
             return
         sw = sw.first()
         if not sw:
             sw = models.Show_watched(                    
-                show_id=episode_watched_query.show_id,
+                show_id=show_id,
                 episode_number=episode_watched_query.episode_number,
                 user_id=episode_watched_query.user_id,                    
                 position=episode_watched_query.position,
@@ -350,9 +350,86 @@ class Watched(object):
             )                
             session.add(sw)
         else:
-            sw.episode_number = episode_watched_query.episode_number,
-            sw.position = episode_watched_query.position,
+            sw.episode_number = episode_watched_query.episode_number
+            sw.position = episode_watched_query.position
             sw.datetime = episode_watched_query.datetime
+        cls.cache_currently_watching(
+            user_id=user_id,
+            show_id=show_id,
+            number=episode_watched_query.episode_number,
+            position=episode_watched_query.position,
+            datetime_=episode_watched_query.datetime,
+            pipe=pipe,
+        )
+
+    @classmethod
+    @auto_pipe
+    def cache_currently_watching(self, user_id, show_id, number,
+        position, datetime_, pipe=None):
+        name = 'users:{}:watching:{}'.format(user_id, show_id)        
+        pipe.hset(
+            name,
+            'number',
+            number,
+        ) 
+        pipe.hset(
+            name,
+            'position',
+            position,
+        )
+        pipe.hset(
+            name,
+            'datetime',
+            datetime_.isoformat()+'Z',
+        )
+
+class Watching(object):
+
+    def __init__(self, number, position, datetime_):
+        '''
+
+        :param number: int
+        :param position: int
+        :param datetime: str (ISO8601)
+        '''
+        self.number = number
+        self.position = position
+        self.datetime = datetime_
+
+    def to_dict(self):
+        return self.__dict__
+
+    @classmethod
+    def get(cls, user_id, show_id):
+        '''
+
+        :param user_id: int
+        :param show_id: int of list of int
+        :returns: `Watched()` or list of `Watched()`
+        '''
+        pipe = database.redis.pipeline()
+        show_ids = show_id
+        if not isinstance(show_id, list):
+            show_ids = [show_id]
+        for n in show_ids:
+            pipe.hgetall('users:{}:watching:{}'.format(user_id, show_id))
+        results = pipe.execute()
+        if not results and not isinstance(show_id, list):
+            return None
+        watching = []
+        for w in results:
+            if not w:
+                watching.append(None)
+                continue
+            watching.append(cls(
+                number=w['number'],
+                position=int(w['position']),
+                datetime_=w['datetime'],
+            ))
+        if isinstance(show_id, list):
+            return watching
+        return watching[0]
+
 
 class Episodes(object):
 

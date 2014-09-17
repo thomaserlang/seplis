@@ -159,7 +159,7 @@ class Test_episode_watched(Testbase):
 
 class Test_episode_append_fields(Testbase):
 
-    def test_user_watching(self):
+    def test_user_watched(self):
         show_id = self.new_show()
         response = self.patch('/1/shows/{}'.format(show_id), 
             {
@@ -183,22 +183,22 @@ class Test_episode_append_fields(Testbase):
         )
         self.assertEqual(response.code, 200)
 
-        # we haven't watched any episodes so user_watching should be None
+        # we haven't watched any episodes so user_watched should be None
 
         # test single episode
-        response = self.get('/1/shows/{}/episodes/1?append=user_watching'.format(show_id))
+        response = self.get('/1/shows/{}/episodes/1?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episode = utils.json_loads(response.body)
-        self.assertTrue('user_watching' in episode)
-        self.assertEqual(episode['user_watching'], None)
+        self.assertTrue('user_watched' in episode)
+        self.assertEqual(episode['user_watched'], None)
 
         # test multi episodes
-        response = self.get('/1/shows/{}/episodes?append=user_watching'.format(show_id))
+        response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)
         for episode in episodes:
-            self.assertTrue('user_watching' in episode)
-            self.assertEqual(episode['user_watching'], None)
+            self.assertTrue('user_watched' in episode)
+            self.assertEqual(episode['user_watched'], None)
 
         # Let's watch some episodes
         for number in [1,2]:
@@ -207,19 +207,19 @@ class Test_episode_append_fields(Testbase):
 
 
         # test single episode
-        response = self.get('/1/shows/{}/episodes/1?append=user_watching'.format(show_id))
+        response = self.get('/1/shows/{}/episodes/1?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episode = utils.json_loads(response.body)
-        self.assertTrue('user_watching' in episode)
-        self.assertEqual(episode['user_watching']['times'], 1)
+        self.assertTrue('user_watched' in episode)
+        self.assertEqual(episode['user_watched']['times'], 1)
 
         # test multi episodes
-        response = self.get('/1/shows/{}/episodes?append=user_watching'.format(show_id))
+        response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)
         for episode in episodes:
-            self.assertTrue('user_watching' in episode)
-            self.assertEqual(episode['user_watching']['times'], 1)
+            self.assertTrue('user_watched' in episode)
+            self.assertEqual(episode['user_watched']['times'], 1)
 
 class Test_air_dates(Testbase):
 

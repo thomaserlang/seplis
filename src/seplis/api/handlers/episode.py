@@ -17,7 +17,7 @@ from tornado import gen
 class Handler(base.Handler):
 
     allowed_append_fields = (
-        'user_watching'
+        'user_watched'
     )
 
     @gen.coroutine
@@ -36,11 +36,9 @@ class Handler(base.Handler):
         ))
         if not result['found']:
             raise exceptions.Episode_unknown()
-        print(self.append_fields)
-        if 'user_watching' in self.append_fields:
-            print('hmm')
+        if 'user_watched' in self.append_fields:
             self.is_logged_in()
-            result['_source']['user_watching'] = Watched.get(
+            result['_source']['user_watched'] = Watched.get(
                 user_id=self.current_user.id,
                 show_id=show_id,
                 number=number,
@@ -72,7 +70,7 @@ class Handler(base.Handler):
         for episode in result['hits']['hits']:
             episodes[episode['_source']['number']] = episode['_source']
 
-        if 'user_watching' in self.append_fields:
+        if 'user_watched' in self.append_fields:
             self.is_logged_in()
             numbers = list(episodes.keys())
             watched = Watched.get(
@@ -81,7 +79,7 @@ class Handler(base.Handler):
                 number=numbers,
             )
             for w, number in zip(watched, numbers):
-                episodes[number]['user_watching'] = w
+                episodes[number]['user_watched'] = w
 
         p = Pagination(
             page=page,

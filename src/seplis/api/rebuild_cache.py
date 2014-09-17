@@ -113,6 +113,7 @@ class Rebuild_cache(object):
         rows = session.query(
             models.Episode_watched,
         ).all()
+        usershows = []
         for row in rows:
             Watched.cache(
                 user_id=row.user_id,
@@ -122,6 +123,23 @@ class Rebuild_cache(object):
                 datetime=row.datetime,
                 pipe=pipe,
             )
+            n = '{}-{}'.format(row.user_id, row.show_id)
+            if n not in usershows:
+                lw = Watched._get_latest_watched(
+                    user_id=row.user_id,
+                    show_id=row.show_id,
+                    session=session,
+                )
+                Watched.cache_currently_watching(
+                    user_id=row.user_id,
+                    show_id=row.show_id,
+                    number=lw.episode_number,
+                    position=lw.position,
+                    datetime_=lw.datetime,
+                    session=session,
+                    pipe=pipe,
+                )
+                usershows.append(n)
 
 def main():
     Rebuild_cache().rebuild()

@@ -444,7 +444,7 @@ class test_show(Testbase):
         self.assertEqual(fan_of[0]['id'], show_id)
         self.assertEqual(fan_of[0]['user_watching'], None)
 
-        # Let's watch part of an episode and see if it shows up
+        # Let's watch a part of an episode and see if it shows up
         # in the user_watching field.
         response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
             self.current_user.id,
