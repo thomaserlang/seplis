@@ -44,7 +44,7 @@ class Rebuild_cache(object):
                 )
 
     def rebuild_episodes(self):
-        from seplis.api.base.show import Episode
+        from seplis.api.base.episode import Episode
         with new_session() as session:
             episodes = session.query(models.Episode).all()
             #pipe = database.redis.pipeline()
