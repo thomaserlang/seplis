@@ -2,6 +2,10 @@ from seplis.config import config
 from seplis.connections import database
 
 def create_indices():
+
+    database.es.indices.delete('shows')
+    database.es.indices.delete('episodes')
+
     settings = {
         'analysis': {
             'filter': {

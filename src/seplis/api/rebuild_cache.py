@@ -13,7 +13,8 @@ class Rebuild_cache(object):
         print('Rebuilding cache/search data for:')
         sys.stdout.flush()
         database.redis.flushdb()
-        database.es.indices.delete(index='_all')
+        database.es.indices.delete(index='shows')
+        database.es.indices.delete(index='episodes')
         elasticcreate.create_indices()
         for name, method in inspect.getmembers(self, predicate=inspect.ismethod):
             if name[:8] == 'rebuild_':
