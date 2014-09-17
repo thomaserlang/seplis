@@ -33,24 +33,25 @@ class Rebuild_cache(object):
                 s.save(session, pipe)
             pipe.execute()
 
-    def rebuild_follow(self):
-        from seplis.api.base.show import Follow        
-        with new_session() as session:
-            followers = session.query(models.Show_follow).all()
-            for follow in followers:
-                Follow.cache(
-                    show_id=follow.show_id,
-                    user_id=follow.user_id,
-                )
+    @auto_session
+    @auto_pipe
+    def rebuild_fans(self, session, pipe):
+        from seplis.api.base.show import Show        
+        fans = session.query(models.Show_fan).all()
+        for fan in fans:
+            Show.cache_fan(
+                show_id=follow.show_id,
+                user_id=follow.user_id,
+                pipe=pipe,
+            )
 
-    def rebuild_episodes(self):
+    @auto_session
+    def rebuild_episodes(self, session):
         from seplis.api.base.episode import Episode
-        with new_session() as session:
-            episodes = session.query(models.Episode).all()
-            #pipe = database.redis.pipeline()
-            for episode in episodes:
-                e = Episode._format_from_row(episode)
-                e.to_elasticsearch(episode.show_id)
+        episodes = session.query(models.Episode).all()
+        for episode in episodes:
+            e = Episode._format_from_row(episode)
+            e.to_elasticsearch(episode.show_id)
 
     def rebuild_tags(self):
         from seplis.api.base.tag import Tag
