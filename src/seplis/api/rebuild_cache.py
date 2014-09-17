@@ -21,17 +21,16 @@ class Rebuild_cache(object):
                 method()
         print('Done!')
 
-    def rebuild_shows(self):
+    @auto_session
+    @auto_pipe
+    def rebuild_shows(self, session, pipe):
         from seplis.api.base.show import Show
-        with new_session() as session:
-            shows = session.query(models.Show).filter(
-                models.Show.status>0,
-            ).all()
-            pipe = database.redis.pipeline()
-            for show in shows:
-                s = Show._format_from_row(show)
-                s.save(session, pipe)
-            pipe.execute()
+        shows = session.query(models.Show).filter(
+            models.Show.status>0,
+        ).all()
+        for show in shows:
+            s = Show._format_from_row(show)
+            s.save(session=session, pipe=pipe)
 
     @auto_session
     @auto_pipe
