@@ -12,7 +12,7 @@ class HTTPData(object):
     def __init__(self, client, response, timeout=TIMEOUT):
         self.client = client
         self.data = utils.json_loads(response.body) if \
-            response and response.body != None \
+            response and response.body \
                 else None
         self.timeout = timeout
         self.link = {}
@@ -39,6 +39,9 @@ class HTTPData(object):
         if 'X-Total-Pages' in response.headers:
             self.pages = int(response.headers['X-Total-Pages'])
 
+    def to_dict(self):
+        return self.data
+
     def all(self):
         s = self
         while True:
@@ -62,6 +65,9 @@ class HTTPData(object):
 
     def __getitem__(self, key):
         return self.data[key]
+
+    def get(self, key, default=None):
+        return self.data.get(key, default)
 
 class Async_client(object):
 

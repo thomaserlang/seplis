@@ -423,15 +423,23 @@ class test_show(Testbase):
         self.get('http://{}/shows/_refresh'.format(
             config['elasticsearch']
         ))
+
         # Let's become a fan of the show
         for i in [1,2]:
             response = self.put('/1/shows/{}/fans/{}'.format(show_id, self.current_user.id))
             self.assertEqual(response.code, 200, response.body)
-            response = self.get('/1/shows/{}?append=is-fan'.format(show_id))
+            response = self.get('/1/shows/{}?append=is_fan'.format(show_id))
             self.assertEqual(response.code, 200)
             show = utils.json_loads(response.body)
             self.assertEqual(show['fans'], 1)
             self.assertEqual(show['is_fan'], True)
+
+        # Let's test that we haven't overwritten any essential data.
+        response = self.get('/1/shows/{}'.format(show_id))
+        self.assertEqual(response.code, 200)
+        show = utils.json_loads(response.body)
+        self.assertTrue('title' in show)
+        self.assertEqual(show['title'], 'test show')
 
         # Let's check that we can find the user in the shows fan
         # list.
@@ -449,7 +457,7 @@ class test_show(Testbase):
         self.assertEqual(fan_of[0]['user_watching'], None)
 
         # When searching for fans we should be able to append the is_fan field.
-        response = self.get('/1/shows?q=id:{}&append=is-fan'.format(show_id))
+        response = self.get('/1/shows?q=id:{}&append=is_fan'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         shows = utils.json_loads(response.body)
         self.assertEqual(shows[0]['id'], show_id)
@@ -484,6 +492,15 @@ class test_show(Testbase):
             self.assertEqual(response.code, 200)
             show = utils.json_loads(response.body)
             self.assertEqual(show['fans'], 0)
+
+
+        # Let's test that we haven't overwritten any essential data.
+        response = self.get('/1/shows/{}'.format(show_id))
+        self.assertEqual(response.code, 200)
+        show = utils.json_loads(response.body)
+        self.assertTrue('title' in show)
+        self.assertEqual(show['title'], 'test show')
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

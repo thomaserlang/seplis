@@ -7,13 +7,13 @@ import seplis.web.handlers.settings
 import seplis.web.handlers.show
 import seplis.web.handlers.tag
 import seplis.web.handlers.suggest
+import seplis.web.handlers.air_dates
 import seplis.web.modules.menu
-import seplis.web.modules.follow_button
+import seplis.web.modules.fan_button
 import seplis.web.modules.tags
 import os
 from seplis.logger import logger
 from tornado.options import define, options
-from seplis.web.client import Async_client
 
 class Application(tornado.web.Application):
 
@@ -29,7 +29,7 @@ class Application(tornado.web.Application):
             login_url='/signin',
             ui_modules=dict(
                 menu=seplis.web.modules.menu.Module,
-                follow_button=seplis.web.modules.follow_button.Module,
+                fan_button=seplis.web.modules.fan_button.Module,
                 tags=seplis.web.modules.tags.Module,
             )
         )
@@ -39,22 +39,26 @@ class Application(tornado.web.Application):
 
             # (r'/signup', handlers.signup.Handler),
             tornado.web.URLSpec(r'/signin', seplis.web.handlers.signin.Handler),
+            tornado.web.URLSpec(r'/api/signin', seplis.web.handlers.signin.API_handler),
             tornado.web.URLSpec(r'/settings', seplis.web.handlers.settings.Handler),
 
-            tornado.web.URLSpec(r'/shows/([0-9]+)', seplis.web.handlers.show.Handler),
-            tornado.web.URLSpec(r'/follow', seplis.web.handlers.show.Follow_handler),
+            tornado.web.URLSpec(r'/show/([0-9]+)', seplis.web.handlers.show.Redirect_handler),
+            tornado.web.URLSpec(r'/show/([0-9]+)/[^/]+', seplis.web.handlers.show.Handler),
+            tornado.web.URLSpec(r'/show-new', seplis.web.handlers.show.New_handler),
+            tornado.web.URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
+            tornado.web.URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.show.Edit_handler),
+            tornado.web.URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),
+
+            tornado.web.URLSpec(r'/api/fan', seplis.web.handlers.show.API_fan_handler),
 
             tornado.web.URLSpec(r'/suggest', seplis.web.handlers.suggest.Handler),
 
             tornado.web.URLSpec(r'/user-tags', seplis.web.handlers.tag.Relation_handler),
             tornado.web.URLSpec(r'/users/([0-9]+)/tags/shows', seplis.web.handlers.tag.Shows_handler, name='user_tagged_shows'),
 
+            tornado.web.URLSpec(r'/air-dates', seplis.web.handlers.air_dates.Handler),
         ]
         tornado.web.Application.__init__(self, urls, **settings)
-        self.client = Async_client(
-            url=config['api']['url'],
-            client_id=config['client']['id'],
-        )
 
 def main():
     logger.set_logger('web-{}.log'.format(config['web']['port']))

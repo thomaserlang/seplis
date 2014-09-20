@@ -24,6 +24,7 @@ from seplis.api.decorators import authenticated
 class Handler(tornado.web.RequestHandler, SentryMixin):
 
     def initialize(self):
+        self.access_token = None
         if self.request.body:
             try:
                 self.request.body = utils.json_loads(self.request.body)
@@ -135,7 +136,8 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             return None
         if bearer[0] != 'Bearer':
             raise tornado.web.HTTPError(400, 'Unrecognized token type')
-        return User.get_from_token(bearer[1])
+        self.access_token = bearer[1]
+        return User.get_from_token(self.access_token)
 
     def validate(self, schema, *arg, **args):
         try:

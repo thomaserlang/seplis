@@ -58,7 +58,7 @@ class Episode(object):
         self.to_elasticsearch(show_id)
 
     def to_elasticsearch(self, show_id):
-        self.show_id = show_id
+        self.show_id = int(show_id)
         database.es.index(
             index='episodes',
             doc_type='episode',
@@ -467,7 +467,9 @@ class Episodes(object):
             page=page,
             per_page=per_page,
         )
-        query = query.limit(
+        query = query.order_by(
+            asc(models.Episode.air_date),
+        ).limit(
             int(per_page),
         ).offset(
             int(page-1) * int(per_page),

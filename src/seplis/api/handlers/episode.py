@@ -12,7 +12,8 @@ from seplis.api.base.pagination import Pagination
 from datetime import datetime
 from sqlalchemy import asc, desc
 from tornado.httpclient import AsyncHTTPClient, HTTPError
-from tornado import gen 
+from tornado import gen
+from collections import OrderedDict
 
 class Handler(base.Handler):
 
@@ -66,8 +67,9 @@ class Handler(base.Handler):
             **req
         )
 
-        episodes = {}
+        episodes = OrderedDict()
         for episode in result['hits']['hits']:
+            episode['_source'].pop('show_id', None)
             episodes[episode['_source']['number']] = episode['_source']
 
         if 'user_watched' in self.append_fields:
@@ -80,7 +82,6 @@ class Handler(base.Handler):
             )
             for w, number in zip(watched, numbers):
                 episodes[number]['user_watched'] = w
-
         p = Pagination(
             page=page,
             per_page=per_page,

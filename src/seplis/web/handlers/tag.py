@@ -2,7 +2,7 @@ import logging
 from seplis.web.handlers import base
 from tornado import gen
 
-class Shows_handler(base.Handler_authenticated):
+class Shows_handler(base.Handler):
 
     @gen.coroutine
     def get(self, user_id):
@@ -29,7 +29,7 @@ class Shows_handler(base.Handler_authenticated):
             total_results=shows['total_results'],
         )
 
-class Relation_handler(base.Handler_authenticated):
+class Relation_handler(base.Handler):
 
     @gen.coroutine
     def get(self):

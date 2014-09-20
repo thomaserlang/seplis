@@ -120,7 +120,11 @@ class test_show_info_changes(TestCase):
                 'url': 'http://example.org',
                 'title': 'Example',
             },
-            'status': 1,
+            'status': 1,            
+            'genres': [
+                'test1',
+                'test2',
+            ],
         }
         show_changed = {   
             'title': 'NCIS 2',
@@ -131,6 +135,11 @@ class test_show_info_changes(TestCase):
             },
             'status': 1,
             'premiered': date(2014, 9, 3),
+            'genres': [
+                'test1',
+                'test2',
+                'test3',
+            ],
         }
 
         changes = show_info_changes(show, show_changed)
@@ -141,7 +150,10 @@ class test_show_info_changes(TestCase):
                 'url': 'http://example.org',
                 'title': 'Example',
             },
-            'premiered': date(2014, 9, 3),
+            'premiered': date(2014, 9, 3),            
+            'genres': [
+                'test3',
+            ],
         })
 
 class test_episode_changes(TestCase):
@@ -156,6 +168,10 @@ class test_episode_changes(TestCase):
             },
             'air_date': date(2014, 9, 3),
             'season': 1,
+            'genres': [
+                'test1',
+                'test2',
+            ]
         }
         episodes_changed = [
             {   
@@ -179,7 +195,7 @@ class test_episode_changes(TestCase):
                 },
                 'air_date': date(2014, 9, 5),
                 'episode': 2,
-                'season': 1
+                'season': 1,
             }
         ]
 

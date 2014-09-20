@@ -87,49 +87,57 @@ class Show_indexer(Client):
         )
         return show_data
 
-    def _update_show(self, show, update_episodes=True):
+    def _update_show(self, show, update_episodes=True, retries=0):
         '''
 
         :param show: dict
         :param update_episodes: bool
         '''
-        if 'indices' not in show:
-            return None
-        show_data = {}
-        show_indexer = self.get_indexer(show['indices'].get('info', ''))
-        if show_indexer:               
-            external_show = show_indexer.get_show(
-                show['externals'][show['indices']['info']]
-            )
-            if external_show:
-                show_data = show_info_changes(
-                    show, 
-                    external_show,
-                )
-        episode_indexer = self.get_indexer(show['indices'].get('episodes'))
-        if episode_indexer and update_episodes:
-            external_episodes = show_indexer.get_episodes(
-                show['externals'][show['indices']['episodes']]
-            )
-            if external_episodes:
-                episodes = self.get(
-                    '/shows/{}/episodes?per_page=500'.format(show['id'])
-                ).all()
-                if not episodes:
-                    episodes = []
-                show_data['episodes'] = show_episode_changes(
-                    episodes,
-                    external_episodes,
-                )
-        if show_data == {'episodes': []}:
+        try:
+            if 'indices' not in show:
+                return None
             show_data = {}
-        if show_data:
-            show = self.patch(
-                'shows/{}'.format(show['id']), 
-                show_data,
-                timeout=120
-            )
-        return show_data
+            show_indexer = self.get_indexer(show['indices'].get('info', ''))
+            if show_indexer:               
+                external_show = show_indexer.get_show(
+                    show['externals'][show['indices']['info']]
+                )
+                if external_show:
+                    show_data = show_info_changes(
+                        show, 
+                        external_show,
+                    )
+            episode_indexer = self.get_indexer(show['indices'].get('episodes'))
+            if episode_indexer and update_episodes:
+                external_episodes = episode_indexer.get_episodes(
+                    show['externals'][show['indices']['episodes']]
+                )
+                if external_episodes:
+                    episodes = self.get(
+                        '/shows/{}/episodes?per_page=500'.format(show['id'])
+                    ).all()
+                    if not episodes:
+                        episodes = []
+                    show_data['episodes'] = show_episode_changes(
+                        episodes,
+                        external_episodes,
+                    )
+            if show_data == {'episodes': []}:
+                show_data = {}
+            if show_data:
+                show = self.patch(
+                    'shows/{}'.format(show['id']), 
+                    show_data,
+                    timeout=120
+                )
+            return show_data
+        except KeyboardInterrupt:
+            raise
+        except:
+            logging.exception('error')
+            if retries <= 5:
+                retries += 1
+                self._update_show(show, update_episodes, retries)
 
     def new(self, external_name, external_id, get_episodes=True):
         '''
@@ -166,13 +174,17 @@ def show_info_changes(show, show_new):
     for s in schemas.Show_schema:
         if not isinstance(s, str) or \
             s == 'externals' or \
-            s == 'indices':
+            s == 'indices' or \
+            s == 'episodes':
             continue
         if s in show and s in show_new:
             if show[s] == None and isinstance(show_new[s], dict):
                 continue
             if show[s] != show_new[s]:
-                changes[s] = show_new[s]
+                if isinstance(show[s], list):
+                    changes[s] = list(set(show_new[s]) - set(show[s]))
+                else:
+                    changes[s] = show_new[s]
         elif s not in show and s in show_new:
             changes[s] = show_new[s]
     return changes

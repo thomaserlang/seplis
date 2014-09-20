@@ -1,7 +1,7 @@
 $('#signin-form').submit(function(event){
     event.preventDefault();
     api.post(
-        '/signin', 
+        '/api/signin', 
         $(this).serialize(), 
         {
             done: function(data){

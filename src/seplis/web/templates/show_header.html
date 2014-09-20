@@ -1,0 +1,31 @@
+<div class="row">   
+    <div class="col-xs-8">
+        {% module fan_button(show) %}
+        {% if show['title'] %}
+            <h1>{{ escape(show['title']) }}</h1> 
+        {% else %}                    
+            <h1>No title</h1>
+            <h4 style="color:red;">
+            {% if show['indices']['info'] %}
+                We're updating this show right now. <br>
+                Please try to reload the page in a couple of minutes.
+            {% else %}
+                Please add an indexer.
+            {% end %}
+            </h4>
+        {% end %}
+        <div class="externals">
+            {% for name in show['externals'] %}
+                <span>{{ escape(name) }}: {{ escape(show['externals'][name]) }}</span>
+            {% end %}
+        </div>
+    </div>
+    <div class="col-xs-4">
+        {% if current_user and current_user['level'] > constants.LEVEL_EDIT_SHOW %}
+            <div class="btn-group pull-right">
+                <a href="/show-edit/{{ show['id'] }}" class="btn btn-default" title="Edit show">Edit</a>
+            </div>
+        {% end %}
+    </div>
+</div>
+

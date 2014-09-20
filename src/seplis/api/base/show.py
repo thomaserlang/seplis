@@ -289,12 +289,14 @@ class Show(object):
             'fans': models.Show.fans + incr,
         })            
         self.fans += incr
-        database.es.index(
+        database.es.update(
             index='shows',
             doc_type='show',
             id=self.id,
             body={
-                'fans': self.fans,
+                'doc': {
+                    'fans': self.fans,
+                },
             },
         )
         pipe.hincrby('shows:{}'.format(self.id), 'fans', incr)

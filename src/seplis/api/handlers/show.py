@@ -19,7 +19,7 @@ from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado import gen, concurrent
 from datetime import datetime
 from sqlalchemy import asc, desc, and_
-
+from collections import OrderedDict
 
 class Handler(base.Handler):
 
@@ -167,7 +167,7 @@ class Handler(base.Handler):
                     data[key] = new_data[key]
 
     allowed_append_fields = (
-        'is-fan'
+        'is_fan'
     )
 
     @gen.coroutine
@@ -183,7 +183,7 @@ class Handler(base.Handler):
         result = yield self.es('/shows/show/{}'.format(show_id))                
         if not result['found']:
             raise exceptions.Show_unknown()
-        if 'is-fan' in self.append_fields:
+        if 'is_fan' in self.append_fields:
             self.is_logged_in()
             result['_source']['is_fan'] = Show.is_fan(
                 user_id=self.current_user.id,
@@ -211,11 +211,11 @@ class Handler(base.Handler):
             '/shows/show/_search',
             **req
         )
-        shows = {}
+        shows = OrderedDict()
         for show in result['hits']['hits']:
             shows[show['_source']['id']] = show['_source']
 
-        if 'is-fan' in self.append_fields:
+        if 'is_fan' in self.append_fields:
             self.is_logged_in()
             show_ids = list(shows.keys())
             is_fan = Shows.is_fan(
@@ -284,7 +284,6 @@ class External_handler(Handler):
 
     def delete(self, title, value): 
         raise HTTPError(405)     
-
 
 class Fans_handler(Handler):
 
@@ -357,3 +356,17 @@ class Fan_of_handler(Handler):
         show.unfan(
             user_id
         )
+
+class Update_handler(base.Handler):
+
+    @authenticated(constants.LEVEL_EDIT_SHOW)
+    def post(self, show_id):
+        from seplis.tasks.update_show import update_show
+        job = database.queue.enqueue(
+            update_show, 
+            self.access_token,
+            int(show_id),
+        )
+        self.write_object({
+            'job_id': job.id,
+        })

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block head %}
+    <script>
+    $(function(){
+        moment.locale('en', {
+            calendar : {
+                lastDay : '[Yesterday] (dddd)',
+                sameDay : '[Today] (dddd)',
+                nextDay : '[Tomorrow] (dddd)',
+                lastWeek : '[Last] dddd',
+                nextWeek : 'dddd',
+                sameElse : 'L'
+            }
+        });
+        $('date').each(function(){
+            $(this).text(
+                moment(
+                    $(this).attr('title'), 
+                    moment.iso_8601
+                ).calendar()
+            );
+        });
+    });
+    </script>
+{% end %}
+{% block body %}
+    {% for air_date, episodes in air_dates.items() %}
+        <div class="airdates">
+            <h3 class="date"><date title="{{ air_date }}">{{ air_date }}</date></h3>
+            <div class="airdate">
+            {% for episode in episodes %}
+                {% set show = episode['show'] %} 
+                {% set episode = episode['episode'] %}
+                <div class="episode">
+                    <div class="image">
+                        <div class="image">
+                            <a href="/show/{{ show['id'] }}">
+                                <img alt="There should be an image here" height="80px" width="60px">
+                            </a>
+                        </div>
+                    </div>
+                    <div class="title info">
+                        <a href="/show/{{ show['id'] }}" title="{{ escape(show['title']) }}">
+                            {{ escape(show['title']) }}
+                        </a>
+                    </div>
+                    <div class="episode-title info">
+                        <a href="/show/{{ show['id'] }}" title="{{ escape(episode['title']) }}">
+                            {{ escape(episode['title']) }}
+                        </a>
+                    </div>
+                </div>
+            {% end %}
+            </div>
+        </div>
+    {% end %}
+{% end %}

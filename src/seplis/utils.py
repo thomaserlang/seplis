@@ -5,7 +5,6 @@ import datetime
 import re
 import tornado.escape
 import collections
-
 import json
 
 def random_key():
@@ -56,16 +55,15 @@ def json_loads(s, charset='utf-8'):
         s = s.decode(charset)
     return json.loads(s)
 
-_punct_re = re.compile(r'[\t !"#$%&\'()*\-/<=>?@\[\\\]^_`{|},.]+')
-
 def slugify(text, delim='-', max_length=45):
-    """Generates an ASCII-only slug."""
-    result = []
-    text = text
-    for word in _punct_re.split(text.lower()):
-        result.extend(word.split())
-    data = delim.join(result)
-    return (data[:max_length]) if len(data) > max_length else data
+    from slugify import slugify
+    result = slugify(
+        text if text else '', 
+        to_lower=True, 
+        max_length=max_length,
+        separator=delim,
+    )
+    return result if result else 'no-title'
 
 def dict_update(d1, d2):
     '''
@@ -110,7 +108,9 @@ def url_encode_tornado_arguments(arguments):
     :returns: str
     '''
     return '&'.join(
-        ['{}={}'.format(arg, tornado.escape.url_escape(value.decode('utf-8') if isinstance(value, bytes) else str(value))) for arg in arguments for value in arguments[arg]]
+        ['{}={}'.format(arg, tornado.escape.url_escape(value.decode('utf-8') \
+            if isinstance(value, bytes) else str(value))) \
+                for arg in arguments for value in arguments[arg]]
     )
 
 def parse_link_header(link_header):

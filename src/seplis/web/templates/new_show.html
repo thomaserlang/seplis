@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block body %}
+    <h1>New show</h1>
+    <form id="form-new-show">
+        <div id="new-show-error"></div>
+        <p>Specify an IMDb ID to prevent duplication of shows.</p>
+        <div class="form-group">
+            <label for="imdb">IMDb ID<strong style="color:red;">*</strong></label>
+            <input type="text" class="form-control" name="imdb" id="imdb" placeholder="" required>
+        </div>
+        <p style="margin-top:30px;">
+            Specify a TheTVDB ID or a TVRage ID (or both).
+        </p>
+        <div class="form-group">
+            <label for="thetvdb">TheTVDB ID</label>
+            <input type="text" class="form-control" name="thetvdb" id="thetvdb" placeholder="">
+        </div>
+        <div class="form-group">
+            <label for="tvrage">TVRage ID</label>
+            <input type="text" class="form-control" name="tvrage" id="tvrage" placeholder="">
+        </div>
+
+        <div class="form-group" style="margin-top:30px;">
+            <label for="index-info">Index show info from</label>
+            <select name="info" id="index-info" class="form-control">
+                <option></option>
+                <option value="thetvdb">TheTVDB</option>
+                <option value="tvrage">TVRage</option>
+            </select>
+        </div>            
+
+        <div class="form-group">
+            <label for="index-episodes">Index episodes from</label>
+            <select name="episodes" id="index-episodes" class="form-control">
+                <option></option>
+                <option value="thetvdb">TheTVDB</option>
+                <option value="tvrage">TVRage</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add show</button>
+
+    </form>
+{% end %}

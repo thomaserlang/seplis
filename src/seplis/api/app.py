@@ -30,6 +30,8 @@ class Application(tornado.web.Application):
             (r'/1/shows/([0-9]+)/episodes', seplis.api.handlers.episode.Handler),
             (r'/1/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Handler),
 
+            (r'/1/shows/([0-9]+)/update', seplis.api.handlers.show.Update_handler),
+
             (r'/1/shows/([0-9]+)/fans', seplis.api.handlers.show.Fans_handler),
             (r'/1/shows/([0-9]+)/fans/([0-9]+)', seplis.api.handlers.show.Fans_handler),
 
@@ -63,7 +65,7 @@ class Application(tornado.web.Application):
             max_workers=seplis.config['api']['max_workers']
         )
         self.sentry_client = AsyncSentryClient(
-            seplis.config['api']['sentry_url'],
+            seplis.config['sentry_dsn'],
             raise_send_errors=True
         )
         tornado.web.Application.__init__(self, urls, **settings)

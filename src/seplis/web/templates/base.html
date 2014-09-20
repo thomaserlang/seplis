@@ -4,20 +4,38 @@
         <title>{{ title }}</title>        
         <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="/static/css/vendor/bootstrap.min.css">
+        <link rel="stylesheet" href="/static/css/vendor/jquery.growl.css">
         <link rel="stylesheet" href="/static/css/base.css">
         <link rel="stylesheet" href="/static/css/show.css">
         <link rel="stylesheet" href="/static/css/signin.css">
         <link rel="stylesheet" href="/static/css/suggest.css">
-        <link rel="stylesheet" href="/static/css/follow_button.css">
+        <link rel="stylesheet" href="/static/css/fan_button.css">
         <link rel="stylesheet" href="/static/css/progress.css">
+        <link rel="stylesheet" href="/static/css/air_dates.css">
 
-        <script type="text/javascript" src="/static/js/vendor/jquery-2.1.0.min.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/jquery-2.1.1.min.js"></script>
         <script type="text/javascript">
+            function show_api_error(error) {
+                var message = error.message + '.';
+                if (error.code === 1001) {
+                    for (var key in error.errors) {
+                        message = message + _.template(multiline(function(){/*
+                            <br><br><strong><%= field %><br></strong> <%= message %>.  
+                        */}), error.errors[key]);
+                    }
+                }
+                $.growl.error({
+                    message: message,
+                    location: 'tc',
+                });
+            }
             $(function(){
                 api = new Api();
                 api.loader_gif = '/static/img/loader.gif';
+                api.default_error_callback = show_api_error;
+
                 template = new Template();
-                current_user = {{ json_dumps(current_user) }};
+                current_user = {{ json_dumps(current_user.data) if current_user else 'null' }};
 
                 var engine = new Bloodhound({
                   name: 'suggest',
@@ -71,10 +89,13 @@
         <script type="text/javascript" src="/static/js/vendor/underscore-min.js"></script>
         <script type="text/javascript" src="/static/js/vendor/bootstrap.min.js"></script>
         <script type="text/javascript" src="/static/js/vendor/typeahead.bundle.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/jquery.growl.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/moment.js"></script>
         <script type="text/javascript" src="/static/js/api.js"></script>
         <script type="text/javascript" src="/static/js/template.js"></script>
         <script type="text/javascript" src="/static/js/signin.js"></script>
         <script type="text/javascript" src="/static/js/tag.js"></script>
-        <script type="text/javascript" src="/static/js/follow_button.js"></script>
+        <script type="text/javascript" src="/static/js/fan_button.js"></script>
+        <script type="text/javascript" src="/static/js/show.js"></script>
     </body>
 </html>

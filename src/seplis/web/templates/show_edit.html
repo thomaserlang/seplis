@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block body %}
+    {% if show %}
+        {% include show_header.html %}
+        <h2>Edit show</h2>
+        <form id="form-edit-show" show-id="{{ show['id'] }}">
+    {% else %}
+        <h1>New show</h1>  
+        <form id="form-new-show">  
+    {% end %}
+        <p>Specify an IMDb ID to prevent duplication of shows.</p>
+        {% for index in constants.EXTERNAL_TYPES %}
+            <div class="form-group">
+                <label for="{{ escape(index) }}">
+                    {{ escape(constants.EXTERNAL_TYPE_NAMES[index]) }} 
+                    ID
+                    {{ ' *' if index in constants.EXTERNAL_REQUIRED_TYPES else '' }}
+                </label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    name="{{ escape(index) }}" 
+                    id="{{ escape(index) }}"
+                    value="{{ show['externals'].get(index, '') if show else '' }}"
+                    {{ 'required' if index in constants.EXTERNAL_REQUIRED_TYPES else '' }}
+                >
+            </div>
+        {% end %}
+
+        <div style="margin-top:30px">
+        {% for index, externals in constants.INDEX_TYPES %}
+            <div class="form-group">
+                <label for="index-{{ escape (index) }}">
+                    Index {{ escape(constants.INDEX_TYPE_NAMES[index].lower()) }} from
+                </label>
+                <select 
+                    name="{{ escape (index) }}" 
+                    id="index-{{ escape (index) }}" 
+                    class="form-control"
+                >
+                    <option></option>
+                    {% for name in externals %}
+                        <option 
+                            value="{{ escape(name) }}"
+                            {{ 'selected' if show and show['indices'][index] == name else '' }}
+                        >
+                            {{ escape(constants.EXTERNAL_TYPE_NAMES[name]) }}
+                        </option>
+                    {% end %}
+                </select>
+            </div> 
+        {% end %}
+        </div>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </form>
+{% end %}

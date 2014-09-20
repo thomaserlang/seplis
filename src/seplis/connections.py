@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from seplis.config import config
 from elasticsearch import Elasticsearch
+from rq import Queue
 
 class Database:
     def __init__(self):
@@ -23,6 +24,12 @@ class Database:
             db=0,
             decode_responses=True,
         )
+        self.queue_redis = redis.StrictRedis(
+            config['redis']['ip'], 
+            port=config['redis']['port'], 
+            db=1,
+        )
+        self.queue = Queue(connection=self.queue_redis)
         self.es = Elasticsearch(
             config['elasticsearch'],
         )

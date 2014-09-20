@@ -197,7 +197,7 @@ class Show_external_duplicated(API_exception):
             self,
             status_code=400,
             code=4003,
-            message='A show with the external: "{}" and id: "{}" does already exist'.format(external_title, external_id),
+            message='A show with the external name of: "{}" and id: "{}" does already exist'.format(external_title, external_id),
             extra={
                 'show': show,
                 'external_title': external_title,

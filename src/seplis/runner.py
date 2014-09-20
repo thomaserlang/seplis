@@ -78,6 +78,14 @@ def update_show(config, show_id):
     )
     indexer.update_show(show_id)
 
+@app.cmd()
+def worker(config):
+    import seplis
+    seplis.config_load(config)
+    logger.set_logger('worker.log')
+    import seplis.tasks.worker
+    seplis.tasks.worker.main()
+
 def main():
     app.run()
 
