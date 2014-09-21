@@ -23,32 +23,7 @@
             </div>
         </div>
         {% if show['seasons'] %}
-            <div class="panel panel-primary">
-                <div class="panel-heading">Seasons</div>
-                <div class="row panel-body">
-                    <div class="col-xs-2">
-                        <ul class="nav nav-pills nav-stacked">
-                            {% for season in reversed(show['seasons']) %}
-                                <li class="{{ 'active' if season.get('season') == selected_season else '' }}">
-                                    <a href="/show/{{ show['id'] }}?season={{ season.get('season') }}">
-                                        Season {{ '{0:0>2}'.format(season['season']) }}
-                                    </a>
-                                </li>
-                            {% end %}
-                        </ul>
-                    </div>
-                    <div class="col-xs-10">
-                        <div class="episodes">
-                            {% for episode in episodes %}
-                                <div class="episode">
-                                    <episode>{{ '{0:0>2}'.format(episode.get('episode', episode.get('number'))) }}.</episode> 
-                                    <name>{{ escape(episode['title']) if episode.get('title') else escape('<no title>')  }}</name>
-                                </div>
-                            {% end %}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% include show_seasons.html %}
         {% end %}
     </show>
 {% end %}

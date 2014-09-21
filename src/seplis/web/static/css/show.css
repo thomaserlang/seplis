@@ -1,3 +1,27 @@
 #form-new-show, #form-edit-show {
     width:300px;
 }
+
+.season-episodes{
+    margin-top:10px;
+}
+
+.season-episodes h3{
+    margin-bottom:20px;
+}
+
+.season-episodes .episode .panel-heading {
+    overflow: hidden;
+}
+
+.season-episodes .episode .title {
+    width:670px;    
+    overflow: hidden;
+    text-overflow: ellipsis; 
+    white-space: nowrap;
+    float:left;
+}
+
+.season-episodes .episode .airdate {
+    float:right;
+}

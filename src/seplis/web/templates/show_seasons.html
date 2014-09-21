@@ -1,0 +1,21 @@
+<div class="season-episodes">
+    <h3>Episodes</h3>
+    <div class="col-xs-2">
+        <ul class="nav nav-pills nav-stacked">
+            {% for season in reversed(show['seasons']) %}
+                <li class="{{ 'active' if season.get('season') == selected_season else '' }}">
+                    <a href="/show/{{ show['id'] }}?season={{ season.get('season') }}">
+                        Season {{ '{0:0>2}'.format(season['season']) }}
+                    </a>
+                </li>
+            {% end %}
+        </ul>
+    </div>
+    <div class="col-xs-10">
+        <div class="episodes panel-group">
+            {% for episode in episodes %}
+                {% include show_episode.html %}
+            {% end %}
+        </div>
+    </div>
+</div>

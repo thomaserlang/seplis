@@ -47,8 +47,8 @@ class Rebuild_cache(object):
         fans = session.query(models.Show_fan).all()
         for fan in fans:
             Show.cache_fan(
-                show_id=follow.show_id,
-                user_id=follow.user_id,
+                show_id=fan.show_id,
+                user_id=fan.user_id,
                 pipe=pipe,
             )
 

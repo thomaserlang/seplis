@@ -83,7 +83,11 @@ class test_show(Testbase):
             },
         })
         self.assertEqual(response.code, 200, response.body)
-        response = self.patch('/1/shows/{}'.format(show_id))
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'indices': {
+                'episodes': 'imdb'
+            }
+        })
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
         self.assertEqual(show['title'], 'NCIS')
@@ -96,13 +100,48 @@ class test_show(Testbase):
         self.assertEqual(show['ended'], None)
         self.assertEqual(show['indices'], {
             'info': 'imdb',
-            'episodes': None,
+            'episodes': 'imdb',
         })
         self.assertEqual(show['externals'], {
             'imdb': 'tt0364845',
         })
 
 
+    def test_put(self):
+        show_id = self.new_show()
+        response = self.put('/1/shows/{}'.format(show_id), {
+            'title': 'NCIS',
+            'description': {
+                'text': 'The cases of the Naval Criminal Investigative Service.',
+            },
+            'premiered': '2003-01-01',
+            'indices': {
+                'info': 'imdb',
+            },
+            'externals': {
+                'imdb': 'tt0364845',
+            },
+        })
+
+        self.assertEqual(response.code, 200, response.body)
+        response = self.put('/1/shows/{}'.format(show_id), {
+            'indices': {
+                'episodes': 'thetvdb',
+            },
+            'externals': {
+                'thetvdb': '1234',
+            }
+        })
+        self.assertEqual(response.code, 200, response.body)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['title'], 'NCIS')
+        self.assertEqual(show['indices'], {
+            'info': None,
+            'episodes': 'thetvdb',
+        })
+        self.assertEqual(show['externals'], {
+            'thetvdb': '1234',
+        })
     def test_indices(self):
         show_id = self.new_show()
 

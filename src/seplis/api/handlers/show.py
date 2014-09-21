@@ -34,7 +34,7 @@ class Handler(base.Handler):
         show_id = Show.create()
         self.set_status(201)
         if self.request.body:
-            show = yield self._patch(
+            show = yield self._update(
                 show_id, 
                 validate_show=False
             )
@@ -51,7 +51,15 @@ class Handler(base.Handler):
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
     def patch(self, show_id):
-        show = yield self._patch(show_id)
+        show = yield self._update(show_id)
+        self.write_object(
+            show
+        )
+
+    @authenticated(constants.LEVEL_EDIT_SHOW)
+    @gen.coroutine
+    def put(self, show_id):
+        show = yield self._update(show_id, overwrite=True)
         self.write_object(
             show
         )
@@ -69,7 +77,7 @@ class Handler(base.Handler):
     )
 
     @concurrent.run_on_executor
-    def _patch(self, show_id, validate_show=True):
+    def _update(self, show_id, validate_show=True, overwrite=False):
         if validate_show:
             self.validate(schemas.Show_schema)
         show = Show.get(show_id)
@@ -79,6 +87,7 @@ class Handler(base.Handler):
             keys=self.update_keys,
             data=show.__dict__,
             new_data=self.request.body,
+            overwrite=overwrite,
         )
         if 'description' in self.request.body:
             desc = self.request.body['description']
@@ -89,6 +98,10 @@ class Handler(base.Handler):
                     show.description.title = desc['title']
                 if 'url' in desc:
                     show.description.url = desc['url']
+        if overwrite:
+            for index, externals in constants.INDEX_TYPES:
+                if index not in show.indices:
+                    show.indices[index] = None
         if 'episodes' in self.request.body:
             self.patch_episodes(
                 show_id,
@@ -156,20 +169,25 @@ class Handler(base.Handler):
             runtime=episode.get('runtime'),
         )
 
-    def _update_keys(self, keys, data, new_data):
+    def _update_keys(self, keys, data, new_data, overwrite=False):
         for key in keys:
             if key in new_data:
                 if isinstance(new_data[key], dict):
-                    data[key].update(new_data[key])
+                    if overwrite:
+                        data[key] = new_data[key]
+                    else:
+                        data[key].update(new_data[key])
                 elif isinstance(new_data[key], list):
-                    data[key] = list(set(data[key] + new_data[key]))
+                    if overwrite:
+                        data[key] = new_data[key]
+                    else:
+                        data[key] = list(set(data[key] + new_data[key]))
                 else:
                     data[key] = new_data[key]
 
     allowed_append_fields = (
         'is_fan'
     )
-
     @gen.coroutine
     def get(self, show_id=None):
         self.append_fields = self.get_append_fields(self.allowed_append_fields)

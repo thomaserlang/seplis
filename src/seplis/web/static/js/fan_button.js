@@ -12,7 +12,7 @@ $('.fan-button').on('click', '.btn-fan', function(event){
                 var fan_count = $(_this).parent().find('.btn-fan-count');
                 fan_count.html(parseInt(fan_count.html())+1);
                 $(_this).toggleClass('btn-fan btn-unfan');
-                $(_this).html('Unfan');
+                $(_this).html('Fan');
             }
         }
     );

@@ -138,7 +138,7 @@ class API_edit_handler(API_new_handler):
     @gen.coroutine
     def post(self, show_id):
         data = self.build_data()
-        show = yield self.client.patch('/shows/{}'.format(show_id), data)
+        show = yield self.client.put('/shows/{}'.format(show_id), data)
         if not show:
             raise exceptions.Show_unknow()
         yield self.client.post('/shows/{}/update'.format(show_id))

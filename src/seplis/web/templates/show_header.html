@@ -1,8 +1,12 @@
 <div class="row">   
     <div class="col-xs-8">
-        {% module fan_button(show) %}
         {% if show['title'] %}
-            <h1>{{ escape(show['title']) }}</h1> 
+            <h1>
+                <a href="/show/{{ show['id'] }}" color="#000">
+                    {{ escape(show['title']) }}
+                </a>
+            </h1>
+            {% module fan_button(show) %}
         {% else %}                    
             <h1>No title</h1>
             <h4 style="color:red;">
@@ -21,9 +25,14 @@
         </div>
     </div>
     <div class="col-xs-4">
-        {% if current_user and current_user['level'] > constants.LEVEL_EDIT_SHOW %}
+        {% if current_user and current_user['level'] > constants.LEVEL_EDIT_SHOW %}           
             <div class="btn-group pull-right">
-                <a href="/show-edit/{{ show['id'] }}" class="btn btn-default" title="Edit show">Edit</a>
+                <a 
+                    href="/show-edit/{{ show['id'] }}" 
+                    class="btn btn-default" 
+                    title="Edit show">
+                    <span class="glyphicon glyphicon-edit"></span>
+                </a>
             </div>
         {% end %}
     </div>

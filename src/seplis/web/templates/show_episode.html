@@ -1,0 +1,56 @@
+<div class="panel panel-default episode">
+    <div 
+        class="panel-heading" 
+        data-toggle="collapse" 
+        data-target="#collapse-{{ episode['number'] }}"
+    >
+        <h4 class="panel-title">
+            <div class="title">
+                {% if episode['episode'] %}
+                    {{ 
+                        '{0:0>2} '.format(
+                            episode['episode'],
+                        )
+                    }}
+                    <font title="Episode number" style="font-size:12px;">
+                        {{ episode['number'] }}.
+                    </font>
+                {% else %}
+                    {{ episode['number'] }}.
+                {% end %}
+                <font title="{{ escape(episode['title']) }}">
+                    {{ escape(episode['title']) }}
+                </font>
+            </div> 
+            <div class="airdate">
+                <date title="{{ escape(episode['air_date']) }}">
+                    {{ escape(episode['air_date']) }}
+                </date title="">
+            </div>
+        </h4>
+    </div>
+
+    <div id="collapse-{{ episode['number'] }}" class="panel-collapse collapse">
+        <div class="panel-body">
+            {% if episode['description']['text'] %}
+                <description>
+                    {{ escape(episode['description']['text']) }}
+                </description>
+                {% if episode['description']['title'] %}
+                    <br>
+                    <source>
+                        <a 
+                            href="{{ escape(episode['description']['url']) }}" 
+                            target="_blank"
+                        >
+                            {{ escape(episode['description']['title']) }}
+                        </a>
+                    </source>
+                {% end %}
+            {% else %}
+                <i>There is no description for this episode yet!</i>
+            {% end %}
+        </div>
+    </div>
+
+</div>

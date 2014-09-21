@@ -179,7 +179,9 @@ class Show(object):
         :raises: `exceptions.Show_external_field_must_be_specified_exception()`
         :raises: `exceptions.Show_index_type_must_be_in_external_field_exception()`
         '''
-        if not self.indices or not self.indices['info'] and not self.indices['episodes']:
+        if not self.indices or \
+            not self.indices.get('info') and \
+                not self.indices.get('episodes'):
             return
         if not self.externals:
             raise exceptions.Show_external_field_must_be_specified_exception()
