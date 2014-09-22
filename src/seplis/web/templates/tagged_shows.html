@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% block body %}
     <div class="row">
-        <div class="col-xs-9" id="tagged-shows">
+        <div class="col-md-9" id="tagged-shows">
             <div class="row">
-                <div class="col-xs-12">
+                <div class="col-md-12">
                     {% for show in shows['results'] %}
                         <div class="row show">
-                            <div class="col-xs-12">
+                            <div class="col-md-12">
                                 <a href="/shows/{{ show['id'] }}">
                                     {{ escape(show.get('title')) }}
                                 </a>
@@ -16,7 +16,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12">
+                <div class="col-md-12">
                     <ul class="pager">
                         <li class="{{ 'disabled' if not prev_page else '' }}"><a href="{{ prev_page }}">Previous</a></li>
                         <li class="{{ 'disabled' if not next_page else '' }}" ><a href="{{ next_page }}">Next</a></li>
@@ -24,7 +24,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-3">
+        <div class="col-md-3">
             <ul class="nav nav-pills nav-stacked">
                 <li class="{{ 'active' if selected_tag_id == 0 else '' }}">
                     <a href="/users/{{ user_id }}/tags/shows">All{{ ' <span class="pull-right label label-default">{}</span>'.format(total_results) if selected_tag_id == 0 else '' }}</a>

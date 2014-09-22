@@ -1,12 +1,11 @@
-<div class="row">   
+<div class="row show-header">
     <div class="col-xs-8">
         {% if show['title'] %}
             <h1>
-                <a href="/show/{{ show['id'] }}" color="#000">
+                <a href="/show/{{ show['id'] }}">
                     {{ escape(show['title']) }}
                 </a>
             </h1>
-            {% module fan_button(show) %}
         {% else %}                    
             <h1>No title</h1>
             <h4 style="color:red;">
@@ -18,11 +17,6 @@
             {% end %}
             </h4>
         {% end %}
-        <div class="externals">
-            {% for name in show['externals'] %}
-                <span>{{ escape(name) }}: {{ escape(show['externals'][name]) }}</span>
-            {% end %}
-        </div>
     </div>
     <div class="col-xs-4">
         {% if current_user and current_user['level'] > constants.LEVEL_EDIT_SHOW %}           
@@ -37,4 +31,3 @@
         {% end %}
     </div>
 </div>
-

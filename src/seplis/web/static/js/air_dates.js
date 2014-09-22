@@ -11,7 +11,7 @@ $(function(){
     });
     $('.airdates date').each(function(){
         $(this).text(
-            moment(
+            moment.utc(
                 $(this).attr('title'), 
                 moment.iso_8601
             ).calendar()

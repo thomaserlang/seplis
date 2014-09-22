@@ -1,0 +1,39 @@
+.clean-reader {
+    height:100%;
+    width:100%;
+    position:absolute;
+    top:0;
+    left:0;
+    z-index: 99999 !important;
+    display: none;
+}
+
+.clean-reader.clean-black {
+    background-color: #000;
+    color: #fff;
+}
+
+.clean-reader.clean-white {
+    background-color: #F8ECC2;
+    color: #000;
+}
+
+.clean-reader .clean-container {
+    text-align: justify;
+}
+
+.clean-reader .clean-header {
+    font-size:52px;
+    margin-top: 20px;
+}
+
+.clean-reader .clean-text {
+    margin-top: 20px;
+    font-size:24px;
+}
+
+.clean-reader .clean-close {
+    float:right;
+    font-size:52px;
+    cursor:pointer;
+}

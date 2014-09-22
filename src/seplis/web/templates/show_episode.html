@@ -1,20 +1,25 @@
 <div class="panel panel-default episode">
     <div 
-        class="panel-heading" 
+        class="
+            panel-heading
+            {% if next_episode and next_episode['number'] == episode['number'] %}
+            next-episode
+            {% end %}
+        " 
         data-toggle="collapse" 
         data-target="#collapse-{{ episode['number'] }}"
     >
         <h4 class="panel-title">
             <div class="title">
                 {% if episode['episode'] %}
+                    <font title="Episode number" style="font-size:12px;">
+                        {{ episode['number'] }}
+                    </font>
                     {{ 
-                        '{0:0>2} '.format(
+                        '{0:0>2}.'.format(
                             episode['episode'],
                         )
                     }}
-                    <font title="Episode number" style="font-size:12px;">
-                        {{ episode['number'] }}.
-                    </font>
                 {% else %}
                     {{ episode['number'] }}.
                 {% end %}
@@ -30,7 +35,16 @@
         </h4>
     </div>
 
-    <div id="collapse-{{ episode['number'] }}" class="panel-collapse collapse">
+    <div 
+        id="collapse-{{ episode['number'] }}" 
+        class="
+            panel-collapse 
+            collapse            
+            {% if next_episode and next_episode['number'] == episode['number'] %}
+            in
+            {% end %}
+        "
+    >
         <div class="panel-body">
             {% if episode['description']['text'] %}
                 <description>

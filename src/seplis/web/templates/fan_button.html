@@ -1,11 +1,5 @@
 <div class="fan-button btn-group">    
     <button 
-        class="btn btn-default btn-fan-count" 
-        title="{{ show['fans'] }} people are fan of this show"
-    >
-        {{ show['fans'] }}
-    </button>
-    <button 
         class="btn btn-default {{ 
             'btn-fan' if not show['is_fan'] else 'btn-unfan' 
         }}" 
@@ -13,5 +7,10 @@
     >
         Fan
     </button>
-
+    <button 
+        class="btn btn-default btn-fan-count" 
+        title="{{ show['fans'] }} people are fan of this show"
+    >
+        {{ show['fans'] }}
+    </button>
 </div>

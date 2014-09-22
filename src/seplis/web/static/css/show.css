@@ -1,3 +1,7 @@
+.navbar {
+    margin-bottom: 10px;
+}
+
 #form-new-show, #form-edit-show {
     width:300px;
 }
@@ -12,10 +16,16 @@
 
 .season-episodes .episode .panel-heading {
     overflow: hidden;
+    background-color: #fff;
+    cursor:pointer;
 }
 
-.season-episodes .episode .title {
-    width:670px;    
+.season-episodes .episode .next-episode {
+    background-color: #5cb85c;
+    color:#fff;
+}
+
+.season-episodes .episode .title { 
     overflow: hidden;
     text-overflow: ellipsis; 
     white-space: nowrap;
@@ -24,4 +34,43 @@
 
 .season-episodes .episode .airdate {
     float:right;
+}
+.show-header h1 a{
+    color: #FF6600;
+    font-weight: bolder;
+}
+
+.season-select {
+    overflow: hidden;
+    line-height: 34px;
+    height:34px;
+    margin-bottom: 10px;
+}
+.season-select .item{
+    float:left;
+}
+
+.season-select .season{
+    font-weight: bolder;
+    font-size: 24px;
+    margin-right:10px;
+}
+
+.show-info {
+    overflow: hidden;
+}
+
+.show-info .image {
+    width: 300px;
+    float:left;
+}
+
+.show-info .description {
+    width:450px;
+    float:left;
+    margin-left:10px;
+}
+
+.show-info .description .description-text {
+    margin-bottom:10px;
 }

@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from seplis.web.handlers import base
 from seplis import utils, constants
 from seplis.web.client import API_error
@@ -11,12 +12,40 @@ class Handler(base.Handler):
     @gen.coroutine
     def get(self, show_id):
         show = yield self.get_show(show_id)
-        episodes = []
-        selected_season = -1
+
+        selected_season, episodes = yield self.get_season_episodes(show)
+        next_episode = yield self.get_next_episode(show_id)
+        if next_episode and \
+            not self.get_argument('season', None) and \
+                selected_season != next_episode['season']:
+            selected_season = next_episode['season']
+        self.render(
+            'show.html',
+            title=show['title'],
+            show=show,
+            episodes=episodes,
+            selected_season=selected_season,
+            next_episode=next_episode,
+        )
+
+    @gen.coroutine
+    def get_show(self, show_id):        
+        if self.current_user:
+            show = yield self.client.get('/shows/{}?append=is_fan'.format(show_id))
+        else:
+            show = yield self.client.get('/shows/{}'.format(show_id))
+        if not show:
+            raise HTTPError(404, 'Unknown show')
+        return show
+
+    @gen.coroutine
+    def get_season_episodes(self, show):
+        selected_season = None
+        _ss = int(self.get_argument('season', 0))
         if 'seasons' in show and show['seasons']:
             for season in show['seasons']:
                 season = season
-                if season['season'] == int(self.get_argument('season', 0)):
+                if season['season'] == _ss:
                     break
             selected_season = season['season']
             req = {
@@ -29,26 +58,25 @@ class Handler(base.Handler):
             if self.current_user:
                 req['append'] = 'user_watched'
             episodes = yield self.client.get(
-                '/shows/{}/episodes'.format(show_id),
+                '/shows/{}/episodes'.format(show['id']),
                 req
             )
-        self.render(
-            'show.html',
-            title=show['title'],
-            show=show,
-            episodes=episodes,
-            selected_season=selected_season,
-        )
+            return (selected_season, episodes)
+        return (None, [])
 
     @gen.coroutine
-    def get_show(self, show_id):        
-        if self.current_user:
-            show = yield self.client.get('/shows/{}?append=is_fan'.format(show_id))
-        else:
-            show = yield self.client.get('/shows/{}'.format(show_id))
-        if not show:
-            raise HTTPError(404, 'Unknown show')
-        return show
+    def get_next_episode(self, show_id):
+        req = {
+            'q': 'air_date:[{} TO *]'.format(datetime.utcnow().date()),
+            'per_page': 1,
+            'sort': 'number:asc',
+        }
+        episodes = yield self.client.get(
+            '/shows/{}/episodes'.format(show_id),
+            req
+        )
+        if episodes:
+            return episodes[0]
 
 class Redirect_handler(base.Handler_unauthenticated):
 
@@ -89,9 +117,9 @@ class New_handler(base.Handler):
 
     @authenticated
     def get(self):
-        self.render(
-            'new_show.html',
+        self.render('show_edit.html',
             title='New show',
+            show=None,
         )
 
 class API_new_handler(base.API_handler):

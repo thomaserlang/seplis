@@ -36,9 +36,9 @@
                             href="/show/{{ show['id'] }}" 
                             title="{{ escape(episode['title']) }}"
                         >
-                            {{ episode['number'] }}
+                            {{ episode['number'] }}:
                             {% if episode['season'] %}
-                                : Season {{ episode['season'] }}, 
+                                Season {{ episode['season'] }}, 
                                 Episode {{ episode['episode'] }}
                             {% end %}
                         </a>

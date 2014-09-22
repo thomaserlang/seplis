@@ -5,6 +5,7 @@
         <link href="http://fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="/static/css/vendor/bootstrap.min.css">
         <link rel="stylesheet" href="/static/css/vendor/jquery.growl.css">
+        
         <link rel="stylesheet" href="/static/css/base.css">
         <link rel="stylesheet" href="/static/css/show.css">
         <link rel="stylesheet" href="/static/css/signin.css">
@@ -12,6 +13,7 @@
         <link rel="stylesheet" href="/static/css/fan_button.css">
         <link rel="stylesheet" href="/static/css/progress.css">
         <link rel="stylesheet" href="/static/css/air_dates.css">
+        <link rel="stylesheet" href="/static/css/clean_reader.css">
 
         <script type="text/javascript" src="/static/js/vendor/jquery-2.1.1.min.js"></script>
         <script type="text/javascript">
@@ -24,10 +26,15 @@
                         */}), error.errors[key]);
                     }
                 }
-                $.growl.error({
-                    message: message,
-                    location: 'tc',
-                });
+                $('#errors').html(_.template(multiline(function(){/*
+                    <div class="alert alert-danger alert-dismissible" role="alert">
+                      <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+
+                      <%= message %>
+                    </div>
+                */}), {
+                    'message':message,
+                }));
             }
             $(function(){
                 api = new Api();
@@ -62,18 +69,6 @@
                     }
                 );
                 {% block jsready %}{% end %}
-                $(document).ajaxStart(function() {
-                    if ($("#progress").length === 0) {
-                        $("body").append($("<div><dt/><dd/></div>").attr("id", "progress"));
-                        $("#progress").width((50 + Math.random() * 30) + "%");
-                    }
-                });
-
-                $(document).ajaxComplete(function() {
-                    $("#progress").width("101%").delay(200).fadeOut(400, function() {
-                        $(this).remove();
-                    });
-                });
             });
         </script>
         {% block head %}{% end %}
@@ -82,15 +77,19 @@
         {% block menu %}
             {% module menu() %}
         {% end %}
-        <div class="container">
+        <div class="container-fluid">
+            <div id="errors"></div>
             {% block body %}{% end %}
         </div>
+        {% block outside_container %}
+        {% end %}
         <script type="text/javascript" src="/static/js/vendor/multiline.js"></script>
         <script type="text/javascript" src="/static/js/vendor/underscore-min.js"></script>
         <script type="text/javascript" src="/static/js/vendor/bootstrap.min.js"></script>
         <script type="text/javascript" src="/static/js/vendor/typeahead.bundle.js"></script>
         <script type="text/javascript" src="/static/js/vendor/jquery.growl.js"></script>
         <script type="text/javascript" src="/static/js/vendor/moment.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/jquery.dotdotdot.js"></script>
         <script type="text/javascript" src="/static/js/api.js"></script>
         <script type="text/javascript" src="/static/js/template.js"></script>
         <script type="text/javascript" src="/static/js/signin.js"></script>
