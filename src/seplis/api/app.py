@@ -8,6 +8,8 @@ import seplis.api.handlers.user
 import seplis.api.handlers.app
 import seplis.api.handlers.tag
 import seplis.api.handlers.episode
+import seplis.api.handlers.image
+from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
 from concurrent.futures import ThreadPoolExecutor
@@ -25,10 +27,15 @@ class Application(tornado.web.Application):
         urls = [
             (r'/1/shows', seplis.api.handlers.show.Handler),
             (r'/1/shows/externals/([a-z_-]+)/([a-z0-9]+)', seplis.api.handlers.show.External_handler),
+            
             (r'/1/shows/([0-9]+)', seplis.api.handlers.show.Handler),
             (r'/1/shows/([0-9,]+)', seplis.api.handlers.show.Multi_handler),
             (r'/1/shows/([0-9]+)/episodes', seplis.api.handlers.episode.Handler),
             (r'/1/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Handler),
+
+            (r'/1/shows/([0-9]+)/images', seplis.api.handlers.image.Handler, {'relation_type': constants.IMAGE_TYPE_SHOW}),
+            (r'/1/shows/([0-9]+)/images/([0-9]+)', seplis.api.handlers.image.Handler),
+            (r'/1/shows/([0-9]+)/images/([0-9]+)/data', seplis.api.handlers.image.Data_handler),
 
             (r'/1/shows/([0-9]+)/update', seplis.api.handlers.show.Update_handler),
 

@@ -143,7 +143,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         try:
             if not isinstance(schema, schemas.Schema):            
                 schema = schemas.Schema(schema, *arg, **args)    
-            schema(self.request.body)            
+            return schema(self.request.body)            
         except MultipleInvalid as e:
             data = []
             for error in e.errors:

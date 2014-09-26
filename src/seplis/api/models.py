@@ -12,6 +12,9 @@ from seplis.api import exceptions
 
 base = declarative_base()
 
+def row_to_dict(row):
+    return {c.name: getattr(row, c.name) for c in row.__table__.columns}
+
 def sort_parser(sort, sort_lookup, sort_list=None):
     '''
     Parses a list of string sort types to SQLAlchemy field sorts.
@@ -209,3 +212,18 @@ class Tag_relation(base):
     type = Column(String(50), primary_key=True, autoincrement=False)
     relation_id = Column(Integer, primary_key=True, autoincrement=False)
     tag_id = Column(Integer, primary_key=True, autoincrement=False)
+
+class Image(base):
+    __tablename__ = 'images'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    relation_type = Column(Integer)
+    relation_id = Column(Integer)
+    external_name = Column(String(50))
+    external_id = Column(String(50))
+    height = Column(Integer)
+    width = Column(Integer)
+    hash = Column(String(64))
+    source_title = Column(String(200))
+    source_url = Column(String(200))
+    datetime = Column(DateTime)

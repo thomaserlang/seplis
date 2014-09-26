@@ -16,6 +16,7 @@ config = {
         'url': 'https://api.seplis.net',
         'port': 8002,
         'max_workers': 5,
+        'storitch': 'http://storitch.local',
     },
     'redis': {
         'ip': '127.0.0.1',

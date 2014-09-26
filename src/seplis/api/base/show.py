@@ -142,7 +142,7 @@ class Show(object):
 
     @classmethod
     @auto_session
-    def create(cls, session):        
+    def create(cls, session=None):        
         '''
         Creates a new show and returns the id.
 

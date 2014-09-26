@@ -105,3 +105,10 @@ Episode_watched = Schema({
     Optional('times'): int,
     Optional('position'): int,
 })
+
+Image = Schema({
+    'external_name': All(str, Length(min=1, max=45)),
+    'external_id': All(str, Length(min=1, max=45)),
+    'source_title': All(str, Length(min=1, max=200)),
+    'source_url': All(str, Length(min=1, max=200)),
+}, required=True)

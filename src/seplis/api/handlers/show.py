@@ -1,24 +1,16 @@
 import logging
-import json
-import sqlalchemy.exc
-from seplis.api.handlers import base
-from tornado import gen, httpclient
-from seplis.utils import json_dumps, json_loads, slugify, dict_update
+from seplis import schemas
 from seplis.api import constants, models, exceptions
-from seplis import schemas, utils
-from seplis.decorators import new_session
+from seplis.api.handlers import base
 from seplis.api.decorators import authenticated
 from seplis.api.base.pagination import Pagination
 from seplis.api.base.show import Show, Shows
 from seplis.api.base.episode import Episode, Episodes, Watching
-from seplis.api.base.tag import Tags
 from seplis.api.base.description import Description
 from seplis.connections import database
-from seplis.config import config
-from tornado.httpclient import AsyncHTTPClient, HTTPError
+from tornado.httpclient import HTTPError
 from tornado import gen, concurrent
 from datetime import datetime
-from sqlalchemy import asc, desc, and_
 from collections import OrderedDict
 
 class Handler(base.Handler):

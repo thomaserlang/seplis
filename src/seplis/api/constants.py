@@ -40,3 +40,5 @@ INDEX_TYPE_NAMES = {
     'info': 'Info',
     'episodes': 'Episodes',
 }
+
+IMAGE_TYPE_SHOW = 1

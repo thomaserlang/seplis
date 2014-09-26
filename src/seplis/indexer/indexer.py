@@ -1,6 +1,7 @@
 import os.path
 import getpass
 import logging
+import time
 from seplis.utils import json_dumps
 from urllib.parse import urljoin
 from seplis.indexer.show.tvrage import Tvrage
@@ -36,6 +37,7 @@ class Show_indexer(Client):
             indexer = self.get_indexer(name)
             if not indexer:
                 continue
+            start_time = time.time()
             ids = indexer.get_updates()
             if not ids: 
                 logging.info('No updates from external source: {}'.format(name))
@@ -67,7 +69,7 @@ class Show_indexer(Client):
                     update_episodes=True,
                 )
                 updated_shows[str(id_)] = show_data
-            indexer.set_latest_update_timestamp()
+            indexer.set_latest_update_timestamp(start_time)
         return updated_shows
 
     def login(self):

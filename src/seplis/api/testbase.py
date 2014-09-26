@@ -58,9 +58,11 @@ class Testbase(AsyncHTTPTestCase):
         if data is not None:
             if isinstance(data, dict):
                 data = json_dumps(data)
-        if self.access_token and (headers == None):
-            headers = {}
-            headers['Authorization'] = 'Bearer {}'.format(self.access_token)
+        if self.access_token:
+            if headers == None:
+                headers = {}
+            if 'Authorization' not in headers:
+                headers['Authorization'] = 'Bearer {}'.format(self.access_token)
         request = HTTPRequest(full_url, headers=headers, method=method, body=data)
         self.http_client.fetch(request, self.stop)
         return self.wait()

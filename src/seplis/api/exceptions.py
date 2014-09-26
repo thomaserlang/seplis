@@ -22,11 +22,11 @@ class API_exception(HTTPError):
 
 class Not_found(API_exception):
 
-    def __init__(self):
+    def __init__(self, message=None):
         API_exception.__init__(self,
             status_code=404,
             code=500, 
-            message='the requested item was not found',
+            message=message or 'the requested item was not found',
             errors=None,
         )
 
@@ -135,7 +135,7 @@ class Not_found_exception(API_exception):
     def __init__(self, message):
         API_exception.__init__(self,
             status_code=404,
-            code=2000, 
+            code=1100, 
             message=message,
         )
 
@@ -144,7 +144,7 @@ class User_not_following_show(API_exception):
     def __init__(self):
         API_exception.__init__(self,
             status_code=400,
-            code=3000, 
+            code=1200, 
             message='you do not follow this show',
         )
 
@@ -153,7 +153,7 @@ class User_has_not_watched_this_episode(API_exception):
     def __init__(self):
         API_exception.__init__(self,
             status_code=400,
-            code=3001, 
+            code=1300, 
             message='you have not watched this episode',
         )
 
@@ -163,7 +163,7 @@ class Show_unknown(API_exception):
         API_exception.__init__(
             self,
             status_code=404,
-            code=4000,
+            code=1400,
             message='unknown show',
         )
 
@@ -173,7 +173,7 @@ class Show_external_field_must_be_specified_exception(API_exception):
         API_exception.__init__(
             self,
             status_code=400,
-            code=4001,
+            code=1401,
             message='the external field must be specified before updating the index field',
         )
 
@@ -183,7 +183,7 @@ class Show_index_type_must_be_in_external_field_exception(API_exception):
         API_exception.__init__(
             self,
             status_code=400,
-            code=4002,
+            code=1402,
             message='Index type: "{}" must first be specified in the external field before adding it to the index field'.format(external_type),
             extra={
                 'external_type': external_type,
@@ -196,8 +196,8 @@ class Show_external_duplicated(API_exception):
         API_exception.__init__(
             self,
             status_code=400,
-            code=4003,
-            message='A show with the external name of: "{}" and id: "{}" does already exist'.format(external_title, external_id),
+            code=1403,
+            message='A show with the external name and id does already exist'.format(external_title, external_id),
             extra={
                 'show': show,
                 'external_title': external_title,
@@ -211,7 +211,7 @@ class User_unknown(API_exception):
         API_exception.__init__(
             self,
             status_code=404,
-            code=5000,
+            code=1500,
             message='unknown user',
         )
 
@@ -222,7 +222,7 @@ class Episode_unknown(API_exception):
         API_exception.__init__(
             self,
             status_code=404,
-            code=6000,
+            code=1600,
             message='unknown episode',
         )
 
@@ -232,7 +232,7 @@ class Elasticsearch_exception(API_exception):
         API_exception.__init__(
             self,
             status_code=status_code,
-            code=7000,
+            code=1700,
             message='search error',
             extra=extra
         ) 
@@ -241,7 +241,7 @@ class Sort_not_allowed(API_exception):
     def __init__(self, sort):
         API_exception.__init__(self,
             status_code=400,
-            code=8000,
+            code=1800,
             message='Sort by: "{}" is not allowed'.format(sort),
             extra=[sort],
         )
@@ -250,7 +250,42 @@ class Append_fields_not_allowed(API_exception):
     def __init__(self, fields):
         API_exception.__init__(self,
             status_code=400,
-            code=9000,
+            code=1900,
             message='Append fields: "{}" are not allowed'.format(','.join(fields)),
-            extra=[fields],
+            extra=fields,
+        )
+
+class Image_external_duplicate(API_exception):    
+    def __init__(self, duplicate_image):
+        API_exception.__init__(self,
+            status_code=400,
+            code=2000,
+            message='An image with the external name: {} and id: {} does already exist',
+            extra=duplicate_image,
+        )
+
+class Image_unknown(API_exception):
+    def __init__(self):
+        API_exception.__init__(self,
+            status_code=400,
+            code=2001,
+            message='unknown image',
+        )
+
+class File_upload_no_files(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(self,
+            status_code=400,
+            code=2100,
+            message='zero files was uploaded',
+        )
+
+class File_upload_unrecognized_image(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(self,
+            status_code=400,
+            code=2101,
+            message='unrecognized image type: please upload a JPG or PNG image',
         )
