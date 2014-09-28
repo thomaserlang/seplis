@@ -40,6 +40,9 @@
         class="
             panel-collapse 
             collapse
+            {% if next_episode and next_episode['number'] == episode['number'] %}
+            in
+            {% end %}
         "
     >
         <div class="panel-body">
