@@ -1,11 +1,13 @@
 import sys
 import inspect
+from seplis import utils
 from seplis.api import models
 from seplis.api import elasticcreate
 from seplis.connections import database, Database
 from seplis.decorators import new_session, auto_pipe, auto_session
 from sqlalchemy import func, or_
 from datetime import datetime
+from elasticsearch import helpers
 
 class Rebuild_cache(object):
 
@@ -25,20 +27,16 @@ class Rebuild_cache(object):
     @auto_pipe
     def rebuild_shows(self, session, pipe):
         from seplis.api.base.show import Show
-        print('... ... Loading shows')
-        sys.stdout.flush()
-        shows = session.query(models.Show).filter(
-            models.Show.status>0,
-        ).all()        
-        total = len(shows)
-        i = 0
-        for show in shows:
-            i += 1
-            sys.stdout.write('\r... ... {}/{}'.format(i, total))
-            s = Show._format_from_row(show)
-            s.save(session=session, pipe=pipe)
-            sys.stdout.flush()
-        print('')
+        to_es = []
+        for item in session.query(models.Show).yield_per(10000):
+            a = Show._format_from_row(item)
+            to_es.append({
+                '_index': 'shows',
+                '_type': 'show',
+                '_id': a.id,
+                '_source': utils.json_dumps(a),
+            })
+        helpers.bulk(database.es, to_es)
 
     @auto_session
     @auto_pipe
@@ -55,33 +53,29 @@ class Rebuild_cache(object):
     @auto_session
     def rebuild_episodes(self, session):
         from seplis.api.base.episode import Episode
-        print('... ... Loading episodes')
-        sys.stdout.flush()
-        episodes = session.query(models.Episode).all()
-        total = len(episodes)
-        i = 0
-        for episode in episodes:
-            i += 1
-            sys.stdout.write('\r... ... {}/{}'.format(i, total))
-            e = Episode._format_from_row(episode)
-            e.to_elasticsearch(episode.show_id)
-            sys.stdout.flush()
-        print('')
+        to_es = []
+        for item in session.query(models.Episode).yield_per(10000):
+            a = Episode._format_from_row(item)
+            to_es.append({
+                '_index': 'episodes',
+                '_type': 'episode',
+                '_id': '{}-{}'.format(item.show_id, a.number),
+                '_source': utils.json_dumps(a),
+            })
+        helpers.bulk(database.es, to_es)
 
     def rebuild_tags(self):
         from seplis.api.base.tag import Tag
         with new_session() as session:
-            tags = session.query(models.Tag).all()
-            for tag in tags:
+            for tag in session.query(models.Tag).yield_per(10000):
                 tag = Tag._format_from_query(tag)
                 tag.cache()
 
     def rebuild_tag_relations_relations(self):
         from seplis.api.base.tag import User_tag_relation
         with new_session() as session:
-            relations = session.query(models.Tag_relation).all()
             with database.redis.pipeline() as pipe:
-                for rel in relations:
+                for rel in session.query(models.Tag_relation).yield_per(10000):
                     User_tag_relation.cache(
                         pipe=pipe,
                         user_id=rel.user_id,
@@ -94,9 +88,8 @@ class Rebuild_cache(object):
     def rebuild_users(self):
         from seplis.api.base.user import User
         with new_session() as session:
-            users = session.query(models.User).all()
             pipe = database.redis.pipeline()
-            for user in users:
+            for user in session.query(models.User).yield_per(10000):
                 user = User._format_from_query(user)
                 user.cache(pipe=pipe)
             pipe.execute()
@@ -104,14 +97,13 @@ class Rebuild_cache(object):
     def rebuild_tokens(self):
         from seplis.api.base.user import Token
         with new_session() as session:
-            tokens = session.query(models.Token).filter(
+            pipe = database.redis.pipeline()
+            for token in session.query(models.Token).filter(
                 or_(
                     models.Token.expires >= datetime.now(),
                     models.Token.expires == None,
                 )
-            ).all()
-            pipe = database.redis.pipeline()
-            for token in tokens:
+            ).yield_per(10000):
                 Token.cache(
                     user_id=token.user_id,
                     token=token.token,
@@ -125,11 +117,8 @@ class Rebuild_cache(object):
     @auto_pipe
     def rebuild_watched(self, session, pipe):
         from seplis.api.base.episode import Watched
-        rows = session.query(
-            models.Episode_watched,
-        ).all()
         usershows = []
-        for row in rows:
+        for row in session.query(models.Episode_watched).yield_per(10000):
             Watched.cache(
                 user_id=row.user_id,
                 show_id=row.show_id,
@@ -155,6 +144,20 @@ class Rebuild_cache(object):
                     pipe=pipe,
                 )
                 usershows.append(n)
+
+    @auto_session
+    def rebuild_images(self, session):
+        from seplis.api.base.image import Image
+        to_es = []
+        for image in session.query(models.Image).yield_per(10000):
+            i = Image._format_from_row(image)
+            to_es.append({
+                '_index': 'images',
+                '_type': 'image',
+                '_id': i.id,
+                '_source': i.to_dict(),
+            })
+        helpers.bulk(database.es, to_es)
 
 def main():
     Rebuild_cache().rebuild()

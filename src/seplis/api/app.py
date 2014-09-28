@@ -33,7 +33,7 @@ class Application(tornado.web.Application):
             (r'/1/shows/([0-9]+)/episodes', seplis.api.handlers.episode.Handler),
             (r'/1/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Handler),
 
-            (r'/1/shows/([0-9]+)/images', seplis.api.handlers.image.Handler, {'relation_type': constants.IMAGE_TYPE_SHOW}),
+            (r'/1/shows/([0-9]+)/images', seplis.api.handlers.image.Handler, {'relation_type': constants.IMAGE_RELATION_TYPE_SHOW}),
             (r'/1/shows/([0-9]+)/images/([0-9]+)', seplis.api.handlers.image.Handler),
             (r'/1/shows/([0-9]+)/images/([0-9]+)/data', seplis.api.handlers.image.Data_handler),
 

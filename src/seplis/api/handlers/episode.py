@@ -45,7 +45,7 @@ class Handler(base.Handler):
                 number=number,
             )
         self.write_object(
-            result['_source']
+            self.episode_format(result['_source'])
         )
 
     @gen.coroutine
@@ -54,22 +54,34 @@ class Handler(base.Handler):
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', 'number:asc')
-        req = {
-            'from': ((page - 1) * per_page),
-            'size': per_page,
-            'sort': sort,
-            'q': 'show_id:{}'.format(show_id)
+        body = {
+            'filter': {
+                'term': {
+                    'show_id': show_id,
+                }
+            }
         }
-        if q != None:
-            req['q'] += ' AND {}'.format(q)
+        if q:
+            body.update({
+                'query': {
+                    'query_string': {
+                        'default_field': 'title',
+                        'query': q,
+                    }
+                }
+            })
         result = yield self.es(
             '/episodes/episode/_search',
-            **req
+            query={
+                'from': ((page - 1) * per_page),
+                'size': per_page,
+                'sort': sort,
+            },           
+            body=body,
         )
 
         episodes = OrderedDict()
         for episode in result['hits']['hits']:
-            episode['_source'].pop('show_id', None)
             episodes[episode['_source']['number']] = episode['_source']
 
         if 'user_watched' in self.append_fields:
@@ -86,9 +98,32 @@ class Handler(base.Handler):
             page=page,
             per_page=per_page,
             total=result['hits']['total'],
-            records=list(episodes.values()),
+            records=self.episode_format(
+                list(episodes.values())
+            ),
         )
         self.write_object(p)
+
+    remove_keys = (
+        'show_id',
+    )
+    def episode_format(self, episodes):
+        '''
+        :param episodes: `episode()` or list of `episode()`
+        '''
+        if isinstance(episodes, list):
+            for episode in episodes:
+                utils.keys_to_remove(
+                    self.remove_keys,
+                    episode
+                )
+        else:
+            utils.keys_to_remove(
+                self.remove_keys,
+                episodes
+            )
+        return episodes
+
 
 class Watched_handler(base.Handler):
 

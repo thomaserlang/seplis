@@ -23,6 +23,7 @@ class Handler_unauthenticated(web.RequestHandler):
             json_dumps=utils.json_dumps,
             escape=self.escape,
             constants=constants,
+            config=config,
         )
         return namespace
 

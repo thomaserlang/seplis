@@ -19,9 +19,9 @@ class Show_indexer_base(object):
         Override this function to return a list of episodes.
         '''
 
-    def get_photos(self, show_id):
+    def get_images(self, show_id):
         '''
-        Override this function to return a list of photos.
+        Override this function to return a list of images.
         '''
 
     def get_updates(self):

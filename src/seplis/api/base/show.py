@@ -8,6 +8,7 @@ from seplis import utils
 from seplis.api.base.pagination import Pagination
 from seplis.api.base.description import Description
 from seplis.api.base.user import Users
+from seplis.api.base.image import Image
 from seplis.api import exceptions, constants, models
 from datetime import datetime, timedelta
 from sqlalchemy import asc, and_
@@ -16,7 +17,7 @@ class Show(object):
 
     def __init__(self, id, title, description, premiered, ended, 
                  externals, indices, status, runtime, genres,
-                 alternate_titles, seasons, fans, updated=None):
+                 alternate_titles, seasons, fans, image, updated=None):
         '''
 
         :param id: int
@@ -39,6 +40,7 @@ class Show(object):
         :param seasons: list of dict
         :param fans: int
         :param updated: datetime
+        :param image: `seplis.base.image.Image()`
         '''
         self.id = id
         self.title = title
@@ -58,6 +60,7 @@ class Show(object):
         self.seasons = seasons
         self.updated = updated
         self.fans = fans
+        self.image = image
 
     @auto_session
     @auto_pipe
@@ -78,6 +81,7 @@ class Show(object):
             'ended': self.ended,
             'index_info': self.indices.get('info') if self.indices else None,
             'index_episodes': self.indices.get('episodes') if self.indices else None,
+            'index_images': self.indices.get('images') if self.indices else None,
             'externals': self.externals,
             'status': self.status,
             'runtime': self.runtime,
@@ -85,6 +89,7 @@ class Show(object):
             'alternate_titles': self.alternate_titles,
             'updated': self.updated,
             'seasons': self.seasons,
+            'image_id': self.image.id if self.image else None,
         })
         self.update_external(
             pipe=pipe,
@@ -110,6 +115,7 @@ class Show(object):
             indices={
                 'info': row.index_info,
                 'episodes': row.index_episodes,
+                'images': row.index_images,
             },
             externals=row.externals if row.externals else {},
             status=row.status,
@@ -119,6 +125,7 @@ class Show(object):
             seasons=row.seasons if row.seasons else [],
             fans=row.fans,
             updated=row.updated,
+            image=Image._format_from_row(row.image),
         )
         return obj
 
@@ -155,6 +162,20 @@ class Show(object):
         session.add(show)
         session.flush()
         return show.id
+
+    def add_image(self, image_id):
+        if image_id:
+            image = Image.get(image_id)
+            if not image:
+                raise exceptions.Image_unknown()
+            if image.type != constants.IMAGE_TYPE_POSTER:
+                raise exceptions.Image_set_wrong_type(
+                    image_type=image.type,
+                    needs_image_type=constants.IMAGE_TYPE_POSTER,
+                )
+            self.image = image
+        else:
+            self.image = None
 
     def to_dict(self):
         return self.__dict__

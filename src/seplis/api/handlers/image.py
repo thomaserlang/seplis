@@ -1,5 +1,5 @@
 import logging
-from tornado import gen
+from tornado import gen, web
 from seplis import schemas, utils
 from seplis.api.handlers import base, file_upload
 from seplis.api import constants, models, exceptions
@@ -17,18 +17,25 @@ class Handler(base.Handler):
     def post(self, relation_id):
         if not self.relation_type:
             raise Exception('relation_type missing')
+        data = self.validate(schemas.Schema(schemas.Image, required=True))
         image = Image.create(self.relation_type, relation_id)
-        self.update_image(image)
-        self.write_image(image)
+        image.__dict__.update(data)
+        image.save()        
+        self.write_object(
+            self.image_format(image.to_dict())
+        )
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     def put(self, relation_id, image_id):        
-        data = self.validate(schemas.Image)
+        data = self.validate(schemas.Schema(schemas.Image, required=False))
         image = Image.get(image_id)
         if not image:
             raise exceptions.Image_unknown()
-        self.update_image(image)
-        self.write_image(image)
+        image.__dict__.update(data)
+        image.save()        
+        self.write_object(
+            self.image_format(image.to_dict())
+        )
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     def delete(self, relation_id, image_id):
@@ -37,26 +44,71 @@ class Handler(base.Handler):
             raise exceptions.Image_unknown()
         image.delete()
 
-    def get(self, relation_id, image_id):
-        image = Image.get(image_id)
-        if not image:
-            raise exceptions.Not_found('the image was not found')
-        self.write_image(image)
+    @gen.coroutine
+    def get(self, relation_id, image_id=None):
+        if image_id:
+            yield self.get_image(image_id)
+        else:
+            yield self.get_images(relation_id)
 
-    def update_image(self, image):
-        data = self.validate(schemas.Image)
-        image.external_name = data['external_name']
-        image.external_id = data['external_id']
-        image.source_title = data['source_title']
-        image.source_url = data['source_url']
-        image.save()
+    @gen.coroutine
+    def get_image(self, image_id):
+        result = yield self.es('/images/image/{}'.format(
+            image_id,
+        ))
+        if not result['found']:
+            raise exceptions.Not_found('the image was not found')
+        self.write_object(
+            self.image_format(result['_source'])
+        )
+
+    @gen.coroutine
+    def get_images(self, relation_id):
+        q = self.get_argument('q', None)
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', 'id:asc')
+        body = {
+            'filter': {
+                'term': {
+                    'relation_type': self.relation_type,
+                    'relation_id': relation_id,
+                }
+            }
+        }
+        if q:
+            body.update({
+                'query': {
+                    'query_string': {
+                        'query': q,
+                    }
+                }
+            })
+        result = yield self.es(
+            '/images/image/_search',
+            query={
+                'from': ((page - 1) * per_page),
+                'size': per_page,
+                'sort': sort,
+            },           
+            body=body,
+        )
+        p = Pagination(
+            page=page,
+            per_page=per_page,
+            total=result['hits']['total'],
+            records=self.image_format(
+                [d['_source'] for d in result['hits']['hits']]
+            ),
+        )
+        self.write_object(p)
 
     remove_keys = (
         'relation_type',
         'relation_id',
     )
 
-    def write_image(self, images):
+    def image_format(self, images):
         '''
         :param images: `Image()` or list of `Image()`
         '''
@@ -64,14 +116,14 @@ class Handler(base.Handler):
             for img in images:
                 utils.keys_to_remove(
                     self.remove_keys,
-                    img.to_dict()
+                    img
                 )
         else:
             utils.keys_to_remove(
                 self.remove_keys,
-                images.to_dict()
+                images
             )
-        self.write_object(images)
+        return images
 
 class Data_handler(file_upload.Handler):
 

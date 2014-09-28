@@ -272,6 +272,20 @@ class Image_unknown(API_exception):
             message='unknown image',
         )
 
+class Image_set_wrong_type(API_exception):
+
+    def __init__(self, image_type, needs_image_type):
+        API_exception.__init__(self,
+            status_code=400,
+            code=2002,
+            message='the image could not be set because of a wrong type',
+            extra={
+                'is': image_type,
+                'needs': needs_image_type if isinstance(needs, list) \
+                    else [needs_image_type],
+            }
+        )        
+        
 class File_upload_no_files(API_exception):
 
     def __init__(self):

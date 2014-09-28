@@ -2,16 +2,16 @@ from seplis.config import config
 from seplis.connections import database
 
 def create_indices():
-
-    database.es.indices.delete('shows')
-    database.es.indices.delete('episodes')
+    database.es.indices.delete('shows', ignore=404)
+    database.es.indices.delete('episodes', ignore=404)
+    database.es.indices.delete('images', ignore=404)
 
     settings = {
         'analysis': {
             'filter': {
                 'nGram_filter': {
                     'type': 'nGram',
-                    'min_gram': 2,
+                    'min_gram': 1,
                     'max_gram': 20,
                     'token_chars': [
                         'letter',
@@ -35,7 +35,7 @@ def create_indices():
                     'type': 'custom',
                     'tokenizer': 'whitespace',
                     'filter': [
-                    'lowercase',
+                        'lowercase',
                         'asciifolding'
                    ]
                 }
@@ -127,6 +127,29 @@ def create_indices():
             }
         }
     })
+
+    database.es.indices.create('images', body={
+        'settings': settings,
+        'mappings': {
+            'image': {
+                'properties' : {
+                    'id': { 'type': 'integer' },
+                    'relation_type': { 'type': 'integer' },
+                    'relation_id': { 'type': 'integer' },
+                    'external_name': { 'type': 'string' },
+                    'external_id': { 'type': 'string' },
+                    'height': { 'type': 'integer' },
+                    'width': { 'type': 'integer' },
+                    'hash': { 'type': 'string' },
+                    'source_title': { 'type': 'string' },
+                    'source_url': { 'type': 'string' },
+                    'type': { 'type': 'integer' },
+                    'created': { 'type': 'string' },
+                },
+            }
+        }
+    })
+
 
 if __name__ == '__main__':
     create_indices()

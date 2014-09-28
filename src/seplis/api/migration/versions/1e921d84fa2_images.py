@@ -29,13 +29,15 @@ def upgrade():
         sa.Column('hash', sa.String(64)),
         sa.Column('source_title', sa.String(200)),
         sa.Column('source_url', sa.String(200)),
-        sa.Column('datetime', sa.DateTime),        
+        sa.Column('created', sa.DateTime),   
+        sa.Column('type', sa.Integer),
     )
 
-    op.create_unique_constraint('uq_relation_type_name', 'images', [
-        'relation_type',
-        'relation_id',
-    ])
+    op.create_index(
+        'ix_relation_type_id',
+        'images',
+        ['relation_type', 'relation_id']
+    )
     op.create_unique_constraint('uq_external_name_id', 'images', [
         'external_name',
         'external_id',

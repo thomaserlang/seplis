@@ -2,12 +2,15 @@ import os.path
 import getpass
 import logging
 import time
+import io
+import requests
 from seplis.utils import json_dumps
 from urllib.parse import urljoin
 from seplis.indexer.show.tvrage import Tvrage
 from seplis.indexer.show.thetvdb import Thetvdb
+from seplis.api import constants
 from seplis.config import config
-from seplis import Client, schemas
+from seplis import Client, schemas, API_error
 
 class Show_indexer(Client):
 
@@ -26,10 +29,10 @@ class Show_indexer(Client):
         return Thetvdb(config['client']['thetvdb'])
 
     def update(self):
-        external_names = [
+        external_names = (
             'tvrage',
             'thetvdb',
-        ]
+        )
         logging.info('Checking for updates from external sources...')
         updated_shows = {}
         for name in external_names:
@@ -89,7 +92,8 @@ class Show_indexer(Client):
         )
         return show_data
 
-    def _update_show(self, show, update_episodes=True, retries=0):
+    def _update_show(self, show, update_episodes=True, 
+        update_images=True, retries=0):
         '''
 
         :param show: dict
@@ -99,47 +103,174 @@ class Show_indexer(Client):
             if 'indices' not in show:
                 return None
             show_data = {}
-            show_indexer = self.get_indexer(show['indices'].get('info', ''))
-            if show_indexer:               
-                external_show = show_indexer.get_show(
-                    show['externals'][show['indices']['info']]
-                )
-                if external_show:
-                    show_data = show_info_changes(
-                        show, 
-                        external_show,
-                    )
-            episode_indexer = self.get_indexer(show['indices'].get('episodes'))
-            if episode_indexer and update_episodes:
-                external_episodes = episode_indexer.get_episodes(
-                    show['externals'][show['indices']['episodes']]
-                )
-                if external_episodes:
-                    episodes = self.get(
-                        '/shows/{}/episodes?per_page=500'.format(show['id'])
-                    ).all()
-                    if not episodes:
-                        episodes = []
-                    show_data['episodes'] = show_episode_changes(
-                        episodes,
-                        external_episodes,
-                    )
-            if show_data == {'episodes': []}:
-                show_data = {}
+            
+            # show info
+            show_updates = self._get_show_updates(show)
+            if show_updates:
+                show_data = show_updates
+
+            # show episodes
+            if update_episodes:
+                episodes = self._get_episode_updates(show)
+                if episodes:
+                    show_data['episodes'] = episodes
+
             if show_data:
-                show = self.patch(
+                self.patch(
                     'shows/{}'.format(show['id']), 
                     show_data,
                     timeout=120
                 )
+            # show images
+            if update_images:
+                images = self._update_images(show)
+                show_data['images'] = images
             return show_data
         except KeyboardInterrupt:
             raise
-        except:
+        except Exception as e:
             logging.exception('error')
-            if retries <= 5:
-                retries += 1
-                self._update_show(show, update_episodes, retries)
+            if isinstance(e, API_error):
+                if e.code in (None, 1009):
+                    raise
+            else: 
+                if retries <= 5:
+                    retries += 1
+                    self._update_show(show, update_episodes, retries)
+
+    def _get_show_updates(self, show):
+        show_indexer = self.get_indexer(show['indices'].get('info', ''))
+        if not show_indexer: 
+            return              
+        external_show = show_indexer.get_show(
+            show['externals'][show['indices']['info']]
+        )
+        if external_show:
+            return show_info_changes(
+                show, 
+                external_show,
+            )
+
+    def _get_episode_updates(self, show):
+        episode_indexer = self.get_indexer(show['indices'].get('episodes', ''))
+        if not episode_indexer:
+            return
+        external_episodes = episode_indexer.get_episodes(
+            show['externals'][show['indices']['episodes']]
+        )
+        if not external_episodes:
+            return
+        episodes = self.get(
+            '/shows/{}/episodes?per_page=500'.format(show['id'])
+        ).all()
+        if not episodes:
+            episodes = []
+        return show_episode_changes(
+            episodes,
+            external_episodes,
+        )
+
+    def _update_images(self, show):
+        '''
+        Retrives images from the external source.
+        If an image with the external name and id does not exist 
+        the image will be uploaded.
+        '''
+
+        image_indexer = self.get_indexer(show['indices'].get('images', ''))
+        if not image_indexer:
+            return
+        external_name = show['indices']['images']
+        external_images = image_indexer.get_images(
+            show['externals'][external_name]
+        )
+        logging.info('_update_images:{}:{}: Found: {} external images'.format(
+            show['id'], 
+            external_name, 
+            len(external_images)
+        ))
+        images = self.get(
+            '/shows/{}/images?q=external_name:{}&per_page=500'.format(
+                show['id'],
+                show['indices']['images'],
+            ),
+        ).all()
+        images_lookup = {image['external_id']: image for image in images}
+        new_images = []
+        updated_images = []
+        for ex_image in external_images:
+            # check if the image already exists on the server
+            if ex_image['external_id'] in images_lookup:
+                image = images_lookup[ex_image['external_id']]
+                # if it exists check that an image has been assigned
+                if not image['hash']:            
+                    logging.info('_update_images:{}:{}: Found image without an image assigned: {}'.format(
+                        show['id'], 
+                        external_name,
+                        image['id'],
+                    ))
+                    # if not upload the image and continue
+                    updated_image = self._upload_show_image(
+                        show,
+                        image,
+                    )
+                    if updated_image:
+                        updated_images.append(image)
+                continue
+            logging.info('_update_images:{}:{}: New image'.format(
+                show['id'], 
+                external_name,
+            ))
+            image = self.post('/shows/{}/images'.format(show['id']),
+                ex_image,
+            )
+            updated_image = self._upload_show_image(
+                show,
+                image,
+            ) 
+            if updated_image:
+                logging.info('_update_images:{}:{}: Image created and uploaded: {}'.format(
+                    show['id'], 
+                    external_name,
+                    image['id']
+                ))
+                updated_images.append(image)
+            else:
+                logging.info('_update_images:{}:{}: The image could not be created or uploaded'.format(
+                    show['id'], 
+                    external_name,
+                ))
+        # If the show has no image set, then we will set one
+        if updated_images and ('image' in show) and not show['image']:
+            for img in updated_images:
+                if img['type'] == constants.IMAGE_TYPE_POSTER:
+                    self.patch('shows/{}'.format(show['id']), {
+                        'image_id': img['id'],
+                    })
+                    break
+        return updated_images
+
+    def _upload_show_image(self, show, image):
+        return self._upload_image(
+            '/shows/{}/images/{}/data'.format(
+                show['id'], 
+                image['id']
+            ),
+            image['source_url'],
+        )
+
+    def _upload_image(self, uri, image_url):
+        r = requests.get(image_url, stream=True)
+        if r.status_code == 200:
+            r = requests.put(self.url+uri,
+                files={
+                    'image': r.raw,
+                },
+                headers={
+                    'Authorization': 'Bearer {}'.format(self.access_token)
+                }
+            )
+            return r.status_code == 200
 
     def new(self, external_name, external_id, get_episodes=True):
         '''

@@ -4,7 +4,17 @@
         {% include show_header.html %}
         <div class="show-info">
             <div class="image">
-                <img alt="image..." src="http://thetvdb.com/banners/posters/81797-5.jpg" width="300" height="400px">
+                {% if show['image'] %}
+                    <img 
+                        alt="image..." 
+                        src="{{ config['web']['image_url'] }}/{{ show['image']['hash'] }}@SX300.jpg" 
+                        width="300px"
+                    >
+                {% else %}
+                    <div class="no-image">
+                        <span>No image</span>
+                    </div>
+                {% end %}
             </div>
                 <div class="description">
                     <div>{% module fan_button(show) %}</div>

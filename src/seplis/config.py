@@ -10,6 +10,7 @@ config = {
         'url': 'https://seplis.net',
         'cookie_secret': 'CHANGE_ME',
         'port': 8001,
+        'image_url': 'http://storitch.local',
     },
     'sentry_dsn': None,
     'api': {

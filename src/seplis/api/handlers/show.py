@@ -67,7 +67,6 @@ class Handler(base.Handler):
         'genres',
         'alternate_titles',
     )
-
     @concurrent.run_on_executor
     def _update(self, show_id, validate_show=True, overwrite=False):
         if validate_show:
@@ -90,6 +89,8 @@ class Handler(base.Handler):
                     show.description.title = desc['title']
                 if 'url' in desc:
                     show.description.url = desc['url']
+        if 'image_id' in self.request.body:
+            show.add_image(self.request.body['image_id'])
         if overwrite:
             for index, externals in constants.INDEX_TYPES:
                 if index not in show.indices:
@@ -109,7 +110,6 @@ class Handler(base.Handler):
         'episode',
         'runtime',
     )
-
     def patch_episodes(self, show_id, episodes_dict):        
         '''
 
@@ -178,7 +178,7 @@ class Handler(base.Handler):
                     data[key] = new_data[key]
 
     allowed_append_fields = (
-        'is_fan'
+        'is_fan',
     )
     @gen.coroutine
     def get(self, show_id=None):
@@ -208,18 +208,27 @@ class Handler(base.Handler):
         q = self.get_argument('q', None)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
-        sort = self.get_argument('sort', None)
+        sort = self.get_argument('sort', '_score')
         req = {
             'from': ((page - 1) * per_page),
             'size': per_page,
+            'sort': sort,
         }
-        if q != None:
-            req['q'] = q
-        if sort:
-            req['sort'] = sort
+        body = None
+        if q:
+            body = {
+                'query': {
+                    'query_string': {
+                        'default_field': 'title',
+                        'query': q,
+                    }
+                }
+            }
+
         result = yield self.es(
             '/shows/show/_search',
-            **req
+            body=body,
+            query=req,
         )
         shows = OrderedDict()
         for show in result['hits']['hits']:

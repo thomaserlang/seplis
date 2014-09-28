@@ -9,15 +9,5 @@ indexer = seplis.Show_indexer(
 
 shows = indexer.get('/shows?sort=id&per_page=500')
 for show in shows.all():
-    def index(retries):
-        try:
-            indexer.update_show(show['id'])
-            logging.error('updated show {}'.format(show['id']))
-        except KeyboardInterrupt:
-            raise
-        except:
-            logging.exception('error')
-            if retries <= 5:
-                retries += 1
-                index(retries)
-    index(0)
+    indexer.update_show(show['id'])
+    logging.info('updated show {}'.format(show['id']))

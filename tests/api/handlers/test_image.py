@@ -41,9 +41,10 @@ class test_show_image(Testbase):
             'external_name': 'google',
             'external_id': '123',
             'source_title': 'Some user',
-            'source_url': 'http://google.com'
+            'source_url': 'http://google.com',
+            'type': constants.IMAGE_TYPE_POSTER,
         })
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 200, response.body)
         image = utils.json_loads(response.body)
         self.assertEqual(image['external_name'], 'google')
         self.assertEqual(image['external_id'], '123')
@@ -55,6 +56,7 @@ class test_show_image(Testbase):
         self.assertEqual(image['hash'], None)
         self.assertEqual(image['width'], None)
         self.assertEqual(image['height'], None)
+        self.assertEqual(image['type'], constants.IMAGE_TYPE_POSTER)
 
 
         # Upload the image
@@ -83,7 +85,7 @@ class test_show_image(Testbase):
             'external_name': 'google 2',
             'external_id': '1234',
             'source_title': 'Some user 2',
-            'source_url': 'http://google2.com'
+            'source_url': 'http://google2.com',
         })
         self.assertEqual(response.code, 200)
         response = self.get('/1/shows/1/images/{}'.format(image['id']))
@@ -93,6 +95,15 @@ class test_show_image(Testbase):
         self.assertEqual(image['external_id'], '1234')
         self.assertEqual(image['source_title'], 'Some user 2')
         self.assertEqual(image['source_url'], 'http://google2.com')
+
+        # get all the images        
+        self.get('http://{}/images/_refresh'.format(
+            config['elasticsearch']
+        ))
+        response = self.get('/1/shows/1/images')
+        self.assertEqual(response.code, 200, response.body)
+        images = utils.json_loads(response.body)
+        self.assertEqual(images[0]['id'], image['id'])
 
         # delete the image
         response = self.delete('/1/shows/1/images/{}'.format(image['id']))

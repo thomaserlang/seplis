@@ -78,7 +78,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             self.write_pagination(obj)
             return
         self.write(
-            utils.json_dumps(obj, indent=4),
+            utils.json_dumps(obj, indent=4, sort_keys=True),
         )
 
     def write_pagination(self, pagination):
@@ -101,20 +101,23 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         return database.redis
 
     @gen.coroutine
-    def es(self, url, **kwargs):
+    def es(self, url, query={}, body={}):
         http_client = AsyncHTTPClient()         
         if not url.startswith('/'):
             url = '/'+url
-        for arg in kwargs:
-            if not isinstance(kwargs[arg], list):
-                kwargs[arg] = [kwargs[arg]]
+        for arg in query:
+            if not isinstance(query[arg], list):
+                query[arg] = [query[arg]]
         try:
             response = yield http_client.fetch(
                 'http://{}{}?{}'.format(
                     config['elasticsearch'],
                     url,
-                    utils.url_encode_tornado_arguments(kwargs) if kwargs else '',
+                    utils.url_encode_tornado_arguments(query) \
+                        if query else '',
                 ),
+                method='POST' if body else 'GET',
+                body=utils.json_dumps(body) if body else None,
             )
             return utils.json_loads(response.body)
         except HTTPError as e:

@@ -1,6 +1,7 @@
 import requests
 import xmltodict
 import logging
+from seplis.api import constants
 from dateutil import parser
 from seplis.indexer.show.base import Show_indexer_base
 
@@ -61,6 +62,34 @@ class Thetvdb(Show_indexer_base):
             if 'Episode' in data['Data']:
                 episodes = self.parse_episodes(data['Data']['Episode'])
             return episodes
+
+    def get_images(self, show_id):        
+        r = requests.get(
+            self._url.format(
+                apikey=self.apikey,
+                id=show_id,
+                type='banners.xml',
+            )
+        )
+        images = []
+        if r.status_code == 200:
+            data = xmltodict.parse(r.content)
+            if not isinstance(data['Banners']['Banner'], list):
+                data['Banners']['Banner'] = [data['Banners']['Banner']]
+            banners = [banner for banner in data['Banners']['Banner'] \
+                if 'Rating' in banner]
+            for banner in sorted(banners, reverse=True, key=lambda banner: float(banner['Rating']) \
+                    if banner['Rating'] else float(0)):
+                if banner['BannerType'] != 'poster':
+                    continue
+                images.append({
+                    'external_name': 'thetvdb',
+                    'external_id': str(banner['id']),
+                    'source_url': 'http://thetvdb.com/banners/{}'.format(banner['BannerPath']),
+                    'source_title': 'TheTVDB',
+                    'type': constants.IMAGE_TYPE_POSTER,
+                })
+        return images
 
     def get_updates(self):
         data = self.get_update_data()
@@ -165,27 +194,6 @@ class Thetvdb(Show_indexer_base):
         except ValueError as e:
             logging.exception('Parsing date "{}"'.format(date))
         return None
-
-    def get_show_photos_urls(self, show_id):
-        '''
-        :returns: list of urls
-        '''
-        r = requests.get(
-            self._url.format(
-                apikey=self.apikey,
-                id=show_id,
-                type='banners.xml',
-            )
-        )
-        banners = []
-        if r.status_code == 200:
-            data = xmltodict.parse(r.content)
-            if isinstance(data['Banners']['Banner'], list):
-                for banner in data['Banners']['Banner']:
-                    banners.append('http://thetvdb.com/banners/{}'.format(banner['BannerPath']))
-            else:
-                banners.append('http://thetvdb.com/banners/{}'.format(data['Banners']['Banner']['BannerPath']))
-        return banners
 
     def get_show_description(self, show_id):
         '''

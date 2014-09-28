@@ -8,10 +8,10 @@ class Image(object):
 
     def __init__(self, id, relation_type, relation_id, external_name,
         external_id, height, width, hash, source_title, source_url, 
-        datetime):
+        type, created):
         self.id = id
-        self.relation_type = relation_type
-        self.relation_id = relation_id
+        self.relation_type = int(relation_type)
+        self.relation_id = int(relation_id)
         self.external_name = external_name
         self.external_id = external_id
         self.height = height
@@ -19,7 +19,8 @@ class Image(object):
         self.hash = hash
         self.source_title = source_title
         self.source_url = source_url
-        self.datetime = datetime
+        self.type = type
+        self.created = created     
 
     def to_dict(self):
         return self.__dict__
@@ -42,7 +43,7 @@ class Image(object):
         image = models.Image(
             relation_type=relation_type,
             relation_id=relation_id,
-            datetime=datetime.utcnow(),
+            created=datetime.utcnow(),
         )
         session.add(image)
         session.flush()
@@ -93,7 +94,8 @@ class Image(object):
         )
 
     @auto_session
-    def delete(self, session=None):
+    @auto_pipe
+    def delete(self, session=None, pipe=None):
         '''
 
         :returns: boolean
@@ -111,3 +113,6 @@ class Image(object):
         if not image:
             return False
         return True
+
+class Images(object):
+    pass

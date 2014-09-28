@@ -33,12 +33,21 @@ INDEX_TYPES = (
     ('episodes', (
         'thetvdb',
         'tvrage',
+    )),
+    ('images', (
+        'thetvdb',
     ))
 )
 
 INDEX_TYPE_NAMES = {
     'info': 'Info',
     'episodes': 'Episodes',
+    'images': 'Images',
 }
 
-IMAGE_TYPE_SHOW = 1
+IMAGE_RELATION_TYPE_SHOW = 1
+
+IMAGE_TYPE_POSTER = 1
+IMAGE_TYPES = {
+    IMAGE_TYPE_POSTER: 'poster',
+}

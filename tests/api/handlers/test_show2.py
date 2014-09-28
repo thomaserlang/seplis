@@ -57,6 +57,7 @@ class test_show(Testbase):
         self.assertEqual(show['indices'], {
             'info': 'imdb',
             'episodes': 'imdb',
+            'images': None,
         })
         self.assertEqual(show['externals'], {
             'imdb': 'tt0364845',
@@ -101,6 +102,7 @@ class test_show(Testbase):
         self.assertEqual(show['indices'], {
             'info': 'imdb',
             'episodes': 'imdb',
+            'images': None,
         })
         self.assertEqual(show['externals'], {
             'imdb': 'tt0364845',
@@ -138,6 +140,7 @@ class test_show(Testbase):
         self.assertEqual(show['indices'], {
             'info': None,
             'episodes': 'thetvdb',
+            'images': None,
         })
         self.assertEqual(show['externals'], {
             'thetvdb': '1234',
@@ -154,7 +157,7 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 400, response.body)
         error = utils.json_loads(response.body)
-        self.assertEqual(error['code'], 4001)
+        self.assertEqual(error['code'], 1401)
 
 
         # so when adding the index to the externals with a value
@@ -172,6 +175,7 @@ class test_show(Testbase):
         self.assertEqual(show['indices'], {
             'info': 'imdb',
             'episodes': None,
+            'images': None,
         })
         self.assertEqual(show['externals'], {
             'imdb': 'tt1234',
@@ -193,6 +197,7 @@ class test_show(Testbase):
         self.assertEqual(show['indices'], {
             'info': None,
             'episodes': None,
+            'images': None,
         })
         self.assertEqual(show['externals'], {
             'imdb': None,
@@ -349,7 +354,7 @@ class test_show(Testbase):
     def test_unknown_show(self):
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.get('/1/shows/999999')
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 404, response.body)
 
     def test_season_count(self):
         show_id = self.new_show()
@@ -540,6 +545,34 @@ class test_show(Testbase):
         self.assertTrue('title' in show)
         self.assertEqual(show['title'], 'test show')
 
+    def test_add_image(self):
+        self.login(constants.LEVEL_EDIT_SHOW)
+        response = self.post('/1/shows/1/images', {
+            'external_name': 'Test',
+            'external_id': '1',
+            'source_title': 'Test',
+            'source_url': 'http://example.net',
+            'type': constants.IMAGE_TYPE_POSTER,
+        })
+        self.assertEqual(response.code, 200)
+        image = utils.json_loads(response.body)
+
+        response = self.post('/1/shows', {
+            'title': 'test show',
+            'status': 1,
+            'image_id': image['id']
+        })
+        self.assertEqual(response.code, 201, response.body)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['image']['id'], image['id'])
+
+        # remove the image
+        response = self.put('/1/shows/{}'.format(show['id']), {
+            'image_id': None
+        })
+        self.assertEqual(response.code, 200)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['image'], None)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

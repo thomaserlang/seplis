@@ -1,12 +1,13 @@
 # coding=UTF-8
 import nose
 import mock
+import xmltodict
 from unittest import TestCase
 from seplis.indexer.show.thetvdb import Thetvdb
 from seplis import schemas
-import xmltodict
+from seplis.api import constants
 
-def mock_tvrage(url):
+def mock_thetvdb_show_info(url):
     if 'Updates.php' in url:
         return mock.Mock(
             content='''<Items>
@@ -263,9 +264,50 @@ def mock_tvrage(url):
             status_code=200,
         )
 
+def mock_thetvdb_images(url, stream=None):
+    if 'banners.xml' in url:
+        return mock.Mock(
+            content='''<?xml version="1.0" encoding="UTF-8" ?>
+            <Banners>
+               <Banner>
+                  <id>14820</id>
+                  <BannerPath>text/80348.jpg</BannerPath>
+                  <BannerType>series</BannerType>
+                  <BannerType2>text</BannerType2>
+                  <Language>en</Language>
+                  <Season></Season>
+               </Banner>
+               <Banner>
+                  <id>877696</id> 
+                  <BannerPath>posters/80348-16.jpg</BannerPath> 
+                  <BannerType>poster</BannerType> 
+                  <BannerType2>680x1000</BannerType2> 
+                  <Language>en</Language> 
+                  <Rating>8.8000</Rating> 
+                  <RatingCount>5</RatingCount>
+               </Banner>
+               <Banner>
+                  <id>877696</id> 
+                  <BannerPath>posters/80348-16.jpg</BannerPath> 
+                  <BannerType>poster</BannerType> 
+                  <BannerType2>680x1000</BannerType2> 
+                  <Language>en</Language> 
+                  <Rating></Rating> 
+                  <RatingCount></RatingCount>
+               </Banner>
+            </Banners>
+            ''',
+            status_code=200,
+        )
+    elif '80348-16.jpg' in url:
+        return mock.Mock(
+            raw=b'this is an image!',
+            status_code=200,
+        )
+
 class test_thetvdb(TestCase):
     
-    @mock.patch('requests.get', mock_tvrage)
+    @mock.patch('requests.get', mock_thetvdb_show_info)
     def test(self):
         thetvdb = Thetvdb('apikey')
         ids = [72108, 123]
@@ -280,7 +322,7 @@ class test_thetvdb(TestCase):
                     'Drama',
                 ])
 
-    @mock.patch('requests.get', mock_tvrage)
+    @mock.patch('requests.get', mock_thetvdb_show_info)
     def test_updates(self):
         thetvdb = Thetvdb('apikey')
         ids = thetvdb.get_updates()
@@ -288,6 +330,23 @@ class test_thetvdb(TestCase):
         self.assertEqual(ids[0], 72108)
         self.assertEqual(ids[1], 123)
         self.assertEqual(ids[2], 987)
+
+
+    @mock.patch('requests.get', mock_thetvdb_images)
+    def test_images(self):
+        thetvdb = Thetvdb('apikey')
+        images = thetvdb.get_images(123)
+        self.assertEqual(len(images), 2)
+        self.assertEqual(
+            images[0]['source_url'], 
+            'http://thetvdb.com/banners/posters/80348-16.jpg'
+        )
+        self.assertEqual(images[0]['source_title'], 'TheTVDB')
+        self.assertEqual(images[0]['external_name'], 'thetvdb')
+        self.assertEqual(images[0]['external_id'], '877696')
+        self.assertEqual(images[0]['type'], constants.IMAGE_TYPE_POSTER)
+        schemas.validate(schemas.Image, images[0])
+            
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

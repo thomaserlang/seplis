@@ -106,10 +106,13 @@ class Show(base):
     externals = Column(JSONEncodedDict())
     index_info = Column(String(45))
     index_episodes = Column(String(45))
+    index_images = Column(String(45))
     seasons = Column(JSONEncodedDict())
     runtime = Column(Integer)
     genres = Column(JSONEncodedDict())
     alternate_titles = Column(JSONEncodedDict())
+    image_id = Column(Integer, ForeignKey('images.id'))
+    image = relationship('Image')
 
 class Episode(base):
     __tablename__ = 'episodes'
@@ -175,7 +178,6 @@ class Show_fan(base):
     datetime = Column(DateTime)
 
 class Episode_watched(base):
-
     __tablename__ = 'episodes_watched'
 
     show_id = Column(Integer, primary_key=True, autoincrement=False)
@@ -186,7 +188,6 @@ class Episode_watched(base):
     datetime = Column(DateTime)
 
 class Show_watched(base):
-
     __tablename__ = 'shows_watched'
 
     show_id = Column(Integer, primary_key=True, autoincrement=False)
@@ -196,7 +197,6 @@ class Show_watched(base):
     datetime = Column(DateTime)
 
 class Tag(base):
-
     __tablename__ = 'tags'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -205,7 +205,6 @@ class Tag(base):
     type = Column(String(50))
 
 class Tag_relation(base):
-
     __tablename__ = 'tag_relations'
 
     user_id = Column(Integer, primary_key=True, autoincrement=False)
@@ -226,4 +225,5 @@ class Image(base):
     hash = Column(String(64))
     source_title = Column(String(200))
     source_url = Column(String(200))
-    datetime = Column(DateTime)
+    created = Column(DateTime)
+    type = Column(Integer)

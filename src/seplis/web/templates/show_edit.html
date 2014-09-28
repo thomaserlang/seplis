@@ -14,7 +14,8 @@
                 <label for="{{ escape(index) }}">
                     {{ escape(constants.EXTERNAL_TYPE_NAMES[index]) }} 
                     ID
-                    {{ ' *' if index in constants.EXTERNAL_REQUIRED_TYPES else '' }}
+                    {{ ' *' if index in \
+                        constants.EXTERNAL_REQUIRED_TYPES else '' }}
                 </label>
                 <input 
                     type="text" 
@@ -22,7 +23,8 @@
                     name="{{ escape(index) }}" 
                     id="{{ escape(index) }}"
                     value="{{ show['externals'].get(index, '') if show else '' }}"
-                    {{ 'required' if index in constants.EXTERNAL_REQUIRED_TYPES else '' }}
+                    {{ 'required' if index in \
+                        constants.EXTERNAL_REQUIRED_TYPES else '' }}
                 >
             </div>
         {% end %}
@@ -42,7 +44,8 @@
                     {% for name in externals %}
                         <option 
                             value="{{ escape(name) }}"
-                            {{ 'selected' if show and show['indices'][index] == name else '' }}
+                            {{ 'selected' if show and \
+                                show['indices'].get(index) == name else '' }}
                         >
                             {{ escape(constants.EXTERNAL_TYPE_NAMES[name]) }}
                         </option>

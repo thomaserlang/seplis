@@ -1,8 +1,10 @@
 import re
 import aniso8601
-from voluptuous import Schema, Any, Required, Length, All, Match, Invalid, Range, Optional
+from voluptuous import Schema, Any, Required, Length, All, Match, \
+    Invalid, Range, Optional
 from datetime import datetime
 from dateutil import parser
+from seplis.api import constants
 
 def validate(schema, d, *arg, **args):
     if not isinstance(schema, Schema):            
@@ -33,6 +35,14 @@ def time_(msg=None):
             raise Invalid('invalid time {}'.format(v))
     return f
 
+def image_type(msg=None):
+    def f(v):
+        if v not in constants.IMAGE_TYPES:
+            raise Invalid('invalid image type: {}'.format(v))
+        else:
+            return v
+    return f
+
 def validate_email(email):
     """Validate email."""
     if not "@" in email:
@@ -56,10 +66,10 @@ Episode_schema = {
 External_schema = Schema({
     All(Length(min=1, max=45)):Any(None, All(str, Length(min=1, max=45)))
 })
-Index_schema = Schema({
-    'info': Any(None, All(str, Length(min=1, max=45))),
-    'episodes': Any(None, All(str, Length(min=1, max=45))), 
-})
+Index_schema = Schema(
+    {key: Any(None, All(str, Length(min=1, max=45))) \
+        for key in constants.INDEX_TYPE_NAMES}
+)
 Show_schema = {
     'title': str,
     'description': Any(None, Description_schema),
@@ -72,6 +82,7 @@ Show_schema = {
     'runtime': Any(int, None),
     'genres': [str],
     'alternate_titles': [str],
+    'image_id': Any(int, None),
 }
 
 User_schema = Schema({
@@ -106,9 +117,10 @@ Episode_watched = Schema({
     Optional('position'): int,
 })
 
-Image = Schema({
+Image = {
     'external_name': All(str, Length(min=1, max=45)),
     'external_id': All(str, Length(min=1, max=45)),
     'source_title': All(str, Length(min=1, max=200)),
     'source_url': All(str, Length(min=1, max=200)),
-}, required=True)
+    'type': All(int, image_type()),
+}

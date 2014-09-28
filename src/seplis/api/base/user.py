@@ -59,17 +59,15 @@ class User(object):
             user.cache()
             return user
 
+    @auto_pipe
     def cache(self, pipe=None):
-        _pipe = pipe if pipe else database.redis.pipeline()
-        _pipe.sadd('users', self.id)
+        pipe.sadd('users', self.id)
         for key, val in self.__dict__.items():
-            _pipe.hset(
+            pipe.hset(
                 name='users:{}'.format(self.id),
                 key=key,
                 value=val,
             )
-        if not pipe:
-            _pipe.execute()
 
     @classmethod
     def get_from_email(cls, email):
@@ -90,13 +88,12 @@ class User(object):
     def _format_from_redis(cls, user):
         if not user:
             return
-        if user:
-            u = User()
-            u.__dict__.update(user)
-            u.level = int(u.level)
-            u.fan_of = int(u.fan_of)
-            u.id = int(u.id)
-            return u
+        u = User()
+        u.__dict__.update(user)
+        u.level = int(u.level)
+        u.fan_of = int(u.fan_of)
+        u.id = int(u.id)
+        return u
 
     @classmethod
     def get(cls, id_):

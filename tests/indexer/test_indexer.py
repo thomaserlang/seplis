@@ -3,11 +3,13 @@ import nose
 import mock
 import json
 import show.test_tvrage
+import show.test_thetvdb
 from tornado import gen
 from datetime import date
 from unittest import TestCase
 from seplis.indexer.indexer import show_info_changes, show_episode_changes
 from seplis.indexer import Show_indexer
+from seplis import utils
 
 @gen.coroutine
 def mock_show_patch(self, request, callback=None, **kwargs):
@@ -97,6 +99,64 @@ def mock_show_patch(self, request, callback=None, **kwargs):
                     code=200,
                 )
 
+@gen.coroutine
+def mock_show_images(self, request, callback=None, **kwargs):
+    if request.method == 'GET':
+        if 'images' in request.url:
+            return mock.Mock(
+                headers={},
+                body=json.dumps([
+                ]),
+                code=200,
+            )
+        elif 'shows/' in request.url:
+            if '4628' in request.url:
+                return mock.Mock(
+                    headers={},
+                    body=json.dumps({
+                        'id': '4628',
+                        'title': 'NCIS',
+                        'indices': {
+                            'images': 'thetvdb',
+                        },
+                        'externals': {
+                            'thetvdb': '4628'
+                        },
+                    }),
+                    code=200,
+                )
+    elif request.method == 'POST':        
+        if 'images' in request.url:
+            data = utils.json_loads(request.body)
+            data.update({
+                'id': 1,
+                'hash': None,
+            })
+            return mock.Mock(
+                headers={},
+                body=json.dumps(data),
+                code=200,
+            )
+
+def mock_upload_image(url, files, headers={}):
+    return mock.Mock(
+        content='',
+        status_code=200,
+        json=mock_get_json,
+    )
+def mock_get_json():
+    return {
+        'id': 1,
+        'hash': '123',
+        'external_name': 'thetvdb',
+        'external_id': '1',
+        'source_url': 'http://example.net/img.jpg',
+        'source_title': 'TheTVDB',
+        'type': 1,
+        'width': 100,
+        'height': 200,
+    }
+
 class test_indexer(TestCase):
 
     @mock.patch('requests.get', show.test_tvrage.mock_tvrage)
@@ -109,6 +169,24 @@ class test_indexer(TestCase):
             self.assertEqual(len(updated_shows['2445']['episodes']), 4)
             self.assertTrue('4628' in updated_shows)
             self.assertEqual(len(updated_shows['4628']['episodes']), 4)
+
+
+    @mock.patch('requests.get', show.test_thetvdb.mock_thetvdb_images)
+    @mock.patch('requests.put', mock_upload_image)
+    def test_images(self):        
+        with mock.patch('tornado.httpclient.AsyncHTTPClient.fetch', mock_show_images) as m:
+            indexer = Show_indexer('http://example.org')
+            updated_images = indexer._update_images({
+                'id': '4628',
+                'title': 'NCIS',
+                'indices': {
+                    'images': 'thetvdb',
+                },
+                'externals': {
+                    'thetvdb': '4628'
+                },
+            })
+            self.assertEqual(len(updated_images), 2)
 
 class test_show_info_changes(TestCase):
 
