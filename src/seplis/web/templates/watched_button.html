@@ -1,0 +1,49 @@
+<div class="watched-button btn-group">
+    <ul class="dropdown-menu" role="menu">
+        <li 
+            class="watched-episode"
+            title="Increment the watched count"
+            show-id="{{ show['id'] }}"
+            episode-number="{{ episode['number'] }}"
+            do="incr"
+            data-loading-text="<img width='14px' height='14px' src='/static/img/loader.gif'>"
+        >
+            <strong>
+                <i class="fa fa-plus"></i>
+            </strong>
+        </li>
+        <li 
+            class="watched-episode"
+            title="Decrement the watched count"
+            show-id="{{ show['id'] }}"
+            episode-number="{{ episode['number'] }}"
+            do="decr"
+            data-loading-text="<img width='14px' height='14px' src='/static/img/loader.gif'>"
+        >
+            <strong>                
+                <i class="fa fa-minus"></i>
+            </strong>
+        </li>
+    </ul>
+
+    <button 
+        class="btn btn-default {{ 
+            'btn-watched' if episode.get('user_watched') else 'btn-not-watched' 
+        }}" 
+        show-id="{{ show['id'] }}"
+        episode-number="{{ episode['number'] }}"
+        data-toggle="{{ 
+            'dropdown' if episode.get('user_watched') else '' 
+        }}"
+        data-loading-text="<img width='14px' height='14px' src='/static/img/loader.gif'>"
+    >
+        <strong>W</strong>
+    </button>
+    {% set times_watched = episode['user_watched']['times'] if episode.get('user_watched') else 0 %}
+    <button 
+        class="btn btn-default btn-watched-count" 
+        title="You have watched this episode {{ times_watched }} times"
+    >
+        {{ times_watched }}
+    </button>
+</div>

@@ -56,6 +56,7 @@ class Rebuild_cache(object):
         to_es = []
         for item in session.query(models.Episode).yield_per(10000):
             a = Episode._format_from_row(item)
+            a.show_id = item.show_id
             to_es.append({
                 '_index': 'episodes',
                 '_type': 'episode',
@@ -119,12 +120,13 @@ class Rebuild_cache(object):
         from seplis.api.base.episode import Watched
         usershows = []
         for row in session.query(models.Episode_watched).yield_per(10000):
-            Watched.cache(
+            Watched.cache_watched(
                 user_id=row.user_id,
                 show_id=row.show_id,
-                number=row.number,
+                number=row.episode_number,
                 times=row.times,
-                datetime=row.datetime,
+                datetime_=row.datetime,
+                position=row.position,
                 pipe=pipe,
             )
             n = '{}-{}'.format(row.user_id, row.show_id)
@@ -140,7 +142,6 @@ class Rebuild_cache(object):
                     number=lw.episode_number,
                     position=lw.position,
                     datetime_=lw.datetime,
-                    session=session,
                     pipe=pipe,
                 )
                 usershows.append(n)

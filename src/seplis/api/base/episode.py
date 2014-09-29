@@ -172,7 +172,7 @@ class Watched(object):
         if not isinstance(number, list):
             numbers = [number]
         for n in numbers:
-            pipe.hgetall('users:{}:watched:{}-{}'.format(user_id, show_id, number))
+            pipe.hgetall('users:{}:watched:{}-{}'.format(user_id, show_id, n))
         results = pipe.execute()
         if not results and not isinstance(number, list):
             return None

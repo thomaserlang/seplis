@@ -1,0 +1,36 @@
+.fan-button{
+    margin-bottom:10px;
+}
+
+.btn-unfan, .btn-watched {
+    color: #fff;
+    background-color: #5cb85c;
+    border-color: #ccc;
+}
+
+.btn-unfan:hover, .btn-unfan:focus, .btn-unfan:active, .btn-unfan.active,
+.btn-watched:hover, .btn-watched:focus, .btn-watched:active, .btn-watched.active{
+    color: #fff;
+    background-color: #47a447;
+    border-color: #ccc;
+}
+
+.watched-button {    
+    float:left;
+    width:82px;
+    margin-right:5px;
+}
+
+.watched-button li {
+    text-align: center;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.watched-button .dropdown-menu{
+    min-width:39px;
+}
+
+.btn-watched-count {
+    width: 42px;
+}

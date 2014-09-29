@@ -9,7 +9,7 @@ import seplis.web.handlers.tag
 import seplis.web.handlers.suggest
 import seplis.web.handlers.air_dates
 import seplis.web.modules.menu
-import seplis.web.modules.fan_button
+import seplis.web.modules.buttons
 import seplis.web.modules.tags
 import os
 from seplis.logger import logger
@@ -29,7 +29,8 @@ class Application(tornado.web.Application):
             login_url='/signin',
             ui_modules=dict(
                 menu=seplis.web.modules.menu.Module,
-                fan_button=seplis.web.modules.fan_button.Module,
+                fan_button=seplis.web.modules.buttons.Fan_module,
+                watched_button=seplis.web.modules.buttons.Watched_module,
                 tags=seplis.web.modules.tags.Module,
             )
         )
@@ -50,6 +51,7 @@ class Application(tornado.web.Application):
             tornado.web.URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),
 
             tornado.web.URLSpec(r'/api/fan', seplis.web.handlers.show.API_fan_handler),
+            tornado.web.URLSpec(r'/api/watched', seplis.web.handlers.show.API_watched_handler),
 
             tornado.web.URLSpec(r'/suggest', seplis.web.handlers.suggest.Handler),
 

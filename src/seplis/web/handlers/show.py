@@ -71,6 +71,8 @@ class Handler(base.Handler):
             'per_page': 1,
             'sort': 'number:asc',
         }
+        if self.current_user:
+            req['append'] = 'user_watched'
         episodes = yield self.client.get(
             '/shows/{}/episodes'.format(show_id),
             req
@@ -110,7 +112,34 @@ class API_fan_handler(base.API_handler):
                 self.current_user['id'],
             ))
         else:
-            self.set_status(400)        
+            self.set_status(400)
+        self.write_object({})
+
+class API_watched_handler(base.API_handler):
+
+    @authenticated
+    @gen.coroutine
+    def post(self):
+        show_id = self.get_argument('show_id')
+        number = self.get_argument('number')
+        do = self.get_argument('do')
+
+        if do == 'delete':
+            yield self.client.delete('/users/{}/watched/shows/{}/episodes/{}'.format(
+                self.current_user['id'],
+                show_id,
+                number,
+            ))
+        else:
+            times = 1 if do == 'incr' else -1
+            yield self.client.put('/users/{}/watched/shows/{}/episodes/{}'.format(
+                self.current_user['id'],
+                show_id,
+                number,
+            ), {
+                'times': times,
+                'position': 0,
+            })
         self.write_object({})
 
 class New_handler(base.Handler):

@@ -18,6 +18,11 @@
     overflow: hidden;
     background-color: #fff;
     cursor:pointer;
+    padding:7px 10px;
+}
+
+.season-episodes .episode .panel-body {
+    padding: 10px;
 }
 
 .season-episodes .episode .next-episode {
@@ -30,10 +35,17 @@
     text-overflow: ellipsis; 
     white-space: nowrap;
     float:left;
+    width:705px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 14px;
 }
 
 .season-episodes .episode .airdate {
     float:right;
+    height: 18px;
+    line-height: 18px;
+    font-size: 14px;
 }
 .show-header h1 a{
     color: #FF6600;
