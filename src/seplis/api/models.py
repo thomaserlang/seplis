@@ -111,8 +111,8 @@ class Show(base):
     runtime = Column(Integer)
     genres = Column(JSONEncodedDict())
     alternate_titles = Column(JSONEncodedDict())
-    image_id = Column(Integer, ForeignKey('images.id'))
-    image = relationship('Image')
+    poster_image_id = Column(Integer, ForeignKey('images.id'))
+    poster_image = relationship('Image')
 
 class Episode(base):
     __tablename__ = 'episodes'

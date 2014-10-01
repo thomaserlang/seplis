@@ -74,6 +74,10 @@ h1, h2, h3{
     margin-top:0;
 }
 
+.btn:focus {
+    background-color: auto;
+}
+
 .panel-default {
     border-color: #ccc;
     -webkit-box-shadow: none !important;
@@ -83,4 +87,8 @@ h1, h2, h3{
 
 .panel-group .panel-heading+.panel-collapse>.panel-body {
     border-top-color: #ccc;
+}
+
+.dropdown-form {
+    padding:10px;
 }

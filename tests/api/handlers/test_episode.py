@@ -221,6 +221,17 @@ class Test_episode_append_fields(Testbase):
             self.assertTrue('user_watched' in episode)
             self.assertEqual(episode['user_watched']['times'], 1)
 
+
+        # test that we can watch a interval of episodes at a time
+        response = self.put('/1/users/{}/watched/shows/{}/episodes/1-2'.format(self.current_user.id, show_id))
+        self.assertEqual(response.code, 200)
+        response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        episodes = utils.json_loads(response.body)
+        for episode in episodes:
+            self.assertTrue('user_watched' in episode)
+            self.assertEqual(episode['user_watched']['times'], 2)
+
 class Test_air_dates(Testbase):
 
     def test_air_dates(self):

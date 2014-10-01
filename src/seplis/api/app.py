@@ -54,6 +54,7 @@ class Application(tornado.web.Application):
             (r'/1/users/([0-9]+)/air-dates', seplis.api.handlers.episode.Air_dates_handler),
         
             (r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Watched_handler),
+            (r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)-([0-9]+)', seplis.api.handlers.episode.Watched_interval_handler),
 
             (r'/1/users/([0-9]+)/tags', seplis.api.handlers.tag.User_types_handler),
             (r'/1/users/([0-9]+)/tags/shows/([0-9]+)', seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}),

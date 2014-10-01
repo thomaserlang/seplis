@@ -48,7 +48,7 @@ class Handler(seplis.api.handlers.base.Handler):
             user_id = self.current_user.id
         user = User.get(user_id)
         if not user:
-            raise exceptions.User_unknown()
+            raise exceptions.Not_found('the user was not found')
         user = user.to_dict(
             user_level=user.level if self.current_user.id != user_id else \
                 constants.LEVEL_SHOW_USER_EMAIL,

@@ -11,12 +11,12 @@
                     <div class="image">
                         <div class="image">
                             <a href="/show/{{ show['id'] }}">
-                                {% if show['image'] %}
+                                {% if show['poster_image'] %}
                                     <img 
                                         alt="No image" 
                                         width="60px"
                                         height="88px"
-                                        src="{{ config['web']['image_url'] }}/{{ show['image']['hash'] }}@SX60.jpg"
+                                        src="{{ config['web']['image_url'] }}/{{ show['poster_image']['hash'] }}@SX60.jpg"
                                     >
                                 {% else %}
                                     <img alt="No image" height="80px" width="60px">

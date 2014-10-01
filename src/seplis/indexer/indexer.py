@@ -241,11 +241,11 @@ class Show_indexer(Client):
                     external_name,
                 ))
         # If the show has no image set, then we will set one
-        if updated_images and ('image' in show) and not show['image']:
+        if updated_images and ('poster_image' in show) and not show['poster_image']:
             for img in updated_images:
                 if img['type'] == constants.IMAGE_TYPE_POSTER:
                     self.patch('shows/{}'.format(show['id']), {
-                        'image_id': img['id'],
+                        'poster_image_id': img['id'],
                     })
                     break
         return updated_images

@@ -62,4 +62,7 @@ $(function(){
         tolerance: 0,
         height:70,
     });
+    $('.dropdown-form input, .dropdown-form label, .dropdown-form .btn').click(function(e) {
+        e.stopPropagation();
+    });
 });

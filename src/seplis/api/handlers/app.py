@@ -34,5 +34,5 @@ class Handler(seplis.api.handlers.base.Handler):
             raise exceptions.Parameter_missing_exception('app_id parameter is missing')
         app = App.get(app_id)
         if not app:
-            raise exceptions.Not_found_exception('app with id: {} could not be found'.format(app_id))            
+            raise exceptions.Not_found('app with id: {} could not be found'.format(app_id))            
         self.write_object(app)

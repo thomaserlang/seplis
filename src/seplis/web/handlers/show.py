@@ -121,25 +121,47 @@ class API_watched_handler(base.API_handler):
     @gen.coroutine
     def post(self):
         show_id = self.get_argument('show_id')
-        number = self.get_argument('number')
+        from_ = self.get_argument('from', None)
+        if from_:
+            to = self.get_argument('to')
+        else:
+            number = self.get_argument('number')
         do = self.get_argument('do')
 
         if do == 'delete':
-            yield self.client.delete('/users/{}/watched/shows/{}/episodes/{}'.format(
-                self.current_user['id'],
-                show_id,
-                number,
-            ))
+            if not from_:
+                yield self.client.delete('/users/{}/watched/shows/{}/episodes/{}'.format(
+                    self.current_user['id'],
+                    show_id,
+                    number,
+                ))
+            else:
+                yield self.client.delete('/users/{}/watched/shows/{}/episodes/{}-{}'.format(
+                    self.current_user['id'],
+                    show_id,
+                    from_,
+                    to,
+                ))
         else:
             times = 1 if do == 'incr' else -1
-            yield self.client.put('/users/{}/watched/shows/{}/episodes/{}'.format(
-                self.current_user['id'],
-                show_id,
-                number,
-            ), {
+            data = {
                 'times': times,
                 'position': 0,
-            })
+            }
+            if not from_:
+                yield self.client.put('/users/{}/watched/shows/{}/episodes/{}'.format(
+                    self.current_user['id'],
+                    show_id,
+                    number,
+                ), data)
+            else:
+                yield self.client.put('/users/{}/watched/shows/{}/episodes/{}-{}'.format(
+                    self.current_user['id'],
+                    show_id,
+                    from_,
+                    to,
+                ), data)
+
         self.write_object({})
 
 class New_handler(base.Handler):

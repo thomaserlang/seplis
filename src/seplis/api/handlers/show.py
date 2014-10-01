@@ -89,8 +89,8 @@ class Handler(base.Handler):
                     show.description.title = desc['title']
                 if 'url' in desc:
                     show.description.url = desc['url']
-        if 'image_id' in self.request.body:
-            show.add_image(self.request.body['image_id'])
+        if 'poster_image_id' in self.request.body:
+            show.add_poster_image(self.request.body['poster_image_id'])
         if overwrite:
             for index, externals in constants.INDEX_TYPES:
                 if index not in show.indices:
@@ -101,6 +101,10 @@ class Handler(base.Handler):
                 self.request.body['episodes'],
             )
         show.save()
+        if show.poster_image:
+            show.poster_image = self.image_format(
+                show.poster_image.__dict__
+            )
         return show
 
     update_episode_keys = (
@@ -199,6 +203,8 @@ class Handler(base.Handler):
                 user_id=self.current_user.id,
                 id_=show_id,
             )
+        if result['_source']['poster_image']:
+            self.image_format(result['_source']['poster_image'])
         self.write_object(
             result['_source']
         )
@@ -283,7 +289,7 @@ class External_handler(Handler):
     def _get(self, title, value):
         show_id = Show.get_id_by_external(title, value)
         if not show_id:   
-            raise exceptions.Not_found_exception('show not found with external: {} with id: {}'.format(title, value))
+            raise exceptions.Not_found('show not found with external: {} with id: {}'.format(title, value))
         return show_id
 
     @gen.coroutine

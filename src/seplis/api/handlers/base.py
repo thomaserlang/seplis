@@ -213,3 +213,24 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         if not_allowed:
             raise exceptions.Append_fields_not_allowed(not_allowed)
         return append_fields
+
+    image_remove_keys = (
+        'relation_type',
+        'relation_id',
+    )
+    def image_format(self, images):
+        '''
+        :param images: `dict` or list of `dict`
+        '''
+        if isinstance(images, list):
+            for img in images:
+                utils.keys_to_remove(
+                    self.image_remove_keys,
+                    img
+                )
+        else:
+            utils.keys_to_remove(
+                self.image_remove_keys,
+                images
+            )
+        return images

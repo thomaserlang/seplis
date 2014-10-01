@@ -1,5 +1,5 @@
-<div class="row season-episodes">
-    <div class="col-md-12 season-select">
+<div class="row">
+    <div class="col-xs-5 season-select">
         <div class="item season">Season</div>
         <div class="item">
             <select class="select-season-select form-control" show-id="{{ show['id'] }}">
@@ -14,7 +14,31 @@
             </select>
         </div>
     </div>
-    <div class="col-md-12">
+    <div class="col-xs-5 pull-right">
+        <div class="pull-right">
+            <button id="button-multi-watched" class="btn btn-default btn-multi-watched" data-toggle="dropdown">
+                Multi watched
+            </button>
+            <div class="dropdown-menu dropdown-form" role="menu" aria-labelledby="dLabel">
+                <form id="form-multi-watched">
+                    <input name="show_id" type="hidden" value="{{ show['id'] }}">
+                    <input name="do" type="hidden" value="incr">
+                    <div class="form-group">
+                        <label for="form-from-episode-number">From episode number</label>
+                        <input id="form-from-episode-number" class="form-control" name="from" placeholder="From">
+                    </div>
+                    <div class="form-group">
+                        <label for="form-to-episode-number">To episode number</label>
+                        <input id="form-to-episode-number" class="form-control" name="to" placeholder="To">
+                    </div>
+                    <button type="submit" class="btn btn-success">Watched</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row season-episodes">
+    <div class="col-xs-12">
         <div class="episodes panel-group">
             {% if next_episode and next_episode['season'] == selected_season %}
                 {% set episode = next_episode %}

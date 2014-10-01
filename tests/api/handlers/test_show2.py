@@ -2,9 +2,9 @@
 import json
 import nose
 from seplis.api.testbase import Testbase
-from seplis import utils
-from seplis.config import config
-from seplis.api import constants
+from seplis import utils, config
+from seplis.api import constants, models
+from seplis.decorators import new_session
 from datetime import datetime, date
 import time
 
@@ -557,22 +557,31 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200)
         image = utils.json_loads(response.body)
 
+        # we need to fake that an image has been uploaded
+        with new_session() as session:
+            session.query(models.Image).filter(
+                models.Image.id == image['id'],
+            ).update({
+                'hash': '17fb3ee9dac3969819af794c1fd11fbd0e02ca3d0e86b9f0c0365f13fa27d225'
+            })
+            session.commit()
+
         response = self.post('/1/shows', {
             'title': 'test show',
             'status': 1,
-            'image_id': image['id']
+            'poster_image_id': image['id']
         })
         self.assertEqual(response.code, 201, response.body)
         show = utils.json_loads(response.body)
-        self.assertEqual(show['image']['id'], image['id'])
+        self.assertEqual(show['poster_image']['id'], image['id'])
 
         # remove the image
         response = self.put('/1/shows/{}'.format(show['id']), {
-            'image_id': None
+            'poster_image_id': None
         })
         self.assertEqual(response.code, 200)
         show = utils.json_loads(response.body)
-        self.assertEqual(show['image'], None)
+        self.assertEqual(show['poster_image'], None)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

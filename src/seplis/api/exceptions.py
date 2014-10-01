@@ -130,15 +130,6 @@ class Restricted_access_exception(API_exception):
             }
         )
 
-class Not_found_exception(API_exception):
-
-    def __init__(self, message):
-        API_exception.__init__(self,
-            status_code=404,
-            code=1100, 
-            message=message,
-        )
-
 class User_not_following_show(API_exception):
 
     def __init__(self):
@@ -162,7 +153,7 @@ class Show_unknown(API_exception):
     def __init__(self):
         API_exception.__init__(
             self,
-            status_code=404,
+            status_code=400,
             code=1400,
             message='unknown show',
         )
@@ -210,7 +201,7 @@ class User_unknown(API_exception):
     def __init__(self):
         API_exception.__init__(
             self,
-            status_code=404,
+            status_code=400,
             code=1500,
             message='unknown user',
         )
@@ -221,7 +212,7 @@ class Episode_unknown(API_exception):
     def __init__(self):
         API_exception.__init__(
             self,
-            status_code=404,
+            status_code=400,
             code=1600,
             message='unknown episode',
         )
@@ -284,7 +275,15 @@ class Image_set_wrong_type(API_exception):
                 'needs': needs_image_type if isinstance(needs, list) \
                     else [needs_image_type],
             }
-        )        
+        )
+
+class Image_no_data(API_exception):
+    def __init__(self):
+        API_exception.__init__(self,
+            status_code=400,
+            code=2003,
+            message='No image data assigned. Please upload an image.',
+        )  
         
 class File_upload_no_files(API_exception):
 

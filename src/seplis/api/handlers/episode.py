@@ -1,18 +1,17 @@
 import logging
 from seplis.api.handlers import base
-from seplis.api import constants, models, exceptions
+from seplis.api import constants,  exceptions
 from seplis import schemas, utils
 from seplis.api.decorators import authenticated
 from seplis.api.base.episode import Episode, Episodes, Watched
-from seplis.connections import database
-from seplis.api import models
-from seplis.decorators import new_session
+from seplis.decorators import auto_session, auto_pipe
 from seplis.config import config
 from seplis.api.base.pagination import Pagination
 from datetime import datetime
 from sqlalchemy import asc, desc
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado import gen
+from tornado.concurrent import run_on_executor
 from collections import OrderedDict
 
 class Handler(base.Handler):
@@ -36,7 +35,7 @@ class Handler(base.Handler):
             number,
         ))
         if not result['found']:
-            raise exceptions.Episode_unknown()
+            raise exceptions.Not_found('the episode was not found')
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
             result['_source']['user_watched'] = Watched.get(
@@ -151,6 +150,65 @@ class Watched_handler(base.Handler):
             raise exceptions.Episode_unknown()
         episode.unwatch(user_id, show_id)
 
+class Watched_interval_handler(base.Handler):
+
+    @authenticated(0)
+    @gen.coroutine
+    def put(self, user_id, show_id, from_, to):
+        if int(user_id) != self.current_user.id:
+            self.check_edit_another_user_right()
+        yield self._put(
+            user_id, 
+            show_id, 
+            int(from_), 
+            int(to),
+        )
+
+    @run_on_executor
+    @auto_session
+    @auto_pipe
+    def _put(self, user_id, show_id, from_, to, 
+        session=None, pipe=None):
+        self.validate(schemas.Episode_watched)
+        for episode_number in range(from_, to+1):
+            episode = Episode.get(show_id, episode_number, session=session)
+            if not episode:
+                raise exceptions.Episode_unknown()
+            episode.watched(
+                user_id, 
+                show_id,
+                times=self.request.body.get('times', 1),
+                position=self.request.body.get('position', 0),
+                session=session,
+                pipe=pipe,
+            )
+
+    @authenticated(0)
+    def delete(self, user_id, show_id, from_, to):
+        if int(user_id) != self.current_user.id:
+            self.check_edit_another_user_right()
+        yield self._delete(
+            user_id, 
+            show_id, 
+            int(from_), 
+            int(to),
+        )
+
+    @run_on_executor
+    @auto_session
+    @auto_pipe   
+    def _delete(self, user_id, show_id, from_, to,
+        session=None, pipe=None):
+        for episode_number in range(from_, to+1):
+            episode = Episode.get(show_id, episode_number, session=session)
+            if not episode:
+                raise exceptions.Episode_unknown()
+            episode.unwatch(
+                user_id, 
+                show_id,
+                session=session,
+                pipe=pipe,
+            )
 
 class Air_dates_handler(Handler):
 

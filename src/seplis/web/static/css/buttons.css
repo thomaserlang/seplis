@@ -17,7 +17,7 @@
 
 .watched-button {    
     float:left;
-    width:82px;
+    width:84px;
     margin-right:5px;
 }
 
@@ -28,9 +28,9 @@
 }
 
 .watched-button .dropdown-menu{
-    min-width:39px;
+    min-width:42px;
 }
 
-.btn-watched-count {
+.btn-watched-count, .btn-watched, .btn-not-watched {
     width: 42px;
 }

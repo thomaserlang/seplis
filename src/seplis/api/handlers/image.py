@@ -34,7 +34,7 @@ class Handler(base.Handler):
         image.__dict__.update(data)
         image.save()        
         self.write_object(
-            self.image_format(image.to_dict())
+            image
         )
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
@@ -59,7 +59,9 @@ class Handler(base.Handler):
         if not result['found']:
             raise exceptions.Not_found('the image was not found')
         self.write_object(
-            self.image_format(result['_source'])
+            self.image_format(
+                result['_source']
+            )
         )
 
     @gen.coroutine
@@ -102,28 +104,6 @@ class Handler(base.Handler):
             ),
         )
         self.write_object(p)
-
-    remove_keys = (
-        'relation_type',
-        'relation_id',
-    )
-
-    def image_format(self, images):
-        '''
-        :param images: `Image()` or list of `Image()`
-        '''
-        if isinstance(images, list):
-            for img in images:
-                utils.keys_to_remove(
-                    self.remove_keys,
-                    img
-                )
-        else:
-            utils.keys_to_remove(
-                self.remove_keys,
-                images
-            )
-        return images
 
 class Data_handler(file_upload.Handler):
 

@@ -17,7 +17,7 @@ class Show(object):
 
     def __init__(self, id, title, description, premiered, ended, 
                  externals, indices, status, runtime, genres,
-                 alternate_titles, seasons, fans, image, updated=None):
+                 alternate_titles, seasons, fans, poster_image, updated=None):
         '''
 
         :param id: int
@@ -40,7 +40,7 @@ class Show(object):
         :param seasons: list of dict
         :param fans: int
         :param updated: datetime
-        :param image: `seplis.base.image.Image()`
+        :param poster_image: `seplis.base.image.Image()`
         '''
         self.id = id
         self.title = title
@@ -60,7 +60,7 @@ class Show(object):
         self.seasons = seasons
         self.updated = updated
         self.fans = fans
-        self.image = image
+        self.poster_image = poster_image
 
     @auto_session
     @auto_pipe
@@ -89,7 +89,7 @@ class Show(object):
             'alternate_titles': self.alternate_titles,
             'updated': self.updated,
             'seasons': self.seasons,
-            'image_id': self.image.id if self.image else None,
+            'poster_image_id': self.poster_image.id if self.poster_image else None,
         })
         self.update_external(
             pipe=pipe,
@@ -125,7 +125,7 @@ class Show(object):
             seasons=row.seasons if row.seasons else [],
             fans=row.fans,
             updated=row.updated,
-            image=Image._format_from_row(row.image),
+            poster_image=Image._format_from_row(row.poster_image),
         )
         return obj
 
@@ -163,19 +163,21 @@ class Show(object):
         session.flush()
         return show.id
 
-    def add_image(self, image_id):
+    def add_poster_image(self, image_id):
         if image_id:
             image = Image.get(image_id)
             if not image:
                 raise exceptions.Image_unknown()
+            if not image.hash:
+                raise exceptions.Image_no_data()
             if image.type != constants.IMAGE_TYPE_POSTER:
                 raise exceptions.Image_set_wrong_type(
                     image_type=image.type,
                     needs_image_type=constants.IMAGE_TYPE_POSTER,
                 )
-            self.image = image
+            self.poster_image = image
         else:
-            self.image = None
+            self.poster_image = None
 
     def to_dict(self):
         return self.__dict__

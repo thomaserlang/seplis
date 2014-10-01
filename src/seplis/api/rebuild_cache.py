@@ -156,7 +156,7 @@ class Rebuild_cache(object):
                 '_index': 'images',
                 '_type': 'image',
                 '_id': i.id,
-                '_source': i.to_dict(),
+                '_source': i.__dict__,
             })
         helpers.bulk(database.es, to_es)
 

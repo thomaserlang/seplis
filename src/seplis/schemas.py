@@ -82,7 +82,7 @@ Show_schema = {
     'runtime': Any(int, None),
     'genres': [str],
     'alternate_titles': [str],
-    'image_id': Any(int, None),
+    'poster_image_id': Any(int, None),
 }
 
 User_schema = Schema({

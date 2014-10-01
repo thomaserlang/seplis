@@ -17,7 +17,7 @@ import sqlalchemy as sa
 def upgrade():
     op.add_column('shows',
         sa.Column(
-            'image_id', 
+            'poster_image_id', 
             sa.Integer, 
             sa.ForeignKey(
                 'images.id', 
