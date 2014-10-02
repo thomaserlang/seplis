@@ -222,3 +222,22 @@ class API_edit_handler(API_new_handler):
             raise exceptions.Show_unknow()
         yield self.client.post('/shows/{}/update'.format(show_id))
         self.write_object(show)
+
+class Fan_of_handler(base.Handler):
+
+    @authenticated
+    @gen.coroutine
+    def get(self):
+        page = int(self.get_argument('page', 1))
+        shows = yield self.client.get('/users/{}/fan-of'.format(
+            self.current_user['id'],
+        ), {
+            'sort': 'title',
+            'page': page,
+            'per_page': 20,
+        })
+        self.render('fan_of.html',
+            title='Fan of',
+            shows=shows,
+            current_page=page,
+        )

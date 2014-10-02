@@ -1,8 +1,7 @@
 import http
 import logging
 from tornado import web, gen, ioloop, escape
-from seplis.config import config
-from seplis import utils
+from seplis import utils, config
 from seplis.web.client import API_error, Async_client
 from seplis.api import constants
 
@@ -24,6 +23,7 @@ class Handler_unauthenticated(web.RequestHandler):
             escape=self.escape,
             constants=constants,
             config=config,
+            image_url=self.image_url,
         )
         return namespace
 
@@ -31,6 +31,11 @@ class Handler_unauthenticated(web.RequestHandler):
         if value == None:
             return ''
         return escape.xhtml_escape(value)
+
+    def image_url(self, image, format_=''):
+        if not image:
+            return ''
+        return config['web']['image_url'] + '/' + image['hash'] + format_
 
 class Handler(Handler_unauthenticated):
 

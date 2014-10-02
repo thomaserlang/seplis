@@ -7,7 +7,7 @@
                 {% if show['poster_image'] %}
                     <img 
                         alt="image..." 
-                        src="{{ config['web']['image_url'] }}/{{ show['poster_image']['hash'] }}@SX300.jpg" 
+                        src="{{ image_url(show['poster_image'], '@SX300.jpg') }}" 
                         width="300px"
                         height="441px"
                     >
@@ -17,36 +17,36 @@
                     </div>
                 {% end %}
             </div>
-                <div class="description">
-                    <div>{% module fan_button(show) %}</div>
-                    {% if show['description']['text'] %}
-                        <div class="description-text">
-                            <p>
-                                {{ escape(show['description']['text']) }}
-                                <a 
-                                    href="#" 
-                                    class="readmore" 
-                                    onclick="
-                                        $('.container-fluid').hide();
-                                        $('.clean-reader').show();
-                                        return false;
-                                    "                                    
-                                >
-                                    Read more »
-                                </a>
-                            </p>
-                        </div>
-                        <source>
-                            <a href="{{ escape(show['description']['url']) }}" target="_blank">
-                                {{ escape(show['description']['title']) }}
+            <div class="description">
+                <div>{% module fan_button(show) %}</div>
+                {% if show['description']['text'] %}
+                    <div class="description-text">
+                        <p>
+                            {{ escape(show['description']['text']) }}
+                            <a 
+                                href="#" 
+                                class="readmore" 
+                                onclick="
+                                    $('.container-fluid').hide();
+                                    $('.clean-reader').show();
+                                    return false;
+                                "                                    
+                            >
+                                Read more »
                             </a>
-                        <source> 
-                    {% else %}
-                        <div class="description-text">
-                            <i>There is no description yet!</i>
-                        </div>
-                    {% end %}
-                </div>
+                        </p>
+                    </div>
+                    <source>
+                        <a href="{{ escape(show['description']['url']) }}" target="_blank">
+                            {{ escape(show['description']['title']) }}
+                        </a>
+                    <source> 
+                {% else %}
+                    <div class="description-text">
+                        <i>There is no description yet!</i>
+                    </div>
+                {% end %}
+            </div>
         </div>
         <hr>
         {% if show['seasons'] %}

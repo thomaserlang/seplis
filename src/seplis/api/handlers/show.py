@@ -269,24 +269,6 @@ class Multi_handler(base.Handler):
             Shows.get(ids)
         )
 
-class Suggest_handler(base.Handler):
-
-    @gen.coroutine
-    def get(self):
-        q = self.get_argument('q')
-        response = self.es.suggest(index='shows', body={
-            'show': {
-                'text': q,
-                'completion': {
-                    'field': 'title_suggest',
-                }
-            }
-        })
-        shows = [{'title': d['text'], 'id': d['payload']['show_id']} for show in response['show'] for d in show['options']]
-
-        self.write_object(shows)
-
-
 class External_handler(Handler):
 
     def _get(self, title, value):

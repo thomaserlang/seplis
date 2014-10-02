@@ -51,3 +51,9 @@ IMAGE_TYPE_POSTER = 1
 IMAGE_TYPES = {
     IMAGE_TYPE_POSTER: 'poster',
 }
+
+SHOW_SORT_FIELDS = (
+    ('title', 'Title'),
+    ('fans', 'Fans'),
+    ('premiered', 'Premiered'),
+)

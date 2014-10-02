@@ -59,6 +59,8 @@ class Application(tornado.web.Application):
             tornado.web.URLSpec(r'/users/([0-9]+)/tags/shows', seplis.web.handlers.tag.Shows_handler, name='user_tagged_shows'),
 
             tornado.web.URLSpec(r'/air-dates', seplis.web.handlers.air_dates.Handler),
+            tornado.web.URLSpec(r'/fan-of', seplis.web.handlers.show.Fan_of_handler),
+
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 

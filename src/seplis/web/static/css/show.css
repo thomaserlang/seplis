@@ -111,3 +111,14 @@
 .btn-multi-watched{
     color: #acacac;
 }
+
+.fan-of > .show {
+    width: 227px;
+    float:left;
+    margin-right:10px;
+    margin-bottom:10px;
+}
+
+.fan-of > .show:nth-child(4n) {
+    margin-right:0;
+}

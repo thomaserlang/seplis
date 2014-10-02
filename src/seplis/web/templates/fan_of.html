@@ -1,0 +1,37 @@
+{% extends base.html %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-xs-8">
+            <h1>Fan of <strong>{{ shows.count }}</strong> shows</h1>
+        </div>
+        <div class="col-xs-4">
+            <div class="pull-right">
+                <a href="/fan-of?layout=grid" class="btn btn-default">
+                    <i class="glyphicon glyphicon-th"></i>
+                </a>
+                <a href="/fan-of?layout=list" class="btn btn-default">
+                    <i class="glyphicon glyphicon-th-list"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% include fan_of_pages.html %}
+    <div class="fan-of">
+        {% for show in shows %}
+            <div class="show">
+                <div class="image">
+                    <a href="/show/{{ show['id'] }}">
+                    <img 
+                        alt="{{ escape(show['title']) }}"
+                        src="{{ image_url(show['poster_image'], '@SX227.jpg') }}"
+                        width="227px"
+                        height="334px"
+                    >
+                    </a>
+                </div>
+            </div>
+        {% end %}
+    </div>
+    {% include fan_of_pages.html %}
+{% end %}
