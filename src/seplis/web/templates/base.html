@@ -15,6 +15,7 @@
         <link rel="stylesheet" href="/static/css/progress.css">
         <link rel="stylesheet" href="/static/css/air_dates.css">
         <link rel="stylesheet" href="/static/css/clean_reader.css">
+        <link rel="stylesheet" href="/static/css/autocomplete.css">
 
         <script type="text/javascript" src="/static/js/vendor/jquery-2.1.1.min.js"></script>
         <script type="text/javascript">
@@ -43,32 +44,7 @@
                 api.default_error_callback = show_api_error;
 
                 template = new Template();
-                current_user = {{ json_dumps(current_user.data) if current_user else 'null' }};
 
-                var engine = new Bloodhound({
-                  name: 'suggest',
-                  remote: '/suggest?q=%QUERY',
-                  datumTokenizer: function(d) {
-                    return Bloodhound.tokenizers.whitespace(d.val);
-                  },
-                  queryTokenizer: Bloodhound.tokenizers.whitespace
-                });
-                engine.initialize()
-                $('.typeahead').typeahead(
-                    {
-                      hint: true,
-                      highlight: true,
-                      minLength: 1
-                    },
-                    {
-                      name: 'suggest',
-                      displayKey: 'title',
-                      source: engine.ttAdapter(),
-                      templates: {
-                        suggestion: _.template('<p><a href="/shows/<%=id %>"><%-title %></a></p>')
-                      }
-                    }
-                );
                 {% block jsready %}{% end %}
             });
         </script>
@@ -87,10 +63,10 @@
         <script type="text/javascript" src="/static/js/vendor/multiline.js"></script>
         <script type="text/javascript" src="/static/js/vendor/underscore-min.js"></script>
         <script type="text/javascript" src="/static/js/vendor/bootstrap.min.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/typeahead.bundle.js"></script>
         <script type="text/javascript" src="/static/js/vendor/jquery.growl.js"></script>
         <script type="text/javascript" src="/static/js/vendor/moment.js"></script>
         <script type="text/javascript" src="/static/js/vendor/jquery.dotdotdot.js"></script>
+        <script type="text/javascript" src="/static/js/vendor/jquery.autocomplete.js"></script>
         <script type="text/javascript" src="/static/js/api.js"></script>
         <script type="text/javascript" src="/static/js/template.js"></script>
         <script type="text/javascript" src="/static/js/signin.js"></script>
@@ -98,5 +74,6 @@
         <script type="text/javascript" src="/static/js/buttons.js"></script>
         <script type="text/javascript" src="/static/js/show.js"></script>
         <script type="text/javascript" src="/static/js/air_dates.js"></script>
+        <script type="text/javascript" src="/static/js/base.js"></script>
     </body>
 </html>

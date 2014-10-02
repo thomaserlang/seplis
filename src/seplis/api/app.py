@@ -42,8 +42,6 @@ class Application(tornado.web.Application):
             (r'/1/shows/([0-9]+)/fans', seplis.api.handlers.show.Fans_handler),
             (r'/1/shows/([0-9]+)/fans/([0-9]+)', seplis.api.handlers.show.Fans_handler),
 
-            (r'/1/suggest-shows', seplis.api.handlers.show.Suggest_handler),
-
             (r'/1/users', seplis.api.handlers.user.Handler),
             (r'/1/users/current', seplis.api.handlers.user.Handler),
             (r'/1/users/([0-9]+)', seplis.api.handlers.user.Handler),

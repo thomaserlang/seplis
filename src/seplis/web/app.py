@@ -53,7 +53,7 @@ class Application(tornado.web.Application):
             tornado.web.URLSpec(r'/api/fan', seplis.web.handlers.show.API_fan_handler),
             tornado.web.URLSpec(r'/api/watched', seplis.web.handlers.show.API_watched_handler),
 
-            tornado.web.URLSpec(r'/suggest', seplis.web.handlers.suggest.Handler),
+            tornado.web.URLSpec(r'/api/suggest', seplis.web.handlers.suggest.Handler),
 
             tornado.web.URLSpec(r'/user-tags', seplis.web.handlers.tag.Relation_handler),
             tornado.web.URLSpec(r'/users/([0-9]+)/tags/shows', seplis.web.handlers.tag.Shows_handler, name='user_tagged_shows'),

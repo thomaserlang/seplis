@@ -11,9 +11,6 @@ Api_error.prototype.toString(function(){
 });
 
 function Api() {
-    $.ajaxSetup({
-        processData : false
-    });
     this.default_error_callback = null;
     this.loader_gif = null;
 }

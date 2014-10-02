@@ -1,23 +1,29 @@
-$.fn.serializeObject = function()
-{
-    var o = {};
-    var a = this.serializeArray();
-    $.each(a, function() {
-        if (o[this.name] !== undefined) {
-            if (!o[this.name].push) {
-                o[this.name] = [o[this.name]];
-            }
-            o[this.name].push(this.value || '');
-        } else {
-            o[this.name] = this.value || '';
+$(function(){
+    $('.autocomplete').autocomplete({
+        serviceUrl: '/api/suggest',   
+        paramName: 'q',
+        noCache: true,
+        width: 400,
+        transformResult: function(response) {
+            response = $.parseJSON(response);
+            return {
+                suggestions: $.map(response, function(r) {
+                    return { 
+                        value: r.title.toString(), 
+                        data: r,
+                    };
+                })
+            };
+        },
+        formatResult: function (suggestion, currentValue) {
+            return _.template(multiline(function(){/*
+                <span class="title"><%- title %></span>
+            */}),
+                suggestion.data 
+            );
+        },    
+        onSelect: function (suggestion) {
+            location.href = '/show/'+suggestion.data.id;
         }
     });
-    return o;
-};
-
-String.prototype.format = function () {
-    var i = 0, args = arguments;
-    return this.replace(/{}/g, function () {
-        return typeof args[i] != 'undefined' ? args[i++] : '';
-    });
-};
+});

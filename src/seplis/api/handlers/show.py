@@ -215,22 +215,26 @@ class Handler(base.Handler):
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', '_score')
+        fields = self.get_argument('fields', None)
+        fields = list(filter(None, fields.split(','))) if fields else None
         req = {
             'from': ((page - 1) * per_page),
             'size': per_page,
             'sort': sort,
         }
-        body = None
+        body = {}
+        if fields:
+            if 'id' not in fields:
+                fields.append('id')
+            body['_source'] = fields
         if q:
-            body = {
-                'query': {
-                    'query_string': {
-                        'default_field': 'title',
-                        'query': q,
-                    }
+            body['query'] = {
+                'query_string': {
+                    'default_field': 'title',
+                    'query': q,
                 }
             }
-
+        
         result = yield self.es(
             '/shows/show/_search',
             body=body,
@@ -239,7 +243,6 @@ class Handler(base.Handler):
         shows = OrderedDict()
         for show in result['hits']['hits']:
             shows[show['_source']['id']] = show['_source']
-
         if 'is_fan' in self.append_fields:
             self.is_logged_in()
             show_ids = list(shows.keys())
