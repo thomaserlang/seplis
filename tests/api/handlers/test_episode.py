@@ -289,7 +289,10 @@ class Test_air_dates(Testbase):
             ],
         })
         self.assertEqual(response.code, 201)
-        show_2 = utils.json_loads(response.body)
+        show_2 = utils.json_loads(response.body)        
+        self.get('http://{}/_refresh'.format(
+            config['elasticsearch']
+        ))
 
         # The user must be a fan of the show before they should show up
         # in the user's air dates calender.
@@ -305,7 +308,10 @@ class Test_air_dates(Testbase):
             })        
             self.assertEqual(response.code, 200, response.body)
 
-        # Let's get our air dates calendar.
+        # Let's get our air dates calendar.        
+        self.get('http://{}/_refresh'.format(
+            config['elasticsearch']
+        ))
         response = self.get('/1/users/{}/air-dates?per_page=5'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         air_dates = utils.json_loads(response.body)

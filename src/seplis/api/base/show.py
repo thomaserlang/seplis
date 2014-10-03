@@ -293,7 +293,7 @@ class Show(object):
         )
         if incr_count:
             pipe.hincrby('shows:{}'.format(show_id), 'fans', 1)
-            pipe.hincrby('users:{}'.format(user_id), 'fan_of', 1)
+            pipe.hincrby('users:{}:stats'.format(user_id), 'fan_of', 1)
 
     @auto_pipe
     @auto_session
@@ -325,7 +325,7 @@ class Show(object):
             },
         )
         pipe.hincrby('shows:{}'.format(self.id), 'fans', incr)
-        pipe.hincrby('users:{}'.format(user_id), 'fan_of', incr)
+        pipe.hincrby('users:{}:stats'.format(user_id), 'fan_of', incr)
 
     @auto_pipe
     @auto_session

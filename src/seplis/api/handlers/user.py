@@ -1,11 +1,11 @@
 import tornado.web
 import tornado.gen
-import seplis.api.handlers.base
 import logging
 import time
 from tornado.concurrent import run_on_executor
 from tornado.web import HTTPError
-from seplis.decorators import new_session
+from seplis.api.handlers import base
+from seplis.connections import database
 from seplis.api import models
 from seplis.api.base.user import User, Token
 from seplis.api.base.app import App
@@ -18,7 +18,7 @@ from seplis.api import constants
 from seplis.api.decorators import authenticated
 from seplis import utils
 
-class Handler(seplis.api.handlers.base.Handler):
+class Handler(base.Handler):
     '''
     Handles user stuff...
     '''
@@ -55,7 +55,19 @@ class Handler(seplis.api.handlers.base.Handler):
         )
         self.write_object(user)
 
-class Token_handler(seplis.api.handlers.base.Handler):
+class Stats_handler(base.Handler):
+
+    def get(self, user_id):
+        s = {key: 0 for key in constants.USER_STAT_FIELDS}
+        stats = database.redis.hgetall('users:{}:stats'.format(user_id))
+        for key in stats:
+            s[key] = int(stats[key])
+        self.write_object(s)
+
+    def get_fan_of(self, user_id):
+        return database.redis.scard('users:{}:fan_of'.format(user_id))
+
+class Token_handler(base.Handler):
 
     @tornado.gen.coroutine
     def post(self):

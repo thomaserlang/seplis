@@ -48,7 +48,8 @@ class Application(tornado.web.Application):
         
             (r'/1/users/([0-9]+)/fan-of', seplis.api.handlers.show.Fan_of_handler),
             (r'/1/users/([0-9]+)/fan-of/([0-9]+)', seplis.api.handlers.show.Fan_of_handler),
-        
+            (r'/1/users/([0-9]+)/stats', seplis.api.handlers.user.Stats_handler),
+
             (r'/1/users/([0-9]+)/air-dates', seplis.api.handlers.episode.Air_dates_handler),
         
             (r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Watched_handler),

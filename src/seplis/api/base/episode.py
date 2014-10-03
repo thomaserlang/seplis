@@ -96,7 +96,7 @@ class Episode(object):
     @auto_pipe
     def unwatch(self, user_id, show_id, session=None, pipe=None):
         '''
-        Totally removes a watched episode.
+        Removes a watched episode.
         To decrement the number of times watched use the `watched` 
         method with `times` set to `-1`.
 
@@ -220,12 +220,13 @@ class Watched(object):
             )
             session.add(ew)
         else:
-            times = ew.times + times
-            if times < 0:
-                times = 0
+            _times = ew.times + times
+            if _times < 0:
+                _times = 0
+                times = -ew.times
             ew.position = position
             ew.datetime = datetime.utcnow()
-            ew.times = times
+            ew.times = _times
         # per show
         cls._set_currently_watching(
             user_id,
@@ -238,8 +239,8 @@ class Watched(object):
             user_id=user_id,
             show_id=show_id,
             number=number,
-            times=ew.times,
-            position=ew.times,
+            times=times,
+            position=ew.position,
             datetime_=ew.datetime,
         )
         return cls(
@@ -277,28 +278,78 @@ class Watched(object):
             session=session,
             pipe=pipe,
         )
-        pipe.delete('users:{}:watched:{}-{}'.format(user_id, show_id, number))
+        name = 'users:{}:watched:{}-{}'.format(user_id, show_id, number)
+        times = database.redis.hget(
+            name=name,
+            key='times',
+        )
+        cls.cache_stats(
+            user_id=user_id, 
+            times=-int(times),
+        )
+        pipe.delete(name)
         return True
 
     @classmethod
     @auto_pipe
-    def cache_watched(self, user_id, show_id, number,
+    def cache_watched(cls, user_id, show_id, number,
         times, position, datetime_, pipe=None):
         name = 'users:{}:watched:{}-{}'.format(user_id, show_id, number)
-        pipe.hset(
-            name,
-            'times',
-            times,
+        pipe.hincrby(
+            name=name,
+            key='times',
+            amount=times,
         )        
         pipe.hset(
-            name,
-            'position',
-            position,
+            name=name,
+            key='position',
+            value=position,
         )
         pipe.hset(
-            name,
-            'datetime',
-            datetime_.isoformat()+'Z',
+            name=name,
+            key='datetime',
+            value=datetime_.isoformat()+'Z',
+        )
+        cls.cache_stats(
+            user_id=user_id,
+            times=times,
+            pipe=pipe,
+        )
+
+    @classmethod
+    @auto_pipe
+    def cache_stats(cls, user_id, times, pipe=None):
+        pipe.hincrby(
+            name='users:{}:stats'.format(user_id),
+            key='episodes_watched',
+            amount=times,
+        )
+
+    @classmethod
+    @auto_session
+    @auto_pipe
+    def cache_minutes_spent(cls, user_id, pipe=None, session=None):
+        result = session.execute('''
+            SELECT 
+                sum(if(isnull(e.runtime),
+                    ifnull(s.runtime, 0),
+                    e.runtime)*ew.times) as minutes
+            FROM
+                episodes_watched ew,
+                shows s,
+                episodes e
+            WHERE
+                ew.user_id = :user_id
+                    and e.show_id = ew.show_id
+                    and e.number = ew.episode_number
+                    and s.id = e.show_id;
+        ''', {
+            'user_id': user_id,
+        })
+        pipe.hset(
+            name='users:{}:stats'.format(user_id),
+            key='minutes_spent',
+            value=result.first()['minutes'],
         )
 
     @classmethod

@@ -36,7 +36,8 @@ class User(object):
         return user
 
     @classmethod
-    def new(cls, name, email, password=None, level=0):
+    @auto_pipe
+    def new(cls, name, email, password=None, level=0, pipe=None):
         '''
         :param name: str
         :param email: email
@@ -56,7 +57,8 @@ class User(object):
             session.add(user)
             session.commit()
             user = cls._format_from_query(user)
-            user.cache()
+            user.cache(pipe=pipe)
+            user.cache_default_stat_fields(pipe=pipe)
             return user
 
     @auto_pipe
@@ -67,6 +69,15 @@ class User(object):
                 name='users:{}'.format(self.id),
                 key=key,
                 value=val,
+            )
+
+    @auto_pipe
+    def cache_default_stat_fields(self, pipe=None):
+        for key in constants.USER_STAT_FIELDS:
+            pipe.hset(
+                name='users:{}:stats'.format(self.id),
+                key=key,
+                value='0',
             )
 
     @classmethod

@@ -14,9 +14,10 @@ class Handler(base.Handler):
     def get(self):
         episodes = yield self.client.get('/users/{}/air-dates'.format(
             self.current_user['id'],
-        ))
+        ), {
+            'per_page': 50,
+        })
         episodes = yield episodes.all_async()
-
         air_dates = OrderedDict()
         for episode in episodes:
             air_date = air_dates.setdefault(
@@ -24,7 +25,6 @@ class Handler(base.Handler):
                 []
             )
             air_date.append(episode)
-
         self.render('air_dates.html',
             title='Air dates',
             air_dates=air_dates,

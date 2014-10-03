@@ -107,9 +107,14 @@ class Handler(base.Handler):
 class Watched_handler(base.Handler):
 
     @authenticated(0)
-    def put(self, user_id, show_id, episode_number):        
+    @gen.coroutine
+    def put(self, user_id, show_id, episode_number):
         if int(user_id) != self.current_user.id:
             self.check_edit_another_user_right()
+        yield self._put(user_id, show_id, episode_number)
+
+    @run_on_executor
+    def _put(self, user_id, show_id, episode_number):
         self.validate(schemas.Episode_watched)
         episode = Episode.get(show_id, episode_number)
         if not episode:
@@ -120,15 +125,22 @@ class Watched_handler(base.Handler):
             times=self.request.body.get('times', 1),
             position=self.request.body.get('position', 0),
         )
+        Watched.cache_minutes_spent(user_id)
 
     @authenticated(0)
+    @gen.coroutine
     def delete(self, user_id, show_id, episode_number):
         if int(user_id) != self.current_user.id:
             self.check_edit_another_user_right()
+        yield self._delete(user_id, show_id, episode_number)
+
+    @run_on_executor
+    def _delete(self, user_id, show_id, episode_number):
         episode = Episode.get(show_id, episode_number)
         if not episode:
             raise exceptions.Episode_unknown()
         episode.unwatch(user_id, show_id)
+        Watched.cache_minutes_spent(user_id)
 
 class Watched_interval_handler(base.Handler):
 
@@ -162,8 +174,10 @@ class Watched_interval_handler(base.Handler):
                 session=session,
                 pipe=pipe,
             )
+        Watched.cache_minutes_spent(user_id)
 
     @authenticated(0)
+    @gen.coroutine
     def delete(self, user_id, show_id, from_, to):
         if int(user_id) != self.current_user.id:
             self.check_edit_another_user_right()
@@ -189,6 +203,7 @@ class Watched_interval_handler(base.Handler):
                 session=session,
                 pipe=pipe,
             )
+        Watched.cache_minutes_spent(user_id)
 
 class Air_dates_handler(base.Handler):
 
@@ -198,51 +213,53 @@ class Air_dates_handler(base.Handler):
         page = int(self.get_argument('page', 1))
         offset_days = int(self.get_argument('offset_days', 1))
         days = int(self.get_argument('days', 7))
-
-        episodes = yield self.es('/episodes/episode/_search',
-            body={
-                'filter': {
-                    'bool': {
-                        'should': self.get_should_filter(user_id),
-                        'must': {
-                            'range': {
-                                'air_date': {
-                                    'gte': (datetime.utcnow().date() - \
-                                        timedelta(days=offset_days)).isoformat(),
-                                    'lte': (datetime.utcnow().date() + \
-                                        timedelta(days=days)).isoformat(),
+        should_be = self.get_should_filter(user_id)
+        result = []
+        episode_count = 0
+        if should_be:
+            episodes = yield self.es('/episodes/episode/_search',
+                body={
+                    'filter': {
+                        'bool': {
+                            'should': should_be,
+                            'must': {
+                                'range': {
+                                    'air_date': {
+                                        'gte': (datetime.utcnow().date() - \
+                                            timedelta(days=offset_days)).isoformat(),
+                                        'lte': (datetime.utcnow().date() + \
+                                            timedelta(days=days)).isoformat(),
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            },
-            query={
-                'from': ((page - 1) * per_page),
-                'size': per_page,
-                'sort': 'air_date:asc',
-            },
-        )
-        episode_count = episodes['hits']['total']
-        episodes = [episode['_source'] for episode in episodes['hits']['hits']]
-        shows = yield self.es('/shows/show/_search',
-            body={
-                'filter': {
-                    'ids': {
-                        'values': set([episode['show_id'] \
-                            for episode in episodes]),
+                },
+                query={
+                    'from': ((page - 1) * per_page),
+                    'size': per_page,
+                    'sort': 'air_date:asc',
+                },
+            )
+            episode_count = episodes['hits']['total']
+            episodes = [episode['_source'] for episode in episodes['hits']['hits']]
+            shows = yield self.es('/shows/show/_search',
+                body={
+                    'filter': {
+                        'ids': {
+                            'values': set([episode['show_id'] \
+                                for episode in episodes]),
+                        }
                     }
                 }
-            }
-        )
-        shows = {show['_source']['id']: show['_source'] \
-            for show in shows['hits']['hits']}
-        result = []
-        for episode in episodes:
-            result.append({
-                'show': shows[episode['show_id']],
-                'episode': self.episode_format(episode),
-            })
+            )
+            shows = {show['_source']['id']: show['_source'] \
+                for show in shows['hits']['hits']}
+            for episode in episodes:
+                result.append({
+                    'show': shows[episode['show_id']],
+                    'episode': self.episode_format(episode),
+                })
         self.write_object(
             Pagination(
                 page=page,

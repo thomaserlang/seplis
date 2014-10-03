@@ -86,14 +86,13 @@ class Rebuild_cache(object):
                     )
                 pipe.execute()
 
-    def rebuild_users(self):
+    @auto_session
+    @auto_pipe
+    def rebuild_users(self, session, pipe):
         from seplis.api.base.user import User
-        with new_session() as session:
-            pipe = database.redis.pipeline()
-            for user in session.query(models.User).yield_per(10000):
-                user = User._format_from_query(user)
-                user.cache(pipe=pipe)
-            pipe.execute()
+        for user in session.query(models.User).yield_per(10000):
+            user = User._format_from_query(user)
+            user.cache(pipe=pipe)
 
     def rebuild_tokens(self):
         from seplis.api.base.user import Token
@@ -119,6 +118,7 @@ class Rebuild_cache(object):
     def rebuild_watched(self, session, pipe):
         from seplis.api.base.episode import Watched
         usershows = []
+        users = []
         for row in session.query(models.Episode_watched).yield_per(10000):
             Watched.cache_watched(
                 user_id=row.user_id,
@@ -145,6 +145,9 @@ class Rebuild_cache(object):
                     pipe=pipe,
                 )
                 usershows.append(n)
+                users.append(row.user_id)
+        for user_id in set(users):
+            Watched.cache_minutes_spent(user_id, session=session, pipe=pipe)
 
     @auto_session
     def rebuild_images(self, session):

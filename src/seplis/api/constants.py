@@ -57,3 +57,9 @@ SHOW_SORT_FIELDS = (
     ('fans', 'Fans'),
     ('premiered', 'Premiered'),
 )
+
+USER_STAT_FIELDS = (
+    'fan_of',
+    'minutes_spent',
+    'episodes_watched',
+)
