@@ -51,6 +51,18 @@ class HTTPData(object):
                 break
             s = s.client.get(s.next, timeout=self.timeout)
 
+    @gen.coroutine
+    def all_async(self):
+        s = self
+        data = []
+        while True:
+            for d in s.data:
+                data.append(d)
+            if not s.next:
+                break
+            s = yield s.client.get(s.next, timeout=self.timeout)
+        return data
+
     def __iter__(self):
         for d in self.data:
             yield d

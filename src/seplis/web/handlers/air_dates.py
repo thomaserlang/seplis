@@ -15,6 +15,7 @@ class Handler(base.Handler):
         episodes = yield self.client.get('/users/{}/air-dates'.format(
             self.current_user['id'],
         ))
+        episodes = yield episodes.all_async()
 
         air_dates = OrderedDict()
         for episode in episodes:
