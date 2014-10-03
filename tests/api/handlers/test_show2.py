@@ -464,7 +464,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 201)
         show = utils.json_loads(response.body)
         show_id = show['id']
-        self.get('http://{}/shows/_refresh'.format(
+        self.get('http://{}/_refresh'.format(
             config['elasticsearch']
         ))
 
@@ -494,7 +494,7 @@ class test_show(Testbase):
 
         # Let's check that we can find the show in the users
         # fan of list.
-        response = self.get('/1/users/{}/fan-of'.format(self.current_user.id))
+        response = self.get('/1/users/{}/fan-of?append=user_watching'.format(self.current_user.id))
         self.assertEqual(response.code, 200, response.body)
         fan_of = utils.json_loads(response.body)
         self.assertEqual(fan_of[0]['id'], show_id)
@@ -518,9 +518,10 @@ class test_show(Testbase):
             'times': 0,
         })
         self.assertEqual(response.code, 200)        
-        response = self.get('/1/users/{}/fan-of'.format(self.current_user.id))
+        response = self.get('/1/users/{}/fan-of?append=user_watching'.format(self.current_user.id))
         self.assertEqual(response.code, 200, response.body)
         fan_of = utils.json_loads(response.body)
+        print(fan_of)
         self.assertEqual(fan_of[0]['id'], show_id)
         self.assertEqual(fan_of[0]['user_watching']['position'], 120)
         self.assertEqual(fan_of[0]['user_watching']['episode']['number'], 1)

@@ -186,18 +186,20 @@ class Handler(base.Handler):
     )
     @gen.coroutine
     def get(self, show_id=None):
-        self.append_fields = self.get_append_fields(self.allowed_append_fields)
         if show_id:
-            yield self.get_show(show_id)
+            shows = yield self.get_show(show_id)
+            self.write_object(shows)
         else:
-            yield self.get_shows()
+            show = yield self.get_shows()
+            self.write_object(show)
 
     @gen.coroutine
     def get_show(self, show_id):
+        append_fields = self.get_append_fields(self.allowed_append_fields)
         result = yield self.es('/shows/show/{}'.format(show_id))                
         if not result['found']:
             raise exceptions.Show_unknown()
-        if 'is_fan' in self.append_fields:
+        if 'is_fan' in append_fields:
             self.is_logged_in()
             result['_source']['is_fan'] = Show.is_fan(
                 user_id=self.current_user.id,
@@ -205,12 +207,11 @@ class Handler(base.Handler):
             )
         if result['_source']['poster_image']:
             self.image_format(result['_source']['poster_image'])
-        self.write_object(
-            result['_source']
-        )
+        return result['_source']
 
     @gen.coroutine
-    def get_shows(self):
+    def get_shows(self, show_ids=None):
+        append_fields = self.get_append_fields(self.allowed_append_fields)
         q = self.get_argument('q', None)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
@@ -234,7 +235,12 @@ class Handler(base.Handler):
                     'query': q,
                 }
             }
-        
+        if show_ids:
+            body['filter'] = {
+                'ids':{
+                    'values': show_ids,
+                }
+            }        
         result = yield self.es(
             '/shows/show/_search',
             body=body,
@@ -243,7 +249,7 @@ class Handler(base.Handler):
         shows = OrderedDict()
         for show in result['hits']['hits']:
             shows[show['_source']['id']] = show['_source']
-        if 'is_fan' in self.append_fields:
+        if 'is_fan' in append_fields:
             self.is_logged_in()
             show_ids = list(shows.keys())
             is_fan = Shows.is_fan(
@@ -259,7 +265,7 @@ class Handler(base.Handler):
             total=result['hits']['total'],
             records=list(shows.values()),
         )
-        self.write_object(p)
+        return p
 
 class Multi_handler(base.Handler):
 
@@ -297,6 +303,9 @@ class External_handler(Handler):
 
 class Fans_handler(Handler):
 
+    allowed_append_fields = (
+        'user_watching'
+    )
     def get(self, show_id):
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
@@ -331,18 +340,23 @@ class Fans_handler(Handler):
         
 class Fan_of_handler(Handler):
 
+    allowed_append_fields = (
+        'user_watching'
+    )
+    @gen.coroutine
     def get(self, user_id):
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
-        sort = self.get_argument('sort', 'title:asc')
-
-        self.write_pagination(
-            Shows.get_fan_of(
-                user_id=user_id,
-                per_page=per_page,
-                page=page,
-                sort=sort,
+        append_fields = self.get_append_fields(self.allowed_append_fields)
+        show_ids = database.redis.smembers('users:{}:fan_of'.format(
+            user_id
+        ))
+        shows = yield self.get_shows(show_ids)
+        if 'user_watching' in append_fields:
+            yield self.append_user_watching(
+                user_id,
+                shows,
             )
+        self.write_object(
+            shows
         )
 
     @authenticated(constants.LEVEL_USER)
@@ -366,6 +380,59 @@ class Fan_of_handler(Handler):
         show.unfan(
             user_id
         )
+
+    def post(self):
+        raise HTTPError(405)
+
+    @gen.coroutine
+    def append_user_watching(self, user_id, shows):
+        pipe = database.redis.pipeline()
+        found_ids = [show['id'] for show in shows.records]
+        for id_ in found_ids:
+            pipe.hgetall('users:{}:watching:{}'.format(
+                user_id, 
+                id_,
+            ))
+        watching = pipe.execute()
+        # get episodes watching
+        episode_ids = []
+        for id_, w in zip(found_ids, watching):
+            episode_ids.append(
+                '{}-{}'.format(
+                    id_, 
+                    w['number'] if w else 0
+                )
+            )
+        episodes = yield self.get_episodes(episode_ids)
+        for w, show, episode in zip(watching, shows.records, episodes):
+            if w:
+                show['user_watching'] = {
+                    'datetime': w['datetime'],
+                    'position': int(w['position']),
+                    'episode': episode,
+                }
+            else:
+                show['user_watching'] = None
+
+    @gen.coroutine
+    def get_episodes(self, ids):
+        episodes = yield self.es('/episodes/episode/_search', body={
+            'filter': {
+                'ids': {
+                    'values': ids,
+                }
+            }
+        })
+        # how can I get elasticsearch to return the result in the
+        # same order as it was requested?
+        d = {'{}-{}'.format(e['_source']['show_id'], e['_source']['number']): 
+            e['_source'] for e in episodes['hits']['hits']}
+        result = []
+        for id_ in ids:
+            result.append(
+                d.get(id_)
+            )
+        return result
 
 class Update_handler(base.Handler):
 

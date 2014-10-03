@@ -19,7 +19,6 @@ class Handler(base.Handler):
     allowed_append_fields = (
         'user_watched'
     )
-
     @gen.coroutine
     def get(self, show_id, number=None):
         self.append_fields = self.get_append_fields(self.allowed_append_fields)
