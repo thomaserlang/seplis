@@ -51,7 +51,13 @@ def create_indices():
                     'title': {
                         'type': 'string',
                         'index_analyzer': 'nGram_analyzer',
-                        'search_analyzer': 'whitespace_analyzer',
+                        'search_analyzer': 'whitespace_analyzer',          
+                        "fields": {
+                            "raw": { 
+                                "type": "string",
+                                "index": "not_analyzed"
+                            }
+                        }
                     },
                     'id': { 'type': 'integer' },
                     'description': {
@@ -106,8 +112,6 @@ def create_indices():
                 'properties' : {
                     'title': {
                         'type': 'string',
-                        'index_analyzer': 'nGram_analyzer',
-                        'search_analyzer': 'whitespace_analyzer',
                     },
                     'number': { 'type': 'integer' },
                     'air_date': { 'type': 'date' },

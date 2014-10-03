@@ -1,4 +1,5 @@
 import logging
+import json
 from seplis.api.handlers import base
 from seplis.api import constants,  exceptions
 from seplis import schemas, utils
@@ -7,7 +8,8 @@ from seplis.api.base.episode import Episode, Episodes, Watched
 from seplis.decorators import auto_session, auto_pipe
 from seplis.config import config
 from seplis.api.base.pagination import Pagination
-from datetime import datetime
+from seplis.connections import database
+from datetime import datetime, timedelta
 from sqlalchemy import asc, desc
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from tornado import gen
@@ -102,27 +104,6 @@ class Handler(base.Handler):
         )
         self.write_object(p)
 
-    remove_keys = (
-        'show_id',
-    )
-    def episode_format(self, episodes):
-        '''
-        :param episodes: `episode()` or list of `episode()`
-        '''
-        if isinstance(episodes, list):
-            for episode in episodes:
-                utils.keys_to_remove(
-                    self.remove_keys,
-                    episode
-                )
-        else:
-            utils.keys_to_remove(
-                self.remove_keys,
-                episodes
-            )
-        return episodes
-
-
 class Watched_handler(base.Handler):
 
     @authenticated(0)
@@ -209,19 +190,77 @@ class Watched_interval_handler(base.Handler):
                 pipe=pipe,
             )
 
-class Air_dates_handler(Handler):
+class Air_dates_handler(base.Handler):
 
+    @gen.coroutine
     def get(self, user_id):        
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         offset_days = int(self.get_argument('offset_days', 1))
         days = int(self.get_argument('days', 7))
+
+        episodes = yield self.es('/episodes/episode/_search',
+            body={
+                'filter': {
+                    'bool': {
+                        'should': self.get_should_filter(user_id),
+                        'must': {
+                            'range': {
+                                'air_date': {
+                                    'gte': (datetime.utcnow().date() - \
+                                        timedelta(days=offset_days)).isoformat(),
+                                    'lte': (datetime.utcnow().date() + \
+                                        timedelta(days=days)).isoformat(),
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            query={
+                'from': ((page - 1) * per_page),
+                'size': per_page,
+                'sort': 'air_date:asc',
+            },
+        )
+        episode_count = episodes['hits']['total']
+        episodes = [episode['_source'] for episode in episodes['hits']['hits']]
+        shows = yield self.es('/shows/show/_search',
+            body={
+                'filter': {
+                    'ids': {
+                        'values': set([episode['show_id'] \
+                            for episode in episodes]),
+                    }
+                }
+            }
+        )
+        shows = {show['_source']['id']: show['_source'] \
+            for show in shows['hits']['hits']}
+        result = []
+        for episode in episodes:
+            result.append({
+                'show': shows[episode['show_id']],
+                'episode': self.episode_format(episode),
+            })
         self.write_object(
-            Episodes.get_user_air_dates(
-                user_id=user_id,
-                per_page=per_page,
+            Pagination(
                 page=page,
-                offset_days=offset_days,
-                days=days,
+                per_page=per_page,
+                total=episode_count,
+                records=result,
             )
         )
+
+    def get_should_filter(self, user_id):
+        show_ids = database.redis.smembers('users:{}:fan_of'.format(
+            user_id
+        ))
+        should_filter = []
+        for id_ in show_ids:
+            should_filter.append({
+                'term': {
+                    'show_id': int(id_),
+                }
+            })
+        return should_filter

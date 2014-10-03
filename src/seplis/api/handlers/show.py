@@ -223,6 +223,7 @@ class Handler(base.Handler):
             'size': per_page,
             'sort': sort,
         }
+        logging.info(req)
         body = {}
         if fields:
             if 'id' not in fields:
@@ -350,6 +351,8 @@ class Fan_of_handler(Handler):
             user_id
         ))
         shows = yield self.get_shows(show_ids)
+        for show in shows.records:
+            logging.info(show['title'])
         if 'user_watching' in append_fields:
             yield self.append_user_watching(
                 user_id,

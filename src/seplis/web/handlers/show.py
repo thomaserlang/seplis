@@ -229,10 +229,11 @@ class Fan_of_handler(base.Handler):
     @gen.coroutine
     def get(self):
         page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', 'title.raw:asc')
         shows = yield self.client.get('/users/{}/fan-of'.format(
             self.current_user['id'],
         ), {
-            'sort': 'title',
+            'sort': sort,
             'page': page,
             'per_page': 20,
         })

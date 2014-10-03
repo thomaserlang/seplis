@@ -234,3 +234,23 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
                 images
             )
         return images
+
+    episode_remove_keys = (
+        'show_id',
+    )
+    def episode_format(self, episodes):
+        '''
+        :param episodes: `episode()` or list of `episode()`
+        '''
+        if isinstance(episodes, list):
+            for episode in episodes:
+                utils.keys_to_remove(
+                    self.episode_remove_keys,
+                    episode
+                )
+        else:
+            utils.keys_to_remove(
+                self.episode_remove_keys,
+                episodes
+            )
+        return episodes
