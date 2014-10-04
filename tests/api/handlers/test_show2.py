@@ -450,6 +450,12 @@ class test_show(Testbase):
         self.assertEqual(show['alternate_titles'], [])
         self.assertEqual(show['seasons'], [])
 
+    def _test_fan_count(self, expected_count):        
+        response = self.get('/1/users/{}/stats'.format(self.current_user.id))
+        self.assertEqual(response.code, 200)
+        stats = utils.json_loads(response.body)
+        self.assertEqual(stats['fan_of'], expected_count)
+
     def test_fan(self):        
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
@@ -468,7 +474,10 @@ class test_show(Testbase):
             config['elasticsearch']
         ))
 
-        # Let's become a fan of the show
+        self._test_fan_count(0)
+
+        # Let's become a fan of the show.
+        # We run it twice to check for duplication bug.
         for i in [1,2]:
             response = self.put('/1/shows/{}/fans/{}'.format(show_id, self.current_user.id))
             self.assertEqual(response.code, 200, response.body)
@@ -477,6 +486,8 @@ class test_show(Testbase):
             show = utils.json_loads(response.body)
             self.assertEqual(show['fans'], 1)
             self.assertEqual(show['is_fan'], True)
+
+        self._test_fan_count(1)
 
         # Let's test that we haven't overwritten any essential data.
         response = self.get('/1/shows/{}'.format(show_id))
@@ -521,12 +532,12 @@ class test_show(Testbase):
         response = self.get('/1/users/{}/fan-of?append=user_watching'.format(self.current_user.id))
         self.assertEqual(response.code, 200, response.body)
         fan_of = utils.json_loads(response.body)
-        print(fan_of)
         self.assertEqual(fan_of[0]['id'], show_id)
         self.assertEqual(fan_of[0]['user_watching']['position'], 120)
         self.assertEqual(fan_of[0]['user_watching']['episode']['number'], 1)
 
-        # Now unfan the show
+        # Now unfan the show.
+        # Run it twice to check for duplication bug.
         for i in [1,2]:
             response = self.delete('/1/shows/{}/fans/{}'.format(
                 show_id,
@@ -537,7 +548,8 @@ class test_show(Testbase):
             self.assertEqual(response.code, 200)
             show = utils.json_loads(response.body)
             self.assertEqual(show['fans'], 0)
-
+            
+        self._test_fan_count(0)
 
         # Let's test that we haven't overwritten any essential data.
         response = self.get('/1/shows/{}'.format(show_id))

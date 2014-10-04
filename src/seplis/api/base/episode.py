@@ -53,6 +53,7 @@ class Episode(object):
             description_url=self.description.url if self.description else None,
             season=self.season,
             episode=self.episode,
+            runtime=self.runtime,
         )
         session.merge(episode)
         self.to_elasticsearch(show_id)
@@ -331,9 +332,12 @@ class Watched(object):
     def cache_minutes_spent(cls, user_id, pipe=None, session=None):
         result = session.execute('''
             SELECT 
-                sum(if(isnull(e.runtime),
-                    ifnull(s.runtime, 0),
-                    e.runtime)*ew.times) as minutes
+                sum(
+                    if(isnull(e.runtime),
+                        ifnull(s.runtime, 0),
+                        e.runtime
+                    ) * ew.times
+                ) as minutes
             FROM
                 episodes_watched ew,
                 shows s,
