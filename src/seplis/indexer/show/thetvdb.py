@@ -74,6 +74,8 @@ class Thetvdb(Show_indexer_base):
         images = []
         if r.status_code == 200:
             data = xmltodict.parse(r.content)
+            if not data or not ('Banners' in data) or not data['Banners']:
+                return images
             if not isinstance(data['Banners']['Banner'], list):
                 data['Banners']['Banner'] = [data['Banners']['Banner']]
             banners = [banner for banner in data['Banners']['Banner'] \

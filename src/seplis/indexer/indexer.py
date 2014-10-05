@@ -139,7 +139,12 @@ class Show_indexer(Client):
             else: 
                 if retries <= 5:
                     retries += 1
-                    self._update_show(show, update_episodes, retries)
+                    self._update_show(
+                        show=show, 
+                        update_episodes=update_episodes, 
+                        update_images=update_images,
+                        retries=retries,
+                    )
 
     def _get_show_updates(self, show):
         show_indexer = self.get_indexer(show['indices'].get('info', ''))
