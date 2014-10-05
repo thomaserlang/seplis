@@ -10,14 +10,13 @@ config = {
         'url': 'https://seplis.net',
         'cookie_secret': 'CHANGE_ME',
         'port': 8001,
-        'image_url': 'http://storitch.local',
+        'image_url': 'http://images.seplis.net',
     },
     'sentry_dsn': None,
     'api': {
         'url': 'https://api.seplis.net',
         'port': 8002,
         'max_workers': 5,
-        'storitch': 'http://storitch.local',
     },
     'redis': {
         'ip': '127.0.0.1',
@@ -35,6 +34,7 @@ config = {
         'thetvdb': None,
         'id': 'CHANGE_ME',
     },
+    'storitch': None,
 }
 
 def load(path=None):

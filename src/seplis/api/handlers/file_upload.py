@@ -23,7 +23,7 @@ class Handler(base.Handler):
         client = self.get_httpclient()
         response = yield gen.Task(
             client.fetch,
-            urljoin(config['api']['storitch'], 'store'),
+            urljoin(config['storitch'], 'store'),
             method='POST',
             headers={'Content-Type': content_type},
             body=body,

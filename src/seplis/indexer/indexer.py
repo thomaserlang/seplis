@@ -83,6 +83,7 @@ class Show_indexer(Client):
             print('No valid token was found.')
 
     def update_show(self, show_id):
+        logging.info('Updating show: {}'.format(show_id))
         show = self.get('/shows/{}'.format(show_id))
         if not show:
             raise Exception('Show not found')
@@ -122,7 +123,9 @@ class Show_indexer(Client):
                     timeout=120
                 )
             # show images
-            if update_images:
+            if update_images and not config['storitch']:
+                logging.warning('Missing url for storitch in the config')
+            if update_images and config['storitch']:
                 images = self._update_images(show)
                 show_data['images'] = images
             return show_data
