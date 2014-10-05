@@ -110,7 +110,7 @@ class Show(base):
     seasons = Column(JSONEncodedDict())
     runtime = Column(Integer)
     genres = Column(JSONEncodedDict())
-    alternate_titles = Column(JSONEncodedDict())
+    alternative_titles = Column(JSONEncodedDict())
     poster_image_id = Column(Integer, ForeignKey('images.id'))
     poster_image = relationship('Image')
 

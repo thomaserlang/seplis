@@ -1,3 +1,4 @@
+import os.path
 import seplis
 import tornado.web
 import tornado.httpserver
@@ -14,6 +15,7 @@ from seplis.logger import logger
 from tornado.options import define, options
 from concurrent.futures import ThreadPoolExecutor
 from raven.contrib.tornado import AsyncSentryClient
+from tornado.web import URLSpec
 
 class Application(tornado.web.Application):
 
@@ -23,49 +25,52 @@ class Application(tornado.web.Application):
             autoescape=None,
             xsrf_cookies=False,
         )
-
+        static_path = os.path.join(os.path.dirname(__file__), 'static')
         urls = [
-            (r'/1/shows', seplis.api.handlers.show.Handler),
-            (r'/1/shows/externals/([a-z_-]+)/([a-z0-9]+)', seplis.api.handlers.show.External_handler),
+            URLSpec(r'/(favicon.ico)', tornado.web.StaticFileHandler, {'path': os.path.join(static_path, 'favicon.ico')}),
+            URLSpec(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
+
+            URLSpec(r'/1/shows', seplis.api.handlers.show.Handler),
+            URLSpec(r'/1/shows/externals/([a-z_-]+)/([a-z0-9]+)', seplis.api.handlers.show.External_handler),
             
-            (r'/1/shows/([0-9]+)', seplis.api.handlers.show.Handler),
-            (r'/1/shows/([0-9,]+)', seplis.api.handlers.show.Multi_handler),
-            (r'/1/shows/([0-9]+)/episodes', seplis.api.handlers.episode.Handler),
-            (r'/1/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Handler),
+            URLSpec(r'/1/shows/([0-9]+)', seplis.api.handlers.show.Handler),
+            URLSpec(r'/1/shows/([0-9,]+)', seplis.api.handlers.show.Multi_handler),
+            URLSpec(r'/1/shows/([0-9]+)/episodes', seplis.api.handlers.episode.Handler),
+            URLSpec(r'/1/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Handler),
 
-            (r'/1/shows/([0-9]+)/images', seplis.api.handlers.image.Handler, {'relation_type': constants.IMAGE_RELATION_TYPE_SHOW}),
-            (r'/1/shows/([0-9]+)/images/([0-9]+)', seplis.api.handlers.image.Handler),
-            (r'/1/shows/([0-9]+)/images/([0-9]+)/data', seplis.api.handlers.image.Data_handler),
+            URLSpec(r'/1/shows/([0-9]+)/images', seplis.api.handlers.image.Handler, {'relation_type': constants.IMAGE_RELATION_TYPE_SHOW}),
+            URLSpec(r'/1/shows/([0-9]+)/images/([0-9]+)', seplis.api.handlers.image.Handler),
+            URLSpec(r'/1/shows/([0-9]+)/images/([0-9]+)/data', seplis.api.handlers.image.Data_handler),
 
-            (r'/1/shows/([0-9]+)/update', seplis.api.handlers.show.Update_handler),
+            URLSpec(r'/1/shows/([0-9]+)/update', seplis.api.handlers.show.Update_handler),
 
-            (r'/1/shows/([0-9]+)/fans', seplis.api.handlers.show.Fans_handler),
-            (r'/1/shows/([0-9]+)/fans/([0-9]+)', seplis.api.handlers.show.Fans_handler),
+            URLSpec(r'/1/shows/([0-9]+)/fans', seplis.api.handlers.show.Fans_handler),
+            URLSpec(r'/1/shows/([0-9]+)/fans/([0-9]+)', seplis.api.handlers.show.Fans_handler),
 
-            (r'/1/users', seplis.api.handlers.user.Handler),
-            (r'/1/users/current', seplis.api.handlers.user.Handler),
-            (r'/1/users/([0-9]+)', seplis.api.handlers.user.Handler),
+            URLSpec(r'/1/users', seplis.api.handlers.user.Handler),
+            URLSpec(r'/1/users/current', seplis.api.handlers.user.Handler),
+            URLSpec(r'/1/users/([0-9]+)', seplis.api.handlers.user.Handler),
         
-            (r'/1/users/([0-9]+)/fan-of', seplis.api.handlers.show.Fan_of_handler),
-            (r'/1/users/([0-9]+)/fan-of/([0-9]+)', seplis.api.handlers.show.Fan_of_handler),
-            (r'/1/users/([0-9]+)/stats', seplis.api.handlers.user.Stats_handler),
+            URLSpec(r'/1/users/([0-9]+)/fan-of', seplis.api.handlers.show.Fan_of_handler),
+            URLSpec(r'/1/users/([0-9]+)/fan-of/([0-9]+)', seplis.api.handlers.show.Fan_of_handler),
+            URLSpec(r'/1/users/([0-9]+)/stats', seplis.api.handlers.user.Stats_handler),
 
-            (r'/1/users/([0-9]+)/air-dates', seplis.api.handlers.episode.Air_dates_handler),
+            URLSpec(r'/1/users/([0-9]+)/air-dates', seplis.api.handlers.episode.Air_dates_handler),
         
-            (r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Watched_handler),
-            (r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)-([0-9]+)', seplis.api.handlers.episode.Watched_interval_handler),
+            URLSpec(r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)', seplis.api.handlers.episode.Watched_handler),
+            URLSpec(r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)-([0-9]+)', seplis.api.handlers.episode.Watched_interval_handler),
 
-            (r'/1/users/([0-9]+)/tags', seplis.api.handlers.tag.User_types_handler),
-            (r'/1/users/([0-9]+)/tags/shows/([0-9]+)', seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}),
-            (r'/1/users/([0-9]+)/tags/([0-9]+)/shows/([0-9]+)', seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}),
-            (r'/1/users/([0-9]+)/tags/shows', seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}),
-            (r'/1/users/([0-9]+)/tags/([0-9]+)/shows', seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}),
+            URLSpec(r'/1/users/([0-9]+)/tags', seplis.api.handlers.tag.User_types_handler),
+            URLSpec(r'/1/users/([0-9]+)/tags/shows/([0-9]+)', seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}),
+            URLSpec(r'/1/users/([0-9]+)/tags/([0-9]+)/shows/([0-9]+)', seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}),
+            URLSpec(r'/1/users/([0-9]+)/tags/shows', seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}),
+            URLSpec(r'/1/users/([0-9]+)/tags/([0-9]+)/shows', seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}),
 
-            (r'/1/apps', seplis.api.handlers.app.Handler),
-            (r'/1/apps/([0-9]+)', seplis.api.handlers.app.Handler),
-            (r'/1/token', seplis.api.handlers.user.Token_handler),
+            URLSpec(r'/1/apps', seplis.api.handlers.app.Handler),
+            URLSpec(r'/1/apps/([0-9]+)', seplis.api.handlers.app.Handler),
+            URLSpec(r'/1/token', seplis.api.handlers.user.Token_handler),
 
-            (r'.*', seplis.api.handlers.base.Handler),      
+            URLSpec(r'.*', seplis.api.handlers.base.Handler),      
         ]
 
         self.executor = ThreadPoolExecutor(

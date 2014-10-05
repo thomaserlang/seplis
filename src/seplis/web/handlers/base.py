@@ -24,8 +24,15 @@ class Handler_unauthenticated(web.RequestHandler):
             constants=constants,
             config=config,
             image_url=self.image_url,
+            plural=self.plural,
         )
         return namespace
+
+    def plural(self, num=0, text=''):
+        return '{}{}'.format(
+            text, 
+            's'[num==1:]
+        )
 
     def escape(self, value):
         if value == None:
@@ -45,7 +52,16 @@ class Handler(Handler_unauthenticated):
         if access_token:
             self.client.access_token = access_token.decode('utf-8')
         try:
-            self.current_user = yield self.client.get('/users/current')
+            self.current_user = self.get_secure_cookie('user')
+            self.current_user = utils.json_loads(self.current_user) \
+                if self.current_user else None
+            if not self.current_user:
+                self.current_user = yield self.client.get('/users/current')
+                self.set_secure_cookie(
+                    'user', 
+                    utils.json_dumps(self.current_user),
+                    expires_days=None,
+                )
         except API_error as e:
             if e.code != 1009: # not signed in
                 raise

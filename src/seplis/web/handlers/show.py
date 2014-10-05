@@ -196,9 +196,14 @@ class API_new_handler(base.API_handler):
         indices = {name: self.get_argument(name) \
             for name, externals in constants.INDEX_TYPES \
                 if self.get_argument(name, None)}
+        alternative_titles = set(filter(None, self.get_argument(
+            'alternative_titles', 
+            ''
+        ).split(',')))
         return {
             'externals': externals,
             'indices': indices,
+            'alternative_titles': alternative_titles,
         }
 
 class Edit_handler(Handler):
@@ -237,8 +242,45 @@ class Fan_of_handler(base.Handler):
             'page': page,
             'per_page': 20,
         })
-        self.render('fan_of.html',
+        if shows.count == 0:
+            yield self.show_empty()
+        else:
+            self.render('fan_of.html',
+                title='Fan of',
+                shows=shows,
+                current_page=page,
+            )
+
+    @gen.coroutine
+    def show_empty(self):
+        page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', 'fans:desc')
+        shows = yield self.client.get('/shows'.format(
+            self.current_user['id'],
+        ), {
+            'sort': sort,
+            'page': page,
+            'per_page': 12,
+        })
+        self.render('fan_of_empty.html',
             title='Fan of',
+            shows=shows,
+            current_page=page,
+        )
+
+class Index_handler(base.Handler):
+
+    @gen.coroutine
+    def get(self):
+        page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', 'fans:desc')
+        shows = yield self.client.get('/shows', {
+            'sort': sort,
+            'page': page,
+            'per_page': 5,
+        })
+        self.render('show_index.html',
+            title='Show index',
             shows=shows,
             current_page=page,
         )

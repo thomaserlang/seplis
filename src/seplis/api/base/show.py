@@ -17,7 +17,7 @@ class Show(object):
 
     def __init__(self, id, title, description, premiered, ended, 
                  externals, indices, status, runtime, genres,
-                 alternate_titles, seasons, fans, poster_image, updated=None):
+                 alternative_titles, seasons, fans, poster_image, updated=None):
         '''
 
         :param id: int
@@ -36,7 +36,7 @@ class Show(object):
         :param status: int
         :param runtime: int
         :param genres: list of str
-        :param alternate_titles: list of str
+        :param alternative_titles: list of str
         :param seasons: list of dict
         :param fans: int
         :param updated: datetime
@@ -56,7 +56,7 @@ class Show(object):
         self.status = status
         self.runtime = runtime
         self.genres = genres
-        self.alternate_titles = alternate_titles
+        self.alternative_titles = alternative_titles
         self.seasons = seasons
         self.updated = updated
         self.fans = fans
@@ -86,7 +86,7 @@ class Show(object):
             'status': self.status,
             'runtime': self.runtime,
             'genres': self.genres,
-            'alternate_titles': self.alternate_titles,
+            'alternative_titles': self.alternative_titles,
             'updated': self.updated,
             'seasons': self.seasons,
             'poster_image_id': self.poster_image.id if self.poster_image else None,
@@ -121,7 +121,7 @@ class Show(object):
             status=row.status,
             runtime=row.runtime,
             genres=row.genres if row.genres else [],
-            alternate_titles=row.alternate_titles if row.alternate_titles else [],
+            alternative_titles=row.alternative_titles if row.alternative_titles else [],
             seasons=row.seasons if row.seasons else [],
             fans=row.fans,
             updated=row.updated,

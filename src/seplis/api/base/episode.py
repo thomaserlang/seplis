@@ -311,11 +311,12 @@ class Watched(object):
             key='datetime',
             value=datetime_.isoformat()+'Z',
         )
-        cls.cache_stats(
-            user_id=user_id,
-            times=times,
-            pipe=pipe,
-        )
+        if times > 0:
+            cls.cache_stats(
+                user_id=user_id,
+                times=times,
+                pipe=pipe,
+            )
 
     @classmethod
     @auto_pipe

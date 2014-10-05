@@ -46,7 +46,7 @@ def image_type(msg=None):
 def validate_email(email):
     """Validate email."""
     if not "@" in email:
-        raise Invalid("this email is invalid")
+        raise Invalid("this is an invalid email address")
     return email
 
 Description_schema = Schema({
@@ -81,12 +81,17 @@ Show_schema = {
     'status': int,
     'runtime': Any(int, None),
     'genres': [str],
-    'alternate_titles': [str],
+    'alternative_titles': [str],
     'poster_image_id': Any(int, None),
 }
 
 User_schema = Schema({
-    'name': All(str, Length(min=1, max=45), Match(re.compile(r'^[a-z0-9-_]+$', re.I), msg='must only contain a-z, 0-9, _ and -')),    
+    'name': All(
+        str, 
+        Length(min=1, max=45), 
+        Match(re.compile(r'^[a-z0-9-_]+$', re.I),
+        msg='must only contain a-z, 0-9, _ and -')
+    ),    
     'email': All(str, Length(min=1, max=100), validate_email),
     'password': All(str, Length(min=6)),
 }, required=True)

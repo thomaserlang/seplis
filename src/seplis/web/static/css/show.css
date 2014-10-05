@@ -2,10 +2,6 @@
     margin-bottom: 10px;
 }
 
-#form-new-show, #form-edit-show {
-    width:300px;
-}
-
 .season-episodes{
     margin-top:10px;
 }
@@ -112,13 +108,21 @@
     color: #acacac;
 }
 
-.fan-of > .show {
+.shows {
+    margin-top:10px;
+}
+
+.shows > .show {
     width: 227px;
     float:left;
     margin-right:10px;
     margin-bottom:10px;
 }
 
-.fan-of > .show:nth-child(4n) {
+.shows > .show:nth-child(4n) {
     margin-right:0;
+}
+
+.show-pages-menu {
+    margin-left:10px
 }

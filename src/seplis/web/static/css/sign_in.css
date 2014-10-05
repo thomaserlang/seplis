@@ -1,0 +1,10 @@
+#sign-in-form, #sign-up-form{
+    width:500px;
+    margin:0 auto;
+}
+#sign-in-form .alert strong{
+    display:block;
+}
+#sign-in-form .alert strong:first-letter{
+    text-transform: capitalize;
+}

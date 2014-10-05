@@ -1,0 +1,16 @@
+{% if shows.pages > 1 %}
+    <div class="row" style="margin-bottom:10px;">
+        <div class="col-xs-11"> 
+            <select name="page" class="form-control change-page" style="width:auto;">
+                {% for page in range(1, shows.pages+1) %}
+                    <option 
+                        value="{{ page }}" 
+                        {{ 'selected' if page == current_page else '' }}
+                    >
+                        Page: {{ page }}
+                    </option>
+                {% end %}
+            </select>
+        </div>
+    </div>
+{% end %}

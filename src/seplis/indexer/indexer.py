@@ -316,6 +316,8 @@ def show_info_changes(show, show_new):
             if show[s] != show_new[s]:
                 if isinstance(show[s], list):
                     changes[s] = list(set(show_new[s]) - set(show[s]))
+                    if not changes[s]:
+                        changes.pop(s)
                 else:
                     changes[s] = show_new[s]
         elif s not in show and s in show_new:

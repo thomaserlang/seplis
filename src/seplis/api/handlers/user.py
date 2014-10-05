@@ -64,9 +64,6 @@ class Stats_handler(base.Handler):
             s[key] = int(stats[key])
         self.write_object(s)
 
-    def get_fan_of(self, user_id):
-        return database.redis.scard('users:{}:fan_of'.format(user_id))
-
 class Token_handler(base.Handler):
 
     @tornado.gen.coroutine

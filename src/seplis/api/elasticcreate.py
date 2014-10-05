@@ -92,9 +92,11 @@ def create_indices():
                             'total': { 'type': 'integer' },
                         },
                     },
-                    'alternate_titles': {
+                    'alternative_titles': {
                         'type': 'string',
-                        'index_name': 'alternate_title',
+                        'index_name': 'alternative_title',
+                        'index_analyzer': 'nGram_analyzer',
+                        'search_analyzer': 'whitespace_analyzer',  
                     },
                     'genres': {
                         'type': 'string',

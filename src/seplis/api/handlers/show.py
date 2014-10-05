@@ -65,7 +65,7 @@ class Handler(base.Handler):
         'status',
         'runtime',
         'genres',
-        'alternate_titles',
+        'alternative_titles',
     )
     @concurrent.run_on_executor
     def _update(self, show_id, validate_show=True, overwrite=False):
@@ -223,7 +223,6 @@ class Handler(base.Handler):
             'size': per_page,
             'sort': sort,
         }
-        logging.info(req)
         body = {}
         if fields:
             if 'id' not in fields:
@@ -250,6 +249,8 @@ class Handler(base.Handler):
         shows = OrderedDict()
         for show in result['hits']['hits']:
             shows[show['_source']['id']] = show['_source']
+            if 'poster_image' in show['_source'] and show['_source']['poster_image']:
+                self.image_format(show['_source']['poster_image'])
         if 'is_fan' in append_fields:
             self.is_logged_in()
             show_ids = list(shows.keys())
@@ -350,9 +351,15 @@ class Fan_of_handler(Handler):
         show_ids = database.redis.smembers('users:{}:fan_of'.format(
             user_id
         ))
-        shows = yield self.get_shows(show_ids)
-        for show in shows.records:
-            logging.info(show['title'])
+        if show_ids:
+            shows = yield self.get_shows(show_ids)
+        else:
+            shows = Pagination(
+                page=int(self.get_argument('page', 1)),
+                per_page=int(self.get_argument('per_page', constants.PER_PAGE)),
+                total=0,
+                records=[],
+            )
         if 'user_watching' in append_fields:
             yield self.append_user_watching(
                 user_id,

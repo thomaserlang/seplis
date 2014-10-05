@@ -5,8 +5,11 @@ class Handler(base.API_handler):
 
     @gen.coroutine
     def get(self):
+        q = self.get_argument('q')
         suggest = yield self.client.get('/shows', {
-            'q': self.get_argument('q'),
-            'fields': 'title'
+            'q': 'title:"{0}" OR alternative_titles:"{0}"'.format(
+                q
+            ),
+            'fields': 'title',
         })
         self.write_object(suggest)

@@ -119,13 +119,15 @@ class Watched_handler(base.Handler):
         episode = Episode.get(show_id, episode_number)
         if not episode:
             raise exceptions.Episode_unknown()
+        times = self.request.body.get('times', 1)
         episode.watched(
             user_id, 
             show_id,
-            times=self.request.body.get('times', 1),
+            times=times,
             position=self.request.body.get('position', 0),
         )
-        Watched.cache_minutes_spent(user_id)
+        if times > 0:
+            Watched.cache_minutes_spent(user_id)
 
     @authenticated(0)
     @gen.coroutine
@@ -162,6 +164,7 @@ class Watched_interval_handler(base.Handler):
     def _put(self, user_id, show_id, from_, to, 
         session=None, pipe=None):
         self.validate(schemas.Episode_watched)
+        times = self.request.body.get('times', 1)
         for episode_number in range(from_, to+1):
             episode = Episode.get(show_id, episode_number, session=session)
             if not episode:
@@ -169,12 +172,13 @@ class Watched_interval_handler(base.Handler):
             episode.watched(
                 user_id, 
                 show_id,
-                times=self.request.body.get('times', 1),
+                times=times,
                 position=self.request.body.get('position', 0),
                 session=session,
                 pipe=pipe,
             )
-        Watched.cache_minutes_spent(user_id)
+        if times > 0:
+            Watched.cache_minutes_spent(user_id)
 
     @authenticated(0)
     @gen.coroutine

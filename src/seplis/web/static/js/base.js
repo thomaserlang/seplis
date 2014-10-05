@@ -26,4 +26,10 @@ $(function(){
             location.href = '/show/'+suggestion.data.id;
         }
     });
+    $('.change-page').change(function(){
+        var url = $.url(location.href);
+        p = url.param();
+        p['page'] = $(this).val();
+        location.href = url.attr('path') + '?' + $.param(p);
+    });
 });

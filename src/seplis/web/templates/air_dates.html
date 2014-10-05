@@ -57,4 +57,21 @@
             </div>
         </div>
     {% end %}
+    {% if not air_dates %}
+        <div class="alert alert-info" role="alert">
+            <h1>There's nothing to watch this week!</h1>
+            <p>
+            But, how can this be?<br>
+
+            Well, you're properly not a fan of any shows that has 
+            episodes airing this week.
+            </p>
+            <p>
+                Use the 
+                <a href="#" onclick="$('.autocomplete').focus();return false;">
+                    search bar</a>
+                above to find new shows.
+            </p>
+        </div>
+    {% end %}
 {% end %}

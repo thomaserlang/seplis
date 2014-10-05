@@ -27,6 +27,8 @@ $(function(){
             }
         )
     });
+    $('#alternative-titles').select2({tags:[]});
+
     $('.season-episodes .episode .next-episode date').each(function(){
         var hours = moment.utc(
             $(this).attr('title'), 

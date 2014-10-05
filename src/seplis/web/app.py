@@ -2,7 +2,7 @@ from seplis.config import config
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
-import seplis.web.handlers.signin
+import seplis.web.handlers.sign_in
 import seplis.web.handlers.settings
 import seplis.web.handlers.show
 import seplis.web.handlers.tag
@@ -14,6 +14,7 @@ import seplis.web.modules.tags
 import os
 from seplis.logger import logger
 from tornado.options import define, options
+from tornado.web import URLSpec
 
 class Application(tornado.web.Application):
 
@@ -26,7 +27,7 @@ class Application(tornado.web.Application):
             autoescape=None,
             xsrf_cookies=True,
             cookie_secret=config['web']['cookie_secret'],
-            login_url='/signin',
+            login_url='/sign-in',
             ui_modules=dict(
                 menu=seplis.web.modules.menu.Module,
                 fan_button=seplis.web.modules.buttons.Fan_module,
@@ -35,31 +36,35 @@ class Application(tornado.web.Application):
             )
         )
         urls = [
-            tornado.web.URLSpec(r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(static_path, 'favicon.ico')}),
-            tornado.web.URLSpec(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
+            URLSpec(r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(static_path, 'favicon.ico')}),
+            URLSpec(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
 
-            # (r'/signup', handlers.signup.Handler),
-            tornado.web.URLSpec(r'/signin', seplis.web.handlers.signin.Handler),
-            tornado.web.URLSpec(r'/api/signin', seplis.web.handlers.signin.API_handler),
-            tornado.web.URLSpec(r'/settings', seplis.web.handlers.settings.Handler),
+            URLSpec(r'/sign-in', seplis.web.handlers.sign_in.Handler),
+            URLSpec(r'/api/sign-in', seplis.web.handlers.sign_in.API_handler),
+            URLSpec(r'/sign-up', seplis.web.handlers.sign_in.Sign_up_handler),
+            URLSpec(r'/api/sign-up', seplis.web.handlers.sign_in.API_sign_up_handler),
+            URLSpec(r'/settings', seplis.web.handlers.settings.Handler),
+            URLSpec(r'/sign-out', seplis.web.handlers.sign_in.Sign_out_handler),
 
-            tornado.web.URLSpec(r'/show/([0-9]+)', seplis.web.handlers.show.Redirect_handler),
-            tornado.web.URLSpec(r'/show/([0-9]+)/[^/]+', seplis.web.handlers.show.Handler),
-            tornado.web.URLSpec(r'/show-new', seplis.web.handlers.show.New_handler),
-            tornado.web.URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
-            tornado.web.URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.show.Edit_handler),
-            tornado.web.URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),
 
-            tornado.web.URLSpec(r'/api/fan', seplis.web.handlers.show.API_fan_handler),
-            tornado.web.URLSpec(r'/api/watched', seplis.web.handlers.show.API_watched_handler),
+            URLSpec(r'/show-index', seplis.web.handlers.show.Index_handler),
+            URLSpec(r'/show/([0-9]+)', seplis.web.handlers.show.Redirect_handler),
+            URLSpec(r'/show/([0-9]+)/[^/]+', seplis.web.handlers.show.Handler),
+            URLSpec(r'/show-new', seplis.web.handlers.show.New_handler),
+            URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
+            URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.show.Edit_handler),
+            URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),
 
-            tornado.web.URLSpec(r'/api/suggest', seplis.web.handlers.suggest.Handler),
+            URLSpec(r'/api/fan', seplis.web.handlers.show.API_fan_handler),
+            URLSpec(r'/api/watched', seplis.web.handlers.show.API_watched_handler),
 
-            tornado.web.URLSpec(r'/user-tags', seplis.web.handlers.tag.Relation_handler),
-            tornado.web.URLSpec(r'/users/([0-9]+)/tags/shows', seplis.web.handlers.tag.Shows_handler, name='user_tagged_shows'),
+            URLSpec(r'/api/suggest', seplis.web.handlers.suggest.Handler),
 
-            tornado.web.URLSpec(r'/air-dates', seplis.web.handlers.air_dates.Handler),
-            tornado.web.URLSpec(r'/fan-of', seplis.web.handlers.show.Fan_of_handler),
+            URLSpec(r'/user-tags', seplis.web.handlers.tag.Relation_handler),
+            URLSpec(r'/users/([0-9]+)/tags/shows', seplis.web.handlers.tag.Shows_handler, name='user_tagged_shows'),
+
+            URLSpec(r'/air-dates', seplis.web.handlers.air_dates.Handler),
+            URLSpec(r'/fan-of', seplis.web.handlers.show.Fan_of_handler),
 
         ]
         tornado.web.Application.__init__(self, urls, **settings)

@@ -22,7 +22,7 @@ def upgrade():
         sa.Column('genres', sa.Text),
     )
     op.add_column('shows',
-        sa.Column('alternate_titles', sa.Text),
+        sa.Column('alternative_titles', sa.Text),
     )
 
     op.add_column('episodes',
