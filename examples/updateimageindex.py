@@ -17,4 +17,5 @@ for show in shows.all():
         'indices': {
             'images': 'thetvdb',
         }
-    })
+    }, timeout=100)
+    print('Show {} done'.format(show['id']))

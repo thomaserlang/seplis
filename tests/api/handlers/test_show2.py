@@ -38,7 +38,7 @@ class test_show(Testbase):
                 'Action',
                 'Thriller',
             ],
-            'alternate_titles': [
+            'alternative_titles': [
                 'NCIS 2',
                 'NCIS 3',
             ],
@@ -64,8 +64,8 @@ class test_show(Testbase):
         })
         self.assertTrue('Action' in show['genres'])
         self.assertTrue('Thriller' in show['genres'])
-        self.assertTrue('NCIS 2' in show['alternate_titles'])
-        self.assertTrue('NCIS 3' in show['alternate_titles'])
+        self.assertTrue('NCIS 2' in show['alternative_titles'])
+        self.assertTrue('NCIS 3' in show['alternative_titles'])
         self.assertEqual(show['runtime'], 40)
 
     def test_patch(self):
@@ -403,28 +403,28 @@ class test_show(Testbase):
     def test_item_list_updates(self):
         show_id = self.new_show()
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'alternate_titles': [
+            'alternative_titles': [
                 'test',
             ],
         })
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
-        self.assertTrue('test' in show['alternate_titles'])
+        self.assertTrue('test' in show['alternative_titles'])
 
         # append and duplicate
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'alternate_titles': [
+            'alternative_titles': [
                 'test',
                 'test2'
             ],
         })
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
-        self.assertTrue('test' in show['alternate_titles'])
-        self.assertTrue('test2' in show['alternate_titles'])        
+        self.assertTrue('test' in show['alternative_titles'])
+        self.assertTrue('test2' in show['alternative_titles'])        
 
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'alternate_titles': [
+            'alternative_titles': [
                 'test',
                 'test',
                 'test2'
@@ -432,8 +432,8 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
-        self.assertTrue('test' in show['alternate_titles'])
-        self.assertTrue('test2' in show['alternate_titles'])
+        self.assertTrue('test' in show['alternative_titles'])
+        self.assertTrue('test2' in show['alternative_titles'])
 
     def test_empty_lists(self):
         self.login(constants.LEVEL_EDIT_SHOW) 
@@ -447,7 +447,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
         self.assertEqual(show['genres'], [])
-        self.assertEqual(show['alternate_titles'], [])
+        self.assertEqual(show['alternative_titles'], [])
         self.assertEqual(show['seasons'], [])
 
     def _test_fan_count(self, expected_count):        

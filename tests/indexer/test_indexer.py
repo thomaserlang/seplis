@@ -234,6 +234,22 @@ class test_show_info_changes(TestCase):
             ],
         })
 
+    def test_genres(self):
+        show = {
+            'genres': [
+                'test1',
+                'test2',
+            ]
+        }
+        show_changed = {
+            'genres': [
+                'test2',
+                'test1',
+            ]
+        }
+        changes = show_info_changes(show, show_changed)
+        self.assertFalse(changes, changes)
+
 class test_episode_changes(TestCase):
     def test(self):
         episode = {
