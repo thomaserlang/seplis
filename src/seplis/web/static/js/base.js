@@ -32,4 +32,9 @@ $(function(){
         p['page'] = $(this).val();
         location.href = url.attr('path') + '?' + $.param(p);
     });
+    $('.change-layout').click(function(event){
+        event.preventDefault();
+        $.cookie('layout', $(this).attr('data-layout'), { expires: 1*365 });
+        location.reload();
+    });
 });

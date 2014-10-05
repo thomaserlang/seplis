@@ -40,14 +40,8 @@
 <div class="row season-episodes">
     <div class="col-xs-12">
         <div class="episodes panel-group">
-            {% if next_episode and next_episode['season'] == selected_season %}
-                {% set episode = next_episode %}
-                {% include show_episode.html %}
-            {% end %}
             {% for episode in episodes %}
-                {% if (next_episode and next_episode['number'] != episode['number']) or not next_episode %}
-                    {% include show_episode.html %}
-                {% end %}
+                {% include show_episode.html %}
             {% end %}
         </div>
     </div>

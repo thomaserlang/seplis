@@ -1,23 +1,7 @@
 {% extends base.html %}
 
 {% block body %}
-    <div class="row">
-        <div class="col-xs-8">
-        </div>
-        <div class="col-xs-4">
-            <div class="pull-right">                
-                <a href="/fan-of?layout=grid" class="btn btn-default">
-                    <i class="glyphicon glyphicon-th"></i>
-                </a>
-                <a href="/fan-of?layout=list" class="btn btn-default">
-                    <i class="glyphicon glyphicon-th-list"></i>
-                </a>
-                <div class="pull-right show-pages-menu">
-                    {% include show_pages.html %}
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include show_index_top.html %}
     <div class="row">
         <div class="col-xs-12 shows">
             {% for show in shows %}
@@ -25,6 +9,7 @@
                     <div class="image">
                         <a href="/show/{{ show['id'] }}">
                         <img 
+                            title="{{ escape(show['title']) }}"
                             alt="{{ escape(show['title']) }}"
                             src="{{ image_url(show['poster_image'], '@SX227.jpg') }}"
                             width="227px"

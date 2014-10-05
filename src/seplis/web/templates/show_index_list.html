@@ -1,0 +1,44 @@
+{% extends base.html %}
+
+{% block body %}
+    {% include show_index_top.html %}
+    <table class="table table-striped shows">
+        {% for show in shows %}
+            <tr>
+                <td style="width:100px">
+                    <a href="/show/{{ show['id'] }}">
+                    <img
+                        alt="{{ escape(show['title']) }}"
+                        src="{{ image_url(show['poster_image'], '@SX100.jpg') }}"
+                        width="100px"
+                        height="147px"
+                    >
+                    </a>
+                </td>
+                <td>
+                    <a href="/show/{{ show['id'] }}">
+                        <h2>
+                            {{ escape(show['title']) }}
+                        </h2>
+                    </a>
+                    <p>
+                        <desc class="show-list-description-text">
+                            {{ escape(show['description']['text']) }}
+                        </desc>
+                        <br>
+                        <a href="{{ escape(show['description']['url']) }}">
+                            {{ escape(show['description']['title']) }}
+                        </a>
+                    </p>
+                </td>
+            </tr>
+        {% end %}
+    </table>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="pull-right">
+                {% include show_pages.html %}
+            </div>
+        </div>
+    </div>
+{% end %}

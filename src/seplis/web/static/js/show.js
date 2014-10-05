@@ -67,4 +67,9 @@ $(function(){
     $('.dropdown-form input, .dropdown-form label, .dropdown-form .btn').click(function(e) {
         e.stopPropagation();
     });
+    $('.show-list-description-text').dotdotdot({
+        after: "a.readmore",
+        tolerance: 0,
+        height:40,
+    });
 });

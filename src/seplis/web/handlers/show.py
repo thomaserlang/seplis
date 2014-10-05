@@ -53,7 +53,7 @@ class Handler(base.Handler):
                     season['from'],
                     season['to'],
                 ),
-                'sort': 'number:desc',
+                'sort': 'number:asc',
             }
             if self.current_user:
                 req['append'] = 'user_watched'
@@ -245,7 +245,10 @@ class Fan_of_handler(base.Handler):
         if shows.count == 0:
             yield self.show_empty()
         else:
-            self.render('fan_of.html',
+            layout = self.get_cookie('layout', 'grid')
+            temp = 'fan_of_list.html' if layout == 'list' \
+                else 'fan_of.html'
+            self.render(temp,
                 title='Fan of',
                 shows=shows,
                 current_page=page,
@@ -277,9 +280,12 @@ class Index_handler(base.Handler):
         shows = yield self.client.get('/shows', {
             'sort': sort,
             'page': page,
-            'per_page': 5,
+            'per_page': 20,
         })
-        self.render('show_index.html',
+        layout = self.get_cookie('layout', 'grid')
+        temp = 'show_index_list.html' if layout == 'list' \
+            else 'show_index.html'
+        self.render(temp,
             title='Show index',
             shows=shows,
             current_page=page,
