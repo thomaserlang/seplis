@@ -183,6 +183,7 @@ class Handler(base.Handler):
 
     allowed_append_fields = (
         'is_fan',
+        'user_watching',
     )
     @gen.coroutine
     def get(self, show_id=None):

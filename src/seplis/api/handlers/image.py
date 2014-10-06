@@ -22,7 +22,9 @@ class Handler(base.Handler):
         image.__dict__.update(data)
         image.save()        
         self.write_object(
-            self.image_format(image.to_dict())
+            self.image_format(
+                image.to_dict()
+            )
         )
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
@@ -75,6 +77,7 @@ class Handler(base.Handler):
                 'term': {
                     'relation_type': self.relation_type,
                     'relation_id': relation_id,
+                    'execution': 'and',
                 }
             }
         }
@@ -86,6 +89,7 @@ class Handler(base.Handler):
                     }
                 }
             })
+        logging.info(body)
         result = yield self.es(
             '/images/image/_search',
             query={

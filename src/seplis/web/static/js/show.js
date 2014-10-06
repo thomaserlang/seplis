@@ -29,7 +29,7 @@ $(function(){
     });
     $('#alternative-titles').select2({tags:[]});
 
-    $('.season-episodes .episode .next-episode date').each(function(){
+    $('date.show-date').each(function(){
         var hours = moment.utc(
             $(this).attr('title'), 
             moment.iso_8601
@@ -50,7 +50,7 @@ $(function(){
         else if (days == '1') {
             days = 'Tomorrow'
         } else {
-            days = 'In '+Math.ceil(days)+' days';
+            days = 'in '+Math.ceil(days)+' days';
         }
         $(this).text(
             days

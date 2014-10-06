@@ -251,7 +251,7 @@ class Image_external_duplicate(API_exception):
         API_exception.__init__(self,
             status_code=400,
             code=2000,
-            message='An image with the external name: {} and id: {} does already exist',
+            message='An image with the external name and id does already exist',
             extra=duplicate_image,
         )
 

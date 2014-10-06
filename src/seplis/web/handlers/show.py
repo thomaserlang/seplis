@@ -31,7 +31,7 @@ class Handler(base.Handler):
     @gen.coroutine
     def get_show(self, show_id):        
         if self.current_user:
-            show = yield self.client.get('/shows/{}?append=is_fan'.format(show_id))
+            show = yield self.client.get('/shows/{}?append=is_fan,user_watching'.format(show_id))
         else:
             show = yield self.client.get('/shows/{}'.format(show_id))
         if not show:

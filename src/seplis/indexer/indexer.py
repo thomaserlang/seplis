@@ -45,33 +45,32 @@ class Show_indexer(Client):
             if not ids: 
                 logging.info('No updates from external source: {}'.format(name))
                 continue
-
             logging.info('Found {} updates from external source: {}'.format(len(ids), name))
-            for id_ in ids:
-                logging.info('Looking for a external show: {} with id: {}'.format(
+        for id_ in ids:
+            logging.info('Looking for a external show: {} with id: {}'.format(
+                name,
+                id_
+            ))
+            show = self.get('/shows/externals/{name}/{id}'.format( 
+                name=name,
+                id=id_,
+            ))
+            if not show:
+                logging.info('Nothing found for external show: {} with id: {}'.format(
                     name,
                     id_
                 ))
-                show = self.get('/shows/externals/{name}/{id}'.format( 
-                    name=name,
-                    id=id_,
-                ))
-                if not show:
-                    logging.info('Nothing found for external show: {} with id: {}'.format(
-                        name,
-                        id_
-                    ))
-                    continue
-                logging.info('External source: {} with id: {} has a relation to show id: {}'.format(
-                    name,
-                    id_,
-                    show['id'],
-                ))
-                show_data = self._update_show(
-                    show,
-                    update_episodes=True,
-                )
-                updated_shows[str(id_)] = show_data
+                continue
+            logging.info('External source: {} with id: {} has a relation to show id: {}'.format(
+                name,
+                id_,
+                show['id'],
+            ))
+            show_data = self._update_show(
+                show,
+                update_episodes=True,
+            )
+            updated_shows[str(id_)] = show_data
             indexer.set_latest_update_timestamp(start_time)
         return updated_shows
 
@@ -184,7 +183,6 @@ class Show_indexer(Client):
         If an image with the external name and id does not exist 
         the image will be uploaded.
         '''
-
         image_indexer = self.get_indexer(show['indices'].get('images', ''))
         if not image_indexer:
             return
