@@ -89,7 +89,6 @@ class Handler(base.Handler):
                     }
                 }
             })
-        logging.info(body)
         result = yield self.es(
             '/images/image/_search',
             query={
