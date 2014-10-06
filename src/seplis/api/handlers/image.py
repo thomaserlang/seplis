@@ -74,11 +74,15 @@ class Handler(base.Handler):
         sort = self.get_argument('sort', 'id:asc')
         body = {
             'filter': {
-                'term': {
-                    'relation_type': self.relation_type,
-                    'relation_id': relation_id,
-                    'execution': 'and',
+                'bool': {
+                    'must': {
+                        'term': {
+                            'relation_type': self.relation_type,
+                            'relation_id': relation_id,
+                        }
+                    }
                 }
+                                
             }
         }
         if q:
@@ -89,6 +93,7 @@ class Handler(base.Handler):
                     }
                 }
             })
+        logging.info(body)
         result = yield self.es(
             '/images/image/_search',
             query={
