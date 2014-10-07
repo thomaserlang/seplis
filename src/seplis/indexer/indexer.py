@@ -92,15 +92,18 @@ class Show_indexer(Client):
             print('No valid token was found.')
 
     def update_show(self, show_id):
-        logging.info('Updating show: {}'.format(show_id))
-        show = self.get('/shows/{}'.format(show_id))
-        if not show:
-            raise Exception('Show not found')
-        show_data = self._update_show(
-            show,
-            update_episodes=True,
-        )
-        return show_data
+        try:
+            logging.info('Updating show: {}'.format(show_id))
+            show = self.get('/shows/{}'.format(show_id))
+            if not show:
+                raise Exception('Show not found')
+            show_data = self._update_show(
+                show,
+                update_episodes=True,
+            )
+            return show_data
+        except:
+            logging.exception('update_show')
 
     @retry(
         stop_max_attempt_number=5,
