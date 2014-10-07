@@ -94,7 +94,8 @@ def update_show(config, show_id):
         logging.exception('indexer_update_show')
 
 @app.cmd()
-def update_shows_all(config):
+@app.cmd_arg('--from_id', type=int, default=1)
+def update_shows_all(config, from_id):
     import seplis
     seplis.config_load(config)
     logger.set_logger('indexer_update_shows_all.log', to_sentry=True)
@@ -103,7 +104,11 @@ def update_shows_all(config):
         access_token=seplis.config['client']['access_token']
     )
     try:
-        shows = indexer.get('/shows?sort=id&per_page=500')
+        shows = indexer.get('/shows', {
+            'sort': 'id',
+            'per_page': 500,
+            'q': 'id:[{} TO *]'.format(from_id)
+        })
         for show in shows.all():
             indexer.update_show(show['id'])
     except:
