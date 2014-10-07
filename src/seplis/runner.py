@@ -35,59 +35,79 @@ def api(config, port, rebuild_cache):
 def upgrade(config):
     import seplis
     seplis.config_load(config)
+    logger.set_logger('upgrade.log', to_sentry=True)
     import seplis.api.migrate
-    seplis.api.migrate.upgrade()
+    try:
+        seplis.api.migrate.upgrade()
+    except:
+        logging.exception('upgrade')
 
 @app.cmd()
 def downgrade(config):
     import seplis
     seplis.config_load(config)
+    logger.set_logger('downgrade.log', to_sentry=True)
     import seplis.api.migrate
-    seplis.api.migrate.downgrade()
+    try:
+        seplis.api.migrate.downgrade()
+    except:
+        logging.exception('downgrade')
 
 @app.cmd()
 def rebuild_cache(config):
     import seplis
     seplis.config_load(config)
-    logger.set_logger('rebuild_cache.log')
+    logger.set_logger('rebuild_cache.log', to_sentry=True)
     import seplis.api.rebuild_cache
-    seplis.api.rebuild_cache.main()
+    try:
+        seplis.api.rebuild_cache.main()
+    except:
+        logging.exception('rebuild_cache')
 
 @app.cmd()
 def update_shows(config):
     import seplis
     seplis.config_load(config)
-    logger.set_logger('indexer_update_shows.log')
-    indexer = seplis.Show_indexer(
-        seplis.config['api']['url'],
-        access_token=seplis.config['client']['access_token'],
-    )
-    indexer.update()
+    logger.set_logger('indexer_update_shows.log', to_sentry=True)
+    try:
+        indexer = seplis.Show_indexer(
+            seplis.config['api']['url'],
+            access_token=seplis.config['client']['access_token'],
+        )
+        indexer.update()
+    except:
+        logging.exception('indexer_update_shows')
 
 @app.cmd()
 @app.cmd_arg('-id', '--show_id', type=int, help='The id of the show')
 def update_show(config, show_id):
     import seplis
     seplis.config_load(config)
-    logger.set_logger('indexer_update_show.log')
-    indexer = seplis.Show_indexer(
-        seplis.config['api']['url'],
-        access_token=seplis.config['client']['access_token'],
-    )
-    indexer.update_show(show_id)
+    logger.set_logger('indexer_update_show.log', to_sentry=True)
+    try:
+        indexer = seplis.Show_indexer(
+            seplis.config['api']['url'],
+            access_token=seplis.config['client']['access_token'],
+        )
+        indexer.update_show(show_id)
+    except:
+        logging.exception('indexer_update_show')
 
 @app.cmd()
-def update_shows_all(config):   
+def update_shows_all(config):
     import seplis
     seplis.config_load(config)
-    logger.set_logger('indexer_update_shows_all.log')
+    logger.set_logger('indexer_update_shows_all.log', to_sentry=True)
     indexer = seplis.Show_indexer(
         url=seplis.config['api']['url'], 
         access_token=seplis.config['client']['access_token']
     )
-    shows = indexer.get('/shows?sort=id&per_page=500')
-    for show in shows.all():
-        indexer.update_show(show['id'])
+    try:
+        shows = indexer.get('/shows?sort=id&per_page=500')
+        for show in shows.all():
+            indexer.update_show(show['id'])
+    except:
+        logging.exception('update_shows_all')
 
 @app.cmd()
 def worker(config):
