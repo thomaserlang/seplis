@@ -102,7 +102,9 @@ class Show_indexer(Client):
                 update_episodes=True,
             )
             return show_data
-        except:
+        except Exception as e:
+            if isinstance(e, KeyboardInterrupt):
+                raise
             logging.exception('update_show')
 
     @retry(
