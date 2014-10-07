@@ -11,6 +11,16 @@ from seplis.indexer.show.thetvdb import Thetvdb
 from seplis.api import constants
 from seplis.config import config
 from seplis import Client, schemas, API_error
+from retrying import retry
+
+def _can_retry_update_show(exception):
+    if isinstance(exception, KeyboardInterrupt):
+        return False    
+    if isinstance(exception, API_error):
+        if exception.code == 1009:
+            # not authenticated, let's get out of here.
+            return False
+    return True
 
 class Show_indexer(Client):
 
@@ -46,32 +56,32 @@ class Show_indexer(Client):
                 logging.info('No updates from external source: {}'.format(name))
                 continue
             logging.info('Found {} updates from external source: {}'.format(len(ids), name))
-        for id_ in ids:
-            logging.info('Looking for a external show: {} with id: {}'.format(
-                name,
-                id_
-            ))
-            show = self.get('/shows/externals/{name}/{id}'.format( 
-                name=name,
-                id=id_,
-            ))
-            if not show:
-                logging.info('Nothing found for external show: {} with id: {}'.format(
+            for id_ in ids:
+                logging.info('Looking for a external show: {} with id: {}'.format(
                     name,
                     id_
                 ))
-                continue
-            logging.info('External source: {} with id: {} has a relation to show id: {}'.format(
-                name,
-                id_,
-                show['id'],
-            ))
-            show_data = self._update_show(
-                show,
-                update_episodes=True,
-            )
-            updated_shows[str(id_)] = show_data
-            indexer.set_latest_update_timestamp(start_time)
+                show = self.get('/shows/externals/{name}/{id}'.format( 
+                    name=name,
+                    id=id_,
+                ))
+                if not show:
+                    logging.info('Nothing found for external show: {} with id: {}'.format(
+                        name,
+                        id_
+                    ))
+                    continue
+                logging.info('External source: {} with id: {} has a relation to show id: {}'.format(
+                    name,
+                    id_,
+                    show['id'],
+                ))
+                show_data = self._update_show(
+                    show,
+                    update_episodes=True,
+                )
+                updated_shows[str(id_)] = show_data
+                indexer.set_latest_update_timestamp(start_time)
         return updated_shows
 
     def login(self):
@@ -92,6 +102,11 @@ class Show_indexer(Client):
         )
         return show_data
 
+    @retry(
+        stop_max_attempt_number=5,
+        retry_on_exception=_can_retry_update_show,
+        wrap_exception=True
+    )
     def _update_show(self, show, update_episodes=True, 
         update_images=True, retries=0):
         '''
@@ -99,51 +114,34 @@ class Show_indexer(Client):
         :param show: dict
         :param update_episodes: bool
         '''
-        try:
-            if 'indices' not in show:
-                return None
-            show_data = {}
-            
-            # show info
-            show_updates = self._get_show_updates(show)
-            if show_updates:
-                show_data = show_updates
+        if 'indices' not in show:
+            return None
+        show_data = {}
+        
+        # show info
+        show_updates = self._get_show_updates(show)
+        if show_updates:
+            show_data = show_updates
 
-            # show episodes
-            if update_episodes:
-                episodes = self._get_episode_updates(show)
-                if episodes:
-                    show_data['episodes'] = episodes
+        # show episodes
+        if update_episodes:
+            episodes = self._get_episode_updates(show)
+            if episodes:
+                show_data['episodes'] = episodes
 
-            if show_data:
-                self.patch(
-                    'shows/{}'.format(show['id']), 
-                    show_data,
-                    timeout=120
-                )
-            # show images
-            if update_images and not config['storitch']:
-                logging.warning('Missing url for storitch in the config')
-            if update_images and config['storitch']:
-                images = self._update_images(show)
-                show_data['images'] = images
-            return show_data
-        except KeyboardInterrupt:
-            raise
-        except Exception as e:
-            logging.exception('error')
-            if isinstance(e, API_error):
-                if e.code in (None, 1009):
-                    raise
-            else: 
-                if retries <= 5:
-                    retries += 1
-                    self._update_show(
-                        show=show, 
-                        update_episodes=update_episodes, 
-                        update_images=update_images,
-                        retries=retries,
-                    )
+        if show_data:
+            self.patch(
+                'shows/{}'.format(show['id']), 
+                show_data,
+                timeout=120
+            )
+        # show images
+        if update_images and not config['storitch']:
+            logging.warning('Missing url for storitch in the config')
+        if update_images and config['storitch']:
+            images = self._update_images(show)
+            show_data['images'] = images
+        return show_data
 
     def _get_show_updates(self, show):
         show_indexer = self.get_indexer(show['indices'].get('info', ''))
