@@ -321,6 +321,7 @@ class test_thetvdb(TestCase):
                     'Adventure',
                     'Drama',
                 ])
+                self.assertEqual(show['externals']['imdb'], 'tt0364845')
 
     @mock.patch('requests.get', mock_thetvdb_show_info)
     def test_updates(self):

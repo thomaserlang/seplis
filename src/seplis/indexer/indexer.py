@@ -76,12 +76,16 @@ class Show_indexer(Client):
                     id_,
                     show['id'],
                 ))
-                show_data = self._update_show(
-                    show,
-                    update_episodes=True,
-                )
-                updated_shows[str(id_)] = show_data
-                indexer.set_latest_update_timestamp(start_time)
+                try:
+                    show_data = self._update_show(
+                        show,
+                        update_episodes=True,
+                    )
+                    updated_shows[str(id_)] = show_data
+                except:
+                    logging.exception('update')
+            indexer.set_latest_update_timestamp(start_time)
+        logging.info('Done updating.')
         return updated_shows
 
     def login(self):

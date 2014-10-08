@@ -35,14 +35,18 @@ class Thetvdb(Show_indexer_base):
                     'title': 'TheTVDB',
                     'url': self._source_url.format(id=show_id), 
                 }
+            externals = {
+                'thetvdb': str(show_id),
+            }
+            if 'IMDB_ID' in data['Data']['Series'] and data['Data']['Series']['IMDB_ID']:
+                externals['imdb'] = data['Data']['Series']['IMDB_ID']
+
             return {
                 'title': data['Data']['Series']['SeriesName'],
                 'description': description,
                 'premiered': self.parse_date(data['Data']['Series']['FirstAired']),
                 'ended': None,               
-                'externals': {
-                    'thetvdb': str(show_id),
-                },
+                'externals': externals,
                 'status': self.parse_status(data['Data']['Series']['Status']),
                 'runtime': int(data['Data']['Series']['Runtime']) if data['Data']['Series']['Runtime'] else None,
                 'genres': self.parse_genres(data['Data']['Series']['Genre']),
