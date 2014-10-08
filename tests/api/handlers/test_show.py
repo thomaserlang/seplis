@@ -456,7 +456,7 @@ class test_show(Testbase):
         stats = utils.json_loads(response.body)
         self.assertEqual(stats['fan_of'], expected_count)
 
-    def test_fan(self):        
+    def test_fan_and_watching(self):        
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
             'title': 'test show',
@@ -535,6 +535,13 @@ class test_show(Testbase):
         self.assertEqual(fan_of[0]['id'], show_id)
         self.assertEqual(fan_of[0]['user_watching']['position'], 120)
         self.assertEqual(fan_of[0]['user_watching']['episode']['number'], 1)
+
+        # When searching for shows we should be able to append the user_watching field.
+        response = self.get('/1/shows?q=id:{}&append=user_watching'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        shows = utils.json_loads(response.body)
+        self.assertEqual(shows[0]['id'], show_id)
+        self.assertEqual(shows[0]['user_watching']['episode']['number'], 1)
 
         # Now unfan the show.
         # Run it twice to check for duplication bug.

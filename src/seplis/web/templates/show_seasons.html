@@ -8,7 +8,7 @@
                         value="{{ season['season'] }}"
                         {{ 'selected' if season['season'] == selected_season else '' }}
                     >
-                        {{ '{0:0>2}'.format(season['season']) }}
+                        {{ season['season'] }}
                     </option>
                 {% end %}
             </select>
@@ -16,13 +16,28 @@
     </div>
     <div class="col-xs-5 pull-right">
         <div class="pull-right">
+
+
             <button id="button-multi-watched" class="btn btn-default btn-multi-watched" data-toggle="dropdown">
-                Multi watched
+                Set progression
             </button>
             <div class="dropdown-menu dropdown-form" role="menu" aria-labelledby="dLabel">
                 <form id="form-multi-watched">
                     <input name="show_id" type="hidden" value="{{ show['id'] }}">
                     <input name="do" type="hidden" value="incr">
+                    <select>
+                        <option>
+                        {% for season in show['seasons'] %}
+                            <optgroup label="Season {{ season['season'] }}">
+                                {% for i, number in enumerate(range(season['from'], season['to']+1)) %}
+                                    <option value="{{ number }}">
+                                        Episode {{ i+1 }}
+                                    </option>
+                                {% end %}
+                            </optgroup>
+                        {% end %}
+                    </select>
+
                     <div class="form-group">
                         <label for="form-from-episode-number">From episode number</label>
                         <input id="form-from-episode-number" class="form-control" name="from" placeholder="From">

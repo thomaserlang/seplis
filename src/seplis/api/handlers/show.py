@@ -15,6 +15,19 @@ from collections import OrderedDict
 
 class Handler(base.Handler):
 
+    allowed_append_fields = (
+        'is_fan',
+        'user_watching',
+    )
+    @gen.coroutine
+    def get(self, show_id=None):
+        if show_id:
+            shows = yield self.get_show(show_id)
+            self.write_object(shows)
+        else:
+            show = yield self.get_shows()
+            self.write_object(show)
+
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine    
     def post(self, show_id=None):
@@ -36,9 +49,13 @@ class Handler(base.Handler):
                 'id': show_id,
             })
 
-    @concurrent.run_on_executor
-    def _post(self):
-        self.validate(schemas.Show_schema)
+    @authenticated(constants.LEVEL_EDIT_SHOW)
+    @gen.coroutine
+    def put(self, show_id):
+        show = yield self._update(show_id, overwrite=True)
+        self.write_object(
+            show
+        )
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
@@ -48,13 +65,9 @@ class Handler(base.Handler):
             show
         )
 
-    @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def put(self, show_id):
-        show = yield self._update(show_id, overwrite=True)
-        self.write_object(
-            show
-        )
+    @concurrent.run_on_executor
+    def _post(self):
+        self.validate(schemas.Show_schema)
 
     update_keys = (
         'title',
@@ -181,34 +194,20 @@ class Handler(base.Handler):
                 else:
                     data[key] = new_data[key]
 
-    allowed_append_fields = (
-        'is_fan',
-        'user_watching',
-    )
-    @gen.coroutine
-    def get(self, show_id=None):
-        if show_id:
-            shows = yield self.get_show(show_id)
-            self.write_object(shows)
-        else:
-            show = yield self.get_shows()
-            self.write_object(show)
-
     @gen.coroutine
     def get_show(self, show_id):
         append_fields = self.get_append_fields(self.allowed_append_fields)
         result = yield self.es('/shows/show/{}'.format(show_id))                
         if not result['found']:
             raise exceptions.Show_unknown()
+        show = result['_source']
         if 'is_fan' in append_fields:
-            self.is_logged_in()
-            result['_source']['is_fan'] = Show.is_fan(
-                user_id=self.current_user.id,
-                id_=show_id,
-            )
-        if result['_source']['poster_image']:
+            self.append_is_fan([show])
+        if 'user_watching' in append_fields:
+            yield self.append_user_watching([show])
+        if show['poster_image']:
             self.image_format(result['_source']['poster_image'])
-        return result['_source']
+        return show
 
     @gen.coroutine
     def get_shows(self, show_ids=None):
@@ -252,23 +251,84 @@ class Handler(base.Handler):
             shows[show['_source']['id']] = show['_source']
             if 'poster_image' in show['_source'] and show['_source']['poster_image']:
                 self.image_format(show['_source']['poster_image'])
+        shows = list(shows.values())
         if 'is_fan' in append_fields:
-            self.is_logged_in()
-            show_ids = list(shows.keys())
-            is_fan = Shows.is_fan(
-                user_id=self.current_user.id,
-                ids=show_ids,
-            )
-            for f, id_ in zip(is_fan, show_ids):
-                shows[id_]['is_fan'] = f
-
+            self.append_is_fan(shows)
+        if 'user_watching' in append_fields:
+            yield self.append_user_watching(shows)
         p = Pagination(
             page=page,
             per_page=per_page,
             total=result['hits']['total'],
-            records=list(shows.values()),
+            records=shows,
         )
         return p
+
+    def append_is_fan(self, shows, user_id=None):
+        if not user_id:
+            self.is_logged_in()
+            user_id = self.current_user.id
+        show_ids = [show['id'] for show in shows]
+        is_fan = Shows.is_fan(
+            user_id=user_id,
+            ids=show_ids,
+        )
+        for f, show in zip(is_fan, shows):
+            show['is_fan'] = f
+
+    @gen.coroutine
+    def append_user_watching(self, shows, user_id=None):
+        pipe = database.redis.pipeline()
+        show_ids = [show['id'] for show in shows]
+        if not user_id:
+            self.is_logged_in()
+            user_id = self.current_user.id
+        for id_ in show_ids:
+            pipe.hgetall('users:{}:watching:{}'.format(
+                user_id, 
+                id_,
+            ))
+        watching = pipe.execute()
+        # get episodes watching
+        episode_ids = []
+        for id_, w in zip(show_ids, watching):
+            episode_ids.append(
+                '{}-{}'.format(
+                    id_, 
+                    w['number'] if w else 0
+                )
+            )
+        episodes = yield self.get_episodes(episode_ids)
+        for w, show, episode in zip(watching, shows, episodes):
+            if w:
+                show['user_watching'] = {
+                    'datetime': w['datetime'],
+                    'position': int(w['position']),
+                    'episode': episode,
+                }
+            else:
+                show['user_watching'] = None
+
+    @gen.coroutine
+    def get_episodes(self, ids):
+        episodes = yield self.es('/episodes/episode/_search', body={
+            'filter': {
+                'ids': {
+                    'values': ids,
+                }
+            }
+        })
+        # how can I get elasticsearch to return the result in the
+        # same order as it was requested?
+        d = {'{}-{}'.format(e['_source']['show_id'], e['_source']['number']): 
+            e['_source'] for e in episodes['hits']['hits']}
+        result = []
+        for id_ in ids:
+            result.append(
+                d.get(id_)
+            )
+        return result
+
 
 class Multi_handler(base.Handler):
 
@@ -306,9 +366,6 @@ class External_handler(Handler):
 
 class Fans_handler(Handler):
 
-    allowed_append_fields = (
-        'user_watching'
-    )
     def get(self, show_id):
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
@@ -343,12 +400,8 @@ class Fans_handler(Handler):
         
 class Fan_of_handler(Handler):
 
-    allowed_append_fields = (
-        'user_watching'
-    )
     @gen.coroutine
     def get(self, user_id):
-        append_fields = self.get_append_fields(self.allowed_append_fields)
         show_ids = database.redis.smembers('users:{}:fan_of'.format(
             user_id
         ))
@@ -360,11 +413,6 @@ class Fan_of_handler(Handler):
                 per_page=int(self.get_argument('per_page', constants.PER_PAGE)),
                 total=0,
                 records=[],
-            )
-        if 'user_watching' in append_fields:
-            yield self.append_user_watching(
-                user_id,
-                shows,
             )
         self.write_object(
             shows
@@ -394,56 +442,6 @@ class Fan_of_handler(Handler):
 
     def post(self):
         raise HTTPError(405)
-
-    @gen.coroutine
-    def append_user_watching(self, user_id, shows):
-        pipe = database.redis.pipeline()
-        found_ids = [show['id'] for show in shows.records]
-        for id_ in found_ids:
-            pipe.hgetall('users:{}:watching:{}'.format(
-                user_id, 
-                id_,
-            ))
-        watching = pipe.execute()
-        # get episodes watching
-        episode_ids = []
-        for id_, w in zip(found_ids, watching):
-            episode_ids.append(
-                '{}-{}'.format(
-                    id_, 
-                    w['number'] if w else 0
-                )
-            )
-        episodes = yield self.get_episodes(episode_ids)
-        for w, show, episode in zip(watching, shows.records, episodes):
-            if w:
-                show['user_watching'] = {
-                    'datetime': w['datetime'],
-                    'position': int(w['position']),
-                    'episode': episode,
-                }
-            else:
-                show['user_watching'] = None
-
-    @gen.coroutine
-    def get_episodes(self, ids):
-        episodes = yield self.es('/episodes/episode/_search', body={
-            'filter': {
-                'ids': {
-                    'values': ids,
-                }
-            }
-        })
-        # how can I get elasticsearch to return the result in the
-        # same order as it was requested?
-        d = {'{}-{}'.format(e['_source']['show_id'], e['_source']['number']): 
-            e['_source'] for e in episodes['hits']['hits']}
-        result = []
-        for id_ in ids:
-            result.append(
-                d.get(id_)
-            )
-        return result
 
 class Update_handler(base.Handler):
 
