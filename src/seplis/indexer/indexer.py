@@ -113,7 +113,7 @@ class Show_indexer(Client):
         wrap_exception=True
     )
     def _update_show(self, show, update_episodes=True, 
-        update_images=True, retries=0):
+        update_images=True):
         '''
 
         :param show: dict

@@ -21,7 +21,7 @@ class test_user(Testbase):
             if error['field'] == 'name':
                 self.assertEqual(error['message'], 'must only contain a-z, 0-9, _ and - for dictionary value')
             elif error['field'] == 'email':
-                self.assertEqual(error['message'], 'this email is invalid for dictionary value')
+                self.assertEqual(error['message'], 'this is an invalid email address for dictionary value')
             elif error['field'] == 'password':
                 self.assertEqual(error['message'], 'length of value must be at least 6 for dictionary value')
 
