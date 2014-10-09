@@ -40,7 +40,6 @@ class Episode(object):
         '''
 
         :param show_id: int
-        :param session: SQLAlchemy session
         :returns: boolean
         '''
         episode = models.Episode(
@@ -200,7 +199,6 @@ class Watched(object):
 
         :returns: `Watched()`
         '''
-        # per show, episode
         ew = session.query(
             models.Episode_watched,
         ).filter(
@@ -228,7 +226,6 @@ class Watched(object):
             ew.position = position
             ew.datetime = datetime.utcnow()
             ew.times = _times
-        # per show
         cls._set_currently_watching(
             user_id,
             show_id,
@@ -383,7 +380,6 @@ class Watched(object):
 
         :param user_id: int
         :param show_id: int
-        :param episode_watched_query: SQLAlchemy query
         '''
         sw = session.query(
             models.Show_watched,

@@ -1,24 +1,24 @@
-<div class="watched-button btn-group">
-    <ul class="dropdown-menu" role="menu">
+<div class="dropdown">
+    <ul class="dropdown-menu btn-watched-button-dropdown" role="menu">
         <li 
-            class="watched-episode"
             title="Increment the watched count"
             show-id="{{ show['id'] }}"
             episode-number="{{ episode['number'] }}"
             do="incr"
             data-loading-text="<img width='14px' height='14px' src='/static/img/loader.gif'>"
+            class="watched-button"
         >
             <strong>
                 <i class="fa fa-plus"></i>
             </strong>
         </li>
         <li 
-            class="watched-episode"
             title="Decrement the watched count"
             show-id="{{ show['id'] }}"
             episode-number="{{ episode['number'] }}"
             do="decr"
             data-loading-text="<img width='14px' height='14px' src='/static/img/loader.gif'>"
+            class="watched-button"
         >
             <strong>                
                 <i class="fa fa-minus"></i>
@@ -26,10 +26,10 @@
         </li>
     </ul>
 
-    <button 
-        class="btn btn-default {{ 
-            'btn-watched' if episode.get('user_watched') else 'btn-not-watched' 
-        }}" 
+    {% set times_watched = episode['user_watched']['times'] if episode.get('user_watched') else 0 %}
+    <span class="times-watched">{{ times_watched }}</span>
+    <a 
+        class="btn-watched {{ 'watched' if episode.get('user_watched') else 'not-watched' }}" 
         show-id="{{ show['id'] }}"
         episode-number="{{ episode['number'] }}"
         data-toggle="{{ 
@@ -38,12 +38,5 @@
         data-loading-text="<img width='14px' height='14px' src='/static/img/loader.gif'>"
     >
         <i class="glyphicon glyphicon-eye-open"></i>
-    </button>
-    {% set times_watched = episode['user_watched']['times'] if episode.get('user_watched') else 0 %}
-    <button 
-        class="btn btn-default btn-watched-count" 
-        title="You have watched this episode {{ times_watched }} times"
-    >
-        {{ times_watched }}
-    </button>
+    </a>
 </div>

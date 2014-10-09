@@ -12,13 +12,17 @@ class Handler(base.Handler):
     @gen.coroutine
     def get(self, show_id):
         show = yield self.get_show(show_id)
-
-        selected_season, episodes = yield self.get_season_episodes(show)
         next_episode = yield self.get_next_episode(show_id)
-        if next_episode and \
-            not self.get_argument('season', None) and \
-                selected_season != next_episode['season']:
-            selected_season = next_episode['season']
+        selected_season = None
+        if not self.get_argument('season', None):
+            if 'user_watching' in show and show['user_watching']:
+                selected_season = show['user_watching']['episode']['season']
+            elif next_episode:
+                selected_season = next_episode['season']        
+        selected_season, episodes = yield self.get_season_episodes(
+            show,
+            season=selected_season,
+        )
         self.render(
             'show.html',
             title=show['title'],
@@ -31,7 +35,9 @@ class Handler(base.Handler):
     @gen.coroutine
     def get_show(self, show_id):        
         if self.current_user:
-            show = yield self.client.get('/shows/{}?append=is_fan,user_watching'.format(show_id))
+            show = yield self.client.get('/shows/{}'.format(show_id), {
+                'append': 'is_fan,user_watching',
+            })
         else:
             show = yield self.client.get('/shows/{}'.format(show_id))
         if not show:
@@ -39,9 +45,9 @@ class Handler(base.Handler):
         return show
 
     @gen.coroutine
-    def get_season_episodes(self, show):
+    def get_season_episodes(self, show, season=None):
         selected_season = None
-        _ss = int(self.get_argument('season', 0))
+        _ss = int(self.get_argument('season', 0)) or season
         if 'seasons' in show and show['seasons']:
             for season in show['seasons']:
                 season = season

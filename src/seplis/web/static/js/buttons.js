@@ -36,7 +36,7 @@ $('.fan-button').on('click', '.btn-unfan', function(event){
     );
 });
 
-$('.season-episodes').on('click', '.btn-not-watched', function(event){
+$('.season-episodes').on('click', '.not-watched', function(event){
     $(this).blur();
     var btn = $(this)
     btn.button('loading');
@@ -49,9 +49,9 @@ $('.season-episodes').on('click', '.btn-not-watched', function(event){
         }),
         {
             done: function(){
-                var watched_count = btn.parent().find('.btn-watched-count');
+                var watched_count = btn.parent().find('.times-watched');
                 watched_count.html(parseInt(watched_count.html())+1);
-                btn.toggleClass('btn-watched btn-not-watched');
+                btn.toggleClass('watched not-watched');
                 btn.attr('data-toggle', 'dropdown');
             },
             always: function(){
@@ -61,13 +61,13 @@ $('.season-episodes').on('click', '.btn-not-watched', function(event){
     );
 });
 
-$('.season-episodes').on('click', '.watched-episode', function(event){
+$('.season-episodes').on('click', '.watched-button', function(event){
     $(this).blur();
     var btn = $(this);
     if (btn.attr("disabled")) {
         return false;
     }
-    var watched_count = btn.parent().parent().find('.btn-watched-count');
+    var watched_count = btn.parent().parent().find('.times-watched');
     var todo = btn.attr('do');
     if ((todo == 'decr') && (parseInt(watched_count.html()) <= 1)) {
         todo = 'delete'
@@ -90,8 +90,8 @@ $('.season-episodes').on('click', '.watched-episode', function(event){
                 }
                 watched_count.html(count);
                 if (count <= 0) { 
-                    var btn_watched = btn.parent().parent().find('.btn-watched');
-                    btn_watched.toggleClass('btn-watched btn-not-watched');
+                    var btn_watched = btn.parent().parent().find('.watched');
+                    btn_watched.toggleClass('watched not-watched');
                     btn_watched.attr('data-toggle', '');
                 }
             },
