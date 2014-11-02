@@ -48,7 +48,7 @@ user=seplis
 Create a schema:
 
 ```
-CREATE schema SEPLIS;
+CREATE schema seplis;
 ```
 
 Create a database user and give it access to the schema:
