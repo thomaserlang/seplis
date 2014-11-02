@@ -227,3 +227,19 @@ class Image(base):
     source_url = Column(String(200))
     created = Column(DateTime)
     type = Column(Integer)
+
+class Play_server(base):
+    __tablename__ = 'play_servers'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    created = Column(DateTime)
+    updated = Column(DateTime)
+    user_id = Column(Integer)
+    name = Column(String(45))
+    address = Column(String(200))
+
+class Play_access(base):
+    __tablename__ = 'play_access'
+
+    play_server_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, primary_key=True)
