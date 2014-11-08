@@ -159,7 +159,7 @@ class Play_server(object):
 class Play_servers(object):
 
     @classmethod
-    def get(cls, user_id, page=1, per_page=constants.PER_PAGE):
+    def get_by_user_id(cls, user_id, page=1, per_page=constants.PER_PAGE):
         '''
 
         :param user_id: int
@@ -176,7 +176,7 @@ class Play_servers(object):
         )
         pipe.scard(name)
         server_ids, total = pipe.execute()
-        servers = cls.get_by_ids(server_ids)
+        servers = cls.get(server_ids)
         return Pagination(
             page=page,
             per_page=per_page,
@@ -185,7 +185,7 @@ class Play_servers(object):
         )
 
     @classmethod
-    def get_by_ids(cls, ids):
+    def get(cls, ids):
         pipe = database.redis.pipeline()
         for id_ in ids:
             pipe.hgetall('play_servers:{}'.format(id_))
@@ -275,7 +275,7 @@ class Play_user_access(object):
         )
         pipe.scard(name)
         server_ids, total = pipe.execute()
-        servers = Play_servers.get_by_ids(server_ids)
+        servers = Play_servers.get(server_ids)
         for server in servers:
             server.__dict__.pop('secret')
         return Pagination(

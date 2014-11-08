@@ -63,7 +63,7 @@ class Server_handler(Handler):
         self.check_user_edit(user_id)
         page = int(self.get_argument('page', 1))
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        servers = Play_servers.get(
+        servers = Play_servers.get_by_user_id(
             user_id=user_id,
             page=page,
             per_page=per_page,
