@@ -94,8 +94,20 @@ class test_play_handler(Testbase):
         self.assertEqual(response.code, 200, response.body)
         servers = utils.json_loads(response.body)
         self.assertEqual(len(servers), 2)
+        self.assertEqual(response.headers['X-Total-Count'], '2')
         self.assertEqual(servers[0]['external_id'], server1['external_id'])
         self.assertEqual(servers[1]['external_id'], server2['external_id'])
+        self.assertTrue('secret' in servers[0])
+        self.assertTrue('secret' in servers[1])
+
+        # get the servers that the user has access to
+        response = self.get('/1/users/{}/play-servers?access_to=true'.format(
+            self.current_user.id
+        ))
+        servers = utils.json_loads(response.body)
+        self.assertEqual(len(servers), 2)
+        self.assertFalse('secret' in servers[0])
+        self.assertFalse('secret' in servers[1])
 
 class test_user_access_handler(Testbase):
 
@@ -111,6 +123,52 @@ class test_user_access_handler(Testbase):
             'address': 'http://example.net',
             'secret': 'SOME SECRET',
         })
+        self.assertEqual(response.code, 201)
+        server = utils.json_loads(response.body)
+
+        # Test that only the user who created the server has access
+        response = self.get('/1/users/{}/play-servers/{}/users'.format(
+            self.current_user.id,
+            server['id'],
+        ))
+        self.assertEqual(response.code, 200, response.body)
+        users = utils.json_loads(response.body)
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0]['id'], self.current_user.id)
+
+        # Let's get the user access to the play server
+        response = self.put('/1/users/{}/play-servers/{}/users/{}'.format(
+            self.current_user.id,
+            server['id'],
+            user.id,
+        ))
+
+        # Now the user should have access
+        response = self.get('/1/users/{}/play-servers/{}/users'.format(
+            self.current_user.id,
+            server['id'],
+        ))
+        self.assertEqual(response.code, 200, response.body)
+        users = utils.json_loads(response.body)
+        self.assertEqual(len(users), 2)
+        self.assertEqual(users[1]['id'], user.id)
+
+        # Remove the user from the server access list        
+        response = self.delete('/1/users/{}/play-servers/{}/users/{}'.format(
+            self.current_user.id,
+            server['id'],
+            user.id,
+        ))
+
+        response = self.get('/1/users/{}/play-servers/{}/users'.format(
+            self.current_user.id,
+            server['id'],
+        ))
+        self.assertEqual(response.code, 200, response.body)
+        users = utils.json_loads(response.body)
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0]['id'], self.current_user.id)
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

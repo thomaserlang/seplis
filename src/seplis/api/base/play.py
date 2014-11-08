@@ -233,7 +233,8 @@ class Play_user_access(object):
 
     @classmethod
     @auto_session
-    def delete(cls, play_server_id, user_id, session=None):
+    @auto_pipe
+    def delete(cls, play_server_id, user_id, session=None, pipe=None):
         '''
 
         :param play_server_id: int
@@ -258,7 +259,8 @@ class Play_user_access(object):
         )
         return True
 
-    def get_servers(self, user_id, page=1, per_page=constants.PER_PAGE):
+    @classmethod
+    def get_servers(cls, user_id, page=1, per_page=constants.PER_PAGE):
         '''
 
         :param user_id: int

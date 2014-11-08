@@ -53,7 +53,11 @@ class Server_handler(Handler):
             server = self.get_server(id_)
             self.write_object(server)
         else:
-            self.get_servers(user_id)
+            access_to = self.get_argument('access_to', None)
+            if access_to == 'true':# get the servers that the user has access to
+                self.get_access_to_servers(user_id)
+            else:# get the users own servers
+                self.get_servers(user_id)
 
     def get_servers(self, user_id):
         self.check_user_edit(user_id)
@@ -66,11 +70,7 @@ class Server_handler(Handler):
         )
         self.write_object(servers)
 
-
-class Access_handler(Handler):
-
-    @authenticated(0)
-    def get(self, user_id):
+    def get_access_to_servers(self, user_id):
         self.check_user_edit(user_id)
         page = int(self.get_argument('page', 1))
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
@@ -80,6 +80,15 @@ class Access_handler(Handler):
             per_page=per_page,
         )
         self.write_object(servers)
+
+
+class Access_handler(Handler):
+
+    @authenticated(0)
+    def get(self, user_id, server_id):
+        self.check_user_edit(user_id)
+        users = Play_server.get_users(server_id)
+        self.write_object(users)
 
     @authenticated(0)
     def put(self, user_id, server_id, access_user_id):

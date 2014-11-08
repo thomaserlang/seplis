@@ -159,6 +159,14 @@ class Application(tornado.web.Application):
             URLSpec(
                 r'/1/users/([0-9]+)/play-servers', 
                 seplis.api.handlers.play.Server_handler
+            ),       
+            URLSpec(
+                r'/1/users/([0-9]+)/play-servers/([0-9]+)/users', 
+                seplis.api.handlers.play.Access_handler
+            ),     
+            URLSpec(
+                r'/1/users/([0-9]+)/play-servers/([0-9]+)/users/([0-9]+)', 
+                seplis.api.handlers.play.Access_handler
             ),
            
             URLSpec(
