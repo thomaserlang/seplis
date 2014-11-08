@@ -2,11 +2,12 @@
 import json
 import nose
 from seplis.api.testbase import Testbase
+from seplis.api.base.user import User
 from seplis import utils
 
 class test_play_handler(Testbase):
 
-    def test(self):
+    def test_single(self):
         self.login(0)
 
         # create a new play server
@@ -68,6 +69,48 @@ class test_play_handler(Testbase):
             server['id']
         ))
         self.assertEqual(response.code, 404)
+
+    def test_multiple(self):
+        self.login(0) 
+        response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
+            'name': 'Thomas',
+            'address': 'http://example.net',
+            'secret': 'SOME SECRET',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        server1 = utils.json_loads(response.body)
+        response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
+            'name': 'Thomas 2',
+            'address': 'http://example.net',
+            'secret': 'SOME SECRET',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        server2 = utils.json_loads(response.body)
+
+        # get the servers
+        response = self.get('/1/users/{}/play-servers'.format(
+            self.current_user.id
+        ))
+        self.assertEqual(response.code, 200, response.body)
+        servers = utils.json_loads(response.body)
+        self.assertEqual(len(servers), 2)
+        self.assertEqual(servers[0]['external_id'], server1['external_id'])
+        self.assertEqual(servers[1]['external_id'], server2['external_id'])
+
+class test_user_access_handler(Testbase):
+
+    def test(self):
+        self.login(3)
+        user = User.new(
+            name='testuser2',
+            email='test2@example.com',
+            level=0,
+        )
+        response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
+            'name': 'Thomas',
+            'address': 'http://example.net',
+            'secret': 'SOME SECRET',
+        })
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

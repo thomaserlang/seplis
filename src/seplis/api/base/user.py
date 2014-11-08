@@ -161,12 +161,8 @@ class Users(object):
         pipe = database.redis.pipeline()
         for id_ in ids:            
             pipe.hgetall('users:{}'.format(id_))
-        result = pipe.execute()
-        users = []
-        for user in result:
-            users.append(
-                User._format_from_redis(user)
-            )
+        users = [User._format_from_redis(user) for \
+            user in pipe.execute()]
         return users
 
 class Token(object):

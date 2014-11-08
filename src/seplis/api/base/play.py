@@ -1,7 +1,9 @@
 import uuid
-from seplis.api import models
+from seplis.api import models, constants
 from seplis.decorators import auto_session, auto_pipe
 from seplis.connections import database
+from seplis.api.base.pagination import Pagination
+from seplis.api.base.user import Users
 from datetime import datetime
 
 class Play_server(object):
@@ -48,7 +50,9 @@ class Play_server(object):
 
     @classmethod
     @auto_session
-    def new(cls, user_id, name, address, secret, session=None):
+    @auto_pipe
+    def new(cls, user_id, name, address, secret, 
+        session=None, pipe=None):
         server = models.Play_server(
             user_id=int(user_id),
             name=name,
@@ -60,7 +64,12 @@ class Play_server(object):
         session.add(server)
         session.flush()
         server = cls._format_from_row(server)
-        server.cache()
+        server.cache(pipe=pipe)
+        Play_user_access.add(
+            play_server_id=server.id,
+            user_id=user_id,
+            pipe=pipe,
+        )
         return server
 
     @auto_session
@@ -122,6 +131,66 @@ class Play_server(object):
             'play_servers:external_id:{}'.format(self.external_id),
             self.id,
         )
+        pipe.sadd(
+            'users:{}:play_servers'.format(self.user_id),
+            self.id,
+        )
+
+    @classmethod
+    def get_users(self, id_, page=1, per_page=constants.PER_PAGE):
+        name = 'play_server_user_access:{}'.format(id_)
+
+        pipe = database.redis.pipeline()
+        pipe.sort(
+            name=name,
+            start=(int(page)-1)*per_page,
+            num=per_page,
+        )
+        pipe.scard(name)
+        user_ids, total = pipe.execute()
+        users = Users.get(user_ids)
+        return Pagination(
+            page=page,
+            per_page=per_page,
+            total=total,
+            records=users,
+        )
+
+class Play_servers(object):
+
+    @classmethod
+    def get(cls, user_id, page=1, per_page=constants.PER_PAGE):
+        '''
+
+        :param user_id: int
+        :param page: int
+        :params per_page: int
+        :returns: `Pagination()`
+        '''
+        pipe = database.redis.pipeline()
+        name = 'users:{}:play_servers'.format(user_id)
+        pipe.sort(
+            name=name,
+            start=(int(page)-1)*per_page,
+            num=per_page,
+        )
+        pipe.scard(name)
+        server_ids, total = pipe.execute()
+        servers = cls.get_by_ids(server_ids)
+        return Pagination(
+            page=page,
+            per_page=per_page,
+            total=total,
+            records=servers,
+        )
+
+    @classmethod
+    def get_by_ids(cls, ids):
+        pipe = database.redis.pipeline()
+        for id_ in ids:
+            pipe.hgetall('play_servers:{}'.format(id_))
+        return [Play_server._format_from_redis(server) \
+            for server in pipe.execute()]
 
 class Play_user_access(object):
 
@@ -129,6 +198,11 @@ class Play_user_access(object):
     @auto_session
     @auto_pipe
     def add(cls, play_server_id, user_id, session=None, pipe=None):
+        '''
+
+        :param play_server_id: int
+        :param user_id: int
+        '''
         pa = models.Play_access(
             play_server_id=play_server_id,
             user_id=user_id,
@@ -143,6 +217,11 @@ class Play_user_access(object):
     @classmethod
     @auto_pipe
     def cache(cls, play_server_id, user_id, pipe):
+        '''
+
+        :param play_server_id: int
+        :param user_id: int
+        '''
         pipe.sadd(
             'play_server_user_access:{}'.format(play_server_id), 
             user_id
@@ -157,6 +236,8 @@ class Play_user_access(object):
     def delete(cls, play_server_id, user_id, session=None):
         '''
 
+        :param play_server_id: int
+        :param user_id: int
         :returns: bool
         '''
         deleted = session.query(
@@ -176,3 +257,28 @@ class Play_user_access(object):
             play_server_id,
         )
         return True
+
+    def get_servers(self, user_id, page=1, per_page=constants.PER_PAGE):
+        '''
+
+        :param user_id: int
+        :returns: `Pagination()`
+        '''
+        name = 'users:{}:play_server_access'.format(user_id)
+        pipe = database.redis.pipeline()
+        pipe.sort(
+            name=name,
+            start=(int(page)-1)*per_page,
+            num=per_page,
+        )
+        pipe.scard(name)
+        server_ids, total = pipe.execute()
+        servers = Play_servers.get_by_ids(server_ids)
+        for server in servers:
+            server.__dict__.pop('secret')
+        return Pagination(
+            page=page,
+            per_page=per_page,
+            total=total,
+            records=servers,
+        )
