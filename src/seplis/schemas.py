@@ -129,3 +129,8 @@ Image = {
     'source_url': All(str, Length(min=1, max=200)),
     'type': All(int, image_type()),
 }
+
+Play_server = {
+    'name': All(str, Length(min=1, max=45)),
+    'address': All(str, Length(min=1, max=200)),
+}

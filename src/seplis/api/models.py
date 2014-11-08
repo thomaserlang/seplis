@@ -237,6 +237,7 @@ class Play_server(base):
     user_id = Column(Integer)
     name = Column(String(45))
     address = Column(String(200))
+    external_id = Column(String(36))
 
 class Play_access(base):
     __tablename__ = 'play_access'

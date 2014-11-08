@@ -198,6 +198,11 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
     def check_edit_another_user_right(self):
         pass
 
+    def check_user_edit(self, user_id):
+        if int(user_id) != self.current_user.id:
+            self.check_edit_another_user_right()
+        return True
+
     @authenticated(constants.LEVEL_USER)
     def is_logged_in(self):
         pass

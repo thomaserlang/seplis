@@ -163,5 +163,19 @@ class Rebuild_cache(object):
             })
         helpers.bulk(database.es, to_es)
 
+    @auto_session
+    @auto_pipe
+    def rebuild_play_servers(self, session, pipe):
+        from seplis.api.base.play import Play_server, Play_user_access
+        for server in session.query(models.Play_server).yield_per(10000):
+            s = Play_server._format_from_row(server)
+            s.cache(pipe=pipe)
+        for user_access in session.query(models.Play_user_access).yield_per(10000):
+            Play_user_access.cache(
+                play_server_id=user_access.play_server_id,
+                user_id=user_access.user_id,
+                pipe=pipe,                
+            )
+
 def main():
     Rebuild_cache().rebuild()

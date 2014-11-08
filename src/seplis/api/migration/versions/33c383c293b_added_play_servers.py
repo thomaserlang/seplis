@@ -31,6 +31,7 @@ def upgrade():
         ),
         sa.Column('name', sa.String(45)),
         sa.Column('address', sa.String(200)),
+        sa.Column('external_id', sa.String(36), index=True),
     )
 
     op.create_table(
@@ -43,7 +44,7 @@ def upgrade():
                 onupdate='cascade', 
                 ondelete='cascade',
             ),
-            primary=True,
+            primary_key=True,
         ),
         sa.Column(
             'user_id', 
@@ -59,4 +60,5 @@ def upgrade():
 
 
 def downgrade():
-    raise NotImplemented()
+    op.drop_table('play_access')
+    op.drop_table('play_servers')

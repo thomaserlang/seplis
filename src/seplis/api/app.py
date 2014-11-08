@@ -10,6 +10,7 @@ import seplis.api.handlers.app
 import seplis.api.handlers.tag
 import seplis.api.handlers.episode
 import seplis.api.handlers.image
+import seplis.api.handlers.play
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -152,12 +153,12 @@ class Application(tornado.web.Application):
             ),
 
             URLSpec(
-                r'/1/users/([0-9]+)/libraries/shows/([0-9]+)/episodes/([0-9]+)', 
-                seplis.api.handlers.episode.Watched_handler
+                r'/1/users/([0-9]+)/play-servers/([0-9]+)', 
+                seplis.api.handlers.play.Server_handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/libraries/shows/([0-9]+)', 
-                seplis.api.handlers.episode.Watched_handler
+                r'/1/users/([0-9]+)/play-servers', 
+                seplis.api.handlers.play.Server_handler
             ),
            
             URLSpec(

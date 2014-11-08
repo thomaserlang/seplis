@@ -30,6 +30,16 @@ class Not_found(API_exception):
             errors=None,
         )
 
+class Forbidden(API_exception):
+
+    def __init__(self, message=None):
+        API_exception.__init__(self,
+            status_code=403,
+            code=501, 
+            message=message or 'forbidden',
+            errors=None,
+        )
+
 class Wrong_email_or_password_exception(API_exception):
 
     def __init__(self):

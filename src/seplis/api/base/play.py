@@ -1,12 +1,13 @@
+import uuid
 from seplis.api import models
 from seplis.decorators import auto_session, auto_pipe
-from seplis import connections
+from seplis.connections import database
 from datetime import datetime
 
 class Play_server(object):
 
     def __init__(self, id, created, updated, user_id, name,
-        address):
+        address, external_id):
         '''
 
         :param id: int
@@ -15,6 +16,7 @@ class Play_server(object):
         :param user_id: int
         :param name: str
         :param address: str
+        :param external_id: str
         '''
         self.id = id
         self.created = created
@@ -22,6 +24,10 @@ class Play_server(object):
         self.user_id = user_id
         self.name = name
         self.address = address
+        self.external_id = external_id
+
+    def to_dict(self):
+        return self.__dict__
 
     @classmethod
     def _format_from_row(cls, row):
@@ -34,20 +40,24 @@ class Play_server(object):
             user_id=row.user_id,
             name=row.name,
             address=row.address,
+            external_id=row.external_id,
         )
 
     @classmethod
     @auto_session
     def new(cls, user_id, name, address, session=None):
         server = models.Play_server(
-            user_id=user_id,
+            user_id=int(user_id),
             name=name,
             address=address,
             created=datetime.utcnow(),
+            external_id=str(uuid.uuid4()),
         )
         session.add(server)
         session.flush()
-        return cls._format_from_row(server)
+        server = cls._format_from_row(server)
+        server.cache()
+        return server
 
     @auto_session
     @auto_pipe
@@ -76,13 +86,16 @@ class Play_server(object):
 
     @classmethod
     def _format_from_redis(cls, server):
+        if not server:
+            return
         ps = Play_server(
-            id=int(server.id),
-            created=server.created,
-            edited=server.edited,
-            user_id=int(server.user_id),
-            name=server.name,
-            address=server.address,
+            id=int(server['id']),
+            created=server['created'],
+            updated=server['updated'] if server['updated'] != 'None' else None,
+            user_id=int(server['user_id']),
+            name=server['name'],
+            address=server['address'],
+            external_id=server['external_id'],
         )
         return ps
 
@@ -99,6 +112,10 @@ class Play_server(object):
                 key=key,
                 value=val,
             )
+        pipe.set(
+            'play_servers:external_id:{}'.format(self.external_id),
+            self.id,
+        )
 
 class Play_user_access(object):
 
@@ -111,6 +128,15 @@ class Play_user_access(object):
             user_id=user_id,
         )
         session.merge(pa)
+        cls.cache(
+            play_server_id=play_server_id,
+            user_id=user_id,
+            pipe=pipe,
+        )
+
+    @classmethod
+    @auto_pipe
+    def cache(cls, play_server_id, user_id, pipe):
         pipe.sadd(
             'play_server_user_access:{}'.format(play_server_id), 
             user_id
