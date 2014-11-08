@@ -284,3 +284,15 @@ class Play_user_access(object):
             total=total,
             records=servers,
         )
+
+    @classmethod
+    def has_access(cls, play_server_id, user_id):     
+        '''
+
+        :param play_server_id: int
+        :param user_id: int
+        :returns: bool
+        '''
+        return database.redis.sismember('play_server_user_access:{}'.format(
+            play_server_id
+        ), user_id)
