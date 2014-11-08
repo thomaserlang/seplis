@@ -14,6 +14,7 @@ class Server_handler(base.Handler):
             user_id=user_id,
             name=data['name'],
             address=data['address'],
+            secret=data['secret'],
         )
         self.set_status(201)
         self.write_object(server)
@@ -30,6 +31,8 @@ class Server_handler(base.Handler):
             server.name = data['name']
         if 'address' in data:
             server.address = data['address']
+        if 'secret' in data:
+            server.secret = data['secret']
         server.save()
         self.write_object(server)
 

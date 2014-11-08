@@ -133,4 +133,5 @@ Image = {
 Play_server = {
     'name': All(str, Length(min=1, max=45)),
     'address': All(str, Length(min=1, max=200)),
+    'secret': All(str, Length(min=1, max=200)),
 }

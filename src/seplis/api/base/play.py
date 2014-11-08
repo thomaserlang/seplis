@@ -7,7 +7,7 @@ from datetime import datetime
 class Play_server(object):
 
     def __init__(self, id, created, updated, user_id, name,
-        address, external_id):
+        address, external_id, secret):
         '''
 
         :param id: int
@@ -17,6 +17,7 @@ class Play_server(object):
         :param name: str
         :param address: str
         :param external_id: str
+        :param secret: str
         '''
         self.id = id
         self.created = created
@@ -25,6 +26,7 @@ class Play_server(object):
         self.name = name
         self.address = address
         self.external_id = external_id
+        self.secret = secret
 
     def to_dict(self):
         return self.__dict__
@@ -41,17 +43,19 @@ class Play_server(object):
             name=row.name,
             address=row.address,
             external_id=row.external_id,
+            secret=row.secret,
         )
 
     @classmethod
     @auto_session
-    def new(cls, user_id, name, address, session=None):
+    def new(cls, user_id, name, address, secret, session=None):
         server = models.Play_server(
             user_id=int(user_id),
             name=name,
             address=address,
             created=datetime.utcnow(),
             external_id=str(uuid.uuid4()),
+            secret=secret,
         )
         session.add(server)
         session.flush()
@@ -70,6 +74,7 @@ class Play_server(object):
             'user_id': self.user_id,
             'name': self.name,
             'address': self.address,
+            'secret': self.secret,
         })
         self.cache(pipe=pipe)
 
@@ -96,6 +101,7 @@ class Play_server(object):
             name=server['name'],
             address=server['address'],
             external_id=server['external_id'],
+            secret=server['secret'],
         )
         return ps
 
