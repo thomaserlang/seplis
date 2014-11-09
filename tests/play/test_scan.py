@@ -56,7 +56,7 @@ class test_scan(unittest.TestCase):
         self.assertTrue(
             isinstance(info, Parsed_episode_season),
         )
-        self.assertEqual(info.show_title, 'Alpha.House')
+        self.assertEqual(info.show_title, 'Alpha House')
         self.assertEqual(info.season, 2)
         self.assertEqual(info.episode, 1)
 
@@ -77,7 +77,7 @@ class test_scan(unittest.TestCase):
         self.assertTrue(
             isinstance(info, Parsed_episode_airdate),
         )
-        self.assertEqual(info.show_title, 'The.Daily.Show')
+        self.assertEqual(info.show_title, 'The Daily Show')
         self.assertEqual(info.airdate, '2014-06-03')
 
 if __name__ == '__main__':

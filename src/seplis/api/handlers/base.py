@@ -83,13 +83,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
 
     def write_pagination(self, pagination):
         links = pagination.links_header_format(
-            urljoin(
-                '%s://%s'.format(
-                    self.request.protocol,
-                    self.request.host,
-                ), 
-                self.request.path
-            ), 
+            self.request.path, 
             self.request.query_arguments,
         )
         if links:
