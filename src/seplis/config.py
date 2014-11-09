@@ -13,8 +13,7 @@ config = {
             'port': 6379,
         },
         'elasticsearch': 'localhost:9200',
-        'storitch': None,        
-        'url': 'https://api.seplis.net',
+        'storitch': None,
         'port': 8002,
         'max_workers': 5,
     },
@@ -35,6 +34,7 @@ config = {
         'thetvdb': None,
         'id': 'CHANGE_ME',
         'validate_cert': True,
+        'api_url': 'https://api.seplis.net',
     },
     'play': {
         'database': 'sqlite:///seplis-play.db',

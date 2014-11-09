@@ -7,7 +7,7 @@ with open('/home/te/oldseplis.json', 'r') as f:
     oldids = json.loads(f.read())
 
 client = Client(
-    url=config['api']['url'], 
+    url=config['client']['api_url'], 
     access_token=config['client']['access_token'],
 )
 i = 0

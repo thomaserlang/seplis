@@ -71,7 +71,7 @@ def update_shows(config):
     logger.set_logger('indexer_update_shows.log', to_sentry=True)
     try:
         indexer = seplis.Show_indexer(
-            seplis.config['api']['url'],
+            seplis.config['client']['api_url'],
             access_token=seplis.config['client']['access_token'],
         )
         indexer.update()
@@ -86,7 +86,7 @@ def update_show(config, show_id):
     logger.set_logger('indexer_update_show.log', to_sentry=True)
     try:
         indexer = seplis.Show_indexer(
-            seplis.config['api']['url'],
+            seplis.config['client']['api_url'],
             access_token=seplis.config['client']['access_token'],
         )
         indexer.update_show(show_id)
@@ -100,7 +100,7 @@ def update_shows_all(config, from_id):
     seplis.config_load(config)
     logger.set_logger('indexer_update_shows_all.log', to_sentry=True)
     indexer = seplis.Show_indexer(
-        url=seplis.config['api']['url'], 
+        url=seplis.config['client']['api_url'], 
         access_token=seplis.config['client']['access_token']
     )
     try:

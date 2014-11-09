@@ -11,7 +11,7 @@ class Handler_unauthenticated(web.RequestHandler):
         super().initialize()
         self.xsrf_token        
         self.client = Async_client(
-            url=config['api']['url'],
+            url=config['client']['api_url'],
             client_id=config['client']['id'],
         )
 

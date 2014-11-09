@@ -2,7 +2,7 @@ from seplis import Client, config, config_load
 config_load()
 
 client = Client(
-    url=config['api']['url'], 
+    url=config['client']['api_url'], 
     access_token=config['client']['access_token']
 )
 

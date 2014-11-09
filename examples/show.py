@@ -2,7 +2,7 @@ import seplis
 seplis.config_load()
 
 indexer = seplis.Show_indexer(
-    url=seplis.config['api']['url'], 
+    url=seplis.config['client']['api_url'], 
     access_token=seplis.config['client']['access_token']
 )
 
