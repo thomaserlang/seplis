@@ -5,7 +5,7 @@ import time
 from tornado.concurrent import run_on_executor
 from tornado.web import HTTPError
 from seplis.api.handlers import base
-from seplis.connections import database
+from seplis.api.connections import database
 from seplis.api import models
 from seplis.api.base.user import User, Token
 from seplis.api.base.app import App

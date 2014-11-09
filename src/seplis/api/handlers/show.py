@@ -7,7 +7,7 @@ from seplis.api.base.pagination import Pagination
 from seplis.api.base.show import Show, Shows
 from seplis.api.base.episode import Episode, Episodes, Watching
 from seplis.api.base.description import Description
-from seplis.connections import database
+from seplis.api.connections import database
 from tornado.httpclient import HTTPError
 from tornado import gen, concurrent
 from datetime import datetime

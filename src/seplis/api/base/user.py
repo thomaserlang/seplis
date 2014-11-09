@@ -1,12 +1,12 @@
 import pickle
 import hashlib
-from seplis.decorators import new_session, auto_pipe
+from seplis.api.decorators import new_session, auto_pipe
 from seplis.api import models, constants
 from datetime import datetime
 from passlib.hash import pbkdf2_sha256
 from seplis.utils import random_key
 from datetime import datetime, timedelta
-from seplis.connections import database
+from seplis.api.connections import database
 
 class User(object):
 

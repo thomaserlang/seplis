@@ -13,8 +13,8 @@ from datetime import datetime
 from raven.contrib.tornado import SentryMixin
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from seplis import utils, schemas
-from seplis.decorators import new_session
-from seplis.connections import database
+from seplis.api.decorators import new_session
+from seplis.api.connections import database
 from seplis.config import config
 from seplis.api import models, exceptions, constants
 from seplis.api.base.user import User

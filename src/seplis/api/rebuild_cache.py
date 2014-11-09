@@ -1,10 +1,9 @@
 import sys
 import inspect
 from seplis import utils
-from seplis.api import models
-from seplis.api import elasticcreate
-from seplis.connections import database, Database
-from seplis.decorators import new_session, auto_pipe, auto_session
+from seplis.api import models, elasticcreate
+from seplis.api.connections import database, Database
+from seplis.api.decorators import new_session, auto_pipe, auto_session
 from sqlalchemy import func, or_
 from datetime import datetime
 from elasticsearch import helpers

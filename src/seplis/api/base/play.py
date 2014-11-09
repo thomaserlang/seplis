@@ -1,7 +1,7 @@
 import uuid
 from seplis.api import models, constants
-from seplis.decorators import auto_session, auto_pipe
-from seplis.connections import database
+from seplis.api.decorators import auto_session, auto_pipe
+from seplis.api.connections import database
 from seplis.api.base.pagination import Pagination
 from seplis.api.base.user import Users
 from datetime import datetime

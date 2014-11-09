@@ -1,6 +1,6 @@
 import logging
-from seplis.decorators import new_session, auto_session, auto_pipe
-from seplis.connections import database
+from seplis.api.decorators import new_session, auto_session, auto_pipe
+from seplis.api.connections import database
 from seplis.api.base.pagination import Pagination
 from seplis.api.base.description import Description
 from seplis.api.base.show import Show

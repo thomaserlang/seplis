@@ -1,6 +1,6 @@
 import seplis.api.handlers.base
 import logging
-from seplis.decorators import new_session
+from seplis.api.decorators import new_session
 from seplis.api import models
 from seplis.schemas import App_schema
 from datetime import datetime

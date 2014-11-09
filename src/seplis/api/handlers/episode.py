@@ -5,10 +5,10 @@ from seplis.api import constants,  exceptions
 from seplis import schemas, utils
 from seplis.api.decorators import authenticated
 from seplis.api.base.episode import Episode, Episodes, Watched
-from seplis.decorators import auto_session, auto_pipe
+from seplis.api.decorators import auto_session, auto_pipe
 from seplis.config import config
 from seplis.api.base.pagination import Pagination
-from seplis.connections import database
+from seplis.api.connections import database
 from seplis.api.base.play import Play_user_access
 from datetime import datetime, timedelta
 from tornado import gen, web

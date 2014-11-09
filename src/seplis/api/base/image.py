@@ -1,6 +1,6 @@
-from seplis.decorators import auto_session, auto_pipe
+from seplis.api.decorators import auto_session, auto_pipe
 from seplis.api import models, exceptions
-from seplis.connections import database
+from seplis.api.connections import database
 from seplis import utils
 from datetime import datetime
 

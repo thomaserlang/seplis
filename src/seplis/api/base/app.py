@@ -1,4 +1,4 @@
-from seplis.decorators import new_session
+from seplis.api.decorators import new_session
 from seplis.api import models
 from datetime import datetime
 from seplis.utils import random_key

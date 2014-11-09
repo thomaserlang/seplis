@@ -2,7 +2,7 @@ from seplis import config_load, config
 from rq import Connection, Queue, Worker
 
 def main():
-    from seplis.connections import database     
+    from seplis.api.connections import database     
     with Connection(connection=database.queue_redis):
         w = Worker(database.queue)
         if config['sentry_dsn']:

@@ -1,5 +1,5 @@
 from seplis.config import config
-from seplis.connections import database
+from seplis.api.connections import database
 
 def create_indices():
     database.es.indices.delete('shows', ignore=404)

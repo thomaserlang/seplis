@@ -5,8 +5,8 @@ from seplis.api.testbase import Testbase
 from datetime import datetime, date, timedelta
 from seplis.utils import json_dumps, json_loads
 from seplis import utils
-from seplis.decorators import new_session
-from seplis.connections import database
+from seplis.api.decorators import new_session
+from seplis.api.connections import database
 from seplis.config import config
 from seplis.api import constants
 

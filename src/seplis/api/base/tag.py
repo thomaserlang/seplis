@@ -3,8 +3,8 @@ import logging
 from seplis import utils
 from seplis.api import models, constants
 from seplis.api.base.pagination import Pagination
-from seplis.decorators import new_session
-from seplis.connections import database
+from seplis.api.decorators import new_session
+from seplis.api.connections import database
 
 class Tag(object):
 

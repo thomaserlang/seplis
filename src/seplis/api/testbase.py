@@ -5,7 +5,7 @@ from seplis.utils import json_dumps, json_loads
 from urllib.parse import urlencode
 from tornado.httpclient import HTTPRequest
 from tornado.testing import AsyncHTTPTestCase
-from seplis.connections import database
+from seplis.api.connections import database
 from seplis.logger import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

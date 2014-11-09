@@ -4,7 +4,7 @@ import nose
 from seplis.api.testbase import Testbase
 from seplis import utils, config
 from seplis.api import constants, models
-from seplis.decorators import new_session
+from seplis.api.decorators import new_session
 from datetime import datetime, date
 import time
 
