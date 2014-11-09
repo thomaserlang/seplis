@@ -98,7 +98,7 @@ class test_show_image(Testbase):
 
         # get all the images        
         self.get('http://{}/images/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
         response = self.get('/1/shows/1/images?q=')
         self.assertEqual(response.code, 200, response.body)

@@ -29,7 +29,7 @@ class Testbase(AsyncHTTPTestCase):
         config['logging']['path'] = None
         logger.set_logger('test.log')
         engine = create_engine(
-            config['database'], 
+            config['api']['database'], 
             convert_unicode=True, 
             echo=False, 
             connect_args={'charset': 'utf8'},
@@ -38,13 +38,13 @@ class Testbase(AsyncHTTPTestCase):
         self.trans = connection.begin()
         database.session = sessionmaker(bind=connection)
         database.redis = redis.StrictRedis(
-            config['redis']['ip'], 
-            port=config['redis']['port'], 
+            config['api']['redis']['ip'], 
+            port=config['api']['redis']['port'], 
             db=10,
             decode_responses=True,
         )
         database.redis.flushdb()
-        database.es = Elasticsearch(config['elasticsearch'])
+        database.es = Elasticsearch(config['api']['elasticsearch'])
         elasticcreate.create_indices()
 
     def tearDown(self):
@@ -118,6 +118,6 @@ class Testbase(AsyncHTTPTestCase):
         show = json_loads(response.body)
         self.assertTrue(show['id'] > 0)        
         self.get('http://{}/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
         return show['id']

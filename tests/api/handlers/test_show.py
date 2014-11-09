@@ -278,7 +278,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200, response.body)
 
         self.get('http://{}/episodes/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
         response = self.get('/1/shows/{}/episodes'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
@@ -305,7 +305,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200)
 
         self.get('http://{}/shows/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
  
         response = self.get('/1/shows', {
@@ -471,7 +471,7 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         show_id = show['id']
         self.get('http://{}/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
 
         self._test_fan_count(0)

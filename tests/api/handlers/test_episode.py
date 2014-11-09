@@ -74,7 +74,7 @@ class Test_episode(Testbase):
 
         # test search
         self.get('http://{}/episodes/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
         response = self.get('/1/shows/{}/episodes'.format(show_id), {
             'q': 'air_date:2014-01-01',
@@ -325,7 +325,7 @@ class Test_air_dates(Testbase):
         self.assertEqual(response.code, 201)
         show_2 = utils.json_loads(response.body)        
         self.get('http://{}/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
 
         # The user must be a fan of the show before they should show up
@@ -344,7 +344,7 @@ class Test_air_dates(Testbase):
 
         # Let's get our air dates calendar.        
         self.get('http://{}/_refresh'.format(
-            config['elasticsearch']
+            config['api']['elasticsearch']
         ))
         response = self.get('/1/users/{}/air-dates?per_page=5'.format(self.current_user.id))
         self.assertEqual(response.code, 200)

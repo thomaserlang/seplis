@@ -111,7 +111,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         try:
             response = yield http_client.fetch(
                 'http://{}{}?{}'.format(
-                    config['elasticsearch'],
+                    config['api']['elasticsearch'],
                     url,
                     utils.url_encode_tornado_arguments(query) \
                         if query else '',

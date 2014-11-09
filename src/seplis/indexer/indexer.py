@@ -145,9 +145,9 @@ class Show_indexer(Client):
                 timeout=120
             )
         # show images
-        if update_images and not config['storitch']:
+        if update_images and not config['api']['storitch']:
             logging.warning('Missing url for storitch in the config')
-        if update_images and config['storitch']:
+        if update_images and config['api']['storitch']:
             images = self._update_images(show)
             show_data['images'] = images
         return show_data

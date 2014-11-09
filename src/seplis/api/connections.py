@@ -8,7 +8,7 @@ from rq import Queue
 class Database:
     def __init__(self):
         self.engine = create_engine(
-            config['database'],
+            config['api']['database'],
             convert_unicode=True,
             echo=False,
             pool_recycle=3600,
@@ -19,19 +19,19 @@ class Database:
             bind=self.engine,
         )
         self.redis = redis.StrictRedis(
-            config['redis']['ip'], 
-            port=config['redis']['port'], 
+            config['api']['redis']['ip'], 
+            port=config['api']['redis']['port'], 
             db=0,
             decode_responses=True,
         )
         self.queue_redis = redis.StrictRedis(
-            config['redis']['ip'], 
-            port=config['redis']['port'], 
+            config['api']['redis']['ip'], 
+            port=config['api']['redis']['port'], 
             db=1,
         )
         self.queue = Queue(connection=self.queue_redis)
         self.es = Elasticsearch(
-            config['elasticsearch'],
+            config['api']['elasticsearch'],
         )
 
 database = Database()

@@ -8,7 +8,7 @@ from alembic import command
 def get_config():
     cfg = alembic.config.Config(os.path.dirname(os.path.abspath(__file__))+'/alembic.ini')
     cfg.set_main_option('script_location', 'seplis.api:migration')
-    cfg.set_main_option('url', config['database'])
+    cfg.set_main_option('url', config['api']['database'])
     return cfg
 
 def upgrade():
