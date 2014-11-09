@@ -7,14 +7,17 @@ from seplis import config_load, config
 from seplis.play.scan import Play_scan, parse_episode, \
     Parsed_episode_season, Parsed_episode_airdate, \
     Parsed_episode_number
+from seplis.play import models
 
 class test_scan(unittest.TestCase):
 
     def setUp(self):        
         config_load()
         config['logging']['path'] = None
-        logger.set_logger('test-play.log')
-
+        config['play']['database'] = 'sqlite://'# memory db
+        from seplis.play.connections import database
+        from seplis.play.decorators import new_session
+        models.base.metadata.create_all(database.engine)
         self.scanner = Play_scan(
             '/', 
             type_='shows',

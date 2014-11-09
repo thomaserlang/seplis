@@ -15,8 +15,20 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    pass
+    op.create_table('episodes', 
+        sa.Column('show_id', sa.Integer, primary_key=True),
+        sa.Column('number', sa.Integer, primary_key=True),
+        sa.Column('path', sa.Text),
+        sa.Column('metadata', sa.Text),
+        sa.Column('file_last_changed', sa.DateTime),
+    )
 
+    op.create_table('show_id_lookup', 
+        sa.Column('filename_title', sa.String(200), unique=True),
+        sa.Column('title', sa.String(200)),
+        sa.Column('show_id', sa.Integer),
+        sa.Column('updated', sa.DateTime),
+    )
 
 def downgrade():
-    pass
+    raise NotImplemented()
