@@ -85,7 +85,7 @@ sudo chown -R seplis:seplis /var/log/seplis
 ```
     
 
-Add the config to `/etc/seplis_conf.yaml`. Example:
+Add the config to `/etc/seplis.yaml`. Example:
 
 ```yml
 web:
@@ -93,16 +93,16 @@ web:
     cookie_secret: CHANGE ME
 api:
     url: http://api.example.net
-database: mysql+pymysql://seplis:mypass@127.0.0.1/seplis
-redis:
-    ip: localhost
-    port: 6379
+    elasticsearch: localhost:9200
+    database: mysql+pymysql://seplis:mypass@127.0.0.1/seplis
+    redis:
+        ip: localhost
+        port: 6379
 logging:
     level: info
     path: /var/log/seplis
 client:
     id: client id
-elasticsearch: localhost:9200
 ```
     
 Upgrade the database:
