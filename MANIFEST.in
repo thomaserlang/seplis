@@ -1,6 +1,6 @@
-include setup.py MANIFEST.in ./src/seplis/api/alembic.ini ./src/seplis/play/alembic.ini ./requirements.txt
-recursive-include ./src/seplis/web/templates *
-recursive-include ./src/seplis/web/static *
-recursive-include ./src/seplis/api/migration *
-recursive-include ./src/seplis/play/migration *
+include setup.py MANIFEST.in src/seplis/api/alembic.ini src/seplis/play/alembic.ini requirements.txt
+recursive-include src/seplis/web/templates *
+recursive-include src/seplis/web/static *
+recursive-include src/seplis/api/migration *
+recursive-include src/seplis/play/migration *
 global-exclude *
