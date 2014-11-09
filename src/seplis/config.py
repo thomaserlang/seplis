@@ -34,6 +34,7 @@ config = {
         'access_token': None,
         'thetvdb': None,
         'id': 'CHANGE_ME',
+        'validate_cert': True,
     },
     'play': {
         'database': 'sqlite:///seplis-play.db',

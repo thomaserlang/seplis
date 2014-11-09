@@ -2,7 +2,7 @@ import logging
 import json
 from tornado import httpclient, gen, ioloop, web
 from urllib.parse import urljoin, urlencode
-from seplis import utils
+from seplis import utils, config
 from functools import partial
 
 TIMEOUT = 60 # seconds
@@ -116,6 +116,7 @@ class Async_client(object):
                 headers=headers,
                 connect_timeout=timeout,
                 request_timeout=timeout,
+                validate_cert=config['client']['validate_cert'],
             ))
         except httpclient.HTTPError as e:
             response = e.response
