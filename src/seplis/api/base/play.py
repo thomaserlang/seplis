@@ -276,8 +276,6 @@ class Play_user_access(object):
         pipe.scard(name)
         server_ids, total = pipe.execute()
         servers = Play_servers.get(server_ids)
-        for server in servers:
-            server.__dict__.pop('secret')
         return Pagination(
             page=page,
             per_page=per_page,

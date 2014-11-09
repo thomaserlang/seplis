@@ -26,7 +26,9 @@ class JsonEncoder(json.JSONEncoder):
         if isinstance(value, set):
             return list(value)
         if hasattr(value, 'to_dict'):
-            return value.to_dict()
+            return value.to_dict()    
+        if isinstance(value, bytes):
+            return value.decode('utf-8')
         return super(JsonEncoder, self).default(value)
 
 def _iso_datetime(value):

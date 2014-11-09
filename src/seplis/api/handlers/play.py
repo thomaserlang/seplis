@@ -79,6 +79,8 @@ class Server_handler(Handler):
             page=page,
             per_page=per_page,
         )
+        for server in servers.records:
+            server.__dict__.pop('secret')
         self.write_object(servers)
 
 

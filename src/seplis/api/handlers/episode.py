@@ -9,10 +9,9 @@ from seplis.decorators import auto_session, auto_pipe
 from seplis.config import config
 from seplis.api.base.pagination import Pagination
 from seplis.connections import database
+from seplis.api.base.play import Play_user_access
 from datetime import datetime, timedelta
-from sqlalchemy import asc, desc
-from tornado.httpclient import AsyncHTTPClient, HTTPError
-from tornado import gen
+from tornado import gen, web
 from tornado.concurrent import run_on_executor
 from collections import OrderedDict
 
@@ -285,3 +284,39 @@ class Air_dates_handler(base.Handler):
                 }
             })
         return should_filter
+
+
+class Play_servers_handler(base.Handler):
+
+    @authenticated(0)
+    @gen.coroutine
+    def get(self, show_id, number):
+        page = int(self.get_argument('page', 1))
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        servers = Play_user_access.get_servers(
+            user_id=self.current_user.id,
+            page=page,
+            per_page=per_page,
+        )
+        servers.records = yield self.get_play_ids(
+            show_id,
+            number,
+            servers.records,
+        )
+        self.write_object(servers)
+
+    @run_on_executor
+    def get_play_ids(self, show_id, number, servers):
+        results = []
+        for server in servers:
+            results.append({
+                'play_id': web.create_signed_value(
+                    secret=server.secret,
+                    name='play_id',
+                    value=','.join([show_id, number]),
+                    version=2,
+                ),
+                'play_server': server,
+            })
+            server.__dict__.pop('secret')
+        return results

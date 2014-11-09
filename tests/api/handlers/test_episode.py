@@ -358,5 +358,40 @@ class Test_air_dates(Testbase):
         self.assertEqual(air_dates[2]['show']['id'], show_2['id'])
         self.assertEqual(air_dates[2]['episode']['number'], 4)
 
+class Test_play_servers(Testbase):
+
+    def test(self):
+        self.login(constants.LEVEL_EDIT_SHOW)
+        response = self.post('/1/shows', {
+            'title': 'Test show',
+            'episodes': [
+                {
+                    'title': 'Episode 1',
+                    'number': 1,
+                },                
+            ],
+        })
+        self.assertEqual(response.code, 201)
+        show = utils.json_loads(response.body)
+
+        response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
+            'name': 'Thomas',
+            'address': 'http://example.net',
+            'secret': 'SOME SECRET',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        server = utils.json_loads(response.body)
+
+        # Let's get the server that the user has access to
+        # with a play id, that we can use when contacting the server.
+        response = self.get('/1/shows/{}/episodes/1/play-servers'.format(
+            show['id'],
+        ))
+        self.assertEqual(response.code, 200)
+        servers = utils.json_loads(response.body)
+        self.assertEqual(len(servers), 1)
+        self.assertEqual(servers[0]['play_server']['id'], server['id'])
+        self.assertTrue(servers[0]['play_id'])
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

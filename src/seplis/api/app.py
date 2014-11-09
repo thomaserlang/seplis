@@ -64,6 +64,11 @@ class Application(tornado.web.Application):
                 r'/1/shows/([0-9]+)/episodes/([0-9]+)', 
                 seplis.api.handlers.episode.Handler
             ),
+            URLSpec(
+                r'/1/shows/([0-9]+)/episodes/([0-9]+)/play-servers', 
+                seplis.api.handlers.episode.Play_servers_handler
+            ),
+            
 
             URLSpec(
                 r'/1/shows/([0-9]+)/images', 
