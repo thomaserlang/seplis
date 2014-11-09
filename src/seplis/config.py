@@ -22,7 +22,7 @@ config = {
         'url': 'https://seplis.net',
         'cookie_secret': 'CHANGE_ME',
         'port': 8001,
-        'image_url': 'http://images.seplis.net',
+        'image_url': 'https://images.seplis.net',
     },
     'logging': {
         'level': 'warning',
@@ -38,6 +38,12 @@ config = {
     'play': {
         'database': 'sqlite:///seplis-play.db',
         'secret': None,
+        'scan': None,
+        'media_types': [
+            'mp4',
+            'mkv',
+            'avi',            
+        ]
     }
 }
 

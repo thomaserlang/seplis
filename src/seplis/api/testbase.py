@@ -27,7 +27,7 @@ class Testbase(AsyncHTTPTestCase):
         super(Testbase, self).setUp()
         config_load()
         config['logging']['path'] = None
-        logger.set_logger('test.log')
+        logger.set_logger('test-api.log')
         engine = create_engine(
             config['api']['database'], 
             convert_unicode=True, 

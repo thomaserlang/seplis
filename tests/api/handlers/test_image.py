@@ -111,6 +111,5 @@ class test_show_image(Testbase):
         response = self.get('/1/shows/1/images/{}'.format(image['id']))
         self.assertEqual(response.code, 404)
 
-
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
