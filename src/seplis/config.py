@@ -35,14 +35,18 @@ config = {
         'thetvdb': None,
         'id': 'CHANGE_ME',
     },
+    'play': {
+        'database': 'sqlite:///seplis-play.db',
+        'secret': None,
+    }
 }
 
 def load(path=None):
     default_paths = [
-        './seplis_conf.yaml',
-        '~/seplis_conf.yaml',
-        '/etc/seplis/seplis_conf.yaml',
-        '/etc/seplis_conf.yaml',
+        './seplis.yaml',
+        '~/seplis.yaml',
+        '/etc/seplis/seplis.yaml',
+        '/etc/seplis.yaml',
     ]
     if not path:
         path = os.environ.get('SEPLIS_CONFIG', None)
