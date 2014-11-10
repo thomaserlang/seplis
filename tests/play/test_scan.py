@@ -24,6 +24,7 @@ class test_scan(unittest.TestCase):
         )
     
     def test_get_files(self):
+        print('b')
         with mock.patch('os.walk') as mockwalk:
             mockwalk.return_value = [                
                 ('/shows', ('NCIS', 'Person of Interest'), ()),
@@ -51,7 +52,36 @@ class test_scan(unittest.TestCase):
                 '/shows/Person of Interest/Season 01/Person of Interest.S01E01.Pilot.mp4',
             ])
 
-    def test_parse_episode(self):
+    def test_show_id_lookup(self):
+        self.scanner.shows_web_lookup = mock.MagicMock(return_value=[
+            {
+                'id': 1,
+                'title': 'Test show',
+            }
+        ])
+
+        # test that a show we have not yet searched is not in the db
+        self.assertEqual(
+            None,
+            self.scanner.show_id_db_lookup('test show'),
+        )
+
+        # search for the show
+        self.assertEqual(
+            1,
+            self.scanner.show_id_lookup('test show')
+        )
+
+        # the result should now be stored in the database
+        self.assertEqual(
+            1,
+            self.scanner.show_id_db_lookup('test show'),
+        )
+
+
+class test_parse_episode(unittest.TestCase):
+
+    def test(self):
         # Normal
         info = parse_episode(
             'Alpha.House.S02E01.The.Love.Doctor.720p.AI.WEBRip.DD5.1.x264-NTb.mkv'

@@ -27,3 +27,10 @@ class Episode(base):
     path = sa.Column(sa.Text)
     meta_data = sa.Column(JSONEncodedDict())
     file_last_changed = sa.Column(sa.DateTime)
+
+class Show_id_lookup(base):
+    __tablename__ = 'show_id_lookup'
+
+    show_title = sa.Column(sa.String(200), primary_key=True)
+    show_id = sa.Column(sa.Integer)
+    updated = sa.DateTime

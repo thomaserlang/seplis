@@ -1,40 +1,41 @@
 import os, os.path
 import re
 import logging
-from seplis import config
-from seplis.play import constants
+from datetime import datetime
+from seplis import config, Client
+from seplis.play import constants, models
+from seplis.play.decorators import new_session
 
 SCAN_TYPES = (
     'shows',
 )
 
-class Episode(object):
+class Parsed_episode(object):
 
-    def __init__(self, show_id, number, last_changed, path, metadata):
-        self.show_id = show_id
-        self.number = number
-        self.last_changed = last_changed
-        self.path = path
-        self.metadata = metadata
+    def __init__(self):
+        self.show_id = None
 
-class Parsed_episode_season(object):
+class Parsed_episode_season(Parsed_episode):
 
     def __init__(self, show_title, season, episode, path):
+        super().__init__()
         self.show_title = show_title
         self.season = season
         self.episode = episode
         self.path = path
 
-class Parsed_episode_airdate(object):
+class Parsed_episode_airdate(Parsed_episode):
 
     def __init__(self, show_title, airdate, path):
+        super().__init__()
         self.show_title = show_title
         self.airdate = airdate
         self.path = path
 
-class Parsed_episode_number(object):
+class Parsed_episode_number(Parsed_episode):
 
     def __init__(self, show_title, number, path):
+        super().__init__()
         self.show_title = show_title
         self.number = number
         self.path = path
@@ -50,11 +51,15 @@ class Play_scan(object):
             raise Exception('scan type: "{}" is not supported'.format(type_))
         self.scan_path = scan_path
         self.type = type_
+        self.client = Client(url=config['client']['api_url'])
 
     def scan(self):
         pass
 
     def get_files(self):
+        '''
+        Looks for files in the `self.scan_path` directory.
+        '''
         files = []
         for dirname, dirnames, filenames in os.walk(self.scan_path):
             for file_ in filenames:
@@ -68,6 +73,68 @@ class Play_scan(object):
                     os.path.join(dirname, file_)
                 )
         return files
+
+    def episode_show_lookup(self, episodes):
+        with new_session() as session:
+            for episode in episodes:
+                pass
+
+    def show_id_lookup(self, show_title):
+        '''
+
+        :param show_title: str
+        :returns: int
+        '''
+        show_id = self.show_id_db_lookup(show_title)
+        if show_id:
+            return show_id
+        shows = self.shows_web_lookup(show_title)
+        if not shows:
+            return
+        show_id = shows[0]['id']
+        with new_session() as session:
+            show = models.Show_id_lookup(
+                show_title=show_title,
+                show_id=show_id,
+                updated=datetime.utcnow(),
+            )
+            session.add(show)
+            session.commit()
+        return show_id
+
+    def show_id_db_lookup(self, show_title):        
+        '''
+
+        :param show_title: str
+        :returns: int
+        '''
+        with new_session() as session:
+            show = session.query(models.Show_id_lookup).filter(
+                models.Show_id_lookup.show_title == show_title,
+            ).first()
+            if not show:
+                return
+            return show.show_id
+
+    def shows_web_lookup(self, show_title):
+        '''
+
+        :param show_title: str
+        :returns: list of dict
+            [
+                {
+                    'id': 1,
+                    'title': 'Show...'
+                }
+            ]
+        '''
+        shows = self.client.get('/shows', {
+            'q': 'title:"{show_title}" alternative_titles:"{show_title}"'.format(
+                show_title=show_title,
+            ),
+            'fields': 'id, title',
+        })
+        return shows
 
 def parse_episodes(files):
     episodes = []

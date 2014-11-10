@@ -24,8 +24,7 @@ def upgrade():
     )
 
     op.create_table('show_id_lookup', 
-        sa.Column('filename_title', sa.String(200), unique=True),
-        sa.Column('title', sa.String(200)),
+        sa.Column('show_title', sa.String(200), primary_key=True),
         sa.Column('show_id', sa.Integer),
         sa.Column('updated', sa.DateTime),
     )

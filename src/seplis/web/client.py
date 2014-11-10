@@ -6,6 +6,7 @@ from seplis import utils, config
 from functools import partial
 
 TIMEOUT = 60 # seconds
+LINK_TYPES = ('next', 'prev', 'first', 'last')
 
 class HTTPData(object):
 
@@ -30,10 +31,11 @@ class HTTPData(object):
             links = utils.parse_link_header(
                 response.headers['Link']
             )
-        self.next = links.get('next')
-        self.prev = links.get('prev')
-        self.first = links.get('first')
-        self.last = links.get('last')
+        for link in LINK_TYPES:
+            self.__dict__[link] = links.get(link)
+            if self.__dict__[link]:
+               urljoin(self.client, self.__dict__[link]) 
+
         if 'X-Total-Count' in response.headers:
             self.count = int(response.headers['X-Total-Count'])
         if 'X-Total-Pages' in response.headers:
