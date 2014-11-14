@@ -14,11 +14,13 @@ class Parsed_episode(object):
 
     def __init__(self):
         self.show_id = None
+        self.number = None
 
 class Parsed_episode_season(Parsed_episode):
 
     def __init__(self, show_title, season, episode, path):
         super().__init__()
+        self.lookup_type = 1
         self.show_title = show_title
         self.season = season
         self.episode = episode
@@ -28,6 +30,7 @@ class Parsed_episode_airdate(Parsed_episode):
 
     def __init__(self, show_title, airdate, path):
         super().__init__()
+        self.lookup_type = 2
         self.show_title = show_title
         self.airdate = airdate
         self.path = path
@@ -54,7 +57,8 @@ class Play_scan(object):
         self.client = Client(url=config['client']['api_url'])
 
     def scan(self):
-        pass
+        files = self.get_files()
+        episodes = parse_episodes(files)
 
     def get_files(self):
         '''
@@ -77,7 +81,9 @@ class Play_scan(object):
     def episode_show_lookup(self, episodes):
         with new_session() as session:
             for episode in episodes:
-                pass
+                show_id = show_id_lookup(episode.show_title)
+                if show_id:
+                    episode.show_id = show_id
 
     def show_id_lookup(self, show_title):
         '''
@@ -109,11 +115,14 @@ class Play_scan(object):
         :returns: int
         '''
         with new_session() as session:
-            show = session.query(models.Show_id_lookup).filter(
+            show = session.query(
+                models.Show_id_lookup
+            ).filter(
                 models.Show_id_lookup.show_title == show_title,
             ).first()
             if not show:
                 return
+            print(show.show_title)
             return show.show_id
 
     def shows_web_lookup(self, show_title):
@@ -135,6 +144,62 @@ class Play_scan(object):
             'fields': 'id, title',
         })
         return shows
+
+    def episode_number_lookup(self, episode):
+        if isinstance(episode, Parsed_episode_number):
+            return episode.number
+        pass
+
+    def episode_number_db_lookup(self, episode):
+        with new_session() as session:
+            value = ''
+            if isinstance(episode, Parsed_episode_season):
+                value = '{}-{}'.format(
+                    episode.season,
+                    episode.episode,
+                )
+            elif isinstance(episode, Parsed_episode_airdate):
+                value = '{}'.format(
+                    episode.airdate,
+                )
+            else:
+                raise Exception('Unknown parsed episode object')
+            e = session.query(
+                models.Episode_lookup.number
+            ).filter(
+                models.Episode_number_lookup.show_id == episode.show_id,
+                models.Episode_number_lookup.lookup_type == episode.lookup_type,
+                models.Episode_number_lookup.lookup_value == value,
+            ).first()
+            if not e:
+                return
+            return e.number
+
+    def episode_number_web_lookup(self, episode):
+        if isinstance(episode, Parsed_episode_season):
+            query = 'season:{} AND episode:{}'.format(
+                episode.season,
+                episode.episode,
+            )
+        elif isinstance(episode, Parsed_episode_airdate):
+            query = 'airdate:{}'.format(
+                episode.airdate,
+            )
+        else:
+            raise Exception('Unknown parsed episode object')
+        episode = self.client.get('/shows/{}/episodes'.format(episode.show_id), {
+            'q': query,
+        })
+
+    def save_episodes(self, episodes):
+        with new_session() as session:
+            for episode in episodes:
+                if not episode.show_id:
+                    continue
+                e = models.Episode(
+                    show_id=episode.show_id,
+                    number=0
+                )
 
 def parse_episodes(files):
     episodes = []

@@ -28,6 +28,14 @@ class Episode(base):
     meta_data = sa.Column(JSONEncodedDict())
     file_last_changed = sa.Column(sa.DateTime)
 
+class Episode_number_lookup(base):
+    __tablename__ = 'episode_number_lookup'    
+
+    show_id = sa.Column(sa.Integer, primary_key=True)
+    lookup_type = sa.Column(sa.Integer, primary_key=True)
+    lookup_value = sa.Column(sa.String(45), primary_key=True)
+    number = sa.Column(sa.Integer)
+
 class Show_id_lookup(base):
     __tablename__ = 'show_id_lookup'
 

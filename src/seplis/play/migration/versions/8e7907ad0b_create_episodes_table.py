@@ -23,6 +23,13 @@ def upgrade():
         sa.Column('file_last_changed', sa.DateTime),
     )
 
+    op.create_table('episode_number_lookup', 
+        sa.Column('show_id', sa.Integer, primary_key=True),
+        sa.Column('lookup_type', sa.Integer, primary_key=True),
+        sa.Column('lookup_value', sa.String(45), primary_key=True),        
+        sa.Column('number', sa.Integer)
+    )
+
     op.create_table('show_id_lookup', 
         sa.Column('show_title', sa.String(200), primary_key=True),
         sa.Column('show_id', sa.Integer),

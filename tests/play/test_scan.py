@@ -2,21 +2,29 @@ import unittest
 import nose
 import mock
 import logging
+from seplis.play.connections import database
+from seplis.play.decorators import new_session
 from seplis.logger import logger
 from seplis import config_load, config
 from seplis.play.scan import Play_scan, parse_episode, \
     Parsed_episode_season, Parsed_episode_airdate, \
     Parsed_episode_number
 from seplis.play import models
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 class test_scan(unittest.TestCase):
 
-    def setUp(self):        
+    def setUp(self):
         config_load()
         config['logging']['path'] = None
-        config['play']['database'] = 'sqlite://'# memory db
-        from seplis.play.connections import database
-        from seplis.play.decorators import new_session
+        database.engine = create_engine(
+            'sqlite://',# memory db
+            convert_unicode=True, 
+            echo=False, 
+        )
+        connection = database.engine.connect()
+        database.session = sessionmaker(bind=connection)
         models.base.metadata.create_all(database.engine)
         self.scanner = Play_scan(
             '/', 
@@ -60,7 +68,7 @@ class test_scan(unittest.TestCase):
             }
         ])
 
-        # test that a show we have not yet searched is not in the db
+        # test that a show we haven't searched for is not in the db
         self.assertEqual(
             None,
             self.scanner.show_id_db_lookup('test show'),
