@@ -20,7 +20,7 @@ def upgrade():
         sa.Column('number', sa.Integer, primary_key=True),
         sa.Column('path', sa.Text),
         sa.Column('metadata', sa.Text),
-        sa.Column('file_last_changed', sa.DateTime),
+        sa.Column('modified_time', sa.DateTime),
     )
 
     op.create_table('episode_number_lookup', 

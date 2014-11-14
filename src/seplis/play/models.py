@@ -26,7 +26,7 @@ class Episode(base):
     number = sa.Column(sa.Integer, primary_key=True)
     path = sa.Column(sa.Text)
     meta_data = sa.Column(JSONEncodedDict())
-    file_last_changed = sa.Column(sa.DateTime)
+    modified_time = sa.Column(sa.DateTime)
 
 class Episode_number_lookup(base):
     __tablename__ = 'episode_number_lookup'    

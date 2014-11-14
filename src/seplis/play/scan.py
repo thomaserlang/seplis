@@ -1,8 +1,10 @@
 import os, os.path
 import re
 import logging
+import time
+import subprocess
 from datetime import datetime
-from seplis import config, Client
+from seplis import config, Client, utils
 from seplis.play import constants, models
 from seplis.play.decorators import new_session
 
@@ -13,6 +15,7 @@ SCAN_TYPES = (
 class Parsed_episode(object):
 
     def __init__(self):
+        self.lookup_type = 0
         self.show_id = None
         self.number = None
 
@@ -79,6 +82,49 @@ class Play_scan(object):
                 )
         return files
 
+    def get_metadata(self, path):
+        '''
+        :returns: dict
+            metadata is a `dict` taken from the result of ffprobe.
+        '''
+        logging.info('Retrieving metadata from "{}"'.format(
+            path,
+        ))
+        if not os.path.exists(path):
+            raise Exception('Path "{}" does not exists'.format(path))
+        ffprobe = os.path.join(config['play']['ffmpeg_folder'], 'ffprobe')
+        if not os.path.exists(ffprobe):
+            raise Exception('ffprobe not found in "{}"'.format(
+                config['play']['ffmpeg_folder'],
+            ))
+        cmd = [
+            ffprobe,
+            '-show_streams',
+            '-show_format',
+            '-loglevel', 'quiet',
+            '-print_format', 'json',
+            path,
+        ]
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        data = process.stdout.read()
+        if not data:
+            return
+        if isinstance(data, bytes):
+            data = data.decode('utf-8')        
+        logging.info('Metadata retrieved from "{}"'.format(
+            path,
+        ))
+        return utils.json_loads(data)
+
+    def get_file_modified_time(self, path):
+        return datetime.utcfromtimestamp(
+            os.path.getmtime(path)
+        )
+
 class Shows_scan(Play_scan):
 
     def __init__(self, scan_path):
@@ -93,26 +139,113 @@ class Shows_scan(Play_scan):
             scanner=self
         )
 
-    def scan_episodes(self):
+    def scan(self):
+        episodes = self.get_episodes()
+        if not episodes:
+            return
+        self.episodes_show_id_lookup(episodes)
+        self.episodes_number_lookup(episodes)
+        self.save_episodes(episodes)
+
+    def get_episodes(self):
         files = self.get_files()
         episodes = parse_episodes(files)
+        logging.info('Found {} episodes in path "{}"'.format(
+            episodes,
+            self.scan_path,
+        ))
 
-    def episodes_show_lookup(self, episodes):
-        with new_session() as session:
-            for episode in episodes:
-                show_id = self.show_id_lookup.lookup(episode.show_title)
-                if show_id:
-                    episode.show_id = show_id
+    def episodes_show_id_lookup(self, episodes):
+        '''
+
+        :param episodes: list of `Parsed_episode()`
+        '''
+        for episode in episodes:
+            logging.info('Looking for a show with title: "{}"'.format(
+                episode.show_title
+            ))
+            show_id = self.show_id.lookup(episode.show_title)
+            if show_id:
+                logging.info('Found show: "{}" with show id: "{}"'.format(
+                    episode.show_title,
+                    show_id,
+                ))
+                episode.show_id = show_id
+            else:
+                logging.info('No show found for title: "{}"'.format(
+                    episode.show_title,
+                ))
+
+    def episodes_number_lookup(self, episodes):
+        '''
+        Finds the episode numbers for all the episodes if `number` is
+        not already filled.
+
+        :param episodes: list of `Parsed_episode()`
+        '''
+        for episode in episodes:
+            if not episode.show_id:
+                continue
+            if isinstance(episode, Parsed_episode_number):
+                continue
+            value = self.episode_number.get_lookup_value()
+            logging.info('Looking for episode {} with show_id {}'.format(
+                value,
+                episode.show_id,
+            ))
+            number = self.episode_number.lookup(episode)
+            if number:                
+                logging.info('Found episode {} from {} with show_id {}'.format(
+                    number,
+                    value,
+                    episod.show_id,
+                ))
+                episode.number = number
+            else:
+                logging.info('No episode was found for {} with show_id {}'.format(
+                    value,
+                    episode.show_id,
+                ))
 
     def save_episodes(self, episodes):
+        '''
+        Saves a list of parsed episodes.
+        If the object has `show_id`, `number` and `path`
+        is filled the episode will be saved.
+
+        :param episodes: list of `Parsed_episode()`
+        '''
+        logging.info('Saving episodes to db from "{}"'.format(
+            self.scan_path
+        ))
+        updated = 0
         with new_session() as session:
             for episode in episodes:
-                if not episode.show_id:
+                if not episode.show_id or not episode.number:
                     continue
+                ep = session.query(
+                    models.Episode,
+                ).filter(
+                    models.Episode.show_id == episode.show_id,
+                    models.Episode.number == episode.number,
+                ).first()
+                modified_time = self.get_file_modified_time(episode.path)
+                if ep and ep.modified_time == modified_time:
+                    continue
+                metadata = self.get_metadata(episode.path)
                 e = models.Episode(
                     show_id=episode.show_id,
-                    number=0
+                    number=episode.number,
+                    path=episode.path,
+                    metadata=metadata,
+                    modified_time=modified_time,
                 )
+                session.merge(e)
+            session.commit()
+        logging.info('{} new/updated episodes saved from "{}"'.format(
+            updated,
+            self.scan_path,
+        ))
 
 class Show_id(object):
 
@@ -121,6 +254,7 @@ class Show_id(object):
 
     def lookup(self, show_title):
         '''
+        Tries to find the show on SEPLIS by it's title.
 
         :param show_title: str
         :returns: int
@@ -286,13 +420,15 @@ def parse_episode(file_):
         except:
             logging.exception('episode parse pattern: {}'.format(pattern))
 
-
 def _parse_episode_info_from_file(file_, match):
     fields = match.groupdict().keys()
     season = None
     if 'show_title' not in fields:
         return None
-    show_title = match.group('show_title').strip().replace('.', ' ')
+    show_title = match.group('show_title').strip()\
+        .replace('.', ' ')\
+        .replace('-', ' ')\
+        .replace('_', ' ')
 
     season = None
     if 'season' in fields:

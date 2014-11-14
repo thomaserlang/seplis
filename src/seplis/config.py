@@ -44,7 +44,8 @@ config = {
             'mp4',
             'mkv',
             'avi',            
-        ]
+        ],
+        'ffmpeg_folder': '/usr/src/ffmpeg/',
     }
 }
 
