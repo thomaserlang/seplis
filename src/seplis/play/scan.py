@@ -238,7 +238,7 @@ class Shows_scan(Play_scan):
                     show_id=episode.show_id,
                     number=episode.number,
                     path=episode.path,
-                    metadata=metadata,
+                    meta_data=metadata,
                     modified_time=modified_time,
                 )
                 session.merge(e)
