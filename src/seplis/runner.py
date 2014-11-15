@@ -1,40 +1,33 @@
 import logging
 import sys
-import aaargh
+import click
 from seplis.logger import logger
+from seplis import config
 
-app = aaargh.App(description='SEPLIS')
-
-app.arg('--config', help='Path to the config file.', default=None)
-
-@app.cmd()
-@app.cmd_arg('-p', '--port', type=int, default=8001)
-def web(config, port):
+@click.group()
+@click.option('--config', default=None, help='path to the config file')
+def cli(config):
     import seplis
     seplis.config_load(config)
-    if port != 8001:
+
+@cli.command()
+@click.option('--port', '-p', default=None, help='the port')
+def web(port):
+    if port:
         seplis.config['web']['port'] = port            
     import seplis.web.app
     seplis.web.app.main()
 
-@app.cmd()
-@app.cmd_arg('-p', '--port', type=int, default=8002)
-@app.cmd_arg('-rc', '--rebuild_cache', type=bool, default=False)
-def api(config, port, rebuild_cache):
-    import seplis
-    seplis.config_load(config)
-    if port != 8002:
+@cli.command()
+@click.option('--port', '-p', default=None, help='the port')
+def api(port):
+    if port:
         seplis.config['api']['port'] = port
-    if rebuild_cache:
-        import seplis.api.rebuild_cache
-        seplis.api.rebuild_cache.main() 
     import seplis.api.app
     seplis.api.app.main()
 
-@app.cmd()
-def upgrade(config):
-    import seplis
-    seplis.config_load(config)
+@cli.command()
+def upgrade():
     logger.set_logger('upgrade.log', to_sentry=True)
     import seplis.api.migrate
     try:
@@ -42,21 +35,8 @@ def upgrade(config):
     except:
         logging.exception('upgrade')
 
-@app.cmd()
-def downgrade(config):
-    import seplis
-    seplis.config_load(config)
-    logger.set_logger('downgrade.log', to_sentry=True)
-    import seplis.api.migrate
-    try:
-        seplis.api.migrate.downgrade()
-    except:
-        logging.exception('downgrade')
-
-@app.cmd()
-def rebuild_cache(config):
-    import seplis
-    seplis.config_load(config)
+@cli.command()
+def rebuild_cache():
     logger.set_logger('rebuild_cache.log', to_sentry=True)
     import seplis.api.rebuild_cache
     try:
@@ -64,10 +44,9 @@ def rebuild_cache(config):
     except:
         logging.exception('rebuild_cache')
 
-@app.cmd()
-def update_shows(config):
+@cli.command()
+def update_shows():
     import seplis
-    seplis.config_load(config)
     logger.set_logger('indexer_update_shows.log', to_sentry=True)
     try:
         indexer = seplis.Show_indexer(
@@ -78,11 +57,10 @@ def update_shows(config):
     except:
         logging.exception('indexer_update_shows')
 
-@app.cmd()
-@app.cmd_arg('-id', '--show_id', type=int, help='The id of the show')
-def update_show(config, show_id):
+@cli.command()
+@click.argument('show_id')
+def update_show(show_id):
     import seplis
-    seplis.config_load(config)
     logger.set_logger('indexer_update_show.log', to_sentry=True)
     try:
         indexer = seplis.Show_indexer(
@@ -93,11 +71,10 @@ def update_show(config, show_id):
     except:
         logging.exception('indexer_update_show')
 
-@app.cmd()
-@app.cmd_arg('--from_id', type=int, default=1)
-def update_shows_all(config, from_id):
+@cli.command()
+@click.option('--from_id', default=1, help='which show to start from')
+def update_shows_all(from_id):
     import seplis
-    seplis.config_load(config)
     logger.set_logger('indexer_update_shows_all.log', to_sentry=True)
     indexer = seplis.Show_indexer(
         url=seplis.config['client']['api_url'], 
@@ -114,16 +91,43 @@ def update_shows_all(config, from_id):
     except:
         logging.exception('update_shows_all')
 
-@app.cmd()
-def worker(config):
-    import seplis
-    seplis.config_load(config)
+@cli.command()
+def worker():
     logger.set_logger('worker.log')
     import seplis.tasks.worker
     seplis.tasks.worker.main()
 
+@cli.command()
+def play_scan():
+    logger.set_logger('scan.log')
+    import seplis.play.scan
+    seplis.play.scan.upgrade_scan_db()
+    if not config['play']['scan']:
+        raise Exception('''
+            Nothing to scan. Add a path in the config file.
+
+            Example:
+
+                play:
+                    scan:
+                        -
+                        type: shows
+                        path: /a/path/to/the/shows
+            ''')
+    for s in config['play']['scan']:
+        scanner = None
+        if s['type'] == 'shows':
+            scanner = seplis.play.scan.Shows_scan(
+                s['path'],
+            )
+        if not scanner:
+            raise Exception('Scan type: "{}" is not supported'.format(
+                s['type']
+            ))
+        scanner.scan()
+
 def main():
-    app.run()
+    cli()
 
 if __name__ == "__main__":
     main()

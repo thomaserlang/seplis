@@ -135,3 +135,15 @@ Play_server = {
     'address': All(str, Length(min=1, max=200)),
     'secret': All(str, Length(min=1, max=200)),
 }
+
+Config_play_scan = Schema(
+    Any(
+        None, 
+        [
+            Schema({
+                'type': str,
+                'path': str,
+            }, required=True)
+        ]
+    )
+)

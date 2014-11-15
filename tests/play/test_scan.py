@@ -272,6 +272,15 @@ class test_shows_scan(Testbase):
         self.scanner.episodes_number_lookup.assert_called_with(episodes)
         self.scanner.save_episodes.assert_called_with(episodes)
 
+    def test_get_episodes(self):
+        self.scanner.get_files = mock.MagicMock()
+        self.scanner.get_files.return_value = [
+            '/Naruto/[HorribleSubs] Naruto Shippuuden - 379 [1080p].mkv'
+        ]
+        episodes = self.scanner.get_episodes()
+        self.assertEqual(len(episodes), 1)
+        self.assertTrue(isinstance(episodes[0], Parsed_episode_number))
+
 class test_parse_episode(unittest.TestCase):
 
     def test(self):

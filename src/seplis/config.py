@@ -1,7 +1,7 @@
 import os
 import os.path
 import yaml
-from seplis.utils import json_loads
+from seplis import schemas
 
 config = {
     'debug': False,
@@ -76,5 +76,7 @@ def load(path=None):
                 config[key].update(data[key])
             else:
                 config[key] = data[key]
-
-        
+    if config['play']['scan']:
+        schemas.Config_play_scan(
+            config['play']['scan']
+        )

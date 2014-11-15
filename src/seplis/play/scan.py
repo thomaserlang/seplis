@@ -151,9 +151,10 @@ class Shows_scan(Play_scan):
         files = self.get_files()
         episodes = parse_episodes(files)
         logging.info('Found {} episodes in path "{}"'.format(
-            episodes,
+            len(episodes),
             self.scan_path,
         ))
+        return episodes
 
     def episodes_show_id_lookup(self, episodes):
         '''
@@ -471,6 +472,18 @@ def _parse_episode_info_from_file(file_, match):
             air_date=air_date,
             path=file_,
         )
+
+def upgrade_scan_db():
+    import alembic.config
+    from alembic import command
+    cfg = alembic.config.Config(
+        os.path.dirname(
+            os.path.abspath(__file__)
+        )+'/alembic.ini'
+    )
+    cfg.set_main_option('script_location', 'seplis.play:migration')
+    cfg.set_main_option('url', config['play']['database'])
+    command.upgrade(cfg, 'head')
 
 def main():
     pass
