@@ -99,7 +99,7 @@ def worker():
 
 @cli.command()
 def play_scan():
-    logger.set_logger('scan.log')
+    logger.set_logger('play_scan.log')
     import seplis.play.scan
     seplis.play.scan.upgrade_scan_db()
     if not config['play']['scan']:
@@ -125,6 +125,12 @@ def play_scan():
                 s['type']
             ))
         scanner.scan()
+
+@cli.command()
+def play_server():
+    logger.set_logger('play_scan.log')
+    import seplis.play.app
+    seplis.play.app.main()
 
 def main():
     cli()

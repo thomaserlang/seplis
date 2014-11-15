@@ -1,6 +1,7 @@
 import os
 import os.path
 import yaml
+import tempfile
 from seplis import schemas
 
 config = {
@@ -46,6 +47,34 @@ config = {
             'avi',            
         ],
         'ffmpeg_folder': '/usr/src/ffmpeg/',
+        'port': 8003,
+        'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
+        'segment_time': 8,
+        'session_timeout': 40, # Timeout for HLS sessions
+        'devices':{
+            'chrome': {
+                'names':    [
+                    'h264',
+                    'webm',
+                ],
+                'default_codec': 'libx264',
+                'type': 'stream',
+            },
+            'default': {
+                'names':    [
+                    'h264',
+                ],
+                'default_codec': 'libx264',
+                'type': 'stream',
+            },
+            'apple': {
+                'names':    [
+                    'h264',
+                ],
+                'default_codec': 'libx264',
+                'type': 'hls',
+            },
+        }, 
     }
 }
 

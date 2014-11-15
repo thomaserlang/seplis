@@ -313,7 +313,10 @@ class Play_servers_handler(base.Handler):
                 'play_id': web.create_signed_value(
                     secret=server.secret,
                     name='play_id',
-                    value=','.join([show_id, number]),
+                    value=utils.json_dumps({
+                        'show_id': int(show_id),
+                        'number': int(number),
+                    }),
                     version=2,
                 ),
                 'play_server': server,
