@@ -189,7 +189,7 @@ class Shows_scan(Play_scan):
                 continue
             if isinstance(episode, Parsed_episode_number):
                 continue
-            value = self.episode_number.get_lookup_value()
+            value = self.episode_number.get_lookup_value(episode)
             logging.info('Looking for episode {} with show_id {}'.format(
                 value,
                 episode.show_id,
@@ -199,7 +199,7 @@ class Shows_scan(Play_scan):
                 logging.info('Found episode {} from {} with show_id {}'.format(
                     number,
                     value,
-                    episod.show_id,
+                    episode.show_id,
                 ))
                 episode.number = number
             else:

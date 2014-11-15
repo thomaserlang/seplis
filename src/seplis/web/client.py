@@ -34,7 +34,10 @@ class HTTPData(object):
         for link in LINK_TYPES:
             self.__dict__[link] = links.get(link)
             if self.__dict__[link]:
-               urljoin(self.client, self.__dict__[link]) 
+                self.__dict__[link] = urljoin(
+                    self.client.url, 
+                    self.__dict__[link]
+                ) 
 
         if 'X-Total-Count' in response.headers:
             self.count = int(response.headers['X-Total-Count'])

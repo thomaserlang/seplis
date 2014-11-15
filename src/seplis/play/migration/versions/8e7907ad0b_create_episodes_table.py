@@ -19,7 +19,7 @@ def upgrade():
         sa.Column('show_id', sa.Integer, primary_key=True),
         sa.Column('number', sa.Integer, primary_key=True),
         sa.Column('path', sa.Text),
-        sa.Column('metadata', sa.Text),
+        sa.Column('meta_data', sa.Text),
         sa.Column('modified_time', sa.DateTime),
     )
 
