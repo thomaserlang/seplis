@@ -1,9 +1,8 @@
-import alembic.config
 import logging
 import os
+import alembic.config
 from alembic import command
 from seplis.config import config, load
-
 
 def get_config():
     cfg = alembic.config.Config(os.path.dirname(os.path.abspath(__file__))+'/alembic.ini')
