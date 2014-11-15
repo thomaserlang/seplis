@@ -4,7 +4,7 @@ from seplis.web.handlers import base
 from seplis import utils, constants
 from seplis.web.client import API_error
 from seplis.api import exceptions
-from tornado import gen, escape
+from tornado import gen
 from tornado.web import HTTPError, authenticated
 
 class Handler(base.Handler):

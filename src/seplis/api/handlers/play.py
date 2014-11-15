@@ -32,7 +32,6 @@ class Server_handler(Handler):
     def put(self, user_id, id_):
         server = self.get_server(id_)
         data = self.validate(schemas.Play_server)
-        print(data)
         if 'name' in data:
             server.name = data['name']
         if 'address' in data:

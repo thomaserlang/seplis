@@ -1,0 +1,17 @@
+{% extends "user_base.html" %}
+{% block user_body %}
+    <div class="row">
+        <div class="col-xs-12 give-space">
+            <a 
+                class="btn btn-success" 
+                title="Create a new play server"
+                href="/user/play-server-form"
+            >
+                New
+            </a>
+        </div>
+        <div class="col-xs-12">
+            {% include 'play_servers_table.html' %}
+        </div>
+    </div>
+{% end %}

@@ -109,6 +109,18 @@ class test_play_handler(Testbase):
         self.assertFalse('secret' in servers[0])
         self.assertFalse('secret' in servers[1])
 
+        # test that deleting a server removes it from the list
+        response = self.delete('/1/users/{}/play-servers/{}'.format(
+            self.current_user.id, 
+            servers[0]['id']
+        ))
+        self.assertEqual(response.code, 200)
+        response = self.get('/1/users/{}/play-servers'.format(
+            self.current_user.id
+        ))
+        servers = utils.json_loads(response.body)
+        self.assertEqual(len(servers), 1, response.body)
+
 class test_user_access_handler(Testbase):
 
     def test(self):

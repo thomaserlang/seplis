@@ -8,6 +8,7 @@ import seplis.web.handlers.show
 import seplis.web.handlers.tag
 import seplis.web.handlers.suggest
 import seplis.web.handlers.air_dates
+import seplis.web.handlers.user.play_servers
 import seplis.web.modules.menu
 import seplis.web.modules.buttons
 import seplis.web.modules.tags
@@ -64,6 +65,10 @@ class Application(tornado.web.Application):
 
             URLSpec(r'/air-dates', seplis.web.handlers.air_dates.Handler),
             URLSpec(r'/fan-of', seplis.web.handlers.show.Fan_of_handler),
+
+            URLSpec(r'/user/play-servers', seplis.web.handlers.user.play_servers.Handler),
+            URLSpec(r'/user/play-server-form', seplis.web.handlers.user.play_servers.Form_handler),
+            URLSpec(r'/api/user/play-server', seplis.web.handlers.user.play_servers.API_handler),
 
         ]
         tornado.web.Application.__init__(self, urls, **settings)

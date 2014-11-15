@@ -68,6 +68,7 @@ class Play_server(object):
         Play_user_access.add(
             play_server_id=server.id,
             user_id=user_id,
+            session=session,
             pipe=pipe,
         )
         return server
@@ -96,6 +97,18 @@ class Play_server(object):
         if not deleted:
             return False
         pipe.delete('play_servers:{}'.format(self.id))
+        pipe.srem(
+            'users:{}:play_servers'.format(self.user_id),
+            self.id,
+        )
+        pipe.delete('play_servers:external_id:{}'.format(self.external_id))
+        pipe.delete(
+            'play_server_user_access:{}'.format(self.id),
+        )
+        pipe.srem(
+            'users:{}:play_server_access'.format(self.user_id),
+            self.id,
+        )
         return True
 
     @classmethod

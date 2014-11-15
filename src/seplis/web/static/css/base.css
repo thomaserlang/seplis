@@ -90,3 +90,7 @@ h1, h2, h3{
 .dropdown-form {
     padding:10px;
 }
+
+.give-space {
+    margin-bottom: 10px;
+}

@@ -1,0 +1,61 @@
+{% extends user_base.html %}
+
+{% block user_body %}
+{% if not play_server %}
+    <h3>New play server</h3>
+{% else %}
+    <h3>Edit play server</h3>
+{% end %}
+<form id="form-play-server" style="width:300px">
+    {% if play_server %}
+        <input name="id" type="hidden" value="{{ play_server['id'] }}">
+    {% end %}
+    <div class="form-group">
+        <label for="input-name">Name</label>
+        <input 
+            name="name"
+            id="input-name"
+            type="text" 
+            class="form-control" 
+            placeholder="My play server"
+            value="{{ play_server['name'] if play_server else '' }}"
+            required
+        >
+    </div>
+    <div class="form-group">
+        <label for="input-address">Address</label>
+        <input 
+            name="address"
+            id="input-address"
+            type="text"
+            class="form-control"
+            placeholder="http://127.0.0.1:8001"
+            value="{{ play_server['address'] if play_server else '' }}"
+            required
+        >
+    </div>
+    <div class="form-group">
+        <label for="input-secret">Secret</label>
+        <input
+            name="secret"
+            id="input-secret"
+            type="text"
+            class="form-control"
+            placeholder="Top secret!"
+            value="{{ play_server['secret'] if play_server else '' }}"
+            onclick="this.select();"
+            required
+        >
+    </div>
+    <button class="btn btn-success" type="submit">Save</button>
+    {% if play_server %}    
+    <button 
+        id="button-play-server-delete"
+        play-server-id="{{ play_server['id'] }}"
+        class="btn"
+    >
+        Delete
+    </button>
+    {% end %}
+</form>
+{% end %}
