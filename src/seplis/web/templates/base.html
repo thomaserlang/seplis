@@ -26,12 +26,12 @@
                 var message = error.message + '.';
                 if (error.code === 1001) {
                     for (var key in error.errors) {
-                        message = message + _.template(multiline(function(){/*
+                        message = message + _.template(multiline(function(){/*!@preserve
                             <br><br><strong><%= field %><br></strong> <%= message %>.  
                         */}), error.errors[key]);
                     }
                 }
-                $('#errors').html(_.template(multiline(function(){/*
+                $('#errors').html(_.template(multiline(function(){/*!@preserve
                     <div class="alert alert-danger alert-dismissible" role="alert">
                       <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
 

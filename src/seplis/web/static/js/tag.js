@@ -54,7 +54,7 @@ $('.btn-group').on('click', '.link-tag-delete', function(event){
 
 function tag_generate_html(tag, relation_id) {  
     return _.template(  
-        multiline(function(){/*
+        multiline(function(){/*!@preserve
             <div class="btn-group">
                 <button class="btn btn-success dropdown-toggle" data-toggle="dropdown">
                     <%-tag.name %>
@@ -89,7 +89,7 @@ function tag_generate_html(tag, relation_id) {
 function show_tags(obj, tags, relation_id) {
     obj.children('.btn-group').slice(1).remove();
     if (tags.length === 0) {
-        obj.append(multiline(function(){/*
+        obj.append(multiline(function(){/*!@preserve
             <div class="btn-group">
                 <button class="btn btn-default" disabled>You have not added any tags.</button>
             </div>
