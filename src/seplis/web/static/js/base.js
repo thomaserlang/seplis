@@ -21,8 +21,7 @@ $(function(){
         },
         formatResult: function (suggestion, currentValue) {
             return _.template(
-                '<span class="title"><%- title %></span>'
-            }),
+                '<span class="title"><%- title %></span>',
                 suggestion.data 
             );
         },    
