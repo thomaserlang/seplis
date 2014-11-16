@@ -20,9 +20,9 @@ $(function(){
             };
         },
         formatResult: function (suggestion, currentValue) {
-            return _.template(multiline(function(){/*!@preserve
-                <span class="title"><%- title %></span>
-            */}),
+            return _.template(
+                '<span class="title"><%- title %></span>'
+            }),
                 suggestion.data 
             );
         },    

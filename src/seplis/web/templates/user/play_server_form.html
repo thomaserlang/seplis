@@ -18,7 +18,7 @@
             type="text" 
             class="form-control" 
             placeholder="My play server"
-            value="{{ play_server['name'] if play_server else '' }}"
+            value="{{ escape(play_server['name']) if play_server else '' }}"
             required
         >
     </div>
@@ -30,7 +30,7 @@
             type="text"
             class="form-control"
             placeholder="http://127.0.0.1:8001"
-            value="{{ play_server['url'] if play_server else '' }}"
+            value="{{ escape(play_server['url']) if play_server else '' }}"
             required
         >
     </div>
@@ -42,7 +42,7 @@
             type="text"
             class="form-control"
             placeholder="Top secret!"
-            value="{{ play_server['secret'] if play_server else '' }}"
+            value="{{ escape(play_server['secret']) if play_server else '' }}"
             onclick="this.select();"
             required
         >

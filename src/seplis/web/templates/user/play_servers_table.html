@@ -3,8 +3,8 @@
     <tbody>
         {% for ps in play_servers %}
             <tr>
-                <td>{{ ps['name'] }}</td>
-                <td>{{ ps['url'] }}</td>
+                <td>{{ escape(ps['name']) }}</td>
+                <td>{{ escape(ps['url']) }}</td>
                 <td align="right">
                     <a href="/user/play-server-form?id={{ ps['id'] }}">
                         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>

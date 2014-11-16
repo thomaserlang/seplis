@@ -48,17 +48,16 @@ $(function(){
             },
             {
                 done: function(data){
-                    menu.html(_.template(multiline(function(){/*
-                        <% for (var ps in play_servers) { %>
-                            <li>
-                            <a 
-                                href="/play-episode?play_server_id=<%- play_servers[ps].play_server.id %>&play_id=<%- play_servers[ps].play_id %>"
-                            >
-                                <%- play_servers[ps].play_server.name %>
-                            </a>
-                            </li>
-                        <% } %>
-                        */}),
+                    menu.html(_.template(
+                        '<% for (var ps in play_servers) { %>'+
+                            '<li>'+
+                            '<a '+
+                                'href="/play-episode?play_server_id=<%- play_servers[ps].play_server.id %>&play_id=<%- play_servers[ps].play_id %>"'+
+                            '>'
+                                '<%- play_servers[ps].play_server.name %>'+
+                            '</a>'+
+                            '</li>'+
+                        '<% } %>',
                         {'play_servers': data}
                     ));
                 },
