@@ -49,7 +49,14 @@ class Server_handler(Handler):
     @authenticated(0)
     def get(self, user_id, id_=None):
         if id_:
-            server = self.get_server(id_)
+            server = Play_server.get(id_)
+            if not server:
+                raise exceptions.Not_found('the play server was not found')
+            if server.user_id != self.current_user.id and \
+                Play_user_access.has_access(server.id, self.current_user.id):
+                server.__dict__.pop('secret')
+            else:
+                self.check_user_edit(server.user_id)
             self.write_object(server)
         else:
             access_to = self.get_argument('access_to', None)

@@ -70,7 +70,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/user/play-server-form', seplis.web.handlers.user.play_servers.Form_handler),
             URLSpec(r'/api/user/play-server', seplis.web.handlers.user.play_servers.API_handler),
             URLSpec(r'/api/show-episode/play-servers', seplis.web.handlers.user.play_servers.API_episode_handler),
-
+            URLSpec(r'/play-episode', seplis.web.handlers.user.play_servers.Play_episode_handler),
+            
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 

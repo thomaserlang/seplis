@@ -353,6 +353,7 @@ class Metadata_handler(tornado.web.RequestHandler):
             if not metadata or not metadata.meta_data:
                 self.set_status(404)
                 self.write('{}')
+                return
             self.write(
                 metadata.meta_data,
             )

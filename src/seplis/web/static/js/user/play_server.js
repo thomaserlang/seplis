@@ -52,10 +52,9 @@ $(function(){
                         <% for (var ps in play_servers) { %>
                             <li>
                             <a 
-                                play-id="<%= play_servers[ps].play_id %>"
-
+                                href="/play-episode?play_server_id=<%- play_servers[ps].play_server.id %>&play_id=<%- play_servers[ps].play_id %>"
                             >
-                                <%= play_servers[ps].play_server.name %>
+                                <%- play_servers[ps].play_server.name %>
                             </a>
                             </li>
                         <% } %>
