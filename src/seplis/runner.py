@@ -8,7 +8,7 @@ from seplis import config
 @click.option('--config', default=None, help='path to the config file')
 def cli(config):
     import seplis
-    config_load(config)
+    seplis.config_load(config)
 
 @cli.command()
 @click.option('--port', '-p', default=None, help='the port')
