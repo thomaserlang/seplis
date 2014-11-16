@@ -445,7 +445,7 @@ def _parse_episode_info_from_file(file_, match):
     if number:
         number = int(number)
 
-    date = None
+    air_date = None
     if 'year' in fields and 'month' in fields and 'day' in fields:
         air_date = '{}-{}-{}'.format(
             match.group('year'),
