@@ -8,13 +8,13 @@ from seplis import config
 @click.option('--config', default=None, help='path to the config file')
 def cli(config):
     import seplis
-    seplis.config_load(config)
+    config_load(config)
 
 @cli.command()
 @click.option('--port', '-p', default=None, help='the port')
 def web(port):
     if port:
-        seplis.config['web']['port'] = port            
+        config['web']['port'] = port            
     import seplis.web.app
     seplis.web.app.main()
 
@@ -22,7 +22,7 @@ def web(port):
 @click.option('--port', '-p', default=None, help='the port')
 def api(port):
     if port:
-        seplis.config['api']['port'] = port
+        config['api']['port'] = port
     import seplis.api.app
     seplis.api.app.main()
 
@@ -50,8 +50,8 @@ def update_shows():
     logger.set_logger('indexer_update_shows.log', to_sentry=True)
     try:
         indexer = seplis.Show_indexer(
-            seplis.config['client']['api_url'],
-            access_token=seplis.config['client']['access_token'],
+            config['client']['api_url'],
+            access_token=config['client']['access_token'],
         )
         indexer.update()
     except:
@@ -64,8 +64,8 @@ def update_show(show_id):
     logger.set_logger('indexer_update_show.log', to_sentry=True)
     try:
         indexer = seplis.Show_indexer(
-            seplis.config['client']['api_url'],
-            access_token=seplis.config['client']['access_token'],
+            config['client']['api_url'],
+            access_token=config['client']['access_token'],
         )
         indexer.update_show(show_id)
     except:
@@ -77,8 +77,8 @@ def update_shows_all(from_id):
     import seplis
     logger.set_logger('indexer_update_shows_all.log', to_sentry=True)
     indexer = seplis.Show_indexer(
-        url=seplis.config['client']['api_url'], 
-        access_token=seplis.config['client']['access_token']
+        url=config['client']['api_url'], 
+        access_token=config['client']['access_token']
     )
     try:
         shows = indexer.get('/shows', {
