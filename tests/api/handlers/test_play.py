@@ -13,13 +13,13 @@ class test_play_handler(Testbase):
         # create a new play server
         response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
             'name': 'Thomas',
-            'address': 'http://example.net',
+            'url': 'http://example.net',
             'secret': 'SOME SECRET',
         })
         self.assertEqual(response.code, 201, response.body)
         server = utils.json_loads(response.body)
         self.assertEqual(server['name'], 'Thomas')
-        self.assertEqual(server['address'], 'http://example.net')
+        self.assertEqual(server['url'], 'http://example.net')
         self.assertEqual(server['secret'], 'SOME SECRET')
         self.assertTrue(server['created'])
         self.assertFalse(server['updated'])
@@ -34,7 +34,7 @@ class test_play_handler(Testbase):
         self.assertEqual(response.code, 200)
         server = utils.json_loads(response.body)
         self.assertEqual(server['name'], 'Thomas')
-        self.assertEqual(server['address'], 'http://example.net')
+        self.assertEqual(server['url'], 'http://example.net')
         self.assertEqual(server['secret'], 'SOME SECRET')
         self.assertFalse(server['updated'])
         self.assertEqual(server['user_id'], self.current_user.id)
@@ -46,13 +46,13 @@ class test_play_handler(Testbase):
             server['id']
         ), {
             'name': 'Thomas 2',
-            'address': 'http://example2.net',
+            'url': 'http://example2.net',
             'secret': 'SOME SECRET 2',
         })
         self.assertEqual(response.code, 200)
         server = utils.json_loads(response.body)
         self.assertEqual(server['name'], 'Thomas 2')
-        self.assertEqual(server['address'], 'http://example2.net')
+        self.assertEqual(server['url'], 'http://example2.net')
         self.assertEqual(server['secret'], 'SOME SECRET 2')
         self.assertTrue(server['updated'])
 
@@ -74,14 +74,14 @@ class test_play_handler(Testbase):
         self.login(0) 
         response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
             'name': 'Thomas',
-            'address': 'http://example.net',
+            'url': 'http://example.net',
             'secret': 'SOME SECRET',
         })
         self.assertEqual(response.code, 201, response.body)
         server1 = utils.json_loads(response.body)
         response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
             'name': 'Thomas 2',
-            'address': 'http://example.net',
+            'url': 'http://example.net',
             'secret': 'SOME SECRET',
         })
         self.assertEqual(response.code, 201, response.body)
@@ -132,7 +132,7 @@ class test_user_access_handler(Testbase):
         )
         response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
             'name': 'Thomas',
-            'address': 'http://example.net',
+            'url': 'http://example.net',
             'secret': 'SOME SECRET',
         })
         self.assertEqual(response.code, 201)

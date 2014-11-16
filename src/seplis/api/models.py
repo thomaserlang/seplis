@@ -236,7 +236,7 @@ class Play_server(base):
     updated = Column(DateTime)
     user_id = Column(Integer)
     name = Column(String(45))
-    address = Column(String(200))
+    url = Column(String(200))
     external_id = Column(String(36))
     secret = Column(String(200))
 

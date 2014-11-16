@@ -13,5 +13,20 @@
             {{ escape(episode['air_date']) }}
         </date>
     </td>
-    <td style="text-align:right;width:50px;">{% module watched_button(show, episode) %}</td>
+    <td>
+        <div class="dropdown">
+            <ul class="dropdown-menu" role="menu"></ul>
+            <a 
+                show-id="{{ show['id'] }}"
+                episode-number="{{ episode['number'] }}"
+                data-toggle="dropdown"
+                class="episode-play-servers"
+            >
+                <i class="glyphicon glyphicon-play-circle"></i>
+            </a>
+        </div>
+    </td>
+    <td style="text-align:right;width:50px;">
+        {% module watched_button(show, episode) %}
+    </td>
 </tr>

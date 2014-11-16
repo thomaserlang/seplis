@@ -9,7 +9,7 @@ from datetime import datetime
 class Play_server(object):
 
     def __init__(self, id, created, updated, user_id, name,
-        address, external_id, secret):
+        url, external_id, secret):
         '''
 
         :param id: int
@@ -17,7 +17,7 @@ class Play_server(object):
         :param updated: datetime
         :param user_id: int
         :param name: str
-        :param address: str
+        :param url: str
         :param external_id: str
         :param secret: str
         '''
@@ -26,7 +26,7 @@ class Play_server(object):
         self.updated = updated
         self.user_id = user_id
         self.name = name
-        self.address = address
+        self.url = url
         self.external_id = external_id
         self.secret = secret
 
@@ -43,7 +43,7 @@ class Play_server(object):
             updated=row.updated,
             user_id=row.user_id,
             name=row.name,
-            address=row.address,
+            url=row.url,
             external_id=row.external_id,
             secret=row.secret,
         )
@@ -51,12 +51,12 @@ class Play_server(object):
     @classmethod
     @auto_session
     @auto_pipe
-    def new(cls, user_id, name, address, secret, 
+    def new(cls, user_id, name, url, secret, 
         session=None, pipe=None):
         server = models.Play_server(
             user_id=int(user_id),
             name=name,
-            address=address,
+            url=url,
             created=datetime.utcnow(),
             external_id=str(uuid.uuid4()),
             secret=secret,
@@ -83,7 +83,7 @@ class Play_server(object):
             'updated': self.updated,
             'user_id': self.user_id,
             'name': self.name,
-            'address': self.address,
+            'url': self.url,
             'secret': self.secret,
         })
         self.cache(pipe=pipe)
@@ -121,7 +121,7 @@ class Play_server(object):
             updated=server['updated'] if server['updated'] != 'None' else None,
             user_id=int(server['user_id']),
             name=server['name'],
-            address=server['address'],
+            url=server['url'],
             external_id=server['external_id'],
             secret=server['secret'],
         )

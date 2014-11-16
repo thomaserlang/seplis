@@ -376,7 +376,7 @@ class Test_play_servers(Testbase):
 
         response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
             'name': 'Thomas',
-            'address': 'http://example.net',
+            'url': 'http://example.net',
             'secret': 'SOME SECRET',
         })
         self.assertEqual(response.code, 201, response.body)

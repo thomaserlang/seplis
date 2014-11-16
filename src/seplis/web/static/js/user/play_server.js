@@ -38,4 +38,32 @@ $(function(){
             }
         )
     });
+    $('.episode-play-servers').click(function(){
+        var menu = $(this).parent().find('.dropdown-menu');
+        api.get(
+            '/api/show-episode/play-servers',
+            {
+                'show_id': $(this).attr('show-id'),
+                'episode_number': $(this).attr('episode-number'),
+            },
+            {
+                done: function(data){
+                    menu.html(_.template(multiline(function(){/*
+                        <% for (var ps in play_servers) { %>
+                            <li>
+                            <a 
+                                play-id="<%= play_servers[ps].play_id %>"
+
+                            >
+                                <%= play_servers[ps].play_server.name %>
+                            </a>
+                            </li>
+                        <% } %>
+                        */}),
+                        {'play_servers': data}
+                    ));
+                },
+            }
+        )
+    });
 });

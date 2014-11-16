@@ -22,7 +22,7 @@ class Server_handler(Handler):
         server = Play_server.new(
             user_id=user_id,
             name=data['name'],
-            address=data['address'],
+            url=data['url'],
             secret=data['secret'],
         )
         self.set_status(201)
@@ -34,8 +34,8 @@ class Server_handler(Handler):
         data = self.validate(schemas.Play_server)
         if 'name' in data:
             server.name = data['name']
-        if 'address' in data:
-            server.address = data['address']
+        if 'url' in data:
+            server.url = data['url']
         if 'secret' in data:
             server.secret = data['secret']
         server.save()

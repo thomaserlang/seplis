@@ -23,14 +23,14 @@
         >
     </div>
     <div class="form-group">
-        <label for="input-address">Address</label>
+        <label for="input-url">URL</label>
         <input 
-            name="address"
-            id="input-address"
+            name="url"
+            id="input-url"
             type="text"
             class="form-control"
             placeholder="http://127.0.0.1:8001"
-            value="{{ play_server['address'] if play_server else '' }}"
+            value="{{ play_server['url'] if play_server else '' }}"
             required
         >
     </div>

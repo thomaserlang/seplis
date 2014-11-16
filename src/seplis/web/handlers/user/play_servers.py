@@ -47,7 +47,7 @@ class API_handler(base.API_handler):
         id_ = self.get_argument('id', None)
         data = {
             'name': self.get_argument('name'),
-            'address': self.get_argument('address'),
+            'url': self.get_argument('url'),
             'secret': self.get_argument('secret'),
         }
         if id_:
@@ -69,3 +69,14 @@ class API_handler(base.API_handler):
             self.get_argument('id'),
         ))
         self.write('{}')
+
+class API_episode_handler(base.API_handler):
+
+    @authenticated
+    @gen.coroutine
+    def get(self):
+        play_servers = yield self.client.get('/shows/{}/episodes/{}/play-servers'.format(
+            self.get_argument('show_id'),
+            self.get_argument('episode_number'),
+        ))
+        self.write_object(play_servers)

@@ -30,7 +30,7 @@ def upgrade():
             ),
         ),
         sa.Column('name', sa.String(45)),
-        sa.Column('address', sa.String(200)),
+        sa.Column('url', sa.String(200)),
         sa.Column('external_id', sa.String(36), index=True),
         sa.Column('secret', sa.String(200), index=True),
     )
