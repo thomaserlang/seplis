@@ -53,7 +53,7 @@ $(function(){
                             '<li>'+
                             '<a '+
                                 'href="/play-episode?play_server_id=<%- play_servers[ps].play_server.id %>&play_id=<%- play_servers[ps].play_id %>"'+
-                            '>'
+                            '>'+
                                 '<%- play_servers[ps].play_server.name %>'+
                             '</a>'+
                             '</li>'+
