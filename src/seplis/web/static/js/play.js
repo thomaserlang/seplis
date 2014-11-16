@@ -75,11 +75,11 @@
         $('.slider').change(function(event){ 
             video.get(0).pause();
             $.get(url+'/'+session+'/cancel');
-            session = _this.guid();
+            session = guid();
             var start = parseInt($(this).val());
             video.attr(
                 'src', 
-                url+'play?play_id='+play_id+
+                url+'/play?play_id='+play_id+
                 '&device='+device+'&session='+session+'&start='+start.toString()
             );
             offset_duration = start;            

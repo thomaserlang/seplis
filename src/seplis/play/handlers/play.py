@@ -75,6 +75,7 @@ class _hls_handler(object):
             self.sessions[self.session]
         )
         self.sessions[self.session]['call_later'] = call_later
+        time.sleep(1)
         self.finish()
 
     def start_transcode(self, session, cmd):
