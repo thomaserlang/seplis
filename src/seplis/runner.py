@@ -19,9 +19,9 @@ def web(port):
     seplis.web.app.main()
 
 @cli.command()
-@click.option('--port', '-p', default=None, help='the port')
+@click.option('--port', '-p', default=8001, help='the port')
 def api(port):
-    if port:
+    if port and config['api']['port'] != port:
         config['api']['port'] = port
     import seplis.api.app
     seplis.api.app.main()

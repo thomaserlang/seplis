@@ -170,7 +170,7 @@ class Shows_scan(Play_scan):
         ))
         show_id = self.show_id.lookup(episode.show_title)
         if show_id:
-            logging.info('Found show: "{}" with show id: "{}"'.format(
+            logging.info('Found show: "{}" with show id: {}'.format(
                 episode.show_title,
                 show_id,
             ))
@@ -218,7 +218,7 @@ class Shows_scan(Play_scan):
         If the object has `show_id`, `number` and `path`
         is filled the episode will be saved.
 
-        :param episodes: list of `Parsed_episode()`
+        :param episode: `Parsed_episode()`
         '''
         updated = 0
         with new_session() as session:
@@ -243,6 +243,7 @@ class Shows_scan(Play_scan):
             )
             session.merge(e)
             session.commit()
+            return True
 
 class Show_id(object):
 
