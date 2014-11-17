@@ -145,29 +145,17 @@ class Play_handler(
             else 'default'
         return device_name
 
-    def get_play_info(self):
-        play_info = decode_play_id(
-            self.get_argument('play_id'),
-        )
-        with new_session() as session:
-            episode = session.query(
-                models.Episode.path,
-                models.Episode.meta_data,
-            ).filter(
-                models.Episode.show_id == play_info['show_id'],
-                models.Episode.number == play_info['number'],
-            ).first()
-            if not episode:
-                raise tornado.web.HTTPError(404)
-            return (episode.path, episode.meta_data)
-
     @tornado.web.asynchronous
     def get(self):
         self.session = self.get_argument('session')
         self.ioloop = tornado.ioloop.IOLoop.current()
         device_name = self.get_device_name()
         device = config['play']['devices'][device_name]
-        file_path, self.metadata = self.get_play_info()
+        episode = get_episode(self.get_argument('play_id'))
+        if not episode:
+            raise tornado.web.HTTPError(404)
+        file_path = episode.path
+        self.metadata = episode.meta_data
         cmd = self.get_transcode_arguments(
             file_path,
             device_name,
@@ -341,26 +329,38 @@ class Hls_cancel_handler(Play_handler, _hls_handler):
 class Metadata_handler(tornado.web.RequestHandler):
 
     def get(self):
-        play_info = decode_play_id(
+        episode = get_episode(
             self.get_argument('play_id'),
         )
-        with new_session() as session:
-            metadata = session.query(
-                models.Episode.meta_data,
-            ).filter(
-                models.Episode.show_id == play_info['show_id'],
-                models.Episode.number == play_info['number'],
-            ).first()
-            if not metadata or not metadata.meta_data:
-                self.set_status(404)
-                self.write('{}')
-                return
-            self.write(
-                metadata.meta_data,
-            )
+        if not episode or not episode.meta_data:
+            self.set_status(404)
+            self.write('{}')
+            return
+        self.write(
+            episode.meta_data,
+        )
 
     def set_default_headers(self):
         set_default_headers(self)
+
+class Play_source_handler(tornado.web.RequestHandler):
+
+    @tornado.web.asynchronous
+    def get(self):
+        episode = get_episode(self.get_argument('play_id'))
+        if config['play']['x-accel']:
+            self.add_header('X-Accel-Redirect', episode.path)
+            self.finish()
+        else:
+            if not episode:
+                raise tornado.web.HTTPError(404)
+            with open(episode.path, 'rb') as f:
+                while 1:
+                    data = f.read(16384)
+                    if not data: 
+                        break
+                    self.write(data)
+            self.finish()
 
 def decode_play_id(play_id):
     return utils.json_loads(tornado.web.decode_signed_value(
@@ -369,3 +369,17 @@ def decode_play_id(play_id):
         value=play_id,
         max_age_days=1,
     ))
+
+def get_episode(play_id):
+    play_info = decode_play_id(
+        play_id,
+    )
+    with new_session() as session:
+        episode = session.query(
+            models.Episode.path,
+            models.Episode.meta_data,
+        ).filter(
+            models.Episode.show_id == play_info['show_id'],
+            models.Episode.number == play_info['number'],
+        ).first()
+        return episode

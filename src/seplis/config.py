@@ -74,6 +74,7 @@ config = {
                 'default_codec': 'libx264',
                 'type': 'hls',
             },
+            'x-accel': False,
         }, 
     }
 }
