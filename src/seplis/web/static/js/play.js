@@ -43,7 +43,7 @@
                 method = '/play';
                 $('.slider').hide();
             }
-            console.log(metadata);
+            
             var src = url+method+'?play_id='+
                 play_id+'&device='+device+'&session='+session;
             $('video').attr('src', src);
