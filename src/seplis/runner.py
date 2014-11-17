@@ -6,22 +6,25 @@ from seplis import config
 
 @click.group()
 @click.option('--config', default=None, help='path to the config file')
-def cli(config):
+@click.option('--logging_path', default=None)
+def cli(config, logging_path):
     import seplis
     seplis.config_load(config)
+    if logging_path != None:
+        seplis.config['logging']['path'] = logging_path
 
 @cli.command()
-@click.option('--port', '-p', default=8001, help='the port')
+@click.option('--port', '-p', default=config['web']['port'], help='the port')
 def web(port):
-    if port and config['web']['port'] != port:
+    if port:
         config['web']['port'] = port            
     import seplis.web.app
     seplis.web.app.main()
 
 @cli.command()
-@click.option('--port', '-p', default=8002, help='the port')
+@click.option('--port', '-p', default=config['api']['port'], help='the port')
 def api(port):
-    if port and config['api']['port'] != port:
+    if port:
         config['api']['port'] = port
     import seplis.api.app
     seplis.api.app.main()
@@ -95,12 +98,19 @@ def update_shows_all(from_id):
 def worker():
     logger.set_logger('worker.log')
     import seplis.tasks.worker
-    seplis.tasks.worker.main()
+    try:
+        seplis.tasks.worker.main()
+    except:
+        logging.exception('worker')
 
 @cli.command()
 def play_scan():
     import seplis.play.scan
-    seplis.play.scan.upgrade_scan_db()
+    try:
+        seplis.play.scan.upgrade_scan_db()
+    except:        
+        logging.exception('play scan db upgrade')
+        raise
     logger.set_logger('play_scan.log')
     if not config['play']['scan']:
         raise Exception('''
@@ -111,20 +121,23 @@ def play_scan():
                 play:
                     scan:
                         -
-                        type: shows
-                        path: /a/path/to/the/shows
+                            type: shows
+                            path: /a/path/to/the/shows
             ''')
-    for s in config['play']['scan']:
-        scanner = None
-        if s['type'] == 'shows':
-            scanner = seplis.play.scan.Shows_scan(
-                s['path'],
-            )
-        if not scanner:
-            raise Exception('Scan type: "{}" is not supported'.format(
-                s['type']
-            ))
-        scanner.scan()
+    try:
+        for s in config['play']['scan']:
+            scanner = None
+            if s['type'] == 'shows':
+                scanner = seplis.play.scan.Shows_scan(
+                    s['path'],
+                )
+            if not scanner:
+                raise Exception('Scan type: "{}" is not supported'.format(
+                    s['type']
+                ))
+            scanner.scan()
+    except:        
+        logging.exception('play scan')
 
 @cli.command()
 def play_server():

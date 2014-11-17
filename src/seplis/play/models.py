@@ -41,4 +41,4 @@ class Show_id_lookup(base):
 
     show_title = sa.Column(sa.String(200), primary_key=True)
     show_id = sa.Column(sa.Integer)
-    updated = sa.DateTime
+    updated = sa.Column(sa.DateTime)

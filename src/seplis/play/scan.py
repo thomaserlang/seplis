@@ -261,16 +261,14 @@ class Show_id(object):
         if show_id:
             return show_id
         shows = self.web_lookup(show_title)
-        if not shows:
-            return
-        show_id = shows[0]['id']
+        show_id = shows[0]['id'] if shows else None
         with new_session() as session:
             show = models.Show_id_lookup(
                 show_title=show_title,
                 show_id=show_id,
                 updated=datetime.utcnow(),
             )
-            session.add(show)
+            session.merge(show)
             session.commit()
         return show_id
 
@@ -286,7 +284,7 @@ class Show_id(object):
             ).filter(
                 models.Show_id_lookup.show_title == show_title,
             ).first()
-            if not show:
+            if not show or not show.show_id:
                 return
             return show.show_id
 
