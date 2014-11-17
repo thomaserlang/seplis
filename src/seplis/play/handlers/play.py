@@ -134,7 +134,7 @@ class _hls_handler(object):
         tornado.ioloop.IOLoop.current().remove_timeout(session['call_later'])
         del self.sessions[session['session']]
 
-class Play_handler(
+class Transcode_handler(
     tornado.web.RequestHandler, 
     _hls_handler, 
     _stream_handler):
@@ -227,6 +227,7 @@ class Play_handler(
         cmd = [ 
             os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
             '-i', file_path,
+            '-async',
             '-f', 'matroska',
             '-loglevel', 'quiet',
             '-threads', '0',
@@ -270,7 +271,7 @@ class Play_handler(
             '-hls_allow_cache', '0',
         ]    
 
-class Hls_file_handler(Play_handler, _hls_handler):
+class Hls_file_handler(Transcode_handler, _hls_handler):
 
     @tornado.web.asynchronous
     def get(self, session, file_):
@@ -315,7 +316,7 @@ def set_default_headers(self):
     self.set_header('Access-Control-Max-Age', '86400')
     self.set_header('Access-Control-Allow-Credentials', 'true')
 
-class Hls_cancel_handler(Play_handler, _hls_handler):
+class Hls_cancel_handler(Transcode_handler, _hls_handler):
 
     def get(self, session):
         if session in self.sessions:
@@ -343,7 +344,7 @@ class Metadata_handler(tornado.web.RequestHandler):
     def set_default_headers(self):
         set_default_headers(self)
 
-class Play_source_handler(tornado.web.RequestHandler):
+class Play_handler(tornado.web.RequestHandler):
 
     @tornado.web.asynchronous
     def get(self):

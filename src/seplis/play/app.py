@@ -17,8 +17,8 @@ class Application(tornado.web.Application):
             (r'/(.*)/media/(.*)', seplis.play.handlers.play.Hls_file_handler),
             (r'/(.*)/cancel', seplis.play.handlers.play.Hls_cancel_handler),
 
+            (r'/transcode', seplis.play.handlers.play.Transcode_handler),
             (r'/play', seplis.play.handlers.play.Play_handler),
-            (r'/play-source', seplis.play.handlers.play.Play_source_handler),
             
             (r'/metadata', seplis.play.handlers.play.Metadata_handler),
         ]
