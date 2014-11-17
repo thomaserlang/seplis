@@ -11,15 +11,15 @@ def cli(config):
     seplis.config_load(config)
 
 @cli.command()
-@click.option('--port', '-p', default=None, help='the port')
+@click.option('--port', '-p', default=8001, help='the port')
 def web(port):
-    if port:
+    if port and config['web']['port'] != port:
         config['web']['port'] = port            
     import seplis.web.app
     seplis.web.app.main()
 
 @cli.command()
-@click.option('--port', '-p', default=8001, help='the port')
+@click.option('--port', '-p', default=8002, help='the port')
 def api(port):
     if port and config['api']['port'] != port:
         config['api']['port'] = port
