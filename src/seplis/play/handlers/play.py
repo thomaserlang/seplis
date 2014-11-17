@@ -227,7 +227,6 @@ class Transcode_handler(
         cmd = [ 
             os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
             '-i', file_path,
-            '-async',
             '-f', 'matroska',
             '-loglevel', 'quiet',
             '-threads', '0',
