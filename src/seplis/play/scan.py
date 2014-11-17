@@ -157,7 +157,6 @@ class Shows_scan(Play_scan):
             len(episodes),
             self.scan_path,
         ))
-        print(len(episodes))
         return episodes
 
     def episode_show_id_lookup(self, episode):
