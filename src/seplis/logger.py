@@ -11,6 +11,7 @@ class logger(object):
     def set_logger(cls, filename, to_sentry=False):
         logger = logging.getLogger()
         logger.setLevel(getattr(logging, config['logging']['level'].upper()))
+        logger.handlers = []
         if config['logging']['path']:
             channel = logging.handlers.RotatingFileHandler(
                 filename=os.path.join(config['logging']['path'], filename),
@@ -19,7 +20,7 @@ class logger(object):
             )
             channel.setFormatter(logging.Formatter('[%(levelname)s %(asctime)s.%(msecs)d %(module)s:%(lineno)d]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
             logger.addHandler(channel)
-        if not logger.handlers:# send to console instead of file
+        else:# send to console instead of file
             channel = logging.StreamHandler()
             channel.setFormatter(logging.Formatter('[%(levelname)s %(asctime)s.%(msecs)d %(module)s:%(lineno)d]: %(message)s', datefmt='%Y-%m-%d %H:%M:%S'))
             logger.addHandler(channel)

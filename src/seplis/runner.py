@@ -99,9 +99,9 @@ def worker():
 
 @cli.command()
 def play_scan():
-    logger.set_logger('play_scan.log')
     import seplis.play.scan
     seplis.play.scan.upgrade_scan_db()
+    logger.set_logger('play_scan.log')
     if not config['play']['scan']:
         raise Exception('''
             Nothing to scan. Add a path in the config file.

@@ -143,9 +143,12 @@ class Shows_scan(Play_scan):
         episodes = self.get_episodes()
         if not episodes:
             return
-        self.episodes_show_id_lookup(episodes)
-        self.episodes_number_lookup(episodes)
-        self.save_episodes(episodes)
+        for episode in episodes:
+            if not self.episode_show_id_lookup(episode):
+                continue
+            if not self.episode_number_lookup(episode):
+                continue
+            self.save_episode(episode)
 
     def get_episodes(self):
         files = self.get_files()
@@ -154,99 +157,93 @@ class Shows_scan(Play_scan):
             len(episodes),
             self.scan_path,
         ))
+        print(len(episodes))
         return episodes
 
-    def episodes_show_id_lookup(self, episodes):
+    def episode_show_id_lookup(self, episode):
         '''
 
-        :param episodes: list of `Parsed_episode()`
+        :param episode: `Parsed_episode()`
+        :returns: bool
         '''
-        for episode in episodes:
-            logging.info('Looking for a show with title: "{}"'.format(
-                episode.show_title
+        logging.info('Looking for a show with title: "{}"'.format(
+            episode.show_title
+        ))
+        show_id = self.show_id.lookup(episode.show_title)
+        if show_id:
+            logging.info('Found show: "{}" with show id: "{}"'.format(
+                episode.show_title,
+                show_id,
             ))
-            show_id = self.show_id.lookup(episode.show_title)
-            if show_id:
-                logging.info('Found show: "{}" with show id: "{}"'.format(
-                    episode.show_title,
-                    show_id,
-                ))
-                episode.show_id = show_id
-            else:
-                logging.info('No show found for title: "{}"'.format(
-                    episode.show_title,
-                ))
+            episode.show_id = show_id
+            return True
+        else:
+            logging.info('No show found for title: "{}"'.format(
+                episode.show_title,
+            ))
+        return False
 
-    def episodes_number_lookup(self, episodes):
+    def episode_number_lookup(self, episode):
         '''
-        Finds the episode numbers for all the episodes if `number` is
-        not already filled.
 
-        :param episodes: list of `Parsed_episode()`
+        :param episode: `Parsed_episode()`
+        :returns: bool
         '''
-        for episode in episodes:
-            if not episode.show_id:
-                continue
-            if isinstance(episode, Parsed_episode_number):
-                continue
-            value = self.episode_number.get_lookup_value(episode)
-            logging.info('Looking for episode {} with show_id {}'.format(
+        if not episode.show_id:
+            return
+        if isinstance(episode, Parsed_episode_number):
+            return
+        value = self.episode_number.get_lookup_value(episode)
+        logging.info('Looking for episode {} with show_id {}'.format(
+            value,
+            episode.show_id,
+        ))
+        number = self.episode_number.lookup(episode)
+        if number:                
+            logging.info('Found episode {} from {} with show_id {}'.format(
+                number,
                 value,
                 episode.show_id,
             ))
-            number = self.episode_number.lookup(episode)
-            if number:                
-                logging.info('Found episode {} from {} with show_id {}'.format(
-                    number,
-                    value,
-                    episode.show_id,
-                ))
-                episode.number = number
-            else:
-                logging.info('No episode was found for {} with show_id {}'.format(
-                    value,
-                    episode.show_id,
-                ))
+            episode.number = number
+            return True
+        else:
+            logging.info('No episode was found for {} with show_id {}'.format(
+                value,
+                episode.show_id,
+            ))
+        return False
 
-    def save_episodes(self, episodes):
+    def save_episode(self, episode):
         '''
-        Saves a list of parsed episodes.
         If the object has `show_id`, `number` and `path`
         is filled the episode will be saved.
 
         :param episodes: list of `Parsed_episode()`
         '''
-        logging.info('Saving episodes to db from "{}"'.format(
-            self.scan_path
-        ))
         updated = 0
         with new_session() as session:
-            for episode in episodes:
-                if not episode.show_id or not episode.number:
-                    continue
-                ep = session.query(
-                    models.Episode,
-                ).filter(
-                    models.Episode.show_id == episode.show_id,
-                    models.Episode.number == episode.number,
-                ).first()
-                modified_time = self.get_file_modified_time(episode.path)
-                if ep and ep.modified_time == modified_time:
-                    continue
-                metadata = self.get_metadata(episode.path)
-                e = models.Episode(
-                    show_id=episode.show_id,
-                    number=episode.number,
-                    path=episode.path,
-                    meta_data=metadata,
-                    modified_time=modified_time,
-                )
-                session.merge(e)
+            if not episode.show_id or not episode.number:
+                return False
+            ep = session.query(
+                models.Episode,
+            ).filter(
+                models.Episode.show_id == episode.show_id,
+                models.Episode.number == episode.number,
+            ).first()
+            modified_time = self.get_file_modified_time(episode.path)
+            if ep and ep.modified_time == modified_time:
+                return
+            metadata = self.get_metadata(episode.path)
+            e = models.Episode(
+                show_id=episode.show_id,
+                number=episode.number,
+                path=episode.path,
+                meta_data=metadata,
+                modified_time=modified_time,
+            )
+            session.merge(e)
             session.commit()
-        logging.info('{} new/updated episodes saved from "{}"'.format(
-            updated,
-            self.scan_path,
-        ))
 
 class Show_id(object):
 
