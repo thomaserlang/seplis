@@ -6,6 +6,7 @@ import subprocess
 import os, os.path
 import shutil
 import time
+import mimetypes
 from seplis import config, utils
 from seplis.play import models
 from seplis.play.decorators import new_session
@@ -348,8 +349,10 @@ class Play_handler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def get(self):
         episode = get_episode(self.get_argument('play_id'))
+        content_type = mimetypes.guess_type(episode.path)
+        if content_type:            
+            self.add_header('Content-Type', content_type)
         if config['play']['x-accel']:
-            self.add_header('Content-Type', 'video/mp4')
             self.add_header('X-Accel-Redirect', '/source'+episode.path)
             self.finish()
         else:
