@@ -105,11 +105,14 @@ class Thetvdb(Show_indexer_base):
         for id_ in data['Series']:
             ids.append(id_)
         for id_ in data['Episode']:
-            ids.append(
-                self.episode_id_to_show_id(
-                    id_,
+            try:
+                ids.append(
+                    self.episode_id_to_show_id(
+                        id_,
+                    )
                 )
-            )
+            except:
+                logging.exception('tvrage get_updates')
         return ids
 
     def get_update_data(self):

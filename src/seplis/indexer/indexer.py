@@ -51,7 +51,11 @@ class Show_indexer(Client):
             if not indexer:
                 continue
             start_time = time.time()
-            ids = indexer.get_updates()
+            ids = []
+            try:
+                ids = indexer.get_updates()
+            except:
+                logging.exception('indexer updates')
             if not ids: 
                 logging.info('No updates from external source: {}'.format(name))
                 continue

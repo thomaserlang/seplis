@@ -1,0 +1,19 @@
+{% for episode in next_to_air %}
+    <div class="item">
+        {% if episode == next_to_air[0] %}
+            <p class="next-episode">Next episode</p>
+        {% end %}
+        <p>
+            {{ escape(episode['title']) if episode['title'] else 'Unknown title' }}
+        </p>
+        <p>
+            {% if 'season' in episode and episode['season'] %}
+                Episode {{ episode['episode'] }}
+                ({{ episode['number'] }})
+            {% else %}            
+                Number {{ episode['number'] }} 
+            {% end %}
+        </p>
+        <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
+    </div>
+{% end %}

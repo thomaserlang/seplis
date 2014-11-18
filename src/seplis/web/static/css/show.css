@@ -74,3 +74,81 @@
 .show-pages-menu {
     margin-left:10px
 }
+
+.episode-sidebar {
+    width:168px;
+    float:left;
+    margin-left:10px;
+    border-radius: 4px;
+    overflow:hidden;
+}
+
+.episode-sidebar .item {
+    width:100%;
+    padding:5px;
+    background-color: #414141;
+    color:#E2E2E2;
+    border-bottom: 1px solid #515151;
+}
+
+.episode-sidebar .item:first-child {
+    background-color: #019875;
+    color:#fff;
+    border:none;
+}
+
+.episode-sidebar .item:last-child {
+    border:none;
+}
+
+.episode-sidebar .item p, .episode-bar .item p {
+    margin:0;
+    text-overflow: ellipsis;
+    white-space:nowrap;
+    overflow:hidden;
+}
+
+.episode-sidebar .item p.next-episode {
+    font-size: 10px;
+    font-weight: bolder;
+}
+
+.episode-bar {
+    margin-top:20px;
+    width:100%;
+    overflow:hidden;
+    height:70px;
+    background-color:#F4F4F4;
+}
+
+.episode-bar .item {
+    width:187.6px;
+    float:left;
+    border-left:10px solid #ccc;
+}
+.episode-bar .item .info {
+    padding:5px;
+    padding-bottom:0;
+}
+.episode-bar .item .progress {
+    height:5px;
+    background-color:#3FC380;
+    border-radius:0;
+    float:left;
+}
+
+.episode-bar .item:nth-child(1){
+    border-left:10px solid #4B77BE;    
+}
+.episode-bar .item:nth-child(2){
+    border-left:10px solid #26A65B;    
+}
+.episode-bar .item:nth-child(3){
+    border-left:10px solid #E87E04;    
+}
+.episode-bar .item:nth-child(4){
+    border-left:10px solid #6C7A89;    
+}
+.episode-bar .item:nth-child(5){
+    border-left:10px solid #8E44AD;    
+}

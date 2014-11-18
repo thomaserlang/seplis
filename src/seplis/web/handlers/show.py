@@ -23,6 +23,8 @@ class Handler(base.Handler):
             show,
             season=selected_season,
         )
+        next_to_air = yield self.get_next_to_air(show['id'])
+        episodes_to_watch = yield self.get_episodes_to_watch(show)
         self.render(
             'show.html',
             title=show['title'],
@@ -30,6 +32,8 @@ class Handler(base.Handler):
             episodes=episodes,
             selected_season=selected_season,
             next_episode=next_episode,
+            next_to_air=next_to_air,
+            episodes_to_watch=episodes_to_watch,
         )
 
     @gen.coroutine
@@ -71,6 +75,18 @@ class Handler(base.Handler):
         return (None, [])
 
     @gen.coroutine
+    def get_next_to_air(self, show_id, per_page=5):
+        episodes = yield self.client.get(
+            '/shows/{}/episodes'.format(show_id),
+            {                
+                'q': 'air_date:[{} TO *]'.format(datetime.utcnow().date()),
+                'per_page': per_page,
+                'sort': 'number:asc',
+            }
+        )
+        return episodes
+
+    @gen.coroutine
     def get_next_episode(self, show_id):
         req = {
             'q': 'air_date:[{} TO *]'.format(datetime.utcnow().date()),
@@ -85,6 +101,23 @@ class Handler(base.Handler):
         )
         if episodes:
             return episodes[0]
+
+    @gen.coroutine
+    def get_episodes_to_watch(self, show, limit=5):
+        number = 1
+        if 'user_watching' in show:
+            number = show['user_watching']['episode']['number']
+            if number > 1:
+                number -= 1
+        episodes = yield self.client.get('/shows/{}/episodes'.format(show['id']),
+            {
+                'q': 'number:[{} TO {}]'.format(
+                    number,
+                    number+limit,
+                ),
+            }
+        )
+        return episodes
 
 class Redirect_handler(base.Handler_unauthenticated):
 

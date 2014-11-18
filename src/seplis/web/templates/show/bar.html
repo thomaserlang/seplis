@@ -1,0 +1,24 @@
+{% for episode in episodes_to_watch %}
+    <div class="item">
+        <div class="info">
+            <p>
+                {{ escape(episode['title']) if episode['title'] else 'Unknown title' }}
+            </p>
+            <p>
+                {% if 'season' in episode and episode['season'] %}
+                    Episode {{ episode['episode'] }}
+                    ({{ episode['number'] }})
+                {% else %}            
+                    Number {{ episode['number'] }} 
+                {% end %}
+            </p>
+            <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
+        </div>
+        {% if 'user_watching' in show and show['runtime'] %}
+            <div 
+                class="progress"
+                style="width:{{ (show['runtime'] / 100) * show['user_watching']['position'] }}%;"
+            ></div>
+        {% end %}
+    </div>
+{% end %}

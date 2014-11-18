@@ -60,7 +60,7 @@ class Tvrage(Show_indexer_base):
             episode_list,
         )
 
-    def get_updates(self, store_latest_timestamp=True):
+    def get_updates(self):
         timestamp = self.get_latest_update_timestamp()        
         r = requests.get(
             self._url_updates.format(
@@ -78,8 +78,6 @@ class Tvrage(Show_indexer_base):
                     show_ids.append(
                         int(show['id'])
                     )
-        if store_latest_timestamp:
-            self.set_latest_update_timestamp()
         return show_ids
 
 

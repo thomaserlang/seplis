@@ -48,8 +48,13 @@
                 {% end %}
 
                 {% include show_next_episode.html %}
-
             </div>
+            <div class="episode-sidebar">
+                {% include show/sidebar.html %}
+            </div>
+        </div>
+        <div class="episode-bar">
+            {% include show/bar.html %}
         </div>
         <hr>
         {% if show['seasons'] %}
