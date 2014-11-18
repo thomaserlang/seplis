@@ -349,6 +349,7 @@ class Play_handler(tornado.web.RequestHandler):
     def get(self):
         episode = get_episode(self.get_argument('play_id'))
         if config['play']['x-accel']:
+            self.add_header('Content-Type', 'video/mp4')
             self.add_header('X-Accel-Redirect', '/source'+episode.path)
             self.finish()
         else:
