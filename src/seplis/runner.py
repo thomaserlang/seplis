@@ -6,12 +6,15 @@ from seplis import config
 
 @click.group()
 @click.option('--config', default=None, help='path to the config file')
-@click.option('--logging_path', default=None)
-def cli(config, logging_path):
+@click.option('--logging_path', '-log_path' default=None, help='a folder to store the log files in')
+@click.option('--logging_level', '-log_level', default=None, help='notset, debug, info, warning, error or critical')
+def cli(config, logging_path, logging_level):
     import seplis
     seplis.config_load(config)
     if logging_path != None:
         seplis.config['logging']['path'] = logging_path
+    if logging_level:
+        seplis.config['logging']['level'] = logging_level
 
 @cli.command()
 @click.option('--port', '-p', default=config['web']['port'], help='the port')
