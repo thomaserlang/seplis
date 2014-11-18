@@ -351,7 +351,7 @@ class Play_handler(tornado.web.RequestHandler):
         episode = get_episode(self.get_argument('play_id'))
         content_type = mimetypes.guess_type(episode.path)
         if content_type:            
-            self.add_header('Content-Type', content_type)
+            self.add_header('Content-Type', content_type[0])
         if config['play']['x-accel']:
             self.add_header('X-Accel-Redirect', '/source'+episode.path)
             self.finish()
