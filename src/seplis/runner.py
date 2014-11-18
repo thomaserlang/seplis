@@ -114,7 +114,7 @@ def play_scan():
     except:        
         logging.exception('play scan db upgrade')
         raise
-    logger.set_logger('play_scan.log')
+    logger.set_logger('play_scan.log', to_sentry=True)
     if not config['play']['scan']:
         raise Exception('''
             Nothing to scan. Add a path in the config file.
@@ -144,7 +144,7 @@ def play_scan():
 
 @cli.command()
 def play_server():
-    logger.set_logger('play_scan.log')
+    logger.set_logger('play_scan.log', to_sentry=True)
     import seplis.play.app
     seplis.play.app.main()
 
