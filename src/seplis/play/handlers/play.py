@@ -171,8 +171,9 @@ class Transcode_handler(
     def set_start_time(self, cmd):
         start = int(self.get_argument('start', 0))
         self.start_time = start
-        cmd.insert(1, '-ss')
-        cmd.insert(2, str(start))
+        l = len(cmd)
+        cmd.insert(l-3, '-ss')
+        cmd.insert(l-2, str(start))
 
     def on_connection_close(self):
         if not hasattr(self, 'type'):
