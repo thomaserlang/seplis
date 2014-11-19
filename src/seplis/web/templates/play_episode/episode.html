@@ -14,8 +14,10 @@
                 {{ episode['number'] }}
             );
             var seplisPlay = $('video').data('seplis_play');
-            {% if episode['user_watched'] and episode['user_watched']['position'] != None %}
+            {% if episode['user_watched'] and episode['user_watched']['position'] %}
                 seplisPlay.setStart({{ episode['user_watched']['position'] }});
+            {% else %}
+                seplisPlay.setStart(0);
             {% end %}
             seplisPlay.play();
         });
