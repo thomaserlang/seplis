@@ -9,6 +9,7 @@ from tornado.web import HTTPError, authenticated
 
 class Handler(base.Handler):
 
+    @authenticated
     @gen.coroutine
     def get(self): 
         show_id = self.get_argument('show_id')
@@ -48,5 +49,25 @@ class Handler(base.Handler):
             number,
         ), {
             'fields': 'title,number,season,episode',
+            'append': 'user_watched',
         })
         return episode
+
+class API_watching_handler(base.API_handler):
+
+    @authenticated
+    @gen.coroutine
+    def post(self):
+        show_id = self.get_argument('show_id')
+        number = self.get_argument('episode_number')
+        position = int(self.get_argument('position'), 0)
+        times = int(self.get_argument('times', 0))
+        yield self.client.put('/users/{}/watched/shows/{}/episodes/{}'.format(
+            self.current_user['id'],
+            show_id,
+            number,
+        ), {
+            'times': times,
+            'position': position,
+        })
+        self.write('{}')

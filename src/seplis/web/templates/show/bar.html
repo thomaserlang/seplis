@@ -19,13 +19,16 @@
                 <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
             </a>
         </div>
-        {% if 'user_watched' in episode and episode['user_watched'] %}
-            {% if episode['user_watched']['position'] > 0 %}
+        {% 
+            if 'user_watched' in episode and episode['user_watched'] and \
+                episode['user_watched']['position'] > 0 and show['runtime']
+        %}
             <div 
                 class="progress"
-                style="width:{{ (episode['runtime'] / 100) * episode['user_watched']['position'] }}%;"
+                style="width:{{ episode['user_watched']['position'] / (show['runtime'] * 60) * 100 }}%;"
             ></div>
-            {% end %}
+        {% else %}
+            <div class="progress"></div>
         {% end %}
     </div>
 {% end %}

@@ -72,6 +72,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/user/play-server-form', seplis.web.handlers.user.play_servers.Form_handler),
             URLSpec(r'/api/user/play-server', seplis.web.handlers.user.play_servers.API_handler),
             
+            URLSpec(r'/api/user/watching', seplis.web.handlers.play_episode.API_watching_handler),
             URLSpec(r'/modal/play-episode', seplis.web.handlers.play_episode.Handler),
             
         ]
