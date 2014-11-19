@@ -105,7 +105,8 @@ class Handler(base.Handler):
     @gen.coroutine
     def get_episodes_to_watch(self, show, limit=5):
         number = 1
-        if 'user_watching' in show and show['user_watching']['episode']:
+        if 'user_watching' in show and show['user_watching'] and \
+            show['user_watching']['episode']:
             number = show['user_watching']['episode']['number']
             if number > 1:
                 number -= 1
