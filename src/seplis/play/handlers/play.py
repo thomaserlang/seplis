@@ -171,6 +171,8 @@ class Transcode_handler(
     def set_start_time(self, cmd):
         start = int(self.get_argument('start', 0))
         self.start_time = start
+        if start == 0:
+            return
         l = len(cmd)
         cmd.insert(1, '-ss')
         cmd.insert(2, str(start))
