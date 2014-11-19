@@ -14,7 +14,7 @@
             </p>
             <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
         </div>
-        {% if 'user_watching' in show and show['runtime'] %}
+        {% if 'user_watching' in show and show['user_watching'] and show['runtime'] %}
             <div 
                 class="progress"
                 style="width:{{ (show['runtime'] / 100) * show['user_watching']['position'] }}%;"
