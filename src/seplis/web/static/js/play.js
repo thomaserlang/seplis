@@ -43,6 +43,7 @@
       
         this.setStart = (function(startime) {
             startTime = startime;
+            console.log(startime);
             video.attr(
                 'src', 
                 url+method+'?play_id='+play_id+
