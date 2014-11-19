@@ -40,4 +40,7 @@ $(function(){
         $.cookie('layout', $(this).attr('data-layout'), { expires: 1*365 });
         location.reload();
     });
+    $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
+        $(e.target).removeData("bs.modal").find(".modal-content").empty();
+    });
 });

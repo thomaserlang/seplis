@@ -9,6 +9,8 @@ import seplis.web.handlers.tag
 import seplis.web.handlers.suggest
 import seplis.web.handlers.air_dates
 import seplis.web.handlers.user.play_servers
+import seplis.web.handlers.play_episode
+
 import seplis.web.modules.menu
 import seplis.web.modules.buttons
 import seplis.web.modules.tags
@@ -69,8 +71,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/user/play-servers', seplis.web.handlers.user.play_servers.Handler),
             URLSpec(r'/user/play-server-form', seplis.web.handlers.user.play_servers.Form_handler),
             URLSpec(r'/api/user/play-server', seplis.web.handlers.user.play_servers.API_handler),
-            URLSpec(r'/api/show-episode/play-servers', seplis.web.handlers.user.play_servers.API_episode_handler),
-            URLSpec(r'/play-episode', seplis.web.handlers.user.play_servers.Play_episode_handler),
+            
+            URLSpec(r'/modal/play-episode', seplis.web.handlers.play_episode.Handler),
             
         ]
         tornado.web.Application.__init__(self, urls, **settings)

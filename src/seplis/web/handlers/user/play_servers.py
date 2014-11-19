@@ -69,32 +69,3 @@ class API_handler(base.API_handler):
             self.get_argument('id'),
         ))
         self.write('{}')
-
-class API_episode_handler(base.API_handler):
-
-    @authenticated
-    @gen.coroutine
-    def get(self):
-        play_servers = yield self.client.get('/shows/{}/episodes/{}/play-servers'.format(
-            self.get_argument('show_id'),
-            self.get_argument('episode_number'),
-        ))
-        self.write_object(play_servers)
-
-class Play_episode_handler(base.Handler):
-
-    @authenticated
-    @gen.coroutine
-    def get(self):
-        play_server = yield self.client.get('/users/{}/play-servers/{}'.format(
-            self.current_user['id'],
-            self.get_argument('play_server_id'),
-        ))
-        if not play_server:
-            raise HTTPError(404, 'unknown play server')
-        self.render(
-            'show_episode_play.html',
-            title=play_server['name'],
-            play_server=play_server,
-            play_id=self.get_argument('play_id'),
-        )

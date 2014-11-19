@@ -1,13 +1,15 @@
-{% extends base.html %}
-
+{% extends ../modal.html %}
+{% block title %}
+    {% include episode_header.html %}
+{% end %}
 {% block body %}
     <video width="100%" controls preload="None"></video>
     <input class="slider" type="range" style="width:100%;" max="0" value="0" setp="1">
     <script>
         $(function (){
             $('video').seplis_play(
-                '{{ play_server['url'] }}',
-                '{{ play_id }}'
+                '{{ play_servers[0]['play_server']['url'] }}',
+                '{{ play_servers[0]['play_id'] }}'
             );
         });
     </script>

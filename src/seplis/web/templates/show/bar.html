@@ -1,24 +1,31 @@
 {% for episode in episodes_to_watch %}
     <div class="item">
         <div class="info">
-            <p>
-                {{ escape(episode['title']) if episode['title'] else 'Unknown title' }}
-            </p>
-            <p>
-                {% if 'season' in episode and episode['season'] %}
-                    Episode {{ episode['episode'] }}
-                    ({{ episode['number'] }})
-                {% else %}            
-                    Number {{ episode['number'] }} 
-                {% end %}
-            </p>
-            <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
+            <a 
+                href="/modal/play-episode?show_id={{ show['id'] }}&episode_number={{ episode['number'] }}" 
+                data-target="#seplis-modal" 
+                data-toggle="modal"
+            >
+                <p>
+                    {{ escape(episode['title']) if episode['title'] else 'Unknown title' }}
+                </p>
+                <p>
+                    {% if 'season' in episode and episode['season'] %}
+                        S{{ episode['season'] }} &#183; E{{ episode['episode'] }} ({{ episode['number'] }})
+                    {% else %}
+                        {{ episode['number'] }}
+                    {% end %}
+                </p>
+                <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
+            </a>
         </div>
-        {% if 'user_watching' in show and show['user_watching'] and show['runtime'] %}
+        {% if 'user_watched' in episode and episode['user_watched'] %}
+            {% if episode['user_watched']['position'] > 0 %}
             <div 
                 class="progress"
-                style="width:{{ (show['runtime'] / 100) * show['user_watching']['position'] }}%;"
+                style="width:{{ (episode['runtime'] / 100) * episode['user_watched']['position'] }}%;"
             ></div>
+            {% end %}
         {% end %}
     </div>
 {% end %}

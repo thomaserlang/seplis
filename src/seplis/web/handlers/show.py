@@ -116,6 +116,7 @@ class Handler(base.Handler):
                     number,
                     number+limit,
                 ),
+                'append': 'user_watched',
             }
         )
         return episodes

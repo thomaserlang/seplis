@@ -1,0 +1,31 @@
+<button id="button-multi-watched" class="btn btn-default btn-multi-watched" data-toggle="dropdown">
+    Set progression
+</button>
+<div class="dropdown-menu dropdown-form" role="menu" aria-labelledby="dLabel">
+    <form id="form-multi-watched">
+        <input name="show_id" type="hidden" value="{{ show['id'] }}">
+        <input name="do" type="hidden" value="incr">
+        <select>
+            <option>
+            {% for season in show['seasons'] %}
+                <optgroup label="Season {{ season['season'] }}">
+                    {% for i, number in enumerate(range(season['from'], season['to']+1)) %}
+                        <option value="{{ number }}">
+                            Episode {{ i+1 }}
+                        </option>
+                    {% end %}
+                </optgroup>
+            {% end %}
+        </select>
+
+        <div class="form-group">
+            <label for="form-from-episode-number">From episode number</label>
+            <input id="form-from-episode-number" class="form-control" name="from" placeholder="From">
+        </div>
+        <div class="form-group">
+            <label for="form-to-episode-number">To episode number</label>
+            <input id="form-to-episode-number" class="form-control" name="to" placeholder="To">
+        </div>
+        <button type="submit" class="btn btn-success">Watched</button>
+    </form>
+</div>

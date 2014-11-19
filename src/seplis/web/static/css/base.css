@@ -94,3 +94,17 @@ h1, h2, h3{
 .give-space {
     margin-bottom: 10px;
 }
+
+#seplis-modal {
+    margin-top:40px;
+}
+#seplis-modal .modal-dialog{
+    width:938px;
+}
+#seplis-modal .modal-content {
+    -webkit-box-shadow: 0 5px 15px rgba(0,0,0,0);
+    -moz-box-shadow: 0 5px 15px rgba(0,0,0,0);
+    -o-box-shadow: 0 5px 15px rgba(0,0,0,0);
+    box-shadow: 0 5px 15px rgba(0,0,0,0);
+    border-radius:0;
+}

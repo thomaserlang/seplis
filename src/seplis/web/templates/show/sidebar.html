@@ -7,12 +7,11 @@
             {{ escape(episode['title']) if episode['title'] else 'Unknown title' }}
         </p>
         <p>
-            {% if 'season' in episode and episode['season'] %}
-                Episode {{ episode['episode'] }}
-                ({{ episode['number'] }})
-            {% else %}            
-                Number {{ episode['number'] }} 
-            {% end %}
+        {% if 'season' in episode and episode['season'] %}
+            S{{ episode['season'] }} &#183; E{{ episode['episode'] }} ({{ episode['number'] }})
+        {% else %}
+            {{ episode['number'] }}
+        {% end %}
         </p>
         <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
     </div>
