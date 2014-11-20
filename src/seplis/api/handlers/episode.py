@@ -256,11 +256,11 @@ class Air_dates_handler(base.Handler):
                     }
                 }
             )
-            shows = {show['_source']['id']: show['_source'] \
+            shows = {str(show['_source']['id']): show['_source'] \
                 for show in shows['hits']['hits']}
             for episode in episodes:
                 result.append({
-                    'show': shows[episode['show_id']],
+                    'show': shows[str(episode['show_id'])],
                     'episode': self.episode_format(episode),
                 })
         self.write_object(
