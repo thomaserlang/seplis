@@ -254,6 +254,10 @@ class Air_dates_handler(base.Handler):
                                 for episode in episodes])),
                         }
                     }
+                },
+                query={
+                    'size': 1000,
+                    'from': 0,
                 }
             )
             shows = {str(show['_source']['id']): show['_source'] \
