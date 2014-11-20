@@ -250,8 +250,8 @@ class Air_dates_handler(base.Handler):
                 body={
                     'filter': {
                         'ids': {
-                            'values': set([episode['show_id'] \
-                                for episode in episodes]),
+                            'values': list(set([episode['show_id'] \
+                                for episode in episodes])),
                         }
                     }
                 }
