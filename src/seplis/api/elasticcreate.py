@@ -7,7 +7,6 @@ def create_indices():
     database.es.indices.delete('images', ignore=404)
 
     database.es.indices.create('shows', body={
-        'settings': settings,
         'mappings': {
             'show': {
                 'properties': {
