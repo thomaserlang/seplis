@@ -8,6 +8,7 @@ $(function(){
         paramName: 'q',
         noCache: true,
         width: 400,
+        triggerSelectOnValidInput: false,
         transformResult: function(response) {
             response = $.parseJSON(response);
             return {

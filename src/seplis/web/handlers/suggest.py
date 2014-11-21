@@ -10,6 +10,7 @@ class Handler(base.API_handler):
             'q': 'title:"{0}" OR alternative_titles:"{0}"'.format(
                 q
             ),
+            'per_page': 5,
             'fields': 'title',
         })
         self.write_object(suggest)

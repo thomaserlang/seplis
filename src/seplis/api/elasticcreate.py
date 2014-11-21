@@ -11,14 +11,9 @@ def create_indices():
             'filter': {
                 'nGram_filter': {
                     'type': 'nGram',
-                    'min_gram': 1,
-                    'max_gram': 20,
-                    'token_chars': [
-                        'letter',
-                        'digit',
-                        'punctuation',
-                        'symbol'
-                    ]
+                    'min_gram': 2,
+                    'max_gram': 10,
+                    'token_chars': [],
                 }
             },
             'analyzer': {
@@ -27,16 +22,16 @@ def create_indices():
                     'tokenizer': 'whitespace',
                     'filter': [
                        'lowercase',
-                       'asciifolding',
-                       'nGram_filter'
+                       'nGram_filter',
                    ]
                 },
                 'whitespace_analyzer': {
                     'type': 'custom',
-                    'tokenizer': 'whitespace',
+                    'tokenizer': 'standard',
                     'filter': [
+                        'standard',
                         'lowercase',
-                        'asciifolding'
+                        'nGram_filter',
                    ]
                 }
             }
@@ -51,21 +46,22 @@ def create_indices():
                     'title': {
                         'type': 'string',
                         'index_analyzer': 'nGram_analyzer',
-                        'search_analyzer': 'whitespace_analyzer',          
-                        "fields": {
-                            "raw": { 
-                                "type": "string",
-                                "index": "not_analyzed"
-                            }
-                        }
+                        'search_analyzer': 'whitespace_analyzer',
                     },
                     'id': { 'type': 'integer' },
                     'description': {
                         'dynamic' : False,
                         'properties' : {
-                            'text': { 'type': 'string' },
-                            'url': { 'type': 'string' },
-                            'title': { 'type': 'string' },
+                            'text': { 
+                                'type': 'string',
+                                'index': 'not_analyzed',
+                            },
+                            'url': { 
+                                'type': 'string',
+                            },
+                            'title': { 
+                                'type': 'string',
+                            },
                         }
                     },
                     'premiered': { 'type': 'date' },
@@ -95,8 +91,6 @@ def create_indices():
                     'alternative_titles': {
                         'type': 'string',
                         'index_name': 'alternative_title',
-                        'index_analyzer': 'nGram_analyzer',
-                        'search_analyzer': 'whitespace_analyzer',  
                     },
                     'genres': {
                         'type': 'string',
@@ -108,7 +102,7 @@ def create_indices():
     })
 
     database.es.indices.create('episodes', body={
-        'settings': settings,
+        #'settings': settings,
         'mappings': {
             'episode': {
                 'properties' : {
@@ -135,7 +129,7 @@ def create_indices():
     })
 
     database.es.indices.create('images', body={
-        'settings': settings,
+        #'settings': settings,
         'mappings': {
             'image': {
                 'properties' : {
