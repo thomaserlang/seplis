@@ -6,47 +6,13 @@ def create_indices():
     database.es.indices.delete('episodes', ignore=404)
     database.es.indices.delete('images', ignore=404)
 
-    settings = {
-        'analysis': {
-            'filter': {
-                'nGram_filter': {
-                    'type': 'nGram',
-                    'min_gram': 2,
-                    'max_gram': 10,
-                    'token_chars': [],
-                }
-            },
-            'analyzer': {
-                'nGram_analyzer': {
-                    'type': 'custom',
-                    'tokenizer': 'whitespace',
-                    'filter': [
-                       'lowercase',
-                       'nGram_filter',
-                   ]
-                },
-                'whitespace_analyzer': {
-                    'type': 'custom',
-                    'tokenizer': 'standard',
-                    'filter': [
-                        'standard',
-                        'lowercase',
-                        'nGram_filter',
-                   ]
-                }
-            }
-        }
-    }
-
     database.es.indices.create('shows', body={
         'settings': settings,
         'mappings': {
             'show': {
-                'properties' : {
+                'properties': {
                     'title': {
                         'type': 'string',
-                        'index_analyzer': 'nGram_analyzer',
-                        'search_analyzer': 'whitespace_analyzer',
                     },
                     'id': { 'type': 'integer' },
                     'description': {
@@ -102,7 +68,6 @@ def create_indices():
     })
 
     database.es.indices.create('episodes', body={
-        #'settings': settings,
         'mappings': {
             'episode': {
                 'properties' : {
@@ -114,7 +79,10 @@ def create_indices():
                     'description': {
                         "dynamic" : False,
                         'properties' : {
-                            'text': { 'type': 'string' },
+                            'text': { 
+                                'type': 'string',
+                                'index': 'not_analyzed', 
+                            },
                             'url': { 'type': 'string' },
                             'title': { 'type': 'string' },
                         },
@@ -129,7 +97,6 @@ def create_indices():
     })
 
     database.es.indices.create('images', body={
-        #'settings': settings,
         'mappings': {
             'image': {
                 'properties' : {
