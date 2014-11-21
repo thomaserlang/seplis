@@ -52,7 +52,7 @@ class Application(tornado.web.Application):
                 tags=seplis.web.modules.tags.Module,
             )
         )
-        if not config['debug']:
+        if config['debug']:
             settings['js_files'] = sorted(get_static_files(
                 static_path,
                 '.js',
