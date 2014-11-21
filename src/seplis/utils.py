@@ -237,3 +237,19 @@ class MultipartFormdataEncoder(object):
         for chunk, chunk_len in self.iter(fields, files):
             body.write(chunk)
         return self.content_type, body.getvalue()
+
+def get_files(path, ext, skip=[]):
+    files = []
+    for dirname, dirnames, filenames in os.walk(path):
+        for file_ in filenames:
+            info = os.path.splitext(file_)
+            if len(info) != 2:
+                continue
+            if info[1] != ext:
+                continue
+            if file_ in skip:
+                continue
+            files.append(
+                os.path.join(dirname, file_)
+            )
+    return files

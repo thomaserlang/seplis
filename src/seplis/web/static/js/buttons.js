@@ -70,7 +70,7 @@ $('.season-episodes').on('click', '.watched-button', function(event){
     var watched_count = btn.parent().parent().find('.times-watched');
     var todo = btn.attr('do');
     if ((todo == 'decr') && (parseInt(watched_count.html()) <= 1)) {
-        todo = 'delete'
+        todo = 'delete';
     }
     btn.button('loading');
     api.post(
@@ -104,7 +104,7 @@ $('.season-episodes').on('click', '.watched-button', function(event){
 
 $('#form-multi-watched').submit(function(event){
     event.preventDefault();
-    var btn = $(this).find('.btn')
+    var btn = $(this).find('.btn');
     btn.button('loading');
     api.post(
         '/api/watched',

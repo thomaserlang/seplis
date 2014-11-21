@@ -74,7 +74,6 @@ class Play_scan(object):
                 info = os.path.splitext(file_)
                 if len(info) != 2:
                     continue
-
                 if info[1][1:] not in config['play']['media_types']:
                     continue
                 files.append(

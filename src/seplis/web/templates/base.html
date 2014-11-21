@@ -3,24 +3,14 @@
     <head>
         <title>{{ title }}</title>        
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
-        <link rel="stylesheet" href="/static/css/vendor/bootstrap.min.css">
-        <link rel="stylesheet" href="/static/css/vendor/jquery.growl.css">
-        <link rel="stylesheet" href="/static/css/vendor/font-awesome.min.css">
-        <link rel="stylesheet" href="/static/css/vendor/select2.css">
-        <link rel="stylesheet" href="/static/css/vendor/select2-bootstrap.css">
-        
-        <link rel="stylesheet" href="/static/css/base.css">
-        <link rel="stylesheet" href="/static/css/show.css">
-        <link rel="stylesheet" href="/static/css/sign_in.css">
-        <link rel="stylesheet" href="/static/css/suggest.css">
-        <link rel="stylesheet" href="/static/css/buttons.css">
-        <link rel="stylesheet" href="/static/css/progress.css">
-        <link rel="stylesheet" href="/static/css/air_dates.css">
-        <link rel="stylesheet" href="/static/css/clean_reader.css">
-        <link rel="stylesheet" href="/static/css/autocomplete.css">
-        <link rel="stylesheet" href="/static/css/sidemenu.css">
 
-        <script type="text/javascript" src="/static/js/vendor/jquery-2.1.1.min.js"></script>
+        {% for file_ in handler.application.settings['css_files'] %}
+            <link rel="stylesheet" href="{{ file_ }}">
+        {% end %}
+        {% for file_ in handler.application.settings['js_files'] %}                
+            <script type="text/javascript" src="{{ file_ }}"></script>
+        {% end %}
+
         <script type="text/javascript">
             function show_api_error(error) {
                 var message = error.message + '.';
@@ -73,26 +63,5 @@
                 </div>
             </div>
         </div>
-        <script type="text/javascript" src="/static/js/vendor/multiline.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/underscore-min.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/bootstrap.min.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/jquery.growl.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/moment.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/jquery.dotdotdot.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/jquery.autocomplete.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/purl.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/select2.min.js"></script>
-        <script type="text/javascript" src="/static/js/vendor/jquery.cookie.js"></script>
-        <script type="text/javascript" src="/static/js/api.js"></script>
-        <script type="text/javascript" src="/static/js/template.js"></script>
-        <script type="text/javascript" src="/static/js/sign_in.js"></script>
-        <script type="text/javascript" src="/static/js/tag.js"></script>
-        <script type="text/javascript" src="/static/js/buttons.js"></script>
-        <script type="text/javascript" src="/static/js/show.js"></script>
-        <script type="text/javascript" src="/static/js/air_dates.js"></script>
-        <script type="text/javascript" src="/static/js/base.js"></script>
-        <script type="text/javascript" src="/static/js/fan_of.js"></script>
-        <script type="text/javascript" src="/static/js/play.js"></script>
-        <script type="text/javascript" src="/static/js/user/play_server.js"></script>
     </body>
 </html>
