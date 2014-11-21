@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends ../base.html %}
 {% block body %}
     <show>
         {% include show_header.html %}
@@ -50,11 +50,11 @@
                 {% include show_next_episode.html %}
             </div>
             <div class="episode-sidebar">
-                {% include show/sidebar.html %}
+                {% include sidebar.html %}
             </div>
         </div>
         <div class="episode-bar">
-            {% include show/bar.html %}
+            {% include bar.html %}
         </div>
         <hr>
         {% if show['seasons'] %}

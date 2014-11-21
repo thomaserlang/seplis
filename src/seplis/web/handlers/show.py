@@ -26,7 +26,7 @@ class Handler(base.Handler):
         next_to_air = yield self.get_next_to_air(show['id'])
         episodes_to_watch = yield self.get_episodes_to_watch(show)
         self.render(
-            'show.html',
+            'show/show.html',
             title=show['title'],
             show=show,
             episodes=episodes,
@@ -209,7 +209,7 @@ class New_handler(base.Handler):
 
     @authenticated
     def get(self):
-        self.render('show_edit.html',
+        self.render('show/show_edit.html',
             title='New show',
             show=None,
         )
@@ -253,7 +253,7 @@ class Edit_handler(Handler):
     @gen.coroutine
     def get(self, show_id):
         show = yield self.get_show(show_id)
-        self.render('show_edit.html',
+        self.render('show/show_edit.html',
             title='Edit show',
             show=show,
         )
