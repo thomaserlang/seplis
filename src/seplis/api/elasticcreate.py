@@ -6,12 +6,45 @@ def create_indices():
     database.es.indices.delete('episodes', ignore=404)
     database.es.indices.delete('images', ignore=404)
 
+    settings = {
+        'analysis': {
+            'filter': {
+                'autocomplete_filter': { 
+                    'type':     'edge_ngram',
+                    'min_gram': 1,
+                    'max_gram': 20,
+                }
+            },
+            'analyzer': {
+                'autocomplete_index': {
+                    'type':      'custom',
+                    'tokenizer': 'standard',
+                    'filter': [
+                        'lowercase',
+                        'autocomplete_filter' ,
+                    ]
+                },
+                'autocomplete_search': {
+                    'type': 'custom',
+                    'tokenizer': 'standard',
+                    'filter': [
+                        'lowercase',
+                        'stop',
+                    ]
+                },
+            },
+        }
+    }
+
     database.es.indices.create('shows', body={
+        'settings': settings,
         'mappings': {
             'show': {
                 'properties': {
                     'title': {
                         'type': 'string',
+                        'index_analyzer': 'autocomplete_index',
+                        'search_analyzer': 'autocomplete_search',
                     },
                     'id': { 'type': 'integer' },
                     'description': {
@@ -56,6 +89,8 @@ def create_indices():
                     'alternative_titles': {
                         'type': 'string',
                         'index_name': 'alternative_title',
+                        'index_analyzer': 'autocomplete_index',
+                        'search_analyzer': 'autocomplete_search',
                     },
                     'genres': {
                         'type': 'string',
@@ -76,7 +111,7 @@ def create_indices():
                     'number': { 'type': 'integer' },
                     'air_date': { 'type': 'date' },
                     'description': {
-                        "dynamic" : False,
+                        'dynamic' : False,
                         'properties' : {
                             'text': { 
                                 'type': 'string',

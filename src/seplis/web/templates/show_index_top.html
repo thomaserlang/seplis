@@ -10,7 +10,7 @@
             <a href="#" class="btn btn-default change-layout" data-layout="list">
                 <i class="glyphicon glyphicon-th-list"></i>
             </a>
-            {% if shows.pages > 1 %}
+            {% if shows.pages and shows.pages > 1 %}
             <div class="pull-right show-pages-menu">
                 {% include show_pages.html %}
             </div>

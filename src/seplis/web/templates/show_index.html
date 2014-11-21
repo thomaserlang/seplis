@@ -4,20 +4,27 @@
     {% include show_index_top.html %}
     <div class="row">
         <div class="col-xs-12 shows">
-            {% for show in shows %}
-                <div class="show">
-                    <div class="image">
-                        <a href="/show/{{ show['id'] }}">
-                        <img 
-                            title="{{ escape(show['title']) }}"
-                            alt="{{ escape(show['title']) }}"
-                            src="{{ image_url(show['poster_image'], '@SX227.jpg') }}"
-                            width="227px"
-                            height="334px"
-                        >
-                        </a>
-                    </div>
+            {% if not shows %}
+                <div class="alert alert-info">
+                    <strong>Zero shows in the database.</strong><br>
+                    Add some.
                 </div>
+            {% else %}
+                {% for show in shows %}
+                    <div class="show">
+                        <div class="image">
+                            <a href="/show/{{ show['id'] }}">
+                            <img 
+                                title="{{ escape(show['title']) }}"
+                                alt="{{ escape(show['title']) }}"
+                                src="{{ image_url(show['poster_image'], '@SX227.jpg') }}"
+                                width="227px"
+                                height="334px"
+                            >
+                            </a>
+                        </div>
+                    </div>
+                {% end %}
             {% end %}
         </div>
     </div>
