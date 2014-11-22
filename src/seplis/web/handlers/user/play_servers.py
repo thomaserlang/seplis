@@ -13,7 +13,6 @@ class Handler(base.Handler):
         play_servers = yield self.client.get('/users/{}/play-servers'.format(
             self.current_user['id'],
         ))
-        logging.info(play_servers)
         self.render(
             'user/play_servers.html',
             title='Play servers',

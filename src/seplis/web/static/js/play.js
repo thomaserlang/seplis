@@ -1,15 +1,13 @@
 (function($) {
-    var SeplisPlay = function(video, url, play_id, show_id, episode_number, start_pos, options) {
+    var SeplisPlay = function(video, play_servers, show_id, episode_number, start_pos, options) {
         var _this = this;
 
         var settings = $.extend({
         }, options);
 
-        if (url.substr(url.length - 1) == '/') {
-            url = url.substr(0, url.length - 1);
-        }
+        this.currentPlayServer = null;
 
-        this.get_device = (function() {
+        this.getDevice = (function() {
             if (navigator.userAgent.match(/(iPad|iPhone|iPod)/g)) {
                 return 'apple';
             }
@@ -32,7 +30,7 @@
         });
 
         var session = guid();
-        var device = this.get_device();
+        var device = this.getDevice();
         var offset_duration = 0;
         var stop_duration_update = false;
         var latest_position_stored = -1;
@@ -44,8 +42,8 @@
         this.setStart = (function(startime) {
             startTime = startime;
             video.attr(
-                'src', 
-                url+method+'?play_id='+play_id+
+                'src',                 
+                _this.currentPlayServer.url+method+'?play_id='+_this.currentPlayServer.play_id+
                 '&device='+device+'&session='+session+'&start='+startime.toString()
             );
             if (method == '/transcode') offset_duration = startime;
@@ -110,41 +108,52 @@
             });
             $('.slider').change(function(event){ 
                 video.get(0).pause();
-                $.get(url+'/'+session+'/cancel');
+                $.get(_this.currentPlayServer.url+'/'+session+'/cancel');
                 session = guid();
                 var start = parseInt($(this).val());
                 _this.setStart(start);
                 video.get(0).play();
             });
         });
-
-        $.getJSON(url+'/metadata', {'play_id': play_id}, 
-            function(data) {                
-                $('.video').removeClass('hide');
+        var checkServer = (function(play_server) {
+            $.getJSON(play_server.url+'/metadata', {'play_id': play_server.play_id}, 
+                function(data) {
+                    if (_this.currentPlayServer) return;
+                    $('.video').removeClass('hide');
+                    $('.loading-video').hide();
+                    _this.currentPlayServer = play_server;
+                    _this.setUp(data);
+                    _this.setStart(start_pos);
+                    _this.play();
+                }
+            ).error(function(jqxhr, textStatus, error){
+                if (_this.currentPlayServer) return;
+                if (jqxhr.status == 404) {
+                    $('.episode-404').removeClass('hide');
+                } else {
+                    $('.episode-no-connection').removeClass('hide');             
+                }
                 $('.loading-video').hide();
-                _this.setUp(data);
-                _this.setStart(start_pos);
-                _this.play();
-            }
-        ).error(function(jqxhr, textStatus, error){
-            if (jqxhr.status == 404) {
-                $('.episode-404').removeClass('hide');
-            } else {
-                $('.episode-no-connection').removeClass('hide');             
-            }
-            $('.loading-video').hide();
+            });
         });
 
+
+        for (i in play_servers) {
+            var ps = play_servers[i];
+            if (ps.url.substr(ps.url.length - 1) == '/') {
+                ps.url = ps.url.substr(0, ps.url.length - 1);
+            }
+            checkServer(ps);
+        }
     }
 
-    $.fn.seplis_play = function(url, play_id, show_id, episode_number, start_pos, options) {
+    $.fn.seplis_play = function(play_servers, show_id, episode_number, start_pos, options) {
         return this.each(function(){
             var video = $(this);
             if (video.data('seplis_play')) return;
             var seplis_play = new SeplisPlay(
                 video, 
-                url, 
-                play_id, 
+                play_servers,
                 show_id,
                 episode_number,
                 start_pos,
