@@ -119,7 +119,9 @@
         });
 
         $.getJSON(url+'/metadata', {'play_id': play_id}, 
-            function(data) {
+            function(data) {                
+                $('.episode-404').removeClass('hide');
+                $('.loading-video').hide();
                 _this.setUp(data);
                 _this.setStart(start_pos);
                 _this.play();
@@ -127,8 +129,10 @@
         ).error(function(jqxhr, textStatus, error){
             if (jqxhr.status == 404) {
                 $('.episode-404').removeClass('hide');
-                $('.video').hide();
+            } else {
+                $('.episode-no-connection').removeClass('hide');             
             }
+            $('.loading-video').hide();
         });
 
     }

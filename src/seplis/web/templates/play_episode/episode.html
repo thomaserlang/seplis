@@ -3,12 +3,18 @@
     {% include episode_header.html %}
 {% end %}
 {% block body %}
-    <div class="video">
+    <div class="video hide">
         <video width="100%" controls preload="None"></video>
         <input class="slider" type="range" style="width:100%;" max="0" value="0" setp="1">
     </div>
+    <div class="loading-video alert alert-info">
+        <strong>Connecting to the play server...</strong>
+    </div>
     <div class="episode-404 hide alert alert-info">
         <strong>This episode is not on any of your play servers.</strong>
+    </div>
+    <div class="episode-no-connection hide alert alert-warning">
+        <strong>The play server could not be contacted.</strong>
     </div>
     <script>
         var play_servers = [
@@ -23,7 +29,8 @@
     <script>
         $(function (){
             $('video').seplis_play(
-                play_servers
+                '{{ play_servers[0]['play_server']['url'] }}',
+                '{{ play_servers[0]['play_id'] }}',
                 {{ show['id'] }},
                 {{ episode['number'] }},
                 {% if episode['user_watched'] and episode['user_watched']['position'] %}
