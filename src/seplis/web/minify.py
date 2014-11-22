@@ -1,7 +1,6 @@
 import os, os.path
 import logging
 import subprocess
-from jsmin import jsmin
 from seplis import utils
 
 def minify_files(files, out_path, minify_method):
