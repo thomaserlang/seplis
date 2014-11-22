@@ -50,7 +50,10 @@
                 offset_duration = startime;
             } else {
                 var url = _this.currentPlayServer.url+'/play?play_id='+
-                    _this.currentPlayServer.play_id+'#t='+startime.toString();
+                    _this.currentPlayServer.play_id;
+                if (startime>0) {
+                    url = url +'#t='+startime.toString();
+                }
             }
             video.attr(
                 'src',                 
