@@ -71,7 +71,7 @@
                     return;
                 }
                 var time = offset_duration + parseInt(this.currentTime);
-                if (((time % 10) == 0) && (latest_position_stored != time)) {
+                if (((time % 10) == 0) && (latest_position_stored != time) && (time > 0)) {
                     latest_position_stored = time;
                     $.post('/api/user/watching', {
                         'show_id': show_id,
@@ -120,7 +120,7 @@
 
         $.getJSON(url+'/metadata', {'play_id': play_id}, 
             function(data) {                
-                $('.episode-404').removeClass('hide');
+                $('.video').removeClass('hide');
                 $('.loading-video').hide();
                 _this.setUp(data);
                 _this.setStart(start_pos);
