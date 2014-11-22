@@ -247,6 +247,8 @@ class Transcode_handler(
             '-ab', '193k',
             '-',
         ]
+        if vcodec == 'copy':
+            cmd.insert(1, '-noaccurate_seek')
         return cmd
 
     def get_transcode_arguments_hls(self, file_path, vcodec):

@@ -19,8 +19,8 @@
     <script>
         var show_id = {{ show['id'] }};
         var number = {{ episode['number'] }};
-        var play_servers = [
-            {% for ps in play_servers %}
+        var play_servers = 
+[            {% for ps in play_servers %}
             {
                 'play_id': '{{ escape(ps['play_id']) }}',
                 'url': '{{ escape(ps['play_server']['url']) }}',
