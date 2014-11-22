@@ -42,6 +42,8 @@ $(function(){
         location.reload();
     });
     $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
-        $(e.target).removeData("bs.modal").find(".modal-content").empty();
+        var obj = $(e.target).removeData("bs.modal").find(".modal-content");
+
+        obj.empty();
     });
 });

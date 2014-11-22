@@ -43,16 +43,26 @@
       
         this.setStart = (function(startime) {
             startTime = startime;
+            var url = _this.currentPlayServer.url+method+'?play_id='+_this.currentPlayServer.play_id+
+                '&device='+device+'&session='+session+'&start='+startime.toString();
             video.attr(
                 'src',                 
-                _this.currentPlayServer.url+method+'?play_id='+_this.currentPlayServer.play_id+
-                '&device='+device+'&session='+session+'&start='+startime.toString()
+                url
             );
             if (method == '/transcode') offset_duration = startime;
+            if ((device == 'apple') && (method == '/transcode')) {
+                $.get(url);
+            }
         });
 
         this.play = (function() {
-            video.get(0).play();
+            if ((device == 'apple') && (method == '/transcode')) {
+                setTimeout(function(){
+                    video.get(0).play();
+                }, 1000);
+            } else {
+                video.get(0).play();
+            }
         });
 
         this.setUp = (function(metadata) {
@@ -123,7 +133,7 @@
                 var start = parseInt($(this).val());
                 _this.setStart(start);
                 watchedIncremented = false;
-                video.get(0).play();
+                _this.play();
             });
         });
         var checkServer = (function(play_server) {
