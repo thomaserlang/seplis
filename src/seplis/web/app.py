@@ -56,10 +56,10 @@ class Application(tornado.web.Application):
             settings['js_files'] = sorted(get_static_files(
                 static_path,
                 '.js',
-                skip=[
+                skip=(
                     'seplis.min.js', 
                     'vendor.min.js',
-                ],
+                ),
             ), reverse=True)
             jquery = '/static/js/vendor/jquery-2.1.1.min.js'
             settings['js_files'].remove(jquery)
@@ -67,10 +67,10 @@ class Application(tornado.web.Application):
             settings['css_files'] = sorted(get_static_files(
                 static_path,
                 '.css',
-                skip=[
+                skip=(
                     'seplis.min.css', 
                     'vendor.min.css',
-                ],
+                ),
             ), reverse=True)
         else:
             settings['js_files'] = []
