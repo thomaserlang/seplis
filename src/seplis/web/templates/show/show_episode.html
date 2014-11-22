@@ -14,17 +14,13 @@
         </date>
     </td>
     <td>
-        <div class="dropdown">
-            <ul class="dropdown-menu" role="menu"></ul>
-            <a 
-                show-id="{{ show['id'] }}"
-                episode-number="{{ episode['number'] }}"
-                data-toggle="dropdown"
-                class="episode-play-servers"
-            >
-                <i class="glyphicon glyphicon-play-circle"></i>
-            </a>
-        </div>
+        <a 
+            href="/modal/play-episode?show_id={{ show['id'] }}&episode_number={{ episode['number'] }}" 
+            data-target="#seplis-modal" 
+            data-toggle="modal"
+        >
+            <i class="glyphicon glyphicon-play-circle"></i>
+        </a>
     </td>
     <td style="text-align:right;width:50px;">
         {% module watched_button(show, episode) %}

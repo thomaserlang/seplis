@@ -1,4 +1,4 @@
-$('.fan-button').on('click', '.btn-fan', function(event){
+$(document).on('click', '.btn-fan', function(event){
     $(this).blur();
     var _this = this;
     api.post(
@@ -17,7 +17,7 @@ $('.fan-button').on('click', '.btn-fan', function(event){
     );
 });
 
-$('.fan-button').on('click', '.btn-unfan', function(event){
+$(document).on('click', '.btn-unfan', function(event){
     $(this).blur();
     var _this = this;
     api.post(
@@ -36,7 +36,7 @@ $('.fan-button').on('click', '.btn-unfan', function(event){
     );
 });
 
-$('.season-episodes').on('click', '.not-watched', function(event){
+$(document).on('click', '.not-watched', function(event){
     $(this).blur();
     var btn = $(this)
     btn.button('loading');
@@ -61,7 +61,7 @@ $('.season-episodes').on('click', '.not-watched', function(event){
     );
 });
 
-$('.season-episodes').on('click', '.watched-button', function(event){
+$(document).on('click', '.watched-button', function(event){
     $(this).blur();
     var btn = $(this);
     if (btn.attr("disabled")) {

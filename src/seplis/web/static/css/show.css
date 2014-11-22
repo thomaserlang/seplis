@@ -138,9 +138,12 @@
     border-radius:0;
     float:left;
 }
-.episode-bar .watching a {
+.episode-bar .watching a, .episode-bar .next-watch a {
     color: #000;
 }
 .episode-bar .watching{
     border-color:#E87E04;    
+}
+.episode-bar .next-watch{
+    border-color:#3498DB;    
 }
