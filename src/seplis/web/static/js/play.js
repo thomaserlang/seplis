@@ -38,6 +38,8 @@
 
         var method = '/transcode';
         var startTime = 0;
+        var watchedIncremented = false;
+        var duration = 0;
       
         this.setStart = (function(startime) {
             startTime = startime;
@@ -54,9 +56,10 @@
         });
 
         this.setUp = (function(metadata) {
+            duration = parseInt(metadata['format']['duration']).toString();
             $('.slider').attr(
                 'max', 
-                parseInt(metadata['format']['duration']).toString()
+                duration
             );
             $('.slider').show();
             if (metadata['format']['format_name'].indexOf('mp4') > -1) {
@@ -69,14 +72,21 @@
                     return;
                 }
                 var time = offset_duration + parseInt(this.currentTime);
-                if (((time % 10) == 0) && (latest_position_stored != time) && (time > 0)) {
+                if (((time % 10) == 0) && (latest_position_stored != time) && (time > 0) && !watchedIncremented) {
                     latest_position_stored = time;
+                    var times = 0;
+                    if (((time / 100) * 5) > (duration-time)) {
+                        watchedIncremented = true;
+                        times = 1;
+                        time = 0;
+                    }
                     $.post('/api/user/watching', {
                         'show_id': show_id,
                         'episode_number': episode_number,
                         'position': time,
+                        'times': times,
                         '_xsrf': getCookie('_xsrf'),
-                    });                
+                    });
                 }
                 $('.slider').val((
                     time
@@ -112,6 +122,7 @@
                 session = guid();
                 var start = parseInt($(this).val());
                 _this.setStart(start);
+                watchedIncremented = false;
                 video.get(0).play();
             });
         });
