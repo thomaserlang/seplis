@@ -36,27 +36,33 @@
         var latest_position_stored = -1;
         var store_position_every = 10;
 
-        var method = '/transcode';
+        var method = 'transcode';
         var startTime = 0;
         var watchedIncremented = false;
         var duration = 0;
       
         this.setStart = (function(startime) {
             startTime = startime;
-            var url = _this.currentPlayServer.url+method+'?play_id='+_this.currentPlayServer.play_id+
-                '&device='+device+'&session='+session+'&start='+startime.toString();
+            if (method == 'transcode') {
+                var url = _this.currentPlayServer.url+'/transcode?play_id='+
+                    _this.currentPlayServer.play_id+'&device='+device+'&session='+
+                    session+'&start='+startime.toString();
+                offset_duration = startime;
+            } else {
+                var url = _this.currentPlayServer.url+'/play?play_id='+
+                    _this.currentPlayServer.play_id+'#t='+startime.toString();
+            }
             video.attr(
                 'src',                 
                 url
             );
-            if (method == '/transcode') offset_duration = startime;
-            if ((device == 'apple') && (method == '/transcode')) {
+            if ((device == 'apple') && (method == 'transcode')) {
                 $.get(url);
             }
         });
 
         this.play = (function() {
-            if ((device == 'apple') && (method == '/transcode')) {
+            if ((device == 'apple') && (method == 'transcode')) {
                 setTimeout(function(){
                     video.get(0).play();
                 }, 1000);
@@ -73,7 +79,7 @@
             );
             $('.slider').show();
             if (metadata['format']['format_name'].indexOf('mp4') > -1) {
-                method = '/play';
+                method = 'play';
                 $('.slider').hide();
             }
 
