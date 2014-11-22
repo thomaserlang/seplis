@@ -1,5 +1,5 @@
-{% for episode in episodes_to_watch %}
-    <div class="item">
+{% for episode in episodes %}
+    <div class="item{{ ' watching' if episode['number'] == watching_number else '' }}">
         <div class="info">
             <a 
                 href="/modal/play-episode?show_id={{ show['id'] }}&episode_number={{ episode['number'] }}" 

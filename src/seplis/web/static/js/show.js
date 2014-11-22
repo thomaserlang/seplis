@@ -73,3 +73,9 @@ $(function(){
         height:40,
     });
 });
+
+function get_show_etw(show_id) {
+    $.get('/module/show-etw', {'show_id': show_id}, function(data) {
+        $('#show-etw').html(data);
+    });
+}

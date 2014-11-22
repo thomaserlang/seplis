@@ -3,23 +3,40 @@
     {% include episode_header.html %}
 {% end %}
 {% block body %}
-    <video width="100%" controls preload="None"></video>
-    <input class="slider" type="range" style="width:100%;" max="0" value="0" setp="1">
+    <div class="video">
+        <video width="100%" controls preload="None"></video>
+        <input class="slider" type="range" style="width:100%;" max="0" value="0" setp="1">
+    </div>
+    <div class="episode-404 hide alert alert-info">
+        <strong>This episode is not on any of your play servers.</strong>
+    </div>
+    <script>
+        var play_servers = [
+            {% for ps in play_servers %}
+            {
+                'play_id': '{{ escape(ps['play_id']) }}',
+                'url': '{{ escape(ps['play_server']['url']) }}',
+            }, 
+            {% end %}
+        ];
+    </script>
     <script>
         $(function (){
             $('video').seplis_play(
-                '{{ play_servers[0]['play_server']['url'] }}',
-                '{{ play_servers[0]['play_id'] }}',
+                play_servers
                 {{ show['id'] }},
-                {{ episode['number'] }}
+                {{ episode['number'] }},
+                {% if episode['user_watched'] and episode['user_watched']['position'] %}
+                    {{ episode['user_watched']['position'] }}
+                {% else %}
+                    0
+                {% end %}
             );
-            var seplisPlay = $('video').data('seplis_play');
-            {% if episode['user_watched'] and episode['user_watched']['position'] %}
-                seplisPlay.setStart({{ episode['user_watched']['position'] }});
-            {% else %}
-                seplisPlay.setStart(0);
-            {% end %}
-            seplisPlay.play();
         });
     </script>
+    <select>
+        {% for i, ps in enumerate(play_servers) %}
+            <option value="{{ i }}">{{ escape(ps['play_server']['name']) }}</option>
+        {% end %}
+    </select>
 {% end %}

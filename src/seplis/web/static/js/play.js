@@ -1,5 +1,5 @@
 (function($) {
-    var SeplisPlay = function(video, url, play_id, show_id, episode_number, options) {
+    var SeplisPlay = function(video, url, play_id, show_id, episode_number, start_pos, options) {
         var _this = this;
 
         var settings = $.extend({
@@ -43,7 +43,6 @@
       
         this.setStart = (function(startime) {
             startTime = startime;
-            console.log(startime);
             video.attr(
                 'src', 
                 url+method+'?play_id='+play_id+
@@ -57,15 +56,15 @@
         });
 
         this.setUp = (function(metadata) {
-            if (metadata['format']['format_name'].indexOf('mp4') > -1) {
-                method = '/play';
-                $('.slider').hide();
-            }
             $('.slider').attr(
                 'max', 
                 parseInt(metadata['format']['duration']).toString()
             );
             $('.slider').show();
+            if (metadata['format']['format_name'].indexOf('mp4') > -1) {
+                method = '/play';
+                $('.slider').hide();
+            }
 
             video.on('timeupdate', function(event){
                 if (stop_duration_update) {
@@ -122,12 +121,19 @@
         $.getJSON(url+'/metadata', {'play_id': play_id}, 
             function(data) {
                 _this.setUp(data);
+                _this.setStart(start_pos);
+                _this.play();
             }
-        );
+        ).error(function(jqxhr, textStatus, error){
+            if (jqxhr.status == 404) {
+                $('.episode-404').removeClass('hide');
+                $('.video').hide();
+            }
+        });
 
     }
 
-    $.fn.seplis_play = function(url, play_id, show_id, episode_number, options) {
+    $.fn.seplis_play = function(url, play_id, show_id, episode_number, start_pos, options) {
         return this.each(function(){
             var video = $(this);
             if (video.data('seplis_play')) return;
@@ -137,6 +143,7 @@
                 play_id, 
                 show_id,
                 episode_number,
+                start_pos,
                 options
             );
             video.data('seplis_play', seplis_play);

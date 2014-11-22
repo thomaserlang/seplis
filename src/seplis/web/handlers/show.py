@@ -24,7 +24,6 @@ class Handler(base.Handler):
             season=selected_season,
         )
         next_to_air = yield self.get_next_to_air(show['id'])
-        episodes_to_watch = yield self.get_episodes_to_watch(show)
         self.render(
             'show/show.html',
             title=show['title'],
@@ -33,7 +32,6 @@ class Handler(base.Handler):
             selected_season=selected_season,
             next_episode=next_episode,
             next_to_air=next_to_air,
-            episodes_to_watch=episodes_to_watch,
         )
 
     @gen.coroutine
@@ -102,19 +100,40 @@ class Handler(base.Handler):
         if episodes:
             return episodes[0]
 
+class Episodes_to_watch_handler(base.Handler):
+
+    @authenticated
     @gen.coroutine
-    def get_episodes_to_watch(self, show, limit=5):
+    def get(self):        
+        show_id = self.get_argument('show_id')
+        show = yield self.client.get('/shows/{}'.format(show_id),{
+            'fields': 'id',
+            'append': 'user_watching',
+        })
+        if not show:
+            raise HTTPError(404, 'show not found')
         number = 1
         if 'user_watching' in show and show['user_watching'] and \
             show['user_watching']['episode']:
             number = show['user_watching']['episode']['number']
-            if number > 1:
-                number -= 1
-        episodes = yield self.client.get('/shows/{}/episodes'.format(show['id']),
+        episodes = yield self.get_episodes_to_watch(
+            show_id=show_id,
+            from_number=number if number <= 1 else number - 1
+        )
+        self.render('show/bar.html',
+            show=show,
+            episodes=episodes,
+            watching_number=number,
+        )
+
+
+    @gen.coroutine
+    def get_episodes_to_watch(self, show_id, from_number, limit=5):
+        episodes = yield self.client.get('/shows/{}/episodes'.format(show_id),
             {
                 'q': 'number:[{} TO {}]'.format(
-                    number,
-                    number+limit,
+                    from_number,
+                    from_number+limit-1,
                 ),
                 'append': 'user_watched',
             }

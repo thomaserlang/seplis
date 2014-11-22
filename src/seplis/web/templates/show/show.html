@@ -53,15 +53,21 @@
                 {% include sidebar.html %}
             </div>
         </div>
-        <div class="episode-bar">
-            {% include bar.html %}
-        </div>
+        <div id="show-etw" class="episode-bar"></div>
         <hr>
         {% if show['seasons'] %}
             {% include show_seasons.html %}
         {% end %}
     </show>
 
+    <script>
+        get_show_etw({{ show['id'] }});
+        $(function(){
+            $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
+                get_show_etw({{ show['id'] }});
+            });
+        });
+    </script>
 {% end %}
 
 {% block outside_container %}

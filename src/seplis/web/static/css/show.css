@@ -116,14 +116,17 @@
     margin-top:20px;
     width:100%;
     overflow:hidden;
-    height:70px;
-    background-color:#F4F4F4;
 }
 
 .episode-bar .item {
+    height:70px;
     width:187.6px;
     float:left;
     border-left:10px solid #ccc;
+    background-color:#F4F4F4;
+}
+.episode-bar .item a {
+    color: #aaa;
 }
 .episode-bar .item .info {
     padding:5px;
@@ -135,19 +138,9 @@
     border-radius:0;
     float:left;
 }
-
-.episode-bar .item:nth-child(1){
-    border-left:10px solid #4B77BE;    
+.episode-bar .watching a {
+    color: #000;
 }
-.episode-bar .item:nth-child(2){
-    border-left:10px solid #26A65B;    
-}
-.episode-bar .item:nth-child(3){
-    border-left:10px solid #E87E04;    
-}
-.episode-bar .item:nth-child(4){
-    border-left:10px solid #6C7A89;    
-}
-.episode-bar .item:nth-child(5){
-    border-left:10px solid #8E44AD;    
+.episode-bar .watching{
+    border-color:#E87E04;    
 }
