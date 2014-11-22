@@ -27,7 +27,11 @@ $(function(){
             }
         )
     });
-    $('#alternative-titles').select2({tags:[]});
+    if ($('#alternative-titles').length) {
+        $('#alternative-titles').select2({
+            tags: []
+        });
+    }
 
     $('date.show-date').each(function(){
         var hours = moment.utc(
@@ -52,9 +56,7 @@ $(function(){
         } else {
             days = 'in '+Math.ceil(days)+' days';
         }
-        $(this).text(
-            days
-        );
+        $(this).text(days);
     });
     $('.season-select select').change(function(){
         location.href = '/show/'+$(this).attr('show-id')+'?season='+$(this).val();
@@ -62,7 +64,7 @@ $(function(){
     $('.show-info .description .description-text').dotdotdot({
         after: "a.readmore",
         tolerance: 0,
-        height:70,
+        height:70
     });
     $('.dropdown-form input, .dropdown-form label, .dropdown-form .btn').click(function(e) {
         e.stopPropagation();
@@ -70,7 +72,7 @@ $(function(){
     $('.show-list-description-text').dotdotdot({
         after: "a.readmore",
         tolerance: 0,
-        height:40,
+        height:40
     });
 });
 

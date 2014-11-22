@@ -21,8 +21,6 @@ def js_minify(file_):
     args = [
         'uglifyjs',
         file_,
-        '-c',
-        '-m',
     ]
     try:
         return subprocess.check_output(args)
@@ -40,16 +38,17 @@ def css_minify(file_):
         return
 
 def main():
+    skip = ('vendor.min.js', 'seplis.min.js')
     js_path = os.path.join(os.path.dirname(__file__), 'static/js')
     js_vendor_files = utils.get_files(
         os.path.join(js_path, 'vendor'),
         '.js',
-        skip=['vendor.min.js']
+        skip=skip,
     )
     js_source_files = utils.get_files(
         js_path, 
         '.js',        
-        skip=['seplis.min.js']
+        skip=skip,
     )
     for file_ in js_vendor_files:
         js_source_files.remove(file_)
