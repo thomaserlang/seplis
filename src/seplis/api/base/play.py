@@ -78,6 +78,8 @@ class Play_server(object):
     def save(self, session=None, pipe=None):
         self.updated = datetime.utcnow()
         session.query(
+            models.Play_server
+        ).filter(
             models.Play_server.id == self.id,
         ).update({
             'updated': self.updated,
