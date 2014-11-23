@@ -138,8 +138,6 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/user/watching', seplis.web.handlers.play_episode.API_watching_handler),
             URLSpec(r'/modal/play-episode', seplis.web.handlers.play_episode.Handler),
 
-
-            URLSpec(r'/module/show-etw', seplis.web.handlers.show.Episodes_to_watch_handler),
             URLSpec(r'/api/show-play-next', seplis.web.handlers.show.API_get_play_now),   
         ]
         tornado.web.Application.__init__(self, urls, **settings)

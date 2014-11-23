@@ -76,12 +76,6 @@ $(function(){
     });
 });
 
-function get_show_etw(show_id) {
-    $.get('/module/show-etw', {'show_id': show_id}, function(data) {
-        $('#show-etw').html(data);
-    });
-}
-
 function get_show_play_next(show_id) {
     $('#show-play-next-image')
         .attr('data-target', '')
