@@ -100,46 +100,6 @@ class Handler(base.Handler):
         if episodes:
             return episodes[0]
 
-class Episodes_to_watch_handler(base.Handler):
-
-    @authenticated
-    @gen.coroutine
-    def get(self):        
-        show_id = self.get_argument('show_id')
-        show = yield self.client.get('/shows/{}'.format(show_id),{
-            'fields': 'id',
-            'append': 'user_watching',
-        })
-        if not show:
-            raise HTTPError(404, 'show not found')
-        number = 1
-        if 'user_watching' in show and show['user_watching'] and \
-            show['user_watching']['episode']:
-            number = show['user_watching']['episode']['number']
-        episodes = yield self.get_episodes_to_watch(
-            show_id=show_id,
-            from_number=number if number <= 1 else number - 1
-        )
-        self.render('show/bar.html',
-            show=show,
-            episodes=episodes,
-            watching_number=number,
-        )
-
-
-    @gen.coroutine
-    def get_episodes_to_watch(self, show_id, from_number, limit=5):
-        episodes = yield self.client.get('/shows/{}/episodes'.format(show_id),
-            {
-                'q': 'number:[{} TO {}]'.format(
-                    from_number,
-                    from_number+limit-1,
-                ),
-                'append': 'user_watched',
-            }
-        )
-        return episodes
-
 class API_get_play_now(base.API_handler):
 
     @authenticated
