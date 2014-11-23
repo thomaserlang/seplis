@@ -44,7 +44,15 @@ def create_indices():
                     'title': {
                         'type': 'string',
                         'index_analyzer': 'autocomplete_index',
-                        'search_analyzer': 'autocomplete_search',
+                        'search_analyzer': 'autocomplete_search',        
+                        'fields' : {
+                            'raw' : {
+                                'type': 
+                                'string', 
+                                'index': 
+                                'not_analyzed'
+                            }
+                        }
                     },
                     'id': { 'type': 'integer' },
                     'description': {
