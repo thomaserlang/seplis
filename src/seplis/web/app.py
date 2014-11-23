@@ -14,7 +14,7 @@ import seplis.web.modules.menu
 import seplis.web.modules.buttons
 import seplis.web.modules.tags
 import hashlib
-import os
+import os, os.path
 from seplis.logger import logger
 from seplis import utils
 from tornado.options import define, options
@@ -59,11 +59,12 @@ class Application(tornado.web.Application):
                 skip=(
                     'seplis.min.js', 
                     'vendor.min.js',
+                    'jquery-2.1.1.min.js',
+                    'api.js',
                 ),
             ), reverse=True)
-            jquery = '/static/js/vendor/jquery-2.1.1.min.js'
-            settings['js_files'].remove(jquery)
-            settings['js_files'].insert(0, jquery)
+            settings['js_files'].insert(0, '/static/js/vendor/jquery-2.1.1.min.js')
+            settings['js_files'].insert(1, '/static/js/api.js')
             settings['css_files'] = sorted(get_static_files(
                 static_path,
                 '.css',
@@ -139,7 +140,7 @@ class Application(tornado.web.Application):
 
 
             URLSpec(r'/module/show-etw', seplis.web.handlers.show.Episodes_to_watch_handler),
-            
+            URLSpec(r'/api/show-play-next', seplis.web.handlers.show.API_get_play_now),   
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 

@@ -27,19 +27,28 @@
 }
 
 .show-info .image {
-    width: 300px;
-    float:left;
-}
-
-.show-info .image .no-image {
+    position: relative; 
     width: 300px;
     height: 441px;
     line-height: 441px;
-    background-color: #428bca;    
-    color: #D6D6D6;
+    float:left;
+}
+
+.show-info .image .play-next-button {
+    position: absolute; 
+    top: 0;
+    left: 0;
+    width:100%;
+    height:100%;
+    color:#fff;
+    border:1px solid #000;
+    font-size:150px;
+    background-color:rgba(189,195,199,0.7);
     text-align: center;
-    vertical-align: middle;
-    font-size:36px;
+    visibility: hidden;
+}
+.show-info .image:hover .play-next-button {
+    visibility: visible;
 }
 
 .show-info .description {

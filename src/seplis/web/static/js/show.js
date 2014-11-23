@@ -64,7 +64,7 @@ $(function(){
     $('.show-info .description .description-text').dotdotdot({
         after: "a.readmore",
         tolerance: 0,
-        height:70
+        height: 70
     });
     $('.dropdown-form input, .dropdown-form label, .dropdown-form .btn').click(function(e) {
         e.stopPropagation();
@@ -80,4 +80,21 @@ function get_show_etw(show_id) {
     $.get('/module/show-etw', {'show_id': show_id}, function(data) {
         $('#show-etw').html(data);
     });
+}
+
+function get_show_play_next(show_id) {
+    $('#show-play-next-image')
+        .attr('data-target', '')
+        .attr('href', '');
+    api.get('/api/show-play-next', {'show_id': show_id}, {
+        done: function(episode){
+            $('#show-play-next-image')
+                .attr('data-target', '#seplis-modal')
+                .attr(
+                    'href', 
+                    '/modal/play-episode?show_id='+show_id+
+                    '&episode_number='+episode.number
+                );
+        }
+    })
 }

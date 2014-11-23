@@ -140,6 +140,54 @@ class Episodes_to_watch_handler(base.Handler):
         )
         return episodes
 
+class API_get_play_now(base.API_handler):
+
+    @authenticated
+    @gen.coroutine
+    def get(self):        
+        show_id = self.get_argument('show_id')
+        show = yield self.client.get('/shows/{}'.format(show_id),{
+            'fields': 'id',
+            'append': 'user_watching',
+        })
+        if not show:
+            raise HTTPError(404, 'show not found')
+        episode = yield self.get_play_episode(show)
+        self.write_object(
+            episode
+        )
+
+    @gen.coroutine
+    def get_watching(self, show_id, from_number):
+        episodes = yield self.client.get('/shows/{}/episodes'.format(show_id),
+            {
+                'q': 'number:[{} TO {}]'.format(
+                    from_number,
+                    from_number+1,
+                ),
+                'append': 'user_watched',
+            }
+        )
+        return episodes
+
+    @gen.coroutine
+    def get_play_episode(self, show):
+        number = (show.get('user_watching') or {}).get('episode', {}).get('number') or 1
+        episodes = yield self.get_watching(show['id'], number)
+        if not episodes:
+            raise HTTPError(404, 'no episodes')
+        episode1 = episodes[0]
+        if not episode1['user_watched']:
+            return episode1
+        if episode1['user_watched']['position'] > 0:
+            return episode1
+        if len(episodes) != 2:
+            raise HTTPError(404, 'no more episodes to watch')
+        episode2 = episodes[1]
+        if episode2['user_watched']:
+            episode2['user_watched']['position'] = 0
+        return episode2
+
 class Redirect_handler(base.Handler_unauthenticated):
 
     @gen.coroutine

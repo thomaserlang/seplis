@@ -4,18 +4,17 @@
         {% include show_header.html %}
         <div class="show-info">
             <div class="image">
-                {% if show['poster_image'] %}
-                    <img 
-                        alt="image..." 
-                        src="{{ image_url(show['poster_image'], '@SX300.jpg') }}" 
-                        width="300px"
-                        height="441px"
+                <img alt="{{ escape(show['title']) }}" src="{{ image_url(show['poster_image'], '@SX300.jpg') }}">
+                <div class="play-next-button">
+                    <a 
+                        href="#" 
+                        data-target="#seplis-modal" 
+                        data-toggle="modal"
+                        id="show-play-next-image"
                     >
-                {% else %}
-                    <div class="no-image">
-                        <span>No image</span>
-                    </div>
-                {% end %}
+                        <i class="glyphicon glyphicon-play-circle"></i>
+                    </a>
+                </div>
             </div>
             <div class="description">
                 <div>{% module fan_button(show) %}</div>
@@ -61,10 +60,14 @@
     </show>
 
     <script>
-        get_show_etw({{ show['id'] }});
         $(function(){
-            $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
-                get_show_etw({{ show['id'] }});
+            get_show_etw({{ show['id'] }});
+            get_show_play_next({{ show['id'] }});
+            $(function(){
+                $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
+                    get_show_etw({{ show['id'] }});
+                    get_show_play_next({{ show['id'] }});
+                });
             });
         });
     </script>

@@ -123,6 +123,9 @@
             video.on('canplay', function() { 
                 video.currentTime = startTime;
             });
+            video.on('ended', function() {
+                $('#seplis-modal').modal('hide');
+            });
             $('.slider').on('touchstart', function(){
                 stop_duration_update = true;
             });
