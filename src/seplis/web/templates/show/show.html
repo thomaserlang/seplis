@@ -63,11 +63,9 @@
         $(function(){
             get_show_etw({{ show['id'] }});
             get_show_play_next({{ show['id'] }});
-            $(function(){
-                $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
-                    get_show_etw({{ show['id'] }});
-                    get_show_play_next({{ show['id'] }});
-                });
+            $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
+                get_show_etw({{ show['id'] }});
+                get_show_play_next({{ show['id'] }});
             });
         });
     </script>
