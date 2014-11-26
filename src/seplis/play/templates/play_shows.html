@@ -16,13 +16,12 @@
             placeholder: "Search for a show",
             minimumInputLength: 1,
             ajax:  {
-                url: "{{ config['client']['api_url'] }}/1/shows",
+                url: "/api/show-suggest",
                 dataType: 'json',
                 quietMillis: 250,
                 data: function (term, page) {
                     return {
                         q: 'title:"'+term+'" OR alternative_titles:"'+term+'"',
-                        fields: 'title',
                     };
                 },
                 results: function (data, page) { 

@@ -25,6 +25,9 @@ class Application(tornado.web.Application):
             (r'/', seplis.play.handlers.play.Play_shows_handler),
 
             (r'/metadata', seplis.play.handlers.play.Metadata_handler),
+
+
+            (r'/api/show-suggest', seplis.play.handlers.play.API_show_suggest_handler),
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 

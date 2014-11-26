@@ -8,7 +8,7 @@ import os, os.path
 import shutil
 import time
 import mimetypes
-from seplis import config, utils
+from seplis import config, utils, Async_client
 from seplis.play import models
 from seplis.play.decorators import new_session
 from sqlalchemy import desc
@@ -44,6 +44,19 @@ class Play_shows_handler(tornado.web.RequestHandler):
             show.show_title = self.get_argument('show_title')
             session.commit()
             self.write('{}')
+
+class API_show_suggest_handler(tornado.web.RequestHandler):
+
+    @tornado.gen.coroutine
+    def get(self):
+        client = Async_client(config['client']['api_url'], version='1')
+        set_default_headers(self)
+        q = self.get_argument('q')
+        shows = yield client.get('/shows', {
+            'q': q,
+            'fields': 'title'
+        })
+        self.write(utils.json_dumps(shows))
 
 class _stream_handler(object):
 
