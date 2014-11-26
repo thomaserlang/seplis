@@ -67,7 +67,7 @@
                     class="show-lookup" 
                     value="{{ escape(show.show_title) if show.show_title else show.show_id }}"
                     style="width:250px;"
-                    name="{{ url_escape(show.file_show_title) }}"
+                    name="{{ show.file_show_title }}"
                 >
             </td>
             <td>{{ escape(show.updated.isoformat()) if show.updated else '<i>Never</i>' }}</td>
