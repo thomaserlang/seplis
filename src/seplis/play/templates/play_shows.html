@@ -1,0 +1,78 @@
+{% extends base.html %}
+
+{% block body %}
+<script>
+    $(function(){
+        function showFormatResult(show) {
+            var markup = '<div class="row-fluid">'+ show.title +'</div>';
+            return markup;
+        }
+
+        function showFormatSelection(show) {
+            return show.title;
+        }
+
+        $('.show-lookup').select2({
+            placeholder: "Search for a show",
+            minimumInputLength: 1,
+            ajax:  {
+                url: "{{ config['client']['api_url'] }}/1/shows",
+                dataType: 'json',
+                quietMillis: 250,
+                data: function (term, page) {
+                    return {
+                        q: 'title:"'+term+'" OR alternative_titles:"'+term+'"',
+                        fields: 'title',
+                    };
+                },
+                results: function (data, page) { 
+                    return { results: data };
+                },
+                cache: true
+            },
+            initSelection: function(element, callback) {
+                var id = $(element).val();
+                if (id !== "") {
+                    callback({
+                        title: id,
+                    });
+                }
+            },
+            formatResult: showFormatResult,
+            formatSelection: showFormatSelection,
+            escapeMarkup: function (m) { return m; }
+        });
+
+        $('.show-lookup').on("select2-selecting", function(e) { 
+            console.log(e.target.title);
+            $.post('/', { 
+                'show_id': e.val,
+                'file_show_title': e.target.name,
+                'show_title': e.object.title,
+            });
+        });
+    });
+</script>
+
+<table class="table">
+    <tr>
+        <th>File show name</th>
+        <th>Matched show id/name</th>
+        <th>Latest update</th>
+    </tr>
+    {% for show in shows %}
+        <tr>
+            <td>{{ escape(show.file_show_title) }}</td>
+            <td>
+                <input 
+                    class="show-lookup" 
+                    value="{{ escape(show.show_title) if show.show_title else show.show_id }}"
+                    style="width:250px;"
+                    name="{{ url_escape(show.file_show_title) }}"
+                >
+            </td>
+            <td>{{ escape(show.updated.isoformat()) if show.updated else '<i>Never</i>' }}</td>
+        </tr>
+    {% end %}
+</table>
+{% end %}

@@ -106,7 +106,10 @@ def load(path=None):
                 config[key].update(data[key])
             else:
                 config[key] = data[key]
-    if config['play']['scan']:
+    if config['play']['scan']:# validate the play scan items
         schemas.Config_play_scan(
             config['play']['scan']
         )
+    config['web']['url'] = config['web']['url'].rstrip('/')
+    config['web']['image_url'] = config['web']['image_url'].rstrip('/')
+    config['client']['api_url'] = config['client']['api_url'].rstrip('/')

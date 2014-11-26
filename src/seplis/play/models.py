@@ -39,6 +39,7 @@ class Episode_number_lookup(base):
 class Show_id_lookup(base):
     __tablename__ = 'show_id_lookup'
 
-    show_title = sa.Column(sa.String(200), primary_key=True)
+    file_show_title = sa.Column(sa.String(200), primary_key=True)
+    show_title = sa.Column(sa.String(200))
     show_id = sa.Column(sa.Integer)
     updated = sa.Column(sa.DateTime)

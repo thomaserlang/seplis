@@ -3,8 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from seplis.config import config
 import os.path
 import alembic.config
-from alembic import command
-from alembic import context
+from alembic import command, context
 
 def get_config():
     cfg = alembic.config.Config(
@@ -32,6 +31,5 @@ class Database:
         self.session = sessionmaker(
             bind=self.engine,
         )
-        #upgrade()
 
 database = Database()

@@ -121,7 +121,7 @@ class test_shows_scan(Testbase):
         ])
         episode = Parsed_episode_season(
             show_id=1,
-            show_title='NCIS',
+            file_show_title='NCIS',
             season=1,
             episode=2,
             path='/',
@@ -151,7 +151,7 @@ class test_shows_scan(Testbase):
         ])
         episode = Parsed_episode_air_date(
             show_id=1,
-            show_title='NCIS',
+            file_show_title='NCIS',
             air_date='2014-11-14',
             path='/',
         )
@@ -180,7 +180,7 @@ class test_shows_scan(Testbase):
         ])
         episode = Parsed_episode_number(
             show_id=1,
-            show_title='NCIS',
+            file_show_title='NCIS',
             number=4,
             path='/',
         )
@@ -206,7 +206,7 @@ class test_shows_scan(Testbase):
         episodes = []
         episodes.append(Parsed_episode_season(
             show_id=1,
-            show_title='ncis',
+            file_show_title='ncis',
             season=1,
             episode=2,
             path='/ncis/ncis.s01e02.mp4',
@@ -214,14 +214,14 @@ class test_shows_scan(Testbase):
         ))
         episodes.append(Parsed_episode_air_date(
             show_id=1,
-            show_title='ncis',
+            file_show_title='ncis',
             air_date='2014-11-14',
             path='/ncis/ncis.2014-11-14.mp4',
             number=3,
         ))
         episodes.append(Parsed_episode_number(
             show_id=1,
-            show_title='ncis',
+            file_show_title='ncis',
             number=4,
             path='/ncis/ncis.4.mp4',
         ))
@@ -258,7 +258,7 @@ class test_shows_scan(Testbase):
     def test_scan(self):
         episodes = [Parsed_episode_number(
             show_id=1,
-            show_title='ncis',
+            file_show_title='ncis',
             number=4,
             path='/ncis/ncis.4.mp4',
         )]
@@ -294,7 +294,7 @@ class test_parse_episode(unittest.TestCase):
         self.assertTrue(
             isinstance(info, Parsed_episode_season),
         )
-        self.assertEqual(info.show_title, 'Alpha House')
+        self.assertEqual(info.file_show_title, 'Alpha House')
         self.assertEqual(info.season, 2)
         self.assertEqual(info.episode, 1)
         self.assertEqual(info.path, path)
@@ -307,7 +307,7 @@ class test_parse_episode(unittest.TestCase):
         self.assertTrue(
             isinstance(info, Parsed_episode_number),
         )
-        self.assertEqual(info.show_title, 'Naruto Shippuuden')
+        self.assertEqual(info.file_show_title, 'Naruto Shippuuden')
         self.assertEqual(info.number, 379)
         self.assertEqual(info.path, path)
 
@@ -319,7 +319,7 @@ class test_parse_episode(unittest.TestCase):
         self.assertTrue(
             isinstance(info, Parsed_episode_air_date),
         )
-        self.assertEqual(info.show_title, 'The Daily Show')
+        self.assertEqual(info.file_show_title, 'The Daily Show')
         self.assertEqual(info.air_date, '2014-06-03')
         self.assertEqual(info.path, path)
 

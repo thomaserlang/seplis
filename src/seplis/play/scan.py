@@ -21,10 +21,10 @@ class Parsed_episode(object):
 
 class Parsed_episode_season(Parsed_episode):
 
-    def __init__(self, show_title, season, episode, path, show_id=None, number=None):
+    def __init__(self, file_show_title, season, episode, path, show_id=None, number=None):
         super().__init__()
         self.lookup_type = 1
-        self.show_title = show_title
+        self.file_show_title = file_show_title
         self.season = season
         self.episode = episode
         self.path = path
@@ -33,10 +33,10 @@ class Parsed_episode_season(Parsed_episode):
 
 class Parsed_episode_air_date(Parsed_episode):
 
-    def __init__(self, show_title, air_date, path, show_id=None, number=None):
+    def __init__(self, file_show_title, air_date, path, show_id=None, number=None):
         super().__init__()
         self.lookup_type = 2
-        self.show_title = show_title
+        self.file_show_title = file_show_title
         self.air_date = air_date
         self.path = path
         self.show_id = show_id
@@ -44,9 +44,9 @@ class Parsed_episode_air_date(Parsed_episode):
 
 class Parsed_episode_number(Parsed_episode):
 
-    def __init__(self, show_title, number, path, show_id=None):
+    def __init__(self, file_show_title, number, path, show_id=None):
         super().__init__()
-        self.show_title = show_title
+        self.file_show_title = file_show_title
         self.number = number
         self.path = path
         self.show_id = show_id
@@ -165,19 +165,19 @@ class Shows_scan(Play_scan):
         :returns: bool
         '''
         logging.info('Looking for a show with title: "{}"'.format(
-            episode.show_title
+            episode.file_show_title
         ))
-        show_id = self.show_id.lookup(episode.show_title)
+        show_id = self.show_id.lookup(episode.file_show_title)
         if show_id:
             logging.info('Found show: "{}" with show id: {}'.format(
-                episode.show_title,
+                episode.file_show_title,
                 show_id,
             ))
             episode.show_id = show_id
             return True
         else:
             logging.info('No show found for title: "{}"'.format(
-                episode.show_title,
+                episode.file_show_title,
             ))
         return False
 
@@ -249,21 +249,21 @@ class Show_id(object):
     def __init__(self, scanner):
         self.scanner = scanner
 
-    def lookup(self, show_title):
+    def lookup(self, file_show_title):
         '''
         Tries to find the show on SEPLIS by it's title.
 
-        :param show_title: str
+        :param file_show_title: str
         :returns: int
         '''
-        show_id = self.db_lookup(show_title)
+        show_id = self.db_lookup(file_show_title)
         if show_id:
             return show_id
-        shows = self.web_lookup(show_title)
+        shows = self.web_lookup(file_show_title)
         show_id = shows[0]['id'] if shows else None
         with new_session() as session:
             show = models.Show_id_lookup(
-                show_title=show_title,
+                file_show_title=file_show_title,
                 show_id=show_id,
                 updated=datetime.utcnow(),
             )
@@ -271,26 +271,26 @@ class Show_id(object):
             session.commit()
         return show_id
 
-    def db_lookup(self, show_title):        
+    def db_lookup(self, file_show_title):        
         '''
 
-        :param show_title: str
+        :param file_show_title: str
         :returns: int
         '''
         with new_session() as session:
             show = session.query(
                 models.Show_id_lookup
             ).filter(
-                models.Show_id_lookup.show_title == show_title,
+                models.Show_id_lookup.file_show_title == file_show_title,
             ).first()
             if not show or not show.show_id:
                 return
             return show.show_id
 
-    def web_lookup(self, show_title):
+    def web_lookup(self, file_show_title):
         '''
 
-        :param show_title: str
+        :param file_show_title: str
         :returns: list of dict
             [
                 {
@@ -300,8 +300,8 @@ class Show_id(object):
             ]
         '''
         shows = self.scanner.client.get('/shows', {
-            'q': 'title:"{show_title}" alternative_titles:"{show_title}"'.format(
-                show_title=show_title,
+            'q': 'title:"{file_show_title}" alternative_titles:"{file_show_title}"'.format(
+                file_show_title=file_show_title,
             ),
             'fields': 'id,title',
         })
@@ -418,9 +418,9 @@ def parse_episode(file_):
 def _parse_episode_info_from_file(file_, match):
     fields = match.groupdict().keys()
     season = None
-    if 'show_title' not in fields:
+    if 'file_show_title' not in fields:
         return None
-    show_title = match.group('show_title').strip()\
+    file_show_title = match.group('file_show_title').strip()\
         .replace('.', ' ')\
         .replace('-', ' ')\
         .replace('_', ' ')
@@ -449,20 +449,20 @@ def _parse_episode_info_from_file(file_, match):
 
     if season and number:
         return Parsed_episode_season(
-            show_title=show_title,
+            file_show_title=file_show_title,
             season=season,
             episode=number,
             path=file_,
         )
     elif not season and number:
         return Parsed_episode_number(
-            show_title=show_title,
+            file_show_title=file_show_title,
             number=number,
             path=file_,
         )
     elif air_date:
         return Parsed_episode_air_date(
-            show_title=show_title,
+            file_show_title=file_show_title,
             air_date=air_date,
             path=file_,
         )

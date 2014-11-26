@@ -2,6 +2,7 @@ import logging
 import tornado.ioloop
 import tornado.web
 import tornado.gen
+import tornado.escape
 import subprocess
 import os, os.path
 import shutil
@@ -10,6 +11,39 @@ import mimetypes
 from seplis import config, utils
 from seplis.play import models
 from seplis.play.decorators import new_session
+from sqlalchemy import desc
+
+class Play_shows_handler(tornado.web.RequestHandler):
+
+    def get(self):
+        with new_session() as session:
+            shows = session.query(
+                models.Show_id_lookup
+            ).order_by(
+                desc(models.Show_id_lookup.updated),
+            ).all()
+            self.render(
+                'play_shows.html',
+                shows=shows,
+                config=config,
+                url_escape=tornado.escape.url_escape
+            )
+
+    def post(self):
+        set_default_headers(self)
+        with new_session() as session:
+            show = session.query(
+                models.Show_id_lookup,
+            ).filter(
+                models.Show_id_lookup.file_show_title == \
+                    self.get_argument('file_show_title')
+            ).first()
+            if not show:
+                raise HTTPError(404, 'show not found')
+            show.show_id = self.get_argument('show_id')            
+            show.show_title = self.get_argument('show_title')
+            session.commit()
+            self.write('{}')
 
 class _stream_handler(object):
 

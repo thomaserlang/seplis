@@ -2,7 +2,7 @@
 FILENAME_PATTERNS = [
     # [group] Show - 01-02 [crc]
     '''^\[(?P<group>.+?)\][ ]?               # group name, captured for [#100]
-    (?P<show_title>.*?)[ ]?[-_][ ]?          # show name, padding, spaces?
+    (?P<file_show_title>.*?)[ ]?[-_][ ]?          # show name, padding, spaces?
     (?P<numberstart>\d+)              # first episode number
     ([-_]\d+)*                               # optional repeating episodes
     [-_](?P<numberend>\d+)            # last episode number
@@ -14,7 +14,7 @@ FILENAME_PATTERNS = [
 
     # [group] Show - 01 [crc]
     '''^\[(?P<group>.+?)\][ ]?               # group name, captured for [#100]
-    (?P<show_title>.*)                       # show name
+    (?P<file_show_title>.*)                       # show name
     [ ]?[-_][ ]?                             # padding and seperator
     (?P<number>\d+)                   # episode number
     (?=                                      # Optional group for crc value (non-capturing)
@@ -25,7 +25,7 @@ FILENAME_PATTERNS = [
 
     # foo s01e23 s01e24 s01e25 *
     '''
-    ^((?P<show_title>.+?)[ \._\-])?          # show name
+    ^((?P<file_show_title>.+?)[ \._\-])?          # show name
     [Ss](?P<season>[0-9]+)             # s01
     [\.\- ]?                                 # separator
     [Ee](?P<numberstart>[0-9]+)       # first e23
@@ -41,7 +41,7 @@ FILENAME_PATTERNS = [
 
     # foo.s01e23e24*
     '''
-    ^((?P<show_title>.+?)[ \._\-])?          # show name
+    ^((?P<file_show_title>.+?)[ \._\-])?          # show name
     [Ss](?P<season>[0-9]+)             # s01
     [\.\- ]?                                 # separator
     [Ee](?P<numberstart>[0-9]+)       # first e23
@@ -52,7 +52,7 @@ FILENAME_PATTERNS = [
 
     # foo.1x23 1x24 1x25
     '''
-    ^((?P<show_title>.+?)[ \._\-])?          # show name
+    ^((?P<file_show_title>.+?)[ \._\-])?          # show name
     (?P<season>[0-9]+)                 # first season number (1)
     [xX](?P<numberstart>[0-9]+)       # first episode (x23)
     ([ \._\-]+                               # separator
@@ -65,7 +65,7 @@ FILENAME_PATTERNS = [
 
     # foo.1x23x24*
     '''
-    ^((?P<show_title>.+?)[ \._\-])?          # show name
+    ^((?P<file_show_title>.+?)[ \._\-])?          # show name
     (?P<season>[0-9]+)                 # 1
     [xX](?P<numberstart>[0-9]+)       # first x23
     ([xX][0-9]+)*                            # x24x25 etc
@@ -74,7 +74,7 @@ FILENAME_PATTERNS = [
 
     # foo.s01e23-24*
     '''
-    ^((?P<show_title>.+?)[ \._\-])?          # show name
+    ^((?P<file_show_title>.+?)[ \._\-])?          # show name
     [Ss](?P<season>[0-9]+)             # s01
     [\.\- ]?                                 # separator
     [Ee](?P<numberstart>[0-9]+)       # first e23
@@ -89,7 +89,7 @@ FILENAME_PATTERNS = [
 
     # foo.1x23-24*
     '''
-    ^((?P<show_title>.+?)[ \._\-])?          # show name
+    ^((?P<file_show_title>.+?)[ \._\-])?          # show name
     (?P<season>[0-9]+)                 # 1
     [xX](?P<numberstart>[0-9]+)       # first x23
     (                                        # -24 etc
@@ -102,7 +102,7 @@ FILENAME_PATTERNS = [
     $)''',
 
     # foo.[1x09-11]*
-    '''^(?P<show_title>.+?)[ \._\-]          # show name and padding
+    '''^(?P<file_show_title>.+?)[ \._\-]          # show name and padding
     \[                                       # [
         ?(?P<season>[0-9]+)            # season
     [xX]                                     # x
@@ -114,20 +114,20 @@ FILENAME_PATTERNS = [
     [^\\/]*$''',
 
     # foo - [012]
-    '''^((?P<show_title>.+?)[ \._\-])?       # show name and padding
+    '''^((?P<file_show_title>.+?)[ \._\-])?       # show name and padding
     \[                                       # [ not optional (or too ambigious)
     (?P<number>[0-9]+)                # episode
     \]                                       # ]
     [^\\/]*$''',
     # foo.s0101, foo.0201
-    '''^(?P<show_title>.+?)[ \._\-]
+    '''^(?P<file_show_title>.+?)[ \._\-]
     [Ss](?P<season>[0-9]{2})
     [\.\- ]?
     (?P<number>[0-9]{2})
     [^0-9]*$''',
 
     # foo.1x09*
-    '''^((?P<show_title>.+?)[ \._\-])?       # show name and padding
+    '''^((?P<file_show_title>.+?)[ \._\-])?       # show name and padding
     \[?                                      # [ optional
     (?P<season>[0-9]+)                 # season
     [xX]                                     # x
@@ -136,7 +136,7 @@ FILENAME_PATTERNS = [
     [^\\/]*$''',
 
     # foo.s01.e01, foo.s01_e01, "foo.s01 - e01"
-    '''^((?P<show_title>.+?)[ \._\-])?
+    '''^((?P<file_show_title>.+?)[ \._\-])?
     \[?
     [Ss](?P<season>[0-9]+)[ ]?[\._\- ]?[ ]?
     [Ee]?(?P<number>[0-9]+)
@@ -145,7 +145,7 @@ FILENAME_PATTERNS = [
 
     # foo.2010.01.02.etc
     '''
-    ^((?P<show_title>.+?)[ \._\-])?          # show name
+    ^((?P<file_show_title>.+?)[ \._\-])?          # show name
     (?P<year>\d{4})                          # year
     [ \._\-]                                 # separator
     (?P<month>\d{2})                         # month
@@ -154,7 +154,7 @@ FILENAME_PATTERNS = [
     [^\/]*$''',
 
     # foo - [01.09]
-    '''^((?P<show_title>.+?))                # show name
+    '''^((?P<file_show_title>.+?))                # show name
     [ \._\-]?                                # padding
     \[                                       # [
     (?P<season>[0-9]+?)                # season
@@ -165,14 +165,14 @@ FILENAME_PATTERNS = [
     [^\\/]*$''',
 
     # Foo - S2 E 02 - etc
-    '''^(?P<show_title>.+?)[ ]?[ \._\-][ ]?
+    '''^(?P<file_show_title>.+?)[ ]?[ \._\-][ ]?
     [Ss](?P<season>[0-9]+)[\.\- ]?
     [Ee]?[ ]?(?P<number>[0-9]+)
     [^\\/]*$''',
 
     # Show - Episode 9999 [S 12 - Ep 131] - etc
     '''
-    (?P<show_title>.+)                       # Showname
+    (?P<file_show_title>.+)                       # Showname
     [ ]-[ ]                                  # -
     [Ee]pisode[ ]\d+                         # Episode 1234 (ignored)
     [ ]
@@ -185,7 +185,7 @@ FILENAME_PATTERNS = [
     ''',
 
     # show name 2 of 6 - blah
-    '''^(?P<show_title>.+?)                  # Show name
+    '''^(?P<file_show_title>.+?)                  # Show name
     [ \._\-]                                 # Padding
     (?P<number>[0-9]+)                # 2
     of                                       # of
@@ -196,7 +196,7 @@ FILENAME_PATTERNS = [
 
     # Show.Name.Part.1.and.Part.2
     '''^(?i)
-    (?P<show_title>.+?)                        # Show name
+    (?P<file_show_title>.+?)                        # Show name
     [ \._\-]                                   # Padding
     (?:part|pt)?[\._ -]
     (?P<numberstart>[0-9]+)             # Part 1
@@ -211,32 +211,32 @@ FILENAME_PATTERNS = [
     ''',
 
     # Show.Name.Part1
-    '''^(?P<show_title>.+?)                  # Show name\n
+    '''^(?P<file_show_title>.+?)                  # Show name\n
     [ \\._\\-]                               # Padding\n
     [Pp]art[ ](?P<number>[0-9]+)      # Part 1\n
     [\\._ -][^\\/]*$                         # More padding, then anything\n
     ''',
 
     # show name Season 01 Episode 20
-    '''^(?P<show_title>.+?)[ ]?               # Show name
+    '''^(?P<file_show_title>.+?)[ ]?               # Show name
     [Ss]eason[ ]?(?P<season>[0-9]+)[ ]? # Season 1
     [Ee]pisode[ ]?(?P<number>[0-9]+)   # Episode 20
     [^\\/]*$''',                              # Anything
 
     # foo.103*
-    '''^(?P<show_title>.+)[ \._\-]
+    '''^(?P<file_show_title>.+)[ \._\-]
     (?P<season>[0-9]{1})
     (?P<number>[0-9]{2})
     [\._ -][^\\/]*$''',
 
     # foo.0103*
-    '''^(?P<show_title>.+)[ \._\-]
+    '''^(?P<file_show_title>.+)[ \._\-]
     (?P<season>[0-9]{2})
     (?P<number>[0-9]{2,3})
     [\._ -][^\\/]*$''',
 
     # show.name.e123.abc
-    '''^(?P<show_title>.+?)                  # Show name
+    '''^(?P<file_show_title>.+?)                  # Show name
     [ \._\-]                                 # Padding
     [Ee](?P<number>[0-9]+)            # E123
     [\._ -][^\\/]*$                          # More padding, then anything
