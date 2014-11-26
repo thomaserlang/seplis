@@ -39,7 +39,7 @@ class Play_shows_handler(tornado.web.RequestHandler):
                     self.get_argument('file_show_title')
             ).first()
             if not show:
-                raise HTTPError(404, 'show not found')
+                raise tornado.web.HTTPError(404, 'show not found')
             show.show_id = self.get_argument('show_id')            
             show.show_title = self.get_argument('show_title')
             session.commit()
