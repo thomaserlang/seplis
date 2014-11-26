@@ -261,9 +261,11 @@ class Show_id(object):
             return show_id
         shows = self.web_lookup(file_show_title)
         show_id = shows[0]['id'] if shows else None
+        show_title = shows[0]['title'] if shows else None
         with new_session() as session:
             show = models.Show_id_lookup(
                 file_show_title=file_show_title,
+                show_title=show_title,
                 show_id=show_id,
                 updated=datetime.utcnow(),
             )
