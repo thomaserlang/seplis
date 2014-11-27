@@ -422,10 +422,11 @@ def _parse_episode_info_from_file(file_, match):
     season = None
     if 'file_show_title' not in fields:
         return None
-    file_show_title = match.group('file_show_title').strip()\
-        .replace('.', ' ')\
-        .replace('-', ' ')\
-        .replace('_', ' ')
+    file_show_title = match.group('file_show_title') \
+        .replace('.', ' ') \
+        .replace('-', ' ') \
+        .replace('_', ' ') \
+        .strip()
 
     season = None
     if 'season' in fields:
