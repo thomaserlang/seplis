@@ -426,7 +426,8 @@ def _parse_episode_info_from_file(file_, match):
         .replace('.', ' ') \
         .replace('-', ' ') \
         .replace('_', ' ') \
-        .strip()
+        .strip() \
+        .lower()
 
     season = None
     if 'season' in fields:
