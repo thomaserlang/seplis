@@ -54,7 +54,7 @@ class API_show_suggest_handler(tornado.web.RequestHandler):
         q = self.get_argument('q')
         shows = yield client.get('/shows', {
             'q': q,
-            'fields': 'title'
+            'fields': 'title,poster_image'
         })
         self.write(utils.json_dumps(shows))
 

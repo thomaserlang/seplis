@@ -4,7 +4,18 @@
 <script>
     $(function(){
         function showFormatResult(show) {
-            var markup = '<div class="row-fluid">'+ show.title +'</div>';
+            var markup = '<div class="row">'
+                    +'<div class="col-xs-3">'
+                        +'<img width="60px" height="88px" src="{{ config['web']['image_url'] }}/'
+                            +show.poster_image.hash+'@SX60'
+                        +'">'
+                    +'</div>'
+                    +'<div class="col-xs-9">'
+                        +'<strong>'
+                            +show.title 
+                        +'</strong>'
+                    +'</div>'
+                +'</div>';
             return markup;
         }
 
