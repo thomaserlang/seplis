@@ -30,8 +30,9 @@ def upgrade():
         sa.Column('number', sa.Integer)
     )
 
-    op.create_table('show_id_lookup', 
-        sa.Column('show_title', sa.String(200), primary_key=True),
+    op.create_table('show_id_lookup_new', 
+        sa.Column('file_show_title', sa.String(200), primary_key=True),
+        sa.Column('show_title', sa.String(200)),
         sa.Column('show_id', sa.Integer),
         sa.Column('updated', sa.DateTime),
     )
