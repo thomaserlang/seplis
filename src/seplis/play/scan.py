@@ -183,6 +183,8 @@ class Shows_scan(Play_scan):
 
     def episode_number_lookup(self, episode):
         '''
+        Tries to lookup the episode number of the episode.
+        Sets the number in the episode object if successful.
 
         :param episode: `Parsed_episode()`
         :returns: bool
@@ -214,10 +216,12 @@ class Shows_scan(Play_scan):
 
     def save_episode(self, episode):
         '''
-        If the object has `show_id`, `number` and `path`
-        is filled the episode will be saved.
+        If `show_id`, `number` and `path` are filled 
+        the episode with a relation to the show will
+        be saved.
 
         :param episode: `Parsed_episode()`
+        :returns: bool
         '''
         updated = 0
         with new_session() as session:
@@ -245,6 +249,9 @@ class Shows_scan(Play_scan):
             return True
 
 class Show_id(object):
+    '''Used to lookup a show id by it's title.
+    The result will be cached in the local db.
+    '''
 
     def __init__(self, scanner):
         self.scanner = scanner
@@ -301,6 +308,10 @@ class Show_id(object):
                 }
             ]
         '''
+        file_show_title = file_show_title \
+            .replace('.', ' ') \
+            .replace('-', ' ') \
+            .replace('_', ' ')
         shows = self.scanner.client.get('/shows', {
             'q': 'title:"{file_show_title}" alternative_titles:"{file_show_title}"'.format(
                 file_show_title=file_show_title,
@@ -310,6 +321,10 @@ class Show_id(object):
         return shows
 
 class Episode_number(object):
+    '''Used to lookup an episode's number from the season and episode or
+    an air date.
+    Stores the result in the local db.
+    '''
 
     def __init__(self, scanner):
         self.scanner = scanner
@@ -422,12 +437,7 @@ def _parse_episode_info_from_file(file_, match):
     season = None
     if 'file_show_title' not in fields:
         return None
-    file_show_title = match.group('file_show_title') \
-        .replace('.', ' ') \
-        .replace('-', ' ') \
-        .replace('_', ' ') \
-        .strip() \
-        .lower()
+    file_show_title = match.group('file_show_title').strip().lower()
 
     season = None
     if 'season' in fields:

@@ -7,7 +7,7 @@ class Handler(base.API_handler):
     def get(self):
         q = self.get_argument('q')
         suggest = yield self.client.get('/shows', {
-            'q': 'title:"{0}" OR alternative_titles:"{0}"'.format(
+            'q': 'title.suggest:"{0}" OR alternative_titles.suggest:"{0}"'.format(
                 q
             ),
             'per_page': 5,

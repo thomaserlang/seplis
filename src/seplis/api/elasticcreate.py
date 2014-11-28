@@ -10,19 +10,20 @@ def create_indices():
         'analysis': {
             'filter': {
                 'autocomplete_filter': { 
-                    'type':     'edge_ngram',
+                    'type': 'edge_ngram',
                     'min_gram': 1,
                     'max_gram': 20,
                 }
             },
             'analyzer': {
                 'autocomplete_index': {
-                    'type':      'custom',
+                    'type': 'custom',
                     'tokenizer': 'standard',
                     'filter': [
                         'lowercase',
-                        'autocomplete_filter' ,
-                    ]
+                        'autocomplete_filter',
+                    ],
+                    'stopwords': '_none_',
                 },
                 'autocomplete_search': {
                     'type': 'custom',
@@ -30,7 +31,8 @@ def create_indices():
                     'filter': [
                         'lowercase',
                         'stop',
-                    ]
+                    ],
+                    'stopwords': '_none_',
                 },
             },
         }
@@ -42,15 +44,16 @@ def create_indices():
             'show': {
                 'properties': {
                     'title': {
-                        'type': 'string',
-                        'index_analyzer': 'autocomplete_index',
-                        'search_analyzer': 'autocomplete_search',        
-                        'fields' : {
+                        'type': 'string',      
+                        'fields': {
                             'raw' : {
-                                'type': 
-                                'string', 
-                                'index': 
-                                'not_analyzed'
+                                'type': 'string', 
+                                'index': 'not_analyzed',
+                            },
+                            'suggest': {
+                                'type': 'string', 
+                                'index_analyzer': 'autocomplete_index',
+                                'search_analyzer': 'autocomplete_search',
                             }
                         }
                     },
@@ -97,8 +100,13 @@ def create_indices():
                     'alternative_titles': {
                         'type': 'string',
                         'index_name': 'alternative_title',
-                        'index_analyzer': 'autocomplete_index',
-                        'search_analyzer': 'autocomplete_search',
+                        'fields': {
+                            'suggest': {
+                                'type': 'string', 
+                                'index_analyzer': 'autocomplete_index',
+                                'search_analyzer': 'autocomplete_search',
+                            },
+                        },
                     },
                     'genres': {
                         'type': 'string',
