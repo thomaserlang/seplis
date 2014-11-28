@@ -44,20 +44,26 @@ class Play_shows_handler(tornado.web.RequestHandler):
             show.show_id = self.get_argument('show_id')            
             show.show_title = self.get_argument('show_title')
             if old_show_id:
-                session.query(
-                    models.Episode_number_lookup,
+                count = session.query(
+                    models.Show_id_lookup,
                 ).filter(
-                    models.Episode_number_lookup.show_id == old_show_id,
-                ).update({
-                    'show_id': show.id,
-                })
-                session.query(
-                    models.Episode,
-                ).filter(
-                    models.Episode.show_id == old_show_id,
-                ).update({
-                    'show_id': show.id,
-                })
+                    models.Show_id_lookup.show_id == old_show_id
+                ).count()
+                if count < 2:
+                    session.query(
+                        models.Episode_number_lookup,
+                    ).filter(
+                        models.Episode_number_lookup.show_id == old_show_id,
+                    ).update({
+                        'show_id': show.show_id,
+                    })
+                    session.query(
+                        models.Episode,
+                    ).filter(
+                        models.Episode.show_id == old_show_id,
+                    ).update({
+                        'show_id': show.show_id,
+                    })
             session.commit()
             self.write('{}')
 
