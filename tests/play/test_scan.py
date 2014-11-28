@@ -294,7 +294,7 @@ class test_parse_episode(unittest.TestCase):
         self.assertTrue(
             isinstance(info, Parsed_episode_season),
         )
-        self.assertEqual(info.file_show_title, 'alpha house')
+        self.assertEqual(info.file_show_title, 'alpha.house')
         self.assertEqual(info.season, 2)
         self.assertEqual(info.episode, 1)
         self.assertEqual(info.path, path)
@@ -319,7 +319,7 @@ class test_parse_episode(unittest.TestCase):
         self.assertTrue(
             isinstance(info, Parsed_episode_air_date),
         )
-        self.assertEqual(info.file_show_title, 'the daily show')
+        self.assertEqual(info.file_show_title, 'the.daily.show')
         self.assertEqual(info.air_date, '2014-06-03')
         self.assertEqual(info.path, path)
 
