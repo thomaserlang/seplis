@@ -12,6 +12,9 @@ class Handler(base.Handler):
             title='Sign in',
         )
 
+    def post(self):
+        get()
+
 class API_handler(base.API_handler):
     
     @gen.coroutine
