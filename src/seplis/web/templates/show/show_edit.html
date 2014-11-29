@@ -62,15 +62,16 @@
     </div>
     <div class="col-xs-6">
         {% if show %}
-        <div class="form-group">
-            <label for="alternative-titles">Alternative titles</label>
-            <input 
-                name="alternative_titles"
-                value="{{ ','.join(show['alternative_titles']) }}"
-                id="alternative-titles"
-                class="form-control"
-            >
-        </div>
+            <div class="form-group">
+                <label for="alternative-titles">Alternative titles</label>
+                <input 
+                    name="alternative_titles"
+                    value="{{ ','.join(show['alternative_titles']) }}"
+                    id="alternative-titles"
+                    class="form-control"
+                >
+            </div>
+        {% end %}
         <div class="form-group">
             <label for="episode-type">Episode type</label>
             <select 
@@ -78,17 +79,21 @@
                 id="episode-type"
                 class="form-control"
             >
+                {% if show %}
+                {% set episode_type = show['episode_type'] %}
+                {% else %}
+                {% set episode_type = constants.SHOW_EPISODE_TYPE_SEASON_EPISODE %}
+                {% end %}
                 {% for i, name in constants.SHOW_EPISODE_TYPE.items() %}
                     <option 
                         value="{{ i }}"
-                        {{ 'selected' if i == show['episode_type'] else '' }}
+                        {{ 'selected' if i == episode_type else '' }}
                     >
                         {{ escape(name) }}
                     </option>
                 {% end %}
             </select>
         </div>
-        {% end %}
     </div>
     </div>
 </form>
