@@ -268,10 +268,12 @@ class API_new_handler(base.API_handler):
             'alternative_titles', 
             ''
         ).split(',')))
+        episode_type = int(self.get_argument('episode_type'))
         return {
             'externals': externals,
             'indices': indices,
             'alternative_titles': alternative_titles,
+            'episode_type': episode_type,
         }
 
 class Edit_handler(Handler):
