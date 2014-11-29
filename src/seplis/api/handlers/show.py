@@ -79,6 +79,7 @@ class Handler(base.Handler):
         'runtime',
         'genres',
         'alternative_titles',
+        'episode_type',
     )
     @concurrent.run_on_executor
     def _update(self, show_id, validate_show=True, overwrite=False):

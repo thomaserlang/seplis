@@ -111,7 +111,8 @@ def create_indices():
                     'genres': {
                         'type': 'string',
                         'index_name': 'genre',
-                    },
+                    },                    
+                    'episode_type': { 'type': 'integer' },
                 }
             }
         }

@@ -16,6 +16,7 @@ class test_show(Testbase):
         # Creating a new show without any data is OK.
         response = self.post('/1/shows')
         self.assertEqual(response.code, 201, response.body)
+        show = utils.json_loads(response.body)
 
         # this should be a successfully creation of a new show
         response = self.post('/1/shows', {
@@ -67,6 +68,10 @@ class test_show(Testbase):
         self.assertTrue('NCIS 2' in show['alternative_titles'])
         self.assertTrue('NCIS 3' in show['alternative_titles'])
         self.assertEqual(show['runtime'], 40)
+        self.assertEqual(
+            show['episode_type'], 
+            constants.SHOW_EPISODE_TYPE_SEASON_EPISODE
+        )
 
     def test_patch(self):
         show_id = self.new_show()
@@ -82,6 +87,7 @@ class test_show(Testbase):
             'externals': {
                 'imdb': 'tt0364845',
             },
+            'episode_type': constants.SHOW_EPISODE_TYPE_AIR_DATE,
         })
         self.assertEqual(response.code, 200, response.body)
         response = self.patch('/1/shows/{}'.format(show_id), {
@@ -107,7 +113,10 @@ class test_show(Testbase):
         self.assertEqual(show['externals'], {
             'imdb': 'tt0364845',
         })
-
+        self.assertEqual(
+            show['episode_type'], 
+            constants.SHOW_EPISODE_TYPE_AIR_DATE
+        )
 
     def test_put(self):
         show_id = self.new_show()
@@ -123,6 +132,7 @@ class test_show(Testbase):
             'externals': {
                 'imdb': 'tt0364845',
             },
+            'episode_type': constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER,
         })
 
         self.assertEqual(response.code, 200, response.body)
@@ -145,6 +155,11 @@ class test_show(Testbase):
         self.assertEqual(show['externals'], {
             'thetvdb': '1234',
         })
+        self.assertEqual(
+            show['episode_type'], 
+            constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER,
+        )
+
     def test_indices(self):
         show_id = self.new_show()
 
@@ -260,6 +275,24 @@ class test_show(Testbase):
             }
         })
         self.assertEqual(response.code, 400, response.body)
+
+    def test_episode_type(self):
+        show_id = self.new_show()
+        response = self.put('/1/shows/{}'.format(show_id), {
+            'episode_type': constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER,
+        })
+        self.assertEqual(response.code, 200)
+        show = utils.json_loads(response.body)        
+        self.assertEqual(
+            show['episode_type'], 
+            constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER,
+        )
+
+        # test wrong episode type
+        response = self.put('/1/shows/{}'.format(show_id), {
+            'episode_type': 999,
+        })
+        self.assertEqual(response.code, 400)
 
     def test_episodes(self):
         show_id = self.new_show()

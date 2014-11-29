@@ -17,7 +17,9 @@ class Show(object):
 
     def __init__(self, id, title, description, premiered, ended, 
                  externals, indices, status, runtime, genres,
-                 alternative_titles, seasons, fans, poster_image, updated=None):
+                 alternative_titles, seasons, fans, poster_image, 
+                 episode_type=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE, 
+                 updated=None):
         '''
 
         :param id: int
@@ -39,8 +41,9 @@ class Show(object):
         :param alternative_titles: list of str
         :param seasons: list of dict
         :param fans: int
-        :param updated: datetime
         :param poster_image: `seplis.base.image.Image()`
+        :param episode_type: int
+        :param updated: datetime
         '''
         self.id = id
         self.title = title
@@ -61,6 +64,7 @@ class Show(object):
         self.updated = updated
         self.fans = fans
         self.poster_image = poster_image
+        self.episode_type = episode_type
 
     @auto_session
     @auto_pipe
@@ -90,6 +94,7 @@ class Show(object):
             'updated': self.updated,
             'seasons': self.seasons,
             'poster_image_id': self.poster_image.id if self.poster_image else None,
+            'episode_type': self.episode_type if self.episode_type else constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
         })
         self.update_external(
             pipe=pipe,
@@ -126,6 +131,7 @@ class Show(object):
             fans=row.fans,
             updated=row.updated,
             poster_image=Image._format_from_row(row.poster_image),
+            episode_type=row.episode_type if row.episode_type else constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
         )
         return obj
 
@@ -171,7 +177,7 @@ class Show(object):
             if not image.hash:
                 raise exceptions.Image_no_data()
             if image.type != constants.IMAGE_TYPE_POSTER:
-                raise exceptions.Image_set_wrong_type(
+                raise exceptions.Image_set_wrong_episode_type(
                     image_type=image.type,
                     needs_image_type=constants.IMAGE_TYPE_POSTER,
                 )
@@ -200,7 +206,7 @@ class Show(object):
 
         :param show: `Show()`
         :raises: `exceptions.Show_external_field_must_be_specified_exception()`
-        :raises: `exceptions.Show_index_type_must_be_in_external_field_exception()`
+        :raises: `exceptions.Show_index_episode_type_must_be_in_external_field_exception()`
         '''
         if not self.indices or \
             not self.indices.get('info') and \
@@ -211,7 +217,7 @@ class Show(object):
         for key in self.indices:
             if (self.indices[key] != None) and \
                (self.indices[key] not in self.externals):
-                raise exceptions.Show_index_type_must_be_in_external_field_exception(
+                raise exceptions.Show_index_episode_type_must_be_in_external_field_exception(
                     self.indices[key]
                 )
 
@@ -297,8 +303,7 @@ class Show(object):
 
     @auto_pipe
     @auto_session
-    def _incr_fan(self, user_id, incr, 
-                 session=None, pipe=None):
+    def _incr_fan(self, user_id, incr, session=None, pipe=None):
         session.query(
             models.User,
         ).filter(

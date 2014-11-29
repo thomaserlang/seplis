@@ -9,7 +9,7 @@ from seplis.api import constants
 def validate(schema, d, *arg, **args):
     if not isinstance(schema, Schema):            
         schema = Schema(schema, *arg, **args)    
-    schema(d)   
+    return schema(d)   
 
 def iso8601():
     def f(v):    
@@ -39,8 +39,7 @@ def image_type(msg=None):
     def f(v):
         if v not in constants.IMAGE_TYPES:
             raise Invalid('invalid image type: {}'.format(v))
-        else:
-            return v
+        return v
     return f
 
 def validate_email(email):
@@ -48,6 +47,13 @@ def validate_email(email):
     if not "@" in email:
         raise Invalid("this is an invalid email address")
     return email
+
+def SHOW_EPISODE_TYPE(msg=None):
+    def f(v):
+        if v not in constants.SHOW_EPISODE_TYPE:
+            raise Invalid('invalid episodes type: {}'.format(v))
+        return v
+    return f
 
 Description_schema = Schema({
     'text': Any(None, str),
@@ -83,6 +89,7 @@ Show_schema = {
     'genres': [str],
     'alternative_titles': [str],
     'poster_image_id': Any(int, None),
+    'episode_type': All(int, SHOW_EPISODE_TYPE()),   
 }
 
 User_schema = Schema({
