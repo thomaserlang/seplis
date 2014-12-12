@@ -61,26 +61,26 @@ class Show_indexer(Client):
                 continue
             logging.info('Found {} updates from external source: {}'.format(len(ids), name))
             for id_ in ids:
-                logging.info('Looking for a external show: {} with id: {}'.format(
-                    name,
-                    id_
-                ))
-                show = self.get('/shows/externals/{name}/{id}'.format( 
-                    name=name,
-                    id=id_,
-                ))
-                if not show:
-                    logging.info('Nothing found for external show: {} with id: {}'.format(
+                try:
+                    logging.info('Looking for a external show: {} with id: {}'.format(
                         name,
                         id_
                     ))
-                    continue
-                logging.info('External source: {} with id: {} has a relation to show id: {}'.format(
-                    name,
-                    id_,
-                    show['id'],
-                ))
-                try:
+                    show = self.get('/shows/externals/{name}/{id}'.format( 
+                        name=name,
+                        id=id_,
+                    ))
+                    if not show:
+                        logging.info('Nothing found for external show: {} with id: {}'.format(
+                            name,
+                            id_
+                        ))
+                        continue
+                    logging.info('External source: {} with id: {} has a relation to show id: {}'.format(
+                        name,
+                        id_,
+                        show['id'],
+                    ))
                     show_data = self._update_show(
                         show,
                         update_episodes=True,
