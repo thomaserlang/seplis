@@ -56,7 +56,7 @@ class Show_indexer(Client):
                 ids = indexer.get_updates()
             except:
                 logging.exception('indexer updates')
-            if not ids: 
+            if not ids:
                 logging.info('No updates from external source: {}'.format(name))
                 continue
             logging.info('Found {} updates from external source: {}'.format(len(ids), name))
