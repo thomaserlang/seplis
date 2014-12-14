@@ -24,7 +24,7 @@ def upgrade():
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
         sa.Column('name', sa.String(20), unique=True),
         sa.Column('email', sa.String(100), unique=True),
-        sa.Column('password', sa.String(200)),
+        sa.Column('password', sa.String(250)),
         sa.Column('created', sa.DateTime),
         sa.Column('level', sa.Integer),
     )
@@ -33,7 +33,6 @@ def upgrade():
         'show_followers',
         sa.Column('show_id', sa.Integer, sa.ForeignKey("shows.id", ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False),
         sa.Column('user_id', sa.Integer, sa.ForeignKey("users.id", ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False),
-        sa.Column('datetime', sa.DateTime),
     )
 
     op.create_table(

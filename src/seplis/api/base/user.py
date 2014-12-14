@@ -1,6 +1,6 @@
 import pickle
 import hashlib
-from seplis.api.decorators import new_session, auto_pipe
+from seplis.api.decorators import new_session, auto_pipe, auto_session
 from seplis.api import models, constants
 from datetime import datetime
 from passlib.hash import pbkdf2_sha256
@@ -142,9 +142,25 @@ class User(object):
             ).first()
             if not user:
                 return None
-            if pbkdf2_sha256.verify(password, user.password):
-                return cls._format_from_query(user)
+            if user.password.startswith('$pbkdf2-sha256$'):
+                if pbkdf2_sha256.verify(password, user.password):
+                    return cls._format_from_query(user)
+            elif user.password.startswith('seplis_old'):
+                if seplis_v2_password_validate(password, user.password):
+                    cls.change_password(user.id, password)
+                    return cls._format_from_query(user)
         return None
+
+    @classmethod
+    @auto_session
+    def change_password(cls, user_id, new_password, session=None):
+        session.query(
+            models.User,
+        ).filter(
+            models.User.id
+        ).update({
+            'password': pbkdf2_sha256.encrypt(new_password),
+        })
 
     @classmethod
     def get_from_token(cls, token):
@@ -204,3 +220,15 @@ class Token(object):
                 expire_days=365,
             )
             return token.token
+
+def seplis_v2_password_validate(password, password_hash):
+    import hashlib
+    s = password_hash.split(':')
+    if len(s) != 3:
+        raise Exception('invalid seplis v2 password')
+    if s[0] != 'seplis_old':
+        raise Exception('invalid seplis v2 password')
+    pw = password+s[1]
+    for i in range(1, 10790):
+        pw = hashlib.sha512(pw.encode('utf-8')).hexdigest()
+    return pw == s[2]

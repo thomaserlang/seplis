@@ -365,9 +365,7 @@ class test_tvrage(TestCase):
     @mock.patch('requests.get', mock_tvrage)
     def test_updates(self):
         thetvdb = Tvrage()
-        ids = thetvdb.get_updates(
-            store_latest_timestamp=False,
-        )
+        ids = thetvdb.get_updates()
         self.assertEqual(len(ids), 2)
         self.assertEqual(ids[0], 4628)
         self.assertEqual(ids[1], 2445)

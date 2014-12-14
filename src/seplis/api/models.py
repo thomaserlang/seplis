@@ -176,7 +176,6 @@ class Show_fan(base):
 
     show_id = Column(Integer, primary_key=True, autoincrement=False)
     user_id = Column(Integer, primary_key=True, autoincrement=False)
-    datetime = Column(DateTime)
 
 class Episode_watched(base):
     __tablename__ = 'episodes_watched'

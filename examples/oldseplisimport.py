@@ -12,11 +12,12 @@ client = Client(
 )
 i = 0
 shows = client.get('/shows?per_page=1000').all()
-lookup = [show['externals']['imdb'] for show in shows if 'imdb' in show['externals']]        
+lookup = {show['externals']['imdb']: show['externals'].get('seplis-v2') for show in shows if 'imdb' in show['externals']}
 for old in oldids:
     try:
+        if not old['imdb']:
+            continue
         if old['imdb'] not in lookup:
-            logging.error('created: {}'.format(old['imdb']))
             externals = {
                 'imdb': str(old['imdb']),
                 'seplis-v2': str(old['seplis']),
@@ -32,6 +33,15 @@ for old in oldids:
                 'externals': externals, 
                 'indices': indices
             })
+        else:
+            if not lookup[old['imdb']]:
+                client.patch('/shows/externals/imdb/{}'.format(old['imdb']),
+                    {
+                        'externals': {
+                            'seplis-v2': str(old['seplis']),
+                        }
+                    }
+                )
     except API_error as e:
         logging.exception('\n{}, {}'.format(old['imdb'], old['tvrage']))
 

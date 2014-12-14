@@ -5,6 +5,7 @@ from seplis.api.testbase import Testbase
 from seplis.api.base.app import App
 from seplis.api import constants
 from seplis import utils
+
 class test_user(Testbase):
 
     def test_post(self):
@@ -136,6 +137,36 @@ class test_user(Testbase):
 
         token = utils.json_loads(response.body)
         self.assertTrue('access_token' in token)
+
+    def test_seplis_old_password(self):
+        from seplis.api.base.user import User, seplis_v2_password_validate
+        old_password = 'seplis_old:818a4bd6aa76c2c1b72ad7b0355d9a4f5661f249a8642e6a64a776edc717cb30:3d418e9bd42c27529d3ba67af6b162fc7035763582ae3e9311197727a6be971adcbb3f32105021b55ae8f3f86061b5f0f949623e12538e86364ab6ce6fefb628'
+        self.assertTrue(
+            seplis_v2_password_validate(
+                'hejhej123',
+                old_password
+            )
+        )
+
+        # test successfully login with a password in the old format
+        user = User.new(
+            name='test',
+            email='test@example.net',
+            password=old_password,
+        )
+        app = App.new(
+            user_id=user.id,
+            name='test app',
+            redirect_uri='',
+            level=constants.LEVEL_GOD, # system
+        )
+        response = self.post('/1/token', {
+            'grant_type': 'password',
+            'email': 'test@example.net',
+            'password': 'hejhej123',
+            'client_id': app.client_id,
+        })
+        self.assertEqual(response.code, 200)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
