@@ -157,7 +157,7 @@ class User(object):
         session.query(
             models.User,
         ).filter(
-            models.User.id
+            models.User.id == user_id,
         ).update({
             'password': pbkdf2_sha256.encrypt(new_password),
         })
