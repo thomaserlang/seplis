@@ -262,6 +262,30 @@ class test_show(Testbase):
         response = self.get('/1/shows/externals/seplis_old/1234')
         self.assertEqual(response.code, 200)
 
+        # check that we can do the with two shows
+        show_id = self.new_show()
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'externals': {
+                'imdb': 'tt12345',
+                'seplis_old': '12345',
+            }
+        })
+        self.assertEqual(response.code, 200, response.body)
+        response = self.get('/1/shows/externals/imdb/tt12345')
+        self.assertEqual(response.code, 200)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['id'], show_id)
+
+        # check that we can't duplicate a external id
+        show_id = self.new_show()
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'externals': {
+                'imdb': 'tt12345',
+                'seplis_old': '12345',
+            }
+        })
+        self.assertEqual(response.code, 400, response.body)
+
     def test_externals_int_id(self):
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
