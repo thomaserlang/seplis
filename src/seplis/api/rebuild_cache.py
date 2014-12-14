@@ -176,5 +176,17 @@ class Rebuild_cache(object):
                 pipe=pipe,                
             )
 
+    @auto_session
+    @auto_pipe
+    def rebuild_show_externals(self, session, pipe):
+        from seplis.api.base.show import Show
+        for external in session.query(models.Show_external).yield_per(10000):
+            Show.cache_external(
+                pipe=pipe,
+                external_title=external.title,
+                external_id=external.value,
+                show_id=external.show_id,
+            )
+
 def main():
     Rebuild_cache().rebuild()
