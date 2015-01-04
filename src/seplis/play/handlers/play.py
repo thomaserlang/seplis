@@ -165,29 +165,7 @@ class _hls_handler(object):
             'process': process,
             'path': os.path.join(path, 'media.m3u8'),
             'session': session,
-        }
-
-    def generate_hls_file(self, runtime, session, segment_time=config['play']['segment_time']):
-        num_files = runtime / config['play']['segment_time']
-        hls = [
-            '#EXTM3U',
-            '#EXT-X-TARGETDURATION:{}'.format(config['play']['segment_time']),
-            '#EXT-X-ALLOW-CACHE:NO',
-            '#EXT-X-MEDIA-SEQUENCE:0',
-        ]
-        for i in range(0, num_files+1):
-            if i != num_files:
-                hls.append('#EXTINF:{}, nodesc'.format(config['play']['segment_time']))
-            else:
-                mod = (num_files) % config['play']['segment_time']
-                hls.append('#EXTINF:{}, nodesc'.format(mod if mod else config['play']['segment_time']))
-            hls.append('{}.ts'.format(
-                str(i).zfill(5),
-            ))
-        hls.append('#EXT-X-ENDLIST')
-        with open(os.path.join(config['play']['temp_folder'], session, 'media.m3u8'), 'w+') as f:
-            for s in hls:
-                f.write(s+'\n')                
+        }            
 
     def cancel_transcode(self, session):
         logging.info('Closing session: {}'.format(session['session']))
