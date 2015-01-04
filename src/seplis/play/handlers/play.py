@@ -352,6 +352,8 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
         with open(path, 'rb') as f:
             s = f.read()
             self.write(s)
+            if 'media.m3u8' == file_:
+                logging.info(s)
         call_later = self.ioloop.call_later(
             config['play']['session_timeout'], 
             self.cancel_transcode, 
