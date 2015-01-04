@@ -144,7 +144,7 @@ def play_scan():
 
 @cli.command()
 def play_server():
-    logger.set_logger('play_scan.log', to_sentry=True)
+    logger.set_logger('play_server.log', to_sentry=True)
     import seplis.play.app
     seplis.play.app.main()
 
