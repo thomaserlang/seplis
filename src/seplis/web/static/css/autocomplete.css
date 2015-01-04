@@ -4,7 +4,7 @@
     overflow: auto; 
 }
 .autocomplete-suggestion { 
-    padding: 2px 5px; 
+    padding: 2px 2px; 
     white-space: nowrap; 
     overflow: hidden; 
     cursor:pointer;
@@ -14,4 +14,10 @@
 }
 .autocomplete-selected { 
     background: #ccc; 
+}
+.show-suggest{
+    overflow: hidden;
+}
+.show-suggest .text{
+    margin-left:5px;
 }

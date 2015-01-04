@@ -90,7 +90,7 @@ class Image(object):
             index='images',
             doc_type='image',
             id=self.id,
-            body=utils.json_dumps(self.__dict__),
+            body=utils.json_dumps(self),
         )
 
     @auto_session

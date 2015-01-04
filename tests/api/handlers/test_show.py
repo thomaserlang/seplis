@@ -631,7 +631,7 @@ class test_show(Testbase):
             'source_url': 'http://example.net',
             'type': constants.IMAGE_TYPE_POSTER,
         })
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 200, response.body)
         image = utils.json_loads(response.body)
 
         # we need to fake that an image has been uploaded

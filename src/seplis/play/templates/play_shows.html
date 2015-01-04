@@ -7,7 +7,7 @@
             var markup = '<div class="row">'
                     +'<div class="col-xs-4">'
                         +(((show.poster_image != null) && (show.poster_image.hash != null)) ?
-                            '<img width="60px" height="88px" src="{{ config['web']['image_url'] }}/'
+                            '<img width="60px" height="88px" src="{{ config['api']['image_url'] }}/'
                                 +show.poster_image.hash+'@SX60'
                             +'">'
                             :

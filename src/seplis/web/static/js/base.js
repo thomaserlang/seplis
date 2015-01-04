@@ -22,7 +22,10 @@ $(function(){
         },
         formatResult: function (suggestion, currentValue) {
             return _.template(
-                '<span class="title"><%- title %></span>',
+                '<div class="show-suggest">'+
+                '<span class="image"><img src="<%- poster_image.url %>@SX60" width="60"></span>'+
+                '<span class="text"><strong><%- title %></strong> (<%- premiered.substring(0, 4) %>)</span>'+
+                '</div>',
                 suggestion.data 
             );
         },    

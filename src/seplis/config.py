@@ -17,12 +17,12 @@ config = {
         'storitch': None,
         'port': 8002,
         'max_workers': 5,
+        'image_url': 'https://images.seplis.net',
     },
     'web': {
         'url': 'https://seplis.net',
         'cookie_secret': 'CHANGE_ME',
         'port': 8001,
-        'image_url': 'https://images.seplis.net',
     },
     'logging': {
         'level': 'warning',
@@ -111,5 +111,5 @@ def load(path=None):
             config['play']['scan']
         )
     config['web']['url'] = config['web']['url'].rstrip('/')
-    config['web']['image_url'] = config['web']['image_url'].rstrip('/')
+    config['api']['image_url'] = config['api']['image_url'].rstrip('/')
     config['client']['api_url'] = config['client']['api_url'].rstrip('/')

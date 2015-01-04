@@ -11,6 +11,6 @@ class Handler(base.API_handler):
                 q
             ),
             'per_page': 5,
-            'fields': 'title,poster_image',
+            'fields': 'title,poster_image,premiered',
         })
         self.write_object(suggest)

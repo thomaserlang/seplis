@@ -237,13 +237,12 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             for img in images:
                 utils.keys_to_remove(
                     self.image_remove_keys,
-                    img
+                    img,
                 )
+                img['url'] = config['api']['image_url'] + '/' + img['hash'] \
+                    if config['api']['image_url'] and img['hash'] else None
         else:
-            utils.keys_to_remove(
-                self.image_remove_keys,
-                images
-            )
+            self.image_format([images])
         return images
 
     episode_remove_keys = (

@@ -42,7 +42,7 @@ class Handler_unauthenticated(web.RequestHandler):
     def image_url(self, image, format_=''):
         if not image:
             return ''
-        return config['web']['image_url'] + '/' + image['hash'] + format_
+        return image['url'] + format_
 
 class Handler(Handler_unauthenticated):
 
