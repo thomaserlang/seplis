@@ -12,11 +12,9 @@ down_revision = '10859a97330e'
 
 from alembic import op
 import sqlalchemy as sa
-
-from seplis.api import models
-from seplis.api.base.user import User
-from seplis.api.base.app import App
-from seplis.api import constants
+from sqlalchemy.sql import text
+from datetime import datetime
+from seplis import utils
 
 def upgrade():
     op.create_table(
@@ -54,12 +52,16 @@ def upgrade():
         sa.Column('datetime', sa.DateTime),
     )
 
-    models.base.bind = op.get_bind()
-    user = User.new(
+    con = op.get_bind()
+    result = con.execute(text('''
+        INSERT INTO users (name, email, password, created, level) 
+        VALUES (:name, :email, :password, :created, :level) 
+    '''),
         name='seplis',
         email='bot@seplis.net',
-        password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',# 123456
-        level=constants.LEVEL_GOD,
+        password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',# 123456,
+        created=datetime.utcnow(),
+        level=6,
     )
 
     op.create_table(
@@ -75,11 +77,16 @@ def upgrade():
         sa.Column('updated', sa.DateTime),   
     )
 
-    app = App.new(
-        user_id=user.id,
+    con.execute(text('''
+        INSERT INTO apps (user_id, name, redirect_uri, level, client_id, client_secret)
+        VALUES (:user_id, :name, :redirect_uri, :level, :client_id, :client_secret)
+    '''),
+        user_id=1,
         name='SEPLIS',
         redirect_uri=None,
-        level=constants.LEVEL_GOD,
+        level=6,
+        client_id=utils.random_key(),
+        client_secret=utils.random_key(),
     )
 
     op.create_table(
