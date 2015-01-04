@@ -359,12 +359,17 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
         # if the file type is m3u8 and it is not found, we'll try again.
         if 'media.m3u8' == file_:
             if times > 20:
-                raise HTTPError(404)
+                raise tornado.web.HTTPError(404)
             if not os.path.exists(path) or (os.stat(path).st_size == 0):
-                logging.info('media.m3u8 not found, trying again in 0.5 seconds. Retry number: {}'.format(times))
-                # Check again in a 0.5 seconds
+                logging.info('media.m3u8 not found, trying again in 1 second. Retry number: {}'.format(times))
                 times += 1
-                self.ioloop.call_later(0.5, self._get, session, file_, times)
+                self.ioloop.call_later(
+                    1, 
+                    self._get, 
+                    session, 
+                    file_, 
+                    times
+                )
                 return        
         with open(path, 'rb') as f:
             s = f.read()
