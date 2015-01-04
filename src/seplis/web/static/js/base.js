@@ -23,7 +23,7 @@ $(function(){
         formatResult: function (suggestion, currentValue) {
             return _.template(
                 '<div class="show-suggest">'+
-                '<span class="image"><img src="<% if (poster_image.url) { %><%= poster_image.url %><% } %>@SX60" width="60"></span>'+
+                '<span class="image"><img src="<% if (poster_image && poster_image.url) { %><%= poster_image.url %>@SX60<% } %>" width="60"></span>'+
                 '<span class="text"><strong><%- title %></strong> '+
                     '<% if (premiered) { %>'+
                         '(<%- premiered.substring(0, 4) %>)'+
