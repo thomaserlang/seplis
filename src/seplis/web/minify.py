@@ -45,6 +45,13 @@ def main():
         '.js',
         skip=skip,
     )
+    to_top = []
+    for f in js_vendor_files:
+        if 'jquery-' in f:
+            to_top.append(f)
+    for f in to_top:
+        js_vendor_files.remove(f)
+        js_vendor_files.insert(0, f)
     js_source_files = utils.get_files(
         js_path, 
         '.js',        
