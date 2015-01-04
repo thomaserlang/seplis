@@ -145,7 +145,6 @@ class _hls_handler(object):
             self.sessions[self.session]
         )
         self.sessions[self.session]['call_later'] = call_later
-        time.sleep(1)
         self.finish()
 
     def start_transcode(self, session, cmd):
@@ -357,13 +356,12 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
             raise tornado.web.HTTPError('unknown session')
         self.ioloop.remove_timeout(self.sessions[session]['call_later'])
         path = os.path.join(config['play']['temp_folder'], session, file_)  
-        # if the file is m3u8 we need to keep looking
-        # until it's created.
+        # if the file type is m3u8 and it is not found, we'll try again.
         if 'media.m3u8' == file_:
-            if times > 6:
+            if times > 20:
                 raise HTTPError(404)
-            if not os.path.exists(path):
-                logging.info('media.m3u8 not found, try again in 0.5 seconds. Retry number: {}'.format(times))
+            if not os.path.exists(path) or (os.stat(path).st_size == 0):
+                logging.info('media.m3u8 not found, trying again in 0.5 seconds. Retry number: {}'.format(times))
                 # Check again in a 0.5 seconds
                 times += 1
                 self.ioloop.call_later(0.5, self._get, session, file_, times)
@@ -371,6 +369,8 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
         with open(path, 'rb') as f:
             s = f.read()
             self.write(s)
+            if 'media.m3u8' == file_:
+                logging.info(s)
         call_later = self.ioloop.call_later(
             config['play']['session_timeout'], 
             self.cancel_transcode, 
