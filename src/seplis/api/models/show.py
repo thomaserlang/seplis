@@ -63,6 +63,8 @@ class Show(base):
         }
 
     def to_elasticsearch(self):
+        if not self.id:
+            return
         database.es.index(
             index='shows',
             doc_type='show',
@@ -70,19 +72,33 @@ class Show(base):
             body=utils.json_dumps(self.serialize),
         )
 
-def _show_before_update(mapper, connection, target):
-    pass
-
 def _show_after_update(mapper, connection, target):
     target.to_elasticsearch()
 
 event.listen(Show, 'after_update', _after_update)
+event.listen(Show, 'after_insert', _after_update)
 
 
-def _count_season_episodes(self, session=None):
+def show_episodes_per_season(show_id, session):
     '''
-    Counts number of episodes per season.
+    Counts the number of episodes per season.
+    From and to is the episode numbers for the season.
 
+    :returns: list of dict
+        [
+            {
+                'season': 1,
+                'from': 1,
+                'to': 22,
+                'total': 22,
+            },
+            {
+                'season': 2,
+                'from': 23,
+                'to': 44,
+                'total': 22,
+            }
+        ]
     '''
     rows = session.execute('''
         SELECT 
@@ -96,7 +112,7 @@ def _count_season_episodes(self, session=None):
             show_id = :show_id
         GROUP BY season;
     ''', {
-        'show_id': self.id,
+        'show_id': show_id,
     })
     seasons = []
     for row in rows:
