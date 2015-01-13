@@ -1,8 +1,10 @@
 import sqlalchemy as sa
-from sqlalchemy import event
+from sqlalchemy import event, orm
+from sqlalchemy.orm.attributes import get_history
 from seplis.models import JSONEncodedDict
 from seplis.api.connections import database
-from seplis.api import constants
+from seplis.api import constants, exceptions
+from seplis.api.decorators import auto_pipe
 from seplis import utils
 
 class Show(base):
@@ -32,6 +34,8 @@ class Show(base):
     poster_image_id = sa.Column(sa.Integer, ForeignKey('images.id'))
     poster_image = relationship('Image')
     episode_type = sa.Column(sa.Integer, server_default=str(constants.SHOW_EPISODE_TYPE_SEASON_EPISODE))
+
+    _cache_key_show_external = 'shows:external:{external_title}:{external_value}'
 
     def serialize(self):
         return {
@@ -63,8 +67,14 @@ class Show(base):
         }
 
     def to_elasticsearch(self):
+        '''
+        Sends the show's info to ES.
+
+        This method is automatically called after update or insert.
+
+        '''
         if not self.id:
-            return
+            raise Exception('can\'t add the show to ES without an ID.')
         database.es.index(
             index='shows',
             doc_type='show',
@@ -72,12 +82,89 @@ class Show(base):
             body=utils.json_dumps(self.serialize),
         )
 
-def _show_after_update(mapper, connection, target):
+    def update_external(self):
+        '''
+        Saves the shows externals to the database and the cache.
+        Checks for duplicates.
+
+        This method is automatically called on update or insert
+        if the show's externals has been modified.
+
+        :raises: exceptions.Show_external_duplicated()
+        '''
+        session = orm.Session.object_session(self)
+        externals_query = session.query(
+            models.Show_external,
+        ).filter(
+            models.Show_external.show_id == self.id,
+        ).all()
+        # delete externals where the relation has been removed.
+        for external in externals_query:
+            name = self._format_cache_key_show_external(
+                external_title,
+                external_value,
+            )
+            if (external.title not in self.externals) or \
+                self.externals[external.title] != external.value:
+                pipe.delete(name, self.id)
+            if external.title not in self.externals:
+                session.delete(external)
+        # update the externals. Raises an exception when there is a another
+        # show with and relation to the external.
+        for title, value in self.externals.items():
+            duplicate_show_id = self.show_id_by_external(title, value)
+            if duplicate_show_id and (duplicate_show_id != self.id):
+                raise exceptions.Show_external_duplicated(
+                    external_title=title,
+                    external_value=value,
+                    show=self.get(duplicate_show_id),
+                )
+            external = models.Show_external(
+                show_id=self.id,
+                title=title,
+                value=value,
+            )
+            self.cache_external(
+                pipe=pipe,
+                external_title=title,
+                external_value=value,
+                show_id=self.id,
+            )
+            session.pipe.set(
+                self._format_cache_key_show_external(title, value),
+                self.id,
+            )
+            session.merge(external)
+
+    @property
+    def _format_cache_key_show_external(external_title, external_value):
+        return self._cache_key_show_external.format(
+            external_title=urllib.parse.quote(external_title),
+            external_value=urllib.parse.quote(external_value),
+        )
+
+    @classmethod
+    def show_id_by_external(self, external_title, external_value):
+        '''
+
+        :returns: int
+        '''
+        if not external_value or not external_title:
+            return
+        show_id = database.redis.get(self._format_cache_key_show_external(
+            external_title,
+            external_value,
+        ))
+        if not show_id:
+            return
+        return int(show_id)
+
+@event.listens_for(Show, 'after_update')
+@event.listens_for(Show, 'after_insert')
+def _show_after(mapper, connection, target):
+    if get_history(target, 'externals')[0] != ():
+        target.update_external()
     target.to_elasticsearch()
-
-event.listen(Show, 'after_update', _after_update)
-event.listen(Show, 'after_insert', _after_update)
-
 
 def show_episodes_per_season(show_id, session):
     '''
