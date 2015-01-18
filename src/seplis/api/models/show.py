@@ -82,7 +82,7 @@ class Show(base):
             body=utils.json_dumps(self.serialize),
         )
 
-    def update_external(self):
+    def update_externals(self):
         '''
         Saves the shows externals to the database and the cache.
         Checks for duplicates.
@@ -163,7 +163,7 @@ class Show(base):
 @event.listens_for(Show, 'after_insert')
 def _show_after(mapper, connection, target):
     if get_history(target, 'externals')[0] != ():
-        target.update_external()
+        target.update_externals()
     target.to_elasticsearch()
 
 def show_episodes_per_season(show_id, session):
