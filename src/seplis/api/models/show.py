@@ -37,8 +37,7 @@ class Show(base):
         sa.Integer, 
         server_default=str(constants.SHOW_EPISODE_TYPE_SEASON_EPISODE)
     )
-
-    @property    
+ 
     def serialize(self):
         return {
             'id': self.id,
@@ -64,7 +63,6 @@ class Show(base):
             'episode_type': self.episode_type,
         }
 
-    @property    
     def serialize_indices(self):
         return {
             'info': self.index_info,
