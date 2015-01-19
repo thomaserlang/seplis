@@ -23,19 +23,19 @@ class Show(base):
     description_url = sa.Column(sa.String(200))
     premiered = sa.Column(sa.Date)
     ended = sa.Column(sa.Date)
-    externals = sa.Column(JSONEncodedDict())
+    externals = sa.Column(JSONEncodedDict(), default={})
     index_info = sa.Column(sa.String(45))
     index_episodes = sa.Column(sa.String(45))
     index_images = sa.Column(sa.String(45))
-    seasons = sa.Column(JSONEncodedDict())
+    seasons = sa.Column(JSONEncodedDict(), default=[])
     runtime = sa.Column(sa.Integer)
-    genres = sa.Column(JSONEncodedDict())
-    alternative_titles = sa.Column(JSONEncodedDict())
+    genres = sa.Column(JSONEncodedDict(), default=[])
+    alternative_titles = sa.Column(JSONEncodedDict(), default=[])
     poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
     #poster_image = sa.relationship('Image')
     episode_type = sa.Column(
         sa.Integer, 
-        server_default=str(constants.SHOW_EPISODE_TYPE_SEASON_EPISODE)
+        server_default=str(constants.SHOW_EPISODE_TYPE_SEASON_EPISODE),
     )
  
     def serialize(self):
@@ -82,7 +82,7 @@ class Show(base):
             index='shows',
             doc_type='show',
             id=self.id,
-            body=utils.json_dumps(self.serialize),
+            body=utils.json_dumps(self.serialize()),
         )
 
     def update_externals(self):
@@ -125,12 +125,6 @@ class Show(base):
                 show_id=self.id,
                 title=title,
                 value=value,
-            )
-            self.cache_external(
-                pipe=pipe,
-                external_title=title,
-                external_value=value,
-                show_id=self.id,
             )
             session.pipe.set(
                 Show_external.format_cache_key(title, value),
