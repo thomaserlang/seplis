@@ -81,8 +81,8 @@ config = {
 
 def load(path=None):
     default_paths = [
-        './seplis.yaml',
         '~/seplis.yaml',
+        './seplis.yaml',
         '/etc/seplis/seplis.yaml',
         '/etc/seplis.yaml',
     ]
