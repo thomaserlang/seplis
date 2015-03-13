@@ -162,9 +162,9 @@ class test_show(Testbase):
 
     def test_indices(self):
         show_id = self.new_show()
-
-        # it should not be possible to add a index with out it exists as
-        # a external.
+        response = self.get('/1/shows/{}'.format(show_id))
+        # it should not be possible to add a index without it exists as
+        # an external.
         response = self.patch('/1/shows/{}'.format(show_id), {
             'indices':{
                 'info': 'imdb',
@@ -214,9 +214,7 @@ class test_show(Testbase):
             'episodes': None,
             'images': None,
         })
-        self.assertEqual(show['externals'], {
-            'imdb': None,
-        })
+        self.assertEqual(show['externals'], {})
 
     def test_external(self):
         show_id = self.new_show()
@@ -253,7 +251,6 @@ class test_show(Testbase):
             }
         })
         self.assertEqual(response.code, 200, response.body)
-
         response = self.get('/1/shows/externals/imdb/tt1234')
         self.assertEqual(response.code, 404)        
 
@@ -353,7 +350,6 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200)
         show = utils.json_loads(response.body)
         self.assertEqual(show['title'], 'This is a test show')
-
         show_id2 = self.new_show()
         response = self.patch('/1/shows/{}'.format(show_id2), {
             'title': 'Test show',
@@ -590,6 +586,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200, response.body)
         fan_of = utils.json_loads(response.body)
         self.assertEqual(fan_of[0]['id'], show_id)
+        self.assertTrue(fan_of[0]['user_watching'] != None)
         self.assertEqual(fan_of[0]['user_watching']['position'], 120)
         self.assertEqual(fan_of[0]['user_watching']['episode']['number'], 1)
 

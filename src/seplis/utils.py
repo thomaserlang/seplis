@@ -11,6 +11,7 @@ import mimetypes
 import sys
 import uuid
 import io
+import sqlalchemy as sa
 
 def random_key():
     return base64.b64encode(
@@ -38,11 +39,14 @@ def _iso_datetime(value):
     Otherwise, return None.
     """
     if isinstance(value, datetime.datetime):
-        return value.replace(microsecond=0).isoformat()+'Z'
+        return isoformat(value)
     elif isinstance(value, datetime.time):
         return value.strftime('%H:%M:%S')
     elif isinstance(value, datetime.date):
         return value.strftime('%Y-%m-%d')
+
+def isoformat(dt):
+    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
         
 def json_dumps(obj, **kwargs):
     '''
@@ -253,3 +257,71 @@ def get_files(path, ext, skip=[]):
                 os.path.join(dirname, file_)
             )
     return files
+
+class JSONEncodedDict(sa.TypeDecorator):  
+    impl = sa.Text  
+  
+    def process_bind_param(self, value, dialect):
+        if value is None:  
+            return None
+        if isinstance(value, str):
+            return value
+        return json_dumps(value)
+  
+    def process_result_value(self, value, dialect):  
+        if not value:  
+            return None
+        return json_loads(value)
+
+    @classmethod
+    def empty_list(cls):
+        return []
+
+    @classmethod
+    def empty_dict(cls):
+        return {}
+
+class dotdict(dict):
+    
+    def __getattr__(self, attr):
+        return self.get(attr)
+    
+    __setattr__= dict.__setitem__
+    
+    __delattr__= dict.__delitem__
+
+
+def row_to_dict(row):
+    return {c.name: getattr(row, c.name) \
+        for c in row.__table__.columns}
+
+def _datetime_none_check(dt):
+    '''Converts 'None' to None.
+
+    :param dt: str
+    :returns: str or None
+    '''
+    if dt == 'None':
+        return
+    return dt
+
+def redis_sa_model_dict(rd, cls):
+    '''Takes a dict returned from redis and
+    converts values to the same type as specified 
+    in the model.
+
+    :param rd: dict from redis
+    :param cls: SQLAlchemy model class
+    '''
+    types = {
+        sa.Integer: int,
+        sa.DateTime: _datetime_none_check,
+    }
+    for key in rd:
+        if not key in cls.__table__.columns:
+            continue
+        t = types.get(
+            type(cls.__table__.columns[key].type)
+        )
+        if t:
+            rd[key] = t(rd[key])

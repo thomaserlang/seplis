@@ -1,59 +1,53 @@
-import tornado.web
-import tornado.gen
 import logging
 import time
+from tornado import gen
 from tornado.concurrent import run_on_executor
 from tornado.web import HTTPError
 from seplis.api.handlers import base
 from seplis.api.connections import database
-from seplis.api import models
-from seplis.api.base.user import User, Token
-from seplis.api.base.app import App
+from seplis.api import exceptions, constants, models
+from seplis.api.decorators import authenticated, new_session
 from seplis.api import exceptions
 from seplis import schemas
 from passlib.hash import pbkdf2_sha256
-from seplis.api import exceptions
 from datetime import datetime
-from seplis.api import constants
-from seplis.api.decorators import authenticated
 from seplis import utils
 
 class Handler(base.Handler):
     '''
     Handles user stuff...
     '''
-    @tornado.gen.coroutine
+    @gen.coroutine
     def post(self, user_id=None):
         if user_id: 
-            raise exceptions.Parameter_must_not_be_set_exception(
+            raise exceptions.Parameter_restricted(
                 'user_id must not be set.'
             )
-        self.validate(schemas.User_schema)
-        password = yield self.encrypt_password(self.request.body['password'])
-        user = User.new(
-            name=self.request.body['name'],   
-            email=self.request.body['email'],
-            password=password,
-        ).to_dict(user_level=constants.LEVEL_SHOW_USER_EMAIL)
+        user = yield self.create()
         self.set_status(201)
         self.write_object(user)
 
     @run_on_executor
-    def encrypt_password(self, password):
-        return pbkdf2_sha256.encrypt(password)
+    def create(self):
+        user = self.validate(schemas.User_schema)
+        with new_session() as session:
+            user = models.User(
+                name=user['name'],
+                email=user['email'],
+                password=pbkdf2_sha256.encrypt(user['password']),
+            )
+            session.add(user)
+            session.commit()
+            return user.serialize()
 
     @authenticated(0)
     def get(self, user_id=None):
         if not user_id:
             user_id = self.current_user.id
-        user = User.get(user_id)
+        user = models.User.get(user_id)
         if not user:
             raise exceptions.Not_found('the user was not found')
-        user = user.to_dict(
-            user_level=user.level if self.current_user.id != user_id else \
-                constants.LEVEL_SHOW_USER_EMAIL,
-        )
-        self.write_object(user)
+        self.write_object(self.user_wrapper(user))
 
 class Stats_handler(base.Handler):
 
@@ -66,36 +60,42 @@ class Stats_handler(base.Handler):
 
 class Token_handler(base.Handler):
 
-    @tornado.gen.coroutine
+    @gen.coroutine
     def post(self):
-        self.validate(schemas.Token)
-        if self.request.body['grant_type'] == 'password':
-            yield self.grant_type_password()
-        else:
+        data = self.validate(schemas.Token)
+        token = None
+        if data['grant_type'] == 'password':
+            token = yield self.grant_type_password()
+        if not token:
             raise exceptions.OAuth_unsuported_grant_type_exception(
-                self.request.body['grant_type']
+                data['grant_type']
             )
+        self.write_object({'access_token': token})
 
     @run_on_executor
     def grant_type_password(self):
-        self.validate(schemas.Token_type_password)
-        app = App.get_by_client_id(client_id=self.request.body['client_id'])
+        data = self.validate(schemas.Token_type_password)
+        app = models.App.by_client_id(data['client_id'])
         if not app:
             raise exceptions.OAuth_unknown_client_id_exception(
-                self.request.body['client_id']
+                data['client_id']
             )
-        if app.level != constants.LEVEL_GOD:
+        if app['level'] != constants.LEVEL_GOD:
             raise exceptions.OAuth_unauthorized_grant_type_level_request_exception(
-                constants.LEVEL_GOD, app.level
+                constants.LEVEL_GOD, app['level']
             )
-        user = User.login(
-            email=self.request.body['email'],
-            password=self.request.body['password'],
+        user = models.User.login(
+            email_or_username=data['email'],
+            password=data['password'],
         )
         if not user:
             raise exceptions.Wrong_email_or_password_exception()
-        self.write_object({'access_token': Token.new(
-            user_id=user.id,
-            user_level=user.level,
-            app_id=app.id,
-        )})
+        with new_session() as session:
+            token = models.Token(
+                app_id=app['id'],
+                user_level=user['level'],
+                user_id=user['id'],
+            )
+            session.add(token)
+            session.commit()
+            return token.token

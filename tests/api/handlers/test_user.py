@@ -2,7 +2,6 @@
 import nose
 import json
 from seplis.api.testbase import Testbase
-from seplis.api.base.app import App
 from seplis.api import constants
 from seplis import utils
 
@@ -97,11 +96,11 @@ class test_user(Testbase):
         self.assertEqual(response.code, 400)
 
         # test wrong app level
-        app = App.new(
+        app = self.new_app(
             user_id=user['id'],
             name='test app 2',
             redirect_uri='',
-            level=1, # system
+            level=1,
         )
         response = self.post('/1/token', {
             'grant_type': 'password',
@@ -111,7 +110,7 @@ class test_user(Testbase):
         })
         self.assertEqual(response.code, 403)
 
-        app = App.new(
+        app = self.new_app(
             user_id=user['id'],
             name='test app',
             redirect_uri='',
@@ -139,7 +138,7 @@ class test_user(Testbase):
         self.assertTrue('access_token' in token)
 
     def test_seplis_old_password(self):
-        from seplis.api.base.user import User, seplis_v2_password_validate
+        from seplis.api.models.user import seplis_v2_password_validate
         old_password = 'seplis_old:818a4bd6aa76c2c1b72ad7b0355d9a4f5661f249a8642e6a64a776edc717cb30:3d418e9bd42c27529d3ba67af6b162fc7035763582ae3e9311197727a6be971adcbb3f32105021b55ae8f3f86061b5f0f949623e12538e86364ab6ce6fefb628'
         self.assertTrue(
             seplis_v2_password_validate(
@@ -149,16 +148,17 @@ class test_user(Testbase):
         )
 
         # test successfully login with a password in the old format
-        user = User.new(
+        user = self.new_user(
             name='test',
             email='test@example.net',
             password=old_password,
+            level=0,
         )
-        app = App.new(
+        app = self.new_app(
             user_id=user.id,
             name='test app',
             redirect_uri='',
-            level=constants.LEVEL_GOD, # system
+            level=constants.LEVEL_GOD,
         )
         response = self.post('/1/token', {
             'grant_type': 'password',

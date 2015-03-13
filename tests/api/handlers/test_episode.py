@@ -120,7 +120,7 @@ class Test_episode_watched(Testbase):
         self.assertEqual(response.code, 200)
 
         # mark the episode as watched
-        response = response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+        response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
             self.current_user.id, 
             show_id, 
             1)
@@ -323,10 +323,11 @@ class Test_air_dates(Testbase):
             ],
         })
         self.assertEqual(response.code, 201)
-        show_2 = utils.json_loads(response.body)        
-        self.get('http://{}/_refresh'.format(
+        show_2 = utils.json_loads(response.body) 
+        response = self.get('http://{}/_refresh'.format(
             config['api']['elasticsearch']
         ))
+        self.assertEqual(response.code, 200)
 
         # The user must be a fan of the show before they should show up
         # in the user's air dates calender.

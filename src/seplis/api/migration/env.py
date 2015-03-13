@@ -2,7 +2,7 @@ from __future__ import with_statement
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
-from seplis.config import config as seplis_config
+from seplis.config import config as seplis_config, load as seplis_load
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -47,6 +47,7 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
+    seplis_load()
     alembic_config = config.get_section(config.config_ini_section)
     alembic_config['sqlalchemy.url'] = seplis_config['api']['database']
     engine = engine_from_config(

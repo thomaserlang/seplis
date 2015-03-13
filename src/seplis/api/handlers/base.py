@@ -17,9 +17,9 @@ from seplis.api.decorators import new_session
 from seplis.api.connections import database
 from seplis.config import config
 from seplis.api import models, exceptions, constants
-from seplis.api.base.user import User
 from seplis.api.base.pagination import Pagination
 from seplis.api.decorators import authenticated
+from sqlalchemy.orm.attributes import flag_modified
 
 class Handler(tornado.web.RequestHandler, SentryMixin):
 
@@ -43,6 +43,31 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         self.set_header('Access-Control-Expose-Headers', 'ETag, Link, X-Total-Count, X-Total-Pages')
         self.set_header('Access-Control-Max-Age', '86400')
         self.set_header('Access-Control-Allow-Credentials', 'true')
+
+    def update_model(self, model_ins, new_data, overwrite=False):
+        '''Updates a SQLAlchemy model instance with a dict object.
+        If a key's item is a list or dict the attribute will
+        be marked as changed.
+
+        :param models: SQLAlchemy instance
+        :param new_data: dict
+        :param overwrite: boolean
+        '''
+        for key in new_data:
+            if not hasattr(model_ins, key):
+                continue
+            if isinstance(new_data[key], dict) and not overwrite:
+                getattr(model_ins, key).update(new_data[key])
+                flag_modified(model_ins, key)
+            elif isinstance(new_data[key], list) and not overwrite:
+                setattr(model_ins, key, 
+                    list(
+                        set(getattr(model_ins, key) + new_data[key])
+                    )
+                )
+                flag_modified(model_ins, key)
+            else:
+                setattr(model_ins, key, new_data[key])
 
     def write_error(self, status_code, **kwargs):
         if isinstance(kwargs['exc_info'][1], exceptions.API_exception):
@@ -146,7 +171,10 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         if bearer[0] != 'Bearer':
             raise tornado.web.HTTPError(400, 'Unrecognized token type')
         self.access_token = bearer[1]
-        return User.get_from_token(self.access_token)
+        user = models.User.by_token(self.access_token)
+        if not user:
+            return
+        return utils.dotdict(user)
 
     def validate(self, schema, *arg, **args):
         try:
@@ -229,38 +257,44 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         'relation_type',
         'relation_id',
     )
-    def image_format(self, images):
-        '''
-        :param images: `dict` or list of `dict`
-        '''
-        if isinstance(images, list):
-            for img in images:
-                utils.keys_to_remove(
-                    self.image_remove_keys,
-                    img,
-                )
-                img['url'] = config['api']['image_url'] + '/' + img['hash'] \
-                    if config['api']['image_url'] and img['hash'] else None
-        else:
-            self.image_format([images])
+    def image_wrapper(self, images):
+        _images = images if isinstance(images, list) else [images]
+        for img in _images:
+            utils.keys_to_remove(
+                self.image_remove_keys,
+                img,
+            )
+            img['url'] = config['api']['image_url'] + '/' + img['hash'] \
+                if config['api']['image_url'] and img['hash'] else None
         return images
 
     episode_remove_keys = (
         'show_id',
     )
-    def episode_format(self, episodes):
-        '''
-        :param episodes: `episode()` or list of `episode()`
-        '''
-        if isinstance(episodes, list):
-            for episode in episodes:
-                utils.keys_to_remove(
-                    self.episode_remove_keys,
-                    episode
-                )
-        else:
+    def episode_wrapper(self, episodes):
+        _episodes = episodes if isinstance(episodes, list) else [episodes]
+        for episode in _episodes:
             utils.keys_to_remove(
                 self.episode_remove_keys,
-                episodes
+                episode
             )
         return episodes
+
+    def user_wrapper(self, users):
+        _users = users if isinstance(users, list) else [users]
+        for user in _users:
+            if not self.current_user or \
+                ((self.current_user.level < constants.LEVEL_SHOW_USER_EMAIL) and \
+                    (self.current_user.id != user['id'])):
+                user.pop('email')
+        return users
+
+    def flatten_request(self, data, key, parent_key):
+        if key in data:
+            if data[key]:
+                d = utils.flatten(
+                    data[key],
+                    parent_key=parent_key,
+                )
+                data.update(d)
+            data.pop(key)

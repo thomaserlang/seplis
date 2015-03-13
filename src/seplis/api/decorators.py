@@ -3,6 +3,7 @@ import sqlalchemy.orm.session
 from tornado.web import HTTPError
 from seplis.api import exceptions
 from seplis.api.connections import database
+from seplis import config
 from contextlib import contextmanager
 
 def authenticated(level):
@@ -68,7 +69,9 @@ def new_session():
     try:
         yield s
     except:
-        s.rollback()
+        # breaks the unittest
+        if not config['debug']:
+            s.rollback()
         raise
     finally:
         s.close()

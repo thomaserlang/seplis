@@ -78,8 +78,8 @@ def upgrade():
     )
 
     con.execute(text('''
-        INSERT INTO apps (user_id, name, redirect_uri, level, client_id, client_secret)
-        VALUES (:user_id, :name, :redirect_uri, :level, :client_id, :client_secret)
+        INSERT INTO apps (user_id, name, redirect_uri, level, client_id, client_secret, created)
+        VALUES (:user_id, :name, :redirect_uri, :level, :client_id, :client_secret, :created)
     '''),
         user_id=1,
         name='SEPLIS',
@@ -87,6 +87,7 @@ def upgrade():
         level=6,
         client_id=utils.random_key(),
         client_secret=utils.random_key(),
+        created=datetime.utcnow(),
     )
 
     op.create_table(

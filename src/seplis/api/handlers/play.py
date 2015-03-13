@@ -1,115 +1,153 @@
 from seplis.api.handlers import base
-from seplis.api.base.play import Play_server, Play_servers, Play_user_access
-from seplis.api.decorators import authenticated
+from seplis.api.decorators import authenticated, new_session
 from seplis.api import exceptions, constants
+from seplis.api import models
 from seplis import schemas
+from tornado import gen
+from tornado.concurrent import run_on_executor
 
-class Handler(base.Handler):
-
-    def get_server(self, id_):
-        server = Play_server.get(id_)
-        if not server:
-            raise exceptions.Not_found('the play server was not found')
-        self.check_user_edit(server.user_id)
-        return server
-
-class Server_handler(Handler):
+class Server_handler(base.Handler):
 
     @authenticated(0)
+    @gen.coroutine
     def post(self, user_id):
         self.check_user_edit(user_id)
-        data = self.validate(schemas.Play_server, required=True)
-        server = Play_server.new(
-            user_id=user_id,
-            name=data['name'],
-            url=data['url'],
-            secret=data['secret'],
-        )
+        ps = yield self.create(user_id)
         self.set_status(201)
-        self.write_object(server)
+        self.write_object(ps)
+
+    @run_on_executor
+    def create(self, user_id):
+        data = self.validate(schemas.Play_server, required=True)
+        with new_session() as session:
+            ps = models.Play_server(
+                user_id=user_id,
+                name=data['name'],
+                url=data['url'],
+                secret=data['secret'],
+            )
+            session.add(ps)
+            session.commit()
+            return ps.serialize()
 
     @authenticated(0)
+    @gen.coroutine
     def put(self, user_id, id_):
-        server = self.get_server(id_)
+        ps = yield self.update(id_)
+        self.write_object(ps)
+
+    @run_on_executor
+    def update(self, id_):
         data = self.validate(schemas.Play_server)
-        if 'name' in data:
-            server.name = data['name']
-        if 'url' in data:
-            server.url = data['url']
-        if 'secret' in data:
-            server.secret = data['secret']
-        server.save()
-        self.write_object(server)
+        with new_session() as session:
+            ps = session.query(models.Play_server).filter(
+                models.Play_server.id == id_,
+            ).first()
+            if not ps:
+                raise exceptions.Not_found('play server not found')
+            self.check_user_edit(ps.user_id)
+            self.update_model(ps, data, overwrite=True)
+            session.commit()
+            return ps.serialize()
 
     @authenticated(0)
+    @gen.coroutine
     def delete(self, user_id, id_):
-        server = self.get_server(id_)
-        server.delete()
+        yield self.remove(id_)
+
+    @run_on_executor
+    def remove(self, id_):
+        with new_session() as session:
+            ps = session.query(models.Play_server).filter(
+                models.Play_server.id == id_,
+            ).first()
+            if not ps:
+                raise exceptions.Not_found('play server not found')
+            self.check_user_edit(ps.user_id)
+            session.delete(ps)
+            session.commit()
 
     @authenticated(0)
     def get(self, user_id, id_=None):
         if id_:
-            server = Play_server.get(id_)
+            server = models.Play_server.get(id_)
             if not server:
                 raise exceptions.Not_found('the play server was not found')
-            if server.user_id != self.current_user.id and \
-                Play_user_access.has_access(server.id, self.current_user.id):
-                server.__dict__.pop('secret')
+            if server['user_id'] != self.current_user.id and \
+                models.Play_server.has_access(server['id'], self.current_user.id):
+                server.pop('secret')
             else:
-                self.check_user_edit(server.user_id)
+                self.check_user_edit(server['user_id'])
             self.write_object(server)
         else:
-            access_to = self.get_argument('access_to', None)
+            access_to = self.get_argument('access_to', False)
             if access_to == 'true':# get the servers that the user has access to
-                self.get_access_to_servers(user_id)
+                servers = self.get_access_to_servers(user_id)
             else:# get the users own servers
-                self.get_servers(user_id)
+                servers = self.get_servers(user_id)
+            self.write_object(servers)
 
-    def get_servers(self, user_id):
+    def get_servers(self, user_id, access_to=False):
         self.check_user_edit(user_id)
         page = int(self.get_argument('page', 1))
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        servers = Play_servers.get_by_user_id(
+        servers = models.Play_server.by_user_id(
             user_id=user_id,
+            access_to=access_to,
             page=page,
             per_page=per_page,
         )
-        self.write_object(servers)
+        return servers
 
     def get_access_to_servers(self, user_id):
-        self.check_user_edit(user_id)
-        page = int(self.get_argument('page', 1))
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        servers = Play_user_access.get_servers(
-            user_id=user_id,
-            page=page,
-            per_page=per_page,
-        )
+        servers = self.get_servers(user_id, access_to=True)
         for server in servers.records:
-            server.__dict__.pop('secret')
-        self.write_object(servers)
+            server.pop('secret')
+        return servers
 
 
-class Access_handler(Handler):
+class Access_handler(base.Handler):
 
     @authenticated(0)
     def get(self, user_id, server_id):
         self.check_user_edit(user_id)
-        users = Play_server.get_users(server_id)
+        page = int(self.get_argument('page', 1))
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        users = models.Play_server.users_with_access(
+            server_id,
+            page=page,
+            per_page=per_page,
+        )
         self.write_object(users)
 
+    def check_server(self, server_id):
+        server = models.Play_server.get(server_id)
+        if not server:
+            raise exceptions.Unknown_play_server()
+        self.check_user_edit(server['user_id'])
+
     @authenticated(0)
+    @gen.coroutine
     def put(self, user_id, server_id, access_user_id):
-        server = self.get_server(server_id)
-        Play_user_access.add(
-            play_server_id=server_id,
+        yield self.give_access(server_id, access_user_id)
+
+    @run_on_executor
+    def give_access(self, server_id, access_user_id):
+        self.check_server(server_id)
+        models.Play_server.give_access(
+            id_=server_id,
             user_id=access_user_id,
         )
 
     @authenticated(0)
+    @gen.coroutine
     def delete(self, user_id, server_id, access_user_id):
-        server = self.get_server(server_id)
-        Play_user_access.delete(
-            play_server_id=server_id,
+        yield self.remove_access(server_id, access_user_id)
+
+    @run_on_executor
+    def remove_access(self, server_id, access_user_id):
+        self.check_server(server_id)
+        models.Play_server.remove_access(
+            id_=server_id,
             user_id=access_user_id,
         )

@@ -3,13 +3,11 @@ import json
 from seplis.api.handlers import base
 from seplis.api import constants,  exceptions
 from seplis import schemas, utils
-from seplis.api.decorators import authenticated
-from seplis.api.base.episode import Episode, Episodes, Watched
-from seplis.api.decorators import auto_session, auto_pipe
+from seplis.api.decorators import authenticated, auto_session, auto_pipe, new_session
 from seplis.config import config
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
-from seplis.api.base.play import Play_user_access
+from seplis.api import models
 from datetime import datetime, timedelta
 from tornado import gen, web
 from tornado.concurrent import run_on_executor
@@ -38,13 +36,13 @@ class Handler(base.Handler):
             raise exceptions.Not_found('the episode was not found')
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
-            result['_source']['user_watched'] = Watched.get(
+            result['_source']['user_watched'] = models.Episode_watched.get(
                 user_id=self.current_user.id,
                 show_id=show_id,
-                number=number,
+                episode_number=number,
             )
         self.write_object(
-            self.episode_format(result['_source'])
+            self.episode_wrapper(result['_source'])
         )
 
     @gen.coroutine
@@ -86,10 +84,10 @@ class Handler(base.Handler):
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
             numbers = list(episodes.keys())
-            watched = Watched.get(
+            watched = models.Episode_watched.get(
                 user_id=self.current_user.id,
                 show_id=show_id,
-                number=numbers,
+                episode_number=numbers,
             )
             for w, number in zip(watched, numbers):
                 episodes[number]['user_watched'] = w
@@ -97,7 +95,7 @@ class Handler(base.Handler):
             page=page,
             per_page=per_page,
             total=result['hits']['total'],
-            records=self.episode_format(
+            records=self.episode_wrapper(
                 list(episodes.values())
             ),
         )
@@ -115,18 +113,28 @@ class Watched_handler(base.Handler):
     @run_on_executor
     def _put(self, user_id, show_id, episode_number):
         self.validate(schemas.Episode_watched)
-        episode = Episode.get(show_id, episode_number)
-        if not episode:
-            raise exceptions.Episode_unknown()
-        times = self.request.body.get('times', 1)
-        episode.watched(
-            user_id, 
-            show_id,
-            times=times,
-            position=self.request.body.get('position', 0),
-        )
-        if times > 0:
-            Watched.cache_minutes_spent(user_id)
+        with new_session() as session:
+            episode = session.query(models.Episode).filter(
+                models.Episode.show_id == show_id,
+                models.Episode.number == episode_number,
+            ).first()
+            if not episode:
+                raise exceptions.Episode_unknown()
+            times = int(self.request.body.get('times', 1))
+            episode.watched(
+                user_id=user_id,
+                times=times,
+                position=int(self.request.body.get('position', 0)),
+            )
+            if times > 0:
+                session.flush()
+                models.Episode_watched.update_minutes_spent(
+                    user_id=user_id,
+                    session=session,
+                    pipe=session.pipe,
+                )
+            session.commit()
+
 
     @authenticated(0)
     @gen.coroutine
@@ -137,11 +145,21 @@ class Watched_handler(base.Handler):
 
     @run_on_executor
     def _delete(self, user_id, show_id, episode_number):
-        episode = Episode.get(show_id, episode_number)
-        if not episode:
-            raise exceptions.Episode_unknown()
-        episode.unwatch(user_id, show_id)
-        Watched.cache_minutes_spent(user_id)
+        with new_session() as session:
+            episode = session.query(models.Episode).filter(
+                models.Episode.show_id == show_id,
+                models.Episode.number == episode_number,
+            ).first()
+            if not episode:
+                raise exceptions.Episode_unknown()
+            episode.unwatch(user_id)
+            session.flush()
+            models.Episode_watched.update_minutes_spent(
+                user_id=user_id,
+                session=session,
+                pipe=session.pipe,
+            )
+            session.commit()
 
 class Watched_interval_handler(base.Handler):
 
@@ -163,21 +181,24 @@ class Watched_interval_handler(base.Handler):
     def _put(self, user_id, show_id, from_, to, 
         session=None, pipe=None):
         self.validate(schemas.Episode_watched)
-        times = self.request.body.get('times', 1)
-        for episode_number in range(from_, to+1):
-            episode = Episode.get(show_id, episode_number, session=session)
-            if not episode:
-                raise exceptions.Episode_unknown()
-            episode.watched(
-                user_id, 
-                show_id,
-                times=times,
-                position=self.request.body.get('position', 0),
-                session=session,
-                pipe=pipe,
-            )
-        if times > 0:
-            Watched.cache_minutes_spent(user_id)
+        times = int(self.request.body.get('times', 1))
+
+        with new_session() as session:
+            episodes = session.query(models.Episode).filter(
+                models.Episode.show_id == show_id,
+                models.Episode.number >= from_,
+                models.Episode.number <= to,
+            ).all()
+            for episode in episodes:
+                episode.watched(user_id, times=times)     
+            if times > 0:
+                session.flush()
+                models.Episode_watched.update_minutes_spent(
+                    user_id=user_id,
+                    session=session,
+                    pipe=session.pipe,
+                )
+            session.commit()
 
     @authenticated(0)
     @gen.coroutine
@@ -196,17 +217,21 @@ class Watched_interval_handler(base.Handler):
     @auto_pipe   
     def _delete(self, user_id, show_id, from_, to,
         session=None, pipe=None):
-        for episode_number in range(from_, to+1):
-            episode = Episode.get(show_id, episode_number, session=session)
-            if not episode:
-                raise exceptions.Episode_unknown()
-            episode.unwatch(
-                user_id, 
-                show_id,
+        with new_session() as session:
+            episodes = session.query(models.Episode).filter(
+                models.Episode.show_id == show_id,
+                models.Episode.number >= from_,
+                models.Episode.number <= to,
+            ).all()
+            for episode in episodes:
+                episode.unwatch(user_id)    
+            session.flush()    
+            models.Episode_watched.update_minutes_spent(
+                user_id=user_id,
                 session=session,
-                pipe=pipe,
+                pipe=session.pipe,
             )
-        Watched.cache_minutes_spent(user_id)
+            session.commit()
 
 class Air_dates_handler(base.Handler):
 
@@ -216,9 +241,9 @@ class Air_dates_handler(base.Handler):
         page = int(self.get_argument('page', 1))
         offset_days = int(self.get_argument('offset_days', 1))
         days = int(self.get_argument('days', 7))
-        should_be = self.get_should_filter(user_id)
         result = []
         episode_count = 0
+        should_be = self.get_should_filter(user_id)
         if should_be:
             episodes = yield self.es('/episodes/episode/_search',
                 body={
@@ -241,7 +266,7 @@ class Air_dates_handler(base.Handler):
                 query={
                     'from': ((page - 1) * per_page),
                     'size': per_page,
-                    'sort': 'air_date:asc',
+                    'sort': 'air_date:asc,show_id:asc,number:asc',
                 },
             )
             episode_count = episodes['hits']['total']
@@ -265,7 +290,7 @@ class Air_dates_handler(base.Handler):
             for episode in episodes:
                 result.append({
                     'show': shows[str(episode['show_id'])],
-                    'episode': self.episode_format(episode),
+                    'episode': self.episode_wrapper(episode),
                 })
         self.write_object(
             Pagination(
@@ -277,7 +302,7 @@ class Air_dates_handler(base.Handler):
         )
 
     def get_should_filter(self, user_id):
-        show_ids = database.redis.smembers('users:{}:fan_of'.format(
+        show_ids = database.redis.smembers(models.Show_fan._user_cache_name.format(
             user_id
         ))
         should_filter = []
@@ -297,8 +322,9 @@ class Play_servers_handler(base.Handler):
     def get(self, show_id, number):
         page = int(self.get_argument('page', 1))
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        servers = Play_user_access.get_servers(
+        servers = models.Play_server.by_user_id(
             user_id=self.current_user.id,
+            access_to=True,
             page=page,
             per_page=per_page,
         )
@@ -315,7 +341,7 @@ class Play_servers_handler(base.Handler):
         for server in servers:
             results.append({
                 'play_id': web.create_signed_value(
-                    secret=server.secret,
+                    secret=server['secret'],
                     name='play_id',
                     value=utils.json_dumps({
                         'show_id': int(show_id),
@@ -325,5 +351,5 @@ class Play_servers_handler(base.Handler):
                 ),
                 'play_server': server,
             })
-            server.__dict__.pop('secret')
+            server.pop('secret')
         return results

@@ -1,12 +1,9 @@
 import logging
-from seplis import schemas
-from seplis.api import constants, models, exceptions
+from seplis import schemas, utils
+from seplis.api import constants, exceptions, models
 from seplis.api.handlers import base
-from seplis.api.decorators import authenticated
+from seplis.api.decorators import authenticated, new_session, auto_session
 from seplis.api.base.pagination import Pagination
-from seplis.api.base.show import Show, Shows
-from seplis.api.base.episode import Episode, Episodes, Watching
-from seplis.api.base.description import Description
 from seplis.api.connections import database
 from tornado.httpclient import HTTPError
 from tornado import gen, concurrent
@@ -31,104 +28,90 @@ class Handler(base.Handler):
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine    
     def post(self, show_id=None):
-        yield self._post()
         if show_id:
-            raise exceptions.Parameter_must_not_be_set_exception(
+            raise exceptions.Parameter_restricted(
                 'show_id must not be set when creating a new one'
             )
-        show_id = Show.create()
+        show = yield self._post()
         self.set_status(201)
-        if self.request.body:
-            show = yield self._update(
-                show_id, 
-                validate_show=False
-            )
-            self.write_object(show)
-        else:
-            self.write_object({
-                'id': show_id,
-            })
-
-    @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def put(self, show_id):
-        show = yield self._update(show_id, overwrite=True)
-        self.write_object(
-            show
-        )
-
-    @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def patch(self, show_id):
-        show = yield self._update(show_id)
-        self.write_object(
-            show
-        )
+        self.write_object(show) 
 
     @concurrent.run_on_executor
     def _post(self):
-        self.validate(schemas.Show_schema)
+        self.request.body = self.validate(schemas.Show_schema)
+        with new_session() as session:
+            show = models.Show()
+            session.add(show)
+            session.flush()
+            self._update(
+                show=show, 
+                overwrite=False,
+                session=session,
+            )
+            session.commit()
+            return show.serialize()
 
-    update_keys = (
-        'title',
-        'premiered',
-        'ended',
-        'externals',
-        'indices',
-        'status',
-        'runtime',
-        'genres',
-        'alternative_titles',
-        'episode_type',
-    )
+    @authenticated(constants.LEVEL_EDIT_SHOW)
+    @gen.coroutine
+    def put(self, show_id): 
+        show = yield self.update(show_id=show_id, overwrite=True)
+        self.write_object(show)
+
+    @authenticated(constants.LEVEL_EDIT_SHOW)
+    @gen.coroutine
+    def patch(self, show_id):        
+        show = yield self.update(show_id=show_id, overwrite=False)
+        self.write_object(show)
+
     @concurrent.run_on_executor
-    def _update(self, show_id, validate_show=True, overwrite=False):
-        if validate_show:
-            self.validate(schemas.Show_schema)
-        show = Show.get(show_id)
-        if not show:
-            raise exceptions.Show_unknown()
-        self._update_keys(
-            keys=self.update_keys,
-            data=show.__dict__,
+    @auto_session
+    def update(self, show_id=None, show=None, overwrite=False, session=None):
+        if not show:      
+            show = session.query(models.Show).get(show_id)
+            if not show:
+                raise exceptions.Not_found('unknown show')
+        self.request.body = self.validate(schemas.Show_schema)
+        self._update(
+            session,
+            show,
+            overwrite=overwrite,
+        )
+        return show.serialize()
+
+    def _update(self, session, show, overwrite=False):
+        self.flatten_request(self.request.body, 'description', 'description')
+        self.flatten_request(self.request.body, 'indices', 'index')
+        if overwrite:
+            for key in constants.INDEX_TYPE_NAMES:
+                setattr(show, 'index_'+key, None)
+        if 'episodes' in self.request.body:
+            episodes = self.request.body.pop('episodes')
+            self.patch_episodes(
+                session,
+                show.id,
+                episodes,
+            )
+            session.flush()
+            show.update_seasons()
+        self.update_model(
+            model_ins=show,
             new_data=self.request.body,
             overwrite=overwrite,
         )
-        if 'description' in self.request.body:
-            desc = self.request.body['description']
-            if desc:
-                if 'text' in desc:
-                    show.description.text = desc['text']
-                if 'title' in desc:
-                    show.description.title = desc['title']
-                if 'url' in desc:
-                    show.description.url = desc['url']
-        if 'poster_image_id' in self.request.body:
-            show.add_poster_image(self.request.body['poster_image_id'])
-        if overwrite:
-            for index, externals in constants.INDEX_TYPES:
-                if index not in show.indices:
-                    show.indices[index] = None
-        if 'episodes' in self.request.body:
-            self.patch_episodes(
-                show_id,
-                self.request.body['episodes'],
-            )
-        show.save()
-        if show.poster_image:
-            show.poster_image = self.image_format(
-                show.poster_image.__dict__
-            )
-        return show
+        #if 'poster_image_id' in self.request.body:
+        #    show.add_poster_image(self.request.body['poster_image_id'])
+        #if overwrite:
+        #    for index, externals in constants.INDEX_TYPES:
+        #        if index not in show.indices:
+        #            show.indices[index] = None
 
-    update_episode_keys = (
-        'title',
-        'air_date',
-        'season',
-        'episode',
-        'runtime',
-    )
-    def patch_episodes(self, show_id, episodes_dict):        
+        #show.save()
+        #if show.poster_image:
+        #    show.poster_image = self.image_wrapper(
+        #        show.poster_image.__dict__
+        #   )
+
+    def patch_episodes(self, session, show_id, episodes_dict):        
         '''
 
         :param show_id: int
@@ -136,64 +119,32 @@ class Handler(base.Handler):
         :returns boolean
         '''
         episodes = []
-        for episode_data in episodes_dict:
-            episode = Episode.get(show_id, episode_data['number'])
-            if not episode:
-                episodes.append(
-                    self._new_episode(episode_data)
-                )
-                continue
-            self._update_keys(
-                keys=self.update_episode_keys,
-                data=episode.__dict__,
-                new_data=episode_data,
+        numbers = [episode['number'] for episode in episodes_dict]
+        ep_g = {episode['number']: episode for episode in episodes_dict}
+        episodes = session.query(models.Episode).filter(
+            models.Episode.show_id == show_id,
+            models.Episode.number.in_(numbers),
+        ).all()
+        for episode in episodes:
+            numbers.remove(episode.number)
+            self.flatten_request(ep_g[episode.number], 'description', 'description')
+            self.update_model(
+                model_ins=episode,
+                new_data=ep_g[episode.number],
+                overwrite=False,
             )
-            if 'description' in episode_data:
-                desc = episode_data['description']
-                if desc:
-                    if 'text' in desc:
-                        episode.description.text = desc['text']
-                    if 'title' in desc:
-                        episode.description.title = desc['title']
-                    if 'url' in desc:
-                        episode.description.url = desc['url']
-            episodes.append(episode)
-        return Episodes.save(show_id, episodes)
-
-    def _new_episode(self, episode):
-        if 'description' in episode and episode['description']:
-            description = Description(
-                text=episode['description'].get('text'),
-                url=episode['description'].get('url'),
-                title=episode['description'].get('title'),
+        for number in numbers:
+            episode = models.Episode(
+                show_id=show_id,
+                number=number,
             )
-        else:
-            description = Description(None)
-        return Episode(
-            number=episode.get('number'),
-            title=episode.get('title'),
-            air_date=episode.get('air_date'),
-            description=description,
-            season=episode.get('season'),
-            episode=episode.get('episode'),
-            runtime=episode.get('runtime'),
-        )
-
-    def _update_keys(self, keys, data, new_data, overwrite=False):
-        for key in keys:
-            if key in new_data:
-                if isinstance(new_data[key], dict):
-                    if overwrite:
-                        data[key] = new_data[key]
-                    else:
-                        data[key].update(new_data[key])
-                elif isinstance(new_data[key], list):
-                    if overwrite:
-                        data[key] = new_data[key]
-                    else:
-                        data[key] = list(set(data[key] + new_data[key]))
-                else:
-                    data[key] = new_data[key]
+            session.add(episode)
+            self.flatten_request(ep_g[episode.number], 'description', 'description')
+            self.update_model(
+                model_ins=episode,
+                new_data=ep_g[episode.number],
+                overwrite=False,
+            )
 
     @gen.coroutine
     def get_show(self, show_id):
@@ -207,7 +158,7 @@ class Handler(base.Handler):
         if 'user_watching' in append_fields:
             yield self.append_user_watching([show])
         if show['poster_image']:
-            self.image_format(result['_source']['poster_image'])
+            self.image_wrapper(result['_source']['poster_image'])
         return show
 
     @gen.coroutine
@@ -250,8 +201,8 @@ class Handler(base.Handler):
         shows = OrderedDict()
         for show in result['hits']['hits']:
             shows[show['_source']['id']] = show['_source']
-            if 'poster_image' in show['_source'] and show['_source']['poster_image']:
-                self.image_format(show['_source']['poster_image'])
+            if show['_source'].get('poster_image'):
+                self.image_wrapper(show['_source']['poster_image'])
         shows = list(shows.values())
         if 'is_fan' in append_fields:
             self.append_is_fan(shows)
@@ -269,29 +220,25 @@ class Handler(base.Handler):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        show_ids = [show['id'] for show in shows]
-        is_fan = Shows.is_fan(
+        is_fan = models.Show_fan.is_fan(
             user_id=user_id,
-            ids=show_ids,
+            show_id=[show['id'] for show in shows],
         )
         for f, show in zip(is_fan, shows):
             show['is_fan'] = f
 
     @gen.coroutine
     def append_user_watching(self, shows, user_id=None):
-        pipe = database.redis.pipeline()
         show_ids = [show['id'] for show in shows]
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        for id_ in show_ids:
-            pipe.hgetall('users:{}:watching:{}'.format(
-                user_id, 
-                id_,
-            ))
-        watching = pipe.execute()
-        # get episodes watching
+        watching = models.Show_watched.get(
+            user_id=user_id,
+            show_id=show_ids,
+        )
         episode_ids = []
+        # get the episodes that the user is watching
         for id_, w in zip(show_ids, watching):
             episode_ids.append(
                 '{}-{}'.format(
@@ -319,7 +266,7 @@ class Handler(base.Handler):
                 }
             }
         })
-        # how can I get elasticsearch to return the result in the
+        # TODO: how can I get elasticsearch to return the result in the
         # same order as it was requested?
         d = {'{}-{}'.format(e['_source']['show_id'], e['_source']['number']): 
             e['_source'] for e in episodes['hits']['hits']}
@@ -336,13 +283,13 @@ class Multi_handler(base.Handler):
     def get(self, show_ids):
         ids = filter(None, show_ids.split(','))
         self.write_object(
-            Shows.get(ids)
+            models.Shows.get(ids)
         )
 
 class External_handler(Handler):
 
     def _get(self, title, value):
-        show_id = Show.get_id_by_external(title, value)
+        show_id = models.Show.show_id_by_external(title, value)
         if not show_id:   
             raise exceptions.Not_found('show not found with external: {} with id: {}'.format(title, value))
         return show_id
@@ -365,45 +312,13 @@ class External_handler(Handler):
     def delete(self, title, value): 
         raise HTTPError(405)     
 
-class Fans_handler(Handler):
 
-    def get(self, show_id):
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
-        show = Show.get(show_id)
-        if not show:
-            raise exceptions.Show_unknown()
-        self.write_object(
-            show.get_fans(page=page, per_page=per_page)
-        )
-
-    @authenticated(constants.LEVEL_USER)
-    def put(self, show_id, user_id):        
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        show = Show.get(show_id)
-        if not show:
-            raise exceptions.Show_unknown()
-        show.become_fan(
-            user_id,
-        )
-
-    @authenticated(constants.LEVEL_USER)
-    def delete(self, show_id, user_id):            
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        show = Show.get(show_id)
-        if not show:
-            raise exceptions.Show_unknown()
-        show.unfan(
-            user_id
-        )
         
 class Fan_of_handler(Handler):
 
     @gen.coroutine
     def get(self, user_id):
-        show_ids = database.redis.smembers('users:{}:fan_of'.format(
+        show_ids = database.redis.smembers(models.Show_fan._user_cache_name.format(
             user_id
         ))
         if show_ids:
@@ -420,29 +335,75 @@ class Fan_of_handler(Handler):
         )
 
     @authenticated(constants.LEVEL_USER)
-    def put(self, user_id, show_id):        
+    @gen.coroutine
+    def put(self, user_id, show_id):
+        yield self._put(user_id, show_id)
+
+    @concurrent.run_on_executor
+    def _put(self, user_id, show_id):
         if int(user_id) != self.current_user.id:
             self.check_edit_another_user_right()
-        show = Show.get(show_id)
-        if not show:
-            raise exceptions.Show_unknown()
-        show.become_fan(
-            user_id,
-        )
+        with new_session() as session:
+            show = session.query(models.Show).get(show_id)
+            if not show:
+                raise exceptions.Show_unknown()
+            show.become_fan(
+                user_id,
+            )
+            session.commit()
 
     @authenticated(constants.LEVEL_USER)
-    def delete(self, user_id, show_id):            
+    @gen.coroutine
+    def delete(self, user_id, show_id):
+        yield self._delete(user_id, user_id)
+
+    @concurrent.run_on_executor
+    def _delete(self, user_id, show_id):            
         if int(user_id) != self.current_user.id:
             self.check_edit_another_user_right()
-        show = Show.get(show_id)
-        if not show:
-            raise exceptions.Show_unknown()
-        show.unfan(
-            user_id
-        )
+        with new_session() as session:
+            show = session.query(models.Show).get(show_id)
+            if not show:
+                raise exceptions.Show_unknown()
+            show.unfan(
+                user_id
+            )
+            session.commit()
 
     def post(self):
         raise HTTPError(405)
+
+class Fans_handler(Fan_of_handler):
+
+    def get(self, show_id):
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        pipe = database.redis.pipeline()
+        name = models.Show_fan._show_cache_name.format(show_id)
+        pipe.scard(name)
+        pipe.sort(
+            name=name,
+            start=(page - 1) * per_page,
+            num=per_page,
+            by='nosort',
+        )
+        total_count, user_ids = pipe.execute()
+        self.write_object(Pagination(
+            page=page,
+            per_page=per_page,
+            total=total_count,
+            records=models.User.get(user_ids),
+        ))
+
+    @authenticated(constants.LEVEL_USER)
+    @gen.coroutine
+    def put(self, show_id, user_id):        
+        yield self._put(user_id=user_id, show_id=show_id)
+
+    @authenticated(constants.LEVEL_USER)
+    @gen.coroutine
+    def delete(self, show_id, user_id):
+        yield self._delete(user_id=user_id, show_id=show_id)
 
 class Update_handler(base.Handler):
 

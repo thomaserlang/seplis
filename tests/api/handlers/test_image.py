@@ -36,8 +36,11 @@ class test_show_image(Testbase):
 
     def test_post(self):
         self.login(constants.LEVEL_EDIT_SHOW)
+        response = self.post('/1/shows')
+        self.assertEqual(response.code, 201)
+        show = utils.json_loads(response.body)
         # create an image
-        response = self.post('/1/shows/1/images', {
+        response = self.post('/1/shows/{}/images'.format(show['id']), {
             'external_name': 'google',
             'external_id': '123',
             'source_title': 'Some user',
@@ -47,12 +50,12 @@ class test_show_image(Testbase):
         self.assertEqual(response.code, 200, response.body)
         image = utils.json_loads(response.body)
         self.assertEqual(image['external_name'], 'google')
-        self.assertEqual(image['external_id'], '123')
+        self.assertEqual(image['external_id'], '123', image)
         self.assertEqual(image['source_title'], 'Some user')
         self.assertEqual(image['source_url'], 'http://google.com')
         self.assertTrue('relation_type' not in image)
         self.assertTrue('relation_id' not in image)
-        self.assertTrue(image['id'] > 0)
+        self.assertTrue(show['id'], image['id'] > 0)
         self.assertEqual(image['hash'], None)
         self.assertEqual(image['width'], None)
         self.assertEqual(image['height'], None)
@@ -66,14 +69,14 @@ class test_show_image(Testbase):
         )
         with patch('seplis.api.handlers.file_upload.Handler.get_httpclient', httpclient_sim) as m:
             response = self.put(
-                '/1/shows/1/images/{}/data'.format(image['id']), 
+                '/1/shows/{}/images/{}/data'.format(show['id'], image['id']), 
                 data=body, 
                 headers={'Content-Type': content_type},
             )
             self.assertEqual(response.code, 200, response.body)
 
         # verify that the image got updated
-        response = self.get('/1/shows/1/images/{}'.format(image['id']))
+        response = self.get('/1/shows/{}/images/{}'.format(show['id'], image['id']))
         self.assertEqual(response.code, 200)
         image = utils.json_loads(response.body)
         self.assertEqual(image['hash'], '17fb3ee9dac3969819af794c1fd11fbd0e02ca3d0e86b9f0c0365f13fa27d225')
@@ -81,14 +84,15 @@ class test_show_image(Testbase):
         self.assertEqual(image['height'], 150)
 
         # update the source
-        response = self.put('/1/shows/1/images/{}'.format(image['id']), {
+        response = self.put('/1/shows/{}/images/{}'.format(show['id'], image['id']), {
             'external_name': 'google 2',
             'external_id': '1234',
             'source_title': 'Some user 2',
             'source_url': 'http://google2.com',
         })
         self.assertEqual(response.code, 200)
-        response = self.get('/1/shows/1/images/{}'.format(image['id']))
+
+        response = self.get('/1/shows/{}/images/{}'.format(show['id'], image['id']))
         self.assertEqual(response.code, 200)
         image = utils.json_loads(response.body)
         self.assertEqual(image['external_name'], 'google 2')
@@ -100,15 +104,16 @@ class test_show_image(Testbase):
         self.get('http://{}/images/_refresh'.format(
             config['api']['elasticsearch']
         ))
-        response = self.get('/1/shows/1/images?q=')
+        response = self.get('/1/shows/{}/images'.format(show['id']))
         self.assertEqual(response.code, 200, response.body)
         images = utils.json_loads(response.body)
+        self.assertEqual(len(images), 1)
         self.assertEqual(images[0]['id'], image['id'])
 
         # delete the image
-        response = self.delete('/1/shows/1/images/{}'.format(image['id']))
+        response = self.delete('/1/shows/{}/images/{}'.format(show['id'], image['id']))
         self.assertEqual(response.code, 200)
-        response = self.get('/1/shows/1/images/{}'.format(image['id']))
+        response = self.get('/1/shows/{}/images/{}'.format(show['id'], image['id']))
         self.assertEqual(response.code, 404)
 
 if __name__ == '__main__':

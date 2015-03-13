@@ -1,18 +1,17 @@
 import os
 import redis
-from seplis import config, config_load
+from seplis import config, config_load, utils
 from seplis.utils import json_dumps, json_loads
 from urllib.parse import urlencode
 from tornado.httpclient import HTTPRequest
 from tornado.testing import AsyncHTTPTestCase
-from seplis.api.connections import database
+from seplis.api.connections import database, setup_event_listeners
 from seplis.logger import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from seplis.api.app import Application
-from seplis.api.base.app import App
-from seplis.api.base.user import User, Token
-from seplis.api import elasticcreate, constants
+from seplis.api import elasticcreate, constants, models
+from seplis.api.decorators import new_session
 from elasticsearch import Elasticsearch
 
 class Testbase(AsyncHTTPTestCase):
@@ -32,11 +31,13 @@ class Testbase(AsyncHTTPTestCase):
             config['api']['database'], 
             convert_unicode=True, 
             echo=False, 
-            connect_args={'charset': 'utf8'},
+            connect_args={'charset': 'utf8mb4'},
+            encoding='UTF-8',
         )
         connection = engine.connect()
         self.trans = connection.begin()
         database.session = sessionmaker(bind=connection)
+        setup_event_listeners(database.session)
         database.redis = redis.StrictRedis(
             config['api']['redis']['ip'], 
             port=config['api']['redis']['port'], 
@@ -89,25 +90,34 @@ class Testbase(AsyncHTTPTestCase):
     def delete(self, url, headers=None):
         return self._fetch(url, 'DELETE', headers)
 
-    def login(self, user_level=0, app_level=0):
+    def login(self, user_level=0, app_level=constants.LEVEL_GOD):
         if self.current_user:
             return
-        self.current_user = User.new(
-            name='testuser',
-            email='test@example.com',
-            level=user_level,
-        )
-        self.current_app = App.new(
-            user_id=self.current_user.id,
-            name='testbase app',
-            redirect_uri='',
-            level=app_level,
-        )
-        self.access_token = Token.new(
-            user_id=self.current_user.id, 
-            user_level=self.current_user.level,
-            app_id=self.current_app.id,
-        )
+        with new_session() as session:
+            user = models.User(                
+                name='testuser',
+                email='test@example.com',
+                level=user_level,
+            )
+            session.add(user)
+            session.flush()
+            self.current_user = utils.dotdict(user.serialize())
+            app = models.App(
+                user_id=user.id,
+                name='testbase app',
+                redirect_uri='',
+                level=app_level,
+            )
+            session.flush()
+            self.current_app = utils.dotdict(app.serialize())
+            access_token = models.Token(
+                user_id=user.id,
+                user_level=user_level,
+                app_id=app.id,
+            )
+            session.add(access_token)
+            session.commit()
+            self.access_token = access_token.token
 
     def new_show(self):
         self.login(constants.LEVEL_EDIT_SHOW)
@@ -121,3 +131,27 @@ class Testbase(AsyncHTTPTestCase):
             config['api']['elasticsearch']
         ))
         return show['id']
+
+    def new_app(self, name, user_id, level, redirect_uri=''):
+        with new_session() as session:
+            app = models.App(
+                name=name,
+                user_id=user_id,
+                level=level,
+                redirect_uri='',
+            )
+            session.add(app)
+            session.commit()
+            return utils.dotdict(app.serialize())
+
+    def new_user(self, name, email, level, password=''):
+        with new_session() as session:
+            user = models.User(
+                name=name,
+                email=email,
+                password=password,
+                level=level,
+            )
+            session.add(user)
+            session.commit()
+            return utils.dotdict(user.serialize())

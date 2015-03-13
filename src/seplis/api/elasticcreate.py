@@ -152,7 +152,7 @@ def create_indices():
             'image': {
                 'properties' : {
                     'id': { 'type': 'integer' },
-                    'relation_type': { 'type': 'integer' },
+                    'relation_type': { 'type': 'string' },
                     'relation_id': { 'type': 'integer' },
                     'external_name': { 'type': 'string' },
                     'external_id': { 'type': 'string' },

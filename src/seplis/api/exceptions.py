@@ -61,7 +61,7 @@ class Validation_exception(API_exception):
             errors=errors,
         )
 
-class Parameter_must_not_be_set_exception(API_exception):
+class Parameter_restricted(API_exception):
 
     def __init__(self, message):
         API_exception.__init__(
@@ -149,7 +149,7 @@ class User_not_following_show(API_exception):
             message='you do not follow this show',
         )
 
-class User_has_not_watched_this_episode(API_exception):
+class User_episode_not_watched(API_exception):
 
     def __init__(self):
         API_exception.__init__(self,
@@ -168,7 +168,7 @@ class Show_unknown(API_exception):
             message='unknown show',
         )
 
-class Show_external_field_must_be_specified_exception(API_exception):
+class Show_external_field_missing(API_exception):
 
     def __init__(self):
         API_exception.__init__(
@@ -178,7 +178,7 @@ class Show_external_field_must_be_specified_exception(API_exception):
             message='the external field must be specified before updating the index field',
         )
 
-class Show_index_type_must_be_in_external_field_exception(API_exception):
+class Show_index_type_not_in_external(API_exception):
 
     def __init__(self, external_type):
         API_exception.__init__(
@@ -193,16 +193,16 @@ class Show_index_type_must_be_in_external_field_exception(API_exception):
 
 class Show_external_duplicated(API_exception):
 
-    def __init__(self, external_title, external_id, show):
+    def __init__(self, external_title, external_value, show):
         API_exception.__init__(
             self,
             status_code=400,
             code=1403,
-            message='A show with the external name and id does already exist'.format(external_title, external_id),
+            message='A show with the external name and value does already exist'.format(external_title, external_value),
             extra={
                 'show': show,
                 'external_title': external_title,
-                'external_id': external_id,
+                'external_value': external_value,
             }
         )
 
@@ -311,4 +311,14 @@ class File_upload_unrecognized_image(API_exception):
             status_code=400,
             code=2101,
             message='unrecognized image type: please upload a JPG or PNG image',
+        )
+
+class Play_server_unknown(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(
+            self,
+            status_code=400,
+            code=2200,
+            message='unknown play server',
         )

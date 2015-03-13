@@ -253,7 +253,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
     episode_remove_keys = (
         'show_id',
     )
-    def episode_format(self, episodes):
+    def episode_wrapper(self, episodes):
         '''
         :param episodes: `episode()` or list of `episode()`
         '''

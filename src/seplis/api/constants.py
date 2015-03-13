@@ -45,8 +45,6 @@ INDEX_TYPE_NAMES = {
     'images': 'Images',
 }
 
-IMAGE_RELATION_TYPE_SHOW = 1
-
 IMAGE_TYPE_POSTER = 1
 IMAGE_TYPES = {
     IMAGE_TYPE_POSTER: 'poster',
@@ -60,7 +58,6 @@ SHOW_SORT_FIELDS = (
 
 USER_STAT_FIELDS = (
     'fan_of',
-    'minutes_spent',
     'episodes_watched',
 )
 

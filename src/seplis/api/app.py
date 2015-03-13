@@ -72,7 +72,7 @@ class Application(tornado.web.Application):
 
             URLSpec(
                 r'/1/shows/([0-9]+)/images', 
-                seplis.api.handlers.image.Handler, {'relation_type': constants.IMAGE_RELATION_TYPE_SHOW}),
+                seplis.api.handlers.image.Handler, {'relation_type': 'show'}),
             URLSpec(
                 r'/1/shows/([0-9]+)/images/([0-9]+)', 
                 seplis.api.handlers.image.Handler

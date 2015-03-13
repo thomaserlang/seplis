@@ -2,7 +2,6 @@
 import json
 import nose
 from seplis.api.testbase import Testbase
-from seplis.api.base.user import User
 from seplis import utils
 
 class test_play_handler(Testbase):
@@ -31,6 +30,7 @@ class test_play_handler(Testbase):
             self.current_user.id, 
             server['id']
         ))
+
         self.assertEqual(response.code, 200)
         server = utils.json_loads(response.body)
         self.assertEqual(server['name'], 'Thomas')
@@ -125,7 +125,7 @@ class test_user_access_handler(Testbase):
 
     def test(self):
         self.login(3)
-        user = User.new(
+        user = self.new_user(
             name='testuser2',
             email='test2@example.com',
             level=0,
@@ -148,7 +148,7 @@ class test_user_access_handler(Testbase):
         self.assertEqual(len(users), 1)
         self.assertEqual(users[0]['id'], self.current_user.id)
 
-        # Let's get the user access to the play server
+        # Lets give the user access to the play server
         response = self.put('/1/users/{}/play-servers/{}/users/{}'.format(
             self.current_user.id,
             server['id'],
