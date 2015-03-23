@@ -2,7 +2,7 @@ import logging
 import sqlalchemy as sa
 from .base import Base
 from sqlalchemy import event, orm
-from sqlalchemy.orm.attributes import get_history
+from sqlalchemy.orm.attributes import get_history, flag_modified
 from seplis.utils import JSONEncodedDict
 from seplis import utils
 from seplis.api.connections import database
@@ -35,7 +35,7 @@ class Show(Base):
     genres = sa.Column(JSONEncodedDict(), default=JSONEncodedDict.empty_list)
     alternative_titles = sa.Column(JSONEncodedDict(), default=JSONEncodedDict.empty_list)
     poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
-    poster_image = orm.relationship('Image')
+    poster_image = orm.relationship('Image', lazy='joined')
     episode_type = sa.Column(
         sa.Integer, 
         default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
@@ -63,7 +63,7 @@ class Show(Base):
             'fans': self.fans,
             'updated': self.updated,
             'poster_image': self.poster_image.serialize() \
-                if self.poster_image else None,
+                if self.poster_image_id else None,
             'episode_type': self.episode_type,
         }
 
@@ -91,9 +91,11 @@ class Show(Base):
 
     def before_upsert(self):
         self.check_indices()
+        if get_history(self, 'externals').has_changes():
+            self.cleanup_externals()        
 
     def after_upsert(self):
-        if get_history(self, 'externals').added != ():
+        if get_history(self, 'externals').has_changes():
             self.update_externals()
         self.to_elasticsearch()
 
@@ -117,10 +119,9 @@ class Show(Base):
             if not self.externals or (external.title not in self.externals):
                 session.delete(external)
         # update the externals. Raises an exception when there is a another
-        # show with and relation to the external.
+        # show with a relation to the external.
         if not self.externals:
             return
-        popit = []
         for title, value in self.externals.items():
             duplicate_show_id = self.show_id_by_external(title, value)
             if duplicate_show_id and (duplicate_show_id != self.id):
@@ -134,18 +135,20 @@ class Show(Base):
                 if title == ex.title:
                     external = ex
                     break
-            if not external and value:
+            if not external:
                 external = Show_external()
                 session.add(external)
-            if external and not value:
-                session.delete(external)
-                popit.append(title)
-            else:
-                external.title = title
-                external.value = value
-                external.show_id = self.id
-        for p in popit:
-            self.externals.pop(title)
+            external.title = title
+            external.value = value
+            external.show_id = self.id
+
+    def cleanup_externals(self):
+        '''Removes externals with None as value.'''
+        popkeys = [key for key, value in self.externals.items() \
+            if not value]
+        if popkeys:
+            for k in popkeys:
+                self.externals.pop(k)
 
     def update_seasons(self):
         '''Counts the number of episodes per season.

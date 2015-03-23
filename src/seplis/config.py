@@ -67,7 +67,7 @@ config = {
                 'default_codec': 'libx264',
                 'type': 'stream',
             },
-            'apple': {
+            'hlsmp4': {
                 'names':    [
                     'h264',
                 ],

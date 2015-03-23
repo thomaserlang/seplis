@@ -61,13 +61,6 @@
             <div id="errors"></div>
             {% block body %}{% end %}
         </div>
-        {% block outside_container %}
-        {% end %}
-        <div class="modal fade" id="seplis-modal" role="dialog">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                </div>
-            </div>
-        </div>
+        {% block body_outside %}{% end %}
     </body>
 </html>

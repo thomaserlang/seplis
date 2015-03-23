@@ -64,19 +64,22 @@ class Handler(base.Handler):
         self.write_object(show)
 
     @concurrent.run_on_executor
-    @auto_session
-    def update(self, show_id=None, show=None, overwrite=False, session=None):
-        if not show:      
+    def update(self, show_id=None, overwrite=False):
+        self.request.body = self.validate(schemas.Show_schema)
+        with new_session() as session: 
             show = session.query(models.Show).get(show_id)
             if not show:
                 raise exceptions.Not_found('unknown show')
-        self.request.body = self.validate(schemas.Show_schema)
-        self._update(
-            session,
-            show,
-            overwrite=overwrite,
-        )
-        return show.serialize()
+            self._update(
+                session,
+                show,
+                overwrite=overwrite,
+            )    
+            session.flush()
+            print(show.externals)
+            session.commit()
+            print(show.externals)
+            return show.serialize()
 
     def _update(self, session, show, overwrite=False):
         self.flatten_request(self.request.body, 'description', 'description')
@@ -98,7 +101,6 @@ class Handler(base.Handler):
             new_data=self.request.body,
             overwrite=overwrite,
         )
-        #if 'poster_image_id' in self.request.body:
         #    show.add_poster_image(self.request.body['poster_image_id'])
         #if overwrite:
         #    for index, externals in constants.INDEX_TYPES:

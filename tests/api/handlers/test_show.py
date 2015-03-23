@@ -649,6 +649,12 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         self.assertEqual(show['poster_image']['id'], image['id'])
 
+        # when retriving the show the poster image must be there.
+        response = self.get('/1/shows/{}'.format(show['id']))
+        self.assertEqual(response.code, 200)        
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['poster_image']['id'], image['id'])
+
         # remove the image
         response = self.put('/1/shows/{}'.format(show['id']), {
             'poster_image_id': None
@@ -658,4 +664,4 @@ class test_show(Testbase):
         self.assertEqual(show['poster_image'], None)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    nose.run(defaultTest=__name__+'.test_show:test_add_image')

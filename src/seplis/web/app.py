@@ -10,9 +10,7 @@ import seplis.web.handlers.suggest
 import seplis.web.handlers.air_dates
 import seplis.web.handlers.user.play_servers
 import seplis.web.handlers.play_episode
-import seplis.web.modules.menu
-import seplis.web.modules.buttons
-import seplis.web.modules.tags
+from seplis.web import modules
 import hashlib
 import os, os.path
 from seplis.logger import logger
@@ -46,11 +44,11 @@ class Application(tornado.web.Application):
             cookie_secret=config['web']['cookie_secret'],
             login_url='/sign-in',
             ui_modules=dict(
-                menu=seplis.web.modules.menu.Module,
-                fan_button=seplis.web.modules.buttons.Fan_module,
-                watched_button=seplis.web.modules.buttons.Watched_module,
-                tags=seplis.web.modules.tags.Module,
-            )
+                menu=modules.Menu,
+                fan_button=modules.Fan_button,
+                watched_button=modules.Watched_button,
+                show_header=modules.Show_header,  
+             )
         )
         if config['debug']:
             settings['js_files'] = sorted(get_static_files(
@@ -115,6 +113,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/show-index', seplis.web.handlers.show.Index_handler),
             URLSpec(r'/show/([0-9]+)', seplis.web.handlers.show.Redirect_handler),
             URLSpec(r'/show/([0-9]+)/[^/]+', seplis.web.handlers.show.Handler),
+            URLSpec(r'/show/([0-9]+)/episode/([0-9]+)/play', seplis.web.handlers.play_episode.Handler),
+
             URLSpec(r'/show-new', seplis.web.handlers.show.New_handler),
             URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
             URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.show.Edit_handler),
@@ -136,8 +136,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/user/play-server', seplis.web.handlers.user.play_servers.API_handler),
             
             URLSpec(r'/api/user/watching', seplis.web.handlers.play_episode.API_watching_handler),
-            URLSpec(r'/modal/play-episode', seplis.web.handlers.play_episode.Handler),
-
+            
             URLSpec(r'/api/show-play-next', seplis.web.handlers.show.API_get_play_now),   
         ]
         tornado.web.Application.__init__(self, urls, **settings)

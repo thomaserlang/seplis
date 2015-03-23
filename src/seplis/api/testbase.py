@@ -30,7 +30,7 @@ class Testbase(AsyncHTTPTestCase):
         engine = create_engine(
             config['api']['database'], 
             convert_unicode=True, 
-            echo=False, 
+            echo=True, 
             connect_args={'charset': 'utf8mb4'},
             encoding='UTF-8',
         )

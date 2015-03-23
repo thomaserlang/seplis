@@ -1,8 +1,15 @@
-{% extends ../modal.html %}
-{% block title %}
-    {% include episode_header.html %}
-{% end %}
+{% extends "../base.html" %}
 {% block body %}
-    <h2>You do not have access to any play servers.</h2>
-    <h3>At some point there will be a link to a guide, telling you how to setup a play server.</h3>
+    
+    {% module show_header(show) %}
+    <h2>
+        {% include episode_header.html %}
+    </h2>
+<div class="alert alert-warning" role="alert">
+    <p>
+        <span class="glyphicon glyphicon-exclamation-sign"></span>
+        <strong>You do not have access to any play servers.</strong>
+    </p>
+    <p>Go to <a href="/user/play-servers">user settings</a> and add a play server.</p>
+</div>
 {% end %}

@@ -5,12 +5,13 @@
         var settings = $.extend({
         }, options);
 
-        this.currentPlayServer = null;
+        var currentPlayServer;
 
-        this.getDevice = (function() {
-            if (navigator.userAgent.match(/(iPad|iPhone|iPod)/g)) {
-                return 'apple';
-            }
+        var getDevice = (function() {
+            var ua = navigator.userAgent;
+            if (ua.match(/(iPad|iPhone|iPod)/g)) {
+                return 'hlsmp4';
+            } 
             return 'default';
         });
         var guid = (function() {
@@ -28,73 +29,76 @@
             var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
             return r ? r[1] : undefined;
         });
+        var isMobile = (function() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        });
 
         var session = guid();
-        var device = this.getDevice();
-        var offset_duration = 0;
-        var stop_duration_update = false;
-        var latest_position_stored = -1;
+        var device = getDevice();
+        var offsetDuration = 0;
+        var lastPosStored = -1;
         var store_position_every = 10;
 
         var method = 'transcode';
         var startTime = 0;
         var watchedIncremented = false;
         var duration = 0;
-      
-        this.setStart = (function(startime) {
-            startTime = startime;
+        var metadata;
+        var player;
+        var controlsHideTimer;
+        
+        var playUrl = (function(){
+            var url;
             if (method == 'transcode') {
-                var url = _this.currentPlayServer.url+'/transcode?play_id='+
-                    _this.currentPlayServer.play_id+'&device='+device+'&session='+
-                    session+'&start='+startime.toString();
-                offset_duration = startime;
+                url = currentPlayServer.url+'/transcode?play_id='+
+                    currentPlayServer.play_id+'&device='+device+'&session='+
+                    session+'&start='+startTime.toString();
+                offsetDuration = startTime;
             } else {
-                var url = _this.currentPlayServer.url+'/play?play_id='+
-                    _this.currentPlayServer.play_id;
-                if (startime>0) {
-                    url = url +'#t='+startime.toString();
+                url = currentPlayServer.url+'/play?play_id='+currentPlayServer.play_id;
+                if (startTime>0) {
+                    url = url +'#t='+startTime.toString();
                 }
             }
-            video.attr(
-                'src',                 
-                url
-            );
-            if ((device == 'apple') && (method == 'transcode')) {
-                $.get(url);
-            }
+            return url;
         });
 
-        this.play = (function() {
-            if ((device == 'apple') && (method == 'transcode')) {
-                setTimeout(function(){
-                    video.get(0).play();
-                }, 1000);
-            } else {
-                video.get(0).play();
-            }
+        var changeSlider = (function(time) {
+            time = parseInt(time);
+            var norm = $('.player-slider').width() / duration;
+            var dotNorm = $('.player-slider-dot').width() / duration;
+            $('.player-slider-dot').css('left', (time*norm)-(time*dotNorm));
+            $('.player-progress').css('width', (time*norm));
+            var format = 'mm:ss';
+            var t = duration - time;
+            if (t >= 3600) format = 'hh:mm:ss';                
+            $('.player-timeleft').html(moment(t*1000).format(format));
         });
 
-        this.setUp = (function(metadata) {
+        this.setUp = (function(metadata_, starttime) {
+            metadata = metadata_;
+            startTime = parseInt(starttime);
             duration = parseInt(metadata['format']['duration']).toString();
-            $('.slider').attr(
-                'max', 
-                duration
-            );
-            $('.slider').show();
+            if (isMobile()) {
+                $('.player-volume').hide();
+            }
             if (metadata['format']['format_name'].indexOf('mp4') > -1) {
                 method = 'play';
-                $('.slider').hide();
             }
-
-            video.on('timeupdate', function(event){
-                if (stop_duration_update) {
-                    return;
-                }
-                var time = offset_duration + parseInt(this.currentTime);
-                if (((time % 10) == 0) && (latest_position_stored != time) && (time > 0) && !watchedIncremented) {
-                    latest_position_stored = time;
+            player = video.get(0);
+            if (!isMobile())
+                player.volume = localStorage.getItem('player_volume_default') || 1;
+            $('.player-volume-slider').val(player.volume);
+            video.trigger('volumechange');
+            video.on('timeupdate', function(){
+                console.log('timeupdate...');
+                $('.player-loading').hide();
+                var time = offsetDuration + parseInt(this.currentTime);
+                if (((time % 10) == 0) && (lastPosStored != time) && 
+                    (time > 0) && !watchedIncremented) {
+                    lastPosStored = time;
                     var times = 0;
-                    if (((time / 100) * 5) > (duration-time)) {
+                    if (((time / 100) * 10) > (duration-time)) {
                         watchedIncremented = true;
                         times = 1;
                         time = 0;
@@ -107,69 +111,200 @@
                         '_xsrf': getCookie('_xsrf'),
                     });
                 }
-                $('.slider').val((
-                    time
-                ).toString());
-                var format = 'mm:ss';
-                if (time >= 3600) {
-                    format = 'hh:mm:ss';
-                }
-                $('time_position').html(
-                    (new Date)
-                        .setSeconds(time)
-                        .toString()
-                );
-            });
-            video.on('canplay', function() { 
-                video.currentTime = startTime;
+                changeSlider(time);
             });
             video.on('ended', function() {
-                $('#seplis-modal').modal('hide');
+                
             });
-            $('.slider').on('touchstart', function(){
-                stop_duration_update = true;
+            video.on('error', function(event) {
+                $('.player-play-server-error').show();
+                $('.player-loading').hide();
+            })
+            video.on('pause', function(){
+                $('.player-play-button').removeClass('hidden');
+                $('.player-pause-button').addClass('hidden');
+                showControls();
             });
-            $('.slider').on('touchend', function(){
-                stop_duration_update = false;            
+            video.on('play', function(){
+                $('.player-pause-button').removeClass('hidden');
+                $('.player-play-button').addClass('hidden');
+                hideErrors();
             });
-            $('.slider').on('mousedown', function(){
-                stop_duration_update = true;
-            });
-            $('.slider').on('mouseup', function(){
-                stop_duration_update = false;            
-            });
-            $('.slider').change(function(event){ 
-                video.get(0).pause();
-                $.get(_this.currentPlayServer.url+'/'+session+'/cancel');
-                session = guid();
-                var start = parseInt($(this).val());
-                _this.setStart(start);
-                watchedIncremented = false;
-                _this.play();
-            });
-        });
-        var checkServer = (function(play_server) {
-            $.getJSON(play_server.url+'/metadata', {'play_id': play_server.play_id}, 
-                function(data) {
-                    if (_this.currentPlayServer) return;
-                    $('.video').removeClass('hide');
-                    $('.loading-video').hide();
-                    _this.currentPlayServer = play_server;
-                    _this.setUp(data);
-                    _this.setStart(start_pos);
-                    _this.play();
-                }
-            ).error(function(jqxhr, textStatus, error){
-                if (_this.currentPlayServer) return;
-                if (jqxhr.status == 404) {
-                    $('.episode-404').removeClass('hide');
+            video.on('volumechange', function(){
+                var remClases = "glyphicon glyphicon-volume-up glyphicon-volume-down glyphicon-volume-off";
+                var icon = $('.player-volume').find('i');
+                icon.removeClass(remClases);
+                if ((player.volume == 0) || (player.muted)) {
+                    icon.addClass("glyphicon glyphicon-volume-off");
+                    player.muted = true;
+                } else if (player.volume <= 0.5) {                    
+                    icon.addClass("glyphicon glyphicon-volume-down");
                 } else {
-                    $('.episode-no-connection').removeClass('hide');             
+                    icon.addClass("glyphicon glyphicon-volume-up");                    
                 }
-                $('.loading-video').hide();
+                $('.player-volume-slider').val(player.volume);
+                localStorage.setItem('player_volume_default', player.volume);
             });
+            video.on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function(){
+                var state = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+                if (state) {
+                    $('.player-fullscreen-button').addClass('hidden');
+                    $('.player-windowed-button').removeClass('hidden');  
+                } else {
+                    $('.player-windowed-button').addClass('hidden');
+                    $('.player-fullscreen-button').removeClass('hidden');                  
+                }
+                startHideControlsStartTimer();
+            });
+            $(window).on('keypress', function(event){
+                console.log(event.which);
+                if (event.which == 32) togglePlay();
+            });
+            $('.player-volume-slider').on('change mousemove touchmove', function(event){
+                player.volume = $(this).val();
+                if (event.type == 'change') 
+                    player.muted = false;                
+            });
+            $('.player-volume i').click(function(){
+                player.muted = !player.muted;
+                if ((!player.muted) && (player.volume === 0)) {
+                    player.volume = 1;
+                }
+            });
+            $('.player-play-pause-button').click(function(){
+                togglePlay();
+            });
+            $('.player-fullscreen-button').click(function(){
+                if (player.requestFullScreen) {
+                    player.requestFullScreen();
+                } else if (player.mozRequestFullScreen) {
+                    player.mozRequestFullScreen();
+                } else if (player.webkitRequestFullScreen) {
+                    player.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+                } else if (player.webkitEnterFullscreen) {
+                    player.webkitEnterFullscreen();
+                }
+            });
+            $('.player-windowed-button').click(function(){
+                if (document.cancelFullScreen) {
+                    document.cancelFullScreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitCancelFullScreen) {
+                    document.webkitCancelFullScreen();
+                }
+            });
+            $('.player-slider').click(function(event){
+                console.log($('.player-controls-wrapper').css('visibility'));
+                var norm = duration / $('.player-slider').width();
+                var time = (event.pageX - $(this).offset().left) * norm;
+                time = parseInt(time);
+                changeSlider(time);
+                if (method == 'play') {
+                    player.currentTime = time;
+                } else {
+                    if (player.paused === false)
+                        togglePlay();
+                    startTime = time;
+                    session = guid();
+                    watchedIncremented = false;
+                    togglePlay();
+                }
+            });
+            $(video).on('mousemove', function(event){
+                showControls();
+                event.stopImmediatePropagation();
+            });
+            $(video).on('click', function(event){
+                if ($('.player-back').is(':visible')) {
+                    if (player.paused === true) return;
+                    hideControls();
+                } else {
+                    showControls();
+                }               
+            });
+            $(video).on('webkitExitFullScreen', function(){
+                console.log('exit fullscreen');
+                alert('exit');
+            });
+            $('.player-back').on('click', function(){
+                alert('Go back to something...');
+            });
+            startHideControlsStartTimer();
+            changeSlider(startTime);
+            var url = playUrl();
+            video.attr('src', url);
+            video.load();
         });
 
+        var startHideControlsStartTimer = (function(){
+            clearTimeout(controlsHideTimer);
+            controlsHideTimer = setTimeout(function(){
+                if (player.paused) return;               
+                hideControls();
+            }, 3000);
+        });
+        var hideControls = (function(){
+            clearTimeout(controlsHideTimer);
+            $('.player-controls-wrapper').css('visibility', 'hidden');
+            $('.player-back').hide();
+        });
+
+        var showControls = (function(){
+            startHideControlsStartTimer();
+            $('.player-controls-wrapper').css('visibility', 'visible');
+            $('.player-back').show();
+        });
+
+        var togglePlay = (function(){
+            if (player.paused === false) {
+                player.pause();
+                if (method == 'transcode') {      
+                    $.get(currentPlayServer.url+'/'+session+'/cancel');
+                    startTime = parseInt(player.currentTime+offsetDuration);  
+                }
+            } else {
+                $('.player-loading').show();
+                if ((method == 'transcode'))
+                    video.attr('src', playUrl());
+                if ((device == 'hlsmp4') && (method == 'transcode')) {
+                    setTimeout(function(){
+                        player.play();
+                    }, 1000);
+                } else {
+                    player.play();
+                }
+            }
+        });
+
+        var hideErrors = (function(){
+            $('.player-episode-404').hide();
+            $('.player-play-server-error').hide();  
+            $('.player-loading').hide();
+        });
+
+        var checkServer = (function(play_server) {
+            $('.player-episode-404').hide();
+            $('.player-play-server-error').hide();  
+            $('.player-loading').show();
+            $.getJSON(play_server.url+'/metadata', {'play_id': play_server.play_id}, 
+                function(data) {
+                    if (currentPlayServer) return; 
+                    hideErrors();
+                    currentPlayServer = play_server;
+                    _this.setUp(data, start_pos);
+                    player.play();
+                }
+            ).error(function(jqxhr, textStatus, error){
+                if (currentPlayServer) return;
+                if (jqxhr.status == 404) {
+                    $('.player-episode-404').show();
+                } else {
+                    $('.player-play-server-error').show();             
+                }
+                $('.player-loading').hide();
+            });
+        });
 
         for (i in play_servers) {
             var ps = play_servers[i];

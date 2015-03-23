@@ -1,7 +1,7 @@
 {% extends ../base.html %}
 {% block body %}
     <show>
-        {% include show_header.html %}
+        {% module show_header(show) %}
         <div class="show-info">
             <div class="image">
                 <img alt="{{ escape(show['title']) }}" src="{{ image_url(show['poster_image'], '@SX300.jpg') }}">
@@ -68,7 +68,7 @@
     </script>
 {% end %}
 
-{% block outside_container %}
+{% block body_outside %}
 <div class="clean-reader clean-white">
     <div class="container clean-container">
         <h2 class="clean-header">

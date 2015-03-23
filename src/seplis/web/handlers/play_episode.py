@@ -11,9 +11,7 @@ class Handler(base.Handler):
 
     @authenticated
     @gen.coroutine
-    def get(self): 
-        show_id = self.get_argument('show_id')
-        number = self.get_argument('episode_number')
+    def get(self, show_id, number):
         show = yield self.get_show(show_id)
         if not show:
             raise HTTPError(404, 'unknown show')
@@ -29,6 +27,7 @@ class Handler(base.Handler):
                 show=show,
                 episode=episode,
             )
+            return
         self.render('play_episode/episode.html',
             show=show,
             episode=episode,

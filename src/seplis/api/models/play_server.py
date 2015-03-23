@@ -246,3 +246,12 @@ class Play_access(Base):
     @property
     def cache_name_user_access_to(self):
         return self._cache_name_user_access_to.format(self.user_id)
+
+@rebuild_cache.register('play_servers')
+def rebuild_play_servers():
+    with new_session() as session:
+        for item in session.query(Play_server).yield_per(10000):
+            item.cache()
+        for item in session.query(Play_access).yield_per(10000):
+            item.cache()
+        session.commit()
