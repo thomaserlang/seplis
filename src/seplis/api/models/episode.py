@@ -371,7 +371,7 @@ class Show_watched(Base):
         return watching if isinstance(show_id, list) else watching[0]
 
     @classmethod
-    def recently_watched(cls, user_id, per_page=constants.PER_PAGE, page=1):
+    def recently(cls, user_id, per_page=constants.PER_PAGE, page=1):
         '''Get recently watched shows for a user.
 
         :returns: list of dict
