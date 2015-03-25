@@ -17,6 +17,7 @@ class Handler(base.Handler):
             per_page=per_page,
             page=page,
         )
+        # fill with show and episode info.
         if pagination.records:
             show_ids = []
             episode_ids = []
@@ -33,7 +34,11 @@ class Handler(base.Handler):
                 'ids': episode_ids,
             })
             episode_ids = []
-            for w, show, episode in zip(pagination.records, show_docs['docs'], episode_docs['docs']):
+            for w, show, episode in zip(
+                pagination.records, 
+                show_docs['docs'], 
+                episode_docs['docs']
+            ):
                 if show['found']:
                     w.update(show['_source'])
                 if episode['found']:
