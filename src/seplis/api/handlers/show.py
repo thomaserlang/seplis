@@ -75,10 +75,7 @@ class Handler(base.Handler):
                 show,
                 overwrite=overwrite,
             )    
-            session.flush()
-            print(show.externals)
             session.commit()
-            print(show.externals)
             return show.serialize()
 
     def _update(self, session, show, overwrite=False):
@@ -101,17 +98,6 @@ class Handler(base.Handler):
             new_data=self.request.body,
             overwrite=overwrite,
         )
-        #    show.add_poster_image(self.request.body['poster_image_id'])
-        #if overwrite:
-        #    for index, externals in constants.INDEX_TYPES:
-        #        if index not in show.indices:
-        #            show.indices[index] = None
-
-        #show.save()
-        #if show.poster_image:
-        #    show.poster_image = self.image_wrapper(
-        #        show.poster_image.__dict__
-        #   )
 
     def patch_episodes(self, session, show_id, episodes_dict):        
         '''
@@ -241,44 +227,22 @@ class Handler(base.Handler):
         )
         episode_ids = []
         # get the episodes that the user is watching
-        for id_, w in zip(show_ids, watching):
-            episode_ids.append(
-                '{}-{}'.format(
-                    id_, 
-                    w['number'] if w else 0
-                )
-            )
+        episode_ids = ['{}-{}'.format(id_, w['number'] if w else 0)\
+            for id_, w in zip(show_ids, watching)]
         episodes = yield self.get_episodes(episode_ids)
         for w, show, episode in zip(watching, shows, episodes):
             if w:
-                show['user_watching'] = {
-                    'datetime': w['datetime'],
-                    'position': int(w['position']),
-                    'episode': episode,
-                }
+                w['episode'] = episode
+                show['user_watching'] = w
             else:
                 show['user_watching'] = None
 
     @gen.coroutine
     def get_episodes(self, ids):
-        episodes = yield self.es('/episodes/episode/_search', body={
-            'filter': {
-                'ids': {
-                    'values': ids,
-                }
-            }
+        result = yield self.es('/episodes/episode/_mget', body={
+            'ids': ids
         })
-        # TODO: how can I get elasticsearch to return the result in the
-        # same order as it was requested?
-        d = {'{}-{}'.format(e['_source']['show_id'], e['_source']['number']): 
-            e['_source'] for e in episodes['hits']['hits']}
-        result = []
-        for id_ in ids:
-            result.append(
-                d.get(id_)
-            )
-        return result
-
+        return [d.get('_source') for d in result['docs']]
 
 class Multi_handler(base.Handler):
 

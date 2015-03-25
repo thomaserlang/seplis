@@ -11,6 +11,7 @@ import seplis.api.handlers.tag
 import seplis.api.handlers.episode
 import seplis.api.handlers.image
 import seplis.api.handlers.play
+import seplis.api.handlers.shows_recently_watched
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -125,6 +126,11 @@ class Application(tornado.web.Application):
             URLSpec(
                 r'/1/users/([0-9]+)/air-dates', 
                 seplis.api.handlers.episode.Air_dates_handler
+            ),
+
+            URLSpec(
+                r'/1/users/([0-9]+)/shows-recently-watched', 
+                seplis.api.handlers.shows_recently_watched.Handler,
             ),
         
             URLSpec(

@@ -19,7 +19,6 @@ class Handler(seplis.api.handlers.base.Handler):
                 'app_id must not be set when creating a new app'
             )
         app = yield self.create()
-        print(app)
         self.set_status(201)
         self.write_object(app)
 

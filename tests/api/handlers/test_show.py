@@ -664,4 +664,4 @@ class test_show(Testbase):
         self.assertEqual(show['poster_image'], None)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__+'.test_show:test_add_image')
+    nose.run(defaultTest=__name__)

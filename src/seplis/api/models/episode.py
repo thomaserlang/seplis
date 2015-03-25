@@ -6,6 +6,7 @@ from sqlalchemy.orm.attributes import get_history
 from seplis import utils
 from seplis.api.connections import database
 from seplis.api.decorators import new_session, auto_pipe, auto_session
+from seplis.api.base.pagination import Pagination
 from seplis.api import exceptions, rebuild_cache, constants
 from datetime import datetime
 
@@ -285,7 +286,7 @@ class Show_watched(Base):
         session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))
         session.pipe.zadd(
             self.cache_name_set, 
-            self.show_id, self.updated_at.timestamp(),            
+            self.updated_at.timestamp(), self.show_id            
         )
 
     @property    
@@ -374,28 +375,38 @@ class Show_watched(Base):
     def recently(cls, user_id, per_page=constants.PER_PAGE, page=1):
         '''Get recently watched shows for a user.
 
-        :returns: list of dict
-            {
-                "show_id": 1,
-                "watching": {
-                    "number": 1,
-                    "position": 37,
-                    "updated_at": "2015-02-21T21:11:00Z"
+        :returns: `Pagination()`
+            `records` will be a list of dict
+            [
+                {
+                    "id": 1,
+                    "watching": {
+                        "number": 1,
+                        "position": 37,
+                        "updated_at": "2015-02-21T21:11:00Z"
+                    }
                 }
-            }
+            ]
         '''
+        name = cls._cache_name_set.format(user_id)
+        start = (page-1)*per_page
         show_ids = database.redis.zrevrange(
-            name=cls.cache_name_set.format(self.user_id),   
-            start=page-1*per_page,
-            num=per_page,
-            score_cast_func=int,
+            name,   
+            start=start,
+            end=(start+per_page)-1,
         )
         w = []
         for show_id, watching in zip(show_ids, cls.get(user_id, show_ids)):
             w.append({
-                'show_id': show_id,
-                'watching': watching,
+                'id': int(show_id),
+                'user_watching': watching,
             })
+        return Pagination(
+            page=page,
+            per_page=per_page,
+            total=database.redis.zcard(name),
+            records=w,
+        )
 
 @rebuild_cache.register('episodes')
 def rebuild_episodes():
