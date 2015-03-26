@@ -240,29 +240,30 @@ class Episode_watched(Base):
         return watched if isinstance(episode_number, list) else watched[0]
 
     def after_upsert(self):
-        session = orm.Session.object_session(self)
         self.cache()
+
+    def before_upsert(self):
+        self.updated_at = datetime.utcnow()
         Show_watched.set_watching(
-            session,
+            self.session,
             show_id=self.show_id,
             user_id=self.user_id,
             episode_watched=self,
         )
 
     def after_delete(self):
-        session = orm.Session.object_session(self)
         Show_watched.set_watching(
-            session,
+            self.session,
             show_id=self.show_id,
             user_id=self.user_id,
-            episode_watched=session.query(Episode_watched).filter(
+            episode_watched=self.session.query(Episode_watched).filter(
                 Episode_watched.show_id == self.show_id,
                 Episode_watched.user_id == self.user_id,
             ).order_by(
                 sa.desc(Episode_watched.updated_at)
             ).first(),
         )
-        session.pipe.delete(self.cache_name)
+        self.session.pipe.delete(self.cache_name)
         self.inc_watched_stats(-self.times)
 
 class Show_watched(Base):
@@ -273,18 +274,17 @@ class Show_watched(Base):
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     episode_number = sa.Column(sa.Integer, autoincrement=False)
     position = sa.Column(sa.Integer)
-    updated_at = sa.Column(sa.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = sa.Column(sa.DateTime)
 
     _cache_name = 'users:{}:watched:shows:{}'
     _cache_name_set = 'users:{}:watched:shows'
 
     def cache(self):
         name = self.cache_name
-        session = orm.Session.object_session(self)
-        session.pipe.hset(name, 'number', self.episode_number) 
-        session.pipe.hset(name, 'position', self.position)
-        session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))
-        session.pipe.zadd(
+        self.session.pipe.hset(name, 'number', self.episode_number) 
+        self.session.pipe.hset(name, 'position', self.position)
+        self.session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))
+        self.session.pipe.zadd(
             self.cache_name_set, 
             self.updated_at.timestamp(), self.show_id            
         )
@@ -305,9 +305,8 @@ class Show_watched(Base):
         self.cache()
 
     def after_delete(self):
-        session = orm.Session.object_session(self)
-        session.pipe.delete(self.cache_name)
-        session.pipe.delete(self.cache_name_set, str(self.show_id))
+        self.session.pipe.delete(self.cache_name)
+        self.session.pipe.delete(self.cache_name_set, str(self.show_id))
 
     @classmethod
     def set_watching(cls, session, show_id, user_id, episode_watched):
@@ -380,7 +379,7 @@ class Show_watched(Base):
             [
                 {
                     "id": 1,
-                    "watching": {
+                    "user_watching": {
                         "number": 1,
                         "position": 37,
                         "updated_at": "2015-02-21T21:11:00Z"

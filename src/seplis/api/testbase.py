@@ -27,25 +27,14 @@ class Testbase(AsyncHTTPTestCase):
         config_load()
         config['logging']['path'] = None
         logger.set_logger('test-api.log')
-        engine = create_engine(
-            config['api']['database'], 
-            convert_unicode=True, 
-            echo=False, 
-            connect_args={'charset': 'utf8mb4'},
-            encoding='UTF-8',
-        )
-        connection = engine.connect()
+        # recreate the database connection
+        # with params from the loaded config.
+        database.__init__()
+        connection = database.engine.connect()
         self.trans = connection.begin()
         database.session = sessionmaker(bind=connection)
         setup_event_listeners(database.session)
-        database.redis = redis.StrictRedis(
-            config['api']['redis']['ip'], 
-            port=config['api']['redis']['port'], 
-            db=10,
-            decode_responses=True,
-        )
         database.redis.flushdb()
-        database.es = Elasticsearch(config['api']['elasticsearch'])
         elasticcreate.create_indices()
 
     def tearDown(self):

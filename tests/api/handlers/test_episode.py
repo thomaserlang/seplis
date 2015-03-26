@@ -237,7 +237,7 @@ class Test_episode_append_fields(Testbase):
         # Let's watch some episodes
         for number in [1,2]:
             response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id, number))
-            self.assertEqual(response.code, 200)
+            self.assertEqual(response.code, 200, 'Run: {}'.format(number))
 
 
         # test single episode

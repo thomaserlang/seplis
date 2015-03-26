@@ -14,7 +14,8 @@ class test_shows_recently_watched(Testbase):
         self.login(constants.LEVEL_EDIT_SHOW)
         show_ids = [self.new_show() for x in range(0, 3)]
         air_date = datetime.now().date().isoformat()
-        for show_id in show_ids:
+        # run it twice to check for duplication bugs.
+        for show_id in show_ids+show_ids:
             response = self.put('/1/shows/{}'.format(show_id), {
                 'episodes': [
                     {
