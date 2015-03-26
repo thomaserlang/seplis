@@ -5,6 +5,7 @@ from .base import Base
 from seplis import utils, config
 from seplis.api import rebuild_cache
 from seplis.api.decorators import new_session
+from datetime import datetime
 
 class Image(Base):
     __tablename__ = 'images'
@@ -19,7 +20,7 @@ class Image(Base):
     hash = sa.Column(sa.String(64))
     source_title = sa.Column(sa.String(200))
     source_url = sa.Column(sa.String(200))
-    created = sa.Column(sa.DateTime, server_default=func.current_timestamp())
+    created = sa.Column(sa.DateTime, default=datetime.now)
     type = sa.Column(sa.Integer)
 
     def serialize(self):
