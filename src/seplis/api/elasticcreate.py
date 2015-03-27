@@ -113,6 +113,8 @@ def create_indices():
                         'index_name': 'genre',
                     },                    
                     'episode_type': { 'type': 'integer' },
+                    'created_at': { 'type': 'date' },
+                    'updated_at': { 'type': 'date' },
                 }
             }
         }
@@ -162,7 +164,7 @@ def create_indices():
                     'source_title': { 'type': 'string' },
                     'source_url': { 'type': 'string' },
                     'type': { 'type': 'integer' },
-                    'created': { 'type': 'string' },
+                    'created_at': { 'type': 'date' },
                 },
             }
         }
