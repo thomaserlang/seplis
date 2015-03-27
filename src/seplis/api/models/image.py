@@ -20,7 +20,7 @@ class Image(Base):
     hash = sa.Column(sa.String(64))
     source_title = sa.Column(sa.String(200))
     source_url = sa.Column(sa.String(200))
-    created = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = sa.Column(sa.DateTime, default=datetime.now)
     type = sa.Column(sa.Integer)
 
     def serialize(self):
@@ -34,7 +34,7 @@ class Image(Base):
             'source_url': self.source_url,
             'source_title': self.source_title,
             'type': self.type,
-            'created': self.created,
+            'created_at': self.created_at,
             '_relation_type': self.relation_type,
             '_relation_id': self.relation_id,
             'url': config['api']['image_url'] + '/' + self.hash \

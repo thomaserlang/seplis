@@ -20,11 +20,11 @@ class test_show(Testbase):
 
         # this should be a successfully creation of a new show
         response = self.post('/1/shows', {
-            'title': 'NCIS',
+            'title': 'QWERTY',
             'description': {
                 'text': 'The cases of the Naval Criminal Investigative Service. \_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ',
                 'title': 'IMDb',
-                'url': 'http://www.imdb.com/title/tt0364845/',
+                'url': 'http://www.imdb.com/title/tt123456799/',
             },
             'premiered': '2003-01-01',
             'ended': None,
@@ -33,25 +33,25 @@ class test_show(Testbase):
                 'episodes': 'imdb',
             },
             'externals': {
-                'imdb': 'tt0364845',
+                'imdb': 'tt123456799',
             },
             'genres': [
                 'Action',
                 'Thriller',
             ],
             'alternative_titles': [
-                'NCIS 2',
-                'NCIS 3',
+                'QWERTY 2',
+                'QWERTY 3',
             ],
             'runtime': 40,
         })
         self.assertEqual(response.code, 201, response.body)
         show = utils.json_loads(response.body)
-        self.assertEqual(show['title'], 'NCIS')
+        self.assertEqual(show['title'], 'QWERTY')
         self.assertEqual(show['description'], {
             'text': 'The cases of the Naval Criminal Investigative Service. \_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ',
             'title': 'IMDb',
-            'url': 'http://www.imdb.com/title/tt0364845/',
+            'url': 'http://www.imdb.com/title/tt123456799/',
         })
         self.assertEqual(show['premiered'], '2003-01-01')
         self.assertEqual(show['ended'], None)
@@ -61,12 +61,12 @@ class test_show(Testbase):
             'images': None,
         })
         self.assertEqual(show['externals'], {
-            'imdb': 'tt0364845',
+            'imdb': 'tt123456799',
         })
         self.assertTrue('Action' in show['genres'])
         self.assertTrue('Thriller' in show['genres'])
-        self.assertTrue('NCIS 2' in show['alternative_titles'])
-        self.assertTrue('NCIS 3' in show['alternative_titles'])
+        self.assertTrue('QWERTY 2' in show['alternative_titles'])
+        self.assertTrue('QWERTY 3' in show['alternative_titles'])
         self.assertEqual(show['runtime'], 40)
         self.assertEqual(
             show['episode_type'], 
@@ -76,7 +76,7 @@ class test_show(Testbase):
     def test_patch(self):
         show_id = self.new_show()
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'title': 'NCIS',
+            'title': 'QWERTY',
             'description': {
                 'text': 'The cases of the Naval Criminal Investigative Service.',
             },
@@ -85,7 +85,7 @@ class test_show(Testbase):
                 'info': 'imdb',
             },
             'externals': {
-                'imdb': 'tt0364845',
+                'imdb': 'tt123456799',
             },
             'episode_type': constants.SHOW_EPISODE_TYPE_AIR_DATE,
         })
@@ -97,7 +97,7 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
-        self.assertEqual(show['title'], 'NCIS')
+        self.assertEqual(show['title'], 'QWERTY')
         self.assertEqual(show['description'], {
             'text': 'The cases of the Naval Criminal Investigative Service.',
             'title': None,
@@ -111,7 +111,7 @@ class test_show(Testbase):
             'images': None,
         })
         self.assertEqual(show['externals'], {
-            'imdb': 'tt0364845',
+            'imdb': 'tt123456799',
         })
         self.assertEqual(
             show['episode_type'], 
@@ -121,7 +121,7 @@ class test_show(Testbase):
     def test_put(self):
         show_id = self.new_show()
         response = self.put('/1/shows/{}'.format(show_id), {
-            'title': 'NCIS',
+            'title': 'QWERTY',
             'description': {
                 'text': 'The cases of the Naval Criminal Investigative Service.',
             },
@@ -130,7 +130,7 @@ class test_show(Testbase):
                 'info': 'imdb',
             },
             'externals': {
-                'imdb': 'tt0364845',
+                'imdb': 'tt123456799',
             },
             'episode_type': constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER,
         })
@@ -146,7 +146,7 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
-        self.assertEqual(show['title'], 'NCIS')
+        self.assertEqual(show['title'], 'QWERTY')
         self.assertEqual(show['indices'], {
             'info': None,
             'episodes': 'thetvdb',
@@ -380,7 +380,7 @@ class test_show(Testbase):
     def test_description(self):
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
-            'title': 'NCIS',
+            'title': 'QWERTY',
             'description': None,
             'premiered': '2003-01-01',
             'ended': None,
@@ -389,7 +389,7 @@ class test_show(Testbase):
                 'episodes': 'imdb',
             },
             'externals': {
-                'imdb': 'tt0364845',
+                'imdb': 'tt123456799',
             },
             'episodes': [
                 {
@@ -402,7 +402,7 @@ class test_show(Testbase):
         })        
         self.assertEqual(response.code, 201, response.body)
         show = utils.json_loads(response.body)
-        self.assertEqual(show['title'], 'NCIS')
+        self.assertEqual(show['title'], 'QWERTY')
 
     def test_unknown_show(self):
         self.login(constants.LEVEL_EDIT_SHOW)

@@ -15,8 +15,8 @@ class Show(Base):
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
 
-    created = sa.Column(sa.DateTime, default=datetime.utcnow)
-    updated = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
+    updated_at = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
     status = sa.Column(sa.Integer, default=0, nullable=False)
     fans = sa.Column(sa.Integer, default=0)
 
@@ -61,7 +61,7 @@ class Show(Base):
                 self.alternative_titles else [],
             'seasons': self.seasons if self.seasons else [],
             'fans': self.fans,
-            'updated': self.updated,
+            'updated_at': self.updated_at,
             'poster_image': self.poster_image.serialize() \
                 if self.poster_image_id else None,
             'episode_type': self.episode_type,
@@ -92,11 +92,10 @@ class Show(Base):
     def before_upsert(self):
         self.check_indices()
         if get_history(self, 'externals').has_changes():
-            self.cleanup_externals()        
+            self.cleanup_externals()    
+            self.update_externals()    
 
-    def after_upsert(self):
-        if get_history(self, 'externals').has_changes():
-            self.update_externals()
+    def after_upsert(self):            
         self.to_elasticsearch()
 
     def update_externals(self):
@@ -108,8 +107,7 @@ class Show(Base):
 
         :raises: exceptions.Show_external_duplicated()
         '''
-        session = orm.Session.object_session(self)
-        externals_query = session.query(
+        externals_query = self.session.query(
             Show_external,
         ).filter(
             Show_external.show_id == self.id,
@@ -117,7 +115,7 @@ class Show(Base):
         # delete externals where the relation has been removed.
         for external in externals_query:
             if not self.externals or (external.title not in self.externals):
-                session.delete(external)
+                self.session.delete(external)
         # update the externals. Raises an exception when there is a another
         # show with a relation to the external.
         if not self.externals:
@@ -128,7 +126,7 @@ class Show(Base):
                 raise exceptions.Show_external_duplicated(
                     external_title=title,
                     external_value=value,
-                    show=session.query(Show).get(duplicate_show_id).serialize(),
+                    show=self.session.query(Show).get(duplicate_show_id).serialize(),
                 )
             external = None
             for ex in externals_query:
@@ -137,7 +135,7 @@ class Show(Base):
                     break
             if not external:
                 external = Show_external()
-                session.add(external)
+                self.session.add(external)
             external.title = title
             external.value = value
             external.show_id = self.id

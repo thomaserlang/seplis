@@ -60,7 +60,7 @@ class test_show_image(Testbase):
         self.assertEqual(image['width'], None)
         self.assertEqual(image['height'], None)
         self.assertEqual(image['type'], constants.IMAGE_TYPE_POSTER)
-        self.assertNotEqual(image['created'], None)
+        self.assertNotEqual(image['created_at'], None)
 
 
         # Upload the image
