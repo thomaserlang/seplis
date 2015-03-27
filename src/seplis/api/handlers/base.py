@@ -53,22 +53,30 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         :param new_data: dict
         :param overwrite: boolean
         '''
-        for key in new_data:
-            if not hasattr(model_ins, key):
-                continue
-            if isinstance(new_data[key], dict) and not overwrite:
-                getattr(model_ins, key).update(new_data[key])
-                flag_modified(model_ins, key)
-            elif isinstance(new_data[key], list) and not overwrite:
-                setattr(model_ins, key, 
-                    list(
-                        set(getattr(model_ins, key) + new_data[key])
+        try:
+            for key in new_data:
+                if not hasattr(model_ins, key):
+                    continue
+                if isinstance(new_data[key], dict) and not overwrite:
+                    getattr(model_ins, key).update(new_data[key])
+                    flag_modified(model_ins, key)
+                elif isinstance(new_data[key], list) and not overwrite:
+                    setattr(model_ins, key, 
+                        list(set(
+                            getattr(model_ins, key) + new_data[key]
+                        ))
                     )
+                    flag_modified(model_ins, key)
+                else:
+                    setattr(model_ins, key, new_data[key])
+        except Exception as e:
+            raise TypeError(
+                'Update model failed for the following key: {} with error: {}'.format(
+                    key, 
+                    e.message,
                 )
-                flag_modified(model_ins, key)
-            else:
-                setattr(model_ins, key, new_data[key])
-
+            )
+            
     def write_error(self, status_code, **kwargs):
         if isinstance(kwargs['exc_info'][1], exceptions.API_exception):
             self.write_object({
