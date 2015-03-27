@@ -79,6 +79,7 @@ class Handler(base.Handler):
             return show.serialize()
 
     def _update(self, session, show, overwrite=False):
+        self._add_poster_image(show, session)
         self.flatten_request(self.request.body, 'description', 'description')
         self.flatten_request(self.request.body, 'indices', 'index')
         if overwrite:
@@ -98,6 +99,17 @@ class Handler(base.Handler):
             new_data=self.request.body,
             overwrite=overwrite,
         )
+
+    def _add_poster_image(self, show, session):
+        poster_image_id = self.request.body.get('poster_image_id')
+        if not poster_image_id or \
+            poster_image_id == show.poster_image_id:
+            return
+        show.poster_image = session.query(models.Image).get(
+            poster_image_id
+        )
+        if not show.poster_image:
+            raise exceptions.Image_unknown()
 
     def patch_episodes(self, session, show_id, episodes_dict):        
         '''

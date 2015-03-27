@@ -663,5 +663,13 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         self.assertEqual(show['poster_image'], None)
 
+        # add the image again
+        response = self.put('/1/shows/{}'.format(show['id']), {
+            'poster_image_id': image['id']
+        })
+        self.assertEqual(response.code, 200)
+        show = utils.json_loads(response.body)
+        self.assertEqual(show['poster_image']['id'], image['id'])
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
