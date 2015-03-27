@@ -649,7 +649,7 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         self.assertEqual(show['poster_image']['id'], image['id'])
 
-        # when retriving the show the poster image must be there.
+        # when retrieving the show the poster image must be there.
         response = self.get('/1/shows/{}'.format(show['id']))
         self.assertEqual(response.code, 200)        
         show = utils.json_loads(response.body)
