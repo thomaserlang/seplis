@@ -218,7 +218,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         return {
             'user': {
                 'is_authenticated': True if self.current_user else False,
-                'info': self.current_user.to_dict() if self.current_user else None,
+                'info': self.current_user if self.current_user else None,
             }
         }
 
