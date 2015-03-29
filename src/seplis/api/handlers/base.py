@@ -306,3 +306,30 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
                 )
                 data.update(d)
             data.pop(key)
+
+    @gen.coroutine
+    def get_shows(self, show_ids):
+        '''Returns a list of shows. Id's that was not found
+        will be appended as `None`.
+
+        :param show_ids: list of int
+        :returns: list of dict
+        '''
+        result = yield self.es('/shows/show/_mget', body={
+            'ids': show_ids
+        })
+        return [d.get('_source') for d in result['docs']]
+
+    @gen.coroutine
+    def get_episodes(self, episode_ids):
+        '''Returns a list of episodes. Id's that was not found
+        will be appended as `None`.
+
+        :param episode_ids: list of str
+            {show_id}-{episode_number}
+        :returns: list of dict
+        '''
+        result = yield self.es('/episodes/episode/_mget', body={
+            'ids': ids
+        })
+        return [d.get('_source') for d in result['docs']]
