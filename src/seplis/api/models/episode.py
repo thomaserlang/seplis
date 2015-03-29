@@ -244,7 +244,7 @@ class Episode_watched(Base):
 
     def before_upsert(self):
         self.updated_at = datetime.utcnow()
-        Show_watched.set_watching(
+        Show_watched.set_watched(
             self.session,
             show_id=self.show_id,
             user_id=self.user_id,
@@ -252,7 +252,7 @@ class Episode_watched(Base):
         )
 
     def after_delete(self):
-        Show_watched.set_watching(
+        Show_watched.set_watched(
             self.session,
             show_id=self.show_id,
             user_id=self.user_id,
@@ -304,7 +304,7 @@ class Show_watched(Base):
         self.session.pipe.delete(self.cache_name_set, str(self.show_id))
 
     @classmethod
-    def set_watching(cls, session, show_id, user_id, episode):
+    def set_watched(cls, session, show_id, user_id, episode):
         ''' Sets an episode as the latest watched for a show
         by the user. If `episode` is None it will look for 
         the previous watched episode for the show.
