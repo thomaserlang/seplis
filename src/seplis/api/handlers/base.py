@@ -337,6 +337,6 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         :returns: list of dict
         '''
         result = yield self.es('/episodes/episode/_mget', body={
-            'ids': ids
+            'ids': episode_ids
         })
         return [d.get('_source') for d in result['docs']]
