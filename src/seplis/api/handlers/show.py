@@ -249,12 +249,6 @@ class Handler(base.Handler):
             else:
                 show['user_watching'] = None
 
-    @gen.coroutine
-    def get_episodes(self, ids):
-        result = yield self.es('/episodes/episode/_mget', body={
-            'ids': ids
-        })
-        return [d.get('_source') for d in result['docs']]
 
 class Multi_handler(base.Handler):
 
