@@ -17,76 +17,55 @@ class Handler(base.Handler):
 
     @gen.coroutine
     def get(self, user_id):        
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
-        offset_days = int(self.get_argument('offset_days', 1))
-        days = int(self.get_argument('days', 7))
-        result = []
-        episode_count = 0
-        
-
-            shows = yield self.es('/shows/show/_search',
-                body={
-                    'filter': {
-                        'ids': {
-                            'values': list(set([episode['show_id'] \
-                                for episode in episodes])),
-                        }
-                    }
-                },
-                query={
-                    'size': 1000,
-                    'from': 0,
-                }
-            )
-            shows = {str(show['_source']['id']): show['_source'] \
-                for show in shows['hits']['hits']}
-            for episode in episodes:
-                result.append({
-                    'show': shows[str(episode['show_id'])],
-                    'episode': self.episode_wrapper(episode),
-                })
-        self.write_object(
-            Pagination(
-                page=page,
-                per_page=per_page,
-                total=episode_count,
-                records=result,
-            )
+        episodes = yield self.get_episodes(user_id)
+        if not episodes:
+            self.write_object([])
+            return
+        shows = yield self.get_shows(
+            set([episode['show_id'] for episode in episodes])
         )
-
+        d = {show['id']: show for show in shows}
+        for ep in episodes:
+            show = d[ep['show_id']]
+            show.setdefault('episodes', [])
+            show['episodes'].append(
+                self.episode_wrapper(ep)
+            )
+        self.write_object(shows)
 
     @gen.coroutine
-    def get_episodes(self):
+    def get_episodes(self, user_id):        
+        offset_days = int(self.get_argument('from_date', 1))
+        days = int(self.get_argument('to_date', 7))
         should_be = self.get_should_filter(user_id)
-        if should_be:
-            episodes = yield self.es('/episodes/episode/_search',
-                body={
-                    'filter': {
-                        'bool': {
-                            'should': should_be,
-                            'must': {
-                                'range': {
-                                    'air_date': {
-                                        'gte': (datetime.utcnow().date() - \
-                                            timedelta(days=offset_days)).isoformat(),
-                                        'lte': (datetime.utcnow().date() + \
-                                            timedelta(days=days)).isoformat(),
-                                    }
+        if not should_be:
+            return []
+        episodes = yield self.es('/episodes/episode/_search',
+            body={
+                'filter': {
+                    'bool': {
+                        'should': should_be,
+                        'must': {
+                            'range': {
+                                'air_date': {
+                                    'gte': (datetime.utcnow().date() - \
+                                        timedelta(days=offset_days)).isoformat(),
+                                    'lte': (datetime.utcnow().date() + \
+                                        timedelta(days=days)).isoformat(),
                                 }
                             }
                         }
                     }
-                },
-                query={
-                    'from': ((page - 1) * per_page),
-                    'size': per_page,
-                    'sort': 'air_date:asc,show_id:asc,number:asc',
-                },
-            )
-            episode_count = episodes['hits']['total']
-            return [episode['_source'] \
-                for episode in episodes['hits']['hits']]
+                }
+            },
+            query={
+                'from': 0,
+                'size': 1000,
+                'sort': 'air_date:asc,show_id:asc,number:asc',
+            },
+        )
+        return [episode['_source'] \
+            for episode in episodes['hits']['hits']]
 
     def get_should_filter(self, user_id):
         show_ids = database.redis.smembers(models.Show_fan._user_cache_name.format(

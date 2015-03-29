@@ -262,8 +262,8 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         return append_fields
 
     image_remove_keys = (
-        'relation_type',
-        'relation_id',
+        '_relation_type',
+        '_relation_id',
     )
     def image_wrapper(self, images):
         _images = images if isinstance(images, list) else [images]
@@ -296,6 +296,13 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
                     (self.current_user.id != user['id'])):
                 user.pop('email')
         return users
+
+    def show_wrapper(self, shows):
+        _shows = shows if isinstance(shows, list) else [shows]
+        for show in _shows:
+            if show['poster_image']:
+                self.image_wrapper(show['poster_image'])
+        return shows
 
     def flatten_request(self, data, key, parent_key):
         if key in data:
