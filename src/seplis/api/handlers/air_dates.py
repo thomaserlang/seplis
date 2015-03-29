@@ -13,7 +13,7 @@ from tornado import gen, web
 from tornado.concurrent import run_on_executor
 from collections import OrderedDict
 
-class Air_dates_handler(base.Handler):
+class Handler(base.Handler):
 
     @gen.coroutine
     def get(self, user_id):        
