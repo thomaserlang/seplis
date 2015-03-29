@@ -248,7 +248,7 @@ class Episode_watched(Base):
             self.session,
             show_id=self.show_id,
             user_id=self.user_id,
-            episode_watched=self,
+            episode=self,
         )
 
     def after_delete(self):
@@ -256,12 +256,7 @@ class Episode_watched(Base):
             self.session,
             show_id=self.show_id,
             user_id=self.user_id,
-            episode_watched=self.session.query(Episode_watched).filter(
-                Episode_watched.show_id == self.show_id,
-                Episode_watched.user_id == self.user_id,
-            ).order_by(
-                sa.desc(Episode_watched.updated_at)
-            ).first(),
+            episode=None,
         )
         self.session.pipe.delete(self.cache_name)
         self.inc_watched_stats(-self.times)
@@ -309,9 +304,10 @@ class Show_watched(Base):
         self.session.pipe.delete(self.cache_name_set, str(self.show_id))
 
     @classmethod
-    def set_watching(cls, session, show_id, user_id, episode_watched):
+    def set_watching(cls, session, show_id, user_id, episode):
         ''' Sets an episode as the latest watched for a show
-        by the user. If `episode` is None the entry will be deleted.
+        by the user. If `episode` is None it will look for 
+        the previous watched episode for the show.
 
         Called by `Episode_watched` after update or delete.
         '''
@@ -321,23 +317,30 @@ class Show_watched(Base):
             Show_watched.show_id == show_id,
             Show_watched.user_id == user_id,
         ).first()
-        if not episode_watched:
+        if not episode:
+            episode = session.query(Episode_watched).filter(
+                Episode_watched.show_id == show_id,
+                Episode_watched.user_id == user_id,
+            ).order_by(
+                sa.desc(Episode_watched.updated_at)
+            ).first()
+        if not episode:
             if sw:
                 session.delete(sw)
             return
         if not sw:
             sw = cls(                    
-                show_id=episode_watched.show_id,
-                episode_number=episode_watched.episode_number,
-                user_id=episode_watched.user_id,                    
-                position=episode_watched.position,
-                updated_at=episode_watched.updated_at,
+                show_id=episode.show_id,
+                episode_number=episode.episode_number,
+                user_id=episode.user_id,                    
+                position=episode.position,
+                updated_at=episode.updated_at,
             )                
             session.add(sw)
         else:
-            sw.episode_number = episode_watched.episode_number
-            sw.position = episode_watched.position
-            sw.updated_at = episode_watched.updated_at
+            sw.episode_number = episode.episode_number
+            sw.position = episode.position
+            sw.updated_at = episode.updated_at
 
     @classmethod
     def get(cls, user_id, show_id):
