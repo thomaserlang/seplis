@@ -56,12 +56,15 @@ class Handler(Handler_unauthenticated):
             self.current_user = utils.json_loads(self.current_user) \
                 if self.current_user else None
             if not self.current_user:
-                self.current_user = yield self.client.get('/users/current')
+                self.current_user = yield self.client.get('/users/current')g
+                self.current_user = self.current_user.data
                 self.set_secure_cookie(
                     'user', 
                     utils.json_dumps(self.current_user),
                     expires_days=None,
                 )
+            if self.current_user:
+                self.current_user = utils.dotdict(self.current_user)
         except API_error as e:
             if e.code != 1009: # not signed in
                 raise
