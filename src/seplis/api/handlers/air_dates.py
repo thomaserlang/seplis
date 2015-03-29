@@ -1,17 +1,15 @@
 import logging
 import json
 from seplis.api.handlers import base
-from seplis.api import constants,  exceptions
+from seplis.api import constants, exceptions
 from seplis import schemas, utils
 from seplis.api.decorators import authenticated
 from seplis.config import config
-from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
 from seplis.api import models
 from datetime import datetime, timedelta
 from tornado import gen, web
 from tornado.concurrent import run_on_executor
-from collections import OrderedDict
 
 class Handler(base.Handler):
 
@@ -21,9 +19,10 @@ class Handler(base.Handler):
         if not episodes:
             self.write_object([])
             return
-        shows = yield self.get_shows(
-            set([episode['show_id'] for episode in episodes])
-        )
+        ids = []
+        [ids.append(episode['show_id']) for episode in episodes \
+            if episode['show_id'] not in ids]
+        shows = yield self.get_shows(ids)
         d = {show['id']: show for show in shows}
         for ep in episodes:
             show = d[ep['show_id']]
