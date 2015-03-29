@@ -24,7 +24,11 @@ class Test_air_dates(Testbase):
 
         # Therefore the end result should be 3 episodes in the result.
         # Since we only ask for episodes that airs in the next 7 days.
-
+        episode_airdates = [
+            datetime.utcnow().date().isoformat(),
+            (datetime.utcnow() + timedelta(days=8)).date().isoformat(),
+            (datetime.utcnow() + timedelta(days=1)).date().isoformat(),
+        ]
         response = self.post('/1/shows', {
             'title': 'Test show 1',
             'episodes': [
@@ -33,14 +37,14 @@ class Test_air_dates(Testbase):
                     'number': 1,
                     'season': 1,
                     'episode': 1,
-                    'air_date': datetime.utcnow().date().isoformat(),
+                    'air_date': episode_airdates[0],
                 },                
                 {
                     'title': 'Episode 2',
                     'number': 2,
                     'season': 1,
                     'episode': 2,
-                    'air_date': (datetime.utcnow() + timedelta(days=8)).date().isoformat(),
+                    'air_date': episode_airdates[1],
                 },
             ],
         })
@@ -55,14 +59,14 @@ class Test_air_dates(Testbase):
                     'number': 3,
                     'season': 3,
                     'episode': 3,
-                    'air_date': datetime.utcnow().date().isoformat(),
+                    'air_date': episode_airdates[0],
                 },
                 {
                     'title': 'Episode 2',
                     'number': 4,
                     'season': 3,
                     'episode': 4,
-                    'air_date': (datetime.utcnow() + timedelta(days=1)).date().isoformat(),
+                    'air_date': episode_airdates[2],
                 },
             ],
         })
@@ -77,8 +81,8 @@ class Test_air_dates(Testbase):
         # in the user's air dates calender.
         response = self.get('/1/users/{}/air-dates'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
-        shows = utils.json_loads(response.body)
-        self.assertEqual(len(shows), 0)
+        airdates = utils.json_loads(response.body)
+        self.assertEqual(len(airdates), 0)
 
         # Let's become a fan of the shows.
         for show_id in [show_1['id'], show_2['id']]:
@@ -93,15 +97,15 @@ class Test_air_dates(Testbase):
         ))
         response = self.get('/1/users/{}/air-dates?per_page=5'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
-        shows = utils.json_loads(response.body)
-        self.assertEqual(len(shows), 2)
+        airdates = utils.json_loads(response.body)
+        self.assertEqual(len(airdates), 2, airdates)
 
-        self.assertEqual(shows[0]['id'], show_1['id'])
-        self.assertEqual(shows[0]['episodes'][0]['number'], 1)
-        self.assertEqual(shows[1]['id'], show_2['id'])
-        self.assertEqual(shows[1]['episodes'][0]['number'], 3)
-        self.assertEqual(shows[1]['id'], show_2['id'])
-        self.assertEqual(shows[1]['episodes'][1]['number'], 4)
+        self.assertEqual(airdates[episode_airdates[0]][0]['id'], show_1['id'])
+        self.assertEqual(airdates[episode_airdates[0]][0]['episodes'][0]['number'], 1)
+        self.assertEqual(airdates[episode_airdates[0]][1]['id'], show_2['id'])
+        self.assertEqual(airdates[episode_airdates[0]][1]['episodes'][0]['number'], 3)
+        self.assertEqual(airdates[episode_airdates[2]][0]['id'], show_2['id'])
+        self.assertEqual(airdates[episode_airdates[2]][0]['episodes'][0]['number'], 4)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
