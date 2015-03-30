@@ -35,7 +35,7 @@ class Show(Base):
     genres = sa.Column(JSONEncodedDict(), default=JSONEncodedDict.empty_list)
     alternative_titles = sa.Column(JSONEncodedDict(), default=JSONEncodedDict.empty_list)
     poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
-    poster_image = orm.relationship('Image', lazy='joined')
+    poster_image = orm.relationship('Image', lazy=False)
     episode_type = sa.Column(
         sa.Integer, 
         default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
