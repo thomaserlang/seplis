@@ -66,6 +66,7 @@ def new_session():
             session.add(some_model())
     '''
     s = database.session()
+    s.autoflush = False
     try:
         yield s
     except:
