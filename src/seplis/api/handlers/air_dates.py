@@ -25,7 +25,7 @@ class Handler(base.Handler):
             if episode['show_id'] not in ids]
         shows = yield self.get_shows(ids)
         shows = {show['id']: show for show in shows}
-        airdates = {}
+        airdates = OrderedDict()
         airdate_shows = OrderedDict()
         prev = None
         for ep in episodes:
@@ -46,7 +46,8 @@ class Handler(base.Handler):
             )
         if episodes:
             airdates[prev] = list(airdate_shows.values())
-        self.write_object(airdates)
+        self.write_object([{'air_date': ad, 'shows': airdates[ad]}\
+            for ad in airdates])
 
     @gen.coroutine
     def get_episodes(self, user_id):        

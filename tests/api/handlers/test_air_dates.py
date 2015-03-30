@@ -100,12 +100,14 @@ class Test_air_dates(Testbase):
         airdates = utils.json_loads(response.body)
         self.assertEqual(len(airdates), 2, airdates)
 
-        self.assertEqual(airdates[episode_airdates[0]][0]['id'], show_1['id'])
-        self.assertEqual(airdates[episode_airdates[0]][0]['episodes'][0]['number'], 1)
-        self.assertEqual(airdates[episode_airdates[0]][1]['id'], show_2['id'])
-        self.assertEqual(airdates[episode_airdates[0]][1]['episodes'][0]['number'], 3)
-        self.assertEqual(airdates[episode_airdates[2]][0]['id'], show_2['id'])
-        self.assertEqual(airdates[episode_airdates[2]][0]['episodes'][0]['number'], 4)
+        self.assertEqual(airdates[0]['air_date'], episode_airdates[0])
+        self.assertEqual(airdates[0]['shows'][0]['id'], show_1['id'])
+        self.assertEqual(airdates[0]['shows'][0]['episodes'][0]['number'], 1)
+        self.assertEqual(airdates[0]['shows'][1]['id'], show_2['id'])
+        self.assertEqual(airdates[0]['shows'][1]['episodes'][0]['number'], 3)
+        self.assertEqual(airdates[1]['air_date'], episode_airdates[2])
+        self.assertEqual(airdates[1]['shows'][0]['id'], show_2['id'])
+        self.assertEqual(airdates[1]['shows'][0]['episodes'][0]['number'], 4)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
