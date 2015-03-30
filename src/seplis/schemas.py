@@ -65,7 +65,7 @@ Episode_schema = {
     Required('number'): int,
     Optional('season'): Any(int, None),
     Optional('episode'): Any(int, None),
-    'air_date': Any(None, datetime, date_()),
+    'air_date': Any(None, date_()),
     'description': Any(None, Description_schema),
     'runtime': Any(int, None),
 }
@@ -79,8 +79,8 @@ Index_schema = Schema(
 Show_schema = {
     'title': str,
     'description': Any(None, Description_schema),
-    'premiered': Any(None, datetime, date_()),
-    'ended': Any(None, datetime, date_()),
+    'premiered': Any(None, date_()),
+    'ended': Any(None, date_()),
     Optional('episodes'): Any([Episode_schema]),
     'externals': Any(None, External_schema),
     'indices': Any(None, Index_schema),
@@ -142,6 +142,7 @@ Play_server = {
     'url': All(str, Length(min=1, max=200)),
     'secret': All(str, Length(min=1, max=200)),
 }
+
 
 Config_play_scan = Schema(
     Any(
