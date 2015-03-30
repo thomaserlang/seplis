@@ -12,20 +12,16 @@ class Handler(base.Handler):
     @authenticated
     @gen.coroutine
     def get(self):
-        episodes = yield self.client.get('/users/{}/air-dates'.format(
-            self.current_user['id'],
+        air_dates = yield self.client.get('/users/{}/air-dates'.format(
+            self.current_user.id,
+        ))
+        recently_watched = yield self.client.get('/users/{}/shows-recently-watched'.format(
+            self.current_user.id
         ), {
-            'per_page': 50,
+            'per_page': 5
         })
-        episodes = yield episodes.all_async()
-        air_dates = OrderedDict()
-        for episode in episodes:
-            air_date = air_dates.setdefault(
-                episode['episode']['air_date'],
-                []
-            )
-            air_date.append(episode)
         self.render('air_dates.html',
             title='Air dates',
             air_dates=air_dates,
+            recently_watched=recently_watched,
         )

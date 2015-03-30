@@ -1,51 +1,27 @@
-.airdates {
-    padding:10px;
+.airdate {
+    margin-top:20px;
+    margin-bottom:20px;
+}
+
+.airdate:first-child {
+    margin-top:0;
+}
+
+.airdate-shows {
+    padding-top:20px;
     border-top:1px solid #E3E3E3;
 }
 
-.airdates:last-child {
-    border-bottom:1px solid #E3E3E3;
-}
-
-
-.airdates:nth-child(2n) {
-   background-color: #FBFBFB;
+.airdate-shows > .image {
+    margin-right: 20px;
 }
 
 .airdates .airdate{
     overflow: hidden;
-    height:80px;
     width:100%;
 }
 
-.airdates .date {
-
-}
-
-.airdates .airdate .episode {
-    width:266px;
+.airdates .airdate .image {
+    width:166px;
     float:left;
-}
-.airdates .airdate .episode a {
-    color:#000;
-}
-.airdates .airdate .episode .image {
-    width:70px;
-    float:left;
-}
-
-.airdates .airdate .episode .title {
-    font-weight: bolder;
-    font-size: 14px;
-}
-
-.airdates .airdate .episode .episode-title {
-    font-size: 12px;
-}
-
-.airdates .airdate .episode .info {
-    overflow: hidden;
-    text-overflow: ellipsis; 
-    white-space: nowrap;
-    width:185px;
 }

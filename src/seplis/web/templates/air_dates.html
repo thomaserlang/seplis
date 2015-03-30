@@ -1,62 +1,50 @@
 {% extends "base.html" %}
 {% block body %}
-    {% for air_date, episodes in air_dates.items() %}
-        <div class="airdates">
-            <h3 class="date"><date title="{{ air_date }}">{{ air_date }}</date></h3>
-            <div class="airdate">
-            {% for episode in episodes %}
-                {% set show = episode['show'] %} 
-                {% set episode = episode['episode'] %}
-                <div class="episode">
+    <div class="airdates">
+        <div class="airdate" style="height:301px">
+            <h3>Recently watched</h3>
+            <div class="airdate-shows">
+                {% for show in recently_watched %}
                     <div class="image">
-                        <div class="image">
-                            <a href="/show/{{ show['id'] }}">
+                        <a href="/show/{{ show['id'] }}">
+                            <img 
+                                alt="{{ escape(show['title']) }}" 
+                                width="166px"
+                                height="244px"
                                 {% if show['poster_image'] %}
-                                    <img 
-                                        alt="No image" 
-                                        width="60px"
-                                        height="88px"
-                                        src="{{ config['api']['image_url'] }}/{{ show['poster_image']['hash'] }}@SX60.jpg"
-                                    >
-                                {% else %}
-                                    <img alt="No image" height="80px" width="60px">
+                                src="{{ config['api']['image_url'] }}/{{ show['poster_image']['hash'] }}@SX166.jpg"
                                 {% end %}
-                            </a>
-                        </div>
-                    </div>
-                    <div class="title info">
-                        <a 
-                            href="/show/{{ show['id'] }}" 
-                            title="{{ escape(show['title']) }}"
-                        >
-                            {{ escape(show['title']) }}
+                            >
                         </a>
                     </div>
-                    <div class="episode-title info">
-                        <a 
-                            href="/show/{{ show['id'] }}" 
-                            title="{{ escape(episode['title']) }}"
-                        >
-                            {{ escape(episode['title']) }}
-                        </a>
-                    </div>
-                    <div class="episode-title info">
-                        <a 
-                            href="/show/{{ show['id'] }}" 
-                            title="{{ escape(episode['title']) }}"
-                        >
-                            {{ episode['number'] }}:
-                            {% if episode['season'] %}
-                                Season {{ episode['season'] }}, 
-                                Episode {{ episode['episode'] }}
-                            {% end %}
-                        </a>
-                    </div>
-                </div>
-            {% end %}
+                {% end %}
             </div>
         </div>
-    {% end %}
+        {% for ad in air_dates %}
+            <div class="airdate">
+                <h3 class="date">
+                    <date title="{{ ad['air_date'] }}">{{ ad['air_date'] }}</date>
+                </h3>
+                <div class="airdate-shows">
+                    {% for show in ad['shows'] %}
+                        <div class="image">
+                            <a href="/show/{{ show['id'] }}">
+                                
+                                <img 
+                                    alt="{{ escape(show['title']) }}" 
+                                    width="166px"
+                                    height="244px"
+                                    {% if show['poster_image'] %}
+                                    src="{{ config['api']['image_url'] }}/{{ show['poster_image']['hash'] }}@SX166.jpg"
+                                    {% end %}
+                                >
+                            </a>
+                        </div>
+                    {% end %}
+                </div>
+            </div>
+        {% end %}
+    </div>
     {% if not air_dates %}
         <div class="alert alert-info" role="alert">
             <h1>There's nothing to watch this week!</h1>
