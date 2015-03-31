@@ -48,6 +48,7 @@ class Application(tornado.web.Application):
                 fan_button=modules.Fan_button,
                 watched_button=modules.Watched_button,
                 show_header=modules.Show_header,  
+                episode_header=modules.Episode_header,
              )
         )
         if config['debug']:

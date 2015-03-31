@@ -281,7 +281,7 @@
                     <input class="player-volume-slider" type="range" min="0" max="1" step="0.01">
                 </div>
                 <div class="player-control-title">
-                    {{ escape(show['title']) }}: {% include episode_header.html %}
+                    {{ escape(show['title']) }}: {% module episode_header(episode) %}
                 </div>
                 <div class="player-control-button player-control-button-right player-fullscreen-windowed-button player-fullscreen-button">
                     <i class="glyphicon glyphicon-fullscreen"></i>

@@ -31,3 +31,11 @@ class Show_header(web.UIModule):
             'show/show_header.html',
             show=show,
         )
+
+class Episode_header(web.UIModule):
+
+    def render(self, episode):
+        return self.render_string(
+            'episode_header.html',
+            episode=episode,
+        )
