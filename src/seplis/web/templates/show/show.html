@@ -46,7 +46,6 @@
                     </div>
                 {% end %}
 
-                {% include show_next_episode.html %}
             </div>
             <div class="episode-sidebar">
                 {% include sidebar.html %}
@@ -57,15 +56,6 @@
             {% include show_seasons.html %}
         {% end %}
     </show>
-
-    <script>
-        $(function(){
-            get_show_play_next({{ show['id'] }});
-            $(document).on("hidden.bs.modal", '#seplis-modal', function (e) {
-                get_show_play_next({{ show['id'] }});
-            });
-        });
-    </script>
 {% end %}
 
 {% block body_outside %}
