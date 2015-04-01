@@ -34,8 +34,9 @@ class Show_header(web.UIModule):
 
 class Episode_header(web.UIModule):
 
-    def render(self, episode):
+    def render(self, episode, title_visible=True):
         return self.render_string(
             'episode_header.html',
             episode=episode,
+            title_visible=title_visible,
         )

@@ -1,6 +1,8 @@
 {% if 'season' in episode and episode['season'] %}
-    S{{ episode['season'] }} &#183; E{{ episode['episode'] }} ({{ episode['number'] }}):
+    S{{ episode['season'] }} &#183; E{{ episode['episode'] }} ({{ episode['number'] }}){% if title_visible %}:{% end %}
 {% else %}
-    {{ episode['number'] }}:
+    Number {{ episode['number'] }}{% if title_visible %}:{% end %}
 {% end %}
-{{ escape(episode['title']) if episode['title'] else 'TBA' }}
+{% if title_visible %}
+    {{ escape(episode['title']) if episode['title'] else 'TBA' }}
+{% end %}

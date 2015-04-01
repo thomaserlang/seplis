@@ -4,15 +4,11 @@
             <p class="next-episode">Next episode</p>
         {% end %}
         <p>
-            {{ escape(episode['title']) if episode['title'] else 'Unknown title' }}
+            {{ escape(episode['title']) if episode['title'] else 'TBA' }}
         </p>
         <p>
-        {% if 'season' in episode and episode['season'] %}
-            S{{ episode['season'] }} &#183; E{{ episode['episode'] }} ({{ episode['number'] }})
-        {% else %}
-            {{ episode['number'] }}
-        {% end %}
+        {% module episode_header(episode, title_visible=False) %}
         </p>
-        <p>{{ episode['air_date'] if episode['air_date'] else 'Unknown air date' }}</p>
+        <p>{{ episode['air_date'] if episode['air_date'] else 'No air date' }}</p>
     </div>
 {% end %}
