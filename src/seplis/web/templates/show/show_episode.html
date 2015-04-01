@@ -2,11 +2,13 @@
     <td style="width:15px;">
         <font color="grey">{{ '{0:0>2}'.format(episode['number']) }}</font>
     </td>
-    <td style="width:15px;">
-        {{ '{0:0>2}'.format(episode['episode']) }}
-    </td>
+    {% if episode.get('episode') %}
+        <td style="width:15px;">
+            {{ '{0:0>2}'.format(episode['episode']) }}
+        </td>
+    {% end %}
     <td>
-        {{ escape(episode['title']) if episode['title'] else '<i>No title</i>' }}
+        {{ escape(episode['title']) if episode['title'] else 'TBA' }}
     </td>
     <td>        
         <date class="airdate" title="{{ escape(episode['air_date']) }}">
