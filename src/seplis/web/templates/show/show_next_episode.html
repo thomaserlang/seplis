@@ -1,9 +1,0 @@
-{% if next_episode %}
-    <div class="next-episode">
-        Next episode
-        <date class="show-date" title="{{ escape(next_episode['air_date']) }}">
-            {{ escape(next_episode['air_date']) }}
-        </date>:
-        {% module episode_header(next_episode) %}
-    </div>
-{% end %}
