@@ -50,9 +50,13 @@ class Handler(base.Handler):
     def get_season_episodes(self, show, season=None):
         selected_season = None
         _ss = int(self.get_argument('season', 0)) or season
+        req = {}
+        if self.current_user:
+            req['append'] = 'user_watched'
         if not show.get('seasons'):
             episodes = yield self.client.get(
                 '/shows/{}/episodes'.format(show['id']),
+                req,
             )
             return (None, episodes)
         for season in show['seasons']:
@@ -60,15 +64,13 @@ class Handler(base.Handler):
             if season['season'] == _ss:
                 break
         selected_season = season['season']
-        req = {
+        req.update({
             'q': 'number:[{} TO {}]'.format(
                 season['from'],
                 season['to'],
             ),
             'sort': 'number:asc',
-        }
-        if self.current_user:
-            req['append'] = 'user_watched'
+        })
         episodes = yield self.client.get(
             '/shows/{}/episodes'.format(show['id']),
             req
