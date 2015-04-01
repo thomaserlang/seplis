@@ -4,7 +4,12 @@
         {% module show_header(show) %}
         <div class="show-info">
             <div class="image">
-                <img alt="{{ escape(show['title']) }}" src="{{ image_url(show['poster_image'], '@SX300.jpg') }}">
+                <img 
+                    alt="{{ escape(show['title']) }} (image missing)" 
+                    src="{{ image_url(show['poster_image'], '@SX300.jpg') }}"
+                    width="300px"
+                    height="441px"
+                >
                 <div class="play-next-button">
                     <a 
                         href="#" 
