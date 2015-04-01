@@ -50,7 +50,7 @@ class Handler(base.Handler):
     def get_season_episodes(self, show, season=None):
         selected_season = None
         _ss = int(self.get_argument('season', 0)) or season
-        if 'seasons' in show and show['seasons']:
+        if show.get('seasons'):
             for season in show['seasons']:
                 season = season
                 if season['season'] == _ss:
