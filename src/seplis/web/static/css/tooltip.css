@@ -1,0 +1,49 @@
+.show-tooltip {
+    background-color:#414141;
+    width:300px;
+    max-width: 300px;
+    min-height:244px;
+    color:#fff;
+    padding:0;
+    border-color:#414141;
+}
+
+.show-tooltip > .qtip-content {
+    padding:0;
+}
+
+a.qtip-close {
+    top:10px !important;
+    right:10px !important;
+    color: #fff;
+    text-decoration: none;
+}
+
+.show-tooltip .header {
+    width:100%;
+    background-color: #428bca;
+    padding:10px;
+    overflow: hidden;
+    padding-right:40px;
+}
+
+.show-tooltip .body {
+    padding:10px;
+    font-size:14px;
+}
+
+.show-tooltip h3 {
+    margin:0;
+    font-size:16px;
+    font-weight:bolder;
+}
+
+.show-tooltip h3 > a {
+    color:#fff;
+    float:left;
+    width:100%;
+}
+
+.show-tooltip .qtip-close {
+    font-size:20px;
+}

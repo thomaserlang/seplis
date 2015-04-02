@@ -1,5 +1,42 @@
 {% extends "base.html" %}
+{% block head %}
+
+{% end %}
 {% block body %}
+    <link rel="stylesheet" href="http://cdn.jsdelivr.net/qtip2/2.2.1/jquery.qtip.min.css">
+    <script src="http://cdn.jsdelivr.net/qtip2/2.2.1/jquery.qtip.min.js"></script>
+    <script>
+        $(function(){
+            $('.airdate-show-image').qtip({
+                content: {
+                    text: function(event, api) {
+                        return $(this).find('.airdate-show-tooltip').html();
+                    },
+                    button: true,
+                },
+                hide: { 
+                    delay: 250, 
+                    fixed:true,
+                },
+                position: {
+                    adjust: {
+                        method: 'flip shift'
+                    },
+                    viewport: $(window),
+                    at: 'center right',
+                    my: 'left center',
+                },
+                style: { 
+                    classes: 'show-tooltip',
+                    def: false,
+                    tip: { 
+                        width: 15, 
+                        offset: -50,
+                    },
+                },
+            });
+        });
+    </script>
     <div class="airdates">
         <div class="airdate" style="height:301px">
             <h3>Recently watched</h3>
@@ -11,9 +48,7 @@
                                 alt="{{ escape(show['title']) }}" 
                                 width="166px"
                                 height="244px"
-                                {% if show['poster_image'] %}
-                                src="{{ config['api']['image_url'] }}/{{ show['poster_image']['hash'] }}@SX166.jpg"
-                                {% end %}
+                                src="{{ image_url(show['poster_image'], '@SX166.jpg') }}"
                             >
                         </a>
                     </div>
@@ -27,18 +62,48 @@
                 </h3>
                 <div class="airdate-shows">
                     {% for show in ad['shows'] %}
-                        <div class="image">
-                            <a href="/show/{{ show['id'] }}">
-                                
+                        <div class="airdate-show-image image">
+                            <a href="/show/{{ show['id'] }}">              
                                 <img 
                                     alt="{{ escape(show['title']) }}" 
                                     width="166px"
                                     height="244px"
-                                    {% if show['poster_image'] %}
-                                    src="{{ config['api']['image_url'] }}/{{ show['poster_image']['hash'] }}@SX166.jpg"
-                                    {% end %}
+                                    src="{{ image_url(show['poster_image'], '@SX166.jpg') }}"
                                 >
                             </a>
+                            <div class="airdate-show-tooltip hidden">
+                                <div class="header">
+                                    <h3>
+                                        <a href="/show/{{ show['id'] }}">   
+                                            {{ escape(show['title']) }}
+                                            a a a a a a a a a a a a a  a
+                                            a a a a a a a a a a a a a  a
+                                            a a a a a a a a a a a a a  a
+                                        </a>
+                                    </h3>
+                                </div>
+                                <div class="body">
+                                    <p><strong>
+                                    Episodes airing {{ escape(ad['air_date']) }}
+                                    </strong></p>
+                                    {% for episode in show['episodes'] %}
+                                        <div style="margin-left:10px;">
+                                        <p>
+                                            <a 
+                                                href="/show/{{ show['id'] }}
+                                                {% if episode.get('season') %}
+                                                    ?season={{episode['season']}}
+                                                {% end %}
+                                                #episode:{{episode['number']}}
+                                                "
+                                            > 
+                                            {% module episode_header(episode) %}
+                                            </a>
+                                        </p>
+                                        </div>
+                                    {% end %}
+                                </div>
+                            </div>
                         </div>
                     {% end %}
                 </div>
