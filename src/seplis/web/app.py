@@ -58,11 +58,11 @@ class Application(tornado.web.Application):
                 skip=(
                     'seplis.min.js', 
                     'vendor.min.js',
-                    'jquery-2.1.1.min.js',
+                    'jquery-2.1.3.js',
                     'api.js',
                 ),
             ), reverse=True)
-            settings['js_files'].insert(0, '/static/js/vendor/jquery-2.1.1.min.js')
+            settings['js_files'].insert(0, '/static/js/vendor/jquery-2.1.3.js')
             settings['js_files'].insert(1, '/static/js/api.js')
             settings['css_files'] = sorted(get_static_files(
                 static_path,
