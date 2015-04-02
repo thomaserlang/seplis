@@ -32,6 +32,10 @@ a.qtip-close {
     font-size:14px;
 }
 
+.show-tooltip .body a {
+    color:#BBBBBB;
+}
+
 .show-tooltip h3 {
     margin:0;
     font-size:16px;
