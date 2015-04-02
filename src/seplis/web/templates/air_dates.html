@@ -15,8 +15,13 @@
                     button: true,
                 },
                 hide: { 
-                    delay: 250, 
-                    fixed:true,
+                    delay: isMobile() ? 0 : 250, 
+                    fixed: true,
+                    effect: false,
+                },
+                show: {
+                    effect: false,
+                    delay: isMobile() ? 0 : 500,
                 },
                 position: {
                     adjust: {
