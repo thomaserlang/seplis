@@ -29,9 +29,6 @@
             var r = document.cookie.match("\\b" + name + "=([^;]*)\\b");
             return r ? r[1] : undefined;
         });
-        var isMobile = (function() {
-            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        });
 
         var session = guid();
         var device = getDevice();

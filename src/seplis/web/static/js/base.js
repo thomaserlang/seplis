@@ -2,6 +2,10 @@ String.prototype.endsWith = function(suffix) {
     return this.indexOf(suffix, this.length - suffix.length) !== -1;
 };
 
+var isMobile = (function() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+});
+
 $(function(){
     $('.autocomplete').autocomplete({
         serviceUrl: '/api/suggest',   
@@ -23,7 +27,7 @@ $(function(){
         formatResult: function (suggestion, currentValue) {
             return _.template(
                 '<div class="show-suggest">'+
-                '<span class="image"><img src="<% if (poster_image && poster_image.url) { %><%= poster_image.url %>@SX60<% } %>" width="60"></span>'+
+                '<span class="image"><img src="<% if (poster_image && poster_image.url) { %><%= poster_image.url %>@SX60<% } %>" width="60px" height="88px"></span>'+
                 '<span class="text"><strong><%- title %></strong> '+
                     '<% if (premiered) { %>'+
                         '(<%- premiered.substring(0, 4) %>)'+
