@@ -301,7 +301,7 @@ class Show_watched(Base):
 
     def after_delete(self):
         self.session.pipe.delete(self.cache_name)
-        self.session.pipe.delete(self.cache_name_set, str(self.show_id))
+        self.session.pipe.zrem(self.cache_name_set, str(self.show_id))
 
     @classmethod
     def set_watched(cls, session, show_id, user_id, episode):

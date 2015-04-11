@@ -57,5 +57,17 @@ class test_shows_recently_watched(Testbase):
             self.assertEqual(shows[0]['user_watching']['episode']['number'], show_id)
             self.assertEqual(shows[0]['user_watching']['episode']['air_date'], air_date)
 
+        # test that deleting all watched episodes for a show does not
+        # reset the hole recently watched list.
+        response = self.delete('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+            self.current_user.id,
+            show_ids[0],
+            show_ids[0],
+        ))
+        response = self.get('/1/users/{}/shows-recently-watched'.format(self.current_user.id))
+        self.assertEqual(response.code, 200)
+        shows = utils.json_loads(response.body)
+        self.assertEqual(len(shows), 2, shows)
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
