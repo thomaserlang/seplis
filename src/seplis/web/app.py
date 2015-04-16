@@ -49,7 +49,7 @@ class Application(tornado.web.Application):
                 watched_button=modules.Watched_button,
                 show_header=modules.Show_header,  
                 episode_header=modules.Episode_header,
-             )
+            )
         )
         if config['debug']:
             settings['js_files'] = sorted(get_static_files(
