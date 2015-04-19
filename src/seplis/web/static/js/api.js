@@ -11,15 +11,17 @@ Api_error.prototype.toString(function(){
 });
 
 function Api() {
-    this.default_error_callback = null;
-    this.loader_gif = null;
+    this.defaultErrorCallback = null;
+    this.defaultDoneCallback = null;
+    this.defaultAlwaysCallback = null;
+    this.loaderGif = null;
 }
 
 Api.prototype._method = function(url, method, data, callbacks){
     var _callbacks = {
-        done: null,
-        error: this.default_error_callback,
-        always: null
+        done: this.defaultDoneCallback,
+        error: this.defaultErrorCallback,
+        always: this.defaultAlwaysCallback,
     }
     if (typeof(callbacks) !== 'undefined') {
         $.extend(_callbacks, callbacks);
@@ -27,8 +29,8 @@ Api.prototype._method = function(url, method, data, callbacks){
     headers = {
         'X-XSRFToken': getCookie('_xsrf')
     }
-    if (this.loader_gif !== null) {
-        $('.api_request_loader').html('<img src="'+this.loader_gif+'" />');
+    if (this.loaderGif !== null) {
+        $('.api_request_loader').html('<img src="'+this.loaderGif+'" />');
     }
     $.ajax({
         url: url,
@@ -61,7 +63,7 @@ Api.prototype._method = function(url, method, data, callbacks){
             _callbacks.done(data);
         }
     }).always(function(){
-        if (this.loader_gif !== null) {
+        if (this.loaderGif !== null) {
             $('.api_request_loader').empty();
         }
         if (_callbacks.always !== null) {
