@@ -159,7 +159,7 @@ class Test_episode_watched(Testbase):
         )
 
         # mark a second episode as watched.
-        # run it twitch to check for duplication error.
+        # run it twice to check for duplication error.
         # it should increment the watched by 2 in the end.
         for i in [1,2]:
             response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
