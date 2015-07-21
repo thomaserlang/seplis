@@ -416,7 +416,7 @@ class Show_watched(Base):
 
     @classmethod
     def get(cls, user_id, show_id):
-        '''Retrives the users watch status from the cache for each 
+        '''Retrieves the users watch status from the cache for each 
         show id in `show_id`.
 
         :param user_id: int
