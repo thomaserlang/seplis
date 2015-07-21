@@ -20,7 +20,7 @@ for old in oldids:
         if old['imdb'] not in lookup:
             externals = {
                 'imdb': str(old['imdb']),
-                'seplis-v2': str(old['seplis']),
+                'seplis-v2': str(old['sid']),
             }
             indices = {}
             if old['tvrage']:
@@ -38,7 +38,7 @@ for old in oldids:
                 client.patch('/shows/externals/imdb/{}'.format(old['imdb']),
                     {
                         'externals': {
-                            'seplis-v2': str(old['seplis']),
+                            'seplis-v2': str(old['sid']),
                         }
                     }
                 )
