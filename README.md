@@ -56,7 +56,7 @@ Create a database user and give it access to the schema:
 ```
 CREATE USER 'seplis'@'localhost' IDENTIFIED BY 'mypass';
 
-GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER ON seplis.* TO 'seplis'@'localhost';
+GRANT ALL ON seplis.* TO 'seplis'@'localhost';
 ```
 
 Create a user for seplis to run as:
