@@ -233,6 +233,26 @@ class Watched_interval_handler(base.Handler):
             )
             session.commit()
 
+class Next_to_watch_handler(base.Handler):
+
+    def get(self, user_id, show_id):
+        episode_number = None
+        try:
+            w = models.Show_watched.get(
+                user_id=user_id,
+                show_id=show_id,
+            )
+            if w:
+                return
+            r = models.Episode_watched.recently(
+                user_id=user_id,
+                show_id=show_id,
+                per_page=1,
+            )
+        finally:
+            pass
+
+
 class Play_servers_handler(base.Handler):
 
     @authenticated(0)

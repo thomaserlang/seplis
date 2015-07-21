@@ -142,9 +142,8 @@ class Test_episode_watched(Testbase):
 
         # check that the list of latest watched shows works.
         show_id_2 = self.new_show()
-        response = self.patch(
-            '/1/shows/{}'.format(show_id_2), 
-            json_dumps({
+        response = self.patch('/1/shows/{}'.format(show_id_2), 
+            {
                 'episodes': [
                     {
                         'air_date': date(2003, 9, 24), 
@@ -155,7 +154,7 @@ class Test_episode_watched(Testbase):
                         'runtime': 45,
                     },
                 ]
-            }),
+            },
         )
 
         # mark a second episode as watched.
@@ -189,6 +188,58 @@ class Test_episode_watched(Testbase):
         # After removing episode 1 as watched there should
         # only be stats left from episode 2.        
         self._test_watched_count(2, 45*2)
+
+    def test_watching(self):
+        self.login(constants.LEVEL_EDIT_SHOW)
+        response = self.post('/1/shows', {
+            'episodes': [
+                {
+                    'number': 1,
+                },                
+                {
+                    'number': 2,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 201, response.body)
+        show = utils.json_loads(response.body)
+
+        show = utils.json_loads(self.get('/1/shows/{}'.format(show['id']), {
+            'append': 'user_watching',
+        }).body)
+        self.assertEqual(show['user_watching'], None)
+
+        # mark the first episode as watching
+        response = self.put('/1/users/{}/watched/shows/{}/episodes/1'.format(
+            self.current_user.id,
+            show['id'],
+        ), {
+            'times': 0,
+            'position': 1,
+        })
+        self.assertEqual(response.code, 200)
+   
+        show = utils.json_loads(self.get('/1/shows/{}'.format(show['id']), {
+            'append': 'user_watching',
+        }).body)
+        self.assertEqual(
+            show['user_watching']['episode']['number'], 
+            1
+        )
+        # mark the first episode as watched
+        response = self.put('/1/users/{}/watched/shows/{}/episodes/1'.format(
+            self.current_user.id,
+            show['id'],
+        ), {
+            'times': 1,
+        })
+        show = utils.json_loads(self.get('/1/shows/{}'.format(show['id']), {
+            'append': 'user_watching',
+        }).body)
+        self.assertEqual(
+            show['user_watching'], 
+            None
+        )
 
 
 class Test_episode_append_fields(Testbase):
