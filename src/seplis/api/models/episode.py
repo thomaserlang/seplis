@@ -79,8 +79,7 @@ class Episode(Base):
         :param user_id: int
         :param times: int
         :param position: int
-        '''   
-        session = orm.Session.object_session(self)        
+        '''         
         ew = session.query(
             Episode_watched,
         ).filter(
@@ -97,7 +96,7 @@ class Episode(Base):
                 position=position,
                 times=times,
             )
-            session.add(ew)
+            self.session.add(ew)
         else:
             times = ew.times + times            
             times = times if times > 0 else 0
@@ -129,11 +128,10 @@ class Episode_watched(Base):
         '''Sends the user's episode watched info to redis.
         This method is automatically called after update or insert.
         ''' 
-        session = orm.Session.object_session(self)
         name = self.cache_name
-        session.pipe.hset(name, 'times', self.times)
-        session.pipe.hset(name, 'position', self.position)
-        session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))
+        self.session.pipe.hset(name, 'times', self.times)
+        self.session.pipe.hset(name, 'position', self.position)
+        self.session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))
         t = get_history(self, 'times')
         if t.added or t.deleted:
             a = t.added[0] if t.added else 0
