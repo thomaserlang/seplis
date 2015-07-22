@@ -78,7 +78,7 @@ class Episode(Base):
         :param times: int
         :param position: int
         '''         
-        ew = session.query(
+        ew = self.session.query(
             Episode_watched,
         ).filter(
             Episode_watched.show_id == self.show_id,
