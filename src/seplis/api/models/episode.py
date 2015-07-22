@@ -45,8 +45,7 @@ class Episode(Base):
 
         This method is automatically called after update or insert.
         ''' 
-        session = orm.Session.object_session(self)
-        session.es_bulk.append({
+        self.session.es_bulk.append({
             '_index': 'episodes',
             '_type': 'episode',
             '_id': '{}-{}'.format(self.show_id, self.number),
@@ -61,8 +60,7 @@ class Episode(Base):
 
         :param user_id: int
         '''
-        session = orm.Session.object_session(self)
-        w = session.query(
+        w = self.session.query(
             Episode_watched,
         ).filter(
             Episode_watched.show_id == self.show_id,
@@ -71,7 +69,7 @@ class Episode(Base):
         ).first()
         if not w:
             raise exceptions.User_episode_not_watched()
-        session.delete(w)
+        self.session.delete(w)
 
     def watched(self, user_id, times=1, position=0):
         '''Marks the episode as watched for the user.
@@ -186,8 +184,7 @@ class Episode_watched(Base):
         :param times: int
         :returns: int
         '''
-        session = orm.Session.object_session(self)
-        t = session.pipe.hincrby(
+        t = self.session.pipe.hincrby(
             name='users:{}:stats'.format(self.user_id),
             key='episodes_watched',
             amount=times,
