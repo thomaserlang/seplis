@@ -88,7 +88,6 @@
             $('.player-volume-slider').val(player.volume);
             video.trigger('volumechange');
             video.on('timeupdate', function(){
-                console.log('timeupdate...');
                 $('.player-loading').hide();
                 var time = offsetDuration + parseInt(this.currentTime);
                 if (((time % 10) == 0) && (lastPosStored != time) && 

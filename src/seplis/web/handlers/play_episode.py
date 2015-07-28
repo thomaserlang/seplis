@@ -61,12 +61,19 @@ class API_watching_handler(base.API_handler):
         number = self.get_argument('episode_number')
         position = int(self.get_argument('position'), 0)
         times = int(self.get_argument('times', 0))
-        yield self.client.put('/users/{}/watched/shows/{}/episodes/{}'.format(
+        if times > 0:
+            url = '/users/{}/watched/shows/{}/episodes/{}'
+            data = { 
+                'times': times,
+            }
+        else:
+            url = '/users/{}/watching/shows/{}/episodes/{}'
+            data = {
+                'position': position,
+            }
+        yield self.client.put(url.format(
             self.current_user['id'],
             show_id,
             number,
-        ), {
-            'times': times,
-            'position': position,
-        })
+        ), data)
         self.write('{}')

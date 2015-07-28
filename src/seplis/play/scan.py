@@ -90,7 +90,7 @@ class Play_scan(object):
             path,
         ))
         if not os.path.exists(path):
-            raise Exception('Path "{}" does not exists'.format(path))
+            raise Exception('Path "{}" does not exist'.format(path))
         ffprobe = os.path.join(config['play']['ffmpeg_folder'], 'ffprobe')
         if not os.path.exists(ffprobe):
             raise Exception('ffprobe not found in "{}"'.format(

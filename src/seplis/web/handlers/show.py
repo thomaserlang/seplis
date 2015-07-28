@@ -219,7 +219,6 @@ class API_watched_handler(base.API_handler):
             times = 1 if do == 'incr' else -1
             data = {
                 'times': times,
-                'position': 0,
             }
             if not from_:
                 yield self.client.put('/users/{}/watched/shows/{}/episodes/{}'.format(

@@ -60,7 +60,6 @@ class test_shows_recently_watched(Testbase):
 
         # test that deleting all watched episodes for a show does not
         # reset the hole recently watched list.
-        logging.error('deleting {}'.format(show_ids[0]))
         response = self.delete('/1/users/{}/watched/shows/{}/episodes/{}'.format(
             self.current_user.id,
             show_ids[0],
