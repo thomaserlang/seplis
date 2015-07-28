@@ -281,6 +281,17 @@ class JSONEncodedDict(sa.TypeDecorator):
     def empty_dict(cls):
         return {}
 
+class YesNoBoolean(sa.TypeDecorator):
+    true_str = 'Y'
+    false_str = 'N'
+    impl = sa.Enum(true_str, false_str)
+
+    def process_bind_param(self, value, dialect):
+        return self.true_str if value else self.false_str
+  
+    def process_result_value(self, value, dialect):  
+        return True if value == self.true_str else False
+
 class dotdict(dict):
     
     def __getattr__(self, attr):

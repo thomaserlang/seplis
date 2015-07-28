@@ -12,7 +12,7 @@ class Handler(base.Handler):
     def get(self, user_id):
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
-        pagination = models.Show_watched.recently(
+        pagination = models.Episode_watched.show_recently(
             user_id=int(user_id),
             per_page=per_page,
             page=page,

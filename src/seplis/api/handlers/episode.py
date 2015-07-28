@@ -1,13 +1,12 @@
 import logging
 import json
 from seplis.api.handlers import base
-from seplis.api import constants,  exceptions
+from seplis.api import constants, exceptions, models
 from seplis import schemas, utils
 from seplis.api.decorators import authenticated, auto_session, auto_pipe, new_session
 from seplis.config import config
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
-from seplis.api import models
 from datetime import datetime, timedelta
 from tornado import gen, web
 from tornado.concurrent import run_on_executor
@@ -20,7 +19,9 @@ class Handler(base.Handler):
     )
     @gen.coroutine
     def get(self, show_id, number=None):
-        self.append_fields = self.get_append_fields(self.allowed_append_fields)
+        self.append_fields = self.get_append_fields(
+            self.allowed_append_fields
+        )
         if number:
             yield self.get_episode(show_id, number)
         else:
@@ -100,158 +101,6 @@ class Handler(base.Handler):
             ),
         )
         self.write_object(p)
-
-class Watched_handler(base.Handler):
-
-    @authenticated(0)
-    @gen.coroutine
-    def put(self, user_id, show_id, episode_number):
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        yield self._put(user_id, show_id, episode_number)
-
-    @run_on_executor
-    def _put(self, user_id, show_id, episode_number):
-        self.validate(schemas.Episode_watched)
-        with new_session() as session:
-            episode = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number == episode_number,
-            ).first()
-            if not episode:
-                raise exceptions.Episode_unknown()
-            times = int(self.request.body.get('times', 1))
-            episode.watched(
-                user_id=user_id,
-                times=times,
-                position=int(self.request.body.get('position', 0)),
-            )
-            if times > 0:
-                session.flush()
-                models.Episode_watched.update_minutes_spent(
-                    user_id=user_id,
-                    session=session,
-                    pipe=session.pipe,
-                )
-            session.commit()
-
-
-    @authenticated(0)
-    @gen.coroutine
-    def delete(self, user_id, show_id, episode_number):
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        yield self._delete(user_id, show_id, episode_number)
-
-    @run_on_executor
-    def _delete(self, user_id, show_id, episode_number):
-        with new_session() as session:
-            episode = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number == episode_number,
-            ).first()
-            if not episode:
-                raise exceptions.Episode_unknown()
-            episode.unwatch(user_id)
-            session.flush()
-            models.Episode_watched.update_minutes_spent(
-                user_id=user_id,
-                session=session,
-                pipe=session.pipe,
-            )
-            session.commit()
-
-class Watched_interval_handler(base.Handler):
-
-    @authenticated(0)
-    @gen.coroutine
-    def put(self, user_id, show_id, from_, to):
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        yield self._put(
-            user_id, 
-            show_id, 
-            int(from_), 
-            int(to),
-        )
-
-    @run_on_executor
-    @auto_session
-    @auto_pipe
-    def _put(self, user_id, show_id, from_, to, 
-        session=None, pipe=None):
-        self.validate(schemas.Episode_watched)
-        times = int(self.request.body.get('times', 1))
-
-        with new_session() as session:
-            episodes = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number >= from_,
-                models.Episode.number <= to,
-            ).all()
-            for episode in episodes:
-                episode.watched(user_id, times=times)     
-            if times > 0:
-                session.flush()
-                models.Episode_watched.update_minutes_spent(
-                    user_id=user_id,
-                    session=session,
-                    pipe=session.pipe,
-                )
-            session.commit()
-
-    @authenticated(0)
-    @gen.coroutine
-    def delete(self, user_id, show_id, from_, to):
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        yield self._delete(
-            user_id, 
-            show_id, 
-            int(from_), 
-            int(to),
-        )
-
-    @run_on_executor
-    @auto_session
-    @auto_pipe   
-    def _delete(self, user_id, show_id, from_, to,
-        session=None, pipe=None):
-        with new_session() as session:
-            episodes = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number >= from_,
-                models.Episode.number <= to,
-            ).all()
-            for episode in episodes:
-                episode.unwatch(user_id)    
-            session.flush()    
-            models.Episode_watched.update_minutes_spent(
-                user_id=user_id,
-                session=session,
-                pipe=session.pipe,
-            )
-            session.commit()
-
-class Next_to_watch_handler(base.Handler):
-
-    def get(self, user_id, show_id):
-        episode_number = None
-        try:
-            w = models.Show_watched.get(
-                user_id=user_id,
-                show_id=show_id,
-            )
-            if w:
-                return
-            r = models.Episode_watched.recently(
-                user_id=user_id,
-                show_id=show_id,
-                per_page=1,
-            )
-        finally:
-            pass
-
 
 class Play_servers_handler(base.Handler):
 

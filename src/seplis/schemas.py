@@ -124,11 +124,6 @@ User_tag_relation_schema = Schema({
     'name': All(str, Length(min=1, max=50)),
 }, required=True)
 
-Episode_watched = Schema({
-    Optional('times'): int,
-    Optional('position'): int,
-})
-
 Image = {
     'external_name': All(str, Length(min=1, max=45)),
     'external_id': All(str, Length(min=1, max=45)),

@@ -184,9 +184,12 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             return
         return utils.dotdict(user)
 
-    def validate(self, schema, *arg, **args):
+    def validate(self, schema=None, *arg, **args):
+        if schema is None:
+            if hasattr(self, '_schema'):
+                schema = getattr(self, '_schema')
         try:
-            if not isinstance(schema, schemas.Schema):            
+            if not isinstance(schema, schemas.Schema):  
                 schema = schemas.Schema(schema, *arg, **args)    
             return schema(self.request.body)            
         except MultipleInvalid as e:

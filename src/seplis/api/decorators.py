@@ -17,6 +17,10 @@ def authenticated(level):
                     self.current_user.level, 
                     level
                 )
+            if self.request.method in ('PUT', 'POST', 'DELETE'):
+                if 'user_id' in kwargs:
+                    if int(kwargs['user_id']) != self.current_user.id:
+                        self.check_edit_another_user_right()
             return method(self, *args, **kwargs)
         return wrapper
     return decorator

@@ -233,7 +233,7 @@ class Handler(base.Handler):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        watching = models.Show_watched.get(
+        watching = models.Episode_watched.show_get(
             user_id=user_id,
             show_id=show_ids,
         )

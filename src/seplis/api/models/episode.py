@@ -117,26 +117,42 @@ class Episode_watched(Base):
     times = sa.Column(sa.Integer, default=0)
     position = sa.Column(sa.Integer)
     updated_at = sa.Column(sa.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed = sa.Column(utils.YesNoBoolean(), default=False)
 
     _cache_name = 'users:{}:watched:shows:{}:numbers:{}'
-    _cache_name_history = 'users:{}:watched:history'
-    _cache_name_show_episode_history = 'users:{}:watched:shows:{}:history'
+    _cache_name_episodes = 'users:{}:watched:episodes'
+
+    _cache_name_show = 'users:{}:watched:shows:{}'
+    _cache_name_show_episodes_watched = 'users:{}:watched:shows:{}:numbers'
+    _cache_name_shows_watched = 'users:{}:watched:shows'
+
 
     def cache(self):
         '''Sends the user's episode watched info to redis.
         This method is automatically called after update or insert.
         ''' 
-        name = self.cache_name
-        self.session.pipe.hset(name, 'times', self.times)
-        self.session.pipe.hset(name, 'position', self.position)
-        self.session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))
+        names = (
+            self.cache_name,
+            self.cache_name_show(
+                user_id=self.user_id,
+                show_id=self.show_id,
+            ),
+        )
+        for name in names:
+            self.session.pipe.hset(name, 'number', self.episode_number)
+            self.session.pipe.hset(name, 'times', self.times)
+            self.session.pipe.hset(name, 'position', self.position)
+            self.session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))    
+            self.session.pipe.hset(name, 'completed', self.completed)
+
         t = get_history(self, 'times')
         if t.added or t.deleted:
             a = t.added[0] if t.added else 0
             d = t.deleted[0] if t.deleted else 0
             self.inc_watched_stats(a-d)
+
         self.session.pipe.zadd(
-            self.cache_name_history, 
+            self.cache_name_episodes, 
             self.updated_at.timestamp(), 
             '{}-{}'.format(
                 self.show_id,
@@ -144,11 +160,20 @@ class Episode_watched(Base):
             )
         )        
         self.session.pipe.zadd(
-            self.cache_name_show_episode_history, 
+            self.cache_name_show_episodes_watched(
+                user_id=self.user_id,
+                show_id=self.show_id,
+            ), 
             self.updated_at.timestamp(), 
             str(self.episode_number),
+        )        
+        self.session.pipe.zadd(
+            self.cache_name_shows_watched(
+                user_id=self.user_id,
+            ), 
+            self.updated_at.timestamp(), 
+            str(self.show_id),
         )
-
 
     @property
     def cache_name(self):
@@ -162,18 +187,30 @@ class Episode_watched(Base):
         )
 
     @property
-    def cache_name_history(self):
-        return self._cache_name_history.format(
+    def cache_name_episodes(self):
+        return self._cache_name_episodes.format(
             self.user_id,
         )
 
-    @property
-    def cache_name_show_episode_history(self):
-        return self._cache_name_show_episode_history.format(
-            self.user_id,
-            self.show_id,
+    @classmethod
+    def cache_name_show_episodes_watched(self, user_id, show_id):
+        return self._cache_name_show_episodes_watched.format(
+            user_id,
+            show_id,
+        )
+    @classmethod
+    def cache_name_shows_watched(self, user_id):
+        return self._cache_name_shows_watched.format(
+            user_id,
+        )
+    @classmethod
+    def cache_name_show(self, user_id, show_id):
+        return self._cache_name_show.format(
+            user_id,
+            show_id,
         )
 
+    
     def inc_watched_stats(self, times):
         '''Increments the users total episode watched count 
         with `times`. To decrement use negative numbers.
@@ -232,7 +269,8 @@ class Episode_watched(Base):
 
     @classmethod
     def get(cls, user_id, show_id, episode_number):
-        '''Retrives episodes watched by the user for a show
+        '''Retrieves watched status for episodes specified by
+        the `show_id` and one or more `episode_number`
         from the cache.
 
         :param user_id: int
@@ -242,7 +280,8 @@ class Episode_watched(Base):
             {
                 "times": 2,
                 "position": 37,
-                "updated_at": "2015-02-21T21:11:00Z"
+                "updated_at": "2015-02-21T21:11:00Z",
+                "completed": True
             }
         '''
         pipe = database.redis.pipeline()
@@ -260,6 +299,7 @@ class Episode_watched(Base):
                 'times': int(w['times']),
                 'position': int(w['position']),
                 'updated_at': w['updated_at'],
+                'completed': w['completed'] == 'True',
             })
         return watched if isinstance(episode_number, list) else watched[0]
 
@@ -268,42 +308,46 @@ class Episode_watched(Base):
 
     def before_upsert(self):
         self.updated_at = datetime.utcnow()
+        episode = self
         times_hist = get_history(self, 'times')
-        Show_watched.set_watched(
-            self.session,
-            show_id=self.show_id,
-            user_id=self.user_id,
-            episode=self \
-                if times_hist.added and times_hist.added[0] > 0 else \
-                    None,
-        )
+        self.completed = True \
+            if times_hist.added and times_hist.added[0] > 0 else \
+                False
 
     def after_delete(self):
-        Show_watched.set_watched(
-            self.session,
-            show_id=self.show_id,
-            user_id=self.user_id,
-            episode=None,
+        names = (
+            self.cache_name,
+            self.cache_name_show(
+                user_id=self.user_id,
+                show_id=self.show_id,
+            ),
         )
-        self.session.pipe.delete(self.cache_name)
+        for name in names:
+            self.session.pipe.delete(name)
         self.inc_watched_stats(-self.times)
         self.session.pipe.zrem(
-            self.cache_name_history, 
+            self.cache_name_episodes, 
             '{}-{}'.format(
                 self.show_id,
                 self.episode_number,
             )
         )
         self.session.pipe.zrem(
-            self.cache_name_show_episode_history, 
+            self.cache_name_show_episodes_watched, 
             str(self.episode_number)
+        )        
+        self.session.pipe.zrem(
+            self.cache_name_shows_watched(
+                user_id=self.user_id,
+            ),
+            str(self.show_id)
         )
 
     @classmethod
     def recently(cls, user_id, show_id=None, per_page=constants.PER_PAGE, page=1):
         '''Get recently watched episodes for a user.
         To get the history from a specific show set `show_id`
-        to the shows id...
+        to the show's id...
 
         :returns: `Pagination()`
             `records` will be a list of dict
@@ -314,8 +358,8 @@ class Episode_watched(Base):
                 }
             ]
         '''
-        name = cls._cache_name_history.format(user_id) if not show_id else \
-            cls._cache_name_show_episode_history.format(user_id, show_id)
+        name = cls._cache_name_episodes.format(user_id) if not show_id else \
+            cls._cache_name_show_episodes_watched.format(user_id, show_id)
         start = (page-1)*per_page
         data = database.redis.zrevrange(
             name,   
@@ -324,7 +368,8 @@ class Episode_watched(Base):
         )
         w = []
         for d in data:
-            show_id, episode_number = d.split('-')
+            show_id, episode_number = d.split('-') if not show_id else \
+                (show_id, d)
             w.append({
                 'show_id': int(show_id),
                 'episode_number': int(episode_number),
@@ -336,97 +381,29 @@ class Episode_watched(Base):
             records=w,
         )
 
-class Show_watched(Base):
-    '''Latest episode watched for a user per show.'''
-    __tablename__ = 'shows_watched'
-
-    show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
-    user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
-    episode_number = sa.Column(sa.Integer, autoincrement=False)
-    position = sa.Column(sa.Integer)
-    updated_at = sa.Column(sa.DateTime)
-
-    _cache_name = 'users:{}:watched:shows:{}'
-    _cache_name_set = 'users:{}:watched:shows'
-
-    def cache(self):
-        name = self.cache_name
-        self.session.pipe.hset(name, 'number', self.episode_number) 
-        self.session.pipe.hset(name, 'position', self.position)
-        self.session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))
-        self.session.pipe.zadd(
-            self.cache_name_set, 
-            self.updated_at.timestamp(), 
-            self.show_id            
-        )
-
-    @property    
-    def cache_name(self):
-        return self._cache_name.format(
-            self.user_id, 
-            self.show_id
-        )
-    @property
-    def cache_name_set(self):
-        return self._cache_name_set.format(
-            self.user_id,
-        )
-
-    def after_upsert(self):
-        self.cache()
-
-    def after_delete(self):
-        self.session.pipe.delete(self.cache_name)
-        self.session.pipe.zrem(self.cache_name_set, str(self.show_id))
-
     @classmethod
-    def set_watched(cls, session, show_id, user_id, episode):
-        ''' Sets an episode as the latest watched for a show
-        by the user.
-        Called by `Episode_watched` after update or delete.
-        '''
-        sw = session.query(
-            Show_watched,
-        ).filter(
-            Show_watched.show_id == show_id,
-            Show_watched.user_id == user_id,
-        ).first()
-        if not episode:
-            if sw:
-                session.delete(sw)
-            return
-        if not sw:
-            sw = cls(                    
-                show_id=episode.show_id,
-                episode_number=episode.episode_number,
-                user_id=episode.user_id,                    
-                position=episode.position,
-                updated_at=episode.updated_at,
-            )                
-            session.add(sw)
-        else:
-            sw.episode_number = episode.episode_number
-            sw.position = episode.position
-            sw.updated_at = episode.updated_at
-
-    @classmethod
-    def get(cls, user_id, show_id):
-        '''Retrieves the users watch status from the cache for each 
+    def show_get(cls, user_id, show_id):
+        '''Retrieves the user's watch status from the cache for each 
         show id in `show_id`.
 
         :param user_id: int
         :param show_id: int or list of int
         :returns: dict or list of dict
             {
+                "times": 1,
                 "number": 1,
                 "position": 37,
-                "updated_at": "2015-02-21T21:11:00Z"
+                "updated_at": "2015-02-21T21:11:00Z",
+                "completed": True
             }
         '''
         pipe = database.redis.pipeline() 
         show_ids = show_id if isinstance(show_id, list) else [show_id]
         for id_ in show_ids:            
-            pipe.hgetall(cls._cache_name.format(user_id, id_))
+            pipe.hgetall(cls.cache_name_show(
+                user_id=user_id, 
+                show_id=id_,
+            ))
         result = pipe.execute()
         watching = []
         for w in result:
@@ -437,11 +414,14 @@ class Show_watched(Base):
                 'number': int(w['number']),
                 'position': int(w['position']),
                 'updated_at': w['updated_at'],
+                'completed': w['completed'] == 'True',
+                'times': int(w['times']),
             })
         return watching if isinstance(show_id, list) else watching[0]
 
+
     @classmethod
-    def recently(cls, user_id, per_page=constants.PER_PAGE, page=1):
+    def show_recently(cls, user_id, per_page=constants.PER_PAGE, page=1):
         '''Get recently watched shows for a user.
 
         :returns: `Pagination()`
@@ -450,14 +430,16 @@ class Show_watched(Base):
                 {
                     "id": 1,
                     "user_watching": {
+                        "times": 1,
                         "number": 1,
                         "position": 37,
-                        "updated_at": "2015-02-21T21:11:00Z"
+                        "updated_at": "2015-02-21T21:11:00Z",
+                        "completed": True
                     }
                 }
             ]
         '''
-        name = cls._cache_name_set.format(user_id)
+        name = cls.cache_name_shows_watched(user_id=user_id)
         start = (page-1)*per_page
         show_ids = database.redis.zrevrange(
             name,   
@@ -465,7 +447,7 @@ class Show_watched(Base):
             end=(start+per_page)-1,
         )
         w = []
-        for show_id, watching in zip(show_ids, cls.get(user_id, show_ids)):
+        for show_id, watching in zip(show_ids, cls.show_get(user_id, show_ids)):
             w.append({
                 'id': int(show_id),
                 'user_watching': watching,
@@ -489,15 +471,4 @@ def rebuild_episode_watched():
     with new_session() as session:
         for item in session.query(Episode_watched).yield_per(10000):
             item.cache()
-        session.commit()
-
-@rebuild_cache.register('show_watched')
-def rebuild_show_watched():
-    with new_session() as session:
-        user_ids = []
-        for item in session.query(Show_watched).yield_per(10000):
-            item.cache()
-            user_ids.append(item.user_id)
-        for id_ in set(user_ids):
-            Episode_watched.update_minutes_spent
         session.commit()

@@ -13,6 +13,9 @@ import seplis.api.handlers.image
 import seplis.api.handlers.play
 import seplis.api.handlers.shows_recently_watched
 import seplis.api.handlers.air_dates
+import seplis.api.handlers.episode_watched
+import seplis.api.handlers.episode_watching
+import seplis.api.handlers.next_to_watch
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -136,11 +139,19 @@ class Application(tornado.web.Application):
         
             URLSpec(
                 r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)', 
-                seplis.api.handlers.episode.Watched_handler
+                seplis.api.handlers.episode_watched.Handler
             ),
             URLSpec(
                 r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)-([0-9]+)', 
-                seplis.api.handlers.episode.Watched_interval_handler
+                seplis.api.handlers.episode_watched.Range_handler
+            ),
+            URLSpec(
+                r'/1/users/([0-9]+)/watching/shows/([0-9]+)/episodes/([0-9]+)', 
+                seplis.api.handlers.episode_watching.Handler
+            ),
+            URLSpec(
+                r'/1/users/([0-9]+)/next-to-watch/shows/([0-9]+)', 
+                seplis.api.handlers.next_to_watch.Handler
             ),
 
             URLSpec(

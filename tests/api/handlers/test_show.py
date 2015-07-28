@@ -573,13 +573,12 @@ class test_show(Testbase):
 
         # Let's watch a part of an episode and see if it shows up
         # in the user_watching field.
-        response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+        response = self.put('/1/users/{}/watching/shows/{}/episodes/{}'.format(
             self.current_user.id,
             show_id,
             1
         ), {
             'position': 120,
-            'times': 0,
         })
         self.assertEqual(response.code, 200)        
         response = self.get('/1/users/{}/fan-of?append=user_watching'.format(self.current_user.id))

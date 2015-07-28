@@ -1,6 +1,7 @@
 # coding=UTF-8
 import json
 import nose
+import logging
 from seplis.api.testbase import Testbase
 from seplis import utils, config
 from seplis.api import constants, models
@@ -40,7 +41,7 @@ class test_shows_recently_watched(Testbase):
             self.assertEqual(show['id'], show_id)
             self.assertEqual(show['user_watching']['number'], show_id)
 
-        # test pagination        
+        # test pagination
         for i, show_id in enumerate(reversed(show_ids)):
             response = self.get('/1/users/{}/shows-recently-watched'.format(
                 self.current_user.id
@@ -59,12 +60,15 @@ class test_shows_recently_watched(Testbase):
 
         # test that deleting all watched episodes for a show does not
         # reset the hole recently watched list.
+        logging.error('deleting {}'.format(show_ids[0]))
         response = self.delete('/1/users/{}/watched/shows/{}/episodes/{}'.format(
             self.current_user.id,
             show_ids[0],
-            show_ids[0],
+            show_ids[0], # the episode number is the same as the show id.
         ))
-        response = self.get('/1/users/{}/shows-recently-watched'.format(self.current_user.id))
+        response = self.get('/1/users/{}/shows-recently-watched'.format(
+            self.current_user.id
+        ))
         self.assertEqual(response.code, 200)
         shows = utils.json_loads(response.body)
         self.assertEqual(len(shows), 2, shows)
