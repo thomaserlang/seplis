@@ -72,7 +72,16 @@ $(function(){
     $('.show-list-description-text').dotdotdot({
         after: "a.readmore",
         tolerance: 0,
-        height:40
+        height: 40
+    });
+    $('.play-next-button').click(function(){
+        var show_id = $(this).attr('show-id');
+        api.get('/api/show-play-next', {'show_id': show_id}, {
+            done: function(episode){
+                location.href = '/show/'+show_id+
+                    '/episode/'+episode.number.toString()+'/play';
+            }
+        });
     });
 });
 
