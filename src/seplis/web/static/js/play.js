@@ -220,9 +220,7 @@
                     showControls();
                 }               
             });
-            $('.player-back').on('click', function(){
-                location.href = '/show/'+show_id;
-            });
+
             startHideControlsStartTimer();
             changeSlider(startTime);
             var url = playUrl();
@@ -249,6 +247,10 @@
             $('.player-back').show();
         });
 
+        $('.player-back').on('click', function(){
+            location.href = '/show/'+show_id;
+        });
+        
         var togglePlay = (function(){
             if (player.paused === false) {
                 player.pause();
