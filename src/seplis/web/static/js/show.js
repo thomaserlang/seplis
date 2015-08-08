@@ -66,7 +66,7 @@ $(function(){
         tolerance: 0,
         height: 70
     });
-    $('.dropdown-form input, .dropdown-form label, .dropdown-form .btn').click(function(e) {
+    $('.dropdown-form').click(function(e) {
         e.stopPropagation();
     });
     $('.show-list-description-text').dotdotdot({

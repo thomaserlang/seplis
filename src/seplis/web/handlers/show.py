@@ -314,7 +314,7 @@ class Fan_of_handler(base.Handler):
         ), {
             'sort': sort,
             'page': page,
-            'per_page': 20,
+            'per_page': 50,
         })
         if shows.count == 0:
             yield self.show_empty()
@@ -354,7 +354,7 @@ class Index_handler(base.Handler):
         shows = yield self.client.get('/shows', {
             'sort': sort,
             'page': page,
-            'per_page': 20,
+            'per_page': 50,
         })
         layout = self.get_cookie('layout', 'grid')
         temp = 'show_index_list.html' if layout == 'list' \

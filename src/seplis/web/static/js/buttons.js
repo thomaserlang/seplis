@@ -102,26 +102,22 @@ $(document).on('click', '.watched-button', function(event){
     );
 });
 
-$('#form-multi-watched').submit(function(event){
-    event.preventDefault();
-    var btn = $(this).find('.btn');
-    btn.button('loading');
-    api.post(
-        '/api/watched',
-        $(this).serialize(),
-        {
-            done: function(data) {
-                location.reload();
-            },
-            always: function(data){
-                btn.button('reset');
+$(function(){
+    $('#form-multi-watched').submit(function(event){
+        event.preventDefault();
+        var btn = $(this).find('.btn');
+        btn.button('loading');
+        api.post(
+            '/api/watched',
+            $(this).serialize(),
+            {
+                done: function(data) {
+                    location.reload();
+                },
+                always: function(data){
+                    btn.button('reset');
+                }
             }
-        }
-    )
-});
-
-$('#button-multi-watched').click(function(){
-    setTimeout(function(){
-        $('#form-from-episode-number').focus();
-    }, 10);
+        )
+    });
 });

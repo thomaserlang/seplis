@@ -3,15 +3,16 @@
         {{ escape(episode['title']) if episode['title'] else 'TBA' }}
     </div>
     <div>
-        <date class="airdate" title="{{ escape(episode['air_date']) }}">
-            {{ escape(episode['air_date']) }}
-        </date> -
         {% if episode.get('episode') %}
             Episode {{ episode['episode'] }} 
             <font color="grey">({{ episode['number'] }})</font>
         {% else %}
            {{ episode['number'] }} 
         {% end %}
+            <strong>&#x2e31;</strong>  
+        <date class="airdate" title="{{ escape(episode['air_date']) }}">
+            {{ escape(episode['air_date']) }}
+        </date>
     </div>
     <div class="bar">
         {% module watched_button(show, episode) %}
