@@ -13,7 +13,7 @@ _thetvdb = 'http://thetvdb.com/api/GetSeriesByRemoteID.php?imdbid={}'
 shows = client.get('shows?sort=id&per_page=500')
 for i, show in enumerate(shows.all()):
     print(i)
-    if 'imdb' not in show['externals'] or i < 4683:
+    if 'imdb' not in show['externals']:
         continue
     r = requests.get(
         _thetvdb.format(
