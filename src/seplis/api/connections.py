@@ -14,7 +14,7 @@ class Database:
             config['api']['database'],
             convert_unicode=True,
             echo=False,
-            pool_recycle=3600,
+            pool_recycle=1800,
             encoding='UTF-8',
             connect_args={'charset': 'utf8mb4'},
         )
