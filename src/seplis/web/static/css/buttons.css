@@ -8,7 +8,7 @@
     border-color: #ccc;
 }
 
-.btn-unfan:hover, .btn-unfan:focus, .btn-unfan:active, .btn-unfan.active{
+.btn-unfan:hover, .btn-unfan:focus, .btn-unfan:active{
     color: #fff;
     background-color: #47a447;
     border-color: #ccc;
@@ -24,8 +24,10 @@
     min-width:42px;
 }
 
-.btn-watched {
-    color: #000;
+.btn-watched, .times-watched, .times-watched:active, .times-watched:hover, .times-watched:focus {
+    background-color:#414141;
+    border: 1px solid #6C6C6C;
+    color:#E2E2E2;
 }
 .btn-watched:hover{
     color: #000;
@@ -33,6 +35,7 @@
     cursor:pointer;
 }
 
-.watched, .watched:hover {
-    color: #5cb85c;
+.watched, .watched:hover, .watched:active, .watched:focus {
+    background-color: #5cb85c;
+    color:#E2E2E2;
 }

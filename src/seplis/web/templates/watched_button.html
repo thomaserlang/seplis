@@ -1,5 +1,13 @@
-<div class="dropdown">
-    <ul class="dropdown-menu btn-watched-button-dropdown" role="menu">
+<div class="btn-group dropdown">
+    <ul 
+        class="
+            dropdown-menu 
+            btn-watched-button-dropdown 
+            dropdown-menu-right
+        " 
+        role="menu"
+        style="top:-10px;"
+    >
         <li 
             title="Increment the watched count"
             show-id="{{ show['id'] }}"
@@ -9,7 +17,7 @@
             class="watched-button"
         >
             <strong>
-                <i class="fa fa-plus"></i>
+                <i class="fa fa-plus" style="color:#30BA51;"></i>
             </strong>
         </li>
         <li 
@@ -21,15 +29,14 @@
             class="watched-button"
         >
             <strong>                
-                <i class="fa fa-minus"></i>
+                <i class="fa fa-minus" style="color:#E42D2D;"></i>
             </strong>
         </li>
     </ul>
 
     {% set times_watched = episode['user_watched']['times'] if episode.get('user_watched') else 0 %}
-    <span class="times-watched">{{ times_watched }}</span>
-    <a 
-        class="btn-watched {{ 'watched' if episode.get('user_watched') else 'not-watched' }}" 
+    <button 
+        class="btn btn-default btn-watched {{ 'watched' if episode.get('user_watched') else 'not-watched' }}"
         show-id="{{ show['id'] }}"
         episode-number="{{ episode['number'] }}"
         data-toggle="{{ 
@@ -37,6 +44,13 @@
         }}"
         data-loading-text="<img width='14px' height='14px' src='/static/img/loader.gif'>"
     >
-        <i class="glyphicon glyphicon-eye-open"></i>
-    </a>
+    Watched
+    </button>
+    <button 
+        class="btn btn-default times-watched"
+        title="Times watched"
+    >
+        {{ times_watched }}
+    </button>
+
 </div>

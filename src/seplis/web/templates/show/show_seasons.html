@@ -1,7 +1,6 @@
 <div class="row">
     <div class="col-xs-5 season-select">
         {% if show['seasons'] %}
-        <div class="item season">Season</div>
         <div class="item">
             <select class="select-season-select form-control" show-id="{{ show['id'] }}">
                 {% for season in reversed(show['seasons']) %}                    
@@ -9,7 +8,7 @@
                         value="{{ season['season'] }}"
                         {{ 'selected' if season['season'] == selected_season else '' }}
                     >
-                        {{ season['season'] }}
+                        Season {{ season['season'] }}
                     </option>
                 {% end %}
             </select>
@@ -22,8 +21,8 @@
         </div>
     </div>
 </div>
-<table class="table table-condensed table-striped season-episodes">
+<div class="season-episodes">
     {% for episode in episodes %}
         {% include show_episode.html %}
     {% end %}
-</table>
+</div>

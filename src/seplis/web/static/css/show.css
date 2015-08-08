@@ -22,6 +22,43 @@
     margin-right:10px;
 }
 
+.season-episodes {
+    overflow: hidden;
+    margin-right:-10px;
+}
+
+.season-episodes .season-episode {
+    width:306px;
+    float:left;
+    margin-top:10px;
+    margin-right:10px;
+    padding-left:5px;
+    padding-right:5px;
+    background-color: #414141;
+    color:#E2E2E2;
+    border-bottom: 1px solid #515151;
+}
+.season-episodes .season-episode .title {
+    font-size:18px;
+    font-weight: bolder;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.season-episodes .season-episode .bar {
+    margin-top:5px;
+}
+
+.season-episodes .season-episode .bar .btn {
+    border-radius: 0;
+}
+
+.season-episodes .season-episode .bar .play-button {
+    font-size:28px;
+    float:right;
+}
+
 .show-info {
     overflow: hidden;
 }
@@ -50,6 +87,8 @@
 }
 .show-info .image:hover .play-next-button {
     visibility: visible;
+    color:#428bca;
+    cursor:pointer;
 }
 
 .show-info .description {

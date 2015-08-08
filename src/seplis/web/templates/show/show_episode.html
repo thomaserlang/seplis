@@ -1,29 +1,25 @@
-<tr>
-    <td style="width:15px;">
-        <font color="grey">{{ '{0:0>2}'.format(episode['number']) }}</font>
-    </td>
-    {% if episode.get('episode') %}
-        <td style="width:15px;">
-            {{ '{0:0>2}'.format(episode['episode']) }}
-        </td>
-    {% end %}
-    <td>
+<div class="season-episode">
+    <div class="title">
         {{ escape(episode['title']) if episode['title'] else 'TBA' }}
-    </td>
-    <td>        
+    </div>
+    <div>
         <date class="airdate" title="{{ escape(episode['air_date']) }}">
             {{ escape(episode['air_date']) }}
-        </date>
-    </td>
-    <td>
+        </date> -
+        {% if episode.get('episode') %}
+            Episode {{ episode['episode'] }} 
+            <font color="grey">({{ episode['number'] }})</font>
+        {% else %}
+           {{ episode['number'] }} 
+        {% end %}
+    </div>
+    <div class="bar">
+        {% module watched_button(show, episode) %}
         <a 
-
             href="/show/{{ show['id'] }}/episode/{{episode['number']}}/play"
+            class="play-button"
         >
             <i class="glyphicon glyphicon-play-circle"></i>
         </a>
-    </td>
-    <td style="text-align:right;width:50px;">
-        {% module watched_button(show, episode) %}
-    </td>
-</tr>
+    </div>
+</div>
