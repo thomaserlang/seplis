@@ -1,9 +1,11 @@
+import logging
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session
 from seplis.api import models, exceptions
 from seplis import schemas
 from tornado import gen, web
 from tornado.concurrent import run_on_executor
+from sqlalchemy import asc
 
 class Handler(base.Handler):
 
@@ -85,16 +87,23 @@ class Range_handler(base.Handler):
     def _put(self, user_id, show_id, from_, to):
         self.validate(Handler._schema)
         times = int(self.request.body.get('times', 1))
-
+        episode = None
         with new_session() as session:
             episodes = session.query(models.Episode).filter(
                 models.Episode.show_id == show_id,
                 models.Episode.number >= from_,
                 models.Episode.number <= to,
-            ).all()
+            ).order_by(asc(models.Episode.number)).all()
+
+            # TODO: fix the commit order...
             for episode in episodes:
-                episode.watched(user_id, times=times, position=0)     
-            session.commit()
+                if episode == episodes[-1]:
+                    continue# skip the last episode
+                episode.watched(user_id, times=times, position=0)
+            if episodes:
+                session.commit()
+                episode.watched(user_id, times=times, position=0)
+                session.commit()
 
     @authenticated(0)
     @gen.coroutine
@@ -113,7 +122,7 @@ class Range_handler(base.Handler):
                 models.Episode.show_id == show_id,
                 models.Episode.number >= from_,
                 models.Episode.number <= to,
-            ).all()
+            ).order_by(asc(models.Episode.number)).all()
             for episode in episodes:
                 episode.unwatch(user_id)
             session.commit()

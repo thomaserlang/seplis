@@ -158,7 +158,7 @@ class Episode_watched(Base):
                 self.show_id,
                 self.episode_number,
             )
-        )        
+        )
         self.session.pipe.zadd(
             self.cache_name_show_episodes_watched(
                 user_id=self.user_id,
@@ -166,7 +166,7 @@ class Episode_watched(Base):
             ), 
             self.updated_at.timestamp(), 
             str(self.episode_number),
-        )        
+        )  
         self.session.pipe.zadd(
             self.cache_name_shows_watched(
                 user_id=self.user_id,
