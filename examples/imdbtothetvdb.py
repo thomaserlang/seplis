@@ -33,5 +33,7 @@ for i, show in enumerate(shows.all()):
             },
             'indices': {
                 'info': 'thetvdb',
+                'images': 'thetvdb',
+                'episodes': 'thetvdb',
             }
         })
