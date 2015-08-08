@@ -18,7 +18,7 @@ def upgrade():
     op.add_column('episodes_watched',
         sa.Column('completed', sa.Enum('Y', 'N'), server_default='N'),
     )
-    op.remove_table('shows_watched')
+    op.drop_table('shows_watched')
 
 def downgrade():
     raise NotImplemented()
