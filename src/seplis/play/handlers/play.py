@@ -331,7 +331,7 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
 
     def _get(self, session, file_, times=1):
         if session not in self.sessions:
-            raise tornado.web.HTTPError(500, 'unknown session')
+            raise tornado.web.HTTPError(404, 'unknown session')
         self.ioloop.remove_timeout(self.sessions[session]['call_later'])
         path = os.path.join(config['play']['temp_folder'], session, file_)  
         # if the file type is m3u8 and it is not found, we'll try again.

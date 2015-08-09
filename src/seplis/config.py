@@ -44,7 +44,8 @@ config = {
         'media_types': [
             'mp4',
             'mkv',
-            'avi',            
+            'avi',
+            'mpg',
         ],
         'ffmpeg_folder': '/usr/src/ffmpeg/',
         'port': 8003,
