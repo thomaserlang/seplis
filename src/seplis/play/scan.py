@@ -137,6 +137,7 @@ class Shows_scan(Play_scan):
         self.episode_number = Episode_number(
             scanner=self
         )
+        self.not_found_shows = []
 
     def scan(self):
         episodes = self.get_episodes()
@@ -164,6 +165,8 @@ class Shows_scan(Play_scan):
         :param episode: `Parsed_episode()`
         :returns: bool
         '''
+        if episode.file_show_title in self.not_found_shows:
+            return False
         logging.info('Looking for a show with title: "{}"'.format(
             episode.file_show_title
         ))
@@ -176,6 +179,7 @@ class Shows_scan(Play_scan):
             episode.show_id = show_id
             return True
         else:
+            self.not_found_shows.append(episode.file_show_title)
             logging.info('No show found for title: "{}"'.format(
                 episode.file_show_title,
             ))
