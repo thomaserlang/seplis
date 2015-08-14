@@ -4,23 +4,25 @@
 {% end %}
 {% block body %}
     <div class="airdates">
-        <div class="airdate" style="height:301px">
-            <h3>Continue watching</h3>
-            <div class="airdate-shows">
-                {% for show in recently_watched %}
-                    <div class="image">
-                        <a href="/show/{{ show['id'] }}">
-                            <img 
-                                alt="{{ escape(show['title']) }}" 
-                                width="166px"
-                                height="244px"
-                                src="{{ image_url(show['poster_image'], '@SX166.jpg') }}"
-                            >
-                        </a>
-                    </div>
-                {% end %}
+        {% if recently_watched %}
+            <div class="airdate" style="height:301px">
+                <h3>Continue watching</h3>
+                <div class="airdate-shows">
+                    {% for show in recently_watched %}
+                        <div class="image">
+                            <a href="/show/{{ show['id'] }}">
+                                <img 
+                                    alt="{{ escape(show['title']) }}" 
+                                    width="166px"
+                                    height="244px"
+                                    src="{{ image_url(show['poster_image'], '@SX166.jpg') }}"
+                                >
+                            </a>
+                        </div>
+                    {% end %}
+                </div>
             </div>
-        </div>
+        {% end %}
         {% for ad in air_dates %}
             <div class="airdate">
                 <h3 class="date">
