@@ -170,6 +170,20 @@ def create_indices():
         }
     })
 
+    database.es.indices.create('users', body={
+        'mappings': {
+            'user': {
+                'properties': {
+                    'id': { 'type': 'integer' },
+                    'name': { 'type': 'string' },
+                    'email': { 'type': 'string' },
+                    'level': { 'type': 'integer' },
+                    'created_at': { 'type':  'date' },
+                }
+            }
+        }
+    })
+
 
 if __name__ == '__main__':
     create_indices()

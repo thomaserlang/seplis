@@ -49,6 +49,11 @@ class Handler(base.Handler):
             raise exceptions.Not_found('the user was not found')
         self.write_object(self.user_wrapper(user))
 
+class Users_handler(base.Handler):
+
+    def get(self):
+        pass
+
 class Stats_handler(base.Handler):
 
     def get(self, user_id):

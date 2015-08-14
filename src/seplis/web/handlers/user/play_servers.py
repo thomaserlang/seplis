@@ -39,6 +39,7 @@ class Form_handler(base.Handler):
                     self.current_user['id'],
                     id_,
                 ))
+            logging.error(play_users)
         self.render(
             'user/play_server_form.html',
             play_server=play_server,

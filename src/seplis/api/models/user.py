@@ -18,7 +18,7 @@ class User(Base):
     name = sa.Column(sa.String(45), unique=True)
     email = sa.Column(sa.String(100), unique=True)
     password = sa.Column(sa.CHAR(87))
-    created = sa.Column(sa.DateTime, default=datetime.utcnow)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     level = sa.Column(sa.Integer, default=constants.LEVEL_USER)
 
     fan_of = sa.Column(sa.Integer, default=0)
@@ -41,7 +41,7 @@ class User(Base):
             'name': self.name,
             'email': self.email,
             'level': self.level,
-            'created': utils.isoformat(self.created),
+            'created_at': utils.isoformat(self.created_at),
         }
         return data
 
@@ -166,8 +166,14 @@ class User(Base):
         for key in user:
             self.session.pipe.hset(name_user, key, user[key])        
         self.session.pipe.set(self.cache_name_email, self.id)
-        self.session.pipe.set(self.cache_name_name, self.id)   
-        self.session.pipe.set(self.cache_name_id_password, self.password)    
+        self.session.pipe.set(self.cache_name_name, self.id)
+        self.session.pipe.set(self.cache_name_id_password, self.password)  
+        self.session.es_bulk.append({
+            '_index': 'users',
+            '_type': 'user',
+            '_id': self.id,
+            '_source': utils.json_dumps(user),
+        })
 
     def cache_user_default_stats(self):
         '''Defaults the user's stats field to 0.
