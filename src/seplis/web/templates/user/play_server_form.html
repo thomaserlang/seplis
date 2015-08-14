@@ -58,4 +58,20 @@
     </button>
     {% end %}
 </form>
+<br>
+    {% if play_users %}
+    <h3>Users with access</h3>
+    <table class="table table-striped">
+        {% for user in play_users %}
+            <tr>
+                <td>
+                    {{ user['name'] }} 
+                    {% if current_user['id'] == user['id'] %}
+                        <font color="#747474"><i>(You)</i></font>
+                    {% end %}
+                </td>
+            </tr>
+        {% end %}
+    </table>
+    {% end %}
 {% end %}

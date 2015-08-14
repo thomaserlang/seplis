@@ -26,6 +26,7 @@ class Form_handler(base.Handler):
     def get(self):
         id_ = self.get_argument('id', None)
         play_server = None
+        play_users = None
         if id_:
             play_server = yield self.client.get('/users/{}/play-servers/{}'.format(
                 self.current_user['id'],
@@ -33,9 +34,15 @@ class Form_handler(base.Handler):
             ))
             if not play_server:
                 raise HTTPError(404, 'unknown play server')
+            play_users = yield self.client.get(
+                '/users/{}/play-servers/{}/users'.format(
+                    self.current_user['id'],
+                    id_,
+                ))
         self.render(
             'user/play_server_form.html',
-            play_server=play_server
+            play_server=play_server,
+            play_users=play_users,
         )
 
 class API_handler(base.API_handler):
