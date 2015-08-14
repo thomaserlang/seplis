@@ -143,6 +143,7 @@ class Access_handler(base.Handler):
     @gen.coroutine
     def delete(self, user_id, server_id, access_user_id):
         yield self.remove_access(server_id, access_user_id)
+        self.set_status(201)
 
     @run_on_executor
     def remove_access(self, server_id, access_user_id):
