@@ -225,7 +225,7 @@
             changeSlider(startTime);
             var url = playUrl();
             video.attr('src', url);
-            video.load();
+            HlsPing();
         });
 
         var startHideControlsStartTimer = (function(){
@@ -254,8 +254,9 @@
         var togglePlay = (function(){
             if (player.paused === false) {
                 player.pause();
-                if (method == 'transcode') {      
-                    $.get(currentPlayServer.url+'/'+session+'/cancel');
+                if (method == 'transcode') {  
+                    if (device == 'hlsmp4')    
+                        $.get(currentPlayServer.url+'/'+session+'/cancel');
                     startTime = parseInt(player.currentTime+offsetDuration);  
                 }
             } else {
@@ -270,6 +271,16 @@
                     player.play();
                 }
             }
+        });
+
+        var HlsPing = (function(){
+            if (device != 'hlsmp4') return;
+            if (player.paused === false) {
+                $.get(currentPlayServer.url+'/'+session+'/ping');
+            }
+            setTimeout(function(){
+                HlsPing();
+            }, 5000);
         });
 
         var hideErrors = (function(){

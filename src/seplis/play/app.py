@@ -18,7 +18,8 @@ class Application(tornado.web.Application):
         urls = [
             (r'/(.*)/media/(.*)', seplis.play.handlers.play.Hls_file_handler),
             (r'/(.*)/cancel', seplis.play.handlers.play.Hls_cancel_handler),
-
+            (r'/(.*)/ping', seplis.play.handlers.play.Hls_ping_handler),
+            
             (r'/transcode', seplis.play.handlers.play.Transcode_handler),
             (r'/play', seplis.play.handlers.play.Play_handler),
             

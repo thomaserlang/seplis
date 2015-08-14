@@ -152,12 +152,9 @@ class _hls_handler(object):
         if os.path.exists(path):
             shutil.rmtree(path)
         os.makedirs(path)
-        runtime = int(float(
-            self.metadata['format']['duration']
-        ))
-        cmd.append('-segment_list')
-        cmd.append(os.path.join(path, 'media.m3u8'))
+        cmd.append('-hls_segment_filename')
         cmd.append(os.path.join(path, '%05d.ts'))
+        cmd.append(os.path.join(path, 'media.m3u8'))
         process = subprocess.Popen(
             cmd
         )
@@ -192,6 +189,10 @@ class Transcode_handler(
             else 'default'
         return device_name
 
+    def set_default_headers(self):
+        self.set_header('Cache-Control', 'no-cache, must-revalidate')
+        self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
+
     @tornado.web.asynchronous
     def get(self):
         self.session = self.get_argument('session')
@@ -219,7 +220,6 @@ class Transcode_handler(
         self.start_time = start
         if start == 0:
             return
-        l = len(cmd)
         cmd.insert(1, '-ss')
         cmd.insert(2, str(start))
 
@@ -257,7 +257,6 @@ class Transcode_handler(
         return device['default_codec']
 
     def get_transcode_arguments(self, file_path, device_name):
-        device_name = device_name if device_name in config['play']['devices'] else 'default'
         device = config['play']['devices'][device_name]
         vcodec = self.get_codec(
             file_path, 
@@ -303,15 +302,11 @@ class Transcode_handler(
             '-i', file_path,
             '-threads', '0',
             '-y',
-            '-segment_format', 'mpegts',
-            '-f', 'segment',
             '-loglevel', 'quiet',
             '-map_metadata', '-1', 
             '-vcodec', vcodec,
             '-flags',
             '-global_header',
-            '-segment_time', str(config['play']['segment_time']), 
-            '-segment_start_number', '0',
             '-bsf', 'h264_mp4toannexb',
             '-map', '0:0',
             '-sn',
@@ -320,6 +315,8 @@ class Transcode_handler(
             '-map', '0:1',
             '-aq', '0',
             '-hls_allow_cache', '0',
+            '-hls_time', str(config['play']['segment_time']),
+            '-hls_list_size', '0', 
         ]    
 
 class Hls_file_handler(Transcode_handler, _hls_handler):
@@ -374,10 +371,31 @@ def set_default_headers(self):
 class Hls_cancel_handler(Transcode_handler, _hls_handler):
 
     def get(self, session):
-        if session in self.sessions:
-            self.cancel_transcode(
-                self.sessions[session]
-            )
+        if session not in self.sessions:
+            raise tornado.web.HTTPError(404, 'unknown session')
+
+        self.cancel_transcode(
+            self.sessions[session]
+        )
+
+    def set_default_headers(self):
+        set_default_headers(self)
+
+
+class Hls_ping_handler(tornado.web.RequestHandler, _hls_handler):
+
+    def get(self, session):
+        self.ioloop = tornado.ioloop.IOLoop.current()
+        if session not in self.sessions:
+            raise tornado.web.HTTPError(404, 'unknown session')
+        self.ioloop.remove_timeout(self.sessions[session]['call_later'])
+        call_later = self.ioloop.call_later(
+            config['play']['session_timeout'], 
+            self.cancel_transcode, 
+            self.sessions[session]
+        )
+        self.sessions[session]['call_later'] = call_later
+
 
     def set_default_headers(self):
         set_default_headers(self)
