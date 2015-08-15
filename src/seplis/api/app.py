@@ -107,7 +107,7 @@ class Application(tornado.web.Application):
             ),
             URLSpec(
                 r'/1/users/current', 
-                seplis.api.handlers.user.Handler
+                seplis.api.handlers.user.Current_handler
             ),
             URLSpec(
                 r'/1/users/([0-9]+)', 

@@ -4,6 +4,7 @@ from tornado import gen
 from tornado.concurrent import run_on_executor
 from tornado.web import HTTPError
 from seplis.api.handlers import base
+from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
 from seplis.api import exceptions, constants, models
 from seplis.api.decorators import authenticated, new_session
@@ -40,19 +41,64 @@ class Handler(base.Handler):
             session.commit()
             return user.serialize()
 
-    @authenticated(0)
+    @gen.coroutine
     def get(self, user_id=None):
         if not user_id:
-            user_id = self.current_user.id
-        user = models.User.get(user_id)
-        if not user:
-            raise exceptions.Not_found('the user was not found')
-        self.write_object(self.user_wrapper(user))
+            users = yield self.get_users()
+            self.write_object(users)
+        else:
+            user = models.User.get(user_id)
+            if not user:
+                raise exceptions.Not_found('the user was not found')
+            self.write_object(self.user_wrapper(user))
 
-class Users_handler(base.Handler):
+    @gen.coroutine    
+    def get_users(self):
+        q = self.get_argument('q', None)
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
+        page = int(self.get_argument('page', 1))
+        sort = self.get_argument('sort', '_score')
+        query = {
+            'from': ((page - 1) * per_page),
+            'size': per_page,
+            'sort': sort,
+        }
+        body = {}
+        if q:
+            body['query'] = {
+                'query_string': {
+                    'default_field': 'name',
+                    'query': q,
+                }
+            }
+        result = yield self.es(
+            '/users/user/_search',
+            body=body,
+            query=query,
+        )
+        users = [user['_source'] for user in result['hits']['hits']]
+        p = Pagination(
+            page=page,
+            per_page=per_page,
+            total=result['hits']['total'],
+            records=self.user_wrapper(users),
+        )
+        return p
 
+class Current_handler(Handler):
+
+    @authenticated(0)
     def get(self):
-        pass
+        super().get(self.current_user.id)
+
+    def post(self):
+        raise HTTPError(405)
+
+    def put(self):
+        raise HTTPError(405)
+
+    def delete(self):
+        raise HTTPError(405) 
 
 class Stats_handler(base.Handler):
 

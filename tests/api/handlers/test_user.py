@@ -3,7 +3,7 @@ import nose
 import json
 from seplis.api.testbase import Testbase
 from seplis.api import constants
-from seplis import utils
+from seplis import utils, config
 
 class test_user(Testbase):
 
@@ -26,30 +26,26 @@ class test_user(Testbase):
                 self.assertEqual(error['message'], 'length of value must be at least 6 for dictionary value')
 
         response = self.post('/1/users', {
-            'name': 'test',
+            'name': 'test___',
             'email': 'test@email.com',
             'password': '123456',
         })
         self.assertEqual(response.code, 201)
         user = utils.json_loads(response.body)
-        self.assertEqual(user['name'], 'test')
+        self.assertEqual(user['name'], 'test___')
         self.assertEqual(user['email'], 'test@email.com')
         self.assertTrue('password' not in user)
-        self.assertTrue('created' in user)
+        self.assertTrue('created_at' in user)
 
     def test_get(self):
         # new user
         response = self.post('/1/users', {
-            'name': 'test',
+            'name': 'test___',
             'email': 'test@email.com',
             'password': '123456',
         })
         self.assertEqual(response.code, 201)
         user = utils.json_loads(response.body)
-
-        # we should not be able to retrieve any users without being logged in
-        response = self.get('/1/users/{}'.format(user['id']))
-        self.assertEqual(response.code, 401)
 
         # login and test that we can retrieve the user.
         # because our user does not have a high enough level to view the email
@@ -58,7 +54,7 @@ class test_user(Testbase):
         response = self.get('/1/users/{}'.format(user['id']))
         self.assertEqual(response.code, 200)
         user2 = utils.json_loads(response.body)
-        self.assertEqual(user2['name'], 'test')
+        self.assertEqual(user2['name'], 'test___')
         self.assertFalse('email' in user2)
         user.pop('email')
         self.assertEqual(user2, user)
@@ -73,7 +69,7 @@ class test_user(Testbase):
 
     def test_token(self):
         response = self.post('/1/users', {
-            'name': 'test',
+            'name': 'test___',
             'email': 'test@email.com',
             'password': '123456',
         })
@@ -149,7 +145,7 @@ class test_user(Testbase):
 
         # test successfully login with a password in the old format
         user = self.new_user(
-            name='test',
+            name='test___',
             email='test@example.net',
             password=old_password,
             level=0,
@@ -167,6 +163,37 @@ class test_user(Testbase):
             'client_id': app.client_id,
         })
         self.assertEqual(response.code, 200)
+
+    def test_user_search(self):
+        users = []
+        users.append(self.new_user(
+            name='test___',
+            email='test___@example.net',
+            password='123',
+            level=0,
+        ))
+        users.append(self.new_user(
+            name='test___2',
+            email='test___2@example.net',
+            password='123',
+            level=0,
+        ))
+        self.get('http://{}/users/_refresh'.format(
+            config['api']['elasticsearch']
+        ))
+        response = self.get('/1/users')
+        self.assertEqual(response.code, 200, response.body)
+        self.assertEqual(len(utils.json_loads(response.body)), 2)
+
+        # test that we can search for a user
+        response = self.get('/1/users?q=test___2')
+        self.assertEqual(response.code, 200, response.body) 
+        user = utils.json_loads(response.body)[0]
+        self.assertEqual(user['name'], 'test___2')
+        # test that the user search does not leak emails
+        self.assertTrue('email' not in user)
+
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
