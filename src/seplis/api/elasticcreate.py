@@ -5,6 +5,7 @@ def create_indices():
     database.es.indices.delete('shows', ignore=404)
     database.es.indices.delete('episodes', ignore=404)
     database.es.indices.delete('images', ignore=404)
+    database.es.indices.delete('users', ignore=404)
 
     settings = {
         'analysis': {
