@@ -67,7 +67,7 @@ class Handler(base.Handler):
         if q:
             body['query'] = {
                 'query_string': {
-                    'default_field': 'name',
+                    'default_field': 'name.suggest',
                     'query': q,
                 }
             }
