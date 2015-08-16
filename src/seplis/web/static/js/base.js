@@ -7,7 +7,7 @@ var isMobile = (function() {
 });
 
 $(function(){
-    $('.autocomplete').autocomplete({
+    $('.autocomplete-show').autocomplete({
         serviceUrl: '/api/suggest',   
         paramName: 'q',
         noCache: true,
