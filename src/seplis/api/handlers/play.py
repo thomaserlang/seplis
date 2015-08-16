@@ -110,7 +110,7 @@ class Access_handler(base.Handler):
 
     @authenticated(0)
     def get(self, user_id, server_id):
-        self.check_user_edit(user_id)
+        self.check_server(server_id)
         page = int(self.get_argument('page', 1))
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         users = models.Play_server.users_with_access(
