@@ -76,3 +76,25 @@ class API_handler(base.API_handler):
             self.get_argument('id'),
         ))
         self.write('{}')
+
+class API_user_handler(base.API_handler):
+
+    @authenticated
+    @gen.coroutine
+    def post(self):
+        yield self.client.put('/users/{}/play-servers/{}/users/{}'.format(
+            self.current_user['id'],
+            self.get_argument('server_id'),
+            self.get_argument('user_id'),
+        ))
+        self.write('{}')
+
+    @authenticated
+    @gen.coroutine
+    def delete(self):
+        yield self.client.delete('/users/{}/play-servers/{}/users/{}'.format(
+            self.current_user['id'],
+            self.get_argument('server_id'),
+            self.get_argument('user_id'),
+        ))
+        self.write('{}')

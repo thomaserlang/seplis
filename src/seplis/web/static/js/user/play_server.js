@@ -64,4 +64,61 @@ $(function(){
             }
         )
     });
+    $('#playserver-autocomplete-user').autocomplete({
+        serviceUrl: '/api/users',   
+        paramName: 'q',
+        noCache: true,
+        width: 200,
+        triggerSelectOnValidInput: false,
+        transformResult: function(response) {
+            response = $.parseJSON(response);
+            return {
+                suggestions: $.map(response, function(r) {
+                    return { 
+                        value: r.name.toString(), 
+                        data: r,
+                    };
+                })
+            };
+        },
+        formatResult: function (suggestion, currentValue) {
+            return _.template(
+                '<div class="user-suggest">'+
+                    '<span class="text">'+
+                        '<%- name %>'+
+                    '</span>'+
+                '</div>',
+                suggestion.data 
+            );
+        },    
+        onSelect: function (data) {
+            api.post(
+                '/api/user/play-server/user', 
+                {
+                    'server_id': $('#playserver-autocomplete-user')
+                        .attr('server-id'),
+                    'user_id': data.data.id
+                },
+                {
+                    done: function(data) {
+                        location.reload();
+                    }
+                }
+            );
+        }
+    });
+    $('.play-server-remove-user').click(function(){
+        api.delete(
+            '/api/user/play-server/user',
+            {
+                'user_id': $(this).attr('user-id'),
+                'server_id': $(this).attr('server-id')
+            },
+            {
+                done: function() {
+                    location.reload();
+                }
+            }
+        );
+    });
 });

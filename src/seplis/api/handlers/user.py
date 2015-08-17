@@ -68,7 +68,7 @@ class Handler(base.Handler):
             body['query'] = {
                 'query_string': {
                     'default_field': 'name.suggest',
-                    'query': q,
+                    'query': 'name.suggest:"{}"'.format(q),
                 }
             }
         result = yield self.es(

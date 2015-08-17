@@ -144,6 +144,9 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/show-play-next', seplis.web.handlers.show.API_get_play_now),   
         
             URLSpec(r'/api/users', seplis.web.handlers.user.user.Users_handler),
+            
+            URLSpec(r'/api/user/play-server/user', seplis.web.handlers.user.play_servers.API_user_handler),
+            
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 
