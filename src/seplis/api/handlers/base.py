@@ -298,6 +298,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
                 ((self.current_user.level < constants.LEVEL_SHOW_USER_EMAIL) and \
                     (self.current_user.id != user['id'])):
                 user.pop('email')
+                user.pop('level')
         return users
 
     def show_wrapper(self, shows):
