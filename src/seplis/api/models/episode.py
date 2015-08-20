@@ -55,6 +55,14 @@ class Episode(Base):
     def after_upsert(self):
         self.to_elasticsearch()
 
+    def after_delete(self):
+        ews = self.session.query(models.Episode_watched).filter(
+            models.Episode_watched.show_id == self.show_id,
+            models.Episode_watched.episode_number == self.number,
+        ).all()
+        for ew in ews:
+            self.session.delete(ew) 
+
     def unwatch(self, user_id):
         '''Removes this episode from the user's watched list.
 
