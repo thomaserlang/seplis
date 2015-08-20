@@ -242,4 +242,4 @@ class Test_play_servers(Testbase):
         self.assertTrue(servers[0]['play_id'])
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__+':Test_episode.test_delete')
+    nose.run(defaultTest=__name__)
