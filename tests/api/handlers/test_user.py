@@ -19,11 +19,11 @@ class test_user(Testbase):
             if error['message'] == 'required key not provided':
                 continue
             if error['field'] == 'name':
-                self.assertEqual(error['message'], 'must only contain a-z, 0-9, _ and - for dictionary value')
+                self.assertEqual(error['message'], 'must only contain a-z, 0-9, _ and -')
             elif error['field'] == 'email':
-                self.assertEqual(error['message'], 'this is an invalid email address for dictionary value')
+                self.assertEqual(error['message'], 'this is an invalid email address')
             elif error['field'] == 'password':
-                self.assertEqual(error['message'], 'length of value must be at least 6 for dictionary value')
+                self.assertEqual(error['message'], 'length of value must be at least 6')
 
         response = self.post('/1/users', {
             'name': 'test___',
@@ -57,6 +57,7 @@ class test_user(Testbase):
         self.assertEqual(user2['name'], 'test___')
         self.assertFalse('email' in user2)
         user.pop('email')
+        user.pop('level')
         self.assertEqual(user2, user)
 
         # check that we can get the current user.
