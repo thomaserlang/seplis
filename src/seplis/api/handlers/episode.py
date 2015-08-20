@@ -102,9 +102,27 @@ class Handler(base.Handler):
         )
         self.write_object(p)
 
+    @authenticated(constants.LEVEL_EDIT_SHOW)
+    @gen.coroutine
+    def delete(self, show_id, number):
+        yield self._delete(show_id, number)
+        self.set_status(201)
+
+    @run_on_executor
+    def _delete(self, show_id, number):
+        with new_session() as session:
+            e = session.query(models.Episode).filter(
+                models.Episode.show_id == show_id,
+                models.Episode.number == number,
+            ).first()
+            if not e:
+                raise exceptions.Not_found('unknown episode')
+            session.delete(e)
+            session.commit()
+
 class Play_servers_handler(base.Handler):
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_USER)
     @gen.coroutine
     def get(self, show_id, number):
         page = int(self.get_argument('page', 1))

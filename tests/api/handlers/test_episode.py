@@ -92,6 +92,45 @@ class Test_episode(Testbase):
         response = self.get('/1/shows/{}/episodes/1'.format(show_id))
         self.assertEqual(response.code, 404, response.body)
 
+    def test_delete(self):        
+        show_id = self.new_show()
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 1',
+                    'air_date': '2015-01-01',
+                    'description': {
+                        'text': 'Test description.'
+                    },
+                    'runtime': 30,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 200)
+        # we need to test that deleting an episode also delets all relations
+        # to watched episodes.
+        response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+            self.current_user.id, 
+            show_id, 
+            1
+        ))
+        self.assertEqual(response.code, 200)
+
+        response = self.delete('/1/shows/{}/episodes/1'.format(
+            show_id
+        ))
+        self.assertEqual(response.code, 201)
+
+        response = self.get('/1/users/{}/watched/shows/{}/episodes/{}'.format(
+            self.current_user.id,
+            show_id,
+            1
+        ))
+        self.assertEqual(response.code, 404)
+        response = self.get('/1/shows/{}/episodes/1'.format(show_id))
+        self.assertEqual(response.code, 404, response.body)
+
 class Test_episode_append_fields(Testbase):
 
     def test_user_watched(self):
@@ -203,4 +242,4 @@ class Test_play_servers(Testbase):
         self.assertTrue(servers[0]['play_id'])
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    nose.run(defaultTest=__name__+':Test_episode.test_delete')
