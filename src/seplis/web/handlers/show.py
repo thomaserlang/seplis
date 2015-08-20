@@ -70,11 +70,13 @@ class Handler(base.Handler):
                 season['to'],
             ),
             'sort': 'number:asc',
+            'per_page': 50,
         })
         episodes = yield self.client.get(
             '/shows/{}/episodes'.format(show['id']),
             req
         )
+        episodes = yield episodes.all_async()
         return (selected_season, episodes)
 
     @gen.coroutine
