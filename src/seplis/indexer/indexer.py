@@ -183,6 +183,17 @@ class Show_indexer(Client):
         ).all()
         if not episodes:
             episodes = []
+        # delete episodes if they does not exist in the list
+        # from the indexed source.
+        external_episode_numbers = [ep['number'] \
+            for ep in external_episodes]
+        for e in episodes:
+            if e['number'] not in external_episode_numbers:
+                self.delete('/shows/{}/episodes/{}'.format(
+                    show['id'],
+                    e['number'],
+                ))
+
         return show_episode_changes(
             episodes,
             external_episodes,
