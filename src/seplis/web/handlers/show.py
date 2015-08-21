@@ -25,7 +25,7 @@ class Handler(base.Handler):
             season=selected_season,
         )
         progression_episode_number = None
-        if show['user_watching']:
+        if 'user_watching' in show and show['user_watching']:
             progression_episode_number = show['user_watching']['episode']['number'] \
                 if not show['user_watching']['completed'] else \
                     show['user_watching']['episode']['number'] + 1
