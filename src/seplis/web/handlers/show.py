@@ -11,8 +11,9 @@ class Handler(base.Handler):
 
     @gen.coroutine
     def get(self, show_id):
-        show = yield self.get_show(show_id)
-        next_episode = yield self.get_next_episode(show_id)
+        show = yield self.get_show(show_id)        
+        next_to_air = yield self.get_next_to_air(show['id'])
+        next_episode = next_to_air[0] if next_to_air else None
         selected_season = None
         if not self.get_argument('season', None):
             if 'user_watching' in show and show['user_watching']:
@@ -23,7 +24,6 @@ class Handler(base.Handler):
             show,
             season=selected_season,
         )
-        next_to_air = yield self.get_next_to_air(show['id'])
         self.render(
             'show/show.html',
             title=show['title'],
