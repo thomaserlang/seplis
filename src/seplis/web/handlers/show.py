@@ -24,6 +24,11 @@ class Handler(base.Handler):
             show,
             season=selected_season,
         )
+        progression_episode_number = None
+        if show['user_watching']:
+            progression_episode_number = show['user_watching']['episode']['number'] \
+                if not show['user_watching']['completed'] else \
+                    show['user_watching']['episode']['number'] + 1
         self.render(
             'show/show.html',
             title=show['title'],
@@ -32,6 +37,7 @@ class Handler(base.Handler):
             selected_season=selected_season,
             next_episode=next_episode,
             next_to_air=next_to_air,
+            progression_episode_number=progression_episode_number,
         )
 
     @gen.coroutine

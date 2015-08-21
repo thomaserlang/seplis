@@ -11,7 +11,12 @@
                 {% for season in show['seasons'] %}
                     <optgroup label="Season {{ season['season'] }}">
                         {% for i, number in enumerate(range(season['from'], season['to']+1)) %}
-                            <option value="{{ number }}">
+                            <option 
+                                value="{{ number }}"
+                                {% if progression_episode_number == number %}
+                                selected
+                                {% end %}
+                            >
                                 <i>S{{ season['season'] }}:</i> Episode {{ i+1 }}
                             </option>
                         {% end %}
@@ -25,7 +30,12 @@
                 {% for season in show['seasons'] %}
                     <optgroup label="Season {{ season['season'] }}">
                         {% for i, number in enumerate(range(season['from'], season['to']+1)) %}
-                            <option value="{{ number }}">
+                            <option 
+                                value="{{ number }}"
+                                {% if progression_episode_number == number %}
+                                selected
+                                {% end %}
+                            >
                                <i>S{{ season['season'] }}:</i> Episode {{ i+1 }}
                             </option>
                         {% end %}
