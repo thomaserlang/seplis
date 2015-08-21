@@ -72,6 +72,8 @@ class Play_scan(object):
         for dirname, dirnames, filenames in os.walk(self.scan_path):
             for file_ in filenames:
                 info = os.path.splitext(file_)
+                if file_.startswith('._'):
+                    continue
                 if len(info) != 2:
                     continue
                 if info[1][1:] not in config['play']['media_types']:

@@ -50,6 +50,7 @@ class test_scan(Testbase):
                 ('/shows/Person of Interest', ('Season 01'), ()),
                 ('/shows/Person of Interest/Season 01', (), (
                     'Person of Interest.S01E01.Pilot.mp4',
+                    '._Person of Interest.S01E01.Pilot.mp4',
                 )),
             ]
 
