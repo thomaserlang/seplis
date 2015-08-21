@@ -32,40 +32,41 @@ class Play_shows_handler(tornado.web.RequestHandler):
     def post(self):
         set_default_headers(self)
         with new_session() as session:
-            show = session.query(
-                models.Show_id_lookup,
-            ).filter(
-                models.Show_id_lookup.file_show_title == \
-                    self.get_argument('file_show_title')
-            ).first()
-            if not show:
-                raise tornado.web.HTTPError(404, 'show not found')
-            old_show_id = show.show_id
-            show.show_id = self.get_argument('show_id')            
-            show.show_title = self.get_argument('show_title')
-            if old_show_id:
-                count = session.query(
+            with session.no_autoflush:
+                show = session.query(
                     models.Show_id_lookup,
                 ).filter(
-                    models.Show_id_lookup.show_id == old_show_id
-                ).count()
-                if count < 2:
-                    session.query(
-                        models.Episode_number_lookup,
+                    models.Show_id_lookup.file_show_title == \
+                        self.get_argument('file_show_title')
+                ).first()
+                if not show:
+                    raise tornado.web.HTTPError(404, 'show not found')
+                old_show_id = show.show_id
+                show.show_id = self.get_argument('show_id')            
+                show.show_title = self.get_argument('show_title')
+                if old_show_id:
+                    count = session.query(
+                        models.Show_id_lookup,
                     ).filter(
-                        models.Episode_number_lookup.show_id == old_show_id,
-                    ).update({
-                        'show_id': show.show_id,
-                    })
-                    session.query(
-                        models.Episode,
-                    ).filter(
-                        models.Episode.show_id == old_show_id,
-                    ).update({
-                        'show_id': show.show_id,
-                    })
-            session.commit()
-            self.write('{}')
+                        models.Show_id_lookup.show_id == old_show_id
+                    ).count()
+                    if count < 2:
+                        session.query(
+                            models.Episode_number_lookup,
+                        ).filter(
+                            models.Episode_number_lookup.show_id == old_show_id,
+                        ).update({
+                            'show_id': show.show_id,
+                        })
+                        session.query(
+                            models.Episode,
+                        ).filter(
+                            models.Episode.show_id == old_show_id,
+                        ).update({
+                            'show_id': show.show_id,
+                        })
+                session.commit()
+                self.write('{}')
 
 class API_show_suggest_handler(tornado.web.RequestHandler):
 
