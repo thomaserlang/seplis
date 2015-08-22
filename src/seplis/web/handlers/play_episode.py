@@ -15,7 +15,7 @@ class Handler(base.Handler):
         show = yield self.get_show(show_id)
         if not show:
             raise HTTPError(404, 'unknown show')
-        episode = yield self.get_episode(show_id, number)
+        episode, next_episode = yield self.get_episode_and_next(show_id, number)
         if not episode:
             raise HTTPError(404, 'unknown episode')
         play_servers = yield self.client.get('/shows/{}/episodes/{}/play-servers'.format(
@@ -32,6 +32,7 @@ class Handler(base.Handler):
             show=show,
             episode=episode,
             play_servers=play_servers,
+            next_episode=next_episode,
         )
 
     @gen.coroutine
@@ -42,15 +43,25 @@ class Handler(base.Handler):
         return show
 
     @gen.coroutine
-    def get_episode(self, show_id, number):
-        episode = yield self.client.get('/shows/{}/episodes/{}'.format(
+    def get_episode_and_next(self, show_id, number):
+        episodes = yield self.client.get('/shows/{}/episodes'.format(
             show_id, 
-            number,
         ), {
             'fields': 'title,number,season,episode',
             'append': 'user_watched',
+            'q': 'number:[{} TO {}]'.format(
+                number,
+                int(number)+1
+            )
         })
-        return episode
+        if not episodes:
+            return
+        if episodes[0]['number'] != int(number):
+            return
+        return (
+            episodes[0],
+            episodes[1] if len(episodes) == 2 else None
+        )
 
 class API_watching_handler(base.API_handler):
 

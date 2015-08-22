@@ -105,9 +105,17 @@
             -webkit-order:3;
             order:3;
         }
-        .player-fullscreen-windowed-button{            
+        .player-fullscreen-windowed-button {            
+            -webkit-order:5;
+            order:5;
+        }
+
+        .player-play-next{            
             -webkit-order:4;
             order:4;
+        }
+        .player-play-next a {
+            color:#fff;
         }
 
         .player-slider-controls {
@@ -308,6 +316,18 @@
                 <div class="player-control-title">
                     {{ escape(show['title']) }}: {% module episode_header(episode) %}
                 </div>
+                {% if next_episode %}
+                    <div 
+                        class="player-control-button player-control-button-right player-play-next"
+                        title="Play next episode"
+                    >
+                        <a 
+                            href="/show/{{ show['id'] }}/episode/{{ next_episode['number'] }}/play"
+                        >
+                            <i class="fa fa-step-forward"></i>
+                        </a>
+                    </div>
+                    {% end %}
                 <div class="player-control-button player-control-button-right player-fullscreen-windowed-button player-fullscreen-button">
                     <i class="glyphicon glyphicon-fullscreen"></i>
                 </div>
