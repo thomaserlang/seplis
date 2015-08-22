@@ -262,8 +262,9 @@
                 }
             } else {
                 $('.player-loading').show();
-                if ((device == 'hlsmp4') && (method == 'transcode')) {
+                if (method == 'transcode') 
                     video.attr('src', playUrl());
+                if ((device == 'hlsmp4') && (method == 'transcode')) {
                     setTimeout(function(){
                         player.play();
                     }, 1000);
@@ -288,7 +289,6 @@
                 startTime = time;
                 session = guid();
                 watchedIncremented = false;
-                video.attr('src', playUrl());
                 togglePlay();
             }
         });
