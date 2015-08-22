@@ -7,6 +7,11 @@
     <style>
         body {
             background-color:#000;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;  
         }
         .video-overlay {
             position:absolute;
@@ -105,13 +110,18 @@
             order:4;
         }
 
+        .player-slider-controls {
+            position:absolute;
+            width:100%;
+            top:-30px;
+        }
+
         .player-slider {            
             height:20px;
             background-color: #2E2E2E;
-            margin-bottom:10px;
             cursor:pointer;
-            display:relative;
             width:100%;
+            position:relative;
         }
 
         .player-slider-dot {
@@ -121,6 +131,7 @@
             background-color:#428bca;
             top: -5.5px;
             border-left:solid 1px #2E2E2E;
+            pointer-events: none;
         }
 
         .player-progress {
@@ -136,6 +147,16 @@
             text-align: right;
             display: block;
             color:#fff;
+        }
+
+        .player-slider-time {
+            position: absolute;
+            top: -50px;
+            color:#fff;
+            background-color:#2E2E2E;
+            padding:10px;
+            padding-top:7.5px;
+            visibility: hidden;
         }
 
         .player-volume-slider {
@@ -263,12 +284,16 @@
             <i class="glyphicon glyphicon-circle-arrow-left" title="Go back"></i>
         </div>
         <div class="player-controls-wrapper">
-            <div class="player-slider"> 
-                <div class="player-progress">
-                    <div class="player-slider-dot"></div>
-                </div>  
-                <label class="player-timeleft"></label>                      
-            </div>
+            <div class="player-slider-controls">
+                <div class="player-slider">
+                    <div class="player-progress">
+                        <div class="player-slider-dot" dragable="true"></div>
+                    </div>             
+                </div>
+                <label class="player-timeleft"></label>
+                <div class="player-slider-time">test</div> 
+            </div> 
+            
             <div class="player-controls">
                 <div class="player-control-button player-play-pause-button player-play-button">
                     <i class="glyphicon glyphicon-play"></i>
