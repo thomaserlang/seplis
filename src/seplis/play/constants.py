@@ -225,8 +225,7 @@ FILENAME_PATTERNS = [
 
     # foo.103*
     '''^(?P<file_show_title>.+)[ \._\-]
-    (?P<season>[0-9]{1})
-    (?P<number>[0-9]{2})
+    (?P<number>[0-9]+)
     [\._ -][^\\/]*$''',
 
     # foo.0103*

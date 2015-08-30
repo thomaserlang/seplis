@@ -312,6 +312,18 @@ class test_parse_episode(unittest.TestCase):
         self.assertEqual(info.number, 379)
         self.assertEqual(info.path, path)
 
+        path = '/Naruto Shippuuden/Naruto Shippuuden.426.720p.mkv'
+        info = parse_episode(
+            path
+        )
+        self.assertTrue(
+            isinstance(info, Parsed_episode_number),
+        )
+        self.assertEqual(info.file_show_title, 'naruto shippuuden')
+        self.assertEqual(info.number, 426)
+        self.assertEqual(info.path, path)
+
+
         # Air date
         path = '/The Daily Show/The.Daily.Show.2014.06.03.Ricky.Gervais.HDTV.x264-D0NK.mp4'
         info = parse_episode(
