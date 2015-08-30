@@ -240,7 +240,8 @@ class Shows_scan(Play_scan):
                 models.Episode.number == episode.number,
             ).first()
             modified_time = self.get_file_modified_time(episode.path)
-            if ep and ep.modified_time == modified_time:
+            if ep and (ep.modified_time == modified_time) and \
+                (ep.path == episode.path):
                 return
             metadata = self.get_metadata(episode.path)
             e = models.Episode(
