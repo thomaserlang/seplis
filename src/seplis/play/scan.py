@@ -198,7 +198,7 @@ class Shows_scan(Play_scan):
         if not episode.show_id:
             return
         if isinstance(episode, Parsed_episode_number):
-            return
+            return True
         value = self.episode_number.get_lookup_value(episode)
         logging.info('Looking for episode {} with show_id {}'.format(
             value,

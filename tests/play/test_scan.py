@@ -185,6 +185,7 @@ class test_shows_scan(Testbase):
             number=4,
             path='/',
         )
+        self.assertTrue(self.scanner.episode_number_lookup(episode))
         # there is no reason to have a lookup record for an
         # episode that already contains the episode number.
         self.assertRaises(
@@ -322,7 +323,6 @@ class test_parse_episode(unittest.TestCase):
         self.assertEqual(info.file_show_title, 'naruto shippuuden')
         self.assertEqual(info.number, 426)
         self.assertEqual(info.path, path)
-
 
         # Air date
         path = '/The Daily Show/The.Daily.Show.2014.06.03.Ricky.Gervais.HDTV.x264-D0NK.mp4'
