@@ -24,7 +24,7 @@
                 console.log('Chrome cast not loaded...');
             }
             console.log('init started');
-            var appId = '45718FC5';
+            var appId = 'AA4C338C';
 
             var sessionRequest = new chrome.cast.SessionRequest(
                 appId
