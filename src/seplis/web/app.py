@@ -10,6 +10,7 @@ import seplis.web.handlers.suggest
 import seplis.web.handlers.air_dates
 import seplis.web.handlers.user.play_servers
 import seplis.web.handlers.user.user
+import seplis.web.handlers.user.progress_token
 import seplis.web.handlers.play_episode
 import hashlib
 import os, os.path
@@ -147,6 +148,7 @@ class Application(tornado.web.Application):
             
             URLSpec(r'/api/user/play-server/user', seplis.web.handlers.user.play_servers.API_user_handler),
             
+            URLSpec(r'/api/progress-token', seplis.web.handlers.user.progress_token.API_handler),
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 
