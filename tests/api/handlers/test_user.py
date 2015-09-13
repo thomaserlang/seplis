@@ -194,7 +194,21 @@ class test_user(Testbase):
         # test that the user search does not leak emails
         self.assertTrue('email' not in user)
 
+class Test_progress_token_handler(Testbase):
 
+    def test(self):
+        self.login()
+
+        response = self.get('/1/progress-token')
+        self.assertEqual(response.code, 200)
+        d = utils.json_loads(response.body)
+
+        self.access_token = d['token']
+
+        response = self.get('/1/users/current')
+        self.assertEqual(response.code, 403, response.body)
+        d = utils.json_loads(response.body)
+        self.assertEqual(d['extra']['user_level'], -1)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
