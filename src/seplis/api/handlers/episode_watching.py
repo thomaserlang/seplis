@@ -1,6 +1,6 @@
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session
-from seplis.api import models, exceptions
+from seplis.api import models, exceptions, constants
 from seplis import schemas
 from tornado import gen, web
 from tornado.concurrent import run_on_executor
@@ -11,7 +11,7 @@ class Handler(base.Handler):
         'position': schemas.All(int, schemas.Range(min=0, max=86400)),
     }
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_PROGRESS)
     @gen.coroutine
     def put(self, user_id, show_id, episode_number):
         yield self._put(user_id, show_id, episode_number)
@@ -34,7 +34,7 @@ class Handler(base.Handler):
             session.commit()
 
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_PROGRESS)
     def get(self, user_id, show_id, episode_number):
         w = models.Episode_watched.get(
             user_id=user_id,

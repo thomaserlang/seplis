@@ -1,5 +1,7 @@
 import re
 
+LEVEL_PROGRESS = -1
+
 LEVEL_USER = 0
 
 LEVEL_EDIT_SHOW = 2

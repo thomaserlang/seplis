@@ -11,7 +11,7 @@ from seplis.api.decorators import authenticated, new_session
 from seplis.api import exceptions
 from seplis import schemas
 from passlib.hash import pbkdf2_sha256
-from datetime import datetime
+from datetime import datetime, timedelta
 from seplis import utils
 
 class Handler(base.Handler):
@@ -146,6 +146,29 @@ class Token_handler(base.Handler):
                 app_id=app['id'],
                 user_level=user['level'],
                 user_id=user['id'],
+            )
+            session.add(token)
+            session.commit()
+            return token.token
+
+class Progress_token_handler(base.Handler):
+
+    @authenticated(constants.LEVEL_USER)
+    @gen.coroutine
+    def get(self):
+        token = yield self.get_token()
+        self.write_object({
+            'token': token,
+        })
+
+    @run_on_executor
+    def get_token(self):
+        with new_session() as session:
+            token = models.Token(
+                app_id=None,
+                user_id=self.current_user.id,
+                user_level=-1,
+                expires=datetime.utcnow()+timedelta(days=1),
             )
             session.add(token)
             session.commit()

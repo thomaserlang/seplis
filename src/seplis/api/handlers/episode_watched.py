@@ -1,7 +1,7 @@
 import logging
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session
-from seplis.api import models, exceptions
+from seplis.api import models, exceptions, constants
 from seplis import schemas
 from tornado import gen, web
 from tornado.concurrent import run_on_executor
@@ -16,7 +16,7 @@ class Handler(base.Handler):
         ),
     }
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_PROGRESS)
     @gen.coroutine
     def put(self, user_id, show_id, episode_number):
         w = yield self._put(user_id, show_id, episode_number)
@@ -60,7 +60,7 @@ class Handler(base.Handler):
             episode.unwatch(user_id)
             session.commit()
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_USER)
     def get(self, user_id, show_id, episode_number):
         w = models.Episode_watched.get(
             user_id=user_id,
@@ -73,7 +73,7 @@ class Handler(base.Handler):
 
 class Range_handler(base.Handler):
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_USER)
     @gen.coroutine
     def put(self, user_id, show_id, from_, to):
         yield self._put(
@@ -105,7 +105,7 @@ class Range_handler(base.Handler):
                 episode.watched(user_id, times=times, position=0)
                 session.commit()
 
-    @authenticated(0)
+    @authenticated(constants.LEVEL_USER)
     @gen.coroutine
     def delete(self, user_id, show_id, from_, to):
         yield self._delete(

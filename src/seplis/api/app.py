@@ -109,6 +109,7 @@ class Application(tornado.web.Application):
                 r'/1/users/current', 
                 seplis.api.handlers.user.Current_handler
             ),
+            
             URLSpec(
                 r'/1/users/([0-9]+)', 
                 seplis.api.handlers.user.Handler
@@ -203,6 +204,10 @@ class Application(tornado.web.Application):
             URLSpec(
                 r'/1/token', 
                 seplis.api.handlers.user.Token_handler
+            ),
+            URLSpec(
+                r'/1/progress-token', 
+                seplis.api.handlers.user.Progress_token_handler
             ),
 
             URLSpec(
