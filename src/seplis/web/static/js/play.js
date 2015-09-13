@@ -45,22 +45,28 @@
         var controlsHideTimer;
 
         var enableMousemoveChangeSlider = false;
+        var currentTime;
         
-        var playUrl = (function(){
+        var playUrl = function(){
+            return _playUrl(method, device, startTime, session);
+        };
+
+        var _playUrl = function(method, device, starttime, session) {
             var url;
+            startTime = starttime;
             if (method == 'transcode') {
                 url = currentPlayServer.url+'/transcode?play_id='+
                     currentPlayServer.play_id+'&device='+device+'&session='+
-                    session+'&start='+startTime.toString();
-                offsetDuration = startTime;
+                    session+'&start='+starttime.toString();
+                offsetDuration = starttime;
             } else {
                 url = currentPlayServer.url+'/play?play_id='+currentPlayServer.play_id;
-                if (startTime>0) {
-                    url = url +'#t='+startTime.toString();
+                if (starttime>0) {
+                    url = url +'#t='+starttime.toString();
                 }
             }
             return url;
-        });
+        }
 
         var changeSlider = (function(time) {
             time = parseInt(time);
@@ -70,6 +76,7 @@
             $('.player-progress').css('width', (time*norm));
             var t = duration - time;             
             $('.player-timeleft').text(getTimeText(t));
+            currentTime = time;
         });
 
         var getTimeText = (function(time) {
@@ -111,6 +118,7 @@
             ChangeVolume(player.volume);
             video.on('timeupdate', function(){
                 $('.player-loading').hide();
+                $('.player-casting-to').hide();
                 var time = offsetDuration + parseInt(this.currentTime);
                 if (((time % 10) == 0) && (lastPosStored != time) && 
                     (time > 0) && !watchedIncremented) {
@@ -137,14 +145,12 @@
                 $('.player-loading').hide();
             })
             video.on('pause', function(){
-                $('.player-play-button').removeClass('hidden');
-                $('.player-pause-button').addClass('hidden');
+                ShowPlayButton();
                 showControls();
             });
             video.on('play', function(){
-                $('.player-pause-button').removeClass('hidden');
-                $('.player-play-button').addClass('hidden');
-                hideErrors();
+                ShowPauseButton();
+                hideErrors();                
                 $('.player-loading').show();
                 startHideControlsStartTimer();
             });
@@ -163,7 +169,6 @@
                 startHideControlsStartTimer();
             });
             $(window).on('keypress', function(event){
-                console.log(event.which);
                 if (event.which == 32) togglePlay();
             });
             $('.player-volume-slider').on('change mousemove touchmove', function(event){
@@ -208,22 +213,105 @@
                 event.stopPropagation();
                 event.preventDefault();
                 if ($('.player-back').is(':visible')) {
-                    if (player.paused === true) return;
+                    if ((player.paused) || (seplisCast.isCasting()))
+                        return;
                     hideControls();
                 } else {
                     showControls();
                 }               
             });
 
+            seplisCast.onCast = function(callback){
+                var st = parseInt(currentTime);
+                playerPause();
+                showCastingScreen();
+                if (method == 'transcode') {  
+                    if (device == 'hlsmp4')    
+                        $.get(currentPlayServer.url+'/'+session+'/cancel');
+                }
+                api.get('/api/progress-token', null, {
+                    done: (function(data) {
+                        callback({
+                            'show_id': show_id,
+                            'episode_number': episode_number,
+                            'start_time': st,
+                            'token': data.token,
+                            'play_url': _playUrl(
+                                method, 
+                                'default',
+                                st,
+                                guid()
+                            ),
+                            'method': method,
+                            'duration': parseInt(duration),
+                            'api_url': data['api_url'],
+                            'user_id': data['user_id'],
+                        });
+                    })
+                });
+            }
+            seplisCast.onProgress = function(currenttime){  
+                if (enableMousemoveChangeSlider)
+                    return;
+                if (currenttime == 0)
+                    return;
+                startTime = currenttime|0;
+                offsetDuration = 0;
+                changeSlider(currenttime);
+                hideErrors();
+                $('.player-casting-to').show();
+            }
+            seplisCast.onPlay = function() {
+                ShowPauseButton();
+            }            
+            seplisCast.onPause = function() {
+                ShowPlayButton();
+            }
+            seplisCast.onReconnected = function() {
+                showCastingScreen();
+            }
+            seplisCast.onStopped = function() {
+                $('.player-casting-to').hide();
+            }
+            seplisCast.init($('.player-cast'));
             changeSlider(startTime);
-            video.attr('src', playUrl());
+            if (!seplisCast.alreadyCasting()) {
+                video.attr('src', playUrl());
+            } else {
+                showCastingScreen();
+                setTimeout(function(){
+                    if (!seplisCast.isCasting())
+                        playerStart();
+                }, 5000);
+            }
             HlsPing();
         });
+
+        var showCastingScreen = function() {
+            showControls();
+            if (video.attr('src') != '')
+                video.attr('src', '');
+            hideErrors();
+            $('.player-casting-to').show();
+            $('.casting-to-name').text(seplisCast.deviceName());
+            clearTimeout(controlsHideTimer);        
+        }
+
+        var ShowPauseButton = function() {
+            $('.player-pause-button').removeClass('hidden');
+            $('.player-play-button').addClass('hidden');
+        }
+
+        var ShowPlayButton = function() {
+            $('.player-play-button').removeClass('hidden');
+            $('.player-pause-button').addClass('hidden');
+        }
 
         var startHideControlsStartTimer = (function(){
             clearTimeout(controlsHideTimer);
             controlsHideTimer = setTimeout(function(){
-                if (player.paused) return;               
+                if (player.paused || seplisCast.isCasting())
+                    return;               
                 hideControls();
             }, 3000);
         });
@@ -252,25 +340,39 @@
             location.href = '/show/'+show_id;
         });
         
+        var playerPause = function(){
+            if (player.paused === true)
+                return;
+            player.pause();
+            if (method == 'transcode') {  
+                if (device == 'hlsmp4')    
+                    $.get(currentPlayServer.url+'/'+session+'/cancel');
+                startTime = parseInt(player.currentTime+offsetDuration);  
+            }
+        }
+
+        var playerStart = function(){
+            $('.player-loading').show();
+            if ((method == 'transcode') || (video.attr('src') == ''))
+                video.attr('src', playUrl());
+            if ((device == 'hlsmp4') && (method == 'transcode')) {
+                setTimeout(function(){
+                    player.play();
+                }, 1000);
+            } else {
+                player.play();
+            }
+        }
+
         var togglePlay = (function(){
-            if (player.paused === false) {
-                player.pause();
-                if (method == 'transcode') {  
-                    if (device == 'hlsmp4')    
-                        $.get(currentPlayServer.url+'/'+session+'/cancel');
-                    startTime = parseInt(player.currentTime+offsetDuration);  
+            if (!seplisCast.isCasting()) {
+                if (!player.paused && (player.readyState != 0)) {
+                    playerPause();
+                } else {
+                    playerStart();
                 }
             } else {
-                $('.player-loading').show();
-                if (method == 'transcode') 
-                    video.attr('src', playUrl());
-                if ((device == 'hlsmp4') && (method == 'transcode')) {
-                    setTimeout(function(){
-                        player.play();
-                    }, 1000);
-                } else {
-                    player.play();
-                }
+                seplisCast.togglePlay();
             }
         });
 
@@ -281,15 +383,22 @@
             var time = x * norm;
             time = parseInt(time);
             changeSlider(time);
-            if (method == 'play') {
-                player.currentTime = time;
-            } else {
-                if (player.paused === false)
-                    togglePlay();
+            if (seplisCast.isCasting()) {
                 startTime = time;
                 session = guid();
                 watchedIncremented = false;
-                togglePlay();
+                seplisCast.play();
+            } else {
+                if (method == 'play') {
+                    player.currentTime = time;
+                } else {
+                    if (player.paused === false)
+                        togglePlay();
+                    startTime = time;
+                    session = guid();
+                    watchedIncremented = false;
+                    togglePlay();
+                }
             }
         });
 
@@ -360,8 +469,7 @@
         });
 
         var checkServer = (function(play_server) {
-            $('.player-episode-404').hide();
-            $('.player-play-server-error').hide();  
+            hideErrors(); 
             $('.player-loading').show();
             $.getJSON(play_server.url+'/metadata', {'play_id': play_server.play_id}, 
                 function(data) {

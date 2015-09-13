@@ -256,7 +256,7 @@ class test_shows_scan(Testbase):
         self.scanner.get_metadata.assert_has_calls(
             mock.call('/ncis/ncis.2014-11-14.mp4'),
         )
-
+        
     def test_scan(self):
         episodes = [Parsed_episode_number(
             show_id=1,

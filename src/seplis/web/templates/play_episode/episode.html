@@ -1,6 +1,7 @@
 {% extends ../base.html %}
 {% block head %}
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
 {% end %}
 {% block menu %}{% end %}
 {% block body_outside %}
@@ -106,16 +107,22 @@
             order:3;
         }
         .player-fullscreen-windowed-button {            
-            -webkit-order:5;
-            order:5;
+            -webkit-order:8;
+            order:8;
         }
 
         .player-play-next{            
-            -webkit-order:4;
-            order:4;
+            -webkit-order:7;
+            order:7;
         }
         .player-play-next a {
             color:#fff;
+        }
+
+        .player-cast{            
+            -webkit-order:6;
+            order:6;
+            display:none;
         }
 
         .player-slider-controls {
@@ -287,6 +294,10 @@
         <div class="player-error player-episode-404">
             <font style="font-size:100px;color:#1E90FF;">&#x26a0;</font><br>
             This episode does not exist on any of your play servers.
+        </div>        
+        <div class="player-error player-casting-to">
+            <img src="/static/img/ic_cast_white_24dp.png"><br>
+            Casting to <span class="casting-to-name"></span>.
         </div>
         <div class="player-back">
             <i class="glyphicon glyphicon-circle-arrow-left" title="Go back"></i>
@@ -316,6 +327,11 @@
                 <div class="player-control-title">
                     {{ escape(show['title']) }}: {% module episode_header(episode) %}
                 </div>
+                <div 
+                    class="player-control-button player-control-button-right player-cast"
+                >
+                    <img src="/static/img/ic_cast_white_24dp.png" width="32px" height="32px">
+                </div>
                 {% if next_episode %}
                     <div 
                         class="player-control-button player-control-button-right player-play-next"
@@ -327,7 +343,7 @@
                             <i class="glyphicon glyphicon-step-forward"></i>
                         </a>
                     </div>
-                    {% end %}
+                {% end %}
                 <div class="player-control-button player-control-button-right player-fullscreen-windowed-button player-fullscreen-button">
                     <i class="glyphicon glyphicon-fullscreen"></i>
                 </div>
