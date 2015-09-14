@@ -112,11 +112,15 @@ def load(path=None):
         schemas.Config_play_scan(
             config['play']['scan']
         )
-    config['web']['url'] = config['web']['url'].rstrip('/')
-    config['api']['image_url'] = config['api']['image_url'].rstrip('/')
-    config['client']['api_url'] = config['client']['api_url'].rstrip('/')
+    if config['web']['url']:
+        config['web']['url'] = config['web']['url'].rstrip('/')
+    if config['api']['image_url']:
+        config['api']['image_url'] = config['api']['image_url'].rstrip('/')
+    if config['client']['api_url']:
+        config['client']['api_url'] = config['client']['api_url'].rstrip('/')
     if not config['client']['public_api_url']:
         config['client']['public_api_url'] = config['client']['api_url']
     else:
-        config['client']['public_api_url'] = \
-            config['client']['public_api_url'].rstrip('/')
+        if config['client']['public_api_url']:
+            config['client']['public_api_url'] = \
+                config['client']['public_api_url'].rstrip('/')
