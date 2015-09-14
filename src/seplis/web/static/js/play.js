@@ -466,6 +466,7 @@
             $('.player-episode-404').hide();
             $('.player-play-server-error').hide();  
             $('.player-loading').hide();
+            $('.player-slider-time').css('visibility', 'hidden');
         });
 
         var checkServer = (function(play_server) {
