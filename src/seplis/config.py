@@ -36,6 +36,7 @@ config = {
         'id': 'CHANGE_ME',
         'validate_cert': True,
         'api_url': 'https://api.seplis.net',
+        'public_api_url': None,
     },
     'play': {
         'database': 'sqlite:///seplis-play.db',
@@ -114,3 +115,8 @@ def load(path=None):
     config['web']['url'] = config['web']['url'].rstrip('/')
     config['api']['image_url'] = config['api']['image_url'].rstrip('/')
     config['client']['api_url'] = config['client']['api_url'].rstrip('/')
+    if not config['client']['public_api_url']:
+        config['client']['public_api_url'] = config['client']['api_url']
+    else:
+        config['client']['public_api_url'] = \
+            config['client']['public_api_url'].rstrip('/')
