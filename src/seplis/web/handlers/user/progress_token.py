@@ -14,6 +14,6 @@ class API_handler(base.API_handler):
     @gen.coroutine
     def get(self):
         d = yield self.client.get('/progress-token')
-        d.data['api_url'] = config['client']['api_url']
+        d.data['api_url'] = config['client']['public_api_url']
         d.data['user_id'] = self.current_user['id']
         self.write_object(d)
