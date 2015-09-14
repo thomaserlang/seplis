@@ -81,8 +81,8 @@
 
         var getTimeText = (function(time) {
             var format = 'mm:ss';
-            if (time >= 3600) format = 'hh:mm:ss';
-            return moment(time*1000).format(format);
+            if (time >= 3600) format = 'HH:mm:ss';
+            return moment(time*1000).utc().format(format);
         });
 
         var ChangeVolume = (function(volume) {
