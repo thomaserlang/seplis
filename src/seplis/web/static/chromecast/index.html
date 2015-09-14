@@ -54,7 +54,6 @@
                     time = 0;
                 }
                 var url = data['api_url'];
-                console.log(data);
                 var url1 = '/1/users/'+data['user_id'].toString();
                 var url2 = '/shows/'+data['show_id'].toString()+
                         '/episodes/'+data['episode_number'];
@@ -141,6 +140,10 @@
         window.castReceiverManager.onSenderDisconnected = function(event) {
             var senders = window.castReceiverManager.getSenders();
             //If last sender explicity disconnects, turn off
+            console.log('onSenderDisconnected');
+            console.log(event);
+            console.log(event.reason);
+            console.log(senders);
             if(senders.length == 0 && event.reason == cast.receiver.system.DisconnectReason.REQUESTED_BY_SENDER)
               window.close();
         }
