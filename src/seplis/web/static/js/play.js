@@ -72,8 +72,13 @@
             time = parseInt(time);
             var norm = $('.player-slider').width() / duration;
             var dotNorm = $('.player-slider-dot').width() / duration;
-            $('.player-slider-dot').css('left', (time*norm)-(time*dotNorm));
-            $('.player-progress').css('width', (time*norm));
+            var x = time*norm;
+            if (x > $('.player-slider').width()) {
+                x = $('.player-slider').width()
+            }
+            $('.player-slider-dot').css('left', x-(time*dotNorm));
+            $('.player-progress').css('width', x);            
+            
             var t = duration - time;             
             $('.player-timeleft').text(getTimeText(t));
             currentTime = time;
