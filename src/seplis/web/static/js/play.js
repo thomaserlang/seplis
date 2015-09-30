@@ -122,6 +122,8 @@
                 player.volume = localStorage.getItem('player_volume_default') || 1;
             ChangeVolume(player.volume);
             video.on('timeupdate', function(){
+                if (video.attr('src') == undefined)
+                    return;
                 $('.player-loading').hide();
                 $('.player-casting-to').hide();
                 var time = offsetDuration + parseInt(this.currentTime);
@@ -149,7 +151,9 @@
                 $('.player-play-server-error').show();
                 $('.player-loading').hide();
             })
-            video.on('pause', function(){
+            video.on('pause', function(){                
+                if (video.attr('src') == undefined)
+                    return;
                 ShowPlayButton();
                 showControls();
             });
@@ -262,25 +266,28 @@
                     return;
                 if (currenttime == 0)
                     return;
-                console.log(currenttime);
                 startTime = currenttime|0;
                 offsetDuration = 0;
                 changeSlider(currenttime);
-                hideErrors();
                 $('.player-casting-to').show();
+                hideErrors();
             }
             seplisCast.onPlay = function() {
                 ShowPauseButton();
+                enableMousemoveChangeSlider = false;
             }            
             seplisCast.onPause = function() {
                 ShowPlayButton();
             }
             seplisCast.onReconnected = function() {
                 showCastingScreen();
-                ShowPlayButton();
             }
             seplisCast.onStopped = function() {
                 $('.player-casting-to').hide();
+            }
+            seplisCast.onLoading = function(){
+                ShowPauseButton();
+                $('.player-loading').show();
             }
             seplisCast.init($('.player-cast'));
             changeSlider(startTime);
@@ -298,9 +305,8 @@
 
         var showCastingScreen = function() {
             showControls();
-            if (video.attr('src') != '')
+            if (video.attr('src') != undefined)
                 video.attr('src', undefined);
-            hideErrors();
             $('.player-casting-to').show();
             $('.casting-to-name').text(seplisCast.deviceName());
             clearTimeout(controlsHideTimer);        
@@ -393,6 +399,7 @@
             time = parseInt(time);
             changeSlider(time);
             if (seplisCast.isCasting()) {
+                enableMousemoveChangeSlider = true;
                 startTime = time;
                 session = guid();
                 watchedIncremented = false;

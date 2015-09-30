@@ -15,6 +15,7 @@
     onPause = null;
     onReconnected = null;
     onStopped = null;
+    onLoading = null;
 
     seplisCast.init = function(_castButton) {
         castButton = _castButton;
@@ -132,7 +133,9 @@
         if (seplisCast.onCast == null) {
             console.log('onCast event not set.');
             return;
-        }
+        }        
+        if (seplisCast.onLoading)
+            seplisCast.onLoading();
         seplisCast.onCast((function(d){
             data = d;
             updateCurrentTime();
@@ -170,17 +173,6 @@
     function onMediaDiscovered(how, mediaSession) {
         mediaSession.addUpdateListener(onMediaStatusUpdate);
         currentMediaSession = mediaSession;
-        if (!updateCurrentTimeTimer) {
-            updateCurrentTime();
-            updateCurrentTimeTimer = setInterval(
-                updateCurrentTime, 
-                1000
-            );
-            currentMediaSession.play();
-            if (seplisCast.onPlay) {
-                seplisCast.onPlay();
-            }
-        }
     }
 
     function onMediaError(e) {
@@ -203,8 +195,6 @@
             } else if (currentMediaSession.playerState == 'PAUSED') {
                 if (seplisCast.onPause)
                     seplisCast.onPause();
-            } else {
-                console.log(currentMediaSession.playerState);
             }
         } else {
             if (seplisCast.onPause)
@@ -237,6 +227,16 @@
         if (session.media.length != 0) {
             console.log('joining session');
             onMediaDiscovered('sessionListener', session.media[0]);
+            if (!updateCurrentTimeTimer) {
+                updateCurrentTime();
+                updateCurrentTimeTimer = setInterval(
+                    updateCurrentTime, 
+                    1000
+                );
+                if (seplisCast.onPlay) {
+                    seplisCast.onPlay();
+                }
+            }
         }
         session.sendMessage(namespace, {
             'method': 'getdata',
