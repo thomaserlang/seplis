@@ -295,6 +295,8 @@
                 video.attr('src', playUrl());
             } else {
                 showCastingScreen();
+                hideControls();
+                $('.player-back').show();
                 setTimeout(function(){
                     if (!seplisCast.isCasting())
                         playerStart();
@@ -368,7 +370,7 @@
 
         var playerStart = function(){
             $('.player-loading').show();
-            if ((method == 'transcode') || (video.attr('src') == ''))
+            if ((method == 'transcode') || (video.attr('src') == undefined))
                 video.attr('src', playUrl());
             if ((device == 'hlsmp4') && (method == 'transcode')) {
                 setTimeout(function(){
