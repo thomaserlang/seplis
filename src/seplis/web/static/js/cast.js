@@ -51,8 +51,10 @@
     }
 
     seplisCast.togglePlay = function() {
-        if (!currentMediaSession)
+        if (!currentMediaSession) {
+            play();
             return;
+        }
         var ps = currentMediaSession.playerState;
         if (ps == 'PLAYING') {
             if (data.method == 'transcode') {
