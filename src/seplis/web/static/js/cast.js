@@ -24,7 +24,8 @@
                 console.log('Chrome cast not loaded...');
             }
             console.log('init started');
-            var appId = 'AA4C338C';
+            //var appId = 'AA4C338C';
+            var appId = '45718FC5';
 
             var sessionRequest = new chrome.cast.SessionRequest(
                 appId
@@ -233,16 +234,13 @@
         session.addMessageListener(namespace, receiverMessage);
         if (session.media.length != 0) {
             console.log('joining session');
-            console.log(session);
             onMediaDiscovered('sessionListener', session.media[0]);
-            session.sendMessage(namespace, {
-                'method': 'getdata',
-            });
-            if (seplisCast.onReconnected)
-                seplisCast.onReconnected();
-        } else {
-            play();
         }
+        session.sendMessage(namespace, {
+            'method': 'getdata',
+        });
+        if (seplisCast.onReconnected)
+            seplisCast.onReconnected();
         session.addMediaListener(
             onMediaDiscovered.bind(this, 'addMediaListener')
         );
