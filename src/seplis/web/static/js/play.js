@@ -255,6 +255,7 @@
                     return;
                 if (currenttime == 0)
                     return;
+                console.log(currenttime);
                 startTime = currenttime|0;
                 offsetDuration = 0;
                 changeSlider(currenttime);
@@ -446,7 +447,8 @@
         $('.player-slider').on('touchend', function(event){
             startHideControlsStartTimer();
             enableMousemoveChangeSlider = false;
-            startAtSliderPos(event);
+            startAtSliderPos(event);            
+            $('.player-slider-time').css('visibility', 'hidden');
         });
         $('.player-slider').on('mouseleave', function(){            
             $('.player-slider-time').css('visibility', 'hidden');
@@ -466,7 +468,6 @@
             $('.player-episode-404').hide();
             $('.player-play-server-error').hide();  
             $('.player-loading').hide();
-            $('.player-slider-time').css('visibility', 'hidden');
         });
 
         var checkServer = (function(play_server) {
