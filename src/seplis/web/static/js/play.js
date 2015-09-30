@@ -153,7 +153,9 @@
                 ShowPlayButton();
                 showControls();
             });
-            video.on('play', function(){
+            video.on('play', function(){    
+                if (video.attr('src') == undefined)
+                    return;
                 ShowPauseButton();
                 hideErrors();                
                 $('.player-loading').show();
@@ -275,6 +277,7 @@
             }
             seplisCast.onReconnected = function() {
                 showCastingScreen();
+                ShowPlayButton();
             }
             seplisCast.onStopped = function() {
                 $('.player-casting-to').hide();
@@ -296,7 +299,7 @@
         var showCastingScreen = function() {
             showControls();
             if (video.attr('src') != '')
-                video.attr('src', '');
+                video.attr('src', undefined);
             hideErrors();
             $('.player-casting-to').show();
             $('.casting-to-name').text(seplisCast.deviceName());
