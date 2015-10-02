@@ -138,6 +138,7 @@
             seplisCast.onLoading();
         seplisCast.onCast((function(d){
             data = d;
+            localStorage.setItem('cast_url', window.location.pathname);
             updateCurrentTime();
             session.sendMessage(
                 namespace, 
@@ -224,6 +225,10 @@
         session = e;
         saveSession(session);
         session.addMessageListener(namespace, receiverMessage);
+        if (window.location.pathname != localStorage.getItem('cast_url')) {
+            play();
+            return;
+        }
         if (session.media.length != 0) {
             console.log('joining session');
             onMediaDiscovered('sessionListener', session.media[0]);
