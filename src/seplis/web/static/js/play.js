@@ -298,9 +298,13 @@
                 hideControls();
                 $('.player-back').show();
                 setTimeout(function(){
-                    if (!seplisCast.isCasting())
+                    if (!seplisCast.isCasting()) {
                         playerStart();
-                }, 5000);
+                        showControls();
+                        $('.player-loading').hide();
+                        $('.player-casting-to').hide();
+                    }
+                }, 2000);
             }
             HlsPing();
         });

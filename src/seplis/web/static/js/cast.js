@@ -106,9 +106,9 @@
     }
 
     function updateCurrentTime() {
-        if (!session || !currentMediaSession || !data) 
+        if (!session || !currentMediaSession || !data) {
             return;
-        try {
+        }
         currenttime = currentMediaSession.getEstimatedTime();
         if (data.method == 'transcode')
             currenttime += data.start_time;
@@ -116,9 +116,6 @@
             seplisCast.onProgress(
                 currenttime
             );
-        } catch(e) {
-            alert
-        }
     }
 
     function stopApp() {
@@ -189,13 +186,15 @@
                         updateCurrentTime, 
                         1000
                     );
+                    saveSession(session);
+                    if (seplisCast.onPlay)
+                        seplisCast.onPlay();
                 }
-                saveSession(session);
-                if (seplisCast.onPlay)
-                    seplisCast.onPlay();
             } else if (currentMediaSession.playerState == 'PAUSED') {
-                if (seplisCast.onPause)
-                    seplisCast.onPause();
+                if (updateCurrentTimeTimer) {
+                    if (seplisCast.onPause)
+                        seplisCast.onPause();
+                }
             }
         } else {
             if (seplisCast.onPause)
@@ -257,13 +256,12 @@
         if (!checkSessionStatusTimer) {
             checkSessionStatusTimer = setInterval(
                 checkSessionStatus.bind(this),
-                5000
+                2000
             )
         }
     }
 
     function sessionUpdateListener() {
-        console.log('session update listener');
         if (session.status == chrome.cast.SessionStatus.STOPPED) {
             sessionStopped();
         } else {
@@ -296,10 +294,6 @@
             onRequestSessionSuccess, 
             onLaunchError
         );
-        if (updateCurrentTimeTimer) {
-            clearInterval(updateCurrentTimeTimer);
-            updateCurrentTimeTimer = null;
-        }
     }
 
     function onRequestSessionSuccess(e) {
@@ -318,7 +312,7 @@
         if (!checkSessionStatusTimer) {
             checkSessionStatusTimer = setInterval(
                 checkSessionStatus.bind(this),
-                5000
+                2000
             )
         }
         play();
@@ -384,9 +378,13 @@
     function checkSessionStatus() {
         if (!session)
             return;
-        if (session.status != chrome.cast.SessionStatus.CONNECTED) {
-            sessionStopped();
-        }  
+        try {
+            if (session.status != chrome.cast.SessionStatus.CONNECTED) {
+                sessionStopped();
+            }  
+        } catch(e) {
+            console.log(e.message);
+        }
     }
 
     function sessionStopped() {
