@@ -408,7 +408,6 @@
                 enableMousemoveChangeSlider = true;
                 startTime = time;
                 session = guid();
-                watchedIncremented = false;
                 seplisCast.play();
             } else {
                 if (method == 'play') {
@@ -418,7 +417,6 @@
                         togglePlay();
                     startTime = time;
                     session = guid();
-                    watchedIncremented = false;
                     togglePlay();
                 }
             }
