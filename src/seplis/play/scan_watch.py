@@ -44,11 +44,7 @@ class Handler(PatternMatchingEventHandler):
                 logging.info('{} could not be parsed'.format(event.src_path))
                 return
             return episode
-        else:
-            raise NotImplemented('Type: {} is not supported for watching'.format(
-                type_
-            ))        
-
+            
     def update(self, event):
         item = self.parse(event)
         if not item:
