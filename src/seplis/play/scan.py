@@ -570,7 +570,7 @@ def cleanup_episodes():
         episodes = session.query(models.Episode).all()
         deleted_count = 0
         for e in episodes:
-            if os.path.exists(episode.path):
+            if os.path.exists(e.path):
                 continue
             deleted_count += 1
             session.delete(e)
