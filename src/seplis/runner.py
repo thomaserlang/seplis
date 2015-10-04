@@ -115,32 +115,31 @@ def play_scan():
         logging.exception('play scan db upgrade')
         raise
     logger.set_logger('play_scan.log', to_sentry=True)
-    if not config['play']['scan']:
-        raise Exception('''
-            Nothing to scan. Add a path in the config file.
+    seplis.play.scan.scan()
+    seplis.play.scan.cleanup()
 
-            Example:
-
-                play:
-                    scan:
-                        -
-                            type: shows
-                            path: /a/path/to/the/shows
-            ''')
+@cli.command()
+def play_scan_watch():
+    import seplis.play.scan_watch
+    import seplis.play.scan
     try:
-        for s in config['play']['scan']:
-            scanner = None
-            if s['type'] == 'shows':
-                scanner = seplis.play.scan.Shows_scan(
-                    s['path'],
-                )
-            if not scanner:
-                raise Exception('Scan type: "{}" is not supported'.format(
-                    s['type']
-                ))
-            scanner.scan()
+        seplis.play.scan.upgrade_scan_db()
     except:        
-        logging.exception('play scan')
+        logging.exception('play scan db upgrade')
+        raise    
+    logger.set_logger('play_scan_watch.log', to_sentry=True)
+    seplis.play.scan_watch.main()
+
+@cli.command()
+def play_scan_cleanup():
+    import seplis.play.scan
+    try:
+        seplis.play.scan.upgrade_scan_db()
+    except:        
+        logging.exception('play scan db upgrade')
+        raise
+    logger.set_logger('play_scan.log', to_sentry=True)
+    seplis.play.scan.cleanup()
 
 @cli.command()
 def play_server():

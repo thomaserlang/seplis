@@ -524,3 +524,49 @@ def upgrade_scan_db():
     cfg.set_main_option('script_location', 'seplis.play:migration')
     cfg.set_main_option('url', config['play']['database'])
     command.upgrade(cfg, 'head')
+
+def scan():
+    if not config['play']['scan']:
+        raise Exception('''
+            Nothing to scan. Add a path in the config file.
+
+            Example:
+
+                play:
+                    scan:
+                        -
+                            type: shows
+                            path: /a/path/to/the/shows
+            ''')
+    for s in config['play']['scan']:    
+        try:
+            scanner = None
+            if s['type'] == 'shows':
+                scanner = seplis.play.scan.Shows_scan(
+                    s['path'],
+                )
+            if not scanner:
+                raise Exception('Scan type: "{}" is not supported'.format(
+                    s['type']
+                ))
+            scanner.scan()
+        except:        
+            logging.exception('play scan')
+
+def cleanup():
+    cleanup_episodes()
+
+def cleanup_episodes():
+    with new_session() as session:
+        logging.info('Episode cleanup started')
+        episodes = session.query(models.Episode).all()
+        deleted_count = 0
+        for e in episodes:
+            if os.path.exists(episode.path):
+                continue
+            deleted_count += 1
+            session.delete(e)
+        session.commit()
+        logging.info('{} episodes was deleted from the database'.format(
+            deleted_count
+        ))
