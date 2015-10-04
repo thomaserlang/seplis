@@ -62,7 +62,10 @@ class Handler(PatternMatchingEventHandler):
         self.update(event)
 
     def on_deleted(self, event):
-        logging.debug('deleted')
+        item = self.parse(event)
+        if not item:
+            return
+        self.scanner.delete_item(item)
 
     def on_moved(self, event):
         self.update(event)
