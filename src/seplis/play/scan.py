@@ -255,7 +255,7 @@ class Shows_scan(Play_scan):
             session.merge(e)
             session.commit()
             logging.info('Saved episode: {} {}'.format(
-                episode.title,
+                episode.file_show_title,
                 episode.number
             ))
             return True
@@ -282,7 +282,7 @@ class Shows_scan(Play_scan):
                 session.delete(ep)
                 session.commit()
                 logging.info('Deleted episode: {} {}'.format(
-                    episode.title,
+                    episode.file_show_title,
                     episode.number
                 ))
                 return True
