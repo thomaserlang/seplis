@@ -107,7 +107,8 @@ def worker():
         logging.exception('worker')
 
 @cli.command()
-def play_scan():
+@click.option('--disable_cleanup', is_flag=True, help='Disable cleanup after scan')
+def play_scan(disable_cleanup):
     import seplis.play.scan
     try:
         seplis.play.scan.upgrade_scan_db()
@@ -116,7 +117,8 @@ def play_scan():
         raise
     logger.set_logger('play_scan.log', to_sentry=True)
     seplis.play.scan.scan()
-    seplis.play.scan.cleanup()
+    if not disable_cleanup:
+        seplis.play.scan.cleanup()
 
 @cli.command()
 def play_scan_watch():

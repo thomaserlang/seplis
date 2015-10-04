@@ -550,7 +550,7 @@ def scan():
         try:
             scanner = None
             if s['type'] == 'shows':
-                scanner = seplis.play.scan.Shows_scan(
+                scanner = Shows_scan(
                     s['path'],
                 )
             if not scanner:
