@@ -198,7 +198,7 @@ class test_shows_scan(Testbase):
             self.scanner.episode_number.lookup(episode)
         )
 
-    def test_save_episode(self):
+    def test_save_item(self):
         self.scanner.get_file_modified_time = mock.MagicMock()
         self.scanner.get_file_modified_time.return_value = datetime(2014, 11, 14, 21, 25, 58)
         self.scanner.get_metadata = mock.MagicMock()
@@ -229,7 +229,7 @@ class test_shows_scan(Testbase):
         ))
         # episodes saved
         for episode in episodes:
-            self.scanner.save_episode(episode)
+            self.scanner.save_item(episode)
 
         # check that metadata was called for all the episodes.
         # if metadata i getting called the episode will be 
@@ -240,19 +240,19 @@ class test_shows_scan(Testbase):
             mock.call('/ncis/ncis.4.mp4'),
         ])
 
-        # check that calling `save_episodes` again does not result
+        # check that calling `save_items` again does not result
         # in a update since the `modified_time` has not changed for
         # any of them.      
         self.scanner.get_metadata.reset_mock()
         for episode in episodes:
-            self.scanner.save_episode(episode)
+            self.scanner.save_item(episode)
         self.scanner.get_metadata.assert_has_calls([])
 
         # check that changing the `modified_time` will result in the
         # episode getting updated in the db.        
         self.scanner.get_metadata.reset_mock()
         self.scanner.get_file_modified_time.return_value = datetime(2014, 11, 15, 21, 25, 58)
-        self.scanner.save_episode(episodes[1])
+        self.scanner.save_item(episodes[1])
         self.scanner.get_metadata.assert_has_calls(
             mock.call('/ncis/ncis.2014-11-14.mp4'),
         )
@@ -266,15 +266,12 @@ class test_shows_scan(Testbase):
         )]
         self.scanner.get_episodes = mock.MagicMock()
         self.scanner.get_episodes.return_value = episodes
-        self.scanner.save_episode = mock.MagicMock()
+        self.scanner.save_item = mock.MagicMock()
         self.scanner.episode_show_id_lookup = mock.MagicMock()
         self.scanner.episode_number_lookup = mock.MagicMock()
 
         self.scanner.scan()
-
-        self.scanner.episode_show_id_lookup.assert_called_with(episodes[0])
-        self.scanner.episode_number_lookup.assert_called_with(episodes[0])
-        self.scanner.save_episode.assert_called_with(episodes[0])
+        self.scanner.save_item.assert_called_with(episodes[0])
 
     def test_get_episodes(self):
         self.scanner.get_files = mock.MagicMock()

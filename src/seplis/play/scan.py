@@ -226,10 +226,12 @@ class Shows_scan(Play_scan):
         :returns: bool
         '''
         updated = 0
-        if not self.episode_show_id_lookup(episode):
-            return False
-        if not self.episode_number_lookup(episode):
-            return False
+        if not episode.show_id:
+            if not self.episode_show_id_lookup(episode):
+                return False
+        if not episode.number:
+            if not self.episode_number_lookup(episode):
+                return False
         with new_session() as session:
             ep = session.query(
                 models.Episode,
