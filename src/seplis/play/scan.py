@@ -254,6 +254,10 @@ class Shows_scan(Play_scan):
             )
             session.merge(e)
             session.commit()
+            logging.info('Saved episode: {} {}'.format(
+                episode.title,
+                episode.number
+            ))
             return True
 
     def delete_item(self, episode):        
@@ -277,6 +281,10 @@ class Shows_scan(Play_scan):
             if ep:
                 session.delete(ep)
                 session.commit()
+                logging.info('Deleted episode: {} {}'.format(
+                    episode.title,
+                    episode.number
+                ))
                 return True
         return False
 
