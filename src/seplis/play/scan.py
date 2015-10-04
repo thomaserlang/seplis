@@ -146,7 +146,7 @@ class Shows_scan(Play_scan):
         if not episodes:
             return
         for episode in episodes:
-            self.save_episode(episode)
+            self.save_item(episode)
 
     def get_episodes(self):
         files = self.get_files()
@@ -216,7 +216,7 @@ class Shows_scan(Play_scan):
             ))
         return False
 
-    def save_episode(self, episode):
+    def save_item(self, episode):
         '''
         If `show_id`, `number` and `path` are filled 
         the episode with a relation to the show will
