@@ -71,6 +71,10 @@ class Handler(PatternMatchingEventHandler):
         self.update(event)
 
     def on_modified(self, event):
+        '''Modified gets called a bunch of times when a file is 
+        being downloaded. 
+        We'll overwrite the call_later event for every call.
+        '''
         self.loop.call_soon_threadsafe(self._modified, event)
 
     def _modified(self, event):
@@ -81,7 +85,6 @@ class Handler(PatternMatchingEventHandler):
             self.update, 
             event
         )
-
 
 def main():
     if not config['play']['scan']:
