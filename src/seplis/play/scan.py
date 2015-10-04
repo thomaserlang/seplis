@@ -256,7 +256,7 @@ class Shows_scan(Play_scan):
             session.commit()
             return True
 
-    def delete_item(self, item):        
+    def delete_item(self, episode):        
         '''
         :param episode: `Parsed_episode()`
         :returns: bool
