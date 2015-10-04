@@ -146,10 +146,6 @@ class Shows_scan(Play_scan):
         if not episodes:
             return
         for episode in episodes:
-            if not self.episode_show_id_lookup(episode):
-                continue
-            if not self.episode_number_lookup(episode):
-                continue
             self.save_episode(episode)
 
     def get_episodes(self):
@@ -230,9 +226,11 @@ class Shows_scan(Play_scan):
         :returns: bool
         '''
         updated = 0
+        if not self.episode_show_id_lookup(episode):
+            return False
+        if not self.episode_number_lookup(episode):
+            return False
         with new_session() as session:
-            if not episode.show_id or not episode.number:
-                return False
             ep = session.query(
                 models.Episode,
             ).filter(
