@@ -44,7 +44,7 @@
             var offsetDuration = 0;
             if (data['method'] == 'transcode')
                 offsetDuration = data['start_time'];
-            if (((offsetDuration / 100) * 10) > data['duration']-offsetDuration)
+            if (((data['start_time'] / 100) * 10) > data['duration']-data['start_time'])
                 return;
             var time = offsetDuration + parseInt(this.currentTime);
             if (((time % 10) == 0) && (lastPosStored != time) && 
