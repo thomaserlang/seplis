@@ -36,6 +36,7 @@
         var data = null;
         var watchedIncremented = false;
         var lastPosStored = -1;
+        var lastEpisodeId = null;
 
         $('video').on('timeupdate', function(){
             if (!data)
@@ -409,6 +410,11 @@
                 var url = event.data['media']['contentId'];
 
                 lastPosStored = -1;
+                var eid = ''+data['show_id']+data['episode_number'];
+                if (eid != lastEpisodeId) {
+                    watchedIncremented = true;
+                    lastEpisodeId = eid;
+                }
 
                 window.mediaHost = new cast.player.api.Host({
                     'mediaElement': window.mediaElement,
