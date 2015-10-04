@@ -43,6 +43,8 @@
             var offsetDuration = 0;
             if (data['method'] == 'transcode')
                 offsetDuration = data['start_time'];
+            if (((offsetDuration / 100) * 10) > data['duration']-offsetDuration)
+                return;
             var time = offsetDuration + parseInt(this.currentTime);
             if (((time % 10) == 0) && (lastPosStored != time) && 
                 (time > 0) && !watchedIncremented) {
@@ -406,7 +408,6 @@
             if (event.data['media'] && event.data['media']['contentId']) {
                 var url = event.data['media']['contentId'];
 
-                watchedIncremented = false;
                 lastPosStored = -1;
 
                 window.mediaHost = new cast.player.api.Host({

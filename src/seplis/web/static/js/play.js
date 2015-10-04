@@ -126,6 +126,8 @@
                     return;
                 $('.player-loading').hide();
                 $('.player-casting-to').hide();
+                if (((offsetDuration / 100) * 10) > duration-offsetDuration)
+                    return;
                 var time = offsetDuration + parseInt(this.currentTime);
                 if (((time % 10) == 0) && (lastPosStored != time) && 
                     (time > 0) && !watchedIncremented) {
