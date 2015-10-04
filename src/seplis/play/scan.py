@@ -64,6 +64,12 @@ class Play_scan(object):
         self.type = type_
         self.client = Client(url=config['client']['api_url'])
 
+    def save_item(self, item):
+        raise NotImplemented()
+
+    def delete_item(self, item):
+        raise NotImplemented()
+
     def get_files(self):
         '''
         Looks for files in the `self.scan_path` directory.
@@ -218,10 +224,6 @@ class Shows_scan(Play_scan):
 
     def save_item(self, episode):
         '''
-        If `show_id`, `number` and `path` are filled 
-        the episode with a relation to the show will
-        be saved.
-
         :param episode: `Parsed_episode()`
         :returns: bool
         '''
@@ -253,6 +255,30 @@ class Shows_scan(Play_scan):
             session.merge(e)
             session.commit()
             return True
+
+    def delete_item(self, item):        
+        '''
+        :param episode: `Parsed_episode()`
+        :returns: bool
+        '''
+        if not episode.show_id:
+            if not self.episode_show_id_lookup(episode):
+                return False
+        if not episode.number:
+            if not self.episode_number_lookup(episode):
+                return False
+        with new_session() as session:
+            ep = session.query(
+                models.Episode,
+            ).filter(
+                models.Episode.show_id == episode.show_id,
+                models.Episode.number == episode.number,
+            ).first()
+            if ep:
+                session.delete(ep)
+                session.commit()
+                return True
+        return False
 
 class Show_id(object):
     '''Used to lookup a show id by it's title.
