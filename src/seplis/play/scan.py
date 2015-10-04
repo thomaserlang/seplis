@@ -225,7 +225,6 @@ class Shows_scan(Play_scan):
         :param episode: `Parsed_episode()`
         :returns: bool
         '''
-        updated = 0
         if not episode.show_id:
             if not self.episode_show_id_lookup(episode):
                 return False
