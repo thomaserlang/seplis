@@ -45,6 +45,7 @@
         var controlsHideTimer;
 
         var enableMousemoveChangeSlider = false;
+        var disableChangeSlider = false;
         var currentTime;
         
         var playUrl = function(){
@@ -69,6 +70,8 @@
         }
 
         var changeSlider = (function(time) {
+            if (disableChangeSlider)
+                return;
             time = parseInt(time);
             var norm = $('.player-slider').width() / duration;
             var dotNorm = $('.player-slider-dot').width() / duration;
@@ -124,6 +127,7 @@
             video.on('timeupdate', function(){
                 if (video.attr('src') == undefined)
                     return;
+                ShowPauseButton();
                 $('.player-loading').hide();
                 $('.player-casting-to').hide();
                 if (((startTime / 100) * 10) > duration-startTime)
@@ -237,7 +241,7 @@
             seplisCast.onCast = function(callback){
                 var st = parseInt(currentTime);
                 playerPause();
-                showCastingScreen();
+                setTimeout(showCastingScreen, 500);
                 if (method == 'transcode') {  
                     if (device == 'hlsmp4')    
                         $.get(currentPlayServer.url+'/'+session+'/cancel');
@@ -268,6 +272,7 @@
                     return;
                 if (currenttime == 0)
                     return;
+                disableChangeSlider = false;
                 startTime = currenttime|0;
                 offsetDuration = 0;
                 changeSlider(currenttime);
@@ -277,12 +282,14 @@
             seplisCast.onPlay = function() {
                 ShowPauseButton();
                 enableMousemoveChangeSlider = false;
+                disableChangeSlider = false;
             }            
             seplisCast.onPause = function() {
                 ShowPlayButton();
             }
-            seplisCast.onReconnected = function() {
-                showCastingScreen();
+            seplisCast.onReconnected = function() {                
+                player.pause();
+                setTimeout(showCastingScreen, 100);
             }
             seplisCast.onStopped = function() {
                 $('.player-casting-to').hide();
@@ -407,7 +414,7 @@
             time = parseInt(time);
             changeSlider(time);
             if (seplisCast.isCasting()) {
-                enableMousemoveChangeSlider = true;
+                disableChangeSlider = true;
                 startTime = time;
                 session = guid();
                 seplisCast.play();
@@ -441,6 +448,7 @@
 
         $('.player-slider').on('mousedown touchstart', function(event){
             enableMousemoveChangeSlider = true;
+            disableChangeSlider = false;
             if (event.type == 'touchstart')
                 clearTimeout(controlsHideTimer);
         });

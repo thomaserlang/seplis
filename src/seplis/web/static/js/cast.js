@@ -2,7 +2,6 @@
 
     var updateCurrentTimeTimer = null;
     var updateStoredSessionTimer = null;
-    var checkSessionStatusTimer = null;
     var currentMediaSession = null;
     var namespace = 'urn:x-cast:net.seplis.cast.data';
     var session = null;
@@ -104,7 +103,7 @@
     }
 
     function updateCurrentTime() {
-        if (!session || !currentMediaSession || !data) {
+        if (!session || !currentMediaSession || !data || !currentMediaSession.media) {
             return;
         }
         currenttime = currentMediaSession.getEstimatedTime();
@@ -133,7 +132,7 @@
             seplisCast.onLoading();
         seplisCast.onCast((function(d){
             data = d;
-            localStorage.setItem('cast_url', window.location.pathname);
+            localStorage.setItem('last_cast_url', window.location.pathname);
             updateCurrentTime();
             session.sendMessage(
                 namespace, 
@@ -185,14 +184,12 @@
                         1000
                     );
                     saveSession(session);
-                    if (seplisCast.onPlay)
-                        seplisCast.onPlay();
                 }
+                if (seplisCast.onPlay)
+                    seplisCast.onPlay();
             } else if (currentMediaSession.playerState == 'PAUSED') {
-                if (updateCurrentTimeTimer) {
-                    if (seplisCast.onPause)
-                        seplisCast.onPause();
-                }
+                if (seplisCast.onPause)
+                    seplisCast.onPause();
             }
         } else {
             if (seplisCast.onPause)
@@ -213,7 +210,6 @@
     }
 
     function onStopAppSuccess() {
-        console.log('Session stopped');
         removeSavedSession();
     }
 
@@ -222,10 +218,6 @@
         session = e;
         saveSession(session);
         session.addMessageListener(namespace, receiverMessage);
-        if (window.location.pathname != localStorage.getItem('cast_url')) {
-            play();
-            return;
-        }
         if (session.media.length != 0) {
             console.log('joining session');
             onMediaDiscovered('sessionListener', session.media[0]);
@@ -239,24 +231,23 @@
                     seplisCast.onPlay();
                 }
             }
+        } else {
+            if (window.location.pathname != localStorage.getItem('last_cast_url')) {
+                play();
+            }
         }
-        session.sendMessage(namespace, {
-            'method': 'getdata',
-        });
-        if (seplisCast.onReconnected)
-            seplisCast.onReconnected();
         session.addMediaListener(
             onMediaDiscovered.bind(this, 'addMediaListener')
         );
         session.addUpdateListener(
             sessionUpdateListener.bind(this)
         );
-        if (!checkSessionStatusTimer) {
-            checkSessionStatusTimer = setInterval(
-                checkSessionStatus.bind(this),
-                2000
-            )
-        }
+        session.sendMessage(namespace, {
+            'method': 'getdata',
+        });
+        if (seplisCast.onReconnected)
+            seplisCast.onReconnected();
+
     }
 
     function sessionUpdateListener() {
@@ -307,12 +298,6 @@
         session.addMediaListener(
             onMediaDiscovered.bind(this, 'addMediaListener')
         );
-        if (!checkSessionStatusTimer) {
-            checkSessionStatusTimer = setInterval(
-                checkSessionStatus.bind(this),
-                2000
-            )
-        }
         play();
     }
 
@@ -373,23 +358,7 @@
         localStorage.removeItem('storedSession');
     }
 
-    function checkSessionStatus() {
-        if (!session)
-            return;
-        try {
-            if (session.status != chrome.cast.SessionStatus.CONNECTED) {
-                sessionStopped();
-            }  
-        } catch(e) {
-            console.log(e.message);
-        }
-    }
-
     function sessionStopped() {
-        if (checkSessionStatusTimer) {
-            clearInterval(checkSessionStatusTimer);
-            checkSessionStatusTimer = null;
-        }
         session = null;
         currentMediaSession = null;
         if (updateCurrentTimeTimer) {
@@ -405,6 +374,7 @@
             seplisCast.onPause();
         if (seplisCast.onStopped)
             seplisCast.onStopped();
+        localStorage.removeItem('last_cast_url');
     }
 
 }(window.seplisCast = window.seplisCast || {}, jQuery));
