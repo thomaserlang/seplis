@@ -17,7 +17,7 @@
     onStopped = null;
     onLoading = null;
 
-    seplisCast.init = function(_castButton) {
+    seplisCast.init = function(_castButton, appId) {
         castButton = _castButton;
         startUpdateStoredSessionTimer();
         setTimeout(function(){
@@ -25,8 +25,6 @@
                 console.log('Chrome cast not loaded...');
             }
             console.log('init started');
-            var appId = 'AA4C338C';
-            //var appId = '45718FC5';
 
             var sessionRequest = new chrome.cast.SessionRequest(
                 appId

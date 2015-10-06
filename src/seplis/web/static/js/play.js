@@ -1,5 +1,5 @@
 (function($) {
-    var SeplisPlay = function(video, play_servers, show_id, episode_number, start_pos, options) {
+    var SeplisPlay = function(video, play_servers, show_id, episode_number, start_pos, chromecastAppId, options) {
         var _this = this;
 
         var settings = $.extend({
@@ -291,7 +291,7 @@
                 ShowPauseButton();
                 $('.player-loading').show();
             }
-            seplisCast.init($('.player-cast'));
+            seplisCast.init($('.player-cast'), chromecastAppId);
             changeSlider(startTime);
             if (!seplisCast.alreadyCasting()) {
                 video.attr('src', playUrl());
@@ -522,7 +522,7 @@
         }
     }
 
-    $.fn.seplis_play = function(play_servers, show_id, episode_number, start_pos, options) {
+    $.fn.seplis_play = function(play_servers, show_id, episode_number, start_pos, chromecastAppId, options) {
         return this.each(function(){
             var video = $(this);
             if (video.data('seplis_play')) return;
@@ -532,6 +532,7 @@
                 show_id,
                 episode_number,
                 start_pos,
+                chromecastAppId,
                 options
             );
             video.data('seplis_play', seplis_play);

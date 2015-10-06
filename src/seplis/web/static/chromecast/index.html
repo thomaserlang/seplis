@@ -143,10 +143,6 @@
         window.castReceiverManager.onSenderDisconnected = function(event) {
             var senders = window.castReceiverManager.getSenders();
             //If last sender explicity disconnects, turn off
-            console.log('onSenderDisconnected');
-            console.log(event);
-            console.log(event.reason);
-            console.log(senders);
             if(senders.length == 0 && event.reason == cast.receiver.system.DisconnectReason.REQUESTED_BY_SENDER)
               window.close();
         }
@@ -412,7 +408,7 @@
                 lastPosStored = -1;
                 var eid = ''+data['show_id']+data['episode_number'];
                 if (eid != lastEpisodeId) {
-                    watchedIncremented = true;
+                    watchedIncremented = false;
                     lastEpisodeId = eid;
                 }
 

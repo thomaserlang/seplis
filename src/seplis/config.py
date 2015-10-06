@@ -78,6 +78,7 @@ config = {
             },
         }, 
         'x-accel': False,
+        'chromecast_appid': 'AA4C338C',
     }
 }
 

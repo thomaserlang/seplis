@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from seplis.web.handlers import base
-from seplis import utils, constants
+from seplis import utils, constants, config
 from seplis.web.client import API_error
 from seplis.api import exceptions
 from tornado import gen
@@ -33,6 +33,7 @@ class Handler(base.Handler):
             episode=episode,
             play_servers=play_servers,
             next_episode=next_episode,
+            chromecast_appid=config['play']['chromecast_appid'],
         )
 
     @gen.coroutine
