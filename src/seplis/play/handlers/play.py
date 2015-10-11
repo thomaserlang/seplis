@@ -93,7 +93,7 @@ class _stream_handler(object):
                 self.finish()                
         def close_fds():
             os.dup2(os.open('/dev/null', os.O_RDONLY), 0)
-            os.close(2)        
+            os.close(2)
         self.process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
@@ -104,10 +104,6 @@ class _stream_handler(object):
         self.fd = self.process.stdout.fileno()
         def receive_data(*args):
             data = self.process.stdout.read(8192)
-            if self.process.stderr:
-                error = self.process.stderr.read()
-                if error:
-                    logging.error(error)
             if data: 
                 send(data)
             elif self.process.poll() is not None:
