@@ -48,8 +48,12 @@ config = {
             'avi',
             'mpg',
         ],
-        'ffmpeg_folder': '/usr/src/ffmpeg/',
-        'ffmpeg_threads': 1,
+        'ffmpeg': {
+            'folder': '/usr/src/ffmpeg/',
+            'threads': 1,
+            'loglevel': '16',
+            'logfile': '%p-%t.log',
+        },
         'port': 8003,
         'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
         'segment_time': 10,
@@ -126,3 +130,13 @@ def load(path=None):
         if config['client']['public_api_url']:
             config['client']['public_api_url'] = \
                 config['client']['public_api_url'].rstrip('/')
+
+    ps = os.path.split(config['play']['ffmpeg']['logfile'])
+    if not ps[0]:
+        if config['logging']['path']:
+            config['play']['ffmpeg']['logfile'] = os.path.join(
+                config['logging']['path'],
+                config['play']['ffmpeg']['logfile'],
+            )
+        else:
+            config['play']['ffmpeg']['logfile'] = None

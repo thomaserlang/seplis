@@ -100,6 +100,7 @@ class _stream_handler(object):
             stderr=subprocess.PIPE,
             close_fds=True,
             preexec_fn=close_fds,
+            env=self.subprocess_env(),
         )
         self.fd = self.process.stdout.fileno()
         def receive_data(*args):
@@ -153,7 +154,8 @@ class _hls_handler(object):
         cmd.append(os.path.join(path, '%05d.ts'))
         cmd.append(os.path.join(path, 'media.m3u8'))
         process = subprocess.Popen(
-            cmd
+            cmd,
+            env=self.subprocess_env(),
         )
         self.sessions[session] = {
             'process': process,
@@ -190,6 +192,15 @@ class Transcode_handler(
         self.set_header('Cache-Control', 'no-cache, must-revalidate')
         self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
 
+    def subprocess_env(self):
+        env = {}
+        if config['play']['ffmpeg']['logfile']:
+            env['FFREPORT'] = 'file=\'{}\':level={}'.format(
+                config['play']['ffmpeg']['logfile'],
+                config['play']['ffmpeg']['loglevel'],
+            )
+        return env
+
     @tornado.web.asynchronous
     def get(self):
         self.session = self.get_argument('session')
@@ -205,7 +216,6 @@ class Transcode_handler(
             file_path,
             device_name,
         )
-        self.set_start_time(cmd)
         self.type = device['type']
         if device['type'] == 'stream':
             self.send_stream(cmd)
@@ -264,18 +274,22 @@ class Transcode_handler(
             vcodec,
             device_name
         ))
+        cmd = []
         if device['type'] == 'stream':
-            return self.get_transcode_arguments_stream(file_path, vcodec)
+            cmd = self.get_transcode_arguments_stream(file_path, vcodec)
         elif device['type'] == 'hls':
-            return self.get_transcode_arguments_hls(file_path, vcodec)
+            cmd = self.get_transcode_arguments_hls(file_path, vcodec)
+        self.set_start_time(cmd)
+        logging.info(' '.join(cmd))
+        return cmd
 
     def get_transcode_arguments_stream(self, file_path, vcodec):
         cmd = [ 
-            os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
+            os.path.join(config['play']['ffmpeg']['folder'], 'ffmpeg'),
             '-i', file_path,
             '-f', 'matroska',
             '-loglevel', 'quiet',
-            '-threads', str(config['play']['ffmpeg_threads']),
+            '-threads', str(config['play']['ffmpeg']['threads']),
             '-y',
             '-map_metadata', '-1', 
             '-vcodec', vcodec,
@@ -295,9 +309,9 @@ class Transcode_handler(
 
     def get_transcode_arguments_hls(self, file_path, vcodec):
         return [       
-            os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
+            os.path.join(config['play']['ffmpeg']['folder'], 'ffmpeg'),
             '-i', file_path,
-            '-threads', str(config['play']['ffmpeg_threads']),
+            '-threads', str(config['play']['ffmpeg']['threads']),
             '-y',
             '-loglevel', 'quiet',
             '-map_metadata', '-1', 
