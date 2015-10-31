@@ -1,6 +1,7 @@
 <div class="season-episode">
-    <div class="title">
-        {{ escape(episode['title']) if episode['title'] else 'TBA' }}
+    {% set eptitle = escape(episode['title']) if episode['title'] else 'TBA' %}
+    <div class="title" title="{{ eptitle }}">
+        {{ eptitle }}
     </div>
     <div>
         {% if episode.get('episode') %}
