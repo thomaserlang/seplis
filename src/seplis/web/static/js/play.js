@@ -445,6 +445,10 @@
             startAtSliderPos(event);
         });
 
+        $(window).resize(function() {
+            changeSlider(currentTime);
+        });
+
         $('.player-slider').on('mousedown touchstart', function(event){
             enableMousemoveChangeSlider = true;
             disableChangeSlider = false;
