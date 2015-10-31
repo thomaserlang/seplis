@@ -142,8 +142,8 @@
                         time = 0;
                     }
                     $.post('/api/user/watching', {
-                        'show': show['id'],
-                        'episode': episode['number'],
+                        'show_id': show['id'],
+                        'episode_number': episode['number'],
                         'position': time,
                         'times': times,
                         '_xsrf': getCookie('_xsrf'),
