@@ -35,7 +35,7 @@ class Handler(base.Handler):
             episode_json=utils.json_dumps(episode),
             play_servers=play_servers,
             next_episode=next_episode,
-            chromecast_appid=config['play']['chromecast_appid'],
+            chromecast_appid=config['web']['chromecast_appid'],
         )
 
     @gen.coroutine
