@@ -275,7 +275,7 @@ class Transcode_handler(
             '-i', file_path,
             '-f', 'matroska',
             '-loglevel', 'quiet',
-            '-threads', '0',
+            '-threads', str(config['play']['ffmpeg_threads']),
             '-y',
             '-map_metadata', '-1', 
             '-vcodec', vcodec,
@@ -297,7 +297,7 @@ class Transcode_handler(
         return [       
             os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
             '-i', file_path,
-            '-threads', '0',
+            '-threads', str(config['play']['ffmpeg_threads']),
             '-y',
             '-loglevel', 'quiet',
             '-map_metadata', '-1', 

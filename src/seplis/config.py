@@ -49,6 +49,7 @@ config = {
             'mpg',
         ],
         'ffmpeg_folder': '/usr/src/ffmpeg/',
+        'ffmpeg_threads': 1,
         'port': 8003,
         'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
         'segment_time': 10,
