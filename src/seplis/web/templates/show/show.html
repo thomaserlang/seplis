@@ -3,14 +3,14 @@
     <show>
         {% module show_header(show) %}
         <div class="show-info">
-            <div class="image">
+            <div class="image play-next" show-id="{{ show['id'] }}">
                 <img 
                     alt="{{ escape(show['title']) }} (image missing)" 
                     src="{{ image_url(show['poster_image'], '@SX300.jpg') }}"
                     width="300px"
                     height="441px"
                 >
-                <div class="play-next-button" show-id="{{ show['id'] }}">
+                <div class="play-next-button">
                     <i class="glyphicon glyphicon-play-circle"></i>
                 </div>
             </div>

@@ -74,7 +74,7 @@ $(function(){
         tolerance: 0,
         height: 40
     });
-    $('.play-next-button').click(function(){
+    $('.play-next').click(function(){
         var show_id = $(this).attr('show-id');
         api.get('/api/show-play-next', {'show_id': show_id}, {
             done: function(episode){
@@ -83,21 +83,7 @@ $(function(){
             }
         });
     });
+    $('.play-next-button').on('touchstart', function(e){
+        e.preventDefault();
+    });
 });
-
-function get_show_play_next(show_id) {
-    $('#show-play-next-image')
-        .attr('data-target', '')
-        .attr('href', '');
-    api.get('/api/show-play-next', {'show_id': show_id}, {
-        done: function(episode){
-            $('#show-play-next-image')
-                .attr('data-target', '#seplis-modal')
-                .attr(
-                    'href', 
-                    '/modal/play-episode?show_id='+show_id+
-                    '&episode_number='+episode.number
-                );
-        }
-    })
-}
