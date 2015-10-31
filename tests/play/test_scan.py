@@ -254,7 +254,7 @@ class test_shows_scan(Testbase):
         self.scanner.get_file_modified_time.return_value = datetime(2014, 11, 15, 21, 25, 58)
         self.scanner.save_item(episodes[1])
         self.scanner.get_metadata.assert_has_calls(
-            mock.call('/ncis/ncis.2014-11-14.mp4'),
+            [mock.call('/ncis/ncis.2014-11-14.mp4')],
         )
         
     def test_scan(self):
