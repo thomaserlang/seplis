@@ -130,11 +130,10 @@
                 ShowPauseButton();
                 $('.player-loading').hide();
                 $('.player-casting-to').hide();
-                if (((startTime / 100) * 10) > duration-startTime)
-                    return;
                 var time = offsetDuration + parseInt(this.currentTime);
                 if (((time % 10) == 0) && (lastPosStored != time) && 
-                    (time > 0) && !watchedIncremented) {
+                    (time > 0) && !watchedIncremented &&
+                    (((startTime / 100) * 10) <= duration-startTime)) {
                     lastPosStored = time;
                     var times = 0;
                     if (((time / 100) * 10) > (duration-time)) {
