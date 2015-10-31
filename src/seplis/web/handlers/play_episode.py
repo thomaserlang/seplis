@@ -30,7 +30,9 @@ class Handler(base.Handler):
             return
         self.render('play_episode/episode.html',
             show=show,
+            show_json=utils.json_dumps(show),
             episode=episode,
+            episode_json=utils.json_dumps(episode),
             play_servers=play_servers,
             next_episode=next_episode,
             chromecast_appid=config['play']['chromecast_appid'],

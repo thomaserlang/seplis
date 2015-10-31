@@ -101,8 +101,8 @@
         </div>
     </div>
     <script>
-        var show_id = {{ show['id'] }};
-        var number = {{ episode['number'] }};
+        var show = {{ show_json }};
+        var episode = {{ episode_json }};
         var play_servers = [            
             {% for ps in play_servers %}
             {
@@ -115,8 +115,8 @@
         $(function(){
             $('video').seplis_play(
                 play_servers,
-                show_id,
-                number,
+                show,
+                episode,
                 start_pos,
                 "{{ chromecast_appid }}"
             );

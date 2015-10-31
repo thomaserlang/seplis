@@ -58,8 +58,8 @@
                 }
                 var url = data['api_url'];
                 var url1 = '/1/users/'+data['user_id'].toString();
-                var url2 = '/shows/'+data['show_id'].toString()+
-                        '/episodes/'+data['episode_number'];
+                var url2 = '/shows/'+data['show']['id'].toString()+
+                        '/episodes/'+data['episode']['number'];
                 var dpos = {};
                 if (times == 0) {
                     url += url1 + '/watching'+ url2;
@@ -406,7 +406,7 @@
                 var url = event.data['media']['contentId'];
 
                 lastPosStored = -1;
-                var eid = ''+data['show_id']+data['episode_number'];
+                var eid = ''+data['show']['id']+data['episode']['number'];
                 if (eid != lastEpisodeId) {
                     watchedIncremented = false;
                     lastEpisodeId = eid;

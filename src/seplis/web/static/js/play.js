@@ -1,5 +1,5 @@
 (function($) {
-    var SeplisPlay = function(video, play_servers, show_id, episode_number, start_pos, chromecastAppId, options) {
+    var SeplisPlay = function(video, play_servers, show, episode, start_pos, chromecastAppId, options) {
         var _this = this;
 
         var settings = $.extend({
@@ -142,8 +142,8 @@
                         time = 0;
                     }
                     $.post('/api/user/watching', {
-                        'show_id': show_id,
-                        'episode_number': episode_number,
+                        'show': show['id'],
+                        'episode': episode['number'],
                         'position': time,
                         'times': times,
                         '_xsrf': getCookie('_xsrf'),
@@ -248,8 +248,8 @@
                 api.get('/api/progress-token', null, {
                     done: (function(data) {
                         callback({
-                            'show_id': show_id,
-                            'episode_number': episode_number,
+                            'show': show,
+                            'episode': episode,
                             'start_time': st,
                             'token': data.token,
                             'play_url': _playUrl(
@@ -366,7 +366,7 @@
         });
 
         $('.player-back').on('click', function(){
-            location.href = '/show/'+show_id;
+            location.href = '/show/'+show['id'];
         });
         
         var playerPause = function(){
@@ -533,15 +533,15 @@
         }
     }
 
-    $.fn.seplis_play = function(play_servers, show_id, episode_number, start_pos, chromecastAppId, options) {
+    $.fn.seplis_play = function(play_servers, show, episode, start_pos, chromecastAppId, options) {
         return this.each(function(){
             var video = $(this);
             if (video.data('seplis_play')) return;
             var seplis_play = new SeplisPlay(
                 video, 
                 play_servers,
-                show_id,
-                episode_number,
+                show,
+                episode,
                 start_pos,
                 chromecastAppId,
                 options
