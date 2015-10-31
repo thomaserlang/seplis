@@ -131,12 +131,13 @@ def load(path=None):
             config['client']['public_api_url'] = \
                 config['client']['public_api_url'].rstrip('/')
 
-    ps = os.path.split(config['play']['ffmpeg']['logfile'])
-    if not ps[0]:
-        if config['logging']['path']:
-            config['play']['ffmpeg']['logfile'] = os.path.join(
-                config['logging']['path'],
-                config['play']['ffmpeg']['logfile'],
-            )
-        else:
-            config['play']['ffmpeg']['logfile'] = None
+    if config['play']['ffmpeg']['logfile']:
+        ps = os.path.split(config['play']['ffmpeg']['logfile'])
+        if not ps[0]:
+            if config['logging']['path']:
+                config['play']['ffmpeg']['logfile'] = os.path.join(
+                    config['logging']['path'],
+                    config['play']['ffmpeg']['logfile'],
+                )
+            else:
+                config['play']['ffmpeg']['logfile'] = None
