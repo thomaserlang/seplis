@@ -243,7 +243,7 @@ class Token(Base):
         self.user_id = user_id
         self.user_level = user_level
         self.expires = expires if expires else \
-            datetime.utcnow() + timedelta(days=365)
+            datetime.utcnow() + timedelta(days=constants.USER_TOKEN_EXPIRE_DAYS)
         self.token = utils.random_key()
 
     def after_insert(self):

@@ -13,6 +13,8 @@ LEVEL_GOD = 6
 
 PER_PAGE = 25
 
+USER_TOKEN_EXPIRE_DAYS = 365
+
 EXTERNAL_TYPES = (
     'imdb',
     'thetvdb',

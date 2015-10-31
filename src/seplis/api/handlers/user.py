@@ -167,7 +167,7 @@ class Progress_token_handler(base.Handler):
             token = models.Token(
                 app_id=None,
                 user_id=self.current_user.id,
-                user_level=-1,
+                user_level=constants.LEVEL_PROGRESS,
                 expires=datetime.utcnow()+timedelta(days=1),
             )
             session.add(token)
