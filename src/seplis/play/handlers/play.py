@@ -194,10 +194,10 @@ class Transcode_handler(
 
     def subprocess_env(self):
         env = {}
-        if config['play']['ffmpeg']['logfile']:
+        if config['play']['ffmpeg_logfile']:
             env['FFREPORT'] = 'file=\'{}\':level={}'.format(
-                config['play']['ffmpeg']['logfile'],
-                config['play']['ffmpeg']['loglevel'],
+                config['play']['ffmpeg_logfile'],
+                config['play']['ffmpeg_loglevel'],
             )
         return env
 
@@ -285,12 +285,13 @@ class Transcode_handler(
 
     def get_transcode_arguments_stream(self, file_path, vcodec):
         cmd = [ 
-            os.path.join(config['play']['ffmpeg']['folder'], 'ffmpeg'),
+            os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
             '-i', file_path,
             '-f', 'matroska',
             '-loglevel', 'quiet',
-            '-threads', str(config['play']['ffmpeg']['threads']),
+            '-threads', str(config['play']['ffmpeg_threads']),
             '-y',
+            '-preset', 'veryfast',
             '-map_metadata', '-1', 
             '-vcodec', vcodec,
             '-map', '0:0',
@@ -309,10 +310,11 @@ class Transcode_handler(
 
     def get_transcode_arguments_hls(self, file_path, vcodec):
         return [       
-            os.path.join(config['play']['ffmpeg']['folder'], 'ffmpeg'),
+            os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
             '-i', file_path,
-            '-threads', str(config['play']['ffmpeg']['threads']),
+            '-threads', str(config['play']['ffmpeg_threads']),
             '-y',
+            '-preset', 'veryfast',
             '-loglevel', 'quiet',
             '-map_metadata', '-1', 
             '-vcodec', vcodec,

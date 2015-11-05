@@ -99,10 +99,10 @@ class Play_scan(object):
         ))
         if not os.path.exists(path):
             raise Exception('Path "{}" does not exist'.format(path))
-        ffprobe = os.path.join(config['play']['ffmpeg']['folder'], 'ffprobe')
+        ffprobe = os.path.join(config['play']['ffmpeg_folder'], 'ffprobe')
         if not os.path.exists(ffprobe):
             raise Exception('ffprobe not found in "{}"'.format(
-                config['play']['ffmpeg']['folder'],
+                config['play']['ffmpeg_folder'],
             ))
         cmd = [
             ffprobe,
