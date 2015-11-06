@@ -340,6 +340,19 @@ class Show_fan(Base):
         result = pipe.execute()
         return result if isinstance(show_id, list) else result[0]
 
+    @classmethod
+    def get_all(cls, user_id):
+        '''Returns a list of all the show ids the user is a fan of.
+
+        :user_id: int
+        :returns: list of int
+        '''
+        show_ids = database.redis.smembers(
+            cls._user_cache_name.format(user_id)
+        )
+        return [int(id_) for id_ in show_ids]
+
+
 class Show_external(Base):
     __tablename__ = 'show_externals'
 
