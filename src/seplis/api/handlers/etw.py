@@ -17,6 +17,7 @@ class Handler(base.Handler):
             for show, episodes in zip(shows, list(grouped.values())):
                 show['next_episode'] = episodes[0]
                 show['total_next_episodes'] = len(episodes)
+            shows = sorted(shows, key=lambda d: d['title'])
         else:
             shows = []
         self.write_object(shows)        
