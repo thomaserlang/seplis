@@ -16,6 +16,7 @@ import seplis.api.handlers.air_dates
 import seplis.api.handlers.episode_watched
 import seplis.api.handlers.episode_watching
 import seplis.api.handlers.next_to_watch
+import seplis.api.handlers.etw
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -153,6 +154,10 @@ class Application(tornado.web.Application):
             URLSpec(
                 r'/1/users/([0-9]+)/next-to-watch/shows/([0-9]+)', 
                 seplis.api.handlers.next_to_watch.Handler
+            ),
+            URLSpec(
+                r'/1/users/([0-9]+)/etw', 
+                seplis.api.handlers.etw.Handler
             ),
 
             URLSpec(

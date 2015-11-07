@@ -326,6 +326,8 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         :param show_ids: list of int
         :returns: list of dict
         '''
+        if not show_ids:
+            return []
         result = yield self.es('/shows/show/_mget', body={
             'ids': show_ids
         })

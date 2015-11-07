@@ -116,10 +116,13 @@ class Testbase(AsyncHTTPTestCase):
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
         self.assertTrue(show['id'] > 0)        
+        self.refresh_es()
+        return show['id']
+
+    def refresh_es(self):
         self.get('http://{}/_refresh'.format(
             config['api']['elasticsearch']
         ))
-        return show['id']
 
     def new_app(self, name, user_id, level, redirect_uri=''):
         with new_session() as session:
