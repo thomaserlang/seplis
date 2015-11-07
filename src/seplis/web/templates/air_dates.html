@@ -30,7 +30,7 @@
                 </h3>
                 <div class="airdate-shows">
                     {% for show in ad['shows'] %}
-                        <div class="airdate-show-image image">
+                        <div class="show-list-image-tooltip image">
                             <a href="/show/{{ show['id'] }}">              
                                 <img 
                                     alt="{{ escape(show['title']) }}" 
@@ -39,7 +39,7 @@
                                     src="{{ image_url(show['poster_image'], '@SX166.jpg') }}"
                                 >
                             </a>
-                            <div class="airdate-show-tooltip hidden">
+                            <div class="show-tooltip-text hidden">
                                 <div class="header">
                                     <h3>
                                         <a href="/show/{{ show['id'] }}">   
