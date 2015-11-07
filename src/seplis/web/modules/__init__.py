@@ -2,9 +2,10 @@ from tornado import web
 
 class Menu(web.UIModule):
 
-    def render(self):
+    def render(self, menu_id):
         return self.render_string(
-            'menu.html'
+            'menu.html',
+            menu_id=menu_id,
         )
 
 class Fan_button(web.UIModule):

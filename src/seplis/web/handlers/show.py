@@ -333,6 +333,7 @@ class Fan_of_handler(base.Handler):
             self.render(temp,
                 title='Fan of',
                 shows=shows,
+                menu_id='shows',
                 current_page=page,
             )
 
@@ -350,6 +351,7 @@ class Fan_of_handler(base.Handler):
         self.render('fan_of_empty.html',
             title='Fan of',
             shows=shows,
+            menu_id='shows',
             current_page=page,
         )
 
@@ -370,5 +372,6 @@ class Index_handler(base.Handler):
         self.render(temp,
             title='Show index',
             shows=shows,
+            menu_id='shows',
             current_page=page,
         )

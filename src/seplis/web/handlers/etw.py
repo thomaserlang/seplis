@@ -17,5 +17,6 @@ class Handler(base.Handler):
         ))
         self.render('etw.html',
             title='ETW',
+            menu_id='etw',
             shows=shows,
         )

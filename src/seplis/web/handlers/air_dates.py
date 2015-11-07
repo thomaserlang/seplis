@@ -22,6 +22,7 @@ class Handler(base.Handler):
         })
         self.render('air_dates.html',
             title='Air dates',
+            menu_id='air_dates',
             air_dates=air_dates,
             recently_watched=recently_watched,
         )

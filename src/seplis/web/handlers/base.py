@@ -25,6 +25,7 @@ class Handler_unauthenticated(web.RequestHandler):
             config=config,
             image_url=self.image_url,
             plural=self.plural,
+            menu_id=None,
         )
         return namespace
 
