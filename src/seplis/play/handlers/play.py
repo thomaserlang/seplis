@@ -212,6 +212,9 @@ class Transcode_handler(
             raise tornado.web.HTTPError(404)
         file_path = episode.path
         self.metadata = episode.meta_data
+        self.video_stream = self.get_video_stream(self.metadata)
+        if not self.video_stream:
+            raise Exception('No video stream were found')
         cmd = self.get_transcode_arguments(
             file_path,
             device_name,
@@ -245,21 +248,21 @@ class Transcode_handler(
         if self.fd:
             self.ioloop.remove_handler(self.fd)
 
-    def get_codec_name(self, file_path):
-
+    def get_video_stream(self, metadata):
         if 'streams' not in self.metadata:
             return
         for stream in self.metadata['streams']:
             if stream['codec_type'] == 'video':
-                return stream['codec_name']
+                return stream
 
     def get_codec(self, file_path, device):
-        codec = self.get_codec_name(file_path)
+        codec = self.video_stream['codec_name']
+        pix_fmt = self.video_stream['pix_fmt']
         if codec:
             logging.info('"{}" has codec type: "{}"'.format(file_path, codec))
         else:        
             logging.info('Could not find a codec for "{}"'.format(file_path))
-        if codec in device['names']:
+        if codec in device['names'] and pix_fmt in device['pix_fmt']:
             return 'copy'
         return device['default_codec']
 
@@ -294,6 +297,7 @@ class Transcode_handler(
             '-preset', 'veryfast',
             '-map_metadata', '-1', 
             '-vcodec', vcodec,
+            '-pix_fmt', 'yuv420p',
             '-map', '0:0',
             '-sn',
             '-acodec', 'aac',
@@ -318,6 +322,7 @@ class Transcode_handler(
             '-loglevel', 'quiet',
             '-map_metadata', '-1', 
             '-vcodec', vcodec,
+            '-pix_fmt', 'yuv420p',
             '-flags',
             '-global_header',
             '-bsf', 'h264_mp4toannexb',

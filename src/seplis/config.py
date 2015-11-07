@@ -65,6 +65,9 @@ config = {
                     'h264',
                     'webm',
                 ],
+                'pix_fmt': [
+                    'yuv420p',
+                ],
                 'default_codec': 'libx264',
                 'type': 'stream',
             },
@@ -72,12 +75,18 @@ config = {
                 'names':    [
                     'h264',
                 ],
+                'pix_fmt': [
+                    'yuv420p',
+                ],
                 'default_codec': 'libx264',
                 'type': 'stream',
             },
             'hlsmp4': {
                 'names':    [
                     'h264',
+                ],
+                'pix_fmt': [
+                    'yuv420p',
                 ],
                 'default_codec': 'libx264',
                 'type': 'hls',
