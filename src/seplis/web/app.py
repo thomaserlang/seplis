@@ -12,6 +12,7 @@ import seplis.web.handlers.user.play_servers
 import seplis.web.handlers.user.user
 import seplis.web.handlers.user.progress_token
 import seplis.web.handlers.play_episode
+import seplis.web.handlers.etw
 import hashlib
 import os, os.path
 from seplis.web import modules
@@ -135,6 +136,7 @@ class Application(tornado.web.Application):
 
             URLSpec(r'/air-dates', seplis.web.handlers.air_dates.Handler),
             URLSpec(r'/fan-of', seplis.web.handlers.show.Fan_of_handler),
+            URLSpec(r'/etw', seplis.web.handlers.etw.Handler),
 
             URLSpec(r'/user/play-servers', seplis.web.handlers.user.play_servers.Handler),
             URLSpec(r'/user/play-server-form', seplis.web.handlers.user.play_servers.Form_handler),

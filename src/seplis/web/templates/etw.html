@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block body %}
+    {% if shows %}
+        <div class="row">
+            <div class="col-xs-12 shows">
+                {% for show in shows %}
+                    <div class="show">
+                        <div class="show-list-image-tooltip image">
+                            <a href="/show/{{ show['id'] }}/episode/{{ show['next_episode']['number']}}/play">
+                                <img 
+                                    title="{{ escape(show['title']) }}"
+                                    alt="{{ escape(show['title']) }}"
+                                    src="{{ image_url(show['poster_image'], '@SX227.jpg') }}"
+                                    width="227px"
+                                    height="334px"
+                                >
+                            </a>
+                            <div class="show-tooltip-text hidden">
+                                <div class="header">
+                                    <h3>
+                                        <a href="/show/{{ show['id'] }}">   
+                                            {{ escape(show['title']) }}
+                                        </a>
+                                    </h3>
+                                </div>
+                                <div class="body">
+                                    <p>
+                                        <strong>Next episode:</strong> <br>
+                                        <a href="/show/{{ show['id'] }}/episode/{{ show['next_episode']['number']}}/play">
+                                            {% module episode_header(show['next_episode']) %}
+                                        </a>
+                                    </p>
+                                    <p>
+                                        <strong>Total episodes to watch:</strong> {{ show['total_next_episodes'] }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% end %}
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            <h1>You have nothing to watch!</h1>
+            <p>
+                Use the 
+                <a href="#" onclick="$('.autocomplete').focus();return false;">
+                    search bar</a>
+                above to find new shows.
+            </p>
+        </div>
+    {% end %}
+{% end %}
