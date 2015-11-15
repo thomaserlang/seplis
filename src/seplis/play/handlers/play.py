@@ -3,6 +3,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.gen
 import tornado.escape
+import tornado.process
 import subprocess
 import os, os.path
 import shutil
@@ -201,8 +202,15 @@ class Transcode_handler(
             )
         return env
 
+    def create_temp_folder(self):
+        path = config['play']['temp_folder']
+        if not os.path.exists(path):
+            os.makedirs(path)
+
     @tornado.web.asynchronous
+    @tornado.gen.engine
     def get(self):
+        self.create_temp_folder()
         self.session = self.get_argument('session')
         self.ioloop = tornado.ioloop.IOLoop.current()
         device_name = self.get_device_name()
@@ -210,13 +218,16 @@ class Transcode_handler(
         episode = get_episode(self.get_argument('play_id'))
         if not episode:
             raise tornado.web.HTTPError(404)
-        file_path = episode.path
+        self.file_path = episode.path
         self.metadata = episode.meta_data
         self.video_stream = self.get_video_stream(self.metadata)
         if not self.video_stream:
             raise Exception('No video stream were found')
+        subtitle_lang = self.get_argument('subtitle_lang', None)
+        self.subtitle_file = None
+        if subtitle_lang:
+            self.subtitle_file = yield self.subtitle(subtitle_lang)
         cmd = self.get_transcode_arguments(
-            file_path,
             device_name,
         )
         self.type = device['type']
@@ -233,7 +244,15 @@ class Transcode_handler(
         cmd.insert(1, '-ss')
         cmd.insert(2, str(start))
 
+    def set_subtitle(self, cmd):
+        if not self.subtitle_file:
+            return
+        cmd.insert(5, '-vf')
+        cmd.insert(6, 'subtitles={}'.format(self.subtitle_file))
+
     def on_connection_close(self):
+        if self.subtitle_file and os.path.exists(self.subtitle_file):
+            os.remove(self.subtitle_file)
         if not hasattr(self, 'type'):
             return
         if self.type != 'stream':
@@ -255,56 +274,52 @@ class Transcode_handler(
             if stream['codec_type'] == 'video':
                 return stream
 
-    def get_codec(self, file_path, device):
+    def get_codec(self, device):
         codec = self.video_stream['codec_name']
         pix_fmt = self.video_stream['pix_fmt']
         if codec:
-            logging.info('"{}" has codec type: "{}"'.format(file_path, codec))
+            logging.info('"{}" has codec type: "{}"'.format(self.file_path, codec))
         else:        
-            logging.info('Could not find a codec for "{}"'.format(file_path))
+            logging.info('Could not find a codec for "{}"'.format(self.file_path))
         if codec in device['names'] and pix_fmt in device['pix_fmt']:
             return 'copy'
         return device['default_codec']
 
-    def get_transcode_arguments(self, file_path, device_name):
+    def get_transcode_arguments(self, device_name):
         device = config['play']['devices'][device_name]
-        vcodec = self.get_codec(
-            file_path, 
-            device
-        )
+        vcodec = self.get_codec(device)
         logging.info('"{}" will be transcoded with codec "{}", with settings from device "{}"'.format(
-            file_path, 
+            self.file_path, 
             vcodec,
             device_name
         ))
         cmd = []
         if device['type'] == 'stream':
-            cmd = self.get_transcode_arguments_stream(file_path, vcodec)
+            cmd = self.get_transcode_arguments_stream(vcodec)
         elif device['type'] == 'hls':
-            cmd = self.get_transcode_arguments_hls(file_path, vcodec)
+            cmd = self.get_transcode_arguments_hls(vcodec)
         self.set_start_time(cmd)
+        self.set_subtitle(cmd)
         logging.info(' '.join(cmd))
         return cmd
 
-    def get_transcode_arguments_stream(self, file_path, vcodec):
+    def get_transcode_arguments_stream(self, vcodec):
         cmd = [ 
             os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
-            '-i', file_path,
+            '-i', self.file_path,
             '-f', 'matroska',
             '-loglevel', 'quiet',
             '-threads', str(config['play']['ffmpeg_threads']),
             '-y',
-            '-preset', 'veryfast',
-            '-map_metadata', '-1', 
-            '-vcodec', vcodec,
-            '-pix_fmt', 'yuv420p',
             '-map', '0:0',
-            '-sn',
-            '-acodec', 'aac',
+            '-preset', 'veryfast',
+            '-c:v', vcodec,
+            '-pix_fmt', 'yuv420p',
+            '-map', '0:1',
+            '-c:a', 'aac',
             '-strict', '-2',
             '-cutoff', '15000',
             '-ac', '2', 
-            '-map', '0:1',
             '-ab', '193k',
             '-',
         ]
@@ -312,10 +327,10 @@ class Transcode_handler(
             cmd.insert(1, '-noaccurate_seek')
         return cmd
 
-    def get_transcode_arguments_hls(self, file_path, vcodec):
+    def get_transcode_arguments_hls(self, vcodec):
         return [       
             os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
-            '-i', file_path,
+            '-i', self.file_path,
             '-threads', str(config['play']['ffmpeg_threads']),
             '-y',
             '-preset', 'veryfast',
@@ -335,7 +350,58 @@ class Transcode_handler(
             '-hls_allow_cache', '0',
             '-hls_time', str(config['play']['segment_time']),
             '-hls_list_size', '0', 
-        ]    
+        ]
+
+    def get_subtitles(self):
+        subs = {}
+        sub_count = -1
+        for stream in self.metadata['streams']:
+            if stream['codec_type'] == 'subtitle':
+                sub_count += 1
+                if 'tags' in stream and 'language' in stream['tags']:
+                    subs[stream['tags']['language']] = sub_count
+        return subs
+
+    def get_subtitles_arguments(self, lang):
+        logging.info('Looking for subtitle with language {}'.format(lang))
+        subs = self.get_subtitles()
+        sub_index = subs.get(lang, None)
+        if sub_index == None:            
+            logging.info('Found no subtitles with language: {}'.format(lang))
+            logging.info('Available subtitles: {}'.format(', '.join(subs.keys())))
+            return
+        args = [
+            os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
+            '-i', self.file_path,
+            '-y',
+            '-vn',
+            '-an',
+            '-c:s:{}'.format(sub_index),
+            'ass',
+        ]        
+        start = int(self.get_argument('start', 0))
+        if start:
+            args.insert(1, '-ss')
+            args.insert(2, str(start))
+        return args
+
+    @tornado.gen.coroutine
+    def subtitle(self, lang):
+        args = self.get_subtitles_arguments(lang)
+        if not args:
+            return 
+        subtitle_file = os.path.join(
+            config['play']['temp_folder'],
+            '{}.ass'.format(self.session)
+        )
+        logging.info('Subtitle found, saving to: {}'.format(subtitle_file))
+        args.append(subtitle_file)
+        logging.info('Subtitle arguments: {}'.format(' '.join(args)))
+        p = tornado.process.Subprocess(args)
+        r = yield p.wait_for_exit(raise_error=False)
+        logging.info(r)
+        logging.info('Subtitle file saved!')
+        return subtitle_file
 
 class Hls_file_handler(Transcode_handler, _hls_handler):
 
