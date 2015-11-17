@@ -119,7 +119,9 @@ class Play_scan(object):
         )
         data = process.stdout.read()
         error = process.stderr.read()
-        if error:
+        if error:        
+            if isinstance(error, bytes):
+                error = error.decode('utf-8')   
             raise Exception('FFprobe error: {}'.format(error))
         if not data:
             return
