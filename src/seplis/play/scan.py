@@ -118,6 +118,9 @@ class Play_scan(object):
             stderr=subprocess.PIPE,
         )
         data = process.stdout.read()
+        error = process.stderr.read()
+        if error:
+            raise Exception('FFprobe error: {}'.format(error))
         if not data:
             return
         if isinstance(data, bytes):
