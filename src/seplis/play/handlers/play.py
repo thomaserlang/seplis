@@ -247,8 +247,10 @@ class Transcode_handler(
     def set_subtitle(self, cmd):
         if not self.subtitle_file:
             return
-        cmd.insert(5, '-vf')
-        cmd.insert(6, 'subtitles={}'.format(self.subtitle_file))
+        
+        i = cmd.index('-i') + 1
+        cmd.insert(i+1, '-vf')
+        cmd.insert(i+2, 'subtitles={}'.format(self.subtitle_file))
 
     def on_connection_close(self):
         if self.subtitle_file and os.path.exists(self.subtitle_file):
@@ -281,8 +283,9 @@ class Transcode_handler(
             logging.info('"{}" has codec type: "{}"'.format(self.file_path, codec))
         else:        
             logging.info('Could not find a codec for "{}"'.format(self.file_path))
-        if codec in device['names'] and pix_fmt in device['pix_fmt']:
-            return 'copy'
+        if not self.subtitle_file:
+            if codec in device['names'] and pix_fmt in device['pix_fmt']:
+                return 'copy'
         return device['default_codec']
 
     def get_transcode_arguments(self, device_name):
@@ -397,9 +400,14 @@ class Transcode_handler(
         logging.info('Subtitle found, saving to: {}'.format(subtitle_file))
         args.append(subtitle_file)
         logging.info('Subtitle arguments: {}'.format(' '.join(args)))
-        p = tornado.process.Subprocess(args)
-        r = yield p.wait_for_exit(raise_error=False)
-        logging.info(r)
+        p = tornado.process.Subprocess(
+            args,
+            env=self.subprocess_env(),
+        )
+        r = yield p.wait_for_exit(raise_error=True)
+        if r != 0:
+            logging.info('Subtitle file could not be saved!')
+            return
         logging.info('Subtitle file saved!')
         return subtitle_file
 
