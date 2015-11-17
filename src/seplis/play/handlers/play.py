@@ -490,9 +490,13 @@ class Metadata_handler(tornado.web.RequestHandler):
         episode = get_episode(
             self.get_argument('play_id'),
         )
-        if not episode or not episode.meta_data:
+        if not episode:
             self.set_status(404)
-            self.write('{}')
+            self.write('{"error": "No episode found"}')
+            return
+        if not episode.meta_data:
+            self.set_status(404)
+            self.write('{"error": "No metadata for the episode found"}')
             return
         self.write(
             episode.meta_data,
