@@ -53,7 +53,7 @@ def create_indices():
                             },
                             'suggest': {
                                 'type': 'string', 
-                                'index_analyzer': 'autocomplete_index',
+                                'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
                             }
                         }
@@ -100,18 +100,16 @@ def create_indices():
                     },
                     'alternative_titles': {
                         'type': 'string',
-                        'index_name': 'alternative_title',
                         'fields': {
                             'suggest': {
                                 'type': 'string', 
-                                'index_analyzer': 'autocomplete_index',
+                                'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
                             },
                         },
                     },
                     'genres': {
                         'type': 'string',
-                        'index_name': 'genre',
                     },                    
                     'episode_type': { 'type': 'integer' },
                     'created_at': { 'type': 'date' },
@@ -186,7 +184,7 @@ def create_indices():
                             },
                             'suggest': {
                                 'type': 'string', 
-                                'index_analyzer': 'autocomplete_index',
+                                'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
                             }
                         }
