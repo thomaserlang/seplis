@@ -133,8 +133,12 @@
                         subtitleLang = lang;
                     }
                     $('.player-subtitle-select-box').hide();
-                    playerPause();
-                    playerStart();
+                    if (!seplisCast.isCasting()) {
+                        playerPause();
+                        playerStart();
+                    } else {
+                        seplisCast.play();
+                    }
                 });
             }
         });
