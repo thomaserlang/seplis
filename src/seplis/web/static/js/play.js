@@ -49,6 +49,7 @@
         var currentTime;
 
         var subtitleLang = null;
+        var audioLang = null;
         
         var playUrl = function(){
             return _playUrl(method, device, startTime, session);
@@ -63,6 +64,9 @@
                     session+'&start='+starttime.toString();
                 if (subtitleLang) {
                     url += '&subtitle_lang='+subtitleLang;
+                }
+                if (audioLang) {
+                    url += '&audio_lang='+audioLang;                    
                 }
                 offsetDuration = starttime;
             } else {
@@ -125,12 +129,20 @@
                     html += '</div>';
                 html += '</div>';
                 $('.player-subtitle-select-box').html(html);
-                $('.subtitle-select').on('click', function(e){
+                $('.subtitle-select, .audio-select').on('click', function(e){
                     var lang = $(this).attr('lang');
-                    if (lang == 'none') {
-                        subtitleLang = null;
-                    } else {
-                        subtitleLang = lang;
+                    if ($(this).hasClass('subtitle-select')) {
+                        if (lang == 'none') {
+                            subtitleLang = null;
+                        } else {
+                            subtitleLang = lang;
+                        }
+                    } else if ($(this).hasClass('audio-select')) {
+                        if (lang == 'none') {
+                            audioLang = null;
+                        } else {
+                            audioLang = lang;
+                        }
                     }
                     $('.player-subtitle-select-box').hide();
                     if (!seplisCast.isCasting()) {
