@@ -47,6 +47,8 @@
         var enableMousemoveChangeSlider = false;
         var disableChangeSlider = false;
         var currentTime;
+
+        var subtitleLang = null;
         
         var playUrl = function(){
             return _playUrl(method, device, startTime, session);
@@ -59,6 +61,9 @@
                 url = currentPlayServer.url+'/transcode?play_id='+
                     currentPlayServer.play_id+'&device='+device+'&session='+
                     session+'&start='+starttime.toString();
+                if (subtitleLang) {
+                    url += '&subtitle_lang='+subtitleLang;
+                }
                 offsetDuration = starttime;
             } else {
                 url = currentPlayServer.url+'/play?play_id='+currentPlayServer.play_id;
@@ -68,6 +73,71 @@
             }
             return url;
         }
+
+        var setupSubtitles = (function(){
+            var subs = [];
+            var audio = [];
+            for (var i in metadata.streams) {
+                var stream = metadata.streams[i];
+                if (stream.codec_type == 'subtitle') {
+                    subs.push(stream.tags.language);
+                } 
+                else if (stream.codec_type == 'audio') {
+                    audio.push(stream.tags.language);
+                }
+            }
+            $('.player-subtitle-select-box').html('');
+            if ((subs.length > 0) || (audio.length > 1)) {
+                var subHideTimer = null;
+                $('.player-subtitle-select').show();
+                $('.player-subtitle-select').on('mouseover', function(e){
+                    clearTimeout(subHideTimer);
+                    $('.player-subtitle-select-box').show();
+                });
+                $('.player-subtitle-select').on('click', function(e){
+                    $('.player-subtitle-select-box').toggle();
+                });
+                $('.player-subtitle-select-box').on('mousemove', function(e){
+                    clearTimeout(subHideTimer);
+                });
+                $('.player-subtitle-select, .player-subtitle-select-box')
+                    .on('mouseleave', function(){
+                        clearTimeout(subHideTimer);
+                        subHideTimer = setTimeout(function(){
+                            $('.player-subtitle-select-box').hide();
+                        }, 500);
+                    });
+                var html = '';
+                html += '<div class="row">';
+                    html += '<div class="col-xs-6">';
+                        html += '<h4>Audio</h4>';
+                        for (var i in audio) {
+                            html += '<p class="audio-select" lang="'+audio[i]+'">'+audio[i]+'</p>';
+                        }
+                    html += '</div>';
+
+                    html += '<div class="col-xs-6">';
+                        html += '<h4>Subtitles</h4>';    
+                        html += '<p class="subtitle-select" lang="none">None</p>';
+                        for (var i in subs) {
+                            html += '<p class="subtitle-select" lang="'+subs[i]+'">'+subs[i]+'</p>';
+                        }
+                    html += '</div>';
+                html += '</div>';
+                $('.player-subtitle-select-box').html(html);
+                $('.subtitle-select').on('click', function(e){
+                    var lang = $(this).attr('lang');
+                    if (lang == 'none') {
+                        subtitleLang = null;
+                    } else {
+                        subtitleLang = lang;
+                    }
+                    $('.player-subtitle-select-box').hide();
+                    playerPause();
+                    playerStart();
+                });
+            }
+        });
 
         var changeSlider = (function(time) {
             if (disableChangeSlider)
@@ -124,6 +194,7 @@
             if (!isMobile())
                 player.volume = localStorage.getItem('player_volume_default') || 1;
             ChangeVolume(player.volume);
+            setupSubtitles();
             video.on('timeupdate', function(){
                 if (video.attr('src') == undefined)
                     return;
