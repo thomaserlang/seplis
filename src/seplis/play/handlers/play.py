@@ -383,12 +383,7 @@ class Transcode_handler(
         logging.info('Available {}: {}'.format(codec_type, ', '.join(langs)))
 
     def get_subtitles_arguments(self, lang):
-        logging.info('Looking for subtitle with language {}'.format(lang))
         sub_index = self._get_stream_index_by_lang('subtitle', lang)
-        if sub_index == None:            
-            logging.info('Found no subtitles with language: {}'.format(lang))
-            logging.info('Available subtitles: {}'.format(', '.join(subs.keys())))
-            return
         args = [
             os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
             '-i', self.file_path,
