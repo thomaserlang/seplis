@@ -384,6 +384,8 @@ class Transcode_handler(
 
     def get_subtitles_arguments(self, lang):
         sub_index = self._get_stream_index_by_lang('subtitle', lang)
+        if not sub_index:
+            return
         args = [
             os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
             '-i', self.file_path,
