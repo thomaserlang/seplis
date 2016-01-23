@@ -223,6 +223,7 @@ class Transcode_handler(
         self.video_stream = self.get_video_stream(self.metadata)
         if not self.video_stream:
             raise Exception('No video stream were found')
+        self.audio_lang = self.get_argument('audio_lang', None)
         subtitle_lang = self.get_argument('subtitle_lang', None)
         self.subtitle_file = None
         if subtitle_lang:
@@ -230,7 +231,6 @@ class Transcode_handler(
         cmd = self.get_transcode_arguments(
             device_name,
         )
-        self.audio_lang = self.get_argument('audio_lang', None)
         self.type = device['type']
         if device['type'] == 'stream':
             self.send_stream(cmd)
@@ -253,7 +253,13 @@ class Transcode_handler(
         cmd.insert(i+2, 'subtitles={}'.format(self.subtitle_file))
 
     def set_audio(self, cmd):
-        pass
+        if not self.audio_lang:
+            return
+        d = self._get_stream_index_by_lang('audio', self.audio_lang)
+        if not d: 
+            return
+        i = cmd.index('0:1')
+        cmd[i] = '0:{}'.format(d['index'])
 
     def on_connection_close(self):
         if self.subtitle_file and os.path.exists(self.subtitle_file):
@@ -306,6 +312,7 @@ class Transcode_handler(
             cmd = self.get_transcode_arguments_hls(vcodec)
         self.set_start_time(cmd)
         self.set_subtitle(cmd)
+        self.set_audio(cmd)
         logging.debug(' '.join(cmd))
         return cmd
 
@@ -358,7 +365,7 @@ class Transcode_handler(
             '-hls_list_size', '0', 
         ]
 
-    def _get_streams_by_lang(self, codec_type, lang):
+    def _get_stream_index_by_lang(self, codec_type, lang):
         logging.info('Looking for {} with language {}'.format(codec_type, lang))
         group_index = -1
         langs = []
@@ -377,7 +384,7 @@ class Transcode_handler(
 
     def get_subtitles_arguments(self, lang):
         logging.info('Looking for subtitle with language {}'.format(lang))
-        sub_index = self._get_streams_by_lang('subtitle', lang)
+        sub_index = self._get_stream_index_by_lang('subtitle', lang)
         if sub_index == None:            
             logging.info('Found no subtitles with language: {}'.format(lang))
             logging.info('Available subtitles: {}'.format(', '.join(subs.keys())))
@@ -390,7 +397,7 @@ class Transcode_handler(
             '-an',
             '-c:s:{}'.format(sub_index['group_index']),
             'ass',
-        ]        
+        ]
         start = int(self.get_argument('start', 0))
         if start:
             args.insert(1, '-ss')
