@@ -462,6 +462,9 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
         self.sessions[session]['call_later'] = call_later
         self.finish()
 
+    def on_connection_close(self):
+        pass
+
 def set_default_headers(self):
     self.set_header('Cache-Control', 'no-cache, must-revalidate')
     self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
