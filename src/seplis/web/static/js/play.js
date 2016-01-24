@@ -94,23 +94,9 @@
             if ((subs.length > 0) || (audio.length > 1)) {
                 var subHideTimer = null;
                 $('.player-subtitle-select').show();
-                $('.player-subtitle-select').on('mouseover', function(e){
-                    clearTimeout(subHideTimer);
-                    $('.player-subtitle-select-box').show();
-                });
                 $('.player-subtitle-select').on('click', function(e){
                     $('.player-subtitle-select-box').toggle();
                 });
-                $('.player-subtitle-select-box').on('mousemove', function(e){
-                    clearTimeout(subHideTimer);
-                });
-                $('.player-subtitle-select, .player-subtitle-select-box')
-                    .on('mouseleave', function(){
-                        clearTimeout(subHideTimer);
-                        subHideTimer = setTimeout(function(){
-                            $('.player-subtitle-select-box').hide();
-                        }, 500);
-                    });
                 var html = '';
                 html += '<div class="row">';
                     html += '<div class="col-xs-6">';
