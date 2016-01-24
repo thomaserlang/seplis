@@ -122,7 +122,7 @@
 
                     html += '<div class="col-xs-6">';
                         html += '<h4>Subtitles</h4>';    
-                        html += '<p class="subtitle-select" lang="none">None</p>';
+                        html += '<p class="subtitle-select" lang="none">off</p>';
                         for (var i in subs) {
                             html += '<p class="subtitle-select" lang="'+subs[i]+'">'+subs[i]+'</p>';
                         }
