@@ -436,6 +436,7 @@
             $('.player-controls-wrapper').css('visibility', 'hidden');
             $('.player-slider-time').css('visibility', 'hidden');
             $('.player-back').hide();
+            $('.player-subtitle-select-box').hide();
         });
 
         var showControls = (function(){
