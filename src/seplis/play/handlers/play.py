@@ -348,18 +348,13 @@ class Transcode_handler(
             '-y',
             '-preset', 'veryfast',
             '-loglevel', 'quiet',
-            '-map_metadata', '-1', 
             '-vcodec', vcodec,
             '-pix_fmt', 'yuv420p',
-            '-flags',
-            '-global_header',
             '-bsf', 'h264_mp4toannexb',
             '-map', '0:0',
-            '-sn',
             '-acodec', 'libmp3lame',
             '-ac', '2',
             '-map', '0:1',
-            '-aq', '0',
             '-hls_allow_cache', '0',
             '-hls_time', str(config['play']['segment_time']),
             '-hls_list_size', '0', 
@@ -444,7 +439,7 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
                 logging.info('media.m3u8 not found, trying again in 1 second. Retry number: {}'.format(times))
                 times += 1
                 self.ioloop.call_later(
-                    1, 
+                    0.1, 
                     self._get, 
                     session, 
                     file_, 
