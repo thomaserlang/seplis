@@ -57,7 +57,7 @@ config = {
 
         'port': 8003,
         'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
-        'segment_time': 10,
+        'segment_time': 3,
         'session_timeout': 40, # Timeout for HLS sessions
         'devices':{
             'chrome': {

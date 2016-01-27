@@ -131,9 +131,7 @@ class _hls_handler(object):
             )
         a = [
             '#EXTM3U',
-            '#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH={}'.format(
-                int(self.metadata['format']['bit_rate'])
-            ),
+            '#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1',
             '{}/media/media.m3u8'.format(self.session),
         ]
         for s in a:
@@ -439,7 +437,7 @@ class Hls_file_handler(Transcode_handler, _hls_handler):
                 logging.info('media.m3u8 not found, trying again in 1 second. Retry number: {}'.format(times))
                 times += 1
                 self.ioloop.call_later(
-                    0.1, 
+                    1, 
                     self._get, 
                     session, 
                     file_, 
