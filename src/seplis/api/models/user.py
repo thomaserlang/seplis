@@ -76,7 +76,7 @@ class User(Base):
         :param email_or_username: str
         :returns: dict
         '''
-        lookup = hashlib.md5(email_or_username.encode('utf-8')).hexdigest()
+        lookup = hashlib.md5(email_or_username.lower().encode('utf-8')).hexdigest()
         user_id = database.redis.get(cls._cache_name_email.format(lookup))
         if not user_id:
             user_id = database.redis.get(cls._cache_name_name.format(
@@ -196,12 +196,12 @@ class User(Base):
     @property
     def cache_name_email(self):
         return self._cache_name_email.format(
-            hashlib.md5(self.email.encode('utf-8')).hexdigest()
+            hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
         )
     @property
     def cache_name_name(self):
         return self._cache_name_name.format(
-            hashlib.md5(self.name.encode('utf-8')).hexdigest(),
+            hashlib.md5(self.name.lower().encode('utf-8')).hexdigest(),
         )
     @property
     def cache_name_stats(self):
