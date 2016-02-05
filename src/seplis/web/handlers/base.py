@@ -49,7 +49,10 @@ class Handler(Handler_unauthenticated):
 
     @gen.coroutine
     def prepare(self):
-        access_token = self.get_secure_cookie('session')
+        access_token = self.get_secure_cookie(
+            'session' 
+            max_age_days=constants.USER_TOKEN_EXPIRE_DAYS,
+        )
         if access_token:
             self.client.access_token = access_token.decode('utf-8')
         try:

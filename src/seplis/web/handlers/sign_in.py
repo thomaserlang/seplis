@@ -33,8 +33,9 @@ class API_handler(base.API_handler):
         self.set_secure_cookie(
             name='session',
             value=response['access_token'],
-            expires_days=365 if self.get_argument('remember_me', 'true') == 'true' \
-                else None,
+            expires_days=constants.USER_TOKEN_EXPIRE_DAYS \
+                if self.get_argument('remember_me', 'true') == 'true' \
+                    else None,
         )
 
 class Sign_up_handler(base.Handler):
