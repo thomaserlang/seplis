@@ -3,10 +3,12 @@ from seplis.web.handlers import base
 from tornado import gen
 from tornado.web import authenticated
 from seplis import utils
+from seplis.api import constants
 
-class Handler(base.Handler):
+class Handler(base.Handler_unauthenticated):
     
     def get(self):
+        logging.error('signin')
         self.render(
             'sign_in.html', 
             title='Sign in',
@@ -33,7 +35,7 @@ class API_handler(base.API_handler):
         self.set_secure_cookie(
             name='session',
             value=response['access_token'],
-            expires_days=constants.USER_TOKEN_EXPIRE_DAYS \
+            expires_days=(constants.USER_TOKEN_EXPIRE_DAYS-1) \
                 if self.get_argument('remember_me', 'true') == 'true' \
                     else None,
         )
@@ -59,6 +61,4 @@ class Sign_out_handler(base.Handler):
 
     @authenticated
     def get(self):
-        self.clear_cookie('session')
-        self.clear_cookie('user')
-        self.redirect('/')
+        self.sign_out()

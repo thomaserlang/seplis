@@ -7,6 +7,10 @@ from seplis.api import constants
 
 class Handler_unauthenticated(web.RequestHandler):
 
+    @property
+    def is_api(self):
+        return False
+
     def initialize(self, *arg, **args):
         super().initialize()
         self.xsrf_token        
@@ -50,8 +54,8 @@ class Handler(Handler_unauthenticated):
     @gen.coroutine
     def prepare(self):
         access_token = self.get_secure_cookie(
-            'session' 
-            max_age_days=constants.USER_TOKEN_EXPIRE_DAYS,
+            'session',
+            max_age_days=(constants.USER_TOKEN_EXPIRE_DAYS-1),
         )
         if access_token:
             self.client.access_token = access_token.decode('utf-8')
@@ -70,13 +74,31 @@ class Handler(Handler_unauthenticated):
             if self.current_user:
                 self.current_user = utils.dotdict(self.current_user)
         except API_error as e:
-            if e.code != 1009: # not signed in
-                self.clear_cookie('session')                
-                self.clear_cookie('user')
-                raise
+            if e.code == 1009: # not signed in
+                if not self.is_api:
+                    self.sign_out()
+                return
+            raise
+
+    def sign_out(self):
+        self.clear_cookie('session')
+        self.clear_cookie('user')
+        self.redirect('/sign-in')
+
+
+    def write_error(self, status_code, **kwargs):
+        if isinstance(kwargs['exc_info'][1], API_error):
+            if kwargs['exc_info'][1].code == 1009:
+                self.sign_out()
+                return
+        super().write_error(status_code, **kwargs)
 
 class API_handler(Handler):
     
+    @property
+    def is_api(self):
+        return True    
+
     def set_default_headers(self):
         self.set_header('Cache-Control', 'no-cache, must-revalidate')
         self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
