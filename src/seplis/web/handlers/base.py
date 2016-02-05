@@ -71,6 +71,8 @@ class Handler(Handler_unauthenticated):
                 self.current_user = utils.dotdict(self.current_user)
         except API_error as e:
             if e.code != 1009: # not signed in
+                self.clear_cookie('session')                
+                self.clear_cookie('user')
                 raise
 
 class API_handler(Handler):
