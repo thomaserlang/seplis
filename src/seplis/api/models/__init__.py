@@ -12,7 +12,7 @@ from .base import Base
 from .show import Show, Show_fan, Show_external
 from .image import Image
 from .episode import Episode, Episode_watched
-from .user import User, Token
+from .user import User, Token, User_show_subtitle_lang
 from .app import App
 from .play_server import Play_server
 
