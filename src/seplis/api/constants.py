@@ -18,12 +18,10 @@ USER_TOKEN_EXPIRE_DAYS = 365
 EXTERNAL_TYPES = (
     'imdb',
     'thetvdb',
-    'tvrage',
 )
 EXTERNAL_TYPE_NAMES = {
     'imdb': 'IMDb',
     'thetvdb': 'TheTVDB',
-    'tvrage': 'TVRage',
 }
 EXTERNAL_REQUIRED_TYPES = (
     'imdb',
@@ -32,11 +30,9 @@ EXTERNAL_REQUIRED_TYPES = (
 INDEX_TYPES = (
     ('info', (
         'thetvdb',
-        'tvrage',
     )),
     ('episodes', (
         'thetvdb',
-        'tvrage',
     )),
     ('images', (
         'thetvdb',
