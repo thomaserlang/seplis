@@ -109,6 +109,9 @@ class Testbase(AsyncHTTPTestCase):
             self.access_token = access_token.token
 
     def new_show(self):
+        '''Signs the user in and returns a show id.
+        :returns: int (show_id)
+        '''
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
             'status': 1,
