@@ -3,14 +3,13 @@ import good
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session
 from seplis.api import models, exceptions, constants
-from seplis import schemas
 from tornado import gen, web
 from tornado.concurrent import run_on_executor
 from sqlalchemy import asc
 
 class Handler(base.Handler):
 
-    validate_schema = good.Schema({
+    __schema__ = good.Schema({
         'times': good.All(
             int, 
             good.Range(min=-20, max=20)
@@ -29,7 +28,7 @@ class Handler(base.Handler):
 
     @run_on_executor
     def _put(self, user_id, show_id, episode_number):
-        self.validate(self.validate_schema)
+        self.validate(self.__schema__)
         with new_session() as session:
             episode = session.query(models.Episode).filter(
                 models.Episode.show_id == show_id,
@@ -86,7 +85,7 @@ class Range_handler(base.Handler):
 
     @run_on_executor
     def _put(self, user_id, show_id, from_, to):
-        self.validate(Handler.validate_schema)
+        self.validate(Handler.__schema__)
         times = int(self.request.body.get('times', 1))
         episode = None
         with new_session() as session:

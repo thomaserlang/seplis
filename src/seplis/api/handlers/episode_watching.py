@@ -8,7 +8,7 @@ from tornado.concurrent import run_on_executor
 
 class Handler(base.Handler):
 
-    validation_schema = good.Schema({
+    __schema__ = good.Schema({
         'position': good.All(int, good.Range(min=0, max=86400)),
     })
 
@@ -19,7 +19,7 @@ class Handler(base.Handler):
 
     @run_on_executor
     def _put(self, user_id, show_id, episode_number):
-        self.validate(self.validation_schema)
+        self.validate(self.__schema__)
         with new_session() as session:
             episode = session.query(models.Episode).filter(
                 models.Episode.show_id == show_id,
