@@ -306,15 +306,19 @@ def row_to_dict(row):
     return {c.name: getattr(row, c.name) \
         for c in row.__table__.columns}
 
-def _datetime_none_check(dt):
+def _None_check_str(v):
     '''Converts 'None' to None.
 
-    :param dt: str
+    :param v: str
     :returns: str or None
     '''
-    if dt == 'None':
+    if v == 'None':
         return
-    return dt
+    return v
+def _None_check_int(v):
+    if v == 'None':
+        return
+    return int(v)
 
 def redis_sa_model_dict(rd, cls):
     '''Takes a dict returned from redis and
@@ -325,8 +329,9 @@ def redis_sa_model_dict(rd, cls):
     :param cls: SQLAlchemy model class
     '''
     types = {
-        sa.Integer: int,
-        sa.DateTime: _datetime_none_check,
+        sa.Integer: _None_check_int,
+        sa.DateTime: _None_check_str,
+        sa.String: _None_check_str,
     }
     for key in rd:
         if not key in cls.__table__.columns:
@@ -336,3 +341,4 @@ def redis_sa_model_dict(rd, cls):
         )
         if t:
             rd[key] = t(rd[key])
+    return rd
