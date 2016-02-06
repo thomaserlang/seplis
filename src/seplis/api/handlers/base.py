@@ -5,8 +5,9 @@ import http.client
 import sys
 import logging
 import redis
+import good
+from sqlalchemy.exc import OperationalError
 from sqlalchemy import or_
-from voluptuous import MultipleInvalid
 from tornado import gen
 from urllib.parse import urljoin
 from datetime import datetime
@@ -78,30 +79,31 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             )
             
     def write_error(self, status_code, **kwargs):
-        if isinstance(kwargs['exc_info'][1], exceptions.API_exception):
-            self.write_object({
-                'code': kwargs['exc_info'][1].code,
-                'message': kwargs['exc_info'][1].message,
-                'errors': kwargs['exc_info'][1].errors,
-                'extra':  kwargs['exc_info'][1].extra,
-            })
-            return 
-        elif isinstance(kwargs['exc_info'][1], TypeError):
-            self.set_status(400)
-            self.write_object({
-                'code': None,
-                'message': str(kwargs['exc_info'][1]),
-                'errors': None,
-                'extra':  None,
-            })
-            return
-        if hasattr(kwargs['exc_info'][1], 'log_message') and kwargs['exc_info'][1].log_message:
+        if 'exc_info' in kwargs:
+            if isinstance(kwargs['exc_info'][1], exceptions.API_exception):
+                self.write_object({
+                    'code': kwargs['exc_info'][1].code,
+                    'message': kwargs['exc_info'][1].message,
+                    'errors': kwargs['exc_info'][1].errors,
+                    'extra': kwargs['exc_info'][1].extra,
+                })
+                return
+            elif isinstance(kwargs['exc_info'][1], OperationalError):
+                self.set_status(503)
+                self.write_object({
+                    'code': 3000,
+                    'message': 'lost connection to the database, please try again',
+                    'errors': None,
+                    'extra': None
+                })
+                return
+        if 'exc_info' in kwargs and isinstance(kwargs['exc_info'][1], tornado.web.HTTPError) and kwargs['exc_info'][1].log_message:
             msg = kwargs['exc_info'][1].log_message
         else:
             msg = http.client.responses[status_code]
         self.write_object({
-            'code': None, 
-            'message': msg, 
+            'code': -1,
+            'message': msg,
             'errors': None,
             'extra': None,
         })
@@ -184,23 +186,41 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             return
         return utils.dotdict(user)
 
-    def validate(self, schema=None, *arg, **args):
-        if schema is None:
-            if hasattr(self, '_schema'):
-                schema = getattr(self, '_schema')
+    def _validate(self, data, schema, *args, **kwargs):
         try:
-            if not isinstance(schema, schemas.Schema):  
-                schema = schemas.Schema(schema, *arg, **args)    
-            return schema(self.request.body)            
-        except MultipleInvalid as e:
+            if not isinstance(schema, good.Schema):        
+                schema = good.Schema(schema, *args, **kwargs)
+            return schema(data)    
+        except good.MultipleInvalid as ee:
             data = []
-            for error in e.errors:
-                path = '.'.join(str(x) for x in error.path)
+            for e in ee:
                 data.append({
-                    'field': path,
-                    'message': error.msg,
+                    'field': u'.'.join(str(x) for x in e.path),
+                    'message': e.message,
                 })
             raise exceptions.Validation_exception(errors=data)
+        except good.Invalid as e:
+            data = [{
+                'field': u'.'.join(str(x) for x in e.path),
+                'message': e.message,
+            }]            
+            raise exceptions.Validation_exception(errors=data)
+
+    def validate(self, schema, *args, **kwargs):
+        return self._validate(
+            self.request.body,
+            schema,
+            *args,
+            **kwargs
+        )
+
+    def validate_arguments(self, schema, *args, **kwargs):
+        return self._validate(
+            utils.tornado_arguments_to_unicode(self.request.arguments),
+            schema,
+            *args,
+            **kwargs
+        )
 
     @gen.coroutine
     def log_exception(self, typ, value, tb):        

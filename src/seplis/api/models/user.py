@@ -264,7 +264,8 @@ class Token(Base):
         return self._cache_name.format(self.token)
 
 class User_show_subtitle_lang(Base):
-
+    __tablename__ = 'user_show_subtitle_lang'
+    
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     subtitle_lang = sa.Column(sa.String)
@@ -336,6 +337,7 @@ def rebuild_tokens():
         session.commit()
 
 @rebuild_cache.register('user_show_subtitle_lang')
+def rebuild_user_show_subtitle_lang():
     with new_session() as session:
         for item in session.query(User_show_subtitle_lang).yield_per(10000):
             item.cache()

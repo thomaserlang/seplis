@@ -346,7 +346,7 @@ class test_thetvdb(TestCase):
         self.assertEqual(images[0]['external_name'], 'thetvdb')
         self.assertEqual(images[0]['external_id'], '877696')
         self.assertEqual(images[0]['type'], constants.IMAGE_TYPE_POSTER)
-        schemas.validate(schemas.Image, images[0])
+        schemas.validate(schemas.Image_required, images[0])
             
 
 if __name__ == '__main__':

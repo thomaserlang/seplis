@@ -332,7 +332,7 @@ class Show_indexer(Client):
 
 def show_info_changes(show, show_new):
     changes = {}
-    for s in schemas.Show_schema:
+    for s in schemas._Show_schema:
         if not isinstance(s, str) or \
             s == 'externals' or \
             s == 'indices' or \
@@ -361,7 +361,7 @@ def show_episode_changes(episodes, episodes_new):
         if episode['number'] not in current:
             changes.append(episode)
             continue
-        for s in schemas.Episode_schema:
+        for s in schemas._Episode_schema:
             s = str(s)
             if s == 'number':
                 data[s] = episode[s]

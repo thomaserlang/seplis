@@ -1,14 +1,13 @@
 import re
 import aniso8601
-from voluptuous import Schema, Any, Required, Length, All, Match, \
-    Invalid, Range, Optional
+import good
 from datetime import datetime
 from dateutil import parser
 from seplis.api import constants
 
 def validate(schema, d, *arg, **args):
-    if not isinstance(schema, Schema):            
-        schema = Schema(schema, *arg, **args)    
+    if not isinstance(schema, good.Schema):            
+        schema = good.Schema(schema, *arg, **args)    
     return schema(d)   
 
 def iso8601():
@@ -16,7 +15,7 @@ def iso8601():
         try:
             return parser.parse(v)
         except:
-            raise Invalid('invalid iso 8601 datetime {}'.format(v))
+            raise good.Invalid('invalid iso 8601 datetime {}'.format(v))
     return f
 
 def date_():
@@ -24,7 +23,7 @@ def date_():
         try:
             return aniso8601.parse_date(v)
         except:
-            raise Invalid('invalid date {}'.format(v))
+            raise good.Invalid('invalid date {}'.format(v))
     return f
 
 def time_(msg=None):
@@ -32,121 +31,126 @@ def time_(msg=None):
         try:
             return aniso8601.parse_time(v)
         except:
-            raise Invalid('invalid time {}'.format(v))
+            raise good.Invalid('invalid time {}'.format(v))
     return f
 
 def image_type(msg=None):
     def f(v):
         if v not in constants.IMAGE_TYPES:
-            raise Invalid('invalid image type: {}'.format(v))
+            raise good.Invalid('invalid image type: {}'.format(v))
         return v
     return f
 
 def validate_email(email):
     """Validate email."""
     if not "@" in email:
-        raise Invalid("this is an invalid email address")
+        raise good.Invalid("this is an invalid email address")
     return email
 
 def SHOW_EPISODE_TYPE(msg=None):
     def f(v):
         if v not in constants.SHOW_EPISODE_TYPE:
-            raise Invalid('invalid episodes type: {}'.format(v))
+            raise good.Invalid('invalid episodes type: {}'.format(v))
         return v
     return f
 
-Description_schema = Schema({
-    'text': Any(None, str),
-    'title': Any(None, str),
-    'url':  Any(None, str),
-})
-Episode_schema = {
-    'title': Any(str, None),
-    Required('number'): int,
-    Optional('season'): Any(int, None),
-    Optional('episode'): Any(int, None),
-    'air_date': Any(None, date_()),
-    'description': Any(None, Description_schema),
-    'runtime': Any(int, None),
+Description_schema = good.Schema({
+    'text': good.Any(None, str),
+    'title': good.Any(None, str),
+    'url':  good.Any(None, str),
+}, default_keys=good.Optional)
+_Episode_schema = {
+    'title': good.Any(str, None),
+    good.Required('number'): int,
+    good.Optional('season'): good.Any(int, None),
+    good.Optional('episode'): good.Any(int, None),
+    'air_date': good.Any(None, date_()),
+    'description': good.Any(None, Description_schema),
+    'runtime': good.Any(int, None),
 }
-External_schema = Schema({
-    All(Length(min=1, max=45)):Any(None, All(str, Length(min=1, max=45)))
-})
-Index_schema = Schema(
-    {key: Any(None, All(str, Length(min=1, max=45))) \
-        for key in constants.INDEX_TYPE_NAMES}
+Episode_schema = good.Schema(_Episode_schema, default_keys=good.Optional)
+External_schema = good.Schema({
+    good.All(good.Length(min=1, max=45)):good.Any(None, good.All(str, good.Length(min=1, max=45)))
+}, default_keys=good.Optional)
+Index_schema = good.Schema(
+    {key: good.Any(None, good.All(str, good.Length(min=1, max=45))) \
+        for key in constants.INDEX_TYPE_NAMES},
+    default_keys=good.Optional,
 )
-Show_schema = {
+_Show_schema = {
     'title': str,
-    'description': Any(None, Description_schema),
-    'premiered': Any(None, date_()),
-    'ended': Any(None, date_()),
-    Optional('episodes'): Any([Episode_schema]),
-    'externals': Any(None, External_schema),
-    'indices': Any(None, Index_schema),
+    'description': good.Any(None, Description_schema),
+    'premiered': good.Any(None, date_()),
+    'ended': good.Any(None, date_()),
+    good.Optional('episodes'): good.Any([Episode_schema]),
+    'externals': good.Any(None, External_schema),
+    'indices': good.Any(None, Index_schema),
     'status': int,
-    'runtime': Any(int, None),
+    'runtime': good.Any(int, None),
     'genres': [str],
     'alternative_titles': [str],
-    'poster_image_id': Any(int, None),
-    'episode_type': All(int, SHOW_EPISODE_TYPE()),   
+    'poster_image_id': good.Any(int, None),
+    'episode_type': good.All(int, SHOW_EPISODE_TYPE()),   
 }
+Show_schema = good.Schema(_Show_schema, default_keys=good.Optional)
 
-User_schema = Schema({
-    'name': All(
+User_schema = good.Schema({
+    'name': good.All(
         str, 
-        Length(min=1, max=45), 
-        Match(re.compile(r'^[a-z0-9-_]+$', re.I),
-        msg='must only contain a-z, 0-9, _ and -')
+        good.Length(min=1, max=45), 
+        good.Match(re.compile(r'^[a-z0-9-_]+$', re.I),
+        message='must only contain a-z, 0-9, _ and -')
     ),    
-    'email': All(str, Length(min=1, max=100), validate_email),
-    'password': All(str, Length(min=6)),
-}, required=True)
-
-App_schema = Schema({
-    'name': All(str, Length(min=1, max=45)),
-    'redirect_uri': All(str, Length(1, max=45)),
-    'level': int,
+    'email': good.All(str, good.Length(min=1, max=100), validate_email),
+    'password': good.All(str, good.Length(min=6)),
 })
 
-Token = Schema({
-    'grant_type': str,
-}, extra=True, required=True)
+App_schema = good.Schema({
+    'name': good.All(str, good.Length(min=1, max=45)),
+    'redirect_uri': good.All(str, good.Length(1, max=45)),
+    'level': int,
+}, default_keys=good.Optional)
 
-Token_type_password = Schema({
+Token = good.Schema({
+    'grant_type': str,
+}, extra_keys=good.Allow)
+
+Token_type_password = good.Schema({
     'grant_type': str,
     'email': str,
     'password': str,
     'client_id': str,
-}, extra=False, required=True)
+})
 
-User_tag_relation_schema = Schema({
-    'name': All(str, Length(min=1, max=50)),
-}, required=True)
+User_tag_relation_schema = good.Schema({
+    'name': good.All(str, good.Length(min=1, max=50)),
+})
 
-Image = {
-    'external_name': All(str, Length(min=1, max=45)),
-    'external_id': All(str, Length(min=1, max=45)),
-    'source_title': All(str, Length(min=1, max=200)),
-    'source_url': All(str, Length(min=1, max=200)),
-    'type': All(int, image_type()),
+_Image = {
+    'external_name': good.All(str, good.Length(min=1, max=45)),
+    'external_id': good.All(str, good.Length(min=1, max=45)),
+    'source_title': good.All(str, good.Length(min=1, max=200)),
+    'source_url': good.All(str, good.Length(min=1, max=200)),
+    'type': good.All(int, image_type()),
 }
+Image_required = good.Schema(_Image, default_keys=good.Required)
+Image_optional = good.Schema(_Image, default_keys=good.Optional)
 
-Play_server = {
-    'name': All(str, Length(min=1, max=45)),
-    'url': All(str, Length(min=1, max=200)),
-    'secret': All(str, Length(min=1, max=200)),
-}
+Play_server = good.Schema({
+    'name': good.All(str, good.Length(min=1, max=45)),
+    'url': good.All(str, good.Length(min=1, max=200)),
+    'secret': good.All(str, good.Length(min=1, max=200)),
+})
 
 
-Config_play_scan = Schema(
-    Any(
+Config_play_scan = good.Schema(
+    good.Any(
         None, 
         [
-            Schema({
+            {
                 'type': str,
                 'path': str,
-            }, required=True)
+            }
         ]
     )
 )

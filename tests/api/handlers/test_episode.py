@@ -219,7 +219,7 @@ class Test_play_servers(Testbase):
                 },                
             ],
         })
-        self.assertEqual(response.code, 201)
+        self.assertEqual(response.code, 201, response.body)
         show = utils.json_loads(response.body)
 
         response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {

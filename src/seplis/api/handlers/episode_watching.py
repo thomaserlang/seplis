@@ -1,3 +1,4 @@
+import good
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session
 from seplis.api import models, exceptions, constants
@@ -7,9 +8,9 @@ from tornado.concurrent import run_on_executor
 
 class Handler(base.Handler):
 
-    _schema = {
-        'position': schemas.All(int, schemas.Range(min=0, max=86400)),
-    }
+    validation_schema = good.Schema({
+        'position': good.All(int, good.Range(min=0, max=86400)),
+    })
 
     @authenticated(constants.LEVEL_PROGRESS)
     @gen.coroutine
@@ -18,7 +19,7 @@ class Handler(base.Handler):
 
     @run_on_executor
     def _put(self, user_id, show_id, episode_number):
-        self.validate(required=True)
+        self.validate(self.validation_schema)
         with new_session() as session:
             episode = session.query(models.Episode).filter(
                 models.Episode.show_id == show_id,

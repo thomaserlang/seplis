@@ -67,7 +67,8 @@ class test_scan(Testbase):
     @mock.patch('os.path.exists')
     def test_get_metadata(self, mock_path_exists, mock_popen):
         mock_path_exists.return_value = True
-        mock_popen().stdout.read.return_value= '{"metadata": "test"}'
+        mock_popen().stdout.read.return_value = '{"metadata": "test"}'
+        mock_popen().stderr.read.return_value = None
         self.assertEqual(
             self.scanner.get_metadata('somefile.mp4'),
             {'metadata': 'test'}

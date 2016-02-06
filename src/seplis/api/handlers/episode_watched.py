@@ -1,4 +1,5 @@
 import logging
+import good
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session
 from seplis.api import models, exceptions, constants
@@ -9,12 +10,12 @@ from sqlalchemy import asc
 
 class Handler(base.Handler):
 
-    _schema = {
-        schemas.Optional('times'): schemas.All(
+    validate_schema = good.Schema({
+        'times': good.All(
             int, 
-            schemas.Range(min=-20, max=20)
+            good.Range(min=-20, max=20)
         ),
-    }
+    }, default_keys=good.Optional)
 
     @authenticated(constants.LEVEL_PROGRESS)
     @gen.coroutine
@@ -28,7 +29,7 @@ class Handler(base.Handler):
 
     @run_on_executor
     def _put(self, user_id, show_id, episode_number):
-        self.validate()
+        self.validate(self.validate_schema)
         with new_session() as session:
             episode = session.query(models.Episode).filter(
                 models.Episode.show_id == show_id,
@@ -85,7 +86,7 @@ class Range_handler(base.Handler):
 
     @run_on_executor
     def _put(self, user_id, show_id, from_, to):
-        self.validate(Handler._schema)
+        self.validate(Handler.validate_schema)
         times = int(self.request.body.get('times', 1))
         episode = None
         with new_session() as session:

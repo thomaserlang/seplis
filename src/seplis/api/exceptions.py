@@ -216,6 +216,15 @@ class User_unknown(API_exception):
             message='unknown user',
         )
 
+class User_show_subtitle_lang_not_found(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(
+            self,
+            status_code=404,
+            code=1510,
+            message='no default subtitle lang found',
+        )
 
 class Episode_unknown(API_exception):
 

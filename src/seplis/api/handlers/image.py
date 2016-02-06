@@ -23,7 +23,7 @@ class Handler(base.Handler):
 
     @concurrent.run_on_executor
     def _post(self, relation_id):
-        data = self.validate(schemas.Schema(schemas.Image, required=True))  
+        data = self.validate(schemas.Image_required)  
         with new_session() as session:
             image = Image()
             image.relation_type = self.relation_type
@@ -41,7 +41,7 @@ class Handler(base.Handler):
 
     @concurrent.run_on_executor
     def _put(self, image_id):
-        data = self.validate(schemas.Schema(schemas.Image, required=False))
+        data = self.validate(schemas.Image_optional)
         with new_session() as session:
             image = session.query(Image).get(image_id)
             if not image:
