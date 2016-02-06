@@ -8,10 +8,10 @@
         var currentPlayServer;
 
         var getDevice = (function() {
-            var ua = navigator.userAgent;
-            if (ua.match(/(iPad|iPhone|iPod)/g)) {
+            var ua = navigator.userAgent.toLowerCase();
+            if (ua.match(/(ipad|iphone)/g)) {
                 return 'hlsmp4';
-            } 
+            }
             return 'default';
         });
         var guid = (function() {
