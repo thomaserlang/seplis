@@ -2,7 +2,7 @@ import logging
 import good
 from seplis.api.decorators import authenticated, new_session
 from seplis.api.handlers import base
-from seplis.api import models, exceptions
+from seplis.api import models, exceptions, constants
 from seplis import schemas
 from tornado import gen
 from tornado.concurrent import run_on_executor
@@ -19,7 +19,9 @@ class Handler(base.Handler):
         ))
     }, default_keys=good.Optional)
 
+    @authenticated(constants.LEVEL_USER)
     def get(self, user_id, show_id):
+        self.check_user_edit(user_id)
         data = models.User_show_subtitle_lang.get(
             user_id=user_id,
             show_id=show_id,
@@ -28,8 +30,10 @@ class Handler(base.Handler):
             raise exceptions.User_show_subtitle_lang_not_found()
         self.write_object(data)
 
+    @authenticated(constants.LEVEL_USER)
     @gen.coroutine
     def put(self, user_id, show_id):
+        self.check_user_edit(user_id)
         yield self._put(user_id, show_id)
         self.set_status(204)
 
@@ -46,8 +50,10 @@ class Handler(base.Handler):
             session.merge(d)
             session.commit()
 
+    @authenticated(constants.LEVEL_USER)
     @gen.coroutine
     def patch(self, user_id, show_id):
+        self.check_user_edit(user_id)
         yield self._patch(user_id, show_id)
         self.set_status(204)
 
