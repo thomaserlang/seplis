@@ -190,7 +190,8 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         try:
             if schema == None:
                 schema = getattr(self, '__schema__', None)
-                raise Exception('missing validation schema')
+                if schema == None:
+                    raise Exception('missing validation schema')
             if not isinstance(schema, good.Schema):        
                 schema = good.Schema(schema, **kwargs)
             return schema(data)    
