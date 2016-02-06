@@ -296,10 +296,12 @@ class User_show_subtitle_lang(Base):
                 "audio_lang": "jpn"
             }
         '''
-        return database.redis.hgetall(self.gen_cache_name(
+        data = database.redis.hgetall(cls.gen_cache_name(
             user_id=user_id,
             show_id=show_id,
         ))
+        if data:
+            return utils.redis_sa_model_dict(data, cls)
 
     @classmethod
     def gen_cache_name(cls, user_id, show_id):

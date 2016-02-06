@@ -17,6 +17,7 @@ import seplis.api.handlers.episode_watched
 import seplis.api.handlers.episode_watching
 import seplis.api.handlers.next_to_watch
 import seplis.api.handlers.etw
+import seplis.api.handlers.user_show_subtitle_lang
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -198,6 +199,11 @@ class Application(tornado.web.Application):
                 seplis.api.handlers.play.Access_handler
             ),
            
+            URLSpec(
+                r'/1/users/([0-9]+)/subtitle-lang/shows/([0-9]+)', 
+                seplis.api.handlers.user_show_subtitle_lang.Handler
+            ),
+
             URLSpec(
                 r'/1/apps', 
                 seplis.api.handlers.app.Handler
