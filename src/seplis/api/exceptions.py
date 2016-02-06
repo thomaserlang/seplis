@@ -223,7 +223,7 @@ class User_show_subtitle_lang_not_found(API_exception):
             self,
             status_code=404,
             code=1510,
-            message='no default subtitle lang found',
+            message='unknown user, show or no default subtitle for this show',
         )
 
 class Episode_unknown(API_exception):
