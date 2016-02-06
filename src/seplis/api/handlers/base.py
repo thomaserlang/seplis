@@ -186,10 +186,13 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             return
         return utils.dotdict(user)
 
-    def _validate(self, data, schema, *args, **kwargs):
+    def _validate(self, data, schema, **kwargs):
         try:
+            if schema == None:
+                schema = getattr(self, '__schema__', None)
+                raise Exception('missing validation schema')
             if not isinstance(schema, good.Schema):        
-                schema = good.Schema(schema, *args, **kwargs)
+                schema = good.Schema(schema, **kwargs)
             return schema(data)    
         except good.MultipleInvalid as ee:
             data = []
@@ -206,19 +209,17 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             }]            
             raise exceptions.Validation_exception(errors=data)
 
-    def validate(self, schema, *args, **kwargs):
+    def validate(self, schema=None, **kwargs):
         return self._validate(
             self.request.body,
             schema,
-            *args,
             **kwargs
         )
 
-    def validate_arguments(self, schema, *args, **kwargs):
+    def validate_arguments(self, schema=None, **kwargs):
         return self._validate(
             utils.tornado_arguments_to_unicode(self.request.arguments),
             schema,
-            *args,
             **kwargs
         )
 
