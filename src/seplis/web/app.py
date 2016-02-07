@@ -11,6 +11,7 @@ import seplis.web.handlers.air_dates
 import seplis.web.handlers.user.play_servers
 import seplis.web.handlers.user.user
 import seplis.web.handlers.user.progress_token
+import seplis.web.handlers.user.subtitle_lang_show
 import seplis.web.handlers.play_episode
 import seplis.web.handlers.etw
 import hashlib
@@ -143,6 +144,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/user/play-server', seplis.web.handlers.user.play_servers.API_handler),
             
             URLSpec(r'/api/user/watching', seplis.web.handlers.play_episode.API_watching_handler),
+
+            URLSpec(r'/api/user/default-subtitle-show', seplis.web.handlers.user.subtitle_lang_show.API_handler),
             
             URLSpec(r'/api/show-play-next', seplis.web.handlers.show.API_get_play_now),   
         

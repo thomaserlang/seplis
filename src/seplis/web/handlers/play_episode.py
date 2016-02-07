@@ -12,7 +12,9 @@ class Handler(base.Handler):
     @authenticated
     @gen.coroutine
     def get(self, show_id, number):
-        show = yield self.get_show(show_id)
+        show = yield self.client.get('/shows/{}'.format(show_id),{
+            'fields': 'title',
+        })
         if not show:
             raise HTTPError(404, 'unknown show')
         episode, next_episode = yield self.get_episode_and_next(show_id, number)
@@ -28,6 +30,15 @@ class Handler(base.Handler):
                 episode=episode,
             )
             return
+        default_subtitle = yield self.client.get('/users/{}/subtitle-lang/shows/{}'.format(
+            self.current_user.id,
+            show_id,
+        ))
+        if not default_subtitle:
+            default_subtitle = {
+                'subtitle_lang': None,
+                'audio_lang': None,
+            }
         self.render('play_episode/episode.html',
             show=show,
             show_json=utils.json_dumps(show),
@@ -35,15 +46,9 @@ class Handler(base.Handler):
             episode_json=utils.json_dumps(episode),
             play_servers=play_servers,
             next_episode=next_episode,
+            default_subtitle_json=utils.json_dumps(default_subtitle),
             chromecast_appid=config['web']['chromecast_appid'],
         )
-
-    @gen.coroutine
-    def get_show(self, show_id):
-        show = yield self.client.get('/shows/{}'.format(show_id),{
-            'fields': 'title',
-        })
-        return show
 
     @gen.coroutine
     def get_episode_and_next(self, show_id, number):

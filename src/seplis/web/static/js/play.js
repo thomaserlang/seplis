@@ -1,5 +1,5 @@
 (function($) {
-    var SeplisPlay = function(video, play_servers, show, episode, start_pos, chromecastAppId, options) {
+    var SeplisPlay = function(video, play_servers, show, episode, start_pos, chromecastAppId, defaultSubtitle, options) {
         var _this = this;
 
         var settings = $.extend({
@@ -48,8 +48,8 @@
         var disableChangeSlider = false;
         var currentTime;
 
-        var subtitleLang = null;
-        var audioLang = null;
+        var subtitleLang = defaultSubtitle.subtitle_lang;
+        var audioLang = defaultSubtitle.audio_lang;
         
         var playUrl = function(){
             return _playUrl(method, device, startTime, session);
@@ -130,6 +130,12 @@
                             audioLang = lang;
                         }
                     }
+                    $.post('/api/user/default-subtitle-show', {
+                        'show_id': show['id'],
+                        'subtitle_lang': subtitleLang,
+                        'audio_lang': audioLang,
+                        '_xsrf': getCookie('_xsrf'),
+                    });
                     $('.player-subtitle-select-box').hide();
                     if (!seplisCast.isCasting()) {
                         playerPause();
@@ -607,7 +613,7 @@
         }
     }
 
-    $.fn.seplis_play = function(play_servers, show, episode, start_pos, chromecastAppId, options) {
+    $.fn.seplis_play = function(play_servers, show, episode, start_pos, chromecastAppId, defaultSubtitle, options) {
         return this.each(function(){
             var video = $(this);
             if (video.data('seplis_play')) return;
@@ -618,6 +624,7 @@
                 episode,
                 start_pos,
                 chromecastAppId,
+                defaultSubtitle,
                 options
             );
             video.data('seplis_play', seplis_play);

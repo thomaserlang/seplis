@@ -107,6 +107,8 @@
     <script>
         var show = {{ show_json }};
         var episode = {{ episode_json }};
+        var defaultSubtitle = {{ default_subtitle_json }};
+
         var play_servers = [            
             {% for ps in play_servers %}
             {
@@ -122,7 +124,8 @@
                 show,
                 episode,
                 start_pos,
-                "{{ chromecast_appid }}"
+                "{{ chromecast_appid }}",
+                defaultSubtitle
             );
             var controls_timer;
         });
