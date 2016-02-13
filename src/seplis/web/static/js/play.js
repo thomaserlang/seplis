@@ -83,6 +83,10 @@
             var audio = [];
             for (var i in metadata.streams) {
                 var stream = metadata.streams[i];
+                if (!('tags' in stream))
+                    continue;
+                if (!('language' in stream.tags))
+                    continue;
                 if (stream.codec_type == 'subtitle') {
                     subs.push(stream.tags.language);
                 } 
