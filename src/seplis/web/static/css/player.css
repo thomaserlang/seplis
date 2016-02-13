@@ -2,7 +2,7 @@
     position:absolute;
     float:left;
     width:100%;
-    z-index:300000;
+    z-index:2147483647;
 }
 .player-video-wrapper {
     position: absolute;
