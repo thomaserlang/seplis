@@ -81,17 +81,25 @@
         var setupSubtitles = (function(){
             var subs = [];
             var audio = [];
+            var s = '';
             for (var i in metadata.streams) {
                 var stream = metadata.streams[i];
                 if (!('tags' in stream))
                     continue;
                 if (!('language' in stream.tags))
                     continue;
+                s = {
+                    'language': stream.tags.language,
+                    'title': stream.tags.language,
+                    'index': stream.index,
+                }
+                if ('title' in stream.tags)
+                    s['title'] = stream.tags.title;
                 if (stream.codec_type == 'subtitle') {
-                    subs.push(stream.tags.language);
+                    subs.push(s);
                 } 
                 else if (stream.codec_type == 'audio') {
-                    audio.push(stream.tags.language);
+                    audio.push(s);
                 }
             }
             $('.player-subtitle-select-box').html('');
@@ -106,7 +114,7 @@
                     html += '<div class="col-xs-6">';
                         html += '<h4>Audio</h4>';
                         for (var i in audio) {
-                            html += '<p class="audio-select" lang="'+audio[i]+'">'+audio[i]+'</p>';
+                            html += '<p class="audio-select" index="'+audio[i]['index']+'" lang="'+audio[i]['language']+'">'+audio[i]['title']+'</p>';
                         }
                     html += '</div>';
 
@@ -114,24 +122,25 @@
                         html += '<h4>Subtitles</h4>';    
                         html += '<p class="subtitle-select" lang="none">off</p>';
                         for (var i in subs) {
-                            html += '<p class="subtitle-select" lang="'+subs[i]+'">'+subs[i]+'</p>';
+                            html += '<p class="subtitle-select" index="'+subs[i]['index']+'" lang="'+subs[i]['language']+'">'+subs[i]['title']+'</p>';
                         }
                     html += '</div>';
                 html += '</div>';
                 $('.player-subtitle-select-box').html(html);
                 $('.subtitle-select, .audio-select').on('click', function(e){
                     var lang = $(this).attr('lang');
+                    var index = $(this).attr('index');
                     if ($(this).hasClass('subtitle-select')) {
                         if (lang == 'none') {
                             subtitleLang = null;
                         } else {
-                            subtitleLang = lang;
+                            subtitleLang = lang + ":" + index;
                         }
                     } else if ($(this).hasClass('audio-select')) {
                         if (lang == 'none') {
                             audioLang = null;
                         } else {
-                            audioLang = lang;
+                            audioLang = lang + ":" + index;
                         }
                     }
                     $.post('/api/user/default-subtitle-show', {

@@ -362,16 +362,29 @@ class Transcode_handler(
         logging.info('Looking for {} with language {}'.format(codec_type, lang))
         group_index = -1
         langs = []
+        index = None
+        if ':' in lang:
+            lang, index = lang.split(':')
+            index = int(index)
+            if index <= (len(self.metadata['streams']) - 1):
+                stream = self.metadata['streams'][index]
+                if not ('tags' in stream and 'language' in stream['tags'] and \
+                    stream['codec_type'] == codec_type and \
+                        stream['tags']['language'] == lang):
+                    index = None
+            else:
+                index = None
         for i, stream in enumerate(self.metadata['streams']):
             if stream['codec_type'] == codec_type:
                 group_index += 1
                 if 'tags' in stream and 'language' in stream['tags']:
                     langs.append(stream['tags']['language'])
-                    if stream['tags']['language'] == lang:
-                        return {
-                            'index': i,
-                            'group_index': group_index,
-                        }
+                    if not index or stream['index'] == index:
+                        if stream['tags']['language'] == lang:
+                            return {
+                                'index': i,
+                                'group_index': group_index,
+                            }
         logging.info('Found no {} with language: {}'.format(codec_type, lang))
         logging.info('Available {}: {}'.format(codec_type, ', '.join(langs)))
 
