@@ -6,7 +6,6 @@ import io
 import requests
 from seplis.utils import json_dumps
 from urllib.parse import urljoin
-from seplis.indexer.show.tvrage import Tvrage
 from seplis.indexer.show.thetvdb import Thetvdb
 from seplis.api import constants
 from seplis.config import config
@@ -31,16 +30,11 @@ class Show_indexer(Client):
         return obj
 
     @property
-    def external_tvrage(self):
-        return Tvrage()
-
-    @property
     def external_thetvdb(self):
         return Thetvdb(config['client']['thetvdb'])
 
     def update(self):
         external_names = (
-            'tvrage',
             'thetvdb',
         )
         logging.info('Checking for updates from external sources...')

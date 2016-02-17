@@ -5,7 +5,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import nose
 import mock
 import json
-import show.test_tvrage
 import show.test_thetvdb
 from tornado import gen
 from datetime import date
@@ -161,17 +160,6 @@ def mock_get_json():
     }
 
 class test_indexer(TestCase):
-
-    @mock.patch('requests.get', show.test_tvrage.mock_tvrage)
-    def test_update(self):
-        with mock.patch('tornado.httpclient.AsyncHTTPClient.fetch', mock_show_patch) as m:
-            indexer = Show_indexer('http://example.org')
-            updated_shows = indexer.update()
-
-            self.assertTrue('2445' in updated_shows)
-            self.assertEqual(len(updated_shows['2445']['episodes']), 4)
-            self.assertTrue('4628' in updated_shows)
-            self.assertEqual(len(updated_shows['4628']['episodes']), 4)
 
 
     @mock.patch('requests.get', show.test_thetvdb.mock_thetvdb_images)
