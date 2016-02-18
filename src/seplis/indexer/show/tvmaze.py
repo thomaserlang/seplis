@@ -93,3 +93,4 @@ class Tvmaze(Show_indexer_base):
             if shows[key] < timestamp:
                 continue
             ids.append(key)
+        return ids

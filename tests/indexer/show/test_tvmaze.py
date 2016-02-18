@@ -102,7 +102,7 @@ class test_tvmaze(TestCase):
 
     @responses.activate
     def test_get_show(self):
-        show_id = 1
+        show_id = 32
         responses.add(responses.GET, Tvmaze._url.format(show_id=show_id),
                   body=self.show, status=200, content_type='application/json')
         tvmaze = Tvmaze()
@@ -111,12 +111,42 @@ class test_tvmaze(TestCase):
 
     @responses.activate
     def test_get_episodes(self):
-        show_id = 1
+        show_id = 32
         responses.add(responses.GET, Tvmaze._url_episodes.format(show_id=show_id),
                   body=self.episodes, status=200, content_type='application/json')
         tvmaze = Tvmaze()
         episodes = tvmaze.get_episodes(show_id)
         schemas.validate([schemas.Episode_schema], episodes)
+
+    @responses.activate
+    def test_get_updates(self):
+        responses.add(responses.GET, Tvmaze._url_update,
+                  body='{"1": 5, "2": 10}', status=200, content_type='application/json')
+        tvmaze = Tvmaze()
+        tvmaze.get_latest_update_timestamp = mock.Mock(return_value=1)
+        ids = tvmaze.get_updates()
+        self.assertTrue('1' in ids)
+        self.assertTrue('2' in ids)
+
+        tvmaze.get_latest_update_timestamp = mock.Mock(return_value=6)
+        ids = tvmaze.get_updates()
+        self.assertFalse('1' in ids)
+        self.assertTrue('2' in ids)
+
+    @responses.activate
+    def test_get_images(self):
+        show_id = 32
+        responses.add(responses.GET, Tvmaze._url.format(show_id=show_id),
+                  body=self.show, status=200, content_type='application/json')
+        tvmaze = Tvmaze()
+        images = tvmaze.get_images(show_id)
+        image = images[0]
+        schemas.validate(schemas.Image_required, image)
+        self.assertEqual('TVmaze', image['source_title'])
+        self.assertEqual('tvmaze', image['external_name'])
+        self.assertEqual('32', image['external_id'])
+        self.assertEqual(constants.IMAGE_TYPE_POSTER, image['type'])
+
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
