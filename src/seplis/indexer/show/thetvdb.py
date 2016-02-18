@@ -2,17 +2,23 @@ import requests
 import xmltodict
 import logging
 from seplis.api import constants
+from seplis import config
 from dateutil import parser
-from seplis.indexer.show.base import Show_indexer_base
+from seplis.indexer.show.base import Show_indexer_base, register_indexer
 
 class Thetvdb(Show_indexer_base):
+    __indexer_name__ = 'thetvdb'
+
     _url = 'http://thetvdb.com/api/{apikey}/series/{id}/{type}'
     _source_url = 'http://thetvdb.com/?tab=series&id={id}'
     _url_updates = 'http://thetvdb.com/api/Updates.php?type=all&time={}'
     _url_episode = 'http://thetvdb.com/api/{apikey}/episodes/{id}/en.xml'
 
-    def __init__(self, apikey):
-        super().__init__('thetvdb', apikey=apikey)
+    def __init__(self, apikey=None):
+        super().__init__()
+        self.apikey = apikey
+        if not apikey:
+            self.apikey = config['client']['thetvdb']
 
     def get_show(self, show_id):
         r = requests.get(
@@ -235,3 +241,4 @@ class Thetvdb(Show_indexer_base):
                 }
         return None
         
+register_indexer(Thetvdb)

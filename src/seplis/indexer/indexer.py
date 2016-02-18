@@ -6,10 +6,10 @@ import io
 import requests
 from seplis.utils import json_dumps
 from urllib.parse import urljoin
-from seplis.indexer.show.thetvdb import Thetvdb
 from seplis.api import constants
 from seplis.config import config
 from seplis import Client, schemas, API_error
+from seplis.indexer.show import indexers
 from retrying import retry
 
 def _can_retry_update_show(exception):
@@ -22,28 +22,12 @@ def _can_retry_update_show(exception):
     return True
 
 class Show_indexer(Client):
-
-    def get_indexer(self, external_name):
-        obj = getattr(self, 'external_{}'.format(external_name), None)
-        if not obj:
-            return None
-        return obj
-
-    @property
-    def external_thetvdb(self):
-        return Thetvdb(config['client']['thetvdb'])
-
     def update(self):
-        external_names = (
-            'thetvdb',
-        )
         logging.info('Checking for updates from external sources...')
         updated_shows = {}
-        for name in external_names:
+        for name in indexers:
             logging.info('Checking external source: {}'.format(name))
-            indexer = self.get_indexer(name)
-            if not indexer:
-                continue
+            indexer = indexers[name]()
             start_time = time.time()
             ids = []
             try:
@@ -199,10 +183,10 @@ class Show_indexer(Client):
         If an image with the external name and id does not exist 
         the image will be uploaded.
         '''
-        image_indexer = self.get_indexer(show['indices'].get('images', ''))
-        if not image_indexer:
+        external_name = show['indices'].get('images', '')
+        if external_name not in indexers:
             return
-        external_name = show['indices']['images']
+        image_indexer = indexers[external_name]()
         external_images = image_indexer.get_images(
             show['externals'][external_name]
         )

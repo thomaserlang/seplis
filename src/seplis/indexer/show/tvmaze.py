@@ -3,15 +3,17 @@ import logging
 import re
 from seplis.api import constants
 from dateutil import parser
-from seplis.indexer.show.base import Show_indexer_base
+from seplis.indexer.show.base import Show_indexer_base, register_indexer
 
 class Tvmaze(Show_indexer_base):
+    __indexer_name__ = 'tvmaze'
+    
     _url = 'http://api.tvmaze.com/shows/{show_id}'
     _url_episodes = 'http://api.tvmaze.com/shows/{show_id}/episodes'
     _url_update = 'http://api.tvmaze.com/updates/shows'
 
-    def __init__(self, apikey=None):
-        super().__init__('tvmaze', apikey=apikey)
+    def __init__(self):
+        super().__init__()
 
     def get_show(self, show_id):
         r = requests.get(self._url.format(show_id=show_id))
@@ -94,3 +96,5 @@ class Tvmaze(Show_indexer_base):
                 continue
             ids.append(key)
         return ids
+
+register_indexer(Tvmaze)

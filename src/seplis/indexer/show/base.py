@@ -3,11 +3,16 @@ import os
 import os.path
 import time
 
-class Show_indexer_base(object):
+indexers = {}
 
-    def __init__(self, name, apikey):
-        self.name = name
-        self.apikey = apikey
+def register_indexer(class_):
+    if class_.__indexer_name__ in indexers:
+        raise Exception('{} is already registered as an indexer'.format(
+            class_.__indexer_name__
+        ))
+    indexers[class_.__indexer_name__] = class_
+
+class Show_indexer_base(object):
 
     def get_show(self, show_id):
         '''
@@ -39,7 +44,7 @@ class Show_indexer_base(object):
             tempfile.gettempdir(),
             'seplis',
             'index',
-            self.name+'.timestamp',
+            self.__indexer_name__+'.timestamp',
         )
         if not os.path.isfile(path):
             return time.time() - 86400
