@@ -68,7 +68,7 @@ class Tvmaze(Show_indexer_base):
         episodes = []
         for i, episode in enumerate(data):
             episodes.append({
-                'number': i,
+                'number': i+1,
                 'title': episode['name'],
                 'season': episode['season'],
                 'episode': episode['number'],
