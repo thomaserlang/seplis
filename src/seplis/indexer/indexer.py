@@ -285,7 +285,9 @@ class Show_indexer(Client):
         '''
         Creates a show.
         '''
-        indexer = self.get_indexer(external_name)
+        if external_name not in indexers:
+            return
+        image_indexer = indexers[external_name]()
         show_data = indexer.get_show(external_id)
         if not get_episodes:
             show_data.pop('episodes')
