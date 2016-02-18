@@ -20,7 +20,7 @@
                 </label>
                 <input 
                     type="text" 
-                    class="form-control" 
+                    class="form-control input-external-id" 
                     name="{{ escape(index) }}" 
                     id="{{ escape(index) }}"
                     value="{{ show['externals'].get(index, '') if show else '' }}"
@@ -35,7 +35,7 @@
 
         <div style="margin-top:30px">
         {% for index, externals in constants.INDEX_TYPES %}
-            <div class="form-group">
+            <div class="form-group" id="show-select-index-sources">
                 <label for="index-{{ escape (index) }}">
                     Index {{ escape(constants.INDEX_TYPE_NAMES[index].lower()) }} from
                 </label>

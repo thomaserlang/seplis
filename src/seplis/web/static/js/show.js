@@ -27,6 +27,29 @@ $(function(){
             }
         )
     });
+    $('#form-edit-show #imdb, #form-new-show #imdb').on('paste', function(){
+        var obj = $(this);
+        setTimeout(function () { 
+            $.getJSON('http://api.tvmaze.com/lookup/shows', {'imdb': obj.val()}, function(show){
+                show.externals['tvmaze'] = show.id;
+                $('#form-edit-show .input-external-id, #form-new-show .input-external-id').each(function(){
+                    if ($(this).val() != '')
+                        return;
+                    if (this.name in show.externals)
+                        $(this).val(show.externals[this.name]);
+                });
+            });
+        }, 10);
+    });
+    $('#show-select-index-sources select').change(function(){
+        var val = $(this).val();
+        $('#show-select-index-sources select').each(function(){
+            if ($(this).val() != '')
+                return;
+            $(this).val(val);            
+        });
+    });
+
     if ($('#alternative-titles').length) {
         $('#alternative-titles').select2({
             tags: []
