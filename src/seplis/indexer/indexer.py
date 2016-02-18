@@ -135,11 +135,13 @@ class Show_indexer(Client):
         return show_data
 
     def _get_show_updates(self, show):
-        show_indexer = self.get_indexer(show['indices'].get('info', ''))
-        if not show_indexer: 
-            return              
+        external_name = show['indices'].get('info', '')
+        if external_name not in indexers:
+            return
+        show_indexer = indexers[external_name]()
+          
         external_show = show_indexer.get_show(
-            show['externals'][show['indices']['info']]
+            show['externals'][external_name]
         )
         if external_show:
             return show_info_changes(
@@ -148,11 +150,12 @@ class Show_indexer(Client):
             )
 
     def _get_episode_updates(self, show):
-        episode_indexer = self.get_indexer(show['indices'].get('episodes', ''))
-        if not episode_indexer:
+        external_name = show['indices'].get('images', '')
+        if external_name not in indexers:
             return
+        episode_indexer = indexers[external_name]()
         external_episodes = episode_indexer.get_episodes(
-            show['externals'][show['indices']['episodes']]
+            show['externals'][external_name]
         )
         if not external_episodes:
             return

@@ -12,9 +12,6 @@ class Tvmaze(Show_indexer_base):
     _url_episodes = 'http://api.tvmaze.com/shows/{show_id}/episodes'
     _url_update = 'http://api.tvmaze.com/updates/shows'
 
-    def __init__(self):
-        super().__init__()
-
     def get_show(self, show_id):
         r = requests.get(self._url.format(show_id=show_id))
         if r.status_code != 200:
