@@ -61,7 +61,7 @@ Description_schema = good.Schema({
 }, default_keys=good.Optional)
 _Episode_schema = {
     'title': good.Any(str, None),
-    good.Required('number'): int,
+    good.Required('number'): good.All(int, good.Range(min=1)),
     good.Optional('season'): good.Any(int, None),
     good.Optional('episode'): good.Any(int, None),
     'air_date': good.Any(None, date_()),
