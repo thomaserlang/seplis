@@ -150,7 +150,7 @@ class Show_indexer(Client):
             )
 
     def _get_episode_updates(self, show):
-        external_name = show['indices'].get('images', '')
+        external_name = show['indices'].get('episodes', '')
         if external_name not in indexers:
             return
         episode_indexer = indexers[external_name]()
