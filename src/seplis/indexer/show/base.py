@@ -66,7 +66,7 @@ class Show_indexer_base(object):
             os.makedirs(path)
         path = os.path.join(
             path,
-            self.name+'.timestamp',
+            self.__indexer_name__+'.timestamp',
         )
         if not timestamp:
             timestamp = time.time()
