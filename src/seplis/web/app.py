@@ -126,7 +126,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
             URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.show.Edit_handler),
             URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),
-
+            URLSpec(r'/api/tvmaze-show-lookup', seplis.web.handlers.show.API_tvmaze_lookup),
+            
             URLSpec(r'/api/fan', seplis.web.handlers.show.API_fan_handler),
             URLSpec(r'/api/watched', seplis.web.handlers.show.API_watched_handler),
 
