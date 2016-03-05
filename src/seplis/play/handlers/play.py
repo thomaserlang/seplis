@@ -256,8 +256,8 @@ class Transcode_handler(
         d = self._get_stream_index_by_lang('audio', self.audio_lang)
         if not d: 
             return
-        i = cmd.index('0:1')
-        cmd[i] = '0:{}'.format(d['index'])
+        i = cmd.index('0:a:0')
+        cmd[i] = '0:a:{}'.format(d['group_index'])
 
     def on_connection_close(self):
         if self.subtitle_file and os.path.exists(self.subtitle_file):
