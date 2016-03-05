@@ -14,26 +14,42 @@ def create_indices():
                     'type': 'edge_ngram',
                     'min_gram': 1,
                     'max_gram': 20,
+                },
+                'strip_dots': {
+                    'type': 'word_delimiter',                    
                 }
             },
             'analyzer': {
                 'autocomplete_index': {
-                    'type': 'custom',
+                    "type" : "custom",
                     'tokenizer': 'standard',
                     'filter': [
                         'lowercase',
                         'autocomplete_filter',
                     ],
-                    'stopwords': '_none_',
                 },
                 'autocomplete_search': {
-                    'type': 'custom',
+                    "type" : "custom",
                     'tokenizer': 'standard',
                     'filter': [
                         'lowercase',
-                        'stop',
+                        'strip_dots',
                     ],
-                    'stopwords': '_none_',
+                },
+                'title_index': {
+                    "type" : "custom",
+                    'tokenizer': 'standard',
+                    'filter': [
+                        'lowercase',
+                    ],
+                },
+                'title_search': {
+                    "type" : "custom",
+                    'tokenizer': 'standard',
+                    'filter': [
+                        'lowercase',
+                        'strip_dots',
+                    ],
                 },
             },
         }
@@ -45,7 +61,9 @@ def create_indices():
             'show': {
                 'properties': {
                     'title': {
-                        'type': 'string',      
+                        'type': 'string',
+                        'analyzer': 'title_index',
+                        'search_analyzer': 'title_search',
                         'fields': {
                             'raw' : {
                                 'type': 'string', 
@@ -100,6 +118,8 @@ def create_indices():
                     },
                     'alternative_titles': {
                         'type': 'string',
+                        'analyzer': 'title_index',
+                        'search_analyzer': 'title_search',
                         'fields': {
                             'suggest': {
                                 'type': 'string', 
