@@ -758,6 +758,11 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 201, response.body)
         show3 = utils.json_loads(response.body)
+        response = self.post('/1/shows', {
+            'title': 'legend',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        show3 = utils.json_loads(response.body)
         self.refresh_es()
 
         response = self.get('/1/shows', {'title': 'dcs legend of something'})
@@ -767,4 +772,4 @@ class test_show(Testbase):
         self.assertEqual(data[0]['id'], show2['id'])
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    nose.run(defaultTest=__name__+':test_show.test_search_title')
