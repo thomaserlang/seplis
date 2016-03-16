@@ -294,8 +294,8 @@ class Handler(base.Handler):
                 'query': {
                     'bool': {
                         'should': [
-                            {'match': {'title.suggest': title}}, 
-                            {'match': {'alternative_titles.suggest': title}},
+                            {'match': {'title.suggest': {'query': title, 'operator': 'and'}}}, 
+                            {'match': {'alternative_titles.suggest': {'query': title, 'operator': 'and'}}},
                         ],
                     }
                 },
