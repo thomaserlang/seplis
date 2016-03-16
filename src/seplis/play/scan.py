@@ -358,9 +358,7 @@ class Show_id(object):
             .replace('-', ' ') \
             .replace('_', ' ')
         shows = self.scanner.client.get('/shows', {
-            'q': 'title:"{title}" OR alternative_titles:"{title}"'.format(
-                title=file_show_title,
-            ),
+            'title': file_show_title,
             'fields': 'id,title',
         })
         return shows
