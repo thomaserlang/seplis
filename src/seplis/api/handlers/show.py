@@ -164,7 +164,6 @@ class Handler(base.Handler):
     @gen.coroutine
     def get_shows(self, show_ids=None):
         append_fields = self.get_append_fields(self.allowed_append_fields)
-        q = self.get_argument('q', None)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', '_score')
@@ -175,18 +174,11 @@ class Handler(base.Handler):
             'size': per_page,
             'sort': sort,
         }
-        body = {}
+        body = self.build_query()
         if fields:
             if 'id' not in fields:
                 fields.append('id')
             body['_source'] = fields
-        if q:
-            body['query'] = {
-                'query_string': {
-                    'default_field': 'title',
-                    'query': q,
-                }
-            }
         if show_ids:
             body['filter'] = {
                 'ids':{
@@ -215,6 +207,103 @@ class Handler(base.Handler):
             records=shows,
         )
         return p
+
+    def build_query(self):
+        """Builds a query from either argument: `q`, `title` or `title_suggest`."""
+        q = self.get_argument('q', None)
+        title = self.get_argument('title', None)
+        title_suggest = self.get_argument('title_suggest', None)
+        query = {}
+        if q:
+            query['query'] = self.build_query_query_string(q)
+        elif title:
+            query['query'] = self.build_query_title(title)
+            query['track_scores'] = True
+        elif title_suggest:
+            query['query'] = self.build_query_title_suggest(title_suggest)
+            query['track_scores'] = True
+        return query
+
+    def build_query_query_string(self, q):
+        """Uses query string for a dynamic way of searching something specific 
+        about a show.
+
+        See: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
+        """
+        return {
+             'query_string': {
+                'fields': ['title', 'alternative_titles'],
+                'query': q,
+            },
+        }
+
+    def build_query_title(self, title):
+        """Searches after a specific title in `title` or `alternative_titles`.
+        Boosts the matched score with the length of the `title`.
+
+        The smaller the title the better the score.
+        This is done to prevent an example like this: 
+
+        Searching for "The Walking Dead" will give this result with a normal query:
+
+        1: Fear The Walking Dead (FTWD)
+        2: The Walking Dead (TWD)
+
+        Both results get the same match score so the order is rather random.
+        We don't want "FTWD" out ranking "TWD" when searching for "TWD".
+        So we use the title's length to boost the score. A longer title
+        will be a disadvantage.
+
+        With this query we get (when searching for "TWD"):
+
+        1: TWD
+        2: FTWD
+
+        Better.
+        """
+        return {
+            'function_score': {
+                'query': {
+                    'bool': {
+                        'should': [
+                            {'match': {'title': title}}, 
+                            {'match': {'alternative_titles': title}},
+                        ],
+                    }
+                },
+                'functions': [
+                    {
+                        'script_score': {
+                            'script': 'def score = 1000 - _source.title.size(); score',
+                        }
+                    }
+                ],
+                'score_mode': 'sum',
+                'boost_mode': 'replace',
+            },
+        }
+
+    def build_query_title_suggest(self, title):
+        """Uses the `suggest` index analyzed with nGram to match
+        parts of the word in the `title` or `alternative_titles`.
+
+        Boosts the calculated match score with the shows number of fans.
+        """
+        return {
+            'function_score': {
+                'query': {
+                    'bool': {
+                        'should': [
+                            {'match': {'title.suggest': title}}, 
+                            {'match': {'alternative_titles.suggest': title}},
+                        ],
+                    }
+                },
+                'field_value_factor': {
+                    'field': 'fans',
+                },
+            },
+        }
 
     def append_is_fan(self, shows, user_id=None):
         if not user_id:

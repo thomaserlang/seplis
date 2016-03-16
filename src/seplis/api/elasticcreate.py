@@ -9,46 +9,49 @@ def create_indices():
 
     settings = {
         'analysis': {
+            'char_filter': {
+                'strip_apostrophe': {
+                    'type': 'mapping',
+                    'mappings': ['`=>', '’=>', '\'=>']
+                }
+            },
             'filter': {
-                'autocomplete_filter': { 
+                'autocomplete_ngram': { 
                     'type': 'edge_ngram',
                     'min_gram': 1,
                     'max_gram': 20,
                 },
-                'strip_dots': {
-                    'type': 'word_delimiter',                    
-                }
+                'title_word_delimiter': {
+                    'type': 'word_delimiter',
+                },
             },
             'analyzer': {
                 'autocomplete_index': {
-                    "type" : "custom",
+                    'type' : 'custom',
                     'tokenizer': 'standard',
                     'filter': [
                         'lowercase',
-                        'autocomplete_filter',
+                        'asciifolding',
+                        'autocomplete_ngram',
                     ],
                 },
                 'autocomplete_search': {
-                    "type" : "custom",
+                    'type' : 'custom',
                     'tokenizer': 'standard',
                     'filter': [
                         'lowercase',
-                        'strip_dots',
-                    ],
-                },
-                'title_index': {
-                    "type" : "custom",
-                    'tokenizer': 'standard',
-                    'filter': [
-                        'lowercase',
+                        'asciifolding',
+                        'word_delimiter',
                     ],
                 },
                 'title_search': {
-                    "type" : "custom",
-                    'tokenizer': 'standard',
+                    'type' : 'custom',
+                    'tokenizer': 'keyword',
+                    'char_filter': ['strip_apostrophe'],
                     'filter': [
                         'lowercase',
-                        'strip_dots',
+                        'asciifolding',
+                        'word_delimiter',
                     ],
                 },
             },
@@ -62,8 +65,7 @@ def create_indices():
                 'properties': {
                     'title': {
                         'type': 'string',
-                        'analyzer': 'title_index',
-                        'search_analyzer': 'title_search',
+                        'analyzer': 'title_search',
                         'fields': {
                             'raw' : {
                                 'type': 'string', 
@@ -73,7 +75,7 @@ def create_indices():
                                 'type': 'string', 
                                 'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
-                            }
+                            },
                         }
                     },
                     'id': { 'type': 'integer' },
@@ -118,13 +120,16 @@ def create_indices():
                     },
                     'alternative_titles': {
                         'type': 'string',
-                        'analyzer': 'title_index',
-                        'search_analyzer': 'title_search',
+                        'analyzer': 'title_search',
                         'fields': {
                             'suggest': {
                                 'type': 'string', 
                                 'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
+                            },
+                            'length': { 
+                              'type': 'token_count',
+                              'analyzer': 'standard',
                             },
                         },
                     },
@@ -134,6 +139,7 @@ def create_indices():
                     'episode_type': { 'type': 'integer' },
                     'created_at': { 'type': 'date' },
                     'updated_at': { 'type': 'date' },
+                    'fans': { 'type': 'integer' },
                 }
             }
         }
