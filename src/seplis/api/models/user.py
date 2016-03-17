@@ -76,14 +76,19 @@ class User(Base):
         :param email_or_username: str
         :returns: dict
         '''
-        lookup = hashlib.md5(email_or_username.lower().encode('utf-8')).hexdigest()
-        user_id = database.redis.get(cls._cache_name_email.format(lookup))
-        if not user_id:
-            user_id = database.redis.get(cls._cache_name_name.format(
-                lookup
-            ))
-        if not user_id:
-            return
+        if isinstance(email_or_username, str):
+            lookup = hashlib.md5(email_or_username.lower().encode('utf-8')).hexdigest()
+            user_id = database.redis.get(cls._cache_name_email.format(lookup))
+            if not user_id:
+                user_id = database.redis.get(cls._cache_name_name.format(
+                    lookup
+                ))
+            if not user_id:
+                return
+        elif isinstance(email_or_username, int):
+            user_id = email_or_username
+        else:
+            raise Exception('Unknown type')
         return cls.get(user_id)
 
     @classmethod

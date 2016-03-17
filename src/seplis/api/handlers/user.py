@@ -1,5 +1,7 @@
 import logging
 import time
+import good
+from sqlalchemy import or_
 from tornado import gen
 from tornado.concurrent import run_on_executor
 from tornado.web import HTTPError
@@ -173,3 +175,40 @@ class Progress_token_handler(base.Handler):
             session.add(token)
             session.commit()
             return token.token
+
+class Change_password_handler(base.Handler):
+
+    __schema__ = good.Schema({
+        'password': str,
+        'new_password': good.All(str, good.Length(min=6)),
+    })
+
+    @authenticated(constants.LEVEL_USER)
+    @gen.coroutine
+    def post(self, user_id=None):
+        user_id = user_id if user_id else self.current_user.id
+        self.check_user_edit(user_id)
+        yield self.change_password(user_id)
+
+    @run_on_executor
+    def change_password(self, user_id):
+        data = self.validate()        
+        if not models.User.login(int(user_id), data['password']):
+            raise exceptions.Wrong_email_or_password_exception()
+        with new_session() as session:
+            models.User.change_password(
+                user_id=user_id,
+                new_password=data['new_password'],
+                session=session,
+            )
+            tokens = session.query(models.Token).filter(
+                or_(
+                    models.Token.expires >= datetime.utcnow(),
+                    models.Token.expires == None,
+                )
+            ).all()
+            for token in tokens:
+                if token.token == self.access_token:
+                    continue
+                session.delete(token)
+            session.commit()
