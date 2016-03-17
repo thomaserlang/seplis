@@ -202,6 +202,7 @@ class Change_password_handler(base.Handler):
                 session=session,
             )
             tokens = session.query(models.Token).filter(
+                models.Token.user_id == user_id,
                 or_(
                     models.Token.expires >= datetime.utcnow(),
                     models.Token.expires == None,
