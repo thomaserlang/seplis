@@ -33,6 +33,7 @@ def create_indices():
                         'lowercase',
                         'asciifolding',
                         'autocomplete_ngram',
+                        'word_delimiter',
                     ],
                 },
                 'autocomplete_search': {
