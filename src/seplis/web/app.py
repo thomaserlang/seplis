@@ -12,6 +12,7 @@ import seplis.web.handlers.user.play_servers
 import seplis.web.handlers.user.user
 import seplis.web.handlers.user.progress_token
 import seplis.web.handlers.user.subtitle_lang_show
+import seplis.web.handlers.user.change_password
 import seplis.web.handlers.play_episode
 import seplis.web.handlers.etw
 import hashlib
@@ -155,6 +156,10 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/user/play-server/user', seplis.web.handlers.user.play_servers.API_user_handler),
             
             URLSpec(r'/api/progress-token', seplis.web.handlers.user.progress_token.API_handler),
+                    
+            URLSpec(r'/change-password', seplis.web.handlers.user.change_password.Handler),
+            URLSpec(r'/api/change-password', seplis.web.handlers.user.change_password.API_handler),
+
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 
