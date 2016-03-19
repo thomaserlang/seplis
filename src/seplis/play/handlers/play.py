@@ -398,8 +398,8 @@ class Transcode_handler(
             '-y',
             '-vn',
             '-an',
-            '-c:s:{}'.format(sub_index['group_index']),
-            'ass',
+            '-c:s', 'ass',
+            '-map', '0:s:{}'.format(sub_index['group_index'])
         ]
         start = int(self.get_argument('start', 0))
         if start:
