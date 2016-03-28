@@ -767,5 +767,27 @@ class test_show(Testbase):
         self.assertEqual(len(data), 2, data)
         self.assertEqual(data[0]['id'], show2['id'], data)
 
+
+        # Test the walking dead
+        with new_session() as session:
+            session.query(models.Show).delete()
+            session.commit()
+        response = self.post('/1/shows', {
+            'title': 'The Walking Dead',
+            'premiered': '2010-10-31',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        response = self.post('/1/shows', {
+            'title': 'Fear the Walking Dead',
+            'premiered': '2015-08-23',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        self.refresh_es()
+        response = self.get('/1/shows', {'title': 'The Walking Dead'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 2, data)
+        self.assertEqual(data[0]['title'], 'The Walking Dead')
+
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__+':test_show.test_search_title')
+    nose.run(defaultTest=__name__)

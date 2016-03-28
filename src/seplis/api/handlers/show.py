@@ -166,7 +166,7 @@ class Handler(base.Handler):
         append_fields = self.get_append_fields(self.allowed_append_fields)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
-        sort = self.get_argument('sort', '_score:desc')
+        sort = self.get_argument('sort', '_score:desc,title.length:asc,premiered:desc')
         fields = self.get_argument('fields', None)
         fields = list(filter(None, fields.split(','))) if fields else None
         req = {

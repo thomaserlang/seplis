@@ -77,6 +77,10 @@ def create_indices():
                                 'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
                             },
+                            'length': { 
+                                'type': 'token_count',
+                                'analyzer': 'standard'
+                            },
                         }
                     },
                     'id': { 'type': 'integer' },
