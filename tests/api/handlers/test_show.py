@@ -760,11 +760,6 @@ class test_show(Testbase):
         self.assertEqual(response.code, 201, response.body)
         show3 = utils.json_loads(response.body)
         self.refresh_es()
-        self.refresh_es()
-        self.refresh_es()
-        self.refresh_es()
-        self.refresh_es()
-        self.refresh_es()
 
         response = self.get('/1/shows', {'title': 'dc\'s legend of something'})
         self.assertEqual(response.code, 200, response.body)
