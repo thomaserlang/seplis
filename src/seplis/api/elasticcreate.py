@@ -9,31 +9,47 @@ def create_indices():
 
     settings = {
         'analysis': {
-            'filter': {
-                'autocomplete_filter': { 
-                    'type': 'edge_ngram',
-                    'min_gram': 1,
-                    'max_gram': 20,
+            'char_filter': {
+                'strip_apostrophe': {
+                    'type': 'mapping',
+                    'mappings': ['`=>', '’=>', '\'=>']
                 }
+            },
+            'tokenizer': {
+                'autocomplete_ngram': { 
+                    'type': 'nGram',
+                    'min_gram': 1,
+                    'max_gram': 5,
+                },
             },
             'analyzer': {
                 'autocomplete_index': {
-                    'type': 'custom',
-                    'tokenizer': 'standard',
+                    'type' : 'custom',
+                    'tokenizer': 'autocomplete_ngram',
                     'filter': [
                         'lowercase',
-                        'autocomplete_filter',
+                        'asciifolding',
+                        'word_delimiter',
                     ],
-                    'stopwords': '_none_',
                 },
                 'autocomplete_search': {
-                    'type': 'custom',
+                    'type' : 'custom',
                     'tokenizer': 'standard',
                     'filter': [
                         'lowercase',
-                        'stop',
+                        'asciifolding',
+                        'word_delimiter',
                     ],
-                    'stopwords': '_none_',
+                },
+                'title_search': {
+                    'type' : 'custom',
+                    'tokenizer': 'keyword',
+                    'char_filter': ['strip_apostrophe'],
+                    'filter': [
+                        'lowercase',
+                        'asciifolding',
+                        'word_delimiter',
+                    ],
                 },
             },
         }
@@ -45,7 +61,8 @@ def create_indices():
             'show': {
                 'properties': {
                     'title': {
-                        'type': 'string',      
+                        'type': 'string',
+                        'analyzer': 'title_search',
                         'fields': {
                             'raw' : {
                                 'type': 'string', 
@@ -55,7 +72,11 @@ def create_indices():
                                 'type': 'string', 
                                 'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
-                            }
+                            },
+                            'length': { 
+                                'type': 'token_count',
+                                'analyzer': 'standard'
+                            },
                         }
                     },
                     'id': { 'type': 'integer' },
@@ -100,11 +121,16 @@ def create_indices():
                     },
                     'alternative_titles': {
                         'type': 'string',
+                        'analyzer': 'title_search',
                         'fields': {
                             'suggest': {
                                 'type': 'string', 
                                 'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
+                            },
+                            'length': { 
+                              'type': 'token_count',
+                              'analyzer': 'standard',
                             },
                         },
                     },
@@ -114,6 +140,7 @@ def create_indices():
                     'episode_type': { 'type': 'integer' },
                     'created_at': { 'type': 'date' },
                     'updated_at': { 'type': 'date' },
+                    'fans': { 'type': 'integer' },
                 }
             }
         }

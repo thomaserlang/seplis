@@ -110,6 +110,10 @@ class Application(tornado.web.Application):
             URLSpec(
                 r'/1/users/current', 
                 seplis.api.handlers.user.Current_handler
+            ),            
+            URLSpec(
+                r'/1/users/current/change-password', 
+                seplis.api.handlers.user.Change_password_handler
             ),
             
             URLSpec(

@@ -6,6 +6,8 @@ from seplis.web.client import API_error
 from seplis.api import exceptions
 from tornado import gen
 from tornado.web import HTTPError, authenticated
+from tornado.httpclient import AsyncHTTPClient
+from tornado.httputil import url_concat
 
 class Handler(base.Handler):
 
@@ -309,6 +311,20 @@ class API_edit_handler(API_new_handler):
             raise exceptions.Show_unknow()
         yield self.client.post('/shows/{}/update'.format(show_id))
         self.write_object(show)
+
+class API_tvmaze_lookup(base.API_handler):
+
+    @gen.coroutine
+    def get(self):
+        httpclient = AsyncHTTPClient()
+        url = 'http://api.tvmaze.com/lookup/shows?{}'.format(
+            utils.url_encode_tornado_arguments(self.request.arguments)
+        )
+        response = yield httpclient.fetch(url)
+        if 200 <= response.code <= 399: 
+            self.write(response.body)
+        else:
+            raise HTTPError(code, response.body)
 
 class Fan_of_handler(base.Handler):
 

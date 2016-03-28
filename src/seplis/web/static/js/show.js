@@ -30,7 +30,7 @@ $(function(){
     $('#form-edit-show #imdb, #form-new-show #imdb').on('paste', function(){
         var obj = $(this);
         setTimeout(function () { 
-            $.getJSON('http://api.tvmaze.com/lookup/shows', {'imdb': obj.val()}, function(show){
+            $.getJSON('/api/tvmaze-show-lookup', {'imdb': obj.val()}, function(show){
                 show.externals['tvmaze'] = show.id;
                 $('#form-edit-show .input-external-id, #form-new-show .input-external-id').each(function(){
                     if ($(this).val() != '')

@@ -34,4 +34,22 @@ $(function(){
             }
         );
     });
+
+    $('#change-password-form').submit(function(event){
+        event.preventDefault();
+        var btn = $(this).find('button');
+        btn.button('loading')
+        api.post(
+            '/api/change-password', 
+            $(this).serialize(), 
+            {
+                done: function(data){
+                    location.href = '/';
+                },
+                always: function(){
+                    btn.button('reset')
+                }
+            }
+        );
+    });
 });

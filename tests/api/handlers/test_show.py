@@ -670,5 +670,124 @@ class test_show(Testbase):
         show = utils.json_loads(response.body)
         self.assertEqual(show['poster_image']['id'], image['id'])
 
+    def test_search_title(self):
+        self.login(constants.LEVEL_EDIT_SHOW)
+        response = self.post('/1/shows', {
+            'title': 'This is a test show',
+            'alternative_titles': [
+                'kurt 1',
+            ]
+        })
+        self.assertEqual(response.code, 201, response.body)
+        show = utils.json_loads(response.body)
+        self.refresh_es()
+
+        # Test that lowercase does not matter
+        response = self.get('/1/shows', {'q': 'this'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1)
+
+        # Test that both title and alternative_titles is searched in
+        response = self.get('/1/shows', {'q': 'kurt'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1)
+
+        # Test ascii folding
+        response = self.get('/1/shows', {'q': 'kùrt'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1)
+
+
+        # Test apostrophe
+        response = self.post('/1/shows', {
+            'title': 'DC\'s legend of something',
+            'alternative_titles': [
+                'DC’s kurt',
+            ]
+        })
+        self.assertEqual(response.code, 201, response.body)
+        show2 = utils.json_loads(response.body)
+        self.refresh_es()
+
+        response = self.get('/1/shows', {'q': 'dc\'s'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1, data)
+        self.assertEqual(data[0]['id'], show2['id'])
+        response = self.get('/1/shows', {'q': 'dc’s'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1, data)
+        self.assertEqual(data[0]['id'], show2['id'])
+        response = self.get('/1/shows', {'q': 'dcs'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1, data)
+        response = self.get('/1/shows', {'q': '"dcs kurt"'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1, data)
+        response = self.get('/1/shows', {'q': '"dc’s kurt"'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(data[0]['id'], show2['id'])
+        response = self.get('/1/shows', {'q': 'dc'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 0, data)
+
+        # Test dotted search
+        response = self.get('/1/shows', {'q': 'dcs.legend.of.something'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1, data)
+        self.assertEqual(data[0]['id'], show2['id'])
+
+        # Test score
+        # Searching for "dcs legend of something" should not return
+        # "Test DC's legend of something" as the first result
+        response = self.post('/1/shows', {
+            'title': 'Test DCs legend of something',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        show3 = utils.json_loads(response.body)
+        response = self.post('/1/shows', {
+            'title': 'legend',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        show3 = utils.json_loads(response.body)
+        self.refresh_es()
+
+        response = self.get('/1/shows', {'title': 'dc\'s legend of something'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 2, data)
+        self.assertEqual(data[0]['id'], show2['id'], data)
+
+
+        # Test the walking dead
+        with new_session() as session:
+            session.query(models.Show).delete()
+            session.commit()
+        response = self.post('/1/shows', {
+            'title': 'The Walking Dead',
+            'premiered': '2010-10-31',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        response = self.post('/1/shows', {
+            'title': 'Fear the Walking Dead',
+            'premiered': '2015-08-23',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        self.refresh_es()
+        response = self.get('/1/shows', {'title': 'The Walking Dead'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 2, data)
+        self.assertEqual(data[0]['title'], 'The Walking Dead')
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

@@ -256,8 +256,8 @@ class Transcode_handler(
         d = self._get_stream_index_by_lang('audio', self.audio_lang)
         if not d: 
             return
-        i = cmd.index('0:1')
-        cmd[i] = '0:{}'.format(d['index'])
+        i = cmd.index('0:a:0')
+        cmd[i] = '0:a:{}'.format(d['group_index'])
 
     def on_connection_close(self):
         if self.subtitle_file and os.path.exists(self.subtitle_file):
@@ -322,11 +322,11 @@ class Transcode_handler(
             '-loglevel', 'quiet',
             '-threads', str(config['play']['ffmpeg_threads']),
             '-y',
-            '-map', '0:0',
+            '-map', '0:v:0',
             '-preset', 'veryfast',
             '-c:v', vcodec,
             '-pix_fmt', 'yuv420p',
-            '-map', '0:1',
+            '-map', '0:a:0',
             '-c:a', 'aac',
             '-strict', '-2',
             '-cutoff', '15000',
@@ -349,10 +349,10 @@ class Transcode_handler(
             '-vcodec', vcodec,
             '-pix_fmt', 'yuv420p',
             '-bsf', 'h264_mp4toannexb',
-            '-map', '0:0',
+            '-map', '0:v:0',
             '-acodec', 'libmp3lame',
             '-ac', '2',
-            '-map', '0:1',
+            '-map', '0:a:0',
             '-hls_allow_cache', '0',
             '-hls_time', str(config['play']['segment_time']),
             '-hls_list_size', '0', 
@@ -398,8 +398,8 @@ class Transcode_handler(
             '-y',
             '-vn',
             '-an',
-            '-c:s:{}'.format(sub_index['group_index']),
-            'ass',
+            '-c:s', 'ass',
+            '-map', '0:s:{}'.format(sub_index['group_index'])
         ]
         start = int(self.get_argument('start', 0))
         if start:

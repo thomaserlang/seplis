@@ -25,6 +25,11 @@ EXTERNAL_TYPE_NAMES = {
     'thetvdb': 'TheTVDB',
     'tvmaze': 'TVmaze',
 }
+EXTERNAL_TYPE_URLS = {
+    'imdb': 'http://www.imdb.com/title/{id}',
+    'thetvdb': 'http://thetvdb.com/?tab=series&id={id}',
+    'tvmaze': 'http://www.tvmaze.com/shows/{id}',
+}
 EXTERNAL_REQUIRED_TYPES = (
     'imdb',
 )

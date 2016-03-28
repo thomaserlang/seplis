@@ -164,29 +164,22 @@ class Handler(base.Handler):
     @gen.coroutine
     def get_shows(self, show_ids=None):
         append_fields = self.get_append_fields(self.allowed_append_fields)
-        q = self.get_argument('q', None)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
-        sort = self.get_argument('sort', '_score')
+        sort = self.get_argument('sort', '_score:desc,title.length:asc,premiered:desc')
         fields = self.get_argument('fields', None)
         fields = list(filter(None, fields.split(','))) if fields else None
         req = {
             'from': ((page - 1) * per_page),
             'size': per_page,
             'sort': sort,
+            'search_type': 'dfs_query_then_fetch',
         }
-        body = {}
+        body = self.build_query()
         if fields:
             if 'id' not in fields:
                 fields.append('id')
             body['_source'] = fields
-        if q:
-            body['query'] = {
-                'query_string': {
-                    'default_field': 'title',
-                    'query': q,
-                }
-            }
         if show_ids:
             body['filter'] = {
                 'ids':{
@@ -215,6 +208,74 @@ class Handler(base.Handler):
             records=shows,
         )
         return p
+
+    def build_query(self):
+        """Builds a query from either argument: `q`, `title` or `title_suggest`."""
+        q = self.get_argument('q', None)
+        title = self.get_argument('title', None)
+        title_suggest = self.get_argument('title_suggest', None)
+        query = {}
+        if q:
+            query['query'] = self.build_query_query_string(q)
+        elif title:
+            query['query'] = self.build_query_title(title)
+            query['track_scores'] = True
+        elif title_suggest:
+            query['query'] = self.build_query_title_suggest(title_suggest)
+            query['track_scores'] = True
+        return query
+
+    def build_query_query_string(self, q):
+        """Uses query string for a dynamic way of searching something specific 
+        about a show.
+
+        See: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html
+        """
+        return {
+             'query_string': {
+                'fields': ['title', 'alternative_titles'],
+                'query': q,                
+                'fuzziness': 2,
+            },
+        }
+
+    def build_query_title(self, title):
+        """Searches after a specific title in `title` or `alternative_titles`."""
+        return {
+            'bool': {
+                'should': [
+                    {'match': {'title': {
+                        'query': title, 
+                        'operator': 'and',
+                        'fuzziness': 1,
+                    }}}, 
+                    {'match': {'alternative_titles': {
+                        'query': title, 
+                        'operator': 'and',
+                        'fuzziness': 1,
+                    }}},
+                ],
+            }
+        }
+
+    def build_query_title_suggest(self, title):
+        """Uses the `suggest` index, analyzed with nGram to match
+        parts of the word in the `title` or `alternative_titles`.
+        """
+        return {
+            'bool': {
+                'should': [
+                    {'match': {'title.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}}, 
+                    {'match': {'alternative_titles.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}},
+                ],
+            }
+        }
 
     def append_is_fan(self, shows, user_id=None):
         if not user_id:

@@ -2,8 +2,10 @@
 import nose
 import json
 from seplis.api.testbase import Testbase
-from seplis.api import constants
+from seplis.api import constants, models
+from seplis.api.decorators import new_session
 from seplis import utils, config
+from datetime import datetime, timedelta
 
 class test_user(Testbase):
 
@@ -209,6 +211,60 @@ class Test_progress_token_handler(Testbase):
         self.assertEqual(response.code, 403, response.body)
         d = utils.json_loads(response.body)
         self.assertEqual(d['extra']['user_level'], -1)
+
+class Test_change_password(Testbase):
+
+    def test(self):
+        self.login()
+        models.User.change_password(
+            user_id=self.current_user.id,
+            new_password='password',
+        )
+
+        # Test wrong password
+        response = self.post('/1/users/current/change-password', {
+            'password': 'wrong',
+            'new_password': 'password123',
+        })
+        self.assertEqual(response.code, 401, response.body)
+
+        # Test correct password
+        response = self.post('/1/users/current/change-password', {
+            'password': 'password',
+            'new_password': 'password123',
+        })
+        self.assertEqual(response.code, 200, response.body)
+
+        # Test that our session has not expired
+        response = self.get('/1/users/current')
+        self.assertEqual(response.code, 200)
+
+        # Test that all other tokens than the current one will
+        # expire on password change
+        with new_session() as session:
+            token = models.Token(
+                app_id=None,
+                user_id=self.current_user.id,
+                user_level=constants.LEVEL_USER,
+                expires=datetime.utcnow()+timedelta(days=1),
+            )
+            session.add(token)
+            session.commit()
+
+            tokens = session.query(models.Token).filter(
+                models.Token.user_id == self.current_user.id
+            ).all()
+            self.assertEqual(len(tokens), 2)
+        response = self.post('/1/users/current/change-password', {
+            'password': 'password123',
+            'new_password': 'password321',
+        })
+        self.assertEqual(response.code, 200, response.body)
+        with new_session() as session:
+            tokens = session.query(models.Token).filter(
+                models.Token.user_id == self.current_user.id
+            ).all()
+            self.assertEqual(len(tokens), 1)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

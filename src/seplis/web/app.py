@@ -12,6 +12,7 @@ import seplis.web.handlers.user.play_servers
 import seplis.web.handlers.user.user
 import seplis.web.handlers.user.progress_token
 import seplis.web.handlers.user.subtitle_lang_show
+import seplis.web.handlers.user.change_password
 import seplis.web.handlers.play_episode
 import seplis.web.handlers.etw
 import hashlib
@@ -126,7 +127,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
             URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.show.Edit_handler),
             URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),
-
+            URLSpec(r'/api/tvmaze-show-lookup', seplis.web.handlers.show.API_tvmaze_lookup),
+            
             URLSpec(r'/api/fan', seplis.web.handlers.show.API_fan_handler),
             URLSpec(r'/api/watched', seplis.web.handlers.show.API_watched_handler),
 
@@ -154,6 +156,10 @@ class Application(tornado.web.Application):
             URLSpec(r'/api/user/play-server/user', seplis.web.handlers.user.play_servers.API_user_handler),
             
             URLSpec(r'/api/progress-token', seplis.web.handlers.user.progress_token.API_handler),
+                    
+            URLSpec(r'/change-password', seplis.web.handlers.user.change_password.Handler),
+            URLSpec(r'/api/change-password', seplis.web.handlers.user.change_password.API_handler),
+
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 
