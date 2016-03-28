@@ -250,25 +250,16 @@ class Handler(base.Handler):
         }
 
     def build_query_title_suggest(self, title):
-        """Uses the `suggest` index analyzed with nGram to match
+        """Uses the `suggest` index, analyzed with nGram to match
         parts of the word in the `title` or `alternative_titles`.
-
-        Boosts the calculated match score with the shows number of fans.
         """
         return {
-            'function_score': {
-                'query': {
-                    'bool': {
-                        'should': [
-                            {'match': {'title.suggest': {'query': title, 'operator': 'and'}}}, 
-                            {'match': {'alternative_titles.suggest': {'query': title, 'operator': 'and'}}},
-                        ],
-                    }
-                },
-                'field_value_factor': {
-                    'field': 'fans',
-                },
-            },
+            'bool': {
+                'should': [
+                    {'match': {'title.suggest': {'query': title, 'operator': 'and'}}}, 
+                    {'match': {'alternative_titles.suggest': {'query': title, 'operator': 'and'}}},
+                ],
+            }
         }
 
     def append_is_fan(self, shows, user_id=None):
