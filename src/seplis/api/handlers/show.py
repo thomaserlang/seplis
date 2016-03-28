@@ -234,7 +234,8 @@ class Handler(base.Handler):
         return {
              'query_string': {
                 'fields': ['title', 'alternative_titles'],
-                'query': q,
+                'query': q,                
+                'fuzziness': 2,
             },
         }
 
@@ -243,8 +244,16 @@ class Handler(base.Handler):
         return {
             'bool': {
                 'should': [
-                    {'match': {'title': {'query': title, 'operator': 'and'}}}, 
-                    {'match': {'alternative_titles': {'query': title, 'operator': 'and'}}},
+                    {'match': {'title': {
+                        'query': title, 
+                        'operator': 'and',
+                        'fuzziness': 1,
+                    }}}, 
+                    {'match': {'alternative_titles': {
+                        'query': title, 
+                        'operator': 'and',
+                        'fuzziness': 1,
+                    }}},
                 ],
             }
         }
@@ -256,8 +265,14 @@ class Handler(base.Handler):
         return {
             'bool': {
                 'should': [
-                    {'match': {'title.suggest': {'query': title, 'operator': 'and'}}}, 
-                    {'match': {'alternative_titles.suggest': {'query': title, 'operator': 'and'}}},
+                    {'match': {'title.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}}, 
+                    {'match': {'alternative_titles.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}},
                 ],
             }
         }
