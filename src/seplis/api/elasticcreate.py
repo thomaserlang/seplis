@@ -15,24 +15,20 @@ def create_indices():
                     'mappings': ['`=>', '’=>', '\'=>']
                 }
             },
-            'filter': {
+            'tokenizer': {
                 'autocomplete_ngram': { 
-                    'type': 'edge_ngram',
+                    'type': 'nGram',
                     'min_gram': 1,
-                    'max_gram': 20,
-                },
-                'title_word_delimiter': {
-                    'type': 'word_delimiter',
+                    'max_gram': 5,
                 },
             },
             'analyzer': {
                 'autocomplete_index': {
                     'type' : 'custom',
-                    'tokenizer': 'standard',
+                    'tokenizer': 'autocomplete_ngram',
                     'filter': [
                         'lowercase',
                         'asciifolding',
-                        'autocomplete_ngram',
                         'word_delimiter',
                     ],
                 },
