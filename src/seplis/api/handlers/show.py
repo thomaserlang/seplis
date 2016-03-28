@@ -166,13 +166,14 @@ class Handler(base.Handler):
         append_fields = self.get_append_fields(self.allowed_append_fields)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
-        sort = self.get_argument('sort', '_score')
+        sort = self.get_argument('sort', '_score:desc')
         fields = self.get_argument('fields', None)
         fields = list(filter(None, fields.split(','))) if fields else None
         req = {
             'from': ((page - 1) * per_page),
             'size': per_page,
             'sort': sort,
+            'search_type': 'dfs_query_then_fetch',
         }
         body = self.build_query()
         if fields:
@@ -238,49 +239,14 @@ class Handler(base.Handler):
         }
 
     def build_query_title(self, title):
-        """Searches after a specific title in `title` or `alternative_titles`.
-        Boosts the matched score with the length of the `title`.
-
-        The smaller the title the better the score.
-        This is done to prevent an example like this: 
-
-        Searching for "The Walking Dead" will give this result with a normal query:
-
-        1: Fear The Walking Dead (FTWD)
-        2: The Walking Dead (TWD)
-
-        Both results get the same match score so the order is rather random.
-        We don't want "FTWD" out ranking "TWD" when searching for "TWD".
-        So we use the title's length to boost the score. A longer title
-        will be a disadvantage.
-
-        With this query we get (when searching for "TWD"):
-
-        1: TWD
-        2: FTWD
-
-        Better.
-        """
+        """Searches after a specific title in `title` or `alternative_titles`."""
         return {
-            'function_score': {
-                'query': {
-                    'bool': {
-                        'should': [
-                            {'match': {'title': {'query': title, 'operator': 'and'}}}, 
-                            {'match': {'alternative_titles': {'query': title, 'operator': 'and'}}},
-                        ],
-                    }
-                },
-                'functions': [
-                    {
-                        'script_score': {
-                            'script': 'def score = 1000 - _source.title.size(); score',
-                        }
-                    }
+            'bool': {
+                'should': [
+                    {'match': {'title': {'query': title, 'operator': 'and'}}}, 
+                    {'match': {'alternative_titles': {'query': title, 'operator': 'and'}}},
                 ],
-                'score_mode': 'sum',
-                'boost_mode': 'replace',
-            },
+            }
         }
 
     def build_query_title_suggest(self, title):

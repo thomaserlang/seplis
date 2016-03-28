@@ -671,10 +671,6 @@ class test_show(Testbase):
         self.assertEqual(show['poster_image']['id'], image['id'])
 
     def test_search_title(self):
-        self.delete('http://{}/shows/show'.format(
-            config['api']['elasticsearch']
-        ))
-        self.refresh_es()
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
             'title': 'This is a test show',
@@ -754,7 +750,7 @@ class test_show(Testbase):
         # Searching for "dcs legend of something" should not return
         # "Test DC's legend of something" as the first result
         response = self.post('/1/shows', {
-            'title': 'Test DC\'s legend of something',
+            'title': 'Test DCs legend of something',
         })
         self.assertEqual(response.code, 201, response.body)
         show3 = utils.json_loads(response.body)
@@ -764,12 +760,17 @@ class test_show(Testbase):
         self.assertEqual(response.code, 201, response.body)
         show3 = utils.json_loads(response.body)
         self.refresh_es()
+        self.refresh_es()
+        self.refresh_es()
+        self.refresh_es()
+        self.refresh_es()
+        self.refresh_es()
 
-        response = self.get('/1/shows', {'title': 'dcs legend of something'})
+        response = self.get('/1/shows', {'title': 'dc\'s legend of something'})
         self.assertEqual(response.code, 200, response.body)
         data = utils.json_loads(response.body)
         self.assertEqual(len(data), 2, data)
-        self.assertEqual(data[0]['id'], show2['id'])
+        self.assertEqual(data[0]['id'], show2['id'], data)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__+':test_show.test_search_title')
