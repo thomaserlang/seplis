@@ -263,10 +263,18 @@ class Handler(base.Handler):
         parts of the word in the `title` or `alternative_titles`.
         """
         return {
-             'query_string': {
-                'fields': ['title.suggest', 'alternative_titles.suggest'],
-                'query': title,
-            },
+            'bool': {
+                'should': [
+                    {'match': {'title.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}}, 
+                    {'match': {'alternative_titles.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}},
+                ],
+            }
         }
 
     def append_is_fan(self, shows, user_id=None):
