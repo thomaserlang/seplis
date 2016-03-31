@@ -28,14 +28,18 @@ class Show_importer_base(object):
         """
 
     def incremental_updates(self):
-        """Override this function and return a list of show ids.
-        The return must be a list of [str/int].
+        """Override this function and return a list of show ids that has changed
+        since last check.
+        Use `last_update_timestamp` and `save_timestamp`.
+        The return must be a list of str/int.
         """
 
     def last_update_timestamp(self):
-        """Get the unix timestamp from when update last was run.
-        For this to work it's required that `incremental_updates`
-        calls `save_timestamp` after it's done.
+        """Get the unix timestamp from when `incremental_updates()` was last run.
+        For this to work it's required that `incremental_updates()`
+        calls `save_timestamp()` after it's done.
+
+        If there is no saved info it defaults to 24 hours ago.
 
         :returns: float
         """
@@ -51,10 +55,10 @@ class Show_importer_base(object):
 
     def save_timestamp(self, timestamp=None):
         """Saves a timestamp in a file.
-        If timestamp i none the current timestamp will be used.
+        If timestamp is `None` the current time will be used.
 
         The correct way to use this is to save the current timestamp
-        to a variable. Do the work and the call `save_timestamp(timestamp)`.
+        to a variable. Do the work and then call `save_timestamp(timestamp)`.
 
         ```
         ttime = time.time()
