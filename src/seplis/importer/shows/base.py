@@ -53,7 +53,7 @@ class Show_importer_base(object):
         with open(path, 'r') as f:
             return float(f.readline())
 
-    def save_timestamp(self, timestamp=None):
+    def save_timestamp(self, timestamp):
         """Saves a timestamp in a file.
         If timestamp is `None` the current time will be used.
 
