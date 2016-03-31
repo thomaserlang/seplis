@@ -1,3 +1,4 @@
+from seplis import config
 
 class Show_importer_base(object):
 
@@ -32,10 +33,21 @@ class Show_importer_base(object):
         """
 
     def last_update_timestamp(self):
-        """Get the timestamp from when update last was run.
+        """Get the unix timestamp from when update last was run.
         For this to work it's required that `incremental_updates`
-        calls `save_timestamp` after it's work is done.
+        calls `save_timestamp` after it's done.
+
+        :returns: float
         """
+        path = os.path.join(
+            config['data_dir'],
+            'importer',
+            self.name+'.timestamp',
+        )
+        if not os.path.isfile(path):
+            return time.time() - 86400
+        with open(path, 'r') as f:
+            return float(f.readline())
 
     def save_timestamp(self, timestamp=None):
         """Saves a timestamp in a file.
@@ -51,15 +63,14 @@ class Show_importer_base(object):
         ```
         """
         path = os.path.join(
-            tempfile.gettempdir(),
-            'seplis',
-            'index',
+            config['data_dir'],
+            'importer',
         )
         if not os.path.exists(path):
             os.makedirs(path)
         path = os.path.join(
             path,
-            self.__indexer_name__+'.timestamp',
+            self.name+'.timestamp',
         )
         if not timestamp:
             timestamp = time.time()
