@@ -2,11 +2,15 @@ from seplis import config
 
 class Show_importer_base(object):
 
-    """The name display to the user when choosing importer source"""
+    """The displayed name"""
     name = None
-    """Must match the externals key from the show"""
+    """The key in externals for the show"""
     id = None
-    """"""
+    """Tuple of supported import methods
+        - info
+        - episodes
+        - images
+    """
     supported = ()
 
     def info(self, show_id):
