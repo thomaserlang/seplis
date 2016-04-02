@@ -1,1 +1,1 @@
-from .shows import importer
+from . import shows

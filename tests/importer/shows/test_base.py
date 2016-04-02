@@ -1,13 +1,12 @@
 # coding=UTF-8
 import nose
-import mock
 from unittest import TestCase
-from seplis import utils, importer
 from datetime import date
+from seplis.importer.shows.base import Show_importer_base
 
-class test_show_info_changes(TestCase):
+class test_show_importer_base(TestCase):
 
-    def test(self):
+    def test_info_changes(self):        
         show = {
             'title': 'NCIS',
             'description': {
@@ -37,7 +36,7 @@ class test_show_info_changes(TestCase):
             ],
         }
 
-        changes = importer.shows.show_info_changes(show, show_changed)
+        changes = Show_importer_base.info_changes(show, show_changed)
         self.assertEqual(changes, {
             'title': 'NCIS 2',
             'description': {
@@ -51,7 +50,6 @@ class test_show_info_changes(TestCase):
             ],
         })
 
-    def test_genres(self):
         show = {
             'genres': [
                 'test1',
@@ -64,11 +62,10 @@ class test_show_info_changes(TestCase):
                 'test1',
             ]
         }
-        changes = importer.shows.show_info_changes(show, show_changed)
+        changes = Show_importer_base.info_changes(show, show_changed)
         self.assertFalse(changes, changes)
 
-class test_episode_changes(TestCase):
-    def test(self):
+    def test_episodes_changed(self):
         episode = {
             'number': 1,
             'title': 'Episode 1',
@@ -110,7 +107,7 @@ class test_episode_changes(TestCase):
             }
         ]
 
-        changes = importer.shows.show_episode_changes([episode], episodes_changed)
+        changes = Show_importer_base.episode_changes([episode], episodes_changed)
         self.assertEqual(changes[0], {   
             'number': 1,
             'title': 'Episode 1 (new title)',
@@ -125,7 +122,7 @@ class test_episode_changes(TestCase):
         self.assertEqual(changes[1], episodes_changed[1])
 
         # test no changes
-        changes = importer.shows.show_episode_changes([episode], [episode])
+        changes = Show_importer_base.episode_changes([episode], [episode])
         self.assertEqual(len(changes), 0)
 
         # test None description
@@ -149,7 +146,7 @@ class test_episode_changes(TestCase):
                 'episode': 1,
             },
         ]        
-        changes = importer.shows.show_episode_changes([episode], episodes_changed)
+        changes = Show_importer_base.episode_changes([episode], episodes_changed)
         self.assertEqual(changes[0], {   
             'number': 1,
             'title': 'Episode 1 (new title)',
