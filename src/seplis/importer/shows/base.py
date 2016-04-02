@@ -105,21 +105,22 @@ class Show_importer_base(object):
         for s in schemas._Show_schema:
             if not isinstance(s, str) or s in skip_fields:
                 continue
-            if s in show and s in show_new:
-                if show[s] == None and isinstance(show_new[s], dict):
+            if s in show_original and s in show_new:
+                if show_original[s] == None and isinstance(show_new[s], dict):
                     continue
-                if show[s] != show_new[s]:
-                    if isinstance(show[s], list):
-                        changes[s] = list(set(show_new[s]) - set(show[s]))
+                if show_original[s] != show_new[s]:
+                    if isinstance(show_original[s], list):
+                        changes[s] = list(set(show_new[s]) - set(show_original[s]))
                         if not changes[s]:
                             changes.pop(s)
                     else:
                         changes[s] = show_new[s]
-            elif s not in show and s in show_new:
+            elif s not in show_original and s in show_new:
                 changes[s] = show_new[s]
         return changes
 
-    def episode_changes(episodes_original, episodes_new):
+    @classmethod
+    def episode_changes(cls, episodes_original, episodes_new):
         """Compares two episode list of dicts for changes.
         If the return is an empty list there is no
         difference between the two.
@@ -127,7 +128,7 @@ class Show_importer_base(object):
         :returns: dict
         """
         changes = []
-        current = {episode['number']: episode for episode in episodes}
+        current = {episode['number']: episode for episode in episodes_original}
         for episode in episodes_new:
             data = {}
             current_episode = current[episode['number']] if episode['number'] in current else episode 
