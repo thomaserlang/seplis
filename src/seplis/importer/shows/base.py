@@ -125,7 +125,7 @@ class Show_importer_base(object):
         If the return is an empty list there is no
         difference between the two.
 
-        :returns: dict
+        :returns: list of dict
         """
         changes = []
         current = {episode['number']: episode for episode in episodes_original}
