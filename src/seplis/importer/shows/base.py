@@ -4,6 +4,8 @@ from seplis import schemas, config
 importers = {}
 
 def register_importer(class_):
+    if not class_.id:
+        raise Exception('The importer id can\'t be `None`')
     if class_.id in importers:
         raise Exception('{} is already registered as an indexer'.format(
             class_.id
