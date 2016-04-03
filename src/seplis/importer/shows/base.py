@@ -1,5 +1,5 @@
 import logging
-import os
+import os, os.path
 import time
 from seplis import schemas, config
 
@@ -61,11 +61,11 @@ class Show_importer_base(object):
 
         :returns: float
         """
-        path = os.path.join(
+        path = os.path.expanduser(os.path.join(
             config['data_dir'],
             'importer',
             self.id+'.timestamp',
-        )
+        ))
         if not os.path.isfile(path):
             return time.time() - 86400
         with open(path, 'r') as f:
@@ -84,10 +84,10 @@ class Show_importer_base(object):
         self.save_timestamp(ttime)
         ```
         """
-        path = os.path.join(
+        path = os.path.expanduser(os.path.join(
             config['data_dir'],
             'importer',
-        )
+        ))
         if not os.path.exists(path):
             os.makedirs(path)
         path = os.path.join(
