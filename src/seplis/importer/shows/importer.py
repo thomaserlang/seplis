@@ -1,5 +1,11 @@
 from seplis import schemas
 
+
+def update_show(show):
+    ''' Updates a show from the chosen importers.
+    `show`
+    '''
+
 def show_info_changes(show_original, show_new):
     """Compares two show dicts for changes.
     If the return is an empty dict there is no

@@ -72,9 +72,9 @@ Episode_schema = good.Schema(_Episode_schema, default_keys=good.Optional)
 External_schema = good.Schema({
     good.All(good.Length(min=1, max=45)):good.Any(None, good.All(str, good.Length(min=1, max=45)))
 }, default_keys=good.Optional)
-Index_schema = good.Schema(
+Importer_schema = good.Schema(
     {key: good.Any(None, good.All(str, good.Length(min=1, max=45))) \
-        for key in constants.INDEX_TYPE_NAMES},
+        for key in constants.IMPORTER_TYPE_NAMES},
     default_keys=good.Optional,
 )
 _Show_schema = {
@@ -84,7 +84,7 @@ _Show_schema = {
     'ended': good.Any(None, date_()),
     good.Optional('episodes'): good.Any([Episode_schema]),
     'externals': good.Any(None, External_schema),
-    'indices': good.Any(None, Index_schema),
+    'importers': good.Any(None, Importer_schema),
     'status': int,
     'runtime': good.Any(int, None),
     'genres': [str],

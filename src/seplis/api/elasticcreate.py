@@ -101,7 +101,7 @@ def create_indices():
                         'dynamic' : True,
                         'type': 'object',
                     },
-                    'indices': {
+                    'import_from': {
                         'dynamic': False,
                         'properties': {
                             'info': { 'type': 'string' },

@@ -27,9 +27,9 @@ class Show(Base):
     premiered = sa.Column(sa.Date)
     ended = sa.Column(sa.Date)
     externals = sa.Column(JSONEncodedDict(), default=JSONEncodedDict.empty_dict)
-    index_info = sa.Column(sa.String(45))
-    index_episodes = sa.Column(sa.String(45))
-    index_images = sa.Column(sa.String(45))
+    importer_info = sa.Column(sa.String(45))
+    importer_episodes = sa.Column(sa.String(45))
+    importer_images = sa.Column(sa.String(45))
     seasons = sa.Column(JSONEncodedDict(), default=JSONEncodedDict.empty_list)
     runtime = sa.Column(sa.Integer)
     genres = sa.Column(JSONEncodedDict(), default=JSONEncodedDict.empty_list)
@@ -52,7 +52,7 @@ class Show(Base):
             },
             'premiered': self.premiered,
             'ended': self.ended,
-            'indices': self.serialize_indices(),
+            'importers': self.serialize_importers(),
             'externals': self.externals if self.externals else {},
             'status': self.status,
             'runtime': self.runtime,
@@ -67,11 +67,11 @@ class Show(Base):
             'episode_type': self.episode_type,
         }
 
-    def serialize_indices(self):
+    def serialize_importers(self):
         return {
-            'info': self.index_info,
-            'episodes': self.index_episodes,
-            'images': self.index_images,
+            'info': self.importer_info,
+            'episodes': self.importer_episodes,
+            'images': self.importer_images,
         }
 
     def to_elasticsearch(self):
@@ -90,7 +90,7 @@ class Show(Base):
         })
 
     def before_upsert(self):
-        self.check_indices()
+        self.check_importers()
         if get_history(self, 'externals').has_changes():
             self.cleanup_externals()    
             self.update_externals()    
@@ -197,23 +197,23 @@ class Show(Base):
             })
         self.seasons = seasons
 
-    def check_indices(self):
-        '''Checks that all the index values are registered as externals.
+    def check_importers(self):
+        '''Checks that all the importer values is registered as externals.
 
         :param show: `Show()`
         :raises: `exceptions.Show_external_field_missing()`
-        :raises: `exceptions.Show_index_type_not_in_external()`
+        :raises: `exceptions.Show_importer_not_in_external()`
         '''
-        indices = self.serialize_indices()
-        if not indices or not any(indices.values()):
+        importers = self.serialize_importers()
+        if not importers or not any(importers.values()):
             return
         if not self.externals:
             raise exceptions.Show_external_field_missing()
-        for key in indices:
-            if (indices[key] != None) and \
-               (indices[key] not in self.externals):
-                raise exceptions.Show_index_type_not_in_external(
-                    indices[key]
+        for key in importers:
+            if (importers[key] != None) and \
+               (importers[key] not in self.externals):
+                raise exceptions.Show_importer_not_in_external(
+                    importers[key]
                 )
 
     @classmethod

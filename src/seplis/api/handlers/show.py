@@ -81,10 +81,10 @@ class Handler(base.Handler):
     def _update(self, session, show, overwrite=False):
         self._add_poster_image(show, session)
         self.flatten_request(self.request.body, 'description', 'description')
-        self.flatten_request(self.request.body, 'indices', 'index')
+        self.flatten_request(self.request.body, 'importers', 'importer')
         if overwrite:
-            for key in constants.INDEX_TYPE_NAMES:
-                setattr(show, 'index_'+key, None)
+            for key in constants.IMPORTER_TYPE_NAMES:
+                setattr(show, 'importer_'+key, None)
         if 'episodes' in self.request.body:
             episodes = self.request.body.pop('episodes')
             self.patch_episodes(

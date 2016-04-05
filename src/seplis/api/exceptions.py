@@ -178,14 +178,14 @@ class Show_external_field_missing(API_exception):
             message='the external field must be specified before updating the index field',
         )
 
-class Show_index_type_not_in_external(API_exception):
+class Show_importer_not_in_external(API_exception):
 
     def __init__(self, external_type):
         API_exception.__init__(
             self,
             status_code=400,
             code=1402,
-            message='Index type: "{}" must first be specified in the external field before adding it to the index field'.format(external_type),
+            message='Importer "{}" must specified as a key in externals with an id'.format(external_type),
             extra={
                 'external_type': external_type,
             }

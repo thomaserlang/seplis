@@ -34,7 +34,7 @@ EXTERNAL_REQUIRED_TYPES = (
     'imdb',
 )
 
-INDEX_TYPES = (
+IMPORTER_TYPES = (
     ('info', (
         'thetvdb',
         'tvmaze',
@@ -49,7 +49,7 @@ INDEX_TYPES = (
     ))
 )
 
-INDEX_TYPE_NAMES = {
+IMPORTER_TYPE_NAMES = {
     'info': 'Info',
     'episodes': 'Episodes',
     'images': 'Images',
