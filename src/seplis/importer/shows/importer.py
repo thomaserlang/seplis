@@ -34,9 +34,9 @@ def update_show(show):
         )
 
 def update_show_info(show):
-    """Retrieves show info from the specified info importer.
-    Compares it to `show` and sends a patch request
-    to the API with the difference.
+    """Retrieves show info from the specified info importer
+    and compares it with the current show to only update
+    if there are any changes.
 
     ``show`` must be a show dict.
 
@@ -57,7 +57,9 @@ def update_show_info(show):
         )
 
 def update_show_episodes(show):
-    """
+    """Retrieves show episodes from the specified episode
+    importer and compares them to the show's current episodes
+    to only update if there are any changes.
 
     ``show`` must be a show dict.
 
