@@ -1,8 +1,77 @@
 # coding=UTF-8
 import nose
+import mock
 from unittest import TestCase
 from datetime import date
 from seplis.importer.shows.importer import *
+
+class Test_update_show_info(TestCase):
+
+    @mock.patch('seplis.importer.shows.importer.client')
+    @mock.patch('seplis.importer.shows.importer.call_importer')
+    def test(self, call_importer, client):
+        show = {
+            'id': 1,
+            'importers': {
+                'info': 'test_importer'
+            }
+        }
+        call_importer.return_value = {'title': 'Test show'}
+        update_show_info(show)
+        call_importer.assert_called_with(
+            id_=show['importers']['info'],
+            method='info',
+            show_id=show['id'],
+        )
+        client.patch.assert_called_with(
+            '/shows/{}'.format(show['id']),
+            {'title': 'Test show'},
+            timeout=120,
+        )
+        
+class Test_update_show_episodes(TestCase):
+
+    @mock.patch('seplis.importer.shows.importer.client')
+    @mock.patch('seplis.importer.shows.importer.call_importer')
+    def test(self, call_importer, client):
+        show = {
+            'id': 1,
+            'importers': {
+                'episodes': 'test_importer'
+            }
+        }
+        client.get.all.return_value = []
+        call_importer.return_value = [{'number': 1}]
+        update_show_episodes(show)
+        call_importer.assert_called_with(
+            id_=show['importers']['episodes'],
+            method='episodes',
+            show_id=show['id'],
+        )
+        client.patch.assert_called_with(
+            '/shows/{}'.format(show['id']),
+            {'episodes': [{'number': 1}]},
+            timeout=120,
+        )
+
+class Test_cleanup_episodes(TestCase):
+
+    @mock.patch('seplis.importer.shows.importer.client')
+    def test(self, client):
+        episodes = [{'number': 1}, {'number': 2}, {'number': 3}]
+        imp_episodes = [{'number': 1}]
+        cleanup_episodes(
+            show_id=1, 
+            episodes=episodes, 
+            imported_episodes=imp_episodes
+        )
+        self.assertEqual(
+            client.delete.mock_calls,
+            [
+                mock.call('/shows/1/episodes/2'),
+                mock.call('/shows/1/episodes/3'),
+            ]
+        )
 
 class Test_show_info_changes(TestCase):
 

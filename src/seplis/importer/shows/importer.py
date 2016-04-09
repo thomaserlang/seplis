@@ -1,10 +1,118 @@
-from seplis import schemas
+import logging
+from seplis import schemas, Client, config
+from .base import importers
 
+logger = logging.getLogger(__name__)
+client = Client(
+    url=config['client']['api_url'],
+    access_token=config['client']['access_token'],
+)
 
 def update_show(show):
-    ''' Updates a show from the chosen importers.
-    `show`
-    '''
+    """Updates a show from the chosen importers in `show["importers"]`.
+    
+    ``show`` must be a show dict. Required keys: id, importers
+
+    """
+    if not show['importers']:
+        return
+    if show['importers']['info']:
+        update_show_info(show)
+    if show['importers']['episodes']:
+        episodes = importer(
+            id_=show['importers']['episodes'],
+            method='episodes',
+            show_id=show['id'],
+        )
+        if episodes:
+            episodes = show_episode_changes(show['episodes'], episodes)
+    if show['importers']['images']:
+        images = importer(
+            id_=show['importers']['images'],
+            method='episodes',
+            show_id=show['id'],
+        )
+
+def update_show_info(show):
+    """Retrieves show info from the specified info importer.
+    Compares it to `show` and sends a patch request
+    to the API with the difference.
+
+    ``show`` must be a show dict.
+
+    """
+    info = call_importer(
+        id_=show['importers']['info'],
+        method='info',
+        show_id=show['id'],
+    )
+    if not info:
+        return
+    info = show_info_changes(show, info)
+    if info:
+        client.patch(
+            '/shows/{}'.format(show['id']), 
+            info,
+            timeout=120,
+        )
+
+def update_show_episodes(show):
+    """
+
+    ``show`` must be a show dict.
+
+    """
+    episodes = client.get(
+        '/shows/{}/episodes?per_page=500'.format(show['id'])
+    ).all() or []
+
+    imp_episodes = call_importer(
+        id_=show['importers']['episodes'],
+        method='episodes',
+        show_id=show['id'],
+    )
+
+    cleanup_episodes(show['id'], episodes, imp_episodes)
+
+    changes = show_episode_changes(episodes, imp_episodes)
+    if changes:
+        client.patch(
+            '/shows/{}'.format(show['id']),
+            {'episodes': changes},
+            timeout=120,
+        )
+
+def cleanup_episodes(show_id, episodes, imported_episodes):
+    """Sends an API request to delete episodes that 
+    does not exist in `imported_episodes`
+
+    ``episodes`` list of all the show's current episodes.
+
+    ``imported_episodes`` list of all episodes imported from
+        an external source.
+
+    """
+    imp_ep_numbers = [e['number'] for e in imported_episodes]
+    for e in episodes:
+        if e['number'] not in imp_ep_numbers:
+            client.delete('/shows/{}/episodes/{}'.format(
+                show_id, 
+                e['number'],
+            ))
+
+def call_importer(id_, method, *args, **kwargs):
+    """Calls a method in a registered importer"""
+    im = importers.get(id_)
+    if not im:
+        logging.error('Unknown importer with id "{}"'.format(id_))
+        return
+    m = getattr(im, method, None)
+    if not m:
+        raise Exception('Unknown method "{}" for importer "{}"'.format(
+            method,
+            id_
+        ))
+    return m(*args, **kwargs)
 
 def show_info_changes(show_original, show_new):
     """Compares two show dicts for changes.
@@ -16,7 +124,7 @@ def show_info_changes(show_original, show_new):
     changes = {}
     skip_fields = (
         'externals',
-        'indices',
+        'importers',
         'episodes',
     )
     for s in schemas._Show_schema:
