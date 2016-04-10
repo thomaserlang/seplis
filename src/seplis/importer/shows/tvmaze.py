@@ -7,8 +7,8 @@ from dateutil import parser
 from .base import Show_importer_base, register_importer
 
 class Tvmaze(Show_importer_base):
-    name = 'TVmaze'
-    id = 'tvmaze'
+    display_name = 'TVmaze'
+    external_name = 'tvmaze'
     supported = (
         'info',
         'episodes',

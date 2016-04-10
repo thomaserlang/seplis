@@ -18,16 +18,16 @@ def register_importer(obj):
 
 class Show_importer_base(object):
 
-    """The displayed name"""
-    name = None
-    """The key in externals for the show"""
-    id = None
+    display_name = None
+    
+    external_name = None
+
+    supported = ()
     """Tuple of supported import methods
         - info
         - episodes
         - images
     """
-    supported = ()
 
     def info(self, show_id):
         """Override this function and return a show.

@@ -7,8 +7,8 @@ from seplis import config
 from .base import Show_importer_base, register_importer
 
 class Thetvdb(Show_importer_base):
-    name = 'TheTVDB'
-    id = 'thetvdb'
+    display_name = 'TheTVDB'
+    external_name = 'thetvdb'
     supported = (
         'info',
         'episodes',
