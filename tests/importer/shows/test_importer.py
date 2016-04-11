@@ -19,6 +19,9 @@ class Test_update_show_info(TestCase):
             'id': 1,
             'importers': {
                 'info': 'test_importer'
+            },
+            'externals': {
+                'test_importer': 'abc',
             }
         }
         call_importer.return_value = {'title': 'Test show'}
@@ -26,7 +29,7 @@ class Test_update_show_info(TestCase):
         call_importer.assert_called_with(
             external_name=show['importers']['info'],
             method='info',
-            show_id=show['id'],
+            show_id='abc',
         )
         client.patch.assert_called_with(
             '/shows/{}'.format(show['id']),
@@ -43,6 +46,9 @@ class Test_update_show_episodes(TestCase):
             'id': 1,
             'importers': {
                 'episodes': 'test_importer'
+            },
+            'externals': {
+                'test_importer': 'abc',
             }
         }
         client.get().all.return_value = []
@@ -51,7 +57,7 @@ class Test_update_show_episodes(TestCase):
         call_importer.assert_called_with(
             external_name=show['importers']['episodes'],
             method='episodes',
-            show_id=show['id'],
+            show_id='abc',
         )
         client.patch.assert_called_with(
             '/shows/{}'.format(show['id']),

@@ -15,24 +15,17 @@ def update_show(show):
     ``show`` must be a show dict. Required keys: id, importers
 
     """
+    if not show['externals']:
+        logger.warn('The show has no externals')
+        return
     if not show['importers']:
+        logger.warn('The specified show has no importers')
         return
     if show['importers']['info']:
         update_show_info(show)
     if show['importers']['episodes']:
-        episodes = importer(
-            external_name=show['importers']['episodes'],
-            method='episodes',
-            show_id=show['id'],
-        )
-        if episodes:
-            episodes = _show_episode_changes(show['episodes'], episodes)
-    if show['importers']['images']:
-        images = importer(
-            external_name=show['importers']['images'],
-            method='episodes',
-            show_id=show['id'],
-        )
+        update_show_episodes(show)
+    update_show_images(show)
 
 def update_show_info(show):
     """Retrieves show info from the specified info importer
@@ -45,7 +38,7 @@ def update_show_info(show):
     info = call_importer(
         external_name=show['importers']['info'],
         method='info',
-        show_id=show['id'],
+        show_id=show['externals'][show['importers']['info']],
     )
     if not info:
         return
@@ -72,7 +65,7 @@ def update_show_episodes(show):
     imp_episodes = call_importer(
         external_name=show['importers']['episodes'],
         method='episodes',
-        show_id=show['id'],
+        show_id=show['externals'][show['importers']['episodes']],
     )
 
     _cleanup_episodes(show['id'], episodes, imp_episodes)
@@ -110,9 +103,6 @@ def update_show_images(show):
     ``show`` must be a show dict.
 
     """
-    if not show.get('externals'):
-        logging.warn('show has no externals skipping images')
-        return
     imp_names = _importers_with_support(show['externals'], 'images')
     images = client.get(
         '/shows/{}/images?per_page=500'.format(show['id'])
