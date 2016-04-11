@@ -1,4 +1,5 @@
 import logging
+import requests
 from seplis import schemas, Client, config
 from .base import importers
 
@@ -20,15 +21,15 @@ def update_show(show):
         update_show_info(show)
     if show['importers']['episodes']:
         episodes = importer(
-            id_=show['importers']['episodes'],
+            external_name=show['importers']['episodes'],
             method='episodes',
             show_id=show['id'],
         )
         if episodes:
-            episodes = show_episode_changes(show['episodes'], episodes)
+            episodes = _show_episode_changes(show['episodes'], episodes)
     if show['importers']['images']:
         images = importer(
-            id_=show['importers']['images'],
+            external_name=show['importers']['images'],
             method='episodes',
             show_id=show['id'],
         )
@@ -42,13 +43,13 @@ def update_show_info(show):
 
     """
     info = call_importer(
-        id_=show['importers']['info'],
+        external_name=show['importers']['info'],
         method='info',
         show_id=show['id'],
     )
     if not info:
         return
-    info = show_info_changes(show, info)
+    info = _show_info_changes(show, info)
     if info:
         client.patch(
             '/shows/{}'.format(show['id']), 
@@ -66,17 +67,17 @@ def update_show_episodes(show):
     """
     episodes = client.get(
         '/shows/{}/episodes?per_page=500'.format(show['id'])
-    ).all() or []
+    ).all()
 
     imp_episodes = call_importer(
-        id_=show['importers']['episodes'],
+        external_name=show['importers']['episodes'],
         method='episodes',
         show_id=show['id'],
     )
 
-    cleanup_episodes(show['id'], episodes, imp_episodes)
+    _cleanup_episodes(show['id'], episodes, imp_episodes)
 
-    changes = show_episode_changes(episodes, imp_episodes)
+    changes = _show_episode_changes(episodes, imp_episodes)
     if changes:
         client.patch(
             '/shows/{}'.format(show['id']),
@@ -84,7 +85,7 @@ def update_show_episodes(show):
             timeout=120,
         )
 
-def cleanup_episodes(show_id, episodes, imported_episodes):
+def _cleanup_episodes(show_id, episodes, imported_episodes):
     """Sends an API request to delete episodes that 
     does not exist in `imported_episodes`
 
@@ -102,21 +103,114 @@ def cleanup_episodes(show_id, episodes, imported_episodes):
                 e['number'],
             ))
 
-def call_importer(id_, method, *args, **kwargs):
+def update_show_images(show):
+    """Retrieves images from importers that support image import 
+    and the external name is assigned to the show with an id.
+
+    ``show`` must be a show dict.
+
+    """
+    if not show.get('externals'):
+        logging.warn('show has no externals skipping images')
+        return
+    imp_names = _importers_with_support(show['externals'], 'images')
+    images = client.get(
+        '/shows/{}/images?per_page=500'.format(show['id'])
+    ).all()
+    print(images)
+    image_external_ids = {
+        '{}-{}'.format(i['external_name'], i['external_id']): i
+        for i in images
+    }
+    for name in imp_names:
+        imp_images = call_importer(
+            external_name=name, 
+            method='images',
+            show_id=show['externals'][name],
+        )
+        if not imp_images:
+            continue
+        for image in imp_images:
+            key = '{}-{}'.format(image['external_name'], image['external_id'])
+            if key not in image_external_ids:
+                _save_image(show['id'], image)
+            else:
+                i = image_external_ids[key]
+                if not i['hash']:
+                    _upload_image(show['id'], i)
+
+def _save_image(show_id, image):
+    saved_image = client.post(
+        '/shows/{}/images'.format(show_id), 
+        image
+    )
+    _upload_image(show_id, saved_image)
+
+def _upload_image(show_id, image):
+    """Uploads the image specified in `image['source_url']`
+    to the API server as saves it for `image`.
+
+    ``image`` image dict.
+
+    :returns: bool
+    """
+    if not image['source_url']:
+        raise Exception('the image must contain a source URL')
+    r = requests.get(image['source_url'], stream=True)
+    if r.status_code != 200:
+        raise Exception(
+            'Could not retrieve the source image from "{}". Status code:'.format(
+                image['source_url'],
+                r.status_code,
+            )
+        )
+    r = requests.put(
+        client.url+'/shows/{}/images/{}/data'.format(show_id, image['id']),
+        files={
+            'image': r.raw,
+        },
+        headers={
+            'Authorization': 'Bearer {}'.format(client.access_token),
+        }
+    )
+    if r.status_code != 200:
+        raise Exception(
+            'Failed to upload data for image {}. '
+            'Status code: {}. Error: {}'.format(
+                image['id'],
+                r.status_code,
+                r.text,
+            )
+        )
+    return True
+
+def _importers_with_support(show_externals, support):
+    """
+    :returns: list of str
+    """
+    imp_names = []
+    for name in importers:
+        if name not in show_externals:
+            continue
+        if support in importers[name].supported:
+            imp_names.append(name)
+    return imp_names
+
+def call_importer(external_name, method, *args, **kwargs):
     """Calls a method in a registered importer"""
-    im = importers.get(id_)
+    im = importers.get(external_name)
     if not im:
-        logging.error('Unknown importer with id "{}"'.format(id_))
+        logging.error('Unknown importer with id "{}"'.format(external_name))
         return
     m = getattr(im, method, None)
     if not m:
         raise Exception('Unknown method "{}" for importer "{}"'.format(
             method,
-            id_
+            external_name
         ))
     return m(*args, **kwargs)
 
-def show_info_changes(show_original, show_new):
+def _show_info_changes(show_original, show_new):
     """Compares two show dicts for changes.
     If the return is an empty dict there is no
     difference between the two.
@@ -147,7 +241,7 @@ def show_info_changes(show_original, show_new):
     return changes
 
 
-def show_episode_changes(episodes_original, episodes_new):
+def _show_episode_changes(episodes_original, episodes_new):
     """Compares two episode list of dicts for changes.
     If the return is an empty list there is no
     difference between the two.
