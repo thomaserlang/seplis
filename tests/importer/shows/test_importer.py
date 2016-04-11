@@ -10,6 +10,26 @@ from seplis.importer.shows.importer import client, importers, update_show, \
     _importers_with_support, _cleanup_episodes
 from seplis.importer.shows.base import Show_importer_base
 
+class Test_update_show(TestCase):
+
+    @mock.patch('seplis.importer.shows.importer.update_show_images')
+    @mock.patch('seplis.importer.shows.importer.update_show_episodes')
+    @mock.patch('seplis.importer.shows.importer.update_show_info')
+    def test(self, update_show_info, update_show_episodes, update_show_images):
+        show = {
+            'externals': {
+                'test': 'abc',
+            },
+            'importers': {
+                'info': 'test',
+                'episodes': 'test',
+            },
+        }
+        update_show(show)
+        update_show_info.assert_called_with(show)
+        update_show_episodes.assert_called_with(show)
+        update_show_images.assert_called_with(show)
+
 class Test_update_show_info(TestCase):
 
     @mock.patch('seplis.importer.shows.importer.client')
