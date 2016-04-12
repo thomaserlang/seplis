@@ -22,7 +22,7 @@ def update_show(show):
         logger.warn('The specified show has no importers')
         return
     if show['importers']['info']:
-        update_show_info(show)
+        show = update_show_info(show)
     if show['importers']['episodes']:
         update_show_episodes(show)
     update_show_images(show)
@@ -44,11 +44,12 @@ def update_show_info(show):
         return
     info = _show_info_changes(show, info)
     if info:
-        client.patch(
+        show = client.patch(
             '/shows/{}'.format(show['id']), 
             info,
             timeout=120,
         )
+    return show
 
 def update_show_episodes(show):
     """Retrieves show episodes from the specified episode
