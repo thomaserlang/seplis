@@ -25,6 +25,7 @@ class Test_update_show(TestCase):
                 'episodes': 'test',
             },
         }
+        update_show_info.return_value = show
         update_show(show)
         update_show_info.assert_called_with(show)
         update_show_episodes.assert_called_with(show)
