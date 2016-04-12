@@ -118,7 +118,6 @@ class Test_update_show_images(TestCase):
             'externals': {
                 'test': 1,
             },
-            'poster_image_id': None,
         }
         imported_images = [
             {

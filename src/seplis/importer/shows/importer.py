@@ -128,7 +128,7 @@ def update_show_images(show):
                 i = image_external_ids[key]
                 if not i['hash']:
                     _upload_image(show['id'], i)
-    if not show['poster_image_id']:
+    if ('poster_image' in show) and not show['poster_image']:
         _set_latest_image_as_primary(show['id'])
 
 def _save_image(show_id, image):
