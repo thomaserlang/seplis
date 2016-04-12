@@ -66,7 +66,7 @@ class Show_importer_base(object):
         path = os.path.expanduser(os.path.join(
             config['data_dir'],
             'importer',
-            self.id+'.timestamp',
+            self.external_name+'.timestamp',
         ))
         if not os.path.isfile(path):
             return time.time() - 86400
@@ -94,7 +94,7 @@ class Show_importer_base(object):
             os.makedirs(path)
         path = os.path.join(
             path,
-            self.id+'.timestamp',
+            self.external_name+'.timestamp',
         )
         if not timestamp:
             timestamp = time.time()
