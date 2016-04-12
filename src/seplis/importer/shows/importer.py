@@ -1,6 +1,6 @@
 import logging
 import requests
-from seplis import schemas, Client, config
+from seplis import schemas, Client, config, constants
 from .base import importers
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,6 @@ def update_show_images(show):
     images = client.get(
         '/shows/{}/images?per_page=500'.format(show['id'])
     ).all()
-    print(images)
     image_external_ids = {
         '{}-{}'.format(i['external_name'], i['external_id']): i
         for i in images
@@ -128,6 +127,8 @@ def update_show_images(show):
                 i = image_external_ids[key]
                 if not i['hash']:
                     _upload_image(show['id'], i)
+    if not show['poster_image_id']:
+        _set_latest_image_as_primary(show['id'])
 
 def _save_image(show_id, image):
     saved_image = client.post(
@@ -185,6 +186,19 @@ def _importers_with_support(show_externals, support):
         if support in importers[name].supported:
             imp_names.append(name)
     return imp_names
+
+def _set_latest_image_as_primary(show_id):
+    images = client.get('/shows/{}/images'.format(show_id), {
+        'per_page': 1,
+        'q': 'type:{} AND _exists_:hash'.format(
+            constants.IMAGE_TYPE_POSTER
+        ),
+        'sort': 'created_at:desc',
+    })
+    if images:
+        client.patch('/shows/{}'.format(show_id), {
+            'poster_image_id': images[0]['id'],
+        })
 
 def call_importer(external_name, method, *args, **kwargs):
     """Calls a method in a registered importer"""
