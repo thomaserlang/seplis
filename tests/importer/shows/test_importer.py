@@ -7,8 +7,39 @@ from datetime import date
 from seplis.importer.shows.importer import client, importers, update_show, \
     update_show_info, update_show_images, update_show_episodes, \
     _save_image, _upload_image, _show_info_changes, _show_episode_changes, \
-    _importers_with_support, _cleanup_episodes
+    _importers_with_support, _cleanup_episodes, _importer_incremental, \
+    update_shows_incremental
 from seplis.importer.shows.base import Show_importer_base
+
+class Test_update_shows_incremental(TestCase):
+
+    @mock.patch.dict('seplis.importer.shows.base.importers', {}, clear=True)
+    @mock.patch('seplis.importer.shows.importer._importer_incremental')
+    def test(self, _importer_incremental):
+        importers['test'] = mock.Mock()
+
+        update_shows_incremental()
+
+        _importer_incremental.assert_called_with(importers['test'])
+
+class Test__importer_incremental(TestCase):
+
+    @mock.patch('seplis.importer.shows.importer.update_show')
+    @mock.patch('seplis.importer.shows.importer.client')
+    def test(self, client, update_show):
+        test_importer = mock.Mock()
+        test_importer.external_name = 'test'
+        test_importer.incremental_updates.return_value = ['1']
+        show = {
+            'id': 1,
+        }
+        client.get.return_value = show
+
+        _importer_incremental(test_importer)
+        
+        client.get.assert_called_with('/shows/externals/test/1')
+        update_show.assert_called_with(show)
+        self.assertTrue(test_importer.save_timestamp.called)
 
 class Test_update_show(TestCase):
 

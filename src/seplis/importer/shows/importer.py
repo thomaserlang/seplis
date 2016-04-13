@@ -1,6 +1,8 @@
 import logging
 import requests
-from seplis import schemas, Client, config, constants
+import time
+from retrying import retry
+from seplis import schemas, Client, config, constants, API_error
 from .base import importers
 
 logger = logging.getLogger(__name__)
@@ -8,6 +10,58 @@ client = Client(
     url=config['client']['api_url'],
     access_token=config['client']['access_token'],
 )
+
+def update_shows_incremental():
+    for key in importers:
+        _importer_incremental(importers[key])
+
+def _importer_incremental(importer):
+    timestamp = time.time()    
+    show_ids = _importer_incremental_updates_with_retry(importer)
+    for show_id in show_ids:
+        show = client.get('/shows/externals/{}/{}'.format(
+            importer.external_name,
+            show_id,
+        ))
+        if not show:
+            logger.info('Show not found by external. {} {}'.format(
+                importer.external_name,
+                show_id,
+            ))
+            continue
+        logger.info('Found show "{}" by external. {} {}'.format(
+            show['id'],
+            importer.external_name,
+            show_id,
+        ))
+        update_show_with_retry(show)
+    importer.save_timestamp(timestamp)
+
+def _can_retry_update_show(exception):
+    if isinstance(exception, KeyboardInterrupt):
+        return False    
+    if isinstance(exception, API_error):
+        if exception.status_code >= 400:
+            return False
+    return True
+
+@retry(
+    stop_max_attempt_number=3,
+    retry_on_exception=_can_retry_update_show,
+    wrap_exception=True,
+    wait_fixed=1000,
+)
+def _importer_incremental_updates_with_retry(importer):
+    return importer.incremental_updates()
+
+@retry(
+    stop_max_attempt_number=3,
+    retry_on_exception=_can_retry_update_show,
+    wrap_exception=True,
+    wait_fixed=1000,
+)
+def update_show_with_retry(show):
+    return update_show(show)
 
 def update_show(show):
     """Updates a show from the chosen importers in `show["importers"]`.
