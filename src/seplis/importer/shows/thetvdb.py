@@ -118,15 +118,16 @@ class Thetvdb(Show_importer_base):
             ids.append(id_)
         for id_ in data['Episode']:
             try:
-                logging.info('tvrage show id from episode id lookup: {}'.format(id_))
                 show_id = self.episode_id_to_show_id(
                     id_,
                 )
                 if not show_id:
                     continue
                 ids.append(show_id)
+            except (KeyboardInterrupt, SystemExit):
+                raise
             except:
-                logging.exception('tvrage get_updates')
+                logging.exception('thetvdb get_updates')
         return ids
 
     def get_update_data(self):
