@@ -8,13 +8,13 @@ importers = {}
 def register_importer(obj):
     if not isinstance(obj, Show_importer_base):
         raise Exception('The object must be an instance of `Show_importer_base()`')
-    if not obj.id:
-        raise Exception('The importer id can\'t be `None`')
-    if obj.id in importers:
+    if not obj.external_name:
+        raise Exception('The importer external_name can\'t be `None`')
+    if obj.external_name in importers:
         raise Exception('{} is already registered as an indexer'.format(
-            obj.id
+            obj.external_name
         ))
-    importers[obj.id] = obj
+    importers[obj.external_name] = obj
 
 class Show_importer_base(object):
 
