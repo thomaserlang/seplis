@@ -12,7 +12,11 @@ client = Client(
 )
 
 def update_shows_incremental():
+    logger.info('Incremental show update started')
+    if not importers:
+        logger.warn('No show importers registered')
     for key in importers:
+        logger.info('Checking importer {}'.format(key))
         _importer_incremental(importers[key])
 
 def _importer_incremental(importer):
@@ -259,7 +263,7 @@ def call_importer(external_name, method, *args, **kwargs):
     """Calls a method in a registered importer"""
     im = importers.get(external_name)
     if not im:
-        logging.error('Unknown importer with id "{}"'.format(external_name))
+        logger.error('Unknown importer with id "{}"'.format(external_name))
         return
     m = getattr(im, method, None)
     if not m:
