@@ -24,22 +24,39 @@ class Test_update_shows_incremental(TestCase):
 
 class Test__importer_incremental(TestCase):
 
+    @mock.patch('seplis.importer.shows.importer.update_show_images')
     @mock.patch('seplis.importer.shows.importer.update_show')
     @mock.patch('seplis.importer.shows.importer.client')
-    def test(self, client, update_show):
+    def test(self, client, update_show, update_show_images):
         test_importer = mock.Mock()
         test_importer.external_name = 'test'
         test_importer.incremental_updates.return_value = ['1']
         show = {
             'id': 1,
+            'importers': {
+                'info': 'test',
+            },
+            'externals': {},
         }
         client.get.return_value = show
 
-        _importer_incremental(test_importer)
-        
+        _importer_incremental(test_importer)        
         client.get.assert_called_with('/shows/externals/test/1')
         update_show.assert_called_with(show)
         self.assertTrue(test_importer.save_timestamp.called)
+        update_show.reset_mock()
+
+        # The importer `test` is not part of the shows importers
+        # therefore update_show must not be called.
+        # But the image importer should be called.
+        show['importers'] = {
+            'info': 'test2',
+        }
+        _importer_incremental(test_importer)        
+        client.get.assert_called_with('/shows/externals/test/1')
+        self.assertFalse(update_show.called)
+        self.assertTrue(test_importer.save_timestamp.called)
+        update_show_images.assert_called_with(show)
 
 class Test_update_show(TestCase):
 

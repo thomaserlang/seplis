@@ -41,7 +41,13 @@ def _importer_incremental(importer):
             importer.external_name,
             show_id,
         ))
-        update_show_with_retry(show)
+        if importer.external_name in show['importers'].values():
+            update_show_with_retry(show)
+        else:
+            try:
+                update_show_images(show)
+            except:
+                logger.exception('update_show_images')
     importer.save_timestamp(timestamp)
 
 def _can_retry_update_show(exception):
@@ -63,7 +69,7 @@ def _can_retry_update_show(exception):
     wait_fixed=5000,
 )
 def _importer_incremental_updates_with_retry(importer):
-    return impotrreer.incremental_updates()
+    return importer.incremental_updates()
 
 @retry(
     stop_max_attempt_number=5,
