@@ -1,9 +1,11 @@
 import logging
-import requests
+import requests, requests.exceptions
 import time
 from retrying import retry
 from seplis import schemas, Client, config, constants, API_error
 from .base import importers
+
+logging.getLogger("requests").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 client = Client(
@@ -17,7 +19,12 @@ def update_shows_incremental():
         logger.warn('No show importers registered')
     for key in importers:
         logger.info('Checking importer {}'.format(key))
-        _importer_incremental(importers[key])
+        try:
+            _importer_incremental(importers[key])
+        except (KeyboardInterrupt, SystemExit, API_error):
+            raise
+        except:
+            logger.exception('_importer_incremental')
 
 def _importer_incremental(importer):
     timestamp = time.time()    
@@ -28,12 +35,8 @@ def _importer_incremental(importer):
             show_id,
         ))
         if not show:
-            logger.info('Show not found by external. {} {}'.format(
-                importer.external_name,
-                show_id,
-            ))
             continue
-        logger.info('Found show "{}" by external. {} {}'.format(
+        logger.info('Found show "{}" by external {} {}'.format(
             show['id'],
             importer.external_name,
             show_id,
@@ -42,27 +45,31 @@ def _importer_incremental(importer):
     importer.save_timestamp(timestamp)
 
 def _can_retry_update_show(exception):
-    if isinstance(exception, KeyboardInterrupt):
-        return False    
-    if isinstance(exception, API_error):
-        if exception.status_code >= 400:
-            return False
-    return True
+    exceptions = (
+        requests.exceptions.HTTPError,
+        requests.exceptions.ConnectTimeout,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ReadTimeout,
+        requests.exceptions.Timeout,
+    )
+    if type(exception) in exceptions:
+        return True
+    return False
 
 @retry(
-    stop_max_attempt_number=3,
+    stop_max_attempt_number=5,
     retry_on_exception=_can_retry_update_show,
-    wrap_exception=True,
-    wait_fixed=1000,
+    wrap_exception=False,
+    wait_fixed=5000,
 )
 def _importer_incremental_updates_with_retry(importer):
-    return importer.incremental_updates()
+    return impotrreer.incremental_updates()
 
 @retry(
-    stop_max_attempt_number=3,
+    stop_max_attempt_number=5,
     retry_on_exception=_can_retry_update_show,
-    wrap_exception=True,
-    wait_fixed=1000,
+    wrap_exception=False,
+    wait_fixed=5000,
 )
 def update_show_with_retry(show):
     return update_show(show)
@@ -102,6 +109,7 @@ def update_show_info(show):
         return
     info = _show_info_changes(show, info)
     if info:
+        logging.info('Updating show "{}" info'.format(show['id']))
         show = client.patch(
             '/shows/{}'.format(show['id']), 
             info,
@@ -120,7 +128,6 @@ def update_show_episodes(show):
     episodes = client.get(
         '/shows/{}/episodes?per_page=500'.format(show['id'])
     ).all()
-
     imp_episodes = call_importer(
         external_name=show['importers']['episodes'],
         method='episodes',
@@ -131,6 +138,7 @@ def update_show_episodes(show):
 
     changes = _show_episode_changes(episodes, imp_episodes)
     if changes:
+        logging.info('Updating show "{}" episodes'.format(show['id']))
         client.patch(
             '/shows/{}'.format(show['id']),
             {'episodes': changes},
@@ -186,7 +194,7 @@ def update_show_images(show):
                 i = image_external_ids[key]
                 if not i['hash']:
                     _upload_image(show['id'], i)
-    if ('poster_image' in show) and not show['poster_image']:
+    if (('poster_image' in show) and not show['poster_image']):
         _set_latest_image_as_primary(show['id'])
 
 def _save_image(show_id, image):
@@ -232,6 +240,10 @@ def _upload_image(show_id, image):
                 r.text,
             )
         )
+    logging.info('Show "{}" new image uploaded: {}'.format(
+        show_id,
+        image['id'],
+    ))
     return True
 
 def _importers_with_support(show_externals, support):
@@ -255,6 +267,10 @@ def _set_latest_image_as_primary(show_id):
         'sort': 'created_at:desc',
     })
     if images:
+        logging.info('Show "{}" new primary image: {}'.format(
+            show_id,
+            images[0]['id'],
+        ))
         client.patch('/shows/{}'.format(show_id), {
             'poster_image_id': images[0]['id'],
         })
