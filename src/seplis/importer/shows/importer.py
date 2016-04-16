@@ -185,21 +185,24 @@ def update_show_images(show):
         for i in images
     }
     for name in imp_names:
-        imp_images = call_importer(
-            external_name=name, 
-            method='images',
-            show_id=show['externals'][name],
-        )
-        if not imp_images:
-            continue
-        for image in imp_images:
-            key = '{}-{}'.format(image['external_name'], image['external_id'])
-            if key not in image_external_ids:
-                _save_image(show['id'], image)
-            else:
-                i = image_external_ids[key]
-                if not i['hash']:
-                    _upload_image(show['id'], i)
+        try:
+            imp_images = call_importer(
+                external_name=name, 
+                method='images',
+                show_id=show['externals'][name],
+            )
+            if not imp_images:
+                continue
+            for image in imp_images:
+                key = '{}-{}'.format(image['external_name'], image['external_id'])
+                if key not in image_external_ids:
+                    _save_image(show['id'], image)
+                else:
+                    i = image_external_ids[key]
+                    if not i['hash']:
+                        _upload_image(show['id'], i)
+        except:
+            logging.exception('update_show_images')
     if (('poster_image' in show) and not show['poster_image']):
         _set_latest_image_as_primary(show['id'])
 
