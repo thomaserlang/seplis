@@ -215,7 +215,7 @@ def update_show_images(show):
     if (('poster_image' in show) and not show['poster_image']):
         _set_latest_image_as_primary(
             show['id'],
-            image_id=images_added[-1] if images_added else None,
+            image_id=images_added[-1]['id'] if images_added else None,
         )
 
 def _save_image(show_id, image):
