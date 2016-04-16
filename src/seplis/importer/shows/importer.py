@@ -13,6 +13,9 @@ client = Client(
     access_token=config['client']['access_token'],
 )
 
+class Importer_upload_image_exception(Exception):
+    pass
+
 def update_shows_incremental():
     logger.info('Incremental show update started')
     if not importers:
@@ -21,7 +24,11 @@ def update_shows_incremental():
         logger.info('Checking importer {}'.format(key))
         try:
             _importer_incremental(importers[key])
-        except (KeyboardInterrupt, SystemExit, API_error):
+        except (
+            KeyboardInterrupt, 
+            SystemExit, 
+            API_error, 
+            Importer_upload_image_exception):
             raise
         except:
             logger.exception('_importer_incremental')
@@ -201,6 +208,8 @@ def update_show_images(show):
                     i = image_external_ids[key]
                     if not i['hash']:
                         _upload_image(show['id'], i)
+        except Importer_upload_image_exception:
+            raise
         except:
             logging.exception('update_show_images')
     if (('poster_image' in show) and not show['poster_image']):
@@ -245,7 +254,7 @@ def _upload_image(show_id, image):
         }
     )
     if r.status_code != 200:
-        raise Exception(
+        raise Importer_upload_image_exception(
             'Failed to upload data for image {}. '
             'Status code: {}. Error: {}'.format(
                 image['id'],
@@ -292,7 +301,7 @@ def _set_latest_image_as_primary(show_id, image_id=None):
             image_id = images[0]['id']
     if image_id:
         client.patch('/shows/{}'.format(show_id), {
-            'poster_image_id': images[0]['id'],
+            'poster_image_id': image_id,
         })
 
 def call_importer(external_name, method, *args, **kwargs):
