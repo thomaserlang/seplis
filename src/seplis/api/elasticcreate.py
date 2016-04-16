@@ -203,7 +203,8 @@ def create_indices():
                 'properties': {
                     'id': { 'type': 'integer' },
                     'name': {
-                        'type': 'string',      
+                        'type': 'string',
+                        'analyzer': 'title_search',
                         'fields': {
                             'raw' : {
                                 'type': 'string', 

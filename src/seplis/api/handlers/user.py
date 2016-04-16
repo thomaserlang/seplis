@@ -64,15 +64,21 @@ class Handler(base.Handler):
             'from': ((page - 1) * per_page),
             'size': per_page,
             'sort': sort,
+            'search_type': 'dfs_query_then_fetch',
         }
         body = {}
         if q:
             body['query'] = {
-                'query_string': {
-                    'default_field': 'name.suggest',
-                    'query': 'name.suggest:"{}"'.format(q),
-                }
+                'bool': {
+                    'should': [
+                        {'match': {'name.suggest': {
+                            'query': q, 
+                            'operator': 'and',
+                        }}}, 
+                    ],
+                },
             }
+            body['track_scores'] = True
         result = yield self.es(
             '/users/user/_search',
             body=body,

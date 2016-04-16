@@ -181,13 +181,11 @@ class test_user(Testbase):
             password='123',
             level=0,
         ))
-        self.get('http://{}/users/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
+        self.refresh_es()
         response = self.get('/1/users')
         self.assertEqual(response.code, 200, response.body)
         self.assertEqual(len(utils.json_loads(response.body)), 2)
-
+        
         # test that we can search for a user
         response = self.get('/1/users?q=test___2')
         self.assertEqual(response.code, 200, response.body) 
