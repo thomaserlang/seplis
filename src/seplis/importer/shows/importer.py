@@ -44,10 +44,7 @@ def _importer_incremental(importer):
         if importer.external_name in show['importers'].values():
             update_show_with_retry(show)
         else:
-            try:
-                update_show_images(show)
-            except:
-                logger.exception('update_show_images')
+            update_show_images(show)
     importer.save_timestamp(timestamp)
 
 def _can_retry_update_show(exception):
