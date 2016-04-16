@@ -52,48 +52,30 @@ def rebuild_cache():
 
 @cli.command()
 def update_shows():
-    import seplis
-    logger.set_logger('indexer_update_shows.log', to_sentry=True)
+    import seplis.importer
+    logger.set_logger('importer_update_shows.log', to_sentry=True)
     try:
-        indexer = seplis.Show_indexer(
-            config['client']['api_url'],
-            access_token=config['client']['access_token'],
-        )
-        indexer.update()
+        seplis.importer.shows.update_shows_incremental()
     except:
-        logging.exception('indexer_update_shows')
+        logging.exception('importer_update_shows')
 
 @cli.command()
 @click.argument('show_id')
 def update_show(show_id):
-    import seplis
-    logger.set_logger('indexer_update_show.log', to_sentry=True)
+    import seplis.importer
+    logger.set_logger('importer_update_show_by_id.log', to_sentry=True)
     try:
-        indexer = seplis.Show_indexer(
-            config['client']['api_url'],
-            access_token=config['client']['access_token'],
-        )
-        indexer.update_show(show_id)
+        seplis.importer.shows.update_show_by_id(show_id)
     except:
-        logging.exception('indexer_update_show')
+        logging.exception('update_show_by_id')
 
 @cli.command()
 @click.option('--from_id', default=1, help='which show to start from')
-def update_shows_all(from_id):
-    import seplis
-    logger.set_logger('indexer_update_shows_all.log', to_sentry=True)
-    indexer = seplis.Show_indexer(
-        url=config['client']['api_url'], 
-        access_token=config['client']['access_token']
-    )
+def update_shows_all(from_id):    
+    import seplis.importer
+    logger.set_logger('importer_update_shows_all.log', to_sentry=True)
     try:
-        shows = indexer.get('/shows', {
-            'sort': 'id',
-            'per_page': 500,
-            'q': 'id:[{} TO *]'.format(from_id)
-        })
-        for show in shows.all():
-            indexer.update_show(show['id'])
+        seplis.importer.shows.update_shows_all(from_id)
     except:
         logging.exception('update_shows_all')
 

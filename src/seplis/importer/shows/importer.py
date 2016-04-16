@@ -16,6 +16,32 @@ client = Client(
 class Importer_upload_image_exception(Exception):
     pass
 
+def update_show_by_id(show_id):
+    show = client.get('/shows/{}'.format(show_id))
+    if not show:
+        logger.error('Unknown show: {}'.format(show_id))
+        return 
+    update_show(show)
+
+def update_shows_all(from_show_id=1):
+    shows = client.get('/shows', {
+        'sort': 'id',
+        'q': 'id:[{} TO *]'.format(from_show_id),
+        'per_page': 500,
+    })
+    for show in shows.all():
+        try:
+            logging.info('Show: {}'.format(show['id']))
+            update_show(show)
+        except (
+            KeyboardInterrupt, 
+            SystemExit, 
+            API_error, 
+            Importer_upload_image_exception):
+            raise
+        except:
+            logger.exception('update_shows_all')
+
 def update_shows_incremental():
     logger.info('Incremental show update started')
     if not importers:
