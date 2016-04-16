@@ -1,13 +1,19 @@
 import requests
 import xmltodict
 import logging
+from dateutil import parser
 from seplis.api import constants
 from seplis import config
-from dateutil import parser
-from seplis.indexer.show.base import Show_indexer_base, register_indexer
+from .base import Show_importer_base, register_importer
 
-class Thetvdb(Show_indexer_base):
-    __indexer_name__ = 'thetvdb'
+class Thetvdb(Show_importer_base):
+    display_name = 'TheTVDB'
+    external_name = 'thetvdb'
+    supported = (
+        'info',
+        'episodes',
+        'images',
+    )
 
     _url = 'http://thetvdb.com/api/{apikey}/series/{id}/{type}'
     _source_url = 'http://thetvdb.com/?tab=series&id={id}'
@@ -20,7 +26,7 @@ class Thetvdb(Show_indexer_base):
         if not apikey:
             self.apikey = config['client']['thetvdb']
 
-    def get_show(self, show_id):
+    def info(self, show_id):
         r = requests.get(
             self._url.format(
                 apikey=self.apikey,
@@ -58,7 +64,7 @@ class Thetvdb(Show_indexer_base):
                 'genres': self.parse_genres(data['Data']['Series']['Genre']),
             }
 
-    def get_episodes(self, show_id):
+    def episodes(self, show_id):
         r = requests.get(
             self._url.format(
                 apikey=self.apikey,
@@ -73,7 +79,7 @@ class Thetvdb(Show_indexer_base):
                 episodes = self.parse_episodes(data['Data']['Episode'])
             return episodes
 
-    def get_images(self, show_id):        
+    def images(self, show_id):        
         r = requests.get(
             self._url.format(
                 apikey=self.apikey,
@@ -103,7 +109,7 @@ class Thetvdb(Show_indexer_base):
                 })
         return images
 
-    def get_updates(self):
+    def incremental_updates(self):
         data = self.get_update_data()
         if not data:
             return
@@ -112,19 +118,20 @@ class Thetvdb(Show_indexer_base):
             ids.append(id_)
         for id_ in data['Episode']:
             try:
-                logging.info('tvrage show id from episode id lookup: {}'.format(id_))
                 show_id = self.episode_id_to_show_id(
                     id_,
                 )
                 if not show_id:
                     continue
                 ids.append(show_id)
+            except (KeyboardInterrupt, SystemExit):
+                raise
             except:
-                logging.exception('tvrage get_updates')
+                logging.exception('thetvdb get_updates')
         return ids
 
     def get_update_data(self):
-        timestamp = self.get_latest_update_timestamp()
+        timestamp = self.last_update_timestamp()
         r = requests.get(
             self._url_updates.format(
                 timestamp,
@@ -241,4 +248,4 @@ class Thetvdb(Show_indexer_base):
                 }
         return None
         
-register_indexer(Thetvdb)
+register_importer(Thetvdb())

@@ -28,7 +28,7 @@ class test_show(Testbase):
             },
             'premiered': '2003-01-01',
             'ended': None,
-            'indices': {
+            'importers': {
                 'info': 'imdb',
                 'episodes': 'imdb',
             },
@@ -55,7 +55,7 @@ class test_show(Testbase):
         })
         self.assertEqual(show['premiered'], '2003-01-01')
         self.assertEqual(show['ended'], None)
-        self.assertEqual(show['indices'], {
+        self.assertEqual(show['importers'], {
             'info': 'imdb',
             'episodes': 'imdb',
             'images': None,
@@ -81,7 +81,7 @@ class test_show(Testbase):
                 'text': 'The cases of the Naval Criminal Investigative Service.',
             },
             'premiered': '2003-01-01',
-            'indices': {
+            'importers': {
                 'info': 'imdb',
             },
             'externals': {
@@ -91,7 +91,7 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200, response.body)
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'indices': {
+            'importers': {
                 'episodes': 'imdb'
             }
         })
@@ -105,7 +105,7 @@ class test_show(Testbase):
         })
         self.assertEqual(show['premiered'], '2003-01-01')
         self.assertEqual(show['ended'], None)
-        self.assertEqual(show['indices'], {
+        self.assertEqual(show['importers'], {
             'info': 'imdb',
             'episodes': 'imdb',
             'images': None,
@@ -126,7 +126,7 @@ class test_show(Testbase):
                 'text': 'The cases of the Naval Criminal Investigative Service.',
             },
             'premiered': '2003-01-01',
-            'indices': {
+            'importers': {
                 'info': 'imdb',
             },
             'externals': {
@@ -137,7 +137,7 @@ class test_show(Testbase):
 
         self.assertEqual(response.code, 200, response.body)
         response = self.put('/1/shows/{}'.format(show_id), {
-            'indices': {
+            'importers': {
                 'episodes': 'thetvdb',
             },
             'externals': {
@@ -147,7 +147,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)
         self.assertEqual(show['title'], 'QWERTY')
-        self.assertEqual(show['indices'], {
+        self.assertEqual(show['importers'], {
             'info': None,
             'episodes': 'thetvdb',
             'images': None,
@@ -160,13 +160,13 @@ class test_show(Testbase):
             constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER,
         )
 
-    def test_indices(self):
+    def test_importers(self):
         show_id = self.new_show()
         response = self.get('/1/shows/{}'.format(show_id))
-        # it should not be possible to add a index without it exists as
+        # it should not be possible to add a importer without it exists as
         # an external.
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'indices':{
+            'importers':{
                 'info': 'imdb',
             }
         })
@@ -175,10 +175,10 @@ class test_show(Testbase):
         self.assertEqual(error['code'], 1401)
 
 
-        # so when adding the index to the externals with a value
+        # so when adding the importer to the externals with a value
         # it should be OK.
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'indices':{
+            'importers':{
                 'info': 'imdb',
             },
             'externals': {
@@ -187,7 +187,7 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200, response.body)
         show = utils.json_loads(response.body)        
-        self.assertEqual(show['indices'], {
+        self.assertEqual(show['importers'], {
             'info': 'imdb',
             'episodes': None,
             'images': None,
@@ -197,10 +197,10 @@ class test_show(Testbase):
         })
 
 
-        # it should be possible to set both the index and the external
+        # it should be possible to set both the importer and the external
         # value to None.        
         response = self.patch('/1/shows/{}'.format(show_id), {
-            'indices':{
+            'importers':{
                 'info': None,
             },
             'externals': {
@@ -209,7 +209,7 @@ class test_show(Testbase):
         })
         show = utils.json_loads(response.body)      
         self.assertEqual(response.code, 200, response.body)
-        self.assertEqual(show['indices'], {
+        self.assertEqual(show['importers'], {
             'info': None,
             'episodes': None,
             'images': None,
@@ -290,7 +290,7 @@ class test_show(Testbase):
                 'imdb': 'tt1234',
                 'seplis_old': 1234,
             },            
-            'indices': {
+            'importers': {
                 'info': 'imdb',
                 'episodes': 'seplis_old',
             }
@@ -384,7 +384,7 @@ class test_show(Testbase):
             'description': None,
             'premiered': '2003-01-01',
             'ended': None,
-            'indices': {
+            'importers': {
                 'info': 'imdb',
                 'episodes': 'imdb',
             },

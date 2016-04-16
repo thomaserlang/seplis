@@ -276,7 +276,7 @@ class API_new_handler(base.API_handler):
             for name in constants.EXTERNAL_TYPES \
                 if self.get_argument(name, None)}
         indices = {name: self.get_argument(name) \
-            for name, externals in constants.INDEX_TYPES \
+            for name, externals in constants.IMPORTER_TYPES \
                 if self.get_argument(name, None)}
         alternative_titles = set(filter(None, self.get_argument(
             'alternative_titles', 

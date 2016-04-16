@@ -3,7 +3,7 @@ import nose
 import mock
 import xmltodict
 from unittest import TestCase
-from seplis.indexer.show.thetvdb import Thetvdb
+from seplis.importer.shows.thetvdb import Thetvdb
 from seplis import schemas
 from seplis.api import constants
 
@@ -312,8 +312,8 @@ class test_thetvdb(TestCase):
         thetvdb = Thetvdb('apikey')
         ids = [72108, 123]
         for id_ in ids:
-            show = thetvdb.get_show(id_)
-            show['episodes'] = thetvdb.get_episodes(id_)
+            show = thetvdb.info(id_)
+            show['episodes'] = thetvdb.episodes(id_)
             schemas.validate(schemas.Show_schema, show)
             if id_ == 72108:
                 self.assertEqual(show['genres'], [
@@ -326,7 +326,7 @@ class test_thetvdb(TestCase):
     @mock.patch('requests.get', mock_thetvdb_show_info)
     def test_updates(self):
         thetvdb = Thetvdb('apikey')
-        ids = thetvdb.get_updates()
+        ids = thetvdb.incremental_updates()
         self.assertEqual(len(ids), 3)
         self.assertEqual(ids[0], 72108)
         self.assertEqual(ids[1], 123)
@@ -336,7 +336,7 @@ class test_thetvdb(TestCase):
     @mock.patch('requests.get', mock_thetvdb_images)
     def test_images(self):
         thetvdb = Thetvdb('apikey')
-        images = thetvdb.get_images(123)
+        images = thetvdb.images(123)
         self.assertEqual(len(images), 2)
         self.assertEqual(
             images[0]['source_url'], 

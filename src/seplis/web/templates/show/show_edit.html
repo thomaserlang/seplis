@@ -34,10 +34,10 @@
         {% end %}
 
         <div style="margin-top:30px">
-        {% for index, externals in constants.INDEX_TYPES %}
+        {% for index, externals in constants.IMPORTER_TYPES %}
             <div class="form-group" id="show-select-index-sources">
                 <label for="index-{{ escape (index) }}">
-                    Index {{ escape(constants.INDEX_TYPE_NAMES[index].lower()) }} from
+                    Index {{ escape(constants.IMPORTER_TYPE_NAMES[index].lower()) }} from
                 </label>
                 <select 
                     name="{{ escape (index) }}" 

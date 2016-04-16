@@ -7,6 +7,7 @@ from seplis import schemas
 config = {
     'debug': False,
     'sentry_dsn': None,
+    'data_dir': '~/.seplis',
     'api': {
         'database': 'sqlite:///seplis.db',    
         'redis': {
@@ -93,7 +94,7 @@ config = {
             },
         }, 
         'x-accel': False,
-    }
+    },
 }
 
 def load(path=None):

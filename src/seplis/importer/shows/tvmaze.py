@@ -1,18 +1,25 @@
 import requests
 import logging
 import re
+import time
 from seplis.api import constants
 from dateutil import parser
-from seplis.indexer.show.base import Show_indexer_base, register_indexer
+from .base import Show_importer_base, register_importer
 
-class Tvmaze(Show_indexer_base):
-    __indexer_name__ = 'tvmaze'
+class Tvmaze(Show_importer_base):
+    display_name = 'TVmaze'
+    external_name = 'tvmaze'
+    supported = (
+        'info',
+        'episodes',
+        'images',
+    )
     
     _url = 'http://api.tvmaze.com/shows/{show_id}'
     _url_episodes = 'http://api.tvmaze.com/shows/{show_id}/episodes'
     _url_update = 'http://api.tvmaze.com/updates/shows'
 
-    def get_show(self, show_id):
+    def info(self, show_id):
         r = requests.get(self._url.format(show_id=show_id))
         if r.status_code != 200:
             return
@@ -25,7 +32,7 @@ class Tvmaze(Show_indexer_base):
                 'url': show['url'],
             }
         externals = {key: str(show['externals'][key]) for key in show['externals']}
-        externals['tvmaze'] = str(show['id'])
+        externals[self.external_name] = str(show['id'])
         return {
             'title': show['name'],
             'description': description,
@@ -36,12 +43,13 @@ class Tvmaze(Show_indexer_base):
             'genres': show['genres'],
         }
 
-    def parse_status(self, status_str):
+    @staticmethod
+    def parse_status(status_str):
         if status_str.lower() == 'ended':
             return 2
         return 1
 
-    def get_images(self, show_id):
+    def images(self, show_id):
         r = requests.get(self._url.format(show_id=show_id))
         if r.status_code != 200:
             return
@@ -60,7 +68,7 @@ class Tvmaze(Show_indexer_base):
             'type': constants.IMAGE_TYPE_POSTER,
         }]
 
-    def get_episodes(self, show_id):
+    def episodes(self, show_id):
         r = requests.get(self._url_episodes.format(show_id=show_id))
         if r.status_code != 200:
             return
@@ -81,17 +89,18 @@ class Tvmaze(Show_indexer_base):
             })
         return episodes
 
-    def get_updates(self):
-        timestamp = self.get_latest_update_timestamp()
+    def incremental_updates(self):
+        last_timestamp = self.last_update_timestamp()
         r = requests.get(self._url_update)
         if r.status_code != 200:
             return
+        current_timestamp = time.time()
         shows = r.json()
         ids = []
         for key in shows:
-            if shows[key] < timestamp:
+            if shows[key] < last_timestamp:
                 continue
             ids.append(key)
         return ids
 
-register_indexer(Tvmaze)
+register_importer(Tvmaze())
