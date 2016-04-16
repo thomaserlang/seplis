@@ -181,6 +181,7 @@ def update_show_images(show):
         '{}-{}'.format(i['external_name'], i['external_id']): i
         for i in images
     }
+    images_added = []
     for name in imp_names:
         try:
             imp_images = call_importer(
@@ -193,7 +194,9 @@ def update_show_images(show):
             for image in imp_images:
                 key = '{}-{}'.format(image['external_name'], image['external_id'])
                 if key not in image_external_ids:
-                    _save_image(show['id'], image)
+                    images_added.append(
+                        _save_image(show['id'], image)
+                    )
                 else:
                     i = image_external_ids[key]
                     if not i['hash']:
@@ -201,7 +204,10 @@ def update_show_images(show):
         except:
             logging.exception('update_show_images')
     if (('poster_image' in show) and not show['poster_image']):
-        _set_latest_image_as_primary(show['id'])
+        _set_latest_image_as_primary(
+            show['id'],
+            image_id=images_added[-1] if images_added else None,
+        )
 
 def _save_image(show_id, image):
     saved_image = client.post(
@@ -209,6 +215,7 @@ def _save_image(show_id, image):
         image
     )
     _upload_image(show_id, saved_image)
+    return saved_image
 
 def _upload_image(show_id, image):
     """Uploads the image specified in `image['source_url']`
@@ -264,19 +271,26 @@ def _importers_with_support(show_externals, support):
             imp_names.append(name)
     return imp_names
 
-def _set_latest_image_as_primary(show_id):
-    images = client.get('/shows/{}/images'.format(show_id), {
-        'per_page': 1,
-        'q': 'type:{} AND _exists_:hash'.format(
-            constants.IMAGE_TYPE_POSTER
-        ),
-        'sort': 'created_at:desc',
-    })
-    if images:
-        logging.info('Show "{}" new primary image: {}'.format(
-            show_id,
-            images[0]['id'],
-        ))
+def _set_latest_image_as_primary(show_id, image_id=None):
+    """Set the shows latests added image as the primary.
+    If `image_id` is not None it will use the image id as
+    the primary.
+    """
+    if not image_id:
+        images = client.get('/shows/{}/images'.format(show_id), {
+            'per_page': 1,
+            'q': 'type:{} AND _exists_:hash'.format(
+                constants.IMAGE_TYPE_POSTER
+            ),
+            'sort': 'created_at:desc',
+        })
+        if images:
+            logging.info('Show "{}" new primary image: {}'.format(
+                show_id,
+                images[0]['id'],
+            ))
+            image_id = images[0]['id']
+    if image_id:
         client.patch('/shows/{}'.format(show_id), {
             'poster_image_id': images[0]['id'],
         })
