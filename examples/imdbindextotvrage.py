@@ -9,7 +9,7 @@ client = Client(
 shows = client.get('/shows?q=info:thetvdb&per_page=500&sort=id')
 for show in shows.all():
     client.patch('/shows/{}'.format(show['id']), {
-        'indices': {
+        'importers': {
             'episodes': 'thetvdb',
         }
     })

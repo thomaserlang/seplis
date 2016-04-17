@@ -31,7 +31,7 @@ for i, show in enumerate(shows.all()):
             'externals': {
                 'thetvdb': str(data['Data']['Series']['id']),
             },
-            'indices': {
+            'importers': {
                 'info': 'thetvdb',
                 'images': 'thetvdb',
                 'episodes': 'thetvdb',

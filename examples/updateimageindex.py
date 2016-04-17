@@ -10,11 +10,11 @@ client = seplis.Client(
 shows = client.get('/shows', {
     'sort': 'id',
     'per_page': 500,
-    'q': '_missing_:indices.image AND _exists_:externals.thetvdb',
+    'q': '_missing_:importers.image AND _exists_:externals.thetvdb',
 })
 for show in shows.all():
     client.patch('/shows/{}'.format(show['id']), {
-        'indices': {
+        'importers': {
             'images': 'thetvdb',
         }
     }, timeout=100)

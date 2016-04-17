@@ -22,16 +22,16 @@ for old in oldids:
                 'imdb': str(old['imdb']),
                 'seplis-v2': str(old['sid']),
             }
-            indices = {}
+            importers = {}
             if old['tvrage']:
                 externals['tvrage'] = str(old['tvrage'])            
-                indices = {
+                importers = {
                     'info': 'tvrage',
                     'episodes': 'tvrage',
                 }
             client.post('/shows', {
                 'externals': externals, 
-                'indices': indices
+                'importers': importers
             })
         else:
             if not lookup[old['imdb']]:
