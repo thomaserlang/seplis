@@ -112,7 +112,10 @@ def play_scan_watch():
         logging.exception('play scan db upgrade')
         raise    
     logger.set_logger('play_scan_watch.log', to_sentry=True)
-    seplis.play.scan_watch.main()
+    try:
+        seplis.play.scan_watch.main()
+    except:
+        logging.exception('play_scan_watch')
 
 @cli.command()
 def play_scan_cleanup():
@@ -123,7 +126,10 @@ def play_scan_cleanup():
         logging.exception('play scan db upgrade')
         raise
     logger.set_logger('play_scan.log', to_sentry=True)
-    seplis.play.scan.cleanup()
+    try:
+        seplis.play.scan.cleanup()
+    except:
+        logging.exception('play_scan_watch')
 
 @cli.command()
 def play_server():
