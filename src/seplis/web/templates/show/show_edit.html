@@ -10,38 +10,38 @@
     {% end %}
     <div class="row">
         <div class="col-xs-6">
-        {% for index in constants.EXTERNAL_TYPES %}
+        {% for importer in constants.EXTERNAL_TYPES %}
             <div class="form-group">
-                <label for="{{ escape(index) }}">
-                    {{ escape(constants.EXTERNAL_TYPE_NAMES[index]) }} 
+                <label for="{{ escape(importer) }}">
+                    {{ escape(constants.EXTERNAL_TYPE_NAMES[importer]) }} 
                     ID
-                    {{ ' *' if index in \
+                    {{ ' *' if importer in \
                         constants.EXTERNAL_REQUIRED_TYPES else '' }}
                 </label>
                 <input 
                     type="text" 
                     class="form-control input-external-id" 
-                    name="{{ escape(index) }}" 
-                    id="{{ escape(index) }}"
-                    value="{{ show['externals'].get(index, '') if show else '' }}"
-                    {{ 'required' if index in \
+                    name="{{ escape(importer) }}" 
+                    id="{{ escape(importer) }}"
+                    value="{{ show['externals'].get(importer, '') if show else '' }}"
+                    {{ 'required' if importer in \
                         constants.EXTERNAL_REQUIRED_TYPES else '' }}
                 >
-                {% if index == 'imdb' %}
+                {% if importer == 'imdb' %}
                     <p>Specify an IMDb ID to prevent duplication of shows.</p>
                 {% end %}
             </div>
         {% end %}
 
         <div style="margin-top:30px">
-        {% for index, externals in constants.IMPORTER_TYPES %}
-            <div class="form-group" id="show-select-index-sources">
-                <label for="index-{{ escape (index) }}">
-                    Index {{ escape(constants.IMPORTER_TYPE_NAMES[index].lower()) }} from
+        {% for importer, externals in constants.IMPORTER_TYPES %}
+            <div class="form-group" id="show-select-importer-sources">
+                <label for="importer-{{ escape (importer) }}">
+                    importer {{ escape(constants.IMPORTER_TYPE_NAMES[importer].lower()) }} from
                 </label>
                 <select 
-                    name="{{ escape (index) }}" 
-                    id="index-{{ escape (index) }}" 
+                    name="{{ escape (importer) }}" 
+                    id="importer-{{ escape (importer) }}" 
                     class="form-control"
                 >
                     <option></option>
@@ -49,7 +49,7 @@
                         <option 
                             value="{{ escape(name) }}"
                             {{ 'selected' if show and \
-                                show['indices'].get(index) == name else '' }}
+                                show['importers'].get(importer) == name else '' }}
                         >
                             {{ escape(constants.EXTERNAL_TYPE_NAMES[name]) }}
                         </option>

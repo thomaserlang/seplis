@@ -275,7 +275,7 @@ class API_new_handler(base.API_handler):
         externals = {name: self.get_argument(name) \
             for name in constants.EXTERNAL_TYPES \
                 if self.get_argument(name, None)}
-        indices = {name: self.get_argument(name) \
+        importers = {name: self.get_argument(name) \
             for name, externals in constants.IMPORTER_TYPES \
                 if self.get_argument(name, None)}
         alternative_titles = set(filter(None, self.get_argument(
@@ -285,7 +285,7 @@ class API_new_handler(base.API_handler):
         episode_type = int(self.get_argument('episode_type'))
         return {
             'externals': externals,
-            'indices': indices,
+            'importers': importers,
             'alternative_titles': alternative_titles,
             'episode_type': episode_type,
         }

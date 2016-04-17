@@ -41,9 +41,9 @@ $(function(){
             });
         }, 10);
     });
-    $('#show-select-index-sources select').change(function(){
+    $('#show-select-importer-sources select').change(function(){
         var val = $(this).val();
-        $('#show-select-index-sources select').each(function(){
+        $('#show-select-importer-sources select').each(function(){
             if ($(this).val() != '')
                 return;
             $(this).val(val);            
