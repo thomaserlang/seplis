@@ -55,7 +55,10 @@ class Handler(PatternMatchingEventHandler):
         logging.debug('Delete: {}'.format(event.src_path))        
 
     def on_created(self, event):
-        self.update(event)
+        """Delay the update event to fix SFTP rename (create+delete)."""
+        def _on_created(event):
+            self.loop.call_later(1, self.update, event)
+        self.loop.call_soon_threadsafe(_on_created, event)
 
     def on_deleted(self, event):
         item = self.parse(event)
