@@ -123,7 +123,8 @@ class Thetvdb(Show_importer_base):
                 )
                 if not show_id:
                     continue
-                ids.append(show_id)
+                if show_id not in ids:
+                    ids.append(show_id)
             except (KeyboardInterrupt, SystemExit):
                 raise
             except:
