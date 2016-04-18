@@ -168,7 +168,7 @@ def update_show_episodes(show):
         external_name=show['importers']['episodes'],
         method='episodes',
         show_id=show['externals'][show['importers']['episodes']],
-    )
+    ) or []
 
     _cleanup_episodes(show['id'], episodes, imp_episodes)
 

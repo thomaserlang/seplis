@@ -134,6 +134,22 @@ class Test_update_show_episodes(TestCase):
             timeout=120,
         )
 
+    @mock.patch('seplis.importer.shows.importer.client')
+    @mock.patch('seplis.importer.shows.importer.call_importer')
+    def test_call_importer_return_none(self, call_importer, client):
+        show = {
+            'id': 1,
+            'importers': {
+                'episodes': 'test_importer'
+            },
+            'externals': {
+                'test_importer': 'abc',
+            }
+        }
+        client.get().all.return_value = []
+        call_importer.return_value = None    
+        update_show_episodes(show)
+
 class Test__cleanup_episodes(TestCase):
 
     @mock.patch('seplis.importer.shows.importer.client')
