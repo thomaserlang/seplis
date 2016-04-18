@@ -39,8 +39,8 @@ def update_shows_all(from_show_id=1):
             API_error, 
             Importer_upload_image_exception):
             raise
-        except:
-            logger.exception('update_shows_all')
+        except Exception as e:
+            logger.exception('update_shows_all: {}'.format(e.message))
 
 def update_shows_incremental():
     logger.info('Incremental show update started')
@@ -56,8 +56,8 @@ def update_shows_incremental():
             API_error, 
             Importer_upload_image_exception):
             raise
-        except:
-            logger.exception('_importer_incremental')
+        except Exception as e:
+            logger.exception('_importer_incremental: {}'.format(e.message))
 
 def _importer_incremental(importer):
     timestamp = time.time()    
