@@ -334,7 +334,7 @@ def call_importer(external_name, method, *args, **kwargs):
     """Calls a method in a registered importer"""
     im = importers.get(external_name)
     if not im:
-        logger.error('Unknown importer with id "{}"'.format(external_name))
+        logger.warn('Unknown importer with id "{}"'.format(external_name))
         return
     m = getattr(im, method, None)
     if not m:
