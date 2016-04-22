@@ -1,8 +1,16 @@
+var webpack = require('webpack');
+
 const static = __dirname+'/src/seplis/web/static'
 
 module.exports = {
     entry: {
         app: static+'/app',
+        vendor: [
+            'jquery',
+            'bootstrap/js/dropdown',
+            'react',
+            'react-dom',
+        ]
     },  
     resolve: {
         extensions: ['', '.js', '.jsx']
@@ -14,6 +22,11 @@ module.exports = {
         libraryTarget: 'var',
         library: 'exports',
     },
+    plugins: [
+        new webpack.optimize.CommonsChunkPlugin({
+            names: ['vendor']
+        }),
+    ],
     module: {
         loaders: [
             {
