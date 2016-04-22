@@ -44,6 +44,7 @@ coverage.xml
 *.sublime-project
 *.sublime-workspace
 *.db
+node_modules/
 
 # Rope
 .ropeproject
