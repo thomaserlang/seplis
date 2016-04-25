@@ -4,12 +4,14 @@ import './ListItem.scss';
 import WatchedButton from './WatchedButton';
 
 const propTypes = {
-    episode: react.PropTypes.object.isRequired,
+    episode: React.PropTypes.object.isRequired,
 }
 
 class ListItem extends React.Component {
     render() {
-        return <div>{episode.title}</div>
+        return (
+            <div>{this.props.episode.title}</div>
+        );
     }
 }
 
