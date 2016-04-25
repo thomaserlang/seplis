@@ -1,6 +1,7 @@
 var webpack = require('webpack');
+var static = __dirname+'/src/seplis/web/static'
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-const static = __dirname+'/src/seplis/web/static'
 
 module.exports = {
     entry: {
@@ -13,7 +14,7 @@ module.exports = {
         ]
     },  
     resolve: {
-        extensions: ['', '.js', '.jsx']
+        extensions: ['', '.js', '.jsx', '.scss']
     },
     output: {
         path: static+'/dist',
@@ -26,6 +27,7 @@ module.exports = {
         new webpack.optimize.CommonsChunkPlugin({
             names: ['vendor']
         }),
+        new ExtractTextPlugin("[name].css"),
     ],
     module: {
         loaders: [
@@ -37,7 +39,12 @@ module.exports = {
                     cacheDirectory: true,
                     presets: ['react', 'es2015']
                 },
+            },  
+            {  
+                test:   /\.scss/,
+                loader: ExtractTextPlugin.extract('style', 'css', 'sass'),
             }
         ]
-    }
+    },
+    devtool: 'source-map',
 }

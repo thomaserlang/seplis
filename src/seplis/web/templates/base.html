@@ -12,6 +12,11 @@
         {% end %}
 
         <script type="text/javascript">
+            
+            for (var n in window.exports.default) {
+                window[n] = window.exports.default[n];
+            }
+
             function show_api_error(error) {
                 var message = error.message + '.';
                 if (error.code === 1001) {
@@ -48,6 +53,12 @@
         {% block head %}{% end %}
     </head>
     <body>
+        <div id="watchedbutton"></div>
+        <script>
+          $(function(){
+            ReactDOM.render(React.createElement(seplis.WatchedButton.default, {value: 2}), document.getElementById('watchedbutton'));
+          });
+        </script>
         {% block menu %}
             {% module menu(menu_id=menu_id) %}
         {% end %}
