@@ -21,7 +21,7 @@ export function request(url, options = {}) {
             'Accept': 'application/json; charset=utf-8',
         }
         if (method !== 'GET') {
-            headers['X-CSRFToken'] = this.getCookie('_xsrf');
+            headers['X-XSRFToken'] = this.getCookie('_xsrf');
         }
 
         return $.ajax({
