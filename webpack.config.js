@@ -1,11 +1,11 @@
 var webpack = require('webpack');
-var static = __dirname+'/src/seplis/web/static'
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
-
+var path = require('path');
+var staticPath = path.resolve('./src/seplis/web/static');
 
 module.exports = {
     entry: {
-        app: static+'/app',
+        app: staticPath+'/app',
         vendor: [
             'jquery',
             'bootstrap/js/dropdown',
@@ -14,10 +14,13 @@ module.exports = {
         ]
     },  
     resolve: {
-        extensions: ['', '.js', '.jsx', '.scss']
+        extensions: ['', '.js', '.jsx', '.scss'],
+        root: [
+            staticPath+'/app',
+        ]
     },
     output: {
-        path: static+'/dist',
+        path: staticPath+'/dist',
         filename: '[name].js',
         sourceMapFilename: '[name].js.map',
         libraryTarget: 'var',
@@ -34,7 +37,7 @@ module.exports = {
             {
                 test: /\.jsx?$/,
                 loader: 'babel',
-                include: static,
+                include: staticPath,
                 query: {
                     cacheDirectory: true,
                     presets: ['react', 'es2015']
