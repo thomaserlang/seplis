@@ -1,7 +1,7 @@
 import React from 'react';
 
 import 'bootstrap/js/dropdown';
-import './watched_button.scss';
+import './WatchedButton.scss';
 
 const WatchedButton = React.createClass({
     propTypes: {
