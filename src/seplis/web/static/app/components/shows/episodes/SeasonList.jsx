@@ -2,7 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {request} from 'api';
 
-import ListItem from './ListItem';
+import './SeasonList.scss'
+import EpisodeListItem from './EpisodeListItem';
 
 const propTypes = {
     'showId': React.PropTypes.number.isRequired,
@@ -51,9 +52,9 @@ class SeasonList extends React.Component {
     render() {
         return (
             <div className="show-season-list">
-                <div className="show-season-list__episodes">
+                <div className="episodes">
                     {this.state.episodes.map((item, index) => (
-                        <ListItem key={item.number} episode={item} />
+                        <EpisodeListItem key={item.number} episode={item} />
                     ))}
                 </div>
             </div>

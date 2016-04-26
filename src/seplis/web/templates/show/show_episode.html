@@ -6,6 +6,7 @@
     <div>
         {% if episode.get('episode') %}
             Episode {{ episode['episode'] }} 
+            &nbsp;
             <font color="grey">({{ episode['number'] }})</font>
         {% else %}
            {{ episode['number'] }} 
