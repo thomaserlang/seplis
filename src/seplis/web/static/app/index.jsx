@@ -1,3 +1,4 @@
+import './base.scss';
 
 export default{
     React: require('react'),
