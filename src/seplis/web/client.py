@@ -3,6 +3,7 @@ import json
 from tornado import httpclient, gen, ioloop, web
 from urllib.parse import urljoin, urlencode
 from seplis import utils, config
+from .exceptions import API_error
 from functools import partial
 
 TIMEOUT = 60 # seconds
@@ -252,31 +253,3 @@ class Client(Async_client):
             headers=headers,
             timeout=timeout,
         ))
-
-class API_error(web.HTTPError):
-
-    def __init__(self, status_code, code, message, errors=None, extra=None):
-        web.HTTPError.__init__(self, status_code, message)
-        self.status_code = status_code
-        self.code = code
-        self.errors = errors
-        self.message = message
-        self.extra = extra
-
-    def __str__(self):
-        result = '{} ({})'.format(self.message, self.code)
-        if self.errors:
-            result += '\n\nErrors:\n'
-            result += json.dumps(
-                self.errors,
-                indent=4, 
-                separators=(',', ': ')
-            )
-        if self.extra:
-            result += '\n\nExtra:\n'
-            result += json.dumps(
-                self.extra,
-                indent=4, 
-                separators=(',', ': ')
-            )
-        return result
