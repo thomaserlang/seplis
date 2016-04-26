@@ -4,6 +4,7 @@ from tornado import web, gen, ioloop, escape
 from seplis import utils, config
 from seplis.web.client import API_error, Async_client
 from seplis.api import constants
+from seplis.web import exceptions
 
 class Handler_unauthenticated(web.RequestHandler):
 
