@@ -3,10 +3,12 @@
     <head>
         <title>{{ title }}</title>
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
 
         {% for file_ in handler.application.settings['css_files'] %}
             <link rel="stylesheet" href="{{ file_ }}">
         {% end %}
+
         {% for file_ in handler.application.settings['js_files'] %}                
             <script type="text/javascript" src="{{ file_ }}"></script>
         {% end %}
