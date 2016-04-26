@@ -72,7 +72,7 @@ class Handler_unauthenticated(web.RequestHandler):
             if schema == None:
                 raise Exception('missing validation schema')
         return self._validate(
-            utils.tornado_arguments_to_unicode(self.request.arguments),
+            self.request.arguments,
             schema,
             **kwargs
         )

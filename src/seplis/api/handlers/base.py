@@ -205,7 +205,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
 
     def validate_arguments(self, schema=None, **kwargs):
         return self._validate(
-            utils.tornado_arguments_to_unicode(self.request.arguments),
+            self.request.arguments,
             schema,
             **kwargs
         )
