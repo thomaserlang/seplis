@@ -147,7 +147,7 @@ class Async_client(object):
         return data
 
     @gen.coroutine
-    def get(self, uri, data=None, headers=None, timeout=TIMEOUT):     
+    def get(self, uri, data=None, headers=None, timeout=TIMEOUT, all_=False):     
         if data != None:
             if isinstance(data, dict):
                 data = urlencode(data, True)
@@ -158,6 +158,8 @@ class Async_client(object):
             headers=headers,
             timeout=timeout,
         )
+        if isinstance(r, HTTPData) and all_:
+            r = yield r.all_async()
         return r
 
     @gen.coroutine
