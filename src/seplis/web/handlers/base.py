@@ -51,15 +51,15 @@ class Handler_unauthenticated(web.RequestHandler):
 
     def _validate(self, data, schema, **kwargs):
         try:
-            if schema == None:
-                schema = getattr(self, '__schema__', None)
-                if schema == None:
-                    raise Exception('missing validation schema')
             return utils.validate_schema(schema, data, **kwargs)  
         except utils.Validation_exception as e:
             raise exceptions.Validation_exception(errors=e.errors)
 
     def validate(self, schema=None, **kwargs):
+        if schema == None:
+            schema = getattr(self, '__schema__', None)
+            if schema == None:
+                raise Exception('missing validation schema')
         return self._validate(
             self.request.body,
             schema,
@@ -67,6 +67,10 @@ class Handler_unauthenticated(web.RequestHandler):
         )
 
     def validate_arguments(self, schema=None, **kwargs):
+        if schema == None:
+            schema = getattr(self, '__arguments_schema__', None)
+            if schema == None:
+                raise Exception('missing validation schema')
         return self._validate(
             utils.tornado_arguments_to_unicode(self.request.arguments),
             schema,
