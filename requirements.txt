@@ -13,7 +13,7 @@ raven==5.8.1
 redis==2.10.3
 requests==2.8.1
 rq==0.5.6
-tornado==4.2.1
+tornado==4.3
 urllib3==1.9
 good==0.0.7-0
 xmltodict==0.9.2
