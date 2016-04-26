@@ -192,23 +192,9 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
                 schema = getattr(self, '__schema__', None)
                 if schema == None:
                     raise Exception('missing validation schema')
-            if not isinstance(schema, good.Schema):        
-                schema = good.Schema(schema, **kwargs)
-            return schema(data)    
-        except good.MultipleInvalid as ee:
-            data = []
-            for e in ee:
-                data.append({
-                    'field': u'.'.join(str(x) for x in e.path),
-                    'message': e.message,
-                })
-            raise exceptions.Validation_exception(errors=data)
-        except good.Invalid as e:
-            data = [{
-                'field': u'.'.join(str(x) for x in e.path),
-                'message': e.message,
-            }]            
-            raise exceptions.Validation_exception(errors=data)
+            return utils.validate_schema(schema, data, **kwargs)  
+        except utils.Validation_exception as e:
+            raise exceptions.Validation_exception(errors=e.errors)
 
     def validate(self, schema=None, **kwargs):
         return self._validate(
