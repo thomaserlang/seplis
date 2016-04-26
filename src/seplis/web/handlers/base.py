@@ -72,7 +72,7 @@ class Handler_unauthenticated(web.RequestHandler):
             if schema == None:
                 raise Exception('missing validation schema')
         return self._validate(
-            self.request.arguments,
+            escape.recursive_unicode(self.request.arguments),
             schema,
             **kwargs
         )
