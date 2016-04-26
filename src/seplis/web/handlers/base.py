@@ -49,6 +49,30 @@ class Handler_unauthenticated(web.RequestHandler):
             return ''
         return image['url'] + format_
 
+    def _validate(self, data, schema, **kwargs):
+        try:
+            if schema == None:
+                schema = getattr(self, '__schema__', None)
+                if schema == None:
+                    raise Exception('missing validation schema')
+            return utils.validate_schema(schema, data, **kwargs)  
+        except utils.Validation_exception as e:
+            raise exceptions.Validation_exception(errors=e.errors)
+
+    def validate(self, schema=None, **kwargs):
+        return self._validate(
+            self.request.body,
+            schema,
+            **kwargs
+        )
+
+    def validate_arguments(self, schema=None, **kwargs):
+        return self._validate(
+            utils.tornado_arguments_to_unicode(self.request.arguments),
+            schema,
+            **kwargs
+        )
+
 class Handler(Handler_unauthenticated):
 
     @gen.coroutine
