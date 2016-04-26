@@ -17,7 +17,7 @@ export function request(url, options = {}) {
         }
     }
 
-    headers = {
+    let headers = {
         'Accept': 'application/json; charset=utf-8',
     }
     if (method !== 'GET') {
