@@ -61,7 +61,7 @@ class EpisodeListItem extends React.Component {
                     {this.renderAirDate()}
                 </div>
                 <div className="button-bar">
-                    <WatchedButton count="1" />
+                    <WatchedButton count={1} />
                 </div>
             </div>
         );

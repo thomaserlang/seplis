@@ -8,10 +8,35 @@ const propTypes = {
 }
 
 class WatchedButton extends React.Component {
+
+    renderDropdown() {
+        return (
+            <ul 
+                className="
+                    dropdown-menu  
+                    dropdown-menu-right
+                    btn-watched-button-dropdown
+                " 
+                role="menu"
+            >
+                <li>
+                    <i className="glyphicon glyphicon-plus"></i>
+                </li>
+                <li>
+                    <i className="glyphicon glyphicon-minus"></i>
+                </li>
+            </ul>
+        )
+    }
+
     render() {
         return (
             <div className="btn-group dropdown">
-                <button className="btn">
+                {this.renderDropdown()}
+                <button 
+                    className="btn"
+                    data-toggle="dropdown"
+                >
                     Watched 
                 </button>
                 <button className="btn">
