@@ -21,8 +21,8 @@ class API_handler(base.API_handler):
     
     @gen.coroutine
     def post(self):
-        yield self.sign_in()
-        self.write_object({})
+        access_token = yield self.sign_in()
+        self.write_object({'access_token': access_token})
 
     @gen.coroutine
     def sign_in(self):
@@ -39,6 +39,7 @@ class API_handler(base.API_handler):
                 if self.get_argument('remember_me', 'true') == 'true' \
                     else None,
         )
+        return response['access_token']
 
 class Sign_up_handler(base.Handler):
 
