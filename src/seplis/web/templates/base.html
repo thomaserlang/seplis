@@ -53,12 +53,6 @@
         {% block head %}{% end %}
     </head>
     <body>
-        <div id="watchedbutton"></div>
-        <script>
-          $(function(){
-            ReactDOM.render(React.createElement(seplis.SeasonList.default, {value: 2}), document.getElementById('watchedbutton'));
-          });
-        </script>
         {% block menu %}
             {% module menu(menu_id=menu_id) %}
         {% end %}

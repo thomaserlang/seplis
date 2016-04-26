@@ -50,9 +50,21 @@
             </div>
         </div>
         <hr>
-        {% if episodes %}
-            {% include show_seasons.html %}
-        {% end %}
+        <div id="seasons"></div>
+        <script>
+          $(function(){
+            ReactDOM.render(
+                React.createElement(
+                    seplis.SeasonList.default, {
+                        showId: {{ show['id'] }},
+                        seasons: {{ json_dumps(show['seasons']) }},
+                        seasonNumber: {{ selected_season }},
+                    }
+                ), 
+                document.getElementById('seasons')
+            );
+          });
+        </script>
     </show>
 {% end %}
 

@@ -15,6 +15,7 @@ import seplis.web.handlers.user.subtitle_lang_show
 import seplis.web.handlers.user.change_password
 import seplis.web.handlers.play_episode
 import seplis.web.handlers.etw
+from .handlers.shows import show_episodes
 import hashlib
 import os, os.path
 from seplis.web import modules
@@ -159,6 +160,8 @@ class Application(tornado.web.Application):
                     
             URLSpec(r'/change-password', seplis.web.handlers.user.change_password.Handler),
             URLSpec(r'/api/change-password', seplis.web.handlers.user.change_password.API_handler),
+
+            URLSpec(r'/api/shows/([0-9]+)/episodes', show_episodes.API_handler)
 
         ]
         tornado.web.Application.__init__(self, urls, **settings)
