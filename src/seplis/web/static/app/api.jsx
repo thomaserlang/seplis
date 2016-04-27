@@ -1,5 +1,13 @@
 import $ from 'jquery';
 
+function handleError(error) {
+    if (error.status === 401) {
+        if (error.responseJSON.code === 1009) {
+            location.href = '/sign-in';
+        }
+    }
+}
+
 export function request(url, options = {}) {
     let query = $.param(options.query || '', true);
     let method = options.method || (options.data ? 'POST':'GET');
@@ -30,10 +38,8 @@ export function request(url, options = {}) {
         data: data,
         contentType: 'application/json',
         headers: headers,
-        success: options.success,
-        error: options.error,
-        complete: options.complete,
-    });
+        'error': handleError,
+    })
 }
 
 function getCookie(name) {

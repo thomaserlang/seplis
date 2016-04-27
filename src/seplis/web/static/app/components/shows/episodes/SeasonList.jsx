@@ -33,10 +33,9 @@ class SeasonList extends React.Component {
             'query': {
                 'q': `number:[${season.from} TO ${season.to}]`,
             },
-            success: (data) => {
-                this.state.episodes = data.episodes;
-                this.setState(this.state);
-            },
+        }).success((data) => {
+            this.state.episodes = data.episodes;
+            this.setState(this.state);            
         });
     }
 
