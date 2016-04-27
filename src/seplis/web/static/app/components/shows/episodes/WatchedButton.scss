@@ -1,3 +1,31 @@
-.episode-watched-button {
-    color:#36c;
+.btn-episode-watched-group {
+    .btn {
+        background-color:#414141;
+        color:#E2E2E2;
+        border: 1px solid #6C6C6C;
+        border-radius:0;
+        outline:0;
+    }
+    .btn:active{
+        outline:0;
+    }
+    .btn-times {
+        cursor: default;
+    }
+    .dropdown-menu {
+        top: -10px;
+        min-width:42px;
+
+        li {
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    }
+    .glyphicon-plus {
+        color:#1DC25B;
+    }
+    .glyphicon-minus {
+        color:#FF332F;
+    }
 }

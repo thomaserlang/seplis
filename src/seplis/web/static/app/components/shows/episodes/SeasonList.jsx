@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {request} from 'api';
+import {isAuthed} from 'utils';
 
 import './SeasonList.scss'
 import EpisodeListItem from './EpisodeListItem';
@@ -29,10 +30,13 @@ class SeasonList extends React.Component {
         this.state.episodes = [];
         this.setState(this.state);
         let season = this.seasonEpisodeNumbers(this.state.seasonNumber);
+        let query = {}
+        query.q = `number:[${season.from} TO ${season.to}]`;
+        if (isAuthed()) {
+            query.append = 'user_watched';
+        }
         request(`/1/shows/${this.props.showId}/episodes`, {
-            query: {
-                q: `number:[${season.from} TO ${season.to}]`,
-            },
+            query: query,
         }).success((episodes) => {
             this.state.episodes = episodes;
             this.setState(this.state);            
@@ -53,7 +57,11 @@ class SeasonList extends React.Component {
             <div className="show-season-list">
                 <div className="episodes">
                     {this.state.episodes.map((item, index) => (
-                        <EpisodeListItem key={item.number} episode={item} />
+                        <EpisodeListItem 
+                            key={item.number} 
+                            showId={this.props.showId}
+                            episode={item} 
+                        />
                     ))}
                 </div>
             </div>

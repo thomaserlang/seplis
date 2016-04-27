@@ -4,6 +4,7 @@ import './EpisodeListItem.scss';
 import WatchedButton from './WatchedButton';
 
 const propTypes = {
+    showId: React.PropTypes.number.isRequired,
     episode: React.PropTypes.object.isRequired,
 }
 
@@ -61,7 +62,11 @@ class EpisodeListItem extends React.Component {
                     {this.renderAirDate()}
                 </div>
                 <div className="button-bar">
-                    <WatchedButton count={1} />
+                    <WatchedButton 
+                        showId={this.props.showId}
+                        episodeNumber={this.props.episode.number}
+                        watched={this.props.episode.watched}
+                    />
                 </div>
             </div>
         );
