@@ -14,10 +14,10 @@
         {% end %}
 
         <script type="text/javascript">
-            
             for (var n in window.exports.default) {
                 window[n] = window.exports.default[n];
             }
+            seplis.apiClientSettings.baseUrl = "{{config['client']['public_api_url']}}";
 
             function show_api_error(error) {
                 var message = error.message + '.';
@@ -43,6 +43,8 @@
                 ));
             }
             $(function(){
+                console.log(window.exports.default);
+
                 api = new Api();
                 api.loaderGif = '/static/img/loader.gif';
                 api.defaultErrorCallback = show_api_error;

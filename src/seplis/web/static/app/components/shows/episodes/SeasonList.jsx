@@ -29,12 +29,12 @@ class SeasonList extends React.Component {
         this.state.episodes = [];
         this.setState(this.state);
         let season = this.seasonEpisodeNumbers(this.state.seasonNumber);
-        request(`/api/shows/${this.props.showId}/episodes`, {
-            'query': {
-                'q': `number:[${season.from} TO ${season.to}]`,
+        request(`/1/shows/${this.props.showId}/episodes`, {
+            query: {
+                q: `number:[${season.from} TO ${season.to}]`,
             },
-        }).success((data) => {
-            this.state.episodes = data.episodes;
+        }).success((episodes) => {
+            this.state.episodes = episodes;
             this.setState(this.state);            
         });
     }

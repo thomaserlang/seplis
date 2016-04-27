@@ -8,6 +8,10 @@ function handleError(error) {
     }
 }
 
+export var apiClientSettings = {
+    'baseUrl': '',
+};
+
 export function request(url, options = {}) {
     let query = $.param(options.query || '', true);
     let method = options.method || (options.data ? 'POST':'GET');
@@ -15,6 +19,10 @@ export function request(url, options = {}) {
 
     if (typeof data !== 'undefined' && method !== 'GET') {
         data = JSON.stringify(data);
+    }
+    
+    if (!url.startsWith('http')) {
+        url = apiClientSettings.baseUrl + url;
     }
 
     if (query) {
