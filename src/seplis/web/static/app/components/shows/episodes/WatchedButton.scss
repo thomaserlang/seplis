@@ -13,13 +13,14 @@
         cursor: default;
     }
     .dropdown-menu {
-        top: -10px;
+        top: -15px;
         min-width:42px;
 
         li {
             text-align: center;
             font-size: 14px;
             cursor: pointer;
+            padding:2px;
         }
     }
     .glyphicon-plus {

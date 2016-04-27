@@ -21,6 +21,18 @@ class WatchedButton extends React.Component {
                 position: 0,
             }
         }
+
+        this.onWatchedIncr = this.onWatchedIncr.bind(this);
+        this.onWatchedDecr = this.onWatchedDecr.bind(this);
+    }
+
+    onWatchedIncr(e) {
+        this.setState({times: ++this.state.times});
+    }    
+    onWatchedDecr(e) {
+        if (this.state.times > 0) {
+            this.setState({times: --this.state.times});
+        }
     }
 
     renderDropdown() {
@@ -29,10 +41,10 @@ class WatchedButton extends React.Component {
                 className="dropdown-menu dropdown-menu-right" 
                 role="menu"
             >
-                <li>
+                <li onClick={this.onWatchedIncr}>
                     <i className="glyphicon glyphicon-plus"></i>
                 </li>
-                <li>
+                <li onClick={this.onWatchedDecr}>
                     <i className="glyphicon glyphicon-minus"></i>
                 </li>
             </ul>
