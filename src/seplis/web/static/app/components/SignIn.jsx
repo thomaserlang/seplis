@@ -68,7 +68,7 @@ class SignIn extends React.Component {
                         required
                     />
                 </div>
-                <a className="btn" href="/sign-up">Sign up</a>
+                <a className="btn" href="/sign-up">Create user</a>
                 <button 
                     type="submit" 
                     className="btn btn-primary pull-right"
@@ -82,8 +82,11 @@ class SignIn extends React.Component {
     renderError() {
         if (!this.state.error) return;
         return (
-            <div className="alert alert-danger" role="alert">
-                {this.state.error}
+            <div 
+                className="alert alert-warning capitalize-first-letter" 
+                role="alert"
+            >
+                <strong>{this.state.error}</strong>
             </div>
         )
     }
