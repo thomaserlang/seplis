@@ -104,7 +104,8 @@ class Handler(Handler_unauthenticated):
         except API_error as e:
             if e.code == 1009: # not signed in
                 if not self.is_api:
-                    self.sign_out()
+                    #self.sign_out()
+                    pass
                 return
             raise
 
@@ -112,7 +113,6 @@ class Handler(Handler_unauthenticated):
         self.clear_cookie('session')
         self.clear_cookie('user')
         self.redirect('/sign-in')
-
 
     def write_error(self, status_code, **kwargs):
         if isinstance(kwargs['exc_info'][1], API_error):

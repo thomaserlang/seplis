@@ -1,0 +1,25 @@
+// Used in sign in and sign up
+
+.standard-form {
+    width:100%;
+    max-width:400px;
+    margin:0 auto;
+
+    .logo {
+        color: #CA6910;
+        border-bottom:1px solid #6C6C6C;
+        font-size: 50px;
+        margin-bottom:5px;
+    }
+
+    .title {
+        font-size: 30px;
+        margin-bottom:10px;
+    }
+
+    .form-control, 
+    .btn {
+        font-size:22px;
+        height: auto;
+    }
+}

@@ -1,0 +1,11 @@
+body {
+    background-color: #26282E;
+    color:#fff;
+}
+
+a, 
+a.btn {
+    &:hover {
+        color:#CA6910;
+    }
+}

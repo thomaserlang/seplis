@@ -1,31 +1,15 @@
 {% extends "base.html" %}
+{% block menu %}{% end %} 
 {% block body %}
-    <form class="form-horizontal sign-in-form" role="form" id="sign-in-form" method="post">
-        <h1 class="page-header">Sign in</h1>
-        <div class="form-group">
-            <label for="email" class="col-xs-3 control-label">Username/email</label>
-            <div class="col-xs-9">
-                <input type="text" class="form-control" id="email" placeholder="test@example.net" name="email" required autofocus>
-            </div>
-        </div>
-        <div class="form-group">
-            <label for="password" class="col-xs-3 control-label">Password</label>
-            <div class="col-xs-9">
-                <input type="password" class="form-control" id="password" name="password" required>
-            </div>
-        </div>
-        <div class="form-group">            
-            <div class="col-xs-offset-3 col-xs-6">
-                <div class="checkbox">
-                    <label>
-                        <input name="remember_me" type="checkbox" value="true" checked> Remember me
-                    </label>
-                </div>
-            </div>
-            <div class="col-xs-3">
-                <button type="submit" class="btn btn-success pull-right">Sign in</button>
-            </div>
-        </div>
-        <input name="next" id="next" type="hidden" value="{{ escape(handler.get_argument('next', '/')) }}" />
-    </form>
+    <div id="signin"></div>
+    <script>
+      $(function(){
+        ReactDOM.render(
+            React.createElement(
+                seplis.SignIn.default
+            ), 
+            document.getElementById('signin')
+        );
+      });
+    </script>
 {% end %}

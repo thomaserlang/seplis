@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <title>{{ title }}</title>
         <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
@@ -18,6 +19,7 @@
                 window[n] = window.exports.default[n];
             }
             seplis.apiClientSettings.baseUrl = "{{config['client']['public_api_url']}}";
+            seplis.apiClientSettings.clientId = "{{config['client']['id']}}";
 
             function show_api_error(error) {
                 var message = error.message + '.';
@@ -69,5 +71,8 @@
             {% block body %}{% end %}
         </div>
         {% block body_outside %}{% end %}
+        {% if config['debug'] %}
+            <script src="{{config['client']['public_api_url'][:-5]}}:8080/webpack-dev-server.js"></script>
+        {% end %}
     </body>
 </html>

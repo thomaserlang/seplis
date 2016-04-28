@@ -1,4 +1,7 @@
-import './base.scss';
+import './styles/Base.scss';
+import './styles/FormBase.scss';
+import './styles/Variables.scss';
+
 import {apiClientSettings} from './api.jsx';
 
 export default{
@@ -8,5 +11,6 @@ export default{
         apiClientSettings: apiClientSettings,
         WatchedButton: require('./components/shows/episodes/WatchedButton'),
         SeasonList: require('./components/shows/episodes/SeasonList'),
+        SignIn: require('./components/SignIn'),
     }
 };

@@ -3,6 +3,7 @@ import $ from 'jquery';
 function handleError(error) {
     if (error.status === 401) {
         if (error.responseJSON.code === 1009) {
+            localStorage.removeItem('access_token');
             location.href = '/sign-in';
         }
     }
@@ -35,9 +36,6 @@ export function request(url, options = {}) {
 
     let headers = {
         'Accept': 'application/json; charset=utf-8',
-    }
-    if (method !== 'GET') {
-        headers['X-XSRFToken'] = getCookie('_xsrf');
     }
 
     return $.ajax({
