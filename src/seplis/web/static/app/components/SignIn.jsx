@@ -33,6 +33,13 @@ class SignIn extends React.Component {
             });
         }).success(data => {
             localStorage.setItem('access_token', data.access_token);
+            this.saveUserIdAndRedirect();
+        });
+    }
+
+    saveUserIdAndRedirect() {
+        request('/1/users/current').success(user => {
+            localStorage.setItem('user_id', user.id);
             location.href = '/';
         });
     }
