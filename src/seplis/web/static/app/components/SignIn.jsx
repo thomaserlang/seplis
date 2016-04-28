@@ -50,7 +50,7 @@ class SignIn extends React.Component {
                         name="email"
                         type="text"
                         className="form-control dark-form-control" 
-                        placeholder="Email/username"
+                        placeholder="Email or name"
                         onChange={this.onDataChange}
                         value={this.state.email}
                         autoFocus
