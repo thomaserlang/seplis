@@ -1,4 +1,5 @@
 import React from 'react';
+import ClassNames from 'classnames'; 
 import {getUserId} from 'utils';
 import {request} from 'api';
 
@@ -18,6 +19,7 @@ class WatchedButton extends React.Component {
         this.setWatchedState();
         this.onWatchedIncr = this.onWatchedIncr.bind(this);
         this.onWatchedDecr = this.onWatchedDecr.bind(this);
+        this.onWatchedClick = this.onWatchedClick.bind(this);
     }
 
     setWatchedState() {
@@ -54,6 +56,11 @@ class WatchedButton extends React.Component {
             this.setState({times: ++this.state.times});
         });
     }
+    onWatchedClick(e) {
+        if (this.state.times !== 0) 
+            return;
+        this.onWatchedIncr(e);
+    }
 
     renderDropdown() {
         return (
@@ -72,12 +79,18 @@ class WatchedButton extends React.Component {
     }
 
     render() {
+        let btnClass = ClassNames({
+            btn: true,
+            'btn-watched': true,
+            watched: this.state.times>0,
+        });
         return (
             <div className="btn-group btn-episode-watched-group dropdown">
                 {this.renderDropdown()}
                 <button 
-                    className="btn btn-watched"
-                    data-toggle="dropdown"
+                    className={btnClass}
+                    data-toggle={this.state.times>0?'dropdown':''}
+                    onClick={this.onWatchedClick}
                 >
                     Watched 
                 </button>
