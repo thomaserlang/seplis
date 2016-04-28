@@ -35,7 +35,12 @@ export function request(url, options = {}) {
     }
 
     let headers = {
-        'Accept': 'application/json; charset=utf-8',
+        Accept: 'application/json; charset=utf-8',
+    }
+    if (url.startsWith(apiClientSettings.baseUrl)) {
+        let access_token = localStorage.getItem('access_token');
+        if (access_token)
+            headers.Authorization = `Bearer ${access_token}`;
     }
 
     return $.ajax({
