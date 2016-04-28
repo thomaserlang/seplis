@@ -1,4 +1,6 @@
 import React from 'react';
+import {getUserId} from 'utils';
+import {request} from 'api';
 
 import 'bootstrap/js/dropdown';
 import './WatchedButton.scss';
@@ -13,26 +15,44 @@ class WatchedButton extends React.Component {
 
     constructor(props) {
         super(props);
-        if (props.watched) {
-            this.state = props.watched;
+        this.setWatchedState();
+        this.onWatchedIncr = this.onWatchedIncr.bind(this);
+        this.onWatchedDecr = this.onWatchedDecr.bind(this);
+    }
+
+    setWatchedState() {
+        if (this.props.watched) {
+            this.state = this.props.watched;
         } else {            
             this.state = {
                 times: 0,
                 position: 0,
             }
         }
-
-        this.onWatchedIncr = this.onWatchedIncr.bind(this);
-        this.onWatchedDecr = this.onWatchedDecr.bind(this);
     }
 
+    watchedApiEndpoint() {
+        let userId = getUserId();
+        return `/1/users/${userId}/watched/shows/${this.props.showId}/episodes/${this.props.episodeNumber}`;
+    }
     onWatchedIncr(e) {
         this.setState({times: ++this.state.times});
+        request(this.watchedApiEndpoint(), {
+            method: 'PUT', 
+        }).error(() => {            
+            this.setState({times: --this.state.times});
+        });
     }    
     onWatchedDecr(e) {
-        if (this.state.times > 0) {
-            this.setState({times: --this.state.times});
-        }
+        if (this.state.times === 0) 
+            return;
+        this.setState({times: --this.state.times});
+        request(this.watchedApiEndpoint(), {
+            data: {times: -1},
+            method: 'PUT', 
+        }).error(() => {            
+            this.setState({times: ++this.state.times});
+        });
     }
 
     renderDropdown() {

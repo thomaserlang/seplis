@@ -65,7 +65,7 @@ class EpisodeListItem extends React.Component {
                     <WatchedButton 
                         showId={this.props.showId}
                         episodeNumber={this.props.episode.number}
-                        watched={this.props.episode.watched}
+                        watched={this.props.episode.user_watched}
                     />
                 </div>
             </div>
