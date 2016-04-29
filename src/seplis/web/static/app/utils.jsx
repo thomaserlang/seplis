@@ -4,5 +4,5 @@ export function isAuthed() {
 }
 
 export function getUserId() {
-    return localStorage.getItem('user_id');
+    return localStorage.getItem('user_id') || 0;
 }
