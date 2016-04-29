@@ -137,6 +137,13 @@ def play_server():
     import seplis.play.app
     seplis.play.app.main()
 
+@cli.command()
+def dev_server():
+    logger.set_logger('dev_server', to_sentry=False)
+    import seplis.dev_server
+    seplis.dev_server.main()
+
+
 def main():
     cli()
 
