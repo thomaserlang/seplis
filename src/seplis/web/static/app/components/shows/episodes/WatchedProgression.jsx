@@ -23,8 +23,10 @@ class WatchedProgression extends React.Component {
     }
 
     selectChange(e) {
-        this.state[e.target.name] = e.target.value;
-        console.log(this.state);
+        this.state[e.target.name] = parseInt(e.target.value);
+        if (this.state.fromNumber > this.state.toNumber)
+            this.state.toNumber = this.state.fromNumber;
+        this.setState(this.state);
     }
 
     dropdownButtonClick(e) {
@@ -44,6 +46,7 @@ class WatchedProgression extends React.Component {
                         seasons={this.props.seasons}
                         name="fromNumber"
                         onChange={this.selectChange}
+                        selectedNumber={this.state.fromNumber}
                     />
                 </div>
                 <div className="form-group">
@@ -52,6 +55,7 @@ class WatchedProgression extends React.Component {
                         seasons={this.props.seasons}
                         name="toNumber"
                         onChange={this.selectChange}
+                        selectedNumber={this.state.toNumber}
                     />
                 </div>
                 <button type="submit" className="btn btn-primary">

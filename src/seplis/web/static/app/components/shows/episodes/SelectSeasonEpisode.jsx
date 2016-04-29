@@ -2,7 +2,7 @@ import React from 'react';
 
 const propTypes = {
     seasons: React.PropTypes.array.isRequired,
-    selectedEpisodeNumber: React.PropTypes.number,
+    selectedNumber: React.PropTypes.number,
     onChange: React.PropTypes.func,
     name: React.PropTypes.string,
 }
@@ -13,7 +13,10 @@ class SelectSeasonEpisode extends React.Component {
         let rows = [];
         for (let i = item.from; i <= item.to; i++) {
             rows.push(
-                <option key={i} value={i}>
+                <option 
+                    key={i} 
+                    value={i}
+                >
                     S{item.season}: Episode {i-item.from+1}
                 </option>
             )
@@ -31,6 +34,7 @@ class SelectSeasonEpisode extends React.Component {
                 name={this.props.name}
                 className="form-control"
                 onChange={this.props.onChange}
+                value={this.props.selectedNumber}
             >
                 {this.props.seasons.map((item, index) => (
                     this.renderSeason(item)
