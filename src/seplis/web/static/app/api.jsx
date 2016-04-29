@@ -10,7 +10,8 @@ function handleError(error) {
 }
 
 export var apiClientSettings = {
-    'baseUrl': '',
+    baseUrl: '',
+    clientId: '',
 };
 
 export function request(url, options = {}) {
