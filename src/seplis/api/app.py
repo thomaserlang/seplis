@@ -244,7 +244,8 @@ def main():
     logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(seplis.config['api']['port'])
-    tornado.ioloop.IOLoop.instance().start()
+    tornado.ioloop.IOLoop.configure('tornado.platform.asyncio.AsyncIOLoop')
+    tornado.ioloop.IOLoop.current().start()
 
 if __name__ == '__main__':
     import seplis
