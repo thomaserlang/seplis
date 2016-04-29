@@ -5,6 +5,7 @@ import {isAuthed} from 'utils';
 
 import './SeasonList.scss'
 import EpisodeListItem from './EpisodeListItem';
+import WatchedProgression from './WatchedProgression';
 
 const propTypes = {
     'showId': React.PropTypes.number.isRequired,
@@ -55,6 +56,10 @@ class SeasonList extends React.Component {
     render() {
         return (
             <div className="show-season-list">
+                <WatchedProgression 
+                    showId={this.props.showId}
+                    seasons={this.props.seasons}
+                />
                 <div className="episodes">
                     {this.state.episodes.map((item, index) => (
                         <EpisodeListItem 

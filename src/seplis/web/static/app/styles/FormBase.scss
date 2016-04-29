@@ -3,3 +3,23 @@
     border: 1px solid #6C6C6C;
     color:#fff;
 }
+
+.btn-dark {
+    background-color: #414141;
+    border: 1px solid #6C6C6C;
+    color:#fff;
+
+    &:hover {
+        background-color: #555555;
+        color:#fff;      
+    }
+    &:focus {
+        background-color: #555555;
+        color:#fff;        
+    }
+}
+
+.btn-transparent {
+    background-color: transparent;
+    color: #959595;
+}
