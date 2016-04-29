@@ -1,10 +1,11 @@
 import redis
 import logging
+from tornado.httpclient import AsyncHTTPClient, HTTPError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import orm, event
 from sqlalchemy.ext.declarative import declarative_base
-from seplis.config import config
+from seplis import config, utils
 from elasticsearch import Elasticsearch, helpers
 from rq import Queue
 
@@ -38,6 +39,35 @@ class Database:
         self.es = Elasticsearch(
             config['api']['elasticsearch'],
         )
+
+    async def es_get(self, url, query={}, body={}):
+        http_client = AsyncHTTPClient()         
+        if not url.startswith('/'):
+            url = '/'+url
+        for arg in query:
+            if not isinstance(query[arg], list):
+                query[arg] = [query[arg]]
+        try:
+            response = await http_client.fetch(
+                'http://{}{}?{}'.format(
+                    config['api']['elasticsearch'],
+                    url,
+                    utils.url_encode_tornado_arguments(query) \
+                        if query else '',
+                ),
+                method='POST' if body else 'GET',
+                body=utils.json_dumps(body) if body else None,
+            )
+            return utils.json_loads(response.body)
+        except HTTPError as e:
+            try:
+                extra = utils.json_loads(e.response.body)
+            except:
+                extra = {'error': e.response.body.decode('utf-8')}
+            raise exceptions.Elasticsearch_exception(
+                e.code,
+                extra,
+            )
 
 @property
 def pipe(self):

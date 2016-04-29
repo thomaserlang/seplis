@@ -12,7 +12,6 @@ from tornado import gen
 from urllib.parse import urljoin
 from datetime import datetime
 from raven.contrib.tornado import SentryMixin
-from tornado.httpclient import AsyncHTTPClient, HTTPError
 from seplis import utils, schemas
 from seplis.api.decorators import new_session
 from seplis.api.connections import database
@@ -141,35 +140,8 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
     def redis(self):
         return database.redis
 
-    @gen.coroutine
-    def es(self, url, query={}, body={}):
-        http_client = AsyncHTTPClient()         
-        if not url.startswith('/'):
-            url = '/'+url
-        for arg in query:
-            if not isinstance(query[arg], list):
-                query[arg] = [query[arg]]
-        try:
-            response = yield http_client.fetch(
-                'http://{}{}?{}'.format(
-                    config['api']['elasticsearch'],
-                    url,
-                    utils.url_encode_tornado_arguments(query) \
-                        if query else '',
-                ),
-                method='POST' if body else 'GET',
-                body=utils.json_dumps(body) if body else None,
-            )
-            return utils.json_loads(response.body)
-        except HTTPError as e:
-            try:
-                extra = utils.json_loads(e.response.body)
-            except:
-                extra = {'error': e.response.body.decode('utf-8')}
-            raise exceptions.Elasticsearch_exception(
-                e.code,
-                extra,
-            )
+    async def es(self, url, query={}, body={}):
+        return await database.es_get(url, query, body)
 
     def get_current_user(self):
         auth = self.request.headers.get('Authorization', None)
