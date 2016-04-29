@@ -4,6 +4,7 @@ function handleError(error) {
     if (error.status === 401) {
         if (error.responseJSON.code === 1009) {
             localStorage.removeItem('access_token');
+            localStorage.removeItem('user_id');
             location.href = '/sign-in';
         }
     }
