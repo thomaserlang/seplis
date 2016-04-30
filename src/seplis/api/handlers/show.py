@@ -1,6 +1,6 @@
 import logging
 from seplis import schemas, utils
-from seplis.api import constants, exceptions, models
+from seplis.api import constants, exceptions, models, components
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session, auto_session
 from seplis.api.base.pagination import Pagination
@@ -288,28 +288,11 @@ class Handler(base.Handler):
         for f, show in zip(is_fan, shows):
             show['is_fan'] = f
 
-    @gen.coroutine
-    def append_user_watching(self, shows, user_id=None):
-        show_ids = [show['id'] for show in shows]
+    async def append_user_watching(self, shows, user_id=None):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        watching = models.Episode_watched.show_get(
-            user_id=user_id,
-            show_id=show_ids,
-        )
-        episode_ids = []
-        # get the episodes that the user is watching
-        episode_ids = ['{}-{}'.format(id_, w['number'] if w else 0)\
-            for id_, w in zip(show_ids, watching)]
-        episodes = yield self.get_episodes(episode_ids)
-        for w, show, episode in zip(watching, shows, episodes):
-            if w:
-                w['episode'] = episode
-                show['user_watching'] = w
-            else:
-                show['user_watching'] = None
-
+        await components.user.add_user_watching(user_id, shows)
 
 class Multi_handler(base.Handler):
 
