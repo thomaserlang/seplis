@@ -9,7 +9,7 @@ async def add_user_watching(user_id, shows):
 
         ```
         show = {
-            "id":
+            "id": 1,
             "user_watching": {
                 "times": 1,
                 "number": 1,

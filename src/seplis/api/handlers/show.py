@@ -292,7 +292,7 @@ class Handler(base.Handler):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        await components.user.add_user_watching(user_id, shows)
+        await components.show.add_user_watching(user_id, shows)
 
 class Multi_handler(base.Handler):
 
