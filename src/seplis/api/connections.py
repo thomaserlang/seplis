@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import orm, event
 from sqlalchemy.ext.declarative import declarative_base
 from seplis import config, utils
+from seplis.api import exceptions
 from elasticsearch import Elasticsearch, helpers
 from rq import Queue
 
