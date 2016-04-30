@@ -358,44 +358,6 @@ class Episode_watched(Base):
         )
 
     @classmethod
-    def recently(cls, user_id, show_id=None, per_page=constants.PER_PAGE, page=1):
-        '''Get recently watched episodes for a user.
-        To get the history from a specific show set `show_id`
-        to the show's id...
-
-        :returns: `Pagination()`
-            `records` will be a list of dict
-            [
-                {
-                    "show_id": 1,
-                    "episode_number": 1
-                }
-            ]
-        '''
-        name = cls._cache_name_episodes.format(user_id) if not show_id else \
-            cls._cache_name_show_episodes_watched.format(user_id, show_id)
-        start = (page-1)*per_page
-        data = database.redis.zrevrange(
-            name,   
-            start=start,
-            end=(start+per_page)-1,
-        )
-        w = []
-        for d in data:
-            show_id, episode_number = d.split('-') if not show_id else \
-                (show_id, d)
-            w.append({
-                'show_id': int(show_id),
-                'episode_number': int(episode_number),
-            })
-        return Pagination(
-            page=page,
-            per_page=per_page,
-            total=database.redis.zcard(name),
-            records=w,
-        )
-
-    @classmethod
     def show_get(cls, user_id, show_id):
         '''Retrieves the user's watch status from the cache for each 
         show id in `show_id`.

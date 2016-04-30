@@ -15,7 +15,7 @@ import seplis.api.handlers.shows_recently_watched
 import seplis.api.handlers.air_dates
 import seplis.api.handlers.episode_watched
 import seplis.api.handlers.episode_watching
-import seplis.api.handlers.next_to_watch
+import seplis.api.handlers.episode_to_watch
 import seplis.api.handlers.etw
 import seplis.api.handlers.user_show_subtitle_lang
 from seplis.api import constants
@@ -157,8 +157,8 @@ class Application(tornado.web.Application):
                 seplis.api.handlers.episode_watching.Handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/next-to-watch/shows/([0-9]+)', 
-                seplis.api.handlers.next_to_watch.Handler
+                r'/1/users/([0-9]+)/shows/([0-9]+)/episodes/to-watch', 
+                seplis.api.handlers.episode_to_watch.Handler
             ),
             URLSpec(
                 r'/1/users/([0-9]+)/etw', 

@@ -23,7 +23,7 @@ class Test_next_to_watch(Testbase):
 
         # without having watched anything we should get
         # the first episode.
-        next_to_watch_url = '/1/users/{}/next-to-watch/shows/{}?append=user_watched'.format(
+        next_to_watch_url = '/1/users/{}/shows/{}/episodes/to-watch'.format(
             self.current_user.id,
             show['id']
         )
