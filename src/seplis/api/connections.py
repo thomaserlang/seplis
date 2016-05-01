@@ -63,6 +63,8 @@ class Database:
         except HTTPError as e:
             try:
                 extra = utils.json_loads(e.response.body)
+                if e.code == 404:
+                    return extra
             except:
                 extra = {'error': e.response.body.decode('utf-8')}
             raise exceptions.Elasticsearch_exception(
