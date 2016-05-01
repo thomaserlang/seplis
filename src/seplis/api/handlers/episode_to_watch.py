@@ -1,11 +1,13 @@
 from . import base
-from seplis.api import components, exceptions
+from seplis.api import components, exceptions, constants
+from seplis.api.decorators import authenticated
 
 class Handler(base.Handler):
 
-    async def get(self, user_id, show_id):
+    @authenticated(constants.LEVEL_PROGRESS)
+    async def get(self, show_id):
         episode = await components.show.episode_to_watch(
-            user_id,
+            self.current_user.id,
             show_id,
         )
         if not episode:

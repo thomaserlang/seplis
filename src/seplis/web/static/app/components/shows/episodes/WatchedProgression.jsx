@@ -38,7 +38,7 @@ class WatchedProgression extends React.Component {
 
     getNextToWatch() {
         request(
-            `/1/users/${getUserId()}/shows/${this.props.showId}/episodes/to-watch`
+            `/1/shows/${this.props.showId}/episodes/to-watch`
         ).success(episode => {
             if (this.state.showForm === false)
                 // Render the form and it's options before 

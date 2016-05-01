@@ -23,8 +23,7 @@ class Test_next_to_watch(Testbase):
 
         # without having watched anything we should get
         # the first episode.
-        next_to_watch_url = '/1/users/{}/shows/{}/episodes/to-watch'.format(
-            self.current_user.id,
+        next_to_watch_url = '/1/shows/{}/episodes/to-watch'.format(
             show['id']
         )
         response = self.get(next_to_watch_url)

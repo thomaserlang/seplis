@@ -157,7 +157,7 @@ class Application(tornado.web.Application):
                 seplis.api.handlers.episode_watching.Handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/shows/([0-9]+)/episodes/to-watch', 
+                r'/1/shows/([0-9]+)/episodes/to-watch', 
                 seplis.api.handlers.episode_to_watch.Handler
             ),
             URLSpec(
