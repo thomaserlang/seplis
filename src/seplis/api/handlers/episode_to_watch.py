@@ -9,5 +9,5 @@ class Handler(base.Handler):
             show_id,
         )
         if not episode:
-            raise exceptions.User_not_episode_to_watch()
+            raise exceptions.User_no_episode_to_watch()
         self.write_object(episode)
