@@ -47,8 +47,7 @@ class Test_etw(Testbase):
 
         # Test after marking the first episode as watching
         # that the episode is still on the etw list
-        response = self.put('/1/users/{}/watching/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        response = self.put('/1/shows/{}/episodes/{}/watching'.format(
             show['id'],
             1
         ), {

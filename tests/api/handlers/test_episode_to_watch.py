@@ -35,8 +35,7 @@ class Test_next_to_watch(Testbase):
 
         # set episode 1 as watching
         response = self.put(
-            '/1/users/{}/watching/shows/{}/episodes/{}'.format(
-                self.current_user.id,
+            '/1/shows/{}/episodes/{}/watching'.format(
                 show['id'],
                 1
             ), 

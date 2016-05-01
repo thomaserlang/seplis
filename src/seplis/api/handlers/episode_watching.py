@@ -14,11 +14,11 @@ class Handler(base.Handler):
 
     @authenticated(constants.LEVEL_PROGRESS)
     @gen.coroutine
-    def put(self, user_id, show_id, episode_number):
-        yield self._put(user_id, show_id, episode_number)
+    def put(self, show_id, episode_number):
+        yield self._put(show_id, episode_number)
 
     @run_on_executor
-    def _put(self, user_id, show_id, episode_number):
+    def _put(self, show_id, episode_number):
         self.validate(self.__schema__)
         with new_session() as session:
             episode = session.query(models.Episode).filter(
@@ -28,7 +28,7 @@ class Handler(base.Handler):
             if not episode:
                 raise exceptions.Episode_unknown()
             episode.watched(
-                user_id=user_id,
+                user_id=self.current_user.id,
                 times=0,
                 position=int(self.request.body['position']),
             )
@@ -36,9 +36,9 @@ class Handler(base.Handler):
 
 
     @authenticated(constants.LEVEL_PROGRESS)
-    def get(self, user_id, show_id, episode_number):
+    def get(self, show_id, episode_number):
         w = models.Episode_watched.get(
-            user_id=user_id,
+            user_id=self.current_user.id,
             show_id=show_id,
             episode_number=episode_number,
         )

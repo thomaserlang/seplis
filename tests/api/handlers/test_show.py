@@ -573,8 +573,7 @@ class test_show(Testbase):
 
         # Let's watch a part of an episode and see if it shows up
         # in the user_watching field.
-        response = self.put('/1/users/{}/watching/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        response = self.put('/1/shows/{}/episodes/{}/watching'.format(
             show_id,
             1
         ), {

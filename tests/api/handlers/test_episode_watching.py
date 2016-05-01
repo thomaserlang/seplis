@@ -17,8 +17,7 @@ class Test_episode_watching(Testbase):
         })
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
-        url = '/1/users/{}/watching/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        url = '/1/shows/{}/episodes/{}/watching'.format(
             show['id'],
             1
         )
