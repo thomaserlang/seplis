@@ -18,9 +18,11 @@ class WatchedProgression extends React.Component {
             showForm: false,
             fromNumber: 1,
             toNumber: 1,
+            saving: false,
         }
         this.dropdownButtonClick = this.dropdownButtonClick.bind(this);
         this.selectChange = this.selectChange.bind(this);
+        this.formSubmit = this.formSubmit.bind(this);
     }
 
     selectChange(e) {
@@ -53,9 +55,22 @@ class WatchedProgression extends React.Component {
         });
     }
 
+    formSubmit(e) {
+        e.preventDefault();
+        this.setState({'saving': true})
+        request(
+            `/1/users/${getUserId()}/watched/shows/${this.props.showId}/episodes/${this.state.fromNumber}-${this.state.toNumber}`,
+            {method: 'PUT'}
+        ).error(() => {
+            this.setState({'saving': false});
+        }).success(() => {
+            location.reload();
+        });
+    }
+
     renderForm() {
         return (
-            <form>
+            <form onSubmit={this.formSubmit}>
                 <div className="form-group">                    
                     <label>From episode</label>
                     <SelectSeasonEpisode
@@ -74,8 +89,12 @@ class WatchedProgression extends React.Component {
                         selectedNumber={this.state.toNumber}
                     />
                 </div>
-                <button type="submit" className="btn btn-primary">
-                    Watched
+                <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={this.state.saving}
+                >
+                    {this.state.saving?'Please wait...':'Watched'}
                 </button>
             </form>
         )
