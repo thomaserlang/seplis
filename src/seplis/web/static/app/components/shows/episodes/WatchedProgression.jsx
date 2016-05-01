@@ -46,6 +46,10 @@ class WatchedProgression extends React.Component {
                 fromNumber: episode.number,
                 toNumber: episode.number,
             });
+        }).error(error => {
+            if (error.responseJSON.code === 1301) {
+                this.setState({showForm:true});
+            }
         });
     }
 
