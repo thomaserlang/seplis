@@ -354,6 +354,7 @@ class Fan_of_handler(Handler):
     @gen.coroutine
     def put(self, user_id, show_id):
         yield self._put(user_id, show_id)
+        self.set_status(204)
 
     @concurrent.run_on_executor
     def _put(self, user_id, show_id):
@@ -372,6 +373,7 @@ class Fan_of_handler(Handler):
     @gen.coroutine
     def delete(self, user_id, show_id):
         yield self._delete(user_id, user_id)
+        self.set_status(204)
 
     @concurrent.run_on_executor
     def _delete(self, user_id, show_id):            
@@ -415,11 +417,13 @@ class Fans_handler(Fan_of_handler):
     @gen.coroutine
     def put(self, show_id, user_id):        
         yield self._put(user_id=user_id, show_id=show_id)
+        self.set_status(204)
 
     @authenticated(constants.LEVEL_USER)
     @gen.coroutine
     def delete(self, show_id, user_id):
         yield self._delete(user_id=user_id, show_id=show_id)
+        self.set_status(204)
 
 class Update_handler(base.Handler):
 
