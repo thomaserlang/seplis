@@ -14,16 +14,16 @@ class EpisodeListItem extends React.Component {
         if (this.props.episode.episode) {
             return (
                 <span>
-                    {this.props.episode.episode}
+                    Episode {this.props.episode.episode}
                     &nbsp;
                     <font color="grey">
-                        {this.props.episode.number}
+                        ({this.props.episode.number})
                     </font> 
                 </span>
             )
         } else {
             return (
-                <span>{this.props.episode.number}</span>
+                <span>Episode {this.props.episode.number}</span>
             )   
         }
     }
