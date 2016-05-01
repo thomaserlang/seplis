@@ -33,6 +33,7 @@ class SeasonList extends React.Component {
         let season = this.seasonEpisodeNumbers(this.state.seasonNumber);
         let query = {}
         query.q = `number:[${season.from} TO ${season.to}]`;
+        query.per_page = season.total;
         if (isAuthed()) {
             query.append = 'user_watched';
         }
