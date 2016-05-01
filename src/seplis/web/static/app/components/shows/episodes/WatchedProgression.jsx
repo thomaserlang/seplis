@@ -1,6 +1,7 @@
 import React from 'react';
 import SelectSeasonEpisode from './SelectSeasonEpisode';
-import {request} from 'utils';
+import {request} from 'api';
+import {getUserId} from 'utils';
 
 import 'bootstrap/js/dropdown';
 
@@ -30,11 +31,22 @@ class WatchedProgression extends React.Component {
     }
 
     dropdownButtonClick(e) {
-        this.setState({showForm: true});
+        this.getNextToWatch();
     }
 
-    getUserWatching() {
-        request('/')
+    getNextToWatch() {
+        request(
+            `/1/users/${getUserId()}/shows/${this.props.showId}/episodes/to-watch`
+        ).success(episode => {
+            if (this.state.showForm === false)
+                // Render the form and it's options before 
+                // setting the selected value. Otherwise it will not work.
+                this.setState({showForm:true});
+            this.setState({
+                fromNumber: episode.number,
+                toNumber: episode.number,
+            });
+        });
     }
 
     renderForm() {
