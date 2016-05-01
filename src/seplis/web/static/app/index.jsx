@@ -12,5 +12,6 @@ export default{
         SeasonList: require('./components/shows/episodes/SeasonList'),
         SignIn: require('./components/SignIn'),
         FanButton: require('./components/shows/FanButton'),
+        LatestEpisodesSideBar: require('./components/shows/episodes/LatestEpisodesSideBar'),
     }
 };

@@ -58,9 +58,19 @@
                 {% end %}
 
             </div>
-            <div class="episode-sidebar">
-                {% include sidebar.html %}
-            </div>
+            <div id="episode-sidebar"></div>
+            <script>
+              $(function(){
+                ReactDOM.render(
+                    React.createElement(
+                        seplis.LatestEpisodesSideBar.default, {
+                            showId: {{ show['id'] }},
+                        }
+                    ), 
+                    document.getElementById('episode-sidebar')
+                );
+              });
+            </script>
         </div>
         <hr>
         <div id="seasons"></div>
