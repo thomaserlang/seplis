@@ -64,8 +64,7 @@ class Test_etw(Testbase):
 
         # Test that the next episode is on the list after we have watched the first one
         response = self.put(
-            '/1/users/{}/watched/shows/{}/episodes/{}'.format(
-                self.current_user.id,
+            '/1/shows/{}/episodes/{}/watched'.format(
                 show['id'],
                 1
             )

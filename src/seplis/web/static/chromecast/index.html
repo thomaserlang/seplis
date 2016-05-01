@@ -57,15 +57,14 @@
                     time = 0;
                 }
                 var url = data['api_url'];
-                var url1 = '/1/users/'+data['user_id'].toString();
-                var url2 = '/shows/'+data['show']['id'].toString()+
-                        '/episodes/'+data['episode']['number'];
+                url += '/shows/'+data['show']['id'].toString();
+                url += '/episodes/'+data['episode']['number'];
                 var dpos = {};
                 if (times == 0) {
-                    url += url1 + '/watching'+ url2;
+                    url += '/watching';
                     dpos['position'] = time;
                 } else {                    
-                    url += url1 + '/watched'+ url2;
+                    url += '/watched';
                     dpos['times'] = 1;
                 }
                 $.ajax({

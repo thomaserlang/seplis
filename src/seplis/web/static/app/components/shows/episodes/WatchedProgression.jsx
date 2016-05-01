@@ -58,8 +58,11 @@ class WatchedProgression extends React.Component {
     formSubmit(e) {
         e.preventDefault();
         this.setState({'saving': true})
+        let id = this.props.showId
+            fromN = this.state.fromNumber
+            toN = this.state.toNumber;
         request(
-            `/1/users/${getUserId()}/watched/shows/${this.props.showId}/episodes/${this.state.fromNumber}-${this.state.toNumber}`,
+            `/1/shows/${id}/episodes/${fromN}-${toN}/watched`,
             {method: 'PUT'}
         ).error(() => {
             this.setState({'saving': false});

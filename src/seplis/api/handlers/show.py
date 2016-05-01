@@ -19,11 +19,11 @@ class Handler(base.Handler):
     @gen.coroutine
     def get(self, show_id=None):
         if show_id:
-            shows = yield self.get_show(show_id)
-            self.write_object(shows)
-        else:
-            show = yield self.get_shows()
+            show = yield self.get_show(show_id)
             self.write_object(show)
+        else:
+            shows = yield self.get_shows()
+            self.write_object(shows)
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine    
@@ -151,7 +151,7 @@ class Handler(base.Handler):
         append_fields = self.get_append_fields(self.allowed_append_fields)
         result = yield self.es('/shows/show/{}'.format(show_id))                
         if not result['found']:
-            raise exceptions.Show_unknown()
+            raise exceptions.Not_found('unknown show')
         show = result['_source']
         if 'is_fan' in append_fields:
             self.append_is_fan([show])

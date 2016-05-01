@@ -110,8 +110,7 @@ class Test_episode(Testbase):
         self.assertEqual(response.code, 200)
         # we need to test that deleting an episode also delets all relations
         # to watched episodes.
-        response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
-            self.current_user.id, 
+        response = self.put('/1/shows/{}/episodes/{}/watched'.format(
             show_id, 
             1
         ))
@@ -122,8 +121,7 @@ class Test_episode(Testbase):
         ))
         self.assertEqual(response.code, 201)
 
-        response = self.get('/1/users/{}/watched/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        response = self.get('/1/shows/{}/episodes/{}/watched'.format(
             show_id,
             1
         ))
@@ -176,7 +174,7 @@ class Test_episode_append_fields(Testbase):
 
         # Let's watch some episodes
         for number in [1,2]:
-            response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id, number))
+            response = self.put('/1/shows/{}/episodes/{}/watched'.format(show_id, number))
             self.assertEqual(response.code, 200, 'Run: {}'.format(number))
 
 
@@ -197,8 +195,8 @@ class Test_episode_append_fields(Testbase):
 
 
         # test that we can watch a interval of episodes at a time
-        response = self.put('/1/users/{}/watched/shows/{}/episodes/1-2'.format(self.current_user.id, show_id))
-        self.assertEqual(response.code, 200)
+        response = self.put('/1/shows/{}/episodes/1-2/watched'.format(self.current_user.id, show_id))
+        self.assertEqual(response.code, 204)
         response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)

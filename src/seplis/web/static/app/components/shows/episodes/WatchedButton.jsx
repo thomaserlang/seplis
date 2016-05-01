@@ -34,8 +34,9 @@ class WatchedButton extends React.Component {
     }
 
     watchedApiEndpoint() {
-        let userId = getUserId();
-        return `/1/users/${userId}/watched/shows/${this.props.showId}/episodes/${this.props.episodeNumber}`;
+        let id = this.props.showId;
+        let n = this.props.episodeNumber;
+        return `/1/shows/${id}/episodes/${n}/watched`;
     }
     onWatchedIncr(e) {
         this.setState({times: ++this.state.times});

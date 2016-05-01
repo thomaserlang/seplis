@@ -26,8 +26,7 @@ class test_shows_recently_watched(Testbase):
                 ]
             })
             self.assertEqual(response.code, 200, response.body)
-            response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
-                self.current_user.id,
+            response = self.put('/1/shows/{}/episodes/{}/watched'.format(
                 show_id,
                 show_id,
             ))
@@ -60,8 +59,7 @@ class test_shows_recently_watched(Testbase):
 
         # test that deleting all watched episodes for a show does not
         # reset the hole recently watched list.
-        response = self.delete('/1/users/{}/watched/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        response = self.delete('/1/shows/{}/episodes/{}/watched'.format(
             show_ids[0],
             show_ids[0], # the episode number is the same as the show id.
         ))
