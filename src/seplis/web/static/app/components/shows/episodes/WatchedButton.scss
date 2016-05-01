@@ -5,7 +5,12 @@
         color:#E2E2E2;
         border: 1px solid #6C6C6C;
         border-radius:0;
-        outline:0;
+        outline:0;    
+        
+        &:hover, &:active {    
+            background-color: #373737;
+            outline: 0;
+        }
     }
 
     .btn:active{
@@ -14,6 +19,10 @@
 
     .btn-times {
         cursor: default;
+        &:hover, &:active {    
+            background-color: #414141;
+            outline: 0;
+        }
     }
 
     .dropdown-menu {
@@ -32,7 +41,7 @@
     .watched {
         background-color: #068223;
         &:hover {
-            background-color: #00AD28;
+            background-color: #008F21;
         }
     }
 

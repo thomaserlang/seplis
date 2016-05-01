@@ -9,8 +9,8 @@ export default{
     ReactDOM: require('react-dom'),
     seplis: {
         apiClientSettings: apiClientSettings,
-        WatchedButton: require('./components/shows/episodes/WatchedButton'),
         SeasonList: require('./components/shows/episodes/SeasonList'),
         SignIn: require('./components/SignIn'),
+        FanButton: require('./components/shows/FanButton'),
     }
 };

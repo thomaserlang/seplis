@@ -15,7 +15,20 @@
                 </div>
             </div>
             <div class="description">
-                <div>{% module fan_button(show) %}</div>
+                <div id="fan-button"></div>
+                <script>
+                  $(function(){
+                    ReactDOM.render(
+                        React.createElement(
+                            seplis.FanButton.default, {
+                                showId: {{ show['id'] }},
+                                isFan: {{ 'true' if show.get('is_fan') else 'false' }},
+                            }
+                        ), 
+                        document.getElementById('fan-button')
+                    );
+                  });
+                </script>
                 {% if show['description']['text'] %}
                     <div class="description-text">
                         <p>

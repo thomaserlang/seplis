@@ -1,0 +1,23 @@
+.btn-fan, 
+.btn-fan:focus {
+    background-color: #414141;
+    color: #E2E2E2;
+    border: 1px solid #6C6C6C;
+    outline: 0;
+    &:hover, &:active {    
+        background-color: #373737;
+        color: #E2E2E2;
+        outline: 0;
+    }
+}
+
+.btn-fan__is-fan, 
+.btn-fan__is-fan:focus {
+    background-color: #068223;
+    color: #E2E2E2;
+    &:hover, &:active {         
+        background-color: #008F21;
+        color: #E2E2E2;
+        outline: 0;
+    }
+}
