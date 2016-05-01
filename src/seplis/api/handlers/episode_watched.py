@@ -82,6 +82,7 @@ class Range_handler(base.Handler):
             int(from_), 
             int(to),
         )
+        self.set_status(204)
 
     @run_on_executor
     def _put(self, user_id, show_id, from_, to):
@@ -114,6 +115,7 @@ class Range_handler(base.Handler):
             int(from_), 
             int(to),
         )
+        self.set_status(204)
 
     @run_on_executor
     def _delete(self, user_id, show_id, from_, to):
