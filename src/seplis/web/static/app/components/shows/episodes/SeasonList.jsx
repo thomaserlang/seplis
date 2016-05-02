@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {request} from 'api';
 import {isAuthed} from 'utils';
+import $ from 'jquery';
 
 import './SeasonList.scss'
 import EpisodeListItem from './EpisodeListItem';
@@ -30,6 +31,7 @@ class SeasonList extends React.Component {
     }
 
     getEpisodes() {
+        var position = $(window).scrollTop();
         this.setState({episodes: []});
         let season = this.seasonEpisodeNumbers(this.state.seasonNumber);
         let query = {}
@@ -41,7 +43,9 @@ class SeasonList extends React.Component {
         request(`/1/shows/${this.props.showId}/episodes`, {
             query: query,
         }).success((episodes) => {
-            this.setState({episodes: episodes});            
+            this.setState({episodes: episodes}, () => {
+                $(window).scrollTop(position);
+            });            
         });
     }
 
