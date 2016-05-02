@@ -47,6 +47,10 @@ class EpisodeListItem extends React.Component {
         }
     }
 
+    getPlayUrl() {
+        return `/show/${this.props.showId}/episode/${this.props.episode.number}/play`;
+    }
+
     render() {
         return (
             <div className="episode-box-list-item">
@@ -67,6 +71,14 @@ class EpisodeListItem extends React.Component {
                         episodeNumber={this.props.episode.number}
                         watched={this.props.episode.user_watched}
                     />
+                    <div className="pull-right">
+                        <a 
+                            href={this.getPlayUrl()} 
+                            className="play-button"
+                        >
+                            <i className="glyphicon glyphicon-play-circle"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
         );
