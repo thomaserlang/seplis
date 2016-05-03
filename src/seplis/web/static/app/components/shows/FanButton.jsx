@@ -15,7 +15,7 @@ class FanButton extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            isFan: props.isFan,\
+            isFan: props.isFan,
         }
         this.onClick = this.onClick.bind(this);
     }
