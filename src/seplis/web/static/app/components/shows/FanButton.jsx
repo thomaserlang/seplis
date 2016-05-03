@@ -15,7 +15,7 @@ class FanButton extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            isFan: props.isFan,
+            isFan: props.isFan,\
         }
         this.onClick = this.onClick.bind(this);
     }
@@ -40,8 +40,14 @@ class FanButton extends React.Component {
             <button 
                 className={btnClass}
                 onClick={this.onClick}
+                title={this.state.isFan?'Unfan':'Become a Fan'}
+                aria-label={this.state.isFan?'Unfan':'Become a Fan'}                
             >
-                {this.state.isFan?'Fan':'Become a Fan'}
+                {this.state.isFan?
+                    <span className="glyphicon glyphicon-star"></span>
+                    :
+                    <span className="glyphicon glyphicon-star-empty"></span>
+                }
             </button>
         );
     }
