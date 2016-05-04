@@ -41,6 +41,7 @@ class Tvmaze(Show_importer_base):
             'status': self.parse_status(show['status']),
             'runtime': show['runtime'],
             'genres': show['genres'],
+            'premiered': show['premiered'],
         }
 
     @staticmethod

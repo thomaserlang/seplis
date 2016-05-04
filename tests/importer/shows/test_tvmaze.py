@@ -108,6 +108,7 @@ class test_tvmaze(TestCase):
         tvmaze = Tvmaze()
         show = tvmaze.info(show_id)
         schemas.validate(schemas.Show_schema, show)
+        self.assertTrue('premiered' in show)
 
     @responses.activate
     def test_episodes(self):
