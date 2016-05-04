@@ -2,7 +2,7 @@
 .btn-fan:focus {
     background-color: #414141;
     color: #E2E2E2;
-    border: 0;
+    border: 1px solid #6C6C6C;
     outline: 0;
     border-radius: 0;
     text-align:middle;
@@ -20,6 +20,7 @@
 .btn-fan__is-fan:focus {
     background-color: #068223;
     color: #E2E2E2;
+    border: 1px solid #068223;
     &:hover, &:active {         
         background-color: #008F21;
         color: #E2E2E2;
@@ -29,6 +30,6 @@
 
 .btn-fan__pull-left {    
     float: left;
-    margin-top:4px;
+    margin-top: 4px;
     margin-right: 10px;
 }
