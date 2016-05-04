@@ -5,10 +5,14 @@
     border: 1px solid #6C6C6C;
     outline: 0;
     border-radius: 0;
+    text-align:middle;
     &:hover, &:active {    
         background-color: #373737;
         color: #E2E2E2;
         outline: 0;
+    }
+    span {
+        left: 1px;
     }
 }
 
@@ -21,4 +25,10 @@
         color: #E2E2E2;
         outline: 0;
     }
+}
+
+.btn-fan__pull-left {    
+    float: left;
+    margin-top:3px;
+    margin-right: 10px;
 }
