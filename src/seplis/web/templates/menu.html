@@ -1,5 +1,5 @@
-<nav class="navbar navbar-default navbar-static-top" role="navigation">
-    <div class="container-fluid">
+<nav class="navbar navbar-seplis navbar-static-top" role="navigation">
+    <div class="container">
         <div class="navbar-header">
             <a class="navbar-brand" href="/">                
                 SEPLIS
@@ -27,14 +27,16 @@
                     </ul>
                 </li>
             </ul>
-            <form class="navbar-form navbar-left" role="search" method="get" action="/search" onsubmit="return false;">
-                <input 
-                    type="text" 
-                    name="q" 
-                    class="autocomplete-show form-control" 
-                    placeholder="Search shows..."
-                >
-            </form>
+            <div class="navbar-header">
+                <form class="navbar-form navbar-left" role="search" method="get" action="/search" onsubmit="return false;">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        class="autocomplete-show form-control" 
+                        placeholder="Search shows..."
+                    >
+                </form>
+            </div>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user %}
                     <li class="dropdown">

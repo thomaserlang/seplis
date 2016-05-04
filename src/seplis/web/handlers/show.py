@@ -9,111 +9,13 @@ from tornado.web import HTTPError, authenticated
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httputil import url_concat
 
-class Handler(base.Handler):
+class Handler(base.Handler_unauthenticated):
 
-    @gen.coroutine
     def get(self, show_id):
-        show = yield self.get_show(show_id)        
-        next_to_air = yield self.get_next_to_air(show['id'])
-        next_episode = next_to_air[0] if next_to_air else None
-        selected_season = None
-        if not self.get_argument('season', None):
-            if 'user_watching' in show and show['user_watching']:
-                selected_season = show['user_watching']['episode']['season']
-            elif next_episode:
-                selected_season = next_episode['season']        
-        selected_season, episodes = yield self.get_season_episodes(
-            show,
-            season=selected_season,
-        )
-        progression_episode_number = None
-        if 'user_watching' in show and show['user_watching']:
-            progression_episode_number = show['user_watching']['episode']['number'] \
-                if not show['user_watching']['completed'] else \
-                    show['user_watching']['episode']['number'] + 1
         self.render(
             'show/show.html',
-            title=show['title'],
-            show=show,
-            episodes=episodes,
-            selected_season=selected_season,
-            next_episode=next_episode,
-            next_to_air=next_to_air,
-            progression_episode_number=progression_episode_number,
+            show_id=show_id,
         )
-
-    @gen.coroutine
-    def get_show(self, show_id):        
-        if self.current_user:
-            show = yield self.client.get('/shows/{}'.format(show_id), {
-                'append': 'is_fan,user_watching',
-            })
-        else:
-            show = yield self.client.get('/shows/{}'.format(show_id))
-        if not show:
-            raise HTTPError(404, 'Unknown show')
-        return show
-
-    @gen.coroutine
-    def get_season_episodes(self, show, season=None):
-        selected_season = None
-        _ss = int(self.get_argument('season', 0)) or season
-        req = {}
-        if self.current_user:
-            req['append'] = 'user_watched'
-        if not show.get('seasons'):
-            episodes = yield self.client.get(
-                '/shows/{}/episodes'.format(show['id']),
-                req,
-            )
-            return (None, episodes)
-        for season in show['seasons']:
-            season = season
-            if season['season'] == _ss:
-                break
-        selected_season = season['season']
-        req.update({
-            'q': 'number:[{} TO {}]'.format(
-                season['from'],
-                season['to'],
-            ),
-            'sort': 'number:asc',
-            'per_page': 50,
-        })
-        episodes = yield self.client.get(
-            '/shows/{}/episodes'.format(show['id']),
-            req
-        )
-        episodes = yield episodes.all_async()
-        return (selected_season, episodes)
-
-    @gen.coroutine
-    def get_next_to_air(self, show_id, per_page=5):
-        episodes = yield self.client.get(
-            '/shows/{}/episodes'.format(show_id),
-            {                
-                'q': 'air_date:[{} TO *]'.format(datetime.utcnow().date()),
-                'per_page': per_page,
-                'sort': 'number:asc',
-            }
-        )
-        return episodes
-
-    @gen.coroutine
-    def get_next_episode(self, show_id):
-        req = {
-            'q': 'air_date:[{} TO *]'.format(datetime.utcnow().date()),
-            'per_page': 1,
-            'sort': 'number:asc',
-        }
-        if self.current_user:
-            req['append'] = 'user_watched'
-        episodes = yield self.client.get(
-            '/shows/{}/episodes'.format(show_id),
-            req
-        )
-        if episodes:
-            return episodes[0]
 
 class API_get_play_now(base.API_handler):
 
@@ -162,20 +64,6 @@ class API_get_play_now(base.API_handler):
         if episode2['user_watched']:
             episode2['user_watched']['position'] = 0
         return episode2
-
-class Redirect_handler(base.Handler_unauthenticated):
-
-    @gen.coroutine
-    def get(self, show_id):        
-        show = yield self.client.get('/shows/{}'.format(show_id))
-        if not show:
-            raise HTTPError(404, 'Unknown show')
-        self.redirect('/show/{}/{}{}'.format(
-            show_id,
-            utils.slugify(show['title']),
-            '?'+utils.url_encode_tornado_arguments(self.request.arguments) \
-                if self.request.arguments else '',
-        ))
 
 class API_fan_handler(base.API_handler):
 

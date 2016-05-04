@@ -1,6 +1,15 @@
+* {    
+    font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
 body {
     background-color: #26282E;
     color:#fff;
+}
+
+h1,
+h2 {
+    margin-top:0;
 }
 
 a, 
@@ -12,12 +21,4 @@ a.btn {
 
 .capitalize-first-letter:first-letter {
     text-transform: uppercase;
-}
-
-.dropdown-menu {
-    background-color: #414141;
-    border-color: #6C6C6C;
-}
-div.dropdown-menu {
-    padding:10px;
 }

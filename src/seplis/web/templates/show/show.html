@@ -1,122 +1,16 @@
 {% extends ../base.html %}
 {% block body %}
-    <show>
-        {% module show_header(show) %}
-        <div class="show-info">
-            <div class="image play-next" show-id="{{ show['id'] }}">
-                <img 
-                    alt="{{ escape(show['title']) }} (image missing)" 
-                    src="{{ image_url(show['poster_image'], '@SX300.jpg') }}"
-                    width="300px"
-                    height="441px"
-                >
-                <div class="play-next-button">
-                    <i class="glyphicon glyphicon-play-circle"></i>
-                </div>
-            </div>
-            <div class="description">
-                <div id="fan-button"></div>
-                <script>
-                  $(function(){
-                    ReactDOM.render(
-                        React.createElement(
-                            seplis.FanButton.default, {
-                                showId: {{ show['id'] }},
-                                isFan: {{ 'true' if show.get('is_fan') else 'false' }},
-                            }
-                        ), 
-                        document.getElementById('fan-button')
-                    );
-                  });
-                </script>
-                {% if show['description']['text'] %}
-                    <div class="description-text">
-                        <p>
-                            {{ escape(show['description']['text']) }}
-                            <a 
-                                href="#" 
-                                class="readmore" 
-                                onclick="
-                                    $('.container-fluid').hide();
-                                    $('.clean-reader').show();
-                                    return false;
-                                "                                    
-                            >
-                                Read more.
-                            </a>
-                        </p>
-                    </div>
-                    <source>
-                        <a href="{{ escape(show['description']['url']) }}" target="_blank">
-                            {{ escape(show['description']['title']) }}
-                        </a>
-                    <source> 
-                {% else %}
-                    <div class="description-text">
-                        <i>There is no description for this show yet!</i>
-                    </div>
-                {% end %}
-
-            </div>
-            <div id="episode-sidebar"></div>
-            <script>
-              $(function(){
-                ReactDOM.render(
-                    React.createElement(
-                        seplis.LatestEpisodesSideBar.default, {
-                            showId: {{ show['id'] }},
-                        }
-                    ), 
-                    document.getElementById('episode-sidebar')
-                );
-              });
-            </script>
-        </div>
-        <hr>
-        <div id="seasons"></div>
-        <script>
-          $(function(){
-            ReactDOM.render(
-                React.createElement(
-                    seplis.SeasonList.default, {
-                        showId: {{ show['id'] }},
-                        seasons: {{ json_dumps(show['seasons']) }},
-                        seasonNumber: {{ selected_season }},
-                    }
-                ), 
-                document.getElementById('seasons')
-            );
-          });
-        </script>
-    </show>
-{% end %}
-
-{% block body_outside %}
-<div class="clean-reader clean-white">
-    <div class="container clean-container">
-        <h2 class="clean-header">
-            {{ escape(show['title']) }}        
-            <div class="clean-close">
-                <i 
-                    class="glyphicon glyphicon-remove-sign" 
-                    title="Close"
-                    onclick="
-                        $('.clean-reader').hide();
-                        $('.container-fluid').show();
-                    "
-                ></i>
-            </div>
-        </h2>
-        <div class="row clean-text">
-            <div class="col-xs-12">
-                <p>{{ escape(show['description']['text']) }}</p>         
-                <source>
-                    <a href="{{ escape(show['description']['url']) }}" target="_blank">
-                        {{ escape(show['description']['title']) }}
-                    </a>
-                <source> 
-            </div>
-        </div>
-    </div>
-</div>
+    <div id="show"></div>
+    <script>
+    $(function(){
+        ReactDOM.render(
+            React.createElement(
+                seplis.views.Show.default, {
+                    showId: {{ escape(show_id) }},
+                }
+            ), 
+            document.getElementById('show')
+        );
+    });
+    </script>
 {% end %}

@@ -120,7 +120,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/sign-out', seplis.web.handlers.sign_in.Sign_out_handler),
 
             URLSpec(r'/show-index', seplis.web.handlers.show.Index_handler),
-            URLSpec(r'/show/([0-9]+)', seplis.web.handlers.show.Redirect_handler),
+            URLSpec(r'/show/([0-9]+)', seplis.web.handlers.show.Handler),
             URLSpec(r'/show/([0-9]+)/[^/]+', seplis.web.handlers.show.Handler),
             URLSpec(r'/show/([0-9]+)/episode/([0-9]+)/play', seplis.web.handlers.play_episode.Handler),
 
