@@ -12,6 +12,12 @@ h2 {
     margin-top:0;
 }
 
+.small-device-header {
+    font-size: 26px;
+    margin-top: 5px;
+    padding-bottom: 5px;
+}
+
 a, 
 a.btn {
     &:hover {
@@ -21,4 +27,23 @@ a.btn {
 
 .capitalize-first-letter:first-letter {
     text-transform: uppercase;
+}
+
+.no-margin-top, .no-margin-top-bottom {
+    margin-top: 0;
+}
+
+.no-margin-bottom, .no-margin-top-bottom {
+    margin-bottom: 0;
+}
+
+.col-margin {
+    margin-bottom: 15px;
+}
+
+.header {
+    border-bottom: 1px solid #eee;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-bottom: 9px;
 }
