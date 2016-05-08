@@ -76,7 +76,7 @@ class EpisodeListItem extends React.Component {
                             href={this.getPlayUrl()} 
                             className="play-button"
                         >
-                            <i className="glyphicon glyphicon-play-circle"></i>
+                            <i className="fa fa-play-circle"></i>
                         </a>
                     </div>
                 </div>

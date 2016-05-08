@@ -3,7 +3,7 @@ import ClassNames from 'classnames';
 import {getUserId} from 'utils';
 import {request} from 'api';
 
-import 'bootstrap/js/dropdown';
+import 'bootstrap/dist/js/umd/dropdown';
 import './WatchedButton.scss';
 
 const propTypes = {
@@ -70,10 +70,10 @@ class WatchedButton extends React.Component {
                 role="menu"
             >
                 <li onClick={this.onWatchedIncr}>
-                    <i className="glyphicon glyphicon-plus"></i>
+                    <i className="fa fa-plus"></i>
                 </li>
                 <li onClick={this.onWatchedDecr}>
-                    <i className="glyphicon glyphicon-minus"></i>
+                    <i className="fa fa-minus"></i>
                 </li>
             </ul>
         )
