@@ -10,6 +10,7 @@ export default{
     ReactDOM: require('react-dom'),
     seplis: {
         apiClientSettings: apiClientSettings,
+        Navbar: require('./components/Navbar.jsx'),
         views: {
             Show: require('./views/Show.jsx'),
             SignIn: require('./views/SignIn.jsx'),

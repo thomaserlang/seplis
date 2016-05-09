@@ -6,3 +6,7 @@ export function isAuthed() {
 export function getUserId() {
     return localStorage.getItem('user_id') || 0;
 }
+
+export function getUserLevel() {
+    return localStorage.getItem('user_level') || null;
+}
