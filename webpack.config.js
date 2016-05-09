@@ -12,7 +12,6 @@ module.exports = {
         vendor: [
             'jquery',
             'bootstrap/dist/js/umd/dropdown',
-            'font-awesome/scss/font-awesome',
             'react',
             'react-dom',
             'moment',

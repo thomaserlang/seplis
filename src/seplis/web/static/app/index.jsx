@@ -12,6 +12,7 @@ export default{
         apiClientSettings: apiClientSettings,
         views: {
             Show: require('./views/Show.jsx'),
+            SignIn: require('./views/SignIn.jsx'),
         }
     }
 };

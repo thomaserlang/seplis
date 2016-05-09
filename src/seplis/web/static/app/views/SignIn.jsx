@@ -40,6 +40,7 @@ class SignIn extends React.Component {
     saveUserIdAndRedirect() {
         request('/1/users/current').success(user => {
             localStorage.setItem('user_id', user.id);
+            localStorage.setItem('user_level', user.level);
             location.href = '/';
         });
     }
