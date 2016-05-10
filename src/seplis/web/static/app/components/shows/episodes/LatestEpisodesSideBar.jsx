@@ -55,7 +55,7 @@ class LatestEpisodesSideBar extends React.Component {
     render() {
         if (this.state.episodes.length == 0) {
             return (
-                <p className="text-muted">No more episodes</p>
+                <p className="text-muted">No ETA for new episodes.</p>
             )
         }
         return (
