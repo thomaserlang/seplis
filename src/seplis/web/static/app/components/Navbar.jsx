@@ -54,7 +54,7 @@ class Navbar extends React.Component {
                     </a>
                     <div className="dropdown-menu">
                         {item.items.map((item, i) => (
-                            <a className="dropdown-item" href={item.url}>
+                            <a key={item.name} className="dropdown-item" href={item.url}>
                                 {item.name}
                             </a>
                         ))}

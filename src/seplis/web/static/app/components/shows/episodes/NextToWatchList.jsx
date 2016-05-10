@@ -53,6 +53,7 @@ class NextToWatchList extends React.Component {
             <span>
             {this.state.episodes.map((item, key) => (
                 <EpisodeListItem 
+                    key={item.number}
                     showId={this.props.showId}
                     episode={item}
                 />
