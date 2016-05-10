@@ -31,6 +31,22 @@ class Show extends React.Component {
         });
     }
 
+    renderAirDates() {
+        if (this.state.show.status > 1) {
+            return;
+        }
+        return (
+            <div className="col-xs-12 col-lg-3 col-margin">
+                <h4 className="header">
+                    Air dates
+                </h4>
+                <LatestEpisodesSideBar
+                    showId={this.props.showId}
+                />
+            </div>
+        );
+    }
+
     renderShow() {
         let show = this.state.show;
         return (
@@ -69,15 +85,7 @@ class Show extends React.Component {
                             showId={this.props.showId}
                         />
                     </div>
-                    <div className="col-xs-12 col-lg-3 col-margin">
-                        <h4 className="header">
-                            Air dates
-                        </h4>
-                        <LatestEpisodesSideBar
-                            showId={this.props.showId}
-                        />
-                    </div>
-
+                    {this.renderAirDates()}
                 </div>
             </div>
         )
