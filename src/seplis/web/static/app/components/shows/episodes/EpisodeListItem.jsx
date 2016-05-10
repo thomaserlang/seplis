@@ -6,6 +6,11 @@ import WatchedButton from './WatchedButton';
 const propTypes = {
     showId: React.PropTypes.number.isRequired,
     episode: React.PropTypes.object.isRequired,
+    displaySeason: React.PropTypes.bool,
+}
+
+const defaultTypes = {
+    displaySeason: true,
 }
 
 class EpisodeListItem extends React.Component {
@@ -14,6 +19,7 @@ class EpisodeListItem extends React.Component {
         if (this.props.episode.episode) {
             return (
                 <span>
+                    {this.props.displaySeason?`S${this.props.episode.season} `: ''}
                     Episode {this.props.episode.episode}
                     &nbsp;
                     <font color="grey">
@@ -84,7 +90,7 @@ class EpisodeListItem extends React.Component {
         );
     }
 }
-
 EpisodeListItem.propTypes = propTypes;
+EpisodeListItem.defaultTypes = defaultTypes;
 
 export default EpisodeListItem;

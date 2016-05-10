@@ -1,6 +1,6 @@
 import React from 'react';
 import {request} from 'api';
-
+import {isAuthed} from 'utils';
 import EpisodeListItem from './EpisodeListItem';
 
 const propTypes = {
@@ -23,14 +23,15 @@ class NextToWatchList extends React.Component {
     }
 
     getEpisodes() {
+        if (!isAuthed()) {
+            this.episodesFrom(1);
+            return;
+        }
+
         request(
             `/1/shows/${this.props.showId}/episodes/to-watch`
         ).success(episode => {
-            request(`/1/shows/${this.props.showId}/episodes`, {
-                query: this.queryFromEpisode(episode),
-            }).success(episodes => {
-                this.setState({episodes:episodes});
-            });
+            this.episodesFrom(episode.number);
         }).error(error => {
             // No more episodes to watch
             if (error.responseJSON.code === 1301) {
@@ -39,13 +40,19 @@ class NextToWatchList extends React.Component {
         });
     }
 
-    queryFromEpisode(episode) {
-        let fromNumber = episode.number;
-        return {
+    episodesFrom(fromNumber) {
+        let query = {
             q: `number:[${fromNumber} TO ${(fromNumber-1) + this.props.numberOfEpisodes}]`,
             sort: 'number:asc',
-            append: 'user_watched',
         }
+        if (isAuthed()) {            
+            query.append = 'user_watched';
+        }
+        request(`/1/shows/${this.props.showId}/episodes`, {
+            query: query,
+        }).success(episodes => {
+            this.setState({episodes:episodes});
+        });
     }
 
     render() {
@@ -56,6 +63,7 @@ class NextToWatchList extends React.Component {
                     key={item.number}
                     showId={this.props.showId}
                     episode={item}
+                    displaySeason={true}
                 />
             ))}
             </span>
