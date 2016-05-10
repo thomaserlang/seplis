@@ -40,37 +40,39 @@ class Show extends React.Component {
                         <div className="btn-fan__pull-left">
                             <FanButton showId={show.id} isFan={show.is_fan || false} />
                         </div>
-                        <h1 className="hidden-xs">
+                        <h1 className="hidden-xs-down">
                             {show.title}
                             &nbsp;
-                            <small>{show.premiered.substring(0,4)}</small>
+                            <small className="text-muted">{show.premiered.substring(0,4)}</small>
                         </h1>
-                        <h1 className="visible-xs small-device-header">
+                        <h1 className="hidden-sm-up small-device-header">
                             {show.title}
                             &nbsp;
-                            <small>{show.premiered.substring(0,4)}</small>
+                            <small className="text-muted">{show.premiered.substring(0,4)}</small>
                         </h1>
                     </div> 
 
+                    <div className="col-xs-4 hidden-sm-up" />
                     <div className="col-xs-4 col-sm-4 col-md-4 col-margin">
                         <img 
                             src={show.poster_image.url + '@SX360'} 
                             width="100%" 
                         />
                     </div>
+                    <div className="col-xs-4 hidden-sm-up" />
 
-                    <div className="col-xs-8 col-sm-8 col-md-5 col-margin">
-                        <h2 className="header">
+                    <div className="col-xs-12 col-sm-8 col-lg-5 col-margin">
+                        <h4 className="header">
                             Next to watch
-                        </h2>
+                        </h4>
                         <NextToWatchList
                             showId={this.props.showId}
                         />
                     </div>
-                    <div className="col-xs-12 col-md-3 col-margin">
-                        <h2 className="header">
+                    <div className="col-xs-12 col-lg-3 col-margin">
+                        <h4 className="header">
                             Air dates
-                        </h2>
+                        </h4>
                         <LatestEpisodesSideBar
                             showId={this.props.showId}
                         />
