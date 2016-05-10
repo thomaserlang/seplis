@@ -1,7 +1,5 @@
 import './styles/Base.scss';
-import './styles/Navbar.scss';
 import './styles/FormBase.scss';
-import './styles/Variables.scss';
 
 import {apiClientSettings} from './api.jsx';
 

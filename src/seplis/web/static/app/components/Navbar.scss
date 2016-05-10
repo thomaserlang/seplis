@@ -1,0 +1,13 @@
+.navbar-seplis {
+    background-color: #428bca;
+
+    .nav-item {
+        .nav-link {
+            color: #DFDFDF;
+            
+            &:hover {
+                color: #fff;
+            }
+        }
+    }
+}

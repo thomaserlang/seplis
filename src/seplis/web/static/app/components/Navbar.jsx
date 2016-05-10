@@ -1,11 +1,8 @@
 import React from 'react';
-
 import {request} from 'api';
 import {isAuthed, getUserLevel} from 'utils';
 
-const propTypes = {
-
-}
+import './Navbar.scss';
 
 const navbarItemsLeft = [
     {
@@ -76,7 +73,7 @@ class Navbar extends React.Component {
 
     render() {
         return (
-            <nav className="navbar navbar-dark bg-inverse">
+            <nav className="navbar navbar-seplis">
                 <div className="container">
                     <ul className="nav navbar-nav">
                         {navbarItemsLeft.map((item, i) => (
@@ -89,6 +86,5 @@ class Navbar extends React.Component {
     }
 
 }
-Navbar.propTypes = propTypes;
 
 export default Navbar;
