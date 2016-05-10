@@ -3,6 +3,9 @@ $enable-rounded: false;
 
 $body-bg: #26282E;
 $body-color: #fff;
+$font-size-root: 16px;
+$headings-margin-bottom: 10px;
+$grid-gutter-width: 20px;
 
 $font-family-sans-serif: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
@@ -39,7 +42,7 @@ a.btn {
 }
 
 .col-margin {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .header {
