@@ -3,13 +3,10 @@
     <div id="show"></div>
     <script>
     $(function(){
+        console.log(seplis);
         ReactDOM.render(
-            React.createElement(
-                seplis.views.Show.default, {
-                    showId: {{ escape(show_id) }},
-                }
-            ), 
-            document.getElementById('show')
+          seplis.Routes.default,
+          document.getElementById('show')
         );
     });
     </script>

@@ -7,10 +7,11 @@ export default{
     React: require('react'),
     ReactDOM: require('react-dom'),
     seplis: {
+        Routes: require('./Routes.jsx'),
         apiClientSettings: apiClientSettings,
         Navbar: require('./components/Navbar.jsx'),
         views: {
-            Show: require('./views/Show.jsx'),
+            Show: require('./views/show/Show.jsx'),
             SignIn: require('./views/SignIn.jsx'),
         }
     }
