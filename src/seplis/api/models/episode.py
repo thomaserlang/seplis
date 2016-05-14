@@ -121,7 +121,7 @@ class Episode(Base):
         }
 
     @staticmethod
-    async def get(show_id, number):
+    async def es_get(show_id, number):
         """Retrives an episode from ES.
         See `Episode.serialize()` for the return format.
         """
@@ -137,7 +137,7 @@ class Episode(Base):
         return response['_source']
 
     @staticmethod
-    async def get_multi(show_id, numbers):
+    async def es_get_multi(show_id, numbers):
         """Retrives episodes from ES.
         Returns a list of a serialized episode.
         See `Episode.serialize()` for the return format.
