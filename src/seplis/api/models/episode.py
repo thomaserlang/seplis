@@ -120,6 +120,40 @@ class Episode(Base):
             'updated_at': ew.updated_at,
         }
 
+    @staticmethod
+    async def get(show_id, number):
+        """Retrives an episode from ES.
+        See `Episode.serialize()` for the return format.
+        """
+        response = await database.es_get(
+            '/episodes/episode/{}-{}'.format(
+                show_id,
+                number,
+            )
+        )
+        if not response['found']:
+            return
+        response['_source'].pop('show_id')
+        return response['_source']
+
+    @staticmethod
+    async def get_multi(show_id, numbers):
+        """Retrives episodes from ES.
+        Returns a list of a serialized episode.
+        See `Episode.serialize()` for the return format.
+        """
+        ids = ['{}-{}'.format(show_id, number) for number in numbers]
+        result = await database.es_get('/episodes/episode/_mget', body={
+            'ids': ids
+        })
+        episodes = []
+        for episode in result['docs']:
+            if '_source'in episode:
+                episode['_source'].pop('show_id')
+                episodes.append(episode['_source'])
+            else:
+                episodes.append(None)                
+        return episodes
 
 class Episode_watched(Base):
     '''Episode watched by the user.'''
