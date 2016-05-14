@@ -1,6 +1,6 @@
 import logging
 from seplis import schemas, utils
-from seplis.api import constants, exceptions, models, components
+from seplis.api import constants, exceptions, models, utils
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session, auto_session
 from seplis.api.base.pagination import Pagination
@@ -292,7 +292,7 @@ class Handler(base.Handler):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        await components.show.add_user_watching(user_id, shows)
+        await utils.show.add_user_watching(user_id, shows)
 
 class Multi_handler(base.Handler):
 
