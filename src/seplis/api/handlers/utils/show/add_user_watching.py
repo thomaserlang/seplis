@@ -1,8 +1,8 @@
 from seplis.api import models
 from seplis.api.connections import database
 
-async def add_user_watching(user_id, shows):
-    """Adds the "user_watching" field to each show in `shows`.
+async def append_user_watching(user_id, shows):
+    """Appends the "user_watching" field to each show in `shows`.
 
     The "user_watching" field contains the latest episode watch data
     for the user.
