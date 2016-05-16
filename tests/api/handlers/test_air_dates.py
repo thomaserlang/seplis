@@ -89,7 +89,7 @@ class Test_air_dates(Testbase):
             response = self.put('/1/users/{}/fan-of/{}'.format(self.current_user.id, show_id), {
                 'user_id': self.current_user.id,
             })        
-            self.assertEqual(response.code, 200, response.body)
+            self.assertEqual(response.code, 204, response.body)
 
         # Let's get our air dates calendar.        
         self.get('http://{}/_refresh'.format(
