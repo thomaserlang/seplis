@@ -172,7 +172,6 @@ class Episode_watched(Base):
 
     def before_upsert(self):
         self.updated_at = datetime.utcnow()
-        episode = self
         times_hist = get_history(self, 'times')
         self.completed = True \
             if times_hist.added and times_hist.added[0] > 0 else \
@@ -246,7 +245,7 @@ class Episode_watched(Base):
             str(self.episode_number),
         )
     def cr_watched_show_episodes(self):
-        self.ck_watched_show_episodes(
+        key = self.ck_watched_show_episodes(
             user_id=self.user_id,
             show_id=self.show_id,
         )
@@ -261,14 +260,14 @@ class Episode_watched(Base):
             user_id,
         )
     def cs_watched_shows(self):
-        key = self.ck_watched_shows(self.user_id),
+        key = self.ck_watched_shows(self.user_id)
         self.session.pipe.zadd(
             key, 
             self.updated_at.timestamp(), 
             str(self.show_id),
         )
     def cr_watched_shows(self):
-        self.ck_watched_shows(
+        key = self.ck_watched_shows(
             user_id=self.user_id,
         )
         self.session.pipe.zrem(
@@ -440,7 +439,7 @@ class Episode_watched(Base):
                 }
             ]
         '''
-        name = cls.cache_name_shows_watched(user_id=user_id)
+        name = cls.ck_watched_shows(user_id=user_id)
         start = (page-1)*per_page
         show_ids = database.redis.zrevrange(
             name,   
