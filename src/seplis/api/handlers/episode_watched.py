@@ -20,7 +20,7 @@ class Handler(base.Handler):
     @gen.coroutine
     def put(self, show_id, episode_number):
         w = yield self._put(show_id, episode_number)
-        self.write_object(models.Episode_watched.get(
+        self.write_object(models.Episode_watched.cache_get(
             user_id=self.current_user.id,
             show_id=show_id,
             episode_number=episode_number,
@@ -62,7 +62,7 @@ class Handler(base.Handler):
 
     @authenticated(constants.LEVEL_USER)
     def get(self, show_id, episode_number):
-        w = models.Episode_watched.get(
+        w = models.Episode_watched.cache_get(
             user_id=self.current_user.id,
             show_id=show_id,
             episode_number=episode_number,

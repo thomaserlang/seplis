@@ -37,7 +37,7 @@ class Handler(base.Handler):
 
     @authenticated(constants.LEVEL_PROGRESS)
     def get(self, show_id, episode_number):
-        w = models.Episode_watched.get(
+        w = models.Episode_watched.cache_get(
             user_id=self.current_user.id,
             show_id=show_id,
             episode_number=episode_number,

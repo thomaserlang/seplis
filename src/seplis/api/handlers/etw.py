@@ -25,7 +25,7 @@ class Handler(base.Handler):
     @gen.coroutine
     def get_episodes(self, user_id):
         show_ids = models.Show_fan.get_all(user_id)
-        shows_watched = models.Episode_watched.show_get(
+        shows_watched = models.Episode_watched.cache_get_show(
             user_id=user_id,
             show_id=show_ids,
         )

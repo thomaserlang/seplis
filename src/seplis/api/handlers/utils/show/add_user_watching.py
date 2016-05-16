@@ -24,7 +24,7 @@ async def append_user_watching(user_id, shows):
     if not shows:
         return
     show_ids = [show['id'] for show in shows]
-    watching = models.Episode_watched.show_get(
+    watching = models.Episode_watched.cache_get_show(
         user_id=user_id, 
         show_id=show_ids
     )

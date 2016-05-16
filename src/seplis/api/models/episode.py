@@ -156,7 +156,12 @@ class Episode(Base):
         return episodes
 
 class Episode_watched(Base):
-    '''Episode watched by the user.'''
+    """Episode watched by the user.
+
+    Cached data:
+
+        * data
+    """
     __tablename__ = 'episodes_watched'
 
     show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
@@ -346,7 +351,7 @@ class Episode_watched(Base):
         )
 
     @classmethod
-    def get(cls, user_id, show_id, episode_number):
+    def cache_get(cls, user_id, show_id, episode_number):
         '''Retrieves watched status for episodes specified by
         the `show_id` and one or more `episode_number`
         from the cache.
@@ -382,7 +387,7 @@ class Episode_watched(Base):
         return watched if isinstance(episode_number, list) else watched[0]
 
     @classmethod
-    def show_get(cls, user_id, show_id):
+    def cache_get_show(cls, user_id, show_id):
         '''Retrieves the user's watch status from the cache for each 
         show id in `show_id`.
 
@@ -447,7 +452,7 @@ class Episode_watched(Base):
             end=(start+per_page)-1,
         )
         w = []
-        for show_id, watching in zip(show_ids, cls.show_get(user_id, show_ids)):
+        for show_id, watching in zip(show_ids, cls.cache_get_show(user_id, show_ids)):
             w.append({
                 'id': int(show_id),
                 'user_watching': watching,
