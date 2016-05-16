@@ -33,7 +33,7 @@ class Test_etw(Testbase):
 
         # Become a fan of the show
         response = self.put('/1/shows/{}/fans/{}'.format(show['id'], self.current_user.id))
-        self.assertEqual(response.code, 200, response.body)
+        self.assertEqual(response.code, 204, response.body)
 
         # Test that the show and the first episode shows up
         response = self.get('/1/users/{}/etw'.format(self.current_user.id))
