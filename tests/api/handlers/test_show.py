@@ -533,7 +533,7 @@ class test_show(Testbase):
         # We run it twice to check for duplication bug.
         for i in [1,2]:
             response = self.put('/1/shows/{}/fans/{}'.format(show_id, self.current_user.id))
-            self.assertEqual(response.code, 200, response.body)
+            self.assertEqual(response.code, 204, response.body)
             response = self.get('/1/shows/{}?append=is_fan'.format(show_id))
             self.assertEqual(response.code, 200)
             show = utils.json_loads(response.body)
@@ -602,7 +602,7 @@ class test_show(Testbase):
                 show_id,
                 self.current_user.id
             ))
-            self.assertEqual(response.code, 200, response.body)        
+            self.assertEqual(response.code, 204, response.body)        
             response = self.get('/1/shows/{}'.format(show_id))
             self.assertEqual(response.code, 200)
             show = utils.json_loads(response.body)
