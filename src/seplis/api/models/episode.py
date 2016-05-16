@@ -163,7 +163,7 @@ class Episode_watched(Base):
     Episode watched data: 
         Use `cache_get(user_id, show_id, episode_number)`
 
-    Show latest watched:
+    Show episode watching:
         Use: `cache_get_show(user_id, show_id)`
 
     Watched shows:
