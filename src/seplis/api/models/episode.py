@@ -160,7 +160,22 @@ class Episode_watched(Base):
 
     Cached data:
 
-        * data
+    Episode watched data: 
+        Use `cache_get(user_id, show_id, episode_number)`
+
+    Show latest watched:
+        Use: `cache_get_show(user_id, show_id)`
+
+    Watched shows:
+        A sorted Redis set with the timestamp of the latest
+        episode as the score value.
+        Use `ck_watched_shows(user_id)` to generate the key.
+
+    Watched show episodes:
+        A sorted Redis set with the timestamp of when
+        the episode was watched as the score value.
+        Use `ck_watched_show_episodes(user_id, show_id)` to generate the key.
+
     """
     __tablename__ = 'episodes_watched'
 
