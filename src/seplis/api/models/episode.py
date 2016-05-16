@@ -167,97 +167,129 @@ class Episode_watched(Base):
     updated_at = sa.Column(sa.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed = sa.Column(utils.YesNoBoolean(), default=False)
 
-    _cache_name = 'users:{}:watched:shows:{}:numbers:{}'
-    _cache_name_episodes = 'users:{}:watched:episodes'
+    def after_upsert(self):
+        self.cache()
 
-    _cache_name_show = 'users:{}:watched:shows:{}'
-    _cache_name_show_episodes_watched = 'users:{}:watched:shows:{}:numbers'
-    _cache_name_shows_watched = 'users:{}:watched:shows'
+    def before_upsert(self):
+        self.updated_at = datetime.utcnow()
+        episode = self
+        times_hist = get_history(self, 'times')
+        self.completed = True \
+            if times_hist.added and times_hist.added[0] > 0 else \
+                False
 
+    def after_delete(self):
+        self.cr_data()
+        self.cr_latest_data()
+        self.cr_watched_shows()
+        self.cr_watched_show_episodes()
+
+        self.inc_watched_stats(-self.times)
+
+    @staticmethod
+    def ck_data(user_id, show_id, episode_number):
+        return 'users:{}:watched:shows:{}:episodes:{}'.format(
+            user_id,
+            show_id,
+            episode_number,
+        )
+    def cs_data(self):
+        """Saves the episode's watched data to the cache as a hset."""
+        key = self.ck_data(self.user_id, self.show_id, self.episode_number)
+        hset = self.session.pipe.hset
+        hset(key, 'times', self.times)
+        hset(key, 'position', self.position)
+        hset(key, 'updated_at', utils.isoformat(self.updated_at))    
+        hset(key, 'completed', self.completed)
+    def cr_data(self):
+        self.session.pipe.delete(
+            self.ck_data(self.user_id, self.show_id, self.episode_number)
+        )
+
+    @staticmethod
+    def ck_latest_data(user_id, show_id):
+        """Cache key for the latest episode watched data
+        for a show.
+        See `cs_latest_data` for how data is stored.
+        """
+        return 'users:{}:watched:shows:{}'.format(
+            user_id,
+            show_id,
+        )
+    def cs_latest_data(self):
+        key = self.ck_latest_data(self.user_id, self.show_id)
+        hset = self.session.pipe.hset
+        hset(key, 'number', self.episode_number)
+        hset(key, 'times', self.times)
+        hset(key, 'position', self.position)
+        hset(key, 'updated_at', utils.isoformat(self.updated_at))    
+        hset(key, 'completed', self.completed)
+    def cr_latest_data(self):
+        self.session.pipe.delete(
+            self.ck_latest_data(self.user_id, self.show_id)
+        )
+
+    @staticmethod
+    def ck_watched_show_episodes(user_id, show_id):
+        return 'users:{}:watched:shows:{}:episodes'.format(
+            user_id,
+            show_id,
+        )
+    def cs_watched_show_episodes(self):
+        key = self.ck_watched_show_episodes(
+            user_id=self.user_id,
+            show_id=self.show_id,
+        )
+        self.session.pipe.zadd(
+            key, 
+            self.updated_at.timestamp(), 
+            str(self.episode_number),
+        )
+    def cr_watched_show_episodes(self):
+        self.ck_watched_show_episodes(
+            user_id=self.user_id,
+            show_id=self.show_id,
+        )
+        self.session.pipe.zrem(
+            key,
+            str(self.episode_number)
+        )
+
+    @staticmethod
+    def ck_watched_shows(user_id):
+        return 'users:{}:watched:shows'.format(
+            user_id,
+        )
+    def cs_watched_shows(self):
+        key = self.ck_watched_shows(self.user_id),
+        self.session.pipe.zadd(
+            key, 
+            self.updated_at.timestamp(), 
+            str(self.show_id),
+        )
+    def cr_watched_shows(self):
+        self.ck_watched_shows(
+            user_id=self.user_id,
+        )
+        self.session.pipe.zrem(
+            key,
+            str(self.show_id)
+        )
 
     def cache(self):
-        '''Sends the user's episode watched info to redis.
+        """Sends the user's episode watched info to redis.
         This method is automatically called after update or insert.
-        ''' 
-        names = (
-            self.cache_name,
-            self.cache_name_show(
-                user_id=self.user_id,
-                show_id=self.show_id,
-            ),
-        )
-        for name in names:
-            self.session.pipe.hset(name, 'number', self.episode_number)
-            self.session.pipe.hset(name, 'times', self.times)
-            self.session.pipe.hset(name, 'position', self.position)
-            self.session.pipe.hset(name, 'updated_at', utils.isoformat(self.updated_at))    
-            self.session.pipe.hset(name, 'completed', self.completed)
+        """ 
+        self.cs_data()
+        self.cs_latest_data()
+        self.cs_watched_show_episodes()
+        self.cs_watched_shows()
 
         t = get_history(self, 'times')
         if t.added or t.deleted:
             a = t.added[0] if t.added else 0
             d = t.deleted[0] if t.deleted else 0
             self.inc_watched_stats(a-d)
-
-        self.session.pipe.zadd(
-            self.cache_name_episodes, 
-            self.updated_at.timestamp(), 
-            '{}-{}'.format(
-                self.show_id,
-                self.episode_number,
-            )
-        )
-        self.session.pipe.zadd(
-            self.cache_name_show_episodes_watched(
-                user_id=self.user_id,
-                show_id=self.show_id,
-            ), 
-            self.updated_at.timestamp(), 
-            str(self.episode_number),
-        )  
-        self.session.pipe.zadd(
-            self.cache_name_shows_watched(
-                user_id=self.user_id,
-            ), 
-            self.updated_at.timestamp(), 
-            str(self.show_id),
-        )
-
-    @property
-    def cache_name(self):
-        '''
-        :returns: str
-        '''
-        return self._cache_name.format(
-            self.user_id, 
-            self.show_id, 
-            self.episode_number,
-        )
-
-    @property
-    def cache_name_episodes(self):
-        return self._cache_name_episodes.format(
-            self.user_id,
-        )
-
-    @classmethod
-    def cache_name_show_episodes_watched(self, user_id, show_id):
-        return self._cache_name_show_episodes_watched.format(
-            user_id,
-            show_id,
-        )
-    @classmethod
-    def cache_name_shows_watched(self, user_id):
-        return self._cache_name_shows_watched.format(
-            user_id,
-        )
-    @classmethod
-    def cache_name_show(self, user_id, show_id):
-        return self._cache_name_show.format(
-            user_id,
-            show_id,
-        )
-
     
     def inc_watched_stats(self, times):
         '''Increments the users total episode watched count 
@@ -314,7 +346,6 @@ class Episode_watched(Base):
             value=result['minutes'] if result['minutes'] else 0,
         )
 
-
     @classmethod
     def get(cls, user_id, show_id, episode_number):
         '''Retrieves watched status for episodes specified by
@@ -336,7 +367,7 @@ class Episode_watched(Base):
         numbers = episode_number if isinstance(episode_number, list) else \
             [episode_number]
         for n in numbers:            
-            pipe.hgetall(cls._cache_name.format(user_id, show_id, n))
+            pipe.hgetall(cls.ck_data(user_id, show_id, n))
         result = pipe.execute()
         watched = []
         for w in result:
@@ -350,46 +381,6 @@ class Episode_watched(Base):
                 'completed': w['completed'] == 'True',
             })
         return watched if isinstance(episode_number, list) else watched[0]
-
-    def after_upsert(self):
-        self.cache()
-
-    def before_upsert(self):
-        self.updated_at = datetime.utcnow()
-        episode = self
-        times_hist = get_history(self, 'times')
-        self.completed = True \
-            if times_hist.added and times_hist.added[0] > 0 else \
-                False
-
-    def after_delete(self):
-        names = (
-            self.cache_name,
-            self.cache_name_show(
-                user_id=self.user_id,
-                show_id=self.show_id,
-            ),
-        )
-        for name in names:
-            self.session.pipe.delete(name)
-        self.inc_watched_stats(-self.times)
-        self.session.pipe.zrem(
-            self.cache_name_episodes, 
-            '{}-{}'.format(
-                self.show_id,
-                self.episode_number,
-            )
-        )
-        self.session.pipe.zrem(
-            self.cache_name_show_episodes_watched, 
-            str(self.episode_number)
-        )        
-        self.session.pipe.zrem(
-            self.cache_name_shows_watched(
-                user_id=self.user_id,
-            ),
-            str(self.show_id)
-        )
 
     @classmethod
     def show_get(cls, user_id, show_id):
@@ -410,7 +401,7 @@ class Episode_watched(Base):
         pipe = database.redis.pipeline() 
         show_ids = show_id if isinstance(show_id, list) else [show_id]
         for id_ in show_ids:            
-            pipe.hgetall(cls.cache_name_show(
+            pipe.hgetall(cls.ck_latest_data(
                 user_id=user_id, 
                 show_id=id_,
             ))
