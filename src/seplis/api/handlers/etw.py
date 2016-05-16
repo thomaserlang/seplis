@@ -35,8 +35,8 @@ class Handler(base.Handler):
             if not watched:
                 return 0
             if not watched['completed']:
-                return watched['number'] - 1
-            return watched['number']
+                return watched['episode_number'] - 1
+            return watched['episode_number']
         episodes = yield self.es('/episodes/episode/_search',
             body={
                 'filter': {

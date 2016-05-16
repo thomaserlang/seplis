@@ -218,7 +218,7 @@ class Episode_watched(Base):
     def cs_latest_data(self):
         key = self.ck_latest_data(self.user_id, self.show_id)
         hset = self.session.pipe.hset
-        hset(key, 'number', self.episode_number)
+        hset(key, 'episode_number', self.episode_number)
         hset(key, 'times', self.times)
         hset(key, 'position', self.position)
         hset(key, 'updated_at', utils.isoformat(self.updated_at))    
@@ -391,7 +391,7 @@ class Episode_watched(Base):
         :returns: dict or list of dict
             {
                 "times": 1,
-                "number": 1,
+                "episode_number": 1,
                 "position": 37,
                 "updated_at": "2015-02-21T21:11:00Z",
                 "completed": True
@@ -411,7 +411,7 @@ class Episode_watched(Base):
                 watching.append(None)
                 continue
             watching.append({
-                'number': int(w['number']),
+                'episode_number': int(w['episode_number']),
                 'position': int(w['position']),
                 'updated_at': w['updated_at'],
                 'completed': w['completed'] == 'True',
@@ -430,8 +430,8 @@ class Episode_watched(Base):
                 {
                     "id": 1,
                     "user_watching": {
+                        "episode_number": 1,
                         "times": 1,
-                        "number": 1,
                         "position": 37,
                         "updated_at": "2015-02-21T21:11:00Z",
                         "completed": True

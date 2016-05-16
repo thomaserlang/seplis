@@ -44,9 +44,9 @@ class Handler(base.Handler):
         number = 1
         if watching:
             if watching['completed']:
-                number = watching['number'] + 1
+                number = watching['episode_number'] + 1
             else:
-                number = watching['number']
+                number = watching['episode_number']
         episode = await models.Episode.es_get(show_id, number)
         if not episode:
             return

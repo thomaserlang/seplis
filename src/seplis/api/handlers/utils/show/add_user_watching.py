@@ -28,7 +28,7 @@ async def append_user_watching(user_id, shows):
         user_id=user_id, 
         show_id=show_ids
     )
-    episode_ids = ['{}-{}'.format(show_id, w['number'] if w else 0)
+    episode_ids = ['{}-{}'.format(show_id, w['episode_number'] if w else 0)
         for show_id, w in zip(show_ids, watching)]
     result = await database.es_get('/episodes/episode/_mget', body={
         'ids': episode_ids

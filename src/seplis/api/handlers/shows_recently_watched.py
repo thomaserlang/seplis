@@ -25,7 +25,7 @@ class Handler(base.Handler):
                 show_ids.append(w['id'])
                 episode_ids.append('{}-{}'.format(
                     w['id'],
-                    w['user_watching']['number'] if w['user_watching'] else 0
+                    w['user_watching']['episode_number'] if w['user_watching'] else 0
                 ))
             show_docs = yield self.es('/shows/show/_mget', body={
                 'ids': show_ids,

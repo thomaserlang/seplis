@@ -38,7 +38,7 @@ class test_shows_recently_watched(Testbase):
         self.assertEqual(len(shows), 3, shows)
         for show, show_id in zip(shows, reversed(show_ids)):
             self.assertEqual(show['id'], show_id)
-            self.assertEqual(show['user_watching']['number'], show_id)
+            self.assertEqual(show['user_watching']['episode_number'], show_id)
 
         # test pagination
         for i, show_id in enumerate(reversed(show_ids)):
@@ -52,7 +52,7 @@ class test_shows_recently_watched(Testbase):
             shows = utils.json_loads(response.body)
             self.assertEqual(len(shows), 1, shows)
             self.assertEqual(shows[0]['id'], show_id)
-            self.assertEqual(shows[0]['user_watching']['number'], show_id)
+            self.assertEqual(shows[0]['user_watching']['episode_number'], show_id)
             self.assertTrue(isinstance(shows[0]['user_watching']['episode'], dict))
             self.assertEqual(shows[0]['user_watching']['episode']['number'], show_id)
             self.assertEqual(shows[0]['user_watching']['episode']['air_date'], air_date)
