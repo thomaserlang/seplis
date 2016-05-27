@@ -14,6 +14,7 @@ module.exports = {
             'bootstrap/dist/js/umd/dropdown',
             'react',
             'react-dom',
+            'react-router',
             'moment',
         ]
     },  
