@@ -56,6 +56,9 @@ class NextToWatchList extends React.Component {
     }
 
     render() {
+        if (this.state.episodes.length == 0) {
+            return <p className="text-muted">No episodes to watch</p>;
+        }
         return (
             <span>
             {this.state.episodes.map((item, key) => (

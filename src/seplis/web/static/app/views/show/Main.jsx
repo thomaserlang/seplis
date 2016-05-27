@@ -1,0 +1,63 @@
+import React from 'react';
+
+import NextToWatchList from 'components/shows/episodes/NextToWatchList';
+import LatestEpisodesSideBar from 'components/shows/episodes/LatestEpisodesSideBar';
+import EpisodeLastWatched from 'components/shows/episodes/EpisodeLastWatched'
+
+const propTypes = {
+    show: React.PropTypes.object.isRequired,
+}
+
+class Main extends React.Component {
+
+    renderAirDates() {
+        if (this.props.show.status > 1) {
+            return;
+        }
+        return (
+            <div className="col-xs-12 col-lg-4 col-margin">
+                <h4 className="header">
+                    Air dates
+                </h4>
+                <LatestEpisodesSideBar
+                    showId={parseInt(this.props.show.id)}
+                />
+            </div>
+        );
+    }
+
+    renderNextToWatch() {
+        return (
+            <div className="col-xs-12 col-lg-8 col-margin">
+                <div className="row">
+                    <div className="col-xs-12 col-margin">
+                    <h4 className="header">
+                        To watch
+                    </h4>
+                    <NextToWatchList
+                        showId={parseInt(this.props.show.id)}
+                        numberOfEpisodes={2}
+                    />                
+                    </div>
+                    <div className="col-xs-12">
+                    <h4 className="header default-margin-top">
+                        Previous watched
+                    </h4>
+                    <EpisodeLastWatched showId={parseInt(this.props.show.id)} />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    render() {
+        return (
+            <div className="row">
+                {this.renderNextToWatch()}
+                {this.renderAirDates()}
+            </div>
+        )
+    }
+}
+
+export default Main;

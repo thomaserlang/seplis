@@ -4,8 +4,6 @@ import {isAuthed} from 'utils';
 
 import Loader from 'components/Loader';
 import FanButton from 'components/shows/FanButton';
-import NextToWatchList from 'components/shows/episodes/NextToWatchList';
-import LatestEpisodesSideBar from 'components/shows/episodes/LatestEpisodesSideBar';
 import ShowNav from 'components/shows/ShowNav';
 
 const propTypes = {
@@ -25,27 +23,11 @@ class Show extends React.Component {
         if (isAuthed()) {
             query.append = 'is_fan';
         }
-        request(`/1/shows/${this.props.params.showId}`, {
+        request(`/1/shows/${parseInt(this.props.params.showId)}`, {
             query: query,
         }).success(show => {
             this.setState({show: show});
         });
-    }
-
-    renderAirDates() {
-        if (this.state.show.status > 1) {
-            return;
-        }
-        return (
-            <div className="col-xs-12 col-lg-3 col-margin">
-                <h4 className="header">
-                    Air dates
-                </h4>
-                <LatestEpisodesSideBar
-                    showId={this.props.params.showId}
-                />
-            </div>
-        );
     }
 
     renderShow() {
@@ -78,19 +60,10 @@ class Show extends React.Component {
                     </div>
                     <div className="col-xs-4 hidden-sm-up" />
 
-                    <div className="col-xs-8">
-                        <ShowNav showId={parseInt(this.props.params.showId)} />
+                    <div className="col-xs-12 col-sm-8">
+                        <ShowNav showId={parseInt(this.state.show.id)} />
+                        {React.cloneElement(this.props.children, {show: show})}
                     </div>
-
-                    <div className="col-xs-12 col-sm-8 col-lg-5 col-margin">
-                        <h4 className="header">
-                            Next to watch
-                        </h4>
-                        <NextToWatchList
-                            showId={this.props.params.showId}
-                        />
-                    </div>
-                    {this.renderAirDates()}
                 </div>
             </div>
         )

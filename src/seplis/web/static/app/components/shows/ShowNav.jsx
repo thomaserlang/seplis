@@ -9,7 +9,16 @@ class ShowNav extends React.Component {
 
     render() {
         return (
-            <ul className="nav nav-tabs">
+            <ul className="nav nav-tabs col-margin">
+                <li className="nav-item">
+                    <Link 
+                        className="nav-link"                        
+                        to={`/show/${this.props.showId}/main`}
+                        activeClassName="active"
+                    >
+                        Main
+                    </Link>
+                </li>
                 <li className="nav-item">
                     <Link 
                         className="nav-link" 
