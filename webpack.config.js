@@ -7,6 +7,7 @@ var staticPath = path.resolve('./src/seplis/web/static');
 var nodeModulesPath = path.resolve('./node_modules');
 
 module.exports = {
+    devtool: "source-map",
     entry: {
         app: staticPath+'/app',
         vendor: [
@@ -36,7 +37,7 @@ module.exports = {
         new webpack.optimize.CommonsChunkPlugin({
             names: ['vendor']
         }),
-        new ExtractTextPlugin("[name].css"),
+        new ExtractTextPlugin("app.css"),
     ],
     module: {
         loaders: [
@@ -51,7 +52,7 @@ module.exports = {
             },  
             {  
                 test:   /\.scss/,
-                loader: ExtractTextPlugin.extract('style', 'css!postcss!sass?includePaths[]='+nodeModulesPath),
+                loader: ExtractTextPlugin.extract('style', 'css?sourceMap!postcss!sass?includePaths[]='+nodeModulesPath),
             },
             { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
             { test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "file-loader" }
@@ -71,5 +72,4 @@ module.exports = {
             ]
         })];
     },
-    devtool: 'source-map',
 }

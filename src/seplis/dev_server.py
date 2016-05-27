@@ -15,7 +15,7 @@ def main():
         ('web', ['python', 'runner.py', 'web'], src_path),
         ('play_server', ['python', 'runner.py', 'play_server'], src_path),
         ('worker', ['python', 'runner.py', 'worker'], src_path),
-        ('webpack', [node_bin+'/webpack', '-w'], base_path),
+        ('webpack', [node_bin+'/webpack', '-d', '-w'], base_path),
         ('webpack-dev-server', [node_bin+'/webpack-dev-server', '--host', '0.0.0.0'], base_path),
     ]
 
