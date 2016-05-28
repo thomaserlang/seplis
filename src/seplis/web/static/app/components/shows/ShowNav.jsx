@@ -29,7 +29,13 @@ class ShowNav extends React.Component {
                     </Link>
                 </li>
                 <li className="nav-item">
-                    <a className="nav-link" href="seasons">Seasons</a>
+                    <Link 
+                        className="nav-link" 
+                        to={`/show/${this.props.showId}/seasons`}
+                        activeClassName="active"
+                    >
+                        Seasons
+                    </Link>
                 </li>
             </ul>
         );
