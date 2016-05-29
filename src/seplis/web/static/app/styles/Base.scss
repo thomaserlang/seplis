@@ -52,3 +52,8 @@ a.btn {
     padding-bottom: 9px;
 }
 
+.borderless, 
+.borderless td, 
+.borderless th {
+    border: none;
+}
