@@ -1,6 +1,6 @@
 import React from 'react';
 
-import NextToWatchList from 'components/shows/episodes/NextToWatchList';
+import NextToWatch from 'components/shows/episodes/NextToWatch';
 import LatestEpisodesSideBar from 'components/shows/episodes/LatestEpisodesSideBar';
 import EpisodeLastWatched from 'components/shows/episodes/EpisodeLastWatched'
 
@@ -9,6 +9,10 @@ const propTypes = {
 }
 
 class Main extends React.Component {
+
+    constructor(props) {
+        super(props);
+    } 
 
     renderAirDates() {
         if (this.props.show.status > 1) {
@@ -34,7 +38,7 @@ class Main extends React.Component {
                     <h4 className="header">
                         To watch
                     </h4>
-                    <NextToWatchList
+                    <NextToWatch
                         showId={parseInt(this.props.show.id)}
                         numberOfEpisodes={2}
                     />                

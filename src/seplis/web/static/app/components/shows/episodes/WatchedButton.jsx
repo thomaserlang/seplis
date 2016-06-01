@@ -42,6 +42,8 @@ class WatchedButton extends React.Component {
         this.setState({times: ++this.state.times});
         request(this.watchedApiEndpoint(), {
             method: 'PUT', 
+        }).success(() => {
+            this.triggerEventWatched();            
         }).error(() => {            
             this.setState({times: --this.state.times});
         });
@@ -53,6 +55,8 @@ class WatchedButton extends React.Component {
         request(this.watchedApiEndpoint(), {
             data: {times: -1},
             method: 'PUT', 
+        }).success(() => {
+            this.triggerEventWatched();            
         }).error(() => {            
             this.setState({times: ++this.state.times});
         });
@@ -61,6 +65,11 @@ class WatchedButton extends React.Component {
         if (this.state.times !== 0) 
             return;
         this.onWatchedIncr(e);
+    }
+
+    triggerEventWatched() {
+        let event = new Event('episode/watched-status-changed');
+        document.dispatchEvent(event);
     }
 
     renderDropdown() {
