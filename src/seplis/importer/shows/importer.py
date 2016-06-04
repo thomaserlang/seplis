@@ -13,7 +13,10 @@ client = Client(
     access_token=config['client']['access_token'],
 )
 
-class Importer_upload_image_exception(Exception):
+class Importer_exception(Exception):
+    pass
+
+class Importer_upload_image_exception(Importer_exception):
     pass
 
 def update_show_by_id(show_id):
@@ -264,8 +267,11 @@ def _upload_image(show_id, image):
         raise Exception('the image must contain a source URL')
     r = requests.get(image['source_url'], stream=True)
     if r.status_code != 200:
-        raise Exception(
-            'Could not retrieve the source image from "{}". Status code:'.format(
+        # Delete the image from the database if the image could not 
+        # be downloaded
+        client.delete('/shows/{}/images/{}'.format(show_id, image['id']))
+        raise Importer_exception(
+            'Could not retrieve the source image from "{}". Status code: {}'.format(
                 image['source_url'],
                 r.status_code,
             )
