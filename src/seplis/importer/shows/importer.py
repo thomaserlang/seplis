@@ -142,7 +142,7 @@ def update_show_info(show):
         show_id=show['externals'][show['importers']['info']],
     )
     if not info:
-        return
+        return show
     info = _show_info_changes(show, info)
     if info:
         logging.info('Updating show "{}" info'.format(show['id']))

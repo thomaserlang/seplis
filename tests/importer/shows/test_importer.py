@@ -94,7 +94,9 @@ class Test_update_show_info(TestCase):
             }
         }
         call_importer.return_value = {'title': 'Test show'}
-        update_show_info(show)
+        client.patch.return_value = {'title': 'Test show'}
+        info = update_show_info(show)
+        self.assertEqual(info, {'title': 'Test show'})
         call_importer.assert_called_with(
             external_name=show['importers']['info'],
             method='info',
@@ -105,6 +107,11 @@ class Test_update_show_info(TestCase):
             {'title': 'Test show'},
             timeout=120,
         )
+
+        # Check that show returns if the import does not exist
+        call_importer.return_value = None
+        info = update_show_info(show)
+        self.assertEqual(info, show)
 
 class Test_update_show_episodes(TestCase):
 
