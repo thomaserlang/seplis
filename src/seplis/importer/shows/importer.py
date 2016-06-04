@@ -13,7 +13,10 @@ client = Client(
     access_token=config['client']['access_token'],
 )
 
-class Importer_upload_image_exception(Exception):
+class Importer_exception(Exception):
+    pass
+
+class Importer_upload_image_exception(Importer_exception):
     pass
 
 def update_show_by_id(show_id):
@@ -142,7 +145,7 @@ def update_show_info(show):
         show_id=show['externals'][show['importers']['info']],
     )
     if not info:
-        return
+        return show
     info = _show_info_changes(show, info)
     if info:
         logging.info('Updating show "{}" info'.format(show['id']))
@@ -264,8 +267,11 @@ def _upload_image(show_id, image):
         raise Exception('the image must contain a source URL')
     r = requests.get(image['source_url'], stream=True)
     if r.status_code != 200:
-        raise Exception(
-            'Could not retrieve the source image from "{}". Status code:'.format(
+        # Delete the image from the database if the image could not 
+        # be downloaded
+        client.delete('/shows/{}/images/{}'.format(show_id, image['id']))
+        raise Importer_exception(
+            'Could not retrieve the source image from "{}". Status code: {}'.format(
                 image['source_url'],
                 r.status_code,
             )
@@ -334,7 +340,14 @@ def call_importer(external_name, method, *args, **kwargs):
     """Calls a method in a registered importer"""
     im = importers.get(external_name)
     if not im:
-        logger.warn('Unknown importer with id "{}"'.format(external_name))
+        logger.warn(
+            'Show "{}" has an unknown importer at {} ' 
+            'with external name "{}"'.format(
+                kwargs.get('show_id'),
+                method,
+                external_name,
+            )
+        )
         return
     m = getattr(im, method, None)
     if not m:

@@ -2,13 +2,14 @@
 import responses
 import nose
 import mock
+import requests.exceptions
 from unittest import TestCase
 from datetime import date
 from seplis.importer.shows.importer import client, importers, update_show, \
     update_show_info, update_show_images, update_show_episodes, \
     _save_image, _upload_image, _show_info_changes, _show_episode_changes, \
     _importers_with_support, _cleanup_episodes, _importer_incremental, \
-    update_shows_incremental
+    update_shows_incremental, Importer_exception, Importer_upload_image_exception
 from seplis.importer.shows.base import Show_importer_base
 
 class Test_update_shows_incremental(TestCase):
@@ -94,7 +95,9 @@ class Test_update_show_info(TestCase):
             }
         }
         call_importer.return_value = {'title': 'Test show'}
-        update_show_info(show)
+        client.patch.return_value = {'title': 'Test show'}
+        info = update_show_info(show)
+        self.assertEqual(info, {'title': 'Test show'})
         call_importer.assert_called_with(
             external_name=show['importers']['info'],
             method='info',
@@ -105,6 +108,11 @@ class Test_update_show_info(TestCase):
             {'title': 'Test show'},
             timeout=120,
         )
+
+        # Check that show returns if the import does not exist
+        call_importer.return_value = None
+        info = update_show_info(show)
+        self.assertEqual(info, show)
 
 class Test_update_show_episodes(TestCase):
 
@@ -252,8 +260,10 @@ class Test__upload_image(TestCase):
             status=404,
             stream=True,
         )
-        with self.assertRaises(Exception):
-            _upload_image(1, image)
+        with mock.patch('seplis.importer.shows.importer.client') as c:
+            with self.assertRaises(Importer_exception):
+                _upload_image(1, image)
+            self.assertTrue(c.delete.called)
 
         # Test upload fail
         responses.reset()
@@ -264,7 +274,7 @@ class Test__upload_image(TestCase):
         )
         upload_url = client.url+'/shows/1/images/1/data'
         responses.add(responses.PUT, upload_url, status=500)
-        with self.assertRaises(Exception):
+        with self.assertRaises(Importer_upload_image_exception):
             _upload_image(1, image)
 
         # Test successfully

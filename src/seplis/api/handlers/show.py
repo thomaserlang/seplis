@@ -247,12 +247,10 @@ class Handler(base.Handler):
                     {'match': {'title': {
                         'query': title, 
                         'operator': 'and',
-                        'fuzziness': 1,
                     }}}, 
                     {'match': {'alternative_titles': {
                         'query': title, 
                         'operator': 'and',
-                        'fuzziness': 1,
                     }}},
                 ],
             }
