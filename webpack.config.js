@@ -18,7 +18,7 @@ module.exports = {
             'react-router',
             'moment',
         ]
-    },  
+    },
     resolve: {
         extensions: ['', '.js', '.jsx', '.scss'],
         
@@ -29,7 +29,7 @@ module.exports = {
     output: {
         path: staticPath+'/dist',
         filename: '[name].js',
-        sourceMapFilename: '[name].js.map',
+        sourceMapFilename: '[file].map',
         libraryTarget: 'var',
         library: 'exports',
     },
