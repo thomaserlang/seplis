@@ -22,6 +22,11 @@ class NextToWatch extends React.Component {
 
     get() {
         if (!isAuthed()) {
+            request(
+                `/1/shows/${this.props.showId}/episodes/1`
+            ).success(episode => {
+                this.setState({episode: episode});
+            });
             return;
         }
 
