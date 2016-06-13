@@ -6,6 +6,13 @@ import {request} from 'api';
 import 'bootstrap/dist/js/umd/dropdown';
 import './WatchedButton.scss';
 
+export const episodeWatchedStatus = (method) => {
+    return {
+        type: 'EPISODE_WATCHED_STATUS',
+        method: method,
+    }
+};
+
 const propTypes = {
     showId: React.PropTypes.number.isRequired,
     episodeNumber: React.PropTypes.number.isRequired,
@@ -43,7 +50,7 @@ class WatchedButton extends React.Component {
         request(this.watchedApiEndpoint(), {
             method: 'PUT', 
         }).success(() => {
-            this.triggerEventWatched();            
+            dispatch(episodeWatcheStatus('incr'));
         }).error(() => {            
             this.setState({times: --this.state.times});
         });
@@ -55,8 +62,8 @@ class WatchedButton extends React.Component {
         request(this.watchedApiEndpoint(), {
             data: {times: -1},
             method: 'PUT', 
-        }).success(() => {
-            this.triggerEventWatched();            
+        }).success(() => {            
+            dispatch(episodeWatcheStatus('decr'));          
         }).error(() => {            
             this.setState({times: ++this.state.times});
         });
@@ -65,11 +72,6 @@ class WatchedButton extends React.Component {
         if (this.state.times !== 0) 
             return;
         this.onWatchedIncr(e);
-    }
-
-    triggerEventWatched() {
-        let event = new Event('episode/watched-status-changed');
-        document.dispatchEvent(event);
     }
 
     renderDropdown() {

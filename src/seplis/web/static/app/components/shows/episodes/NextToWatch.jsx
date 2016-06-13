@@ -14,9 +14,7 @@ class NextToWatch extends React.Component {
         this.state = {
             episode: null,
         }
-        document.addEventListener('episode/watched-status-changed', () => {
-            this.get();
-        });
+        document.addEventListener('episode/watched-status-changed', this.get);
         this.get();
     }
 
