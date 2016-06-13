@@ -242,17 +242,11 @@ class Handler(base.Handler):
     def build_query_title(self, title):
         """Searches after a specific title in `title` or `alternative_titles`."""
         return {
-            'bool': {
-                'should': [
-                    {'match': {'title': {
-                        'query': title, 
-                        'operator': 'and',
-                    }}}, 
-                    {'match': {'alternative_titles': {
-                        'query': title, 
-                        'operator': 'and',
-                    }}},
-                ],
+            'multi_match': {
+                'query': title,
+                'fields': ['title', 'alternative_titles'],
+                'operator': 'and',
+                'type': 'phrase',
             }
         }
 
@@ -261,17 +255,11 @@ class Handler(base.Handler):
         parts of the word in the `title` or `alternative_titles`.
         """
         return {
-            'bool': {
-                'should': [
-                    {'match': {'title.suggest': {
-                        'query': title, 
-                        'operator': 'and',
-                    }}}, 
-                    {'match': {'alternative_titles.suggest': {
-                        'query': title, 
-                        'operator': 'and',
-                    }}},
-                ],
+            'multi_match': {
+                'query': title,
+                'fields': ['title.suggest', 'alternative_titles.suggest'],
+                'operator': 'and',
+                'type': 'phrase',
             }
         }
 
