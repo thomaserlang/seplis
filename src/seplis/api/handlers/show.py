@@ -255,11 +255,17 @@ class Handler(base.Handler):
         parts of the word in the `title` or `alternative_titles`.
         """
         return {
-            'multi_match': {
-                'query': title,
-                'fields': ['title.suggest', 'alternative_titles.suggest'],
-                'operator': 'and',
-                'type': 'phrase',
+            'bool': {
+                'should': [
+                    {'match': {'title.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}}, 
+                    {'match': {'alternative_titles.suggest': {
+                        'query': title, 
+                        'operator': 'and',
+                    }}},
+                ],
             }
         }
 
