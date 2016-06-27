@@ -55,41 +55,41 @@ def SHOW_EPISODE_TYPE(msg=None):
     return f
 
 Description_schema = good.Schema({
-    'text': good.Any(None, str),
-    'title': good.Any(None, str),
-    'url':  good.Any(None, str),
+    'text': good.Maybe(str),
+    'title': good.Maybe(str),
+    'url':  good.Maybe(str),
 }, default_keys=good.Optional)
 _Episode_schema = {
     'title': good.Any(str, None),
     good.Required('number'): good.All(int, good.Range(min=1)),
-    good.Optional('season'): good.Any(int, None),
-    good.Optional('episode'): good.Any(int, None),
-    'air_date': good.Any(None, date_()),
-    'description': good.Any(None, Description_schema),
-    'runtime': good.Any(int, None),
+    good.Optional('season'): good.Maybe(int),
+    good.Optional('episode'): good.Maybe(int),
+    'air_date': good.Maybe(date_()),
+    'description': good.Maybe(Description_schema),
+    'runtime': good.Maybe(int),
 }
 Episode_schema = good.Schema(_Episode_schema, default_keys=good.Optional)
 External_schema = good.Schema({
-    good.All(good.Length(min=1, max=45)):good.Any(None, good.All(str, good.Length(min=1, max=45)))
+    good.All(good.Length(min=1, max=45)):good.Maybe(good.All(str, good.Length(min=1, max=45)))
 }, default_keys=good.Optional)
 Importer_schema = good.Schema(
-    {key: good.Any(None, good.All(str, good.Length(min=1, max=45))) \
+    {key: good.Maybe(good.All(str, good.Length(min=1, max=45))) \
         for key in constants.IMPORTER_TYPE_NAMES},
     default_keys=good.Optional,
 )
 _Show_schema = {
-    'title': str,
-    'description': good.Any(None, Description_schema),
-    'premiered': good.Any(None, date_()),
-    'ended': good.Any(None, date_()),
+    'title': good.Maybe(str),
+    'description': good.Maybe(Description_schema),
+    'premiered': good.Maybe(date_()),
+    'ended': good.Maybe(date_()),
     good.Optional('episodes'): good.Any([Episode_schema]),
-    'externals': good.Any(None, External_schema),
-    'importers': good.Any(None, Importer_schema),
+    'externals': good.Maybe(External_schema),
+    'importers': good.Maybe(Importer_schema),
     'status': int,
-    'runtime': good.Any(int, None),
+    'runtime': good.Maybe(int),
     'genres': [str],
     'alternative_titles': [str],
-    'poster_image_id': good.Any(int, None),
+    'poster_image_id': good.Maybe(int),
     'episode_type': good.All(int, SHOW_EPISODE_TYPE()),   
 }
 Show_schema = good.Schema(_Show_schema, default_keys=good.Optional)
