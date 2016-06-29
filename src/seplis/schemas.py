@@ -82,7 +82,7 @@ _Show_schema = {
     'description': good.Maybe(Description_schema),
     'premiered': good.Maybe(date_()),
     'ended': good.Maybe(date_()),
-    good.Optional('episodes'): good.Any([Episode_schema]),
+    good.Optional('episodes'): [Episode_schema],
     'externals': good.Maybe(External_schema),
     'importers': good.Maybe(Importer_schema),
     'status': int,
