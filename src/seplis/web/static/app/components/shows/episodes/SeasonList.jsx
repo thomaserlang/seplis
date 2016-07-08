@@ -24,10 +24,7 @@ class SeasonList extends React.Component {
             seasonNumber: this.props.seasonNumber,
         }
         this.onSeasonChange = this.onSeasonChange.bind(this);
-    }
-
-    componentDidMount() {
-        this.getEpisodes();        
+        this.getEpisodes();
     }
 
     getEpisodes() {
