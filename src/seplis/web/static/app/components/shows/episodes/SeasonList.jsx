@@ -4,7 +4,6 @@ import {request} from 'api';
 import {isAuthed} from 'utils';
 import $ from 'jquery';
 
-import './SeasonList.scss'
 import EpisodeListItem from './EpisodeListItem';
 import WatchedProgression from './WatchedProgression';
 import SelectSeason from './SelectSeason';
@@ -69,24 +68,38 @@ class SeasonList extends React.Component {
 
     render() {
         return (
-            <div className="show-season-list">
-                <SelectSeason                    
-                    seasons={this.props.seasons}
-                    selectedSeason={this.state.seasonNumber}
-                    onChange={this.onSeasonChange}
-                />
-                <WatchedProgression 
-                    showId={this.props.showId}
-                    seasons={this.props.seasons}
-                />
-                <div className="episodes">
-                    {this.state.episodes.map((item, index) => (
-                        <EpisodeListItem 
-                            key={item.number} 
+            <div className="row show-season-list">
+                <div className="col-xs-12 m-b-1">
+                    <div className="pull-xs-right">
+                        <WatchedProgression 
                             showId={this.props.showId}
-                            episode={item} 
+                            seasons={this.props.seasons}
                         />
-                    ))}
+                    </div>
+                </div>
+                <div className="col-xs-12">
+                    <SelectSeason                    
+                        seasons={this.props.seasons}
+                        selectedSeason={this.state.seasonNumber}
+                        onChange={this.onSeasonChange}
+                    />
+                </div>
+                <div className="col-xs-12 hidden-md-up m-b-1" />
+                <div className="col-xs-12">
+                    <div className="row">
+                        {this.state.episodes.map((item, index) => (
+                            <div                            
+                                key={item.number} 
+                                className="col-xs-12 col-md-6 col-lg-4"
+                            >
+                                <div className="hidden-sm-down m-b-1" />
+                                <EpisodeListItem 
+                                    showId={this.props.showId}
+                                    episode={item} 
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </div>
         );
