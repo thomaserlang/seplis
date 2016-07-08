@@ -2,16 +2,10 @@ import React from 'react';
 import ClassNames from 'classnames'; 
 import {getUserId} from 'utils';
 import {request} from 'api';
+import {trigger_episode_watched_status} from 'events';
 
 import 'bootstrap/dist/js/umd/dropdown';
 import './WatchedButton.scss';
-
-export const episodeWatchedStatus = (method) => {
-    return {
-        type: 'EPISODE_WATCHED_STATUS',
-        method: method,
-    }
-};
 
 const propTypes = {
     showId: React.PropTypes.number.isRequired,
@@ -50,7 +44,11 @@ class WatchedButton extends React.Component {
         request(this.watchedApiEndpoint(), {
             method: 'PUT', 
         }).success(() => {
-            // TODO: episode watched event
+            trigger_episode_watched_status(
+                'incr', 
+                this.props.showId, 
+                this.props.episodeNumber
+            );
         }).error(() => {            
             this.setState({times: --this.state.times});
         });
@@ -63,7 +61,11 @@ class WatchedButton extends React.Component {
             data: {times: -1},
             method: 'PUT', 
         }).success(() => {
-            // TODO: episode watched event
+            trigger_episode_watched_status(
+                'decr', 
+                this.props.showId, 
+                this.props.episodeNumber
+            );
         }).error(() => {            
             this.setState({times: ++this.state.times});
         });

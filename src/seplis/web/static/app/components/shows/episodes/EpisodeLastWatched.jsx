@@ -1,8 +1,8 @@
 import React from 'react';
 import {request} from 'api'
 import {isAuthed} from 'utils';
-
 import EpisodeListItem from './EpisodeListItem';
+import {EVENT_EPISODE_WATCHED_STATUS} from 'events';
 
 const propTypes = {
     'showId': React.PropTypes.number.isRequired,
@@ -16,12 +16,15 @@ class EpisodeLastWatched extends React.Component {
             episode: null,
         }
         this.get();
-        document.addEventListener('episode/watched-status-changed', () => {
-            this.get();
-        });
+        this.eventGet = this.get.bind(this);
+        document.addEventListener(EVENT_EPISODE_WATCHED_STATUS, this.eventGet);
     }
 
-    get() {
+    componentWillUnmount() {
+        document.removeEventListener(EVENT_EPISODE_WATCHED_STATUS, this.eventGet);
+    }
+
+    get(event={}) {
         if (!isAuthed())
             return;
         request(

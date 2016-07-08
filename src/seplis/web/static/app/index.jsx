@@ -2,7 +2,6 @@ import './styles/Base.scss';
 import './styles/FormBase.scss';
 
 import {apiClientSettings} from './api.jsx';
-import './store';
 
 export default{
     React: require('react'),
