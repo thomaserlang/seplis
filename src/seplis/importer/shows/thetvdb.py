@@ -179,7 +179,9 @@ class Thetvdb(Show_importer_base):
         number = 0
         for episode in episodes:
             try:
-                if (int(episode['SeasonNumber']) == 0):
+                if int(episode['SeasonNumber']) == 0:
+                    continue
+                if int(episode['EpisodeNumber']) == 0:
                     continue
                 number += 1
                 _episodes.append(self.parse_episode(episode, number))

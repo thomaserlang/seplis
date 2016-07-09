@@ -339,6 +339,41 @@ class test_show(Testbase):
         episodes = utils.json_loads(response.body)
         self.assertEqual(len(episodes), 1, response.body)
 
+
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 0',
+                    'season': 0,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 400, response.body)
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 0',
+                    'episode': 0,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 400, response.body)
+
+        # Allow season and episode None
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 0',
+                    'season': None,
+                    'episode': None,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 200, response.body)
+
     def test_search(self):
         show_id1 = self.new_show()
         response = self.patch('/1/shows/{}'.format(show_id1), {

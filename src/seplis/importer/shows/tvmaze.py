@@ -76,6 +76,10 @@ class Tvmaze(Show_importer_base):
         data = r.json()
         episodes = []
         for i, episode in enumerate(data):
+            if episode['season'] == 0:
+                continue
+            if episode['number'] == 0:
+                continue
             episodes.append({
                 'number': i+1,
                 'title': episode['name'],
