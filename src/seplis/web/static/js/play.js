@@ -185,16 +185,16 @@
         });
 
         var ChangeVolume = (function(volume) {
-            var remClases = "glyphicon glyphicon-volume-up glyphicon-volume-down glyphicon-volume-off";
+            var remClases = "fa fa-volume-up fa-volume-down fa-volume-off";
             var icon = $('.player-volume').find('i');
             icon.removeClass(remClases);
             if ((volume == 0) || (player.muted)) {
-                icon.addClass("glyphicon glyphicon-volume-off");
+                icon.addClass("fa fa-volume-off");
                 player.muted = true;
             } else if (volume <= 0.5) {
-                icon.addClass("glyphicon glyphicon-volume-down");
+                icon.addClass("fa fa-volume-down");
             } else {
-                icon.addClass("glyphicon glyphicon-volume-up");                    
+                icon.addClass("fa fa-volume-up");                    
             }
             $('.player-volume-slider').val(volume);
             localStorage.setItem('player_volume_default', volume);
