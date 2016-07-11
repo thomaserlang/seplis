@@ -2,6 +2,7 @@ from seplis.config import config
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
+import seplis.web.handlers.react
 import seplis.web.handlers.sign_in
 import seplis.web.handlers.settings
 import seplis.web.handlers.show
@@ -112,6 +113,12 @@ class Application(tornado.web.Application):
 
             URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/air-dates"}),
 
+
+            URLSpec(r'/show-new', seplis.web.handlers.react.Handler),
+            URLSpec(r'/show.*/([0-9]+)', seplis.web.handlers.react.Handler),
+            URLSpec(r'/show/([0-9]+)/[^/]+', seplis.web.handlers.react.Handler),
+            URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.react.Handler),
+
             URLSpec(r'/sign-in', seplis.web.handlers.sign_in.Handler),
             URLSpec(r'/api/sign-in', seplis.web.handlers.sign_in.API_handler),
             URLSpec(r'/sign-up', seplis.web.handlers.sign_in.Sign_up_handler),
@@ -120,13 +127,9 @@ class Application(tornado.web.Application):
             URLSpec(r'/sign-out', seplis.web.handlers.sign_in.Sign_out_handler),
 
             URLSpec(r'/show-index', seplis.web.handlers.show.Index_handler),
-            URLSpec(r'/show/([0-9]+)', seplis.web.handlers.show.Handler),
-            URLSpec(r'/show/([0-9]+)/[^/]+', seplis.web.handlers.show.Handler),
             URLSpec(r'/show/([0-9]+)/episode/([0-9]+)/play', seplis.web.handlers.play_episode.Handler),
 
-            URLSpec(r'/show-new', seplis.web.handlers.show.New_handler),
             URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
-            URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.show.Edit_handler),
             URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),
             URLSpec(r'/api/tvmaze-show-lookup', seplis.web.handlers.show.API_tvmaze_lookup),
             

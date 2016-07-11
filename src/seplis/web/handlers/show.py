@@ -9,14 +9,6 @@ from tornado.web import HTTPError, authenticated
 from tornado.httpclient import AsyncHTTPClient
 from tornado.httputil import url_concat
 
-class Handler(base.Handler_unauthenticated):
-
-    def get(self, show_id):
-        self.render(
-            'show/show.html',
-            show_id=show_id,
-        )
-
 class API_get_play_now(base.API_handler):
 
     @authenticated
@@ -177,17 +169,6 @@ class API_new_handler(base.API_handler):
             'alternative_titles': alternative_titles,
             'episode_type': episode_type,
         }
-
-class Edit_handler(Handler):
-
-    @authenticated
-    @gen.coroutine
-    def get(self, show_id):
-        show = yield self.get_show(show_id)
-        self.render('show/show_edit.html',
-            title='Edit show',
-            show=show,
-        )
 
 class API_edit_handler(API_new_handler):
 
