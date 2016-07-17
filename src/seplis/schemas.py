@@ -61,12 +61,12 @@ Description_schema = good.Schema({
 }, default_keys=good.Optional)
 _Episode_schema = {
     'title': good.Maybe(str),
-    good.Required('number'): good.All(int, good.Range(min=1)),
-    good.Optional('season'): good.Maybe(good.All(int, good.Range(min=1))),
-    good.Optional('episode'): good.Maybe(good.All(int, good.Range(min=1))),
+    good.Required('number'): good.All(good.Coerce(int), good.Range(min=1)),
+    good.Optional('season'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
+    good.Optional('episode'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
     'air_date': good.Any(None, date_()),
     'description': good.Any(None, Description_schema),
-    'runtime': good.Maybe(int),
+    'runtime': good.Maybe(good.Coerce(int)),
 }
 Episode_schema = good.Schema(_Episode_schema, default_keys=good.Optional)
 External_schema = good.Schema({
@@ -85,12 +85,12 @@ _Show_schema = {
     good.Optional('episodes'): good.Any([Episode_schema]),
     'externals': good.Any(None, External_schema),
     'importers': good.Any(None, Importer_schema),
-    'status': int,
-    'runtime': good.Maybe(int),
+    'status': good.Coerce(int),
+    'runtime': good.Maybe(good.Coerce(int)),
     'genres': [str],
     'alternative_titles': [str],
-    'poster_image_id': good.Maybe(int),
-    'episode_type': good.All(int, SHOW_EPISODE_TYPE()),   
+    'poster_image_id': good.Maybe(good.Coerce(int)),
+    'episode_type': good.All(good.Coerce(int), SHOW_EPISODE_TYPE()),   
 }
 Show_schema = good.Schema(_Show_schema, default_keys=good.Optional)
 
