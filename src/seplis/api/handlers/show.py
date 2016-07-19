@@ -1,5 +1,5 @@
 import logging
-from seplis import schemas
+from seplis import schemas, tasks
 from seplis.api import constants, exceptions, models
 from seplis.api.handlers import base, utils as handler_utils
 from seplis.api.decorators import authenticated, new_session, auto_session
@@ -34,6 +34,11 @@ class Handler(base.Handler):
             )
         show = yield self._post()
         self.set_status(201)
+        database.queue.enqueue(
+            tasks.update_show,
+            self.access_token,
+            int(show['id']),
+        )
         self.write_object(show) 
 
     @concurrent.run_on_executor
@@ -427,9 +432,8 @@ class Update_handler(base.Handler):
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     def post(self, show_id):
-        from seplis.tasks.update_show import update_show
         job = database.queue.enqueue(
-            update_show, 
+            tasks.update_show,
             self.access_token,
             int(show_id),
         )
