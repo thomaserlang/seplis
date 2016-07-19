@@ -26,7 +26,7 @@ class Not_found(API_exception):
         API_exception.__init__(self,
             status_code=404,
             code=500, 
-            message=message or 'the requested item was not found',
+            message=message or 'The requested item was not found',
             errors=None,
         )
 
@@ -36,7 +36,7 @@ class Forbidden(API_exception):
         API_exception.__init__(self,
             status_code=403,
             code=501, 
-            message=message or 'forbidden',
+            message=message or 'Forbidden',
             errors=None,
         )
 
@@ -46,7 +46,7 @@ class Wrong_email_or_password_exception(API_exception):
         API_exception.__init__(self,
             status_code=401,
             code=1000, 
-            message='wrong email and/or password',
+            message='Wrong email and/or password',
             errors=None,
         )
 
@@ -57,7 +57,7 @@ class Validation_exception(API_exception):
             self,
             status_code=400,
             code=1001,
-            message='one or more fields failed validation',
+            message='One or more fields failed validation',
             errors=errors,
         )
 
@@ -88,7 +88,7 @@ class OAuth_unsuported_grant_type_exception(API_exception):
             self,
             status_code=400,
             code=1006,
-            message='unsupported grant_type "{}"'.format(grant_type),
+            message='Unsupported grant_type "{}"'.format(grant_type),
             extra={
                 'grant_type': grant_type,
             }
@@ -101,7 +101,7 @@ class OAuth_unknown_client_id_exception(API_exception):
             self,
             status_code=400,
             code=1007,
-            message='unknown client_id: {}'.format(client_id),
+            message='Unknown client_id: {}'.format(client_id),
         )
 
 class OAuth_unauthorized_grant_type_level_request_exception(API_exception):
@@ -111,7 +111,9 @@ class OAuth_unauthorized_grant_type_level_request_exception(API_exception):
             self,
             status_code=403,
             code=1008,
-            message='this app does not have authorization to make this type of grant type request, required level: {}, your app\'s level: {}'.format(required_level, app_level),
+            message='This app does not have authorization to make'
+                    ' this type of grant type request, required level: {},'
+                    ' your app\'s level: {}'.format(required_level, app_level),
             extra={
                 'app_level': app_level,
                 'required_level': required_level,
@@ -124,7 +126,7 @@ class Not_signed_in_exception(API_exception):
         API_exception.__init__(self,
             status_code=401,
             code=1009, 
-            message='not signed in',
+            message='Not signed in',
         )
 
 class Restricted_access_exception(API_exception):
@@ -133,20 +135,12 @@ class Restricted_access_exception(API_exception):
         API_exception.__init__(self,
             status_code=403,
             code=1010, 
-            message='your access level: {}, is not high enough for the required level: {}'.format(user_level, required_level),
+            message='Your access level: {}, is not high enough'
+                    ' for the required level: {}'.format(user_level, required_level),
             extra={
                 'required_level': required_level,
                 'user_level': user_level,
             }
-        )
-
-class User_not_following_show(API_exception):
-
-    def __init__(self):
-        API_exception.__init__(self,
-            status_code=400,
-            code=1200, 
-            message='you do not follow this show',
         )
 
 class User_episode_not_watched(API_exception):
@@ -155,14 +149,14 @@ class User_episode_not_watched(API_exception):
         API_exception.__init__(self,
             status_code=400,
             code=1300, 
-            message='you have not watched this episode',
+            message='You have not watched this episode',
         )
 
 class User_no_episode_to_watch(API_exception):
 
     def __init__(self):
         super().__init__(
-            status_code=404,
+            status_code=204,
             code=1301, 
             message='No episodes to watch',
         )
@@ -174,7 +168,7 @@ class Show_unknown(API_exception):
             self,
             status_code=400,
             code=1400,
-            message='unknown show',
+            message='Unknown show',
         )
 
 class Show_external_field_missing(API_exception):
@@ -184,7 +178,7 @@ class Show_external_field_missing(API_exception):
             self,
             status_code=400,
             code=1401,
-            message='the external field must be specified before updating the index field',
+            message='Missing externals',
         )
 
 class Show_importer_not_in_external(API_exception):
@@ -194,7 +188,7 @@ class Show_importer_not_in_external(API_exception):
             self,
             status_code=400,
             code=1402,
-            message='Importer "{}" must specified as a key in externals with an id'.format(external_type),
+            message='Importer "{}" must have a registered id in externals'.format(external_type),
             extra={
                 'external_type': external_type,
             }
@@ -207,7 +201,10 @@ class Show_external_duplicated(API_exception):
             self,
             status_code=400,
             code=1403,
-            message='A show with the external name and value does already exist'.format(external_title, external_value),
+            message='A show with external name: "{}" and id: "{}" does already exist'.format(
+                external_title, 
+                external_value,
+            ),
             extra={
                 'show': show,
                 'external_title': external_title,
@@ -222,7 +219,7 @@ class User_unknown(API_exception):
             self,
             status_code=400,
             code=1500,
-            message='unknown user',
+            message='Unknown user',
         )
 
 class User_show_subtitle_lang_not_found(API_exception):
@@ -232,7 +229,7 @@ class User_show_subtitle_lang_not_found(API_exception):
             self,
             status_code=404,
             code=1510,
-            message='unknown user, show or no default subtitle for this show',
+            message='Unknown user, show or no default subtitle for this show',
         )
 
 class Episode_unknown(API_exception):
@@ -242,7 +239,7 @@ class Episode_unknown(API_exception):
             self,
             status_code=400,
             code=1600,
-            message='unknown episode',
+            message='Unknown episode',
         )
 
 class Elasticsearch_exception(API_exception):
@@ -252,7 +249,7 @@ class Elasticsearch_exception(API_exception):
             self,
             status_code=status_code,
             code=1700,
-            message='search error',
+            message='Search error',
             extra=extra
         ) 
 
@@ -288,21 +285,7 @@ class Image_unknown(API_exception):
         API_exception.__init__(self,
             status_code=400,
             code=2001,
-            message='unknown image',
-        )
-
-class Image_set_wrong_type(API_exception):
-
-    def __init__(self, image_type, needs_image_type):
-        API_exception.__init__(self,
-            status_code=400,
-            code=2002,
-            message='the image could not be set because of a wrong type',
-            extra={
-                'is': image_type,
-                'needs': needs_image_type if isinstance(needs, list) \
-                    else [needs_image_type],
-            }
+            message='Unknown image',
         )
 
 class Image_no_data(API_exception):
@@ -310,7 +293,7 @@ class Image_no_data(API_exception):
         API_exception.__init__(self,
             status_code=400,
             code=2003,
-            message='No image data assigned. Please upload an image.',
+            message='No image data assigned. Please upload an image',
         )  
         
 class File_upload_no_files(API_exception):
@@ -319,7 +302,7 @@ class File_upload_no_files(API_exception):
         API_exception.__init__(self,
             status_code=400,
             code=2100,
-            message='zero files was uploaded',
+            message='Zero files was uploaded',
         )
 
 class File_upload_unrecognized_image(API_exception):
@@ -328,7 +311,7 @@ class File_upload_unrecognized_image(API_exception):
         API_exception.__init__(self,
             status_code=400,
             code=2101,
-            message='unrecognized image type: please upload a JPG or PNG image',
+            message='Unrecognized image type. Please upload a JPG or PNG image',
         )
 
 class Play_server_unknown(API_exception):
@@ -338,5 +321,5 @@ class Play_server_unknown(API_exception):
             self,
             status_code=400,
             code=2200,
-            message='unknown play server',
+            message='Unknown play server',
         )
