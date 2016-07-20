@@ -17,10 +17,13 @@ module.exports = {
             'react-dom',
             'react-router',
             'moment',
+            'select2',
+            'flat',
+            'form-serialize',
         ]
     },
     resolve: {
-        extensions: ['', '.js', '.jsx', '.scss'],
+        extensions: ['', '.js', '.jsx', '.scss', '.css'],
         
         root: [
             staticPath+'/app',
@@ -51,7 +54,7 @@ module.exports = {
                 },
             },  
             {  
-                test:   /\.scss/,
+                test:   /\.(scss|css)/,
                 loader: ExtractTextPlugin.extract('style', 'css?sourceMap!postcss!sass?includePaths[]='+nodeModulesPath),
             },
             { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },

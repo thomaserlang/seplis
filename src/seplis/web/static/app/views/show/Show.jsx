@@ -42,19 +42,19 @@ class Show extends React.Component {
                         <h1 className="hidden-xs-down">
                             {show.title}
                             &nbsp;
-                            <small className="text-muted">{show.premiered.substring(0,4)}</small>
+                            <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>
                         </h1>
                         <h1 className="hidden-sm-up small-device-header">
                             {show.title}
                             &nbsp;
-                            <small className="text-muted">{show.premiered.substring(0,4)}</small>
+                            <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>
                         </h1>
                     </div> 
 
                     <div className="col-xs-4 hidden-sm-up" />
                     <div className="col-xs-4 col-sm-4 col-md-4 col-margin">
                         <img 
-                            src={show.poster_image.url + '@SX360'} 
+                            src={show.poster_image!=null?show.poster_image.url + '@SX360':''} 
                             width="100%" 
                         />
                     </div>

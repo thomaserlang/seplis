@@ -50,12 +50,6 @@ $(function(){
         });
     });
 
-    if ($('#alternative-titles').length) {
-        $('#alternative-titles').select2({
-            tags: []
-        });
-    }
-
     $('date.show-date').each(function(){
         var hours = moment.utc(
             $(this).attr('title'), 

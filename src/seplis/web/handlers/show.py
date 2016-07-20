@@ -183,13 +183,16 @@ class API_edit_handler(API_new_handler):
 
 class API_tvmaze_lookup(base.API_handler):
 
-    @gen.coroutine
-    def get(self):
+    async def get(self):
         httpclient = AsyncHTTPClient()
-        url = 'http://api.tvmaze.com/lookup/shows?{}'.format(
-            utils.url_encode_tornado_arguments(self.request.arguments)
-        )
-        response = yield httpclient.fetch(url)
+        tvmaze = self.get_argument('tvmaze', None)
+        if tvmaze:
+            url = 'http://api.tvmaze.com/shows/{}'.format(tvmaze)
+        else:
+            url = 'http://api.tvmaze.com/lookup/shows?{}'.format(
+                utils.url_encode_tornado_arguments(self.request.arguments)
+            )
+        response = await httpclient.fetch(url)
         if 200 <= response.code <= 399: 
             self.write(response.body)
         else:

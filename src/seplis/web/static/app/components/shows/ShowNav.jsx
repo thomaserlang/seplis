@@ -37,6 +37,15 @@ class ShowNav extends React.Component {
                         Seasons
                     </Link>
                 </li>
+                <li className="nav-item pull-xs-right">
+                    <Link 
+                        className="nav-link" 
+                        to={`/show/${this.props.showId}/edit`}
+                        activeClassName="active"
+                    >
+                        <i className="fa fa-cog"></i>
+                    </Link>
+                </li>
             </ul>
         );
     }

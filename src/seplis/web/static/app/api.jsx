@@ -20,12 +20,13 @@ export function request(url, options = {}) {
     let query = $.param(options.query || '', true);
     let method = options.method || (options.data ? 'POST':'GET');
     let data = options.data;
+    let localRequest = options.localRequest || false;
 
     if (typeof data !== 'undefined' && method !== 'GET') {
         data = JSON.stringify(data);
     }
     
-    if (!url.startsWith('http')) {
+    if ((!url.startsWith('https')) && (!localRequest)) {
         url = apiClientSettings.baseUrl + url;
     }
 
