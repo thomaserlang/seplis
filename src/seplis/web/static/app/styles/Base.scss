@@ -11,6 +11,9 @@ $font-family-sans-serif: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-s
 
 @import "bootstrap/scss/bootstrap";
 
+$fa-font-path: "~font-awesome/fonts";
+@import "font-awesome/scss/font-awesome";
+
 h1,
 h2 {
     margin-top:0;
