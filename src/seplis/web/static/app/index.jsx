@@ -6,6 +6,7 @@ import {apiClientSettings} from './api.jsx';
 export default{
     React: require('react'),
     ReactDOM: require('react-dom'),
+    $: require('jquery'),
     seplis: {
         Routes: require('./Routes.jsx'),
         apiClientSettings: apiClientSettings,

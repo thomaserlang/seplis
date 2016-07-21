@@ -41,6 +41,11 @@ module.exports = {
             names: ['vendor']
         }),
         new ExtractTextPlugin("app.css"),
+        new webpack.ProvidePlugin({
+            $: "jquery",
+            jQuery: "jquery",
+            "window.jQuery": "jquery"
+        }),
     ],
     module: {
         loaders: [
@@ -54,7 +59,7 @@ module.exports = {
                 },
             },  
             {  
-                test:   /\.(scss|css)/,
+                test: /\.(scss|css)/,
                 loader: ExtractTextPlugin.extract('style', 'css?sourceMap!postcss!sass?includePaths[]='+nodeModulesPath),
             },
             { test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/, loader: "url-loader?limit=10000&mimetype=application/font-woff" },
