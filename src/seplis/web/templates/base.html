@@ -3,15 +3,10 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <title>{{ title }}</title>
-        <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css">
-
-        {% for file_ in handler.application.settings['css_files'] %}
-            <link rel="stylesheet" href="{{ file_ }}">
-        {% end %}
-
-        {% for file_ in handler.application.settings['js_files'] %}                
-            <script type="text/javascript" src="{{ file_ }}"></script>
-        {% end %}
+        
+        <link rel="stylesheet" href="/static/dist/app.css">
+        <script type="text/javascript" src="/static/dist/vendor.js"></script>
+        <script type="text/javascript" src="/static/dist/app.js"></script>
 
         <script type="text/javascript">
             for (var n in window.exports.default) {
@@ -20,36 +15,7 @@
             seplis.apiClientSettings.baseUrl = "{{config['client']['public_api_url']}}";
             seplis.apiClientSettings.clientId = "{{config['client']['id']}}";
 
-            function show_api_error(error) {
-                var message = error.message + '.';
-                if (error.code === 1001) {
-                    for (var key in error.errors) {
-                        message = message + _.template(
-                            '<br><br><strong><%= field %><br></strong> <%= message %>.',
-                            error.errors[key]
-                        );
-                    }
-                }
-                $('#errors').html(_.template(
-                    '<div class="alert alert-danger alert-dismissible" role="alert">'+
-                      '<button type="button" class="close" data-dismiss="alert">'+
-                          '<span aria-hidden="true">&times;</span>'+
-                          '<span class="sr-only">Close</span>'+
-                      '</button>'+
-                      '<%= message %>'+
-                    '</div>',
-                    {
-                        'message':message,
-                    }
-                ));
-            }
             $(function(){
-                api = new Api();
-                api.loaderGif = '/static/img/loader.gif';
-                api.defaultErrorCallback = show_api_error;
-
-                template = new Template();
-
                 {% block jsready %}{% end %}
             });
         </script>

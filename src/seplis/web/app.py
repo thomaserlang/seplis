@@ -25,19 +25,6 @@ from seplis import utils
 from tornado.options import define, options
 from tornado.web import URLSpec
 
-def get_static_files(static_path, ext, skip):
-    _files = utils.get_files(
-        static_path,
-        ext,
-        skip=skip,
-    )
-    files = []
-    for file_ in _files:
-        files.append(
-            '/static'+file_[len(static_path):]
-        )
-    return files
-
 class Application(tornado.web.Application):
 
     def __init__(self, **args):
@@ -58,54 +45,6 @@ class Application(tornado.web.Application):
                 episode_header=modules.Episode_header,
             )
         )
-        if config['debug']:
-            settings['js_files'] = sorted(get_static_files(
-                static_path,
-                '.js',
-                skip=(
-                    'seplis.min.js', 
-                    'vendor.min.js',
-                    'jquery-2.1.3.js',
-                    'api.js',
-                ),
-            ), reverse=True)
-            settings['js_files'].insert(0, '/static/js/vendor/jquery-2.1.3.js')
-            settings['js_files'].insert(1, '/static/js/api.js')
-            settings['css_files'] = sorted(get_static_files(
-                static_path,
-                '.css',
-                skip=(
-                    'seplis.min.css', 
-                    'vendor.min.css',
-                ),
-            ), reverse=True)
-        else:
-            settings['js_files'] = []
-            with open(os.path.join(static_path, 'js/vendor/vendor.min.js')) as f:
-                settings['js_files'].append(
-                    '/static/js/vendor/vendor.min.js?{}'.format(
-                        hashlib.md5(f.read().encode('utf-8')).hexdigest()
-                    )
-                )
-            with open(os.path.join(static_path, 'js/seplis.min.js')) as f:
-                settings['js_files'].append(
-                    '/static/js/seplis.min.js?{}'.format(
-                        hashlib.md5(f.read().encode('utf-8')).hexdigest()
-                    )
-                )
-            settings['css_files'] = []
-            with open(os.path.join(static_path, 'css/vendor/vendor.min.css')) as f:
-                settings['css_files'].append(
-                    '/static/css/vendor/vendor.min.css?{}'.format(
-                        hashlib.md5(f.read().encode('utf-8')).hexdigest()
-                    )
-                )
-            with open(os.path.join(static_path, 'css/seplis.min.css')) as f:
-                settings['css_files'].append(
-                    '/static/css/seplis.min.css?{}'.format(
-                        hashlib.md5(f.read().encode('utf-8')).hexdigest()
-                    )
-                )
 
         urls = [
             URLSpec(r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(static_path, 'favicon.ico')}),
