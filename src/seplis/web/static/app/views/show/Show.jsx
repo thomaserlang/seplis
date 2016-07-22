@@ -39,12 +39,7 @@ class Show extends React.Component {
                         <div className="btn-fan__pull-left">
                             <FanButton showId={show.id} isFan={show.is_fan || false} />
                         </div>
-                        <h1 className="hidden-xs-down">
-                            {show.title}
-                            &nbsp;
-                            <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>
-                        </h1>
-                        <h1 className="hidden-sm-up small-device-header">
+                        <h1>
                             {show.title}
                             &nbsp;
                             <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>

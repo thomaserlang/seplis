@@ -3,9 +3,9 @@ $enable-rounded: false;
 
 $body-bg: #26282E;
 $body-color: #fff;
-$font-size-root: 16px;
-$headings-margin-bottom: 10px;
-$grid-gutter-width: 17px;
+$font-size-root: 100%;
+$headings-margin-bottom: 1rem;
+$grid-gutter-width: 1rem;
 
 $font-family-sans-serif: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
@@ -21,12 +21,6 @@ h2 {
 
 h3 {
     color:#428bca;
-}
-
-.small-device-header {
-    font-size: 26px;
-    margin-top: 5px;
-    padding-bottom: 5px;
 }
 
 a, 
@@ -49,7 +43,7 @@ a.btn {
 }
 
 .col-margin {
-    margin-bottom: 10px;
+    margin-bottom: 1rem;
 }
 
 .header {
