@@ -40,7 +40,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With')
         self.set_header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
-        self.set_header('Access-Control-Expose-Headers', 'ETag, Link, X-Total-Count, X-Total-Pages')
+        self.set_header('Access-Control-Expose-Headers', 'ETag, Link, X-Total-Count, X-Total-Pages, X-Page')
         self.set_header('Access-Control-Max-Age', '86400')
         self.set_header('Access-Control-Allow-Credentials', 'true')
 
