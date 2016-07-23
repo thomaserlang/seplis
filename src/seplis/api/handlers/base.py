@@ -130,6 +130,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             self.set_header('Link', links)
         self.set_header('X-Total-Count', pagination.total)
         self.set_header('X-Total-Pages', pagination.pages)
+        self.set_header('X-Page', pagination.page)
         self.write_object(pagination.records)
 
     @property
