@@ -70,7 +70,7 @@ _Episode_schema = {
 }
 Episode_schema = good.Schema(_Episode_schema, default_keys=good.Optional)
 External_schema = good.Schema({
-    good.All(good.Length(min=1, max=45)):good.Any(None, good.All(str, good.Length(min=1, max=45)))
+    good.All(good.Length(min=1, max=45)):good.Any(None, good.All(good.Coerce(str), good.Length(min=1, max=45)))
 }, default_keys=good.Optional)
 Importer_schema = good.Schema(
     {key: good.Any(None, good.All(str, good.Length(min=1, max=45))) \
