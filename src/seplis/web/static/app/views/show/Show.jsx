@@ -64,12 +64,38 @@ class Show extends React.Component {
         )
     }
 
+    renderShowImporting() {
+        setTimeout(() => {
+            this.getShow();
+        }, 5000);
+        return (
+            <center>
+                <h1>The show is currently in the importing query</h1>
+                <h2>Check back later!</h2>
+                <a 
+                    className="btn btn-warning" 
+                    href={`/show/${this.state.show.id}/edit`}
+                >
+                    Edit show
+                </a>
+                <Loader />
+            </center>
+        )
+    }
+
     render() {
         if (!this.state.show) {
             return (
                 <Loader />
             )
-        } else {
+        } 
+        else if (
+            (this.state.show.status == 0)
+            && !(this.props.location.pathname.endsWith('/edit'))
+            && (this.state.show.importers.info != null)) {
+            return this.renderShowImporting();
+        }
+        else {
             return this.renderShow();
         }
     }
