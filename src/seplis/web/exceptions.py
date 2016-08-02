@@ -1,4 +1,5 @@
 from tornado.web import HTTPError
+from seplis import utils
 
 class API_error(HTTPError):
     
@@ -24,14 +25,14 @@ class API_error(HTTPError):
         result = '{} ({})'.format(self.message, self.code)
         if self.errors:
             result += '\n\nErrors:\n'
-            result += json.dumps(
+            result += utils.json_dumps(
                 self.errors,
                 indent=4, 
                 separators=(',', ': ')
             )
         if self.extra:
             result += '\n\nExtra:\n'
-            result += json.dumps(
+            result += utils.json_dumps(
                 self.extra,
                 indent=4, 
                 separators=(',', ': ')
