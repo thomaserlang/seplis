@@ -84,9 +84,7 @@ class Handler(base.Handler):
             for episode in episodes['hits']['hits']]
 
     def get_should_filter(self, user_id):
-        show_ids = database.redis.smembers(models.Show_fan._user_cache_name.format(
-            user_id
-        ))
+        show_ids = models.Show_fan.get_all(user_id)
         return [{
             'term': {
                 'show_id': int(id_),
