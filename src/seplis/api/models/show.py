@@ -281,12 +281,12 @@ class Show_fan(Base):
         session = orm.Session.object_session(self)
         session.pipe.zadd(
             self.show_cache_name, 
-            self.created_at.timestamp() if self.created_at else datetime.utcnow(),
+            self.created_at.timestamp() if self.created_at else datetime.utcnow().timestamp(),
             self.user_id,
         )
         session.pipe.zadd(
             self.user_cache_name,              
-            self.created_at.timestamp() if self.created_at else datetime.utcnow(),
+            self.created_at.timestamp() if self.created_at else datetime.utcnow().timestamp(),
             self.show_id,
         )
 
