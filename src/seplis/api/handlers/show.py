@@ -177,9 +177,11 @@ class Handler(base.Handler):
         req = {
             'from': ((page - 1) * per_page),
             'size': per_page,
-            'sort': sort,
             'search_type': 'dfs_query_then_fetch',
         }
+        if sort != 'NO_SORT':
+            req['sort'] = sort
+            logging.info(sort)
         body = self.build_query()
         if fields:
             if 'id' not in fields:
@@ -337,9 +339,8 @@ class Fan_of_handler(Handler):
 
     @gen.coroutine
     def get(self, user_id):
-        show_ids = database.redis.smembers(models.Show_fan._user_cache_name.format(
-            user_id
-        ))
+        sort = self.get_argument('sort', None)
+        show_ids = models.Show_fan.get_all(user_id)
         if show_ids:
             shows = yield self.get_shows(show_ids)
         else:
@@ -401,12 +402,11 @@ class Fans_handler(Fan_of_handler):
         page = int(self.get_argument('page', 1))
         pipe = database.redis.pipeline()
         name = models.Show_fan._show_cache_name.format(show_id)
-        pipe.scard(name)
-        pipe.sort(
+        pipe.zcard(name)
+        pipe.zrevrange(
             name=name,
             start=(page - 1) * per_page,
-            num=per_page,
-            by='nosort',
+            end=per_page,
         )
         total_count, user_ids = pipe.execute()
         self.write_object(Pagination(

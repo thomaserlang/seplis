@@ -234,10 +234,7 @@ class Show(Base):
 
     def become_fan(self, user_id):
         session = orm.Session.object_session(self)
-        if database.redis.sismember(
-                Show_fan._show_cache_name.format(self.id),
-                user_id
-            ):
+        if Show_fan.is_fan(show_id=self.id, user_id=user_id):
             return
         fan = Show_fan(
             show_id=self.id,
@@ -247,14 +244,14 @@ class Show(Base):
 
     def unfan(self, user_id):
         session = orm.Session.object_session(self)
+        if not Show_fan.is_fan(show_id=self.id, user_id=user_id):
+            return
         fan = session.query(Show_fan).filter(
             Show_fan.show_id == self.id,
             Show_fan.user_id == user_id,
         ).first()
-        if not fan:
-            return
-        session.delete(fan)
-
+        if fan:
+            session.delete(fan)
 
 class Show_fan(Base):
     __tablename__ = 'show_fans'
@@ -271,14 +268,27 @@ class Show_fan(Base):
         primary_key=True, 
         autoincrement=False,
     )
+    created_at = sa.Column(
+        sa.DateTime, 
+        default=datetime.utcnow, 
+        onupdate=datetime.utcnow,
+    )
 
     _show_cache_name = 'shows:{}:fans'
     _user_cache_name = 'users:{}:fan_of'
 
     def cache(self):
         session = orm.Session.object_session(self)
-        session.pipe.sadd(self.show_cache_name, self.user_id)
-        session.pipe.sadd(self.user_cache_name, self.show_id)
+        session.pipe.zadd(
+            self.show_cache_name, 
+            self.created_at.timestamp() if self.created_at else datetime.utcnow(),
+            self.user_id,
+        )
+        session.pipe.zadd(
+            self.user_cache_name,              
+            self.created_at.timestamp() if self.created_at else datetime.utcnow(),
+            self.show_id,
+        )
 
     @property
     def show_cache_name(self):
@@ -294,10 +304,9 @@ class Show_fan(Base):
 
         :param amount: int
         '''
-        session = orm.Session.object_session(self)
-        session.pipe.hincrby('shows:{}'.format(self.show_id), 'fans', amount)
-        session.pipe.hincrby('users:{}:stats'.format(self.user_id), 'fan_of', amount)
-        session.es_bulk.append({
+        self.session.pipe.hincrby('shows:{}'.format(self.show_id), 'fans', amount)
+        self.session.pipe.hincrby('users:{}:stats'.format(self.user_id), 'fan_of', amount)
+        self.session.es_bulk.append({
             '_op_type': 'update',
             '_index': 'shows',
             '_type': 'show',
@@ -305,12 +314,12 @@ class Show_fan(Base):
             '_id': self.show_id,
             'script': 'ctx._source.fans += {}'.format(amount),
         })
-        session.execute(Show.__table__.update()\
+        self.session.execute(Show.__table__.update()\
             .where(Show.__table__.c.id==self.show_id)\
             .values(fans=Show.__table__.c.fans + amount)
         )
         from seplis.api.models import User
-        session.execute(User.__table__.update()\
+        self.session.execute(User.__table__.update()\
             .where(User.__table__.c.id == self.user_id)\
             .values(fan_of=User.__table__.c.fan_of + amount)
         )
@@ -320,9 +329,8 @@ class Show_fan(Base):
         self.incr_fan(1)
 
     def after_delete(self):
-        session = orm.Session.object_session(self)
-        session.pipe.srem(self.show_cache_name, self.user_id)
-        session.pipe.srem(self.user_cache_name, self.show_id)
+        self.session.pipe.zrem(self.show_cache_name, self.user_id)
+        self.session.pipe.zrem(self.user_cache_name, self.show_id)
         self.incr_fan(-1)
 
     @classmethod
@@ -333,11 +341,12 @@ class Show_fan(Base):
         :param show_id: int or list of int
         :returns: bool or list of bool
         '''
-        ids = show_id if isinstance(show_id, list) else [show_id]
+        show_ids = show_id if isinstance(show_id, list) else [show_id]
         pipe = database.redis.pipeline()
-        for id_ in ids:
-            pipe.sismember(cls._show_cache_name.format(id_), user_id)
-        result = pipe.execute()
+        for id_ in show_ids:
+            pipe.zrank(cls._user_cache_name.format(user_id), id_)
+        a = pipe.execute()
+        result = [True if id_ != None else False for id_ in a]
         return result if isinstance(show_id, list) else result[0]
 
     @classmethod
@@ -347,8 +356,10 @@ class Show_fan(Base):
         :user_id: int
         :returns: list of int
         '''
-        show_ids = database.redis.smembers(
-            cls._user_cache_name.format(user_id)
+        show_ids = database.redis.zrevrange(
+            cls._user_cache_name.format(user_id),
+            start=0,
+            end=-1
         )
         return [int(id_) for id_ in show_ids]
 

@@ -295,7 +295,7 @@ class test_show(Testbase):
                 'episodes': 'seplis_old',
             }
         })
-        self.assertEqual(response.code, 400, response.body)
+        self.assertEqual(response.code, 201, response.body)
 
     def test_episode_type(self):
         show_id = self.new_show()
@@ -558,9 +558,7 @@ class test_show(Testbase):
         self.assertEqual(response.code, 201)
         show = utils.json_loads(response.body)
         show_id = show['id']
-        self.get('http://{}/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
+        self.refresh_es()
 
         self._test_fan_count(0)
 
@@ -569,6 +567,7 @@ class test_show(Testbase):
         for i in [1,2]:
             response = self.put('/1/shows/{}/fans/{}'.format(show_id, self.current_user.id))
             self.assertEqual(response.code, 204, response.body)
+            self.refresh_es()
             response = self.get('/1/shows/{}?append=is_fan'.format(show_id))
             self.assertEqual(response.code, 200)
             show = utils.json_loads(response.body)
