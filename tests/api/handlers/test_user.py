@@ -58,9 +58,6 @@ class test_user(Testbase):
         user2 = utils.json_loads(response.body)
         self.assertEqual(user2['name'], 'test___')
         self.assertFalse('email' in user2)
-        user.pop('email')
-        user.pop('level')
-        self.assertEqual(user2, user)
 
         # check that we can get the current user.
         # when we retrieve our own user name the email 
