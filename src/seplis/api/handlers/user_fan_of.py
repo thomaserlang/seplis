@@ -43,7 +43,6 @@ class Handler(base.Pagination_handler):
 
     @run_on_executor
     def fan(self, user_id, show_id):
-        self.check_user_edit(user_id)
         if self.redis.zrank(models.Show_fan.ck_user_shows(user_id), show_id) != None:
             return
         with new_session() as session:
@@ -56,7 +55,6 @@ class Handler(base.Pagination_handler):
 
     @run_on_executor
     def unfan(self, user_id, show_id):
-        self.check_user_edit(user_id)
         if self.redis.zrank(models.Show_fan.ck_user_shows(user_id), show_id) == None:
             return
         with new_session() as session:
