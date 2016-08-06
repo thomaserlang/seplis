@@ -1,9 +1,8 @@
 from seplis.api.handlers import base
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
-from seplis.api.decorators import new_session, run_on_executor
-from seplis.api import models
-import logging
+from seplis.api.decorators import new_session, run_on_executor, authenticated
+from seplis.api import models, constants
 
 class Handler(base.Pagination_handler):
 
@@ -32,10 +31,12 @@ class Handler(base.Pagination_handler):
             total=total_records,
         ))
 
+    @authenticated(constants.LEVEL_USER)
     async def put(self, user_id, show_id):
         await self.fan(user_id, show_id)
         self.set_status(204)
 
+    @authenticated(constants.LEVEL_USER)
     async def delete(self, user_id, show_id):
         await self.unfan(user_id, show_id)
         self.set_status(204)
