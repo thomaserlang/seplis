@@ -9,6 +9,8 @@ import ShowEdit from './views/show/Edit';
 
 import ShowNew from './views/show/New';
 
+import FanOf from './views/FanOf';
+
 export default (
     <Router history={browserHistory}>
         <Route path="/show/:showId" component={Show}>
@@ -19,5 +21,6 @@ export default (
             <Route path="edit" component={ShowEdit} />
         </Route>
         <Route path="/show-new" component={ShowNew} />
-    </Router>
+        <Route path="/fan-of" component={FanOf} />
+      </Router>
 );
