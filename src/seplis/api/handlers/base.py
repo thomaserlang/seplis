@@ -334,7 +334,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
 
 class Pagination_handler(Handler):
 
-    __arguments_schema__ = {
+    __arguments_schema__ = good.Schema({
         'per_page': good.Any(
             good.All(
                 [good.All(good.Coerce(int), good.Range(min=1))],
@@ -349,7 +349,7 @@ class Pagination_handler(Handler):
             ),
             good.Default([1])
         ),
-    }
+    }, default_keys=good.Required)
 
     def get(self, *args, **kwargs):
         args = self.validate_arguments()
