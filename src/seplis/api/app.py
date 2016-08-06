@@ -1,8 +1,10 @@
 import os.path
 import seplis
+import asyncio
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
+import tornado.platform.asyncio
 import seplis.api.handlers.base
 import seplis.api.handlers.show
 import seplis.api.handlers.user
@@ -19,6 +21,7 @@ import seplis.api.handlers.episode_to_watch
 import seplis.api.handlers.episode_last_watched
 import seplis.api.handlers.etw
 import seplis.api.handlers.user_show_subtitle_lang
+import seplis.api.handlers.user_fan_of
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -247,10 +250,14 @@ class Application(tornado.web.Application):
 
 def main():
     logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
+
+    tornado.platform.asyncio.AsyncIOMainLoop().install()
+    ioloop = asyncio.get_event_loop()
+
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(seplis.config['api']['port'])
-    tornado.ioloop.IOLoop.configure('tornado.platform.asyncio.AsyncIOLoop')
-    tornado.ioloop.IOLoop.current().start()
+
+    ioloop.run_forever()
 
 if __name__ == '__main__':
     import seplis
