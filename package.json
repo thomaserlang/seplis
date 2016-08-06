@@ -22,6 +22,7 @@
     "jquery": "2.2.3",
     "moment": "^2.13.0",
     "node-sass": "^3.6.0",
+    "parse-link-header": "^0.4.1",
     "postcss-loader": "^0.9.1",
     "react": "^15.0.1",
     "react-dom": "^15.0.1",
