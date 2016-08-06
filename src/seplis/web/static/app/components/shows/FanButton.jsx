@@ -23,7 +23,7 @@ class FanButton extends React.Component {
     onClick(e) {
         e.preventDefault();
         this.setState({isFan: !this.state.isFan});
-        request(`/1/shows/${this.props.showId}/fans/${getUserId()}`, {
+        request(`/1/users/${getUserId()}/fan-of/${this.props.showId}`, {
             method: this.state.isFan?'DELETE':'PUT',
         }).error(() => {            
             this.setState({isFan: !this.state.isFan});
