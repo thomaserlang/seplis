@@ -161,15 +161,15 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
 
     def _validate(self, data, schema, **kwargs):
         try:
-            if schema == None:
-                schema = getattr(self, '__schema__', None)
-                if schema == None:
-                    raise Exception('missing validation schema')
             return utils.validate_schema(schema, data, **kwargs)  
         except utils.Validation_exception as e:
             raise exceptions.Validation_exception(errors=e.errors)
 
     def validate(self, schema=None, **kwargs):
+        if schema == None:
+            schema = getattr(self, '__schema__', None)
+            if schema == None:
+                raise Exception('missing validation schema')
         return self._validate(
             self.request.body,
             schema,
@@ -177,6 +177,10 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         )
 
     def validate_arguments(self, schema=None, **kwargs):
+        if schema == None:
+            schema = getattr(self, '__arguments_schema__', None)
+            if schema == None:
+                raise Exception('missing validation schema')
         return self._validate(
             tornado.escape.recursive_unicode(self.request.arguments),
             schema,
@@ -327,3 +331,27 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             'ids': episode_ids
         })
         return [d.get('_source') for d in result['docs']]
+
+class Pagination_handler(Handler):
+
+    __arguments_schema__ = {
+        'per_page': good.Any(
+            good.All(
+                [good.All(good.Coerce(int), good.Range(min=1))],
+                good.Length(max=1),
+            ),
+            good.Default([constants.PER_PAGE])
+        ),
+        'page': good.Any(
+            good.All(
+                [good.All(good.Coerce(int), good.Range(min=1))],
+                good.Length(max=1),
+            ),
+            good.Default([1])
+        ),
+    }
+
+    def get(self, *args, **kwargs):
+        args = self.validate_arguments()
+        self.per_page = args['per_page'][0]
+        self.page = args['page'][0]

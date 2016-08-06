@@ -177,11 +177,9 @@ class Handler(base.Handler):
         req = {
             'from': ((page - 1) * per_page),
             'size': per_page,
+            'sort': sort,
             'search_type': 'dfs_query_then_fetch',
         }
-        if sort != 'NO_SORT':
-            req['sort'] = sort
-            logging.info(sort)
         body = self.build_query()
         if fields:
             if 'id' not in fields:
@@ -192,7 +190,7 @@ class Handler(base.Handler):
                 'ids':{
                     'values': show_ids,
                 }
-            }        
+            }
         result = yield self.es(
             '/shows/show/_search',
             body=body,
@@ -332,101 +330,6 @@ class External_handler(Handler):
 
     def delete(self, title, value): 
         raise HTTPError(405)     
-
-
-        
-class Fan_of_handler(Handler):
-
-    @gen.coroutine
-    def get(self, user_id):
-        sort = self.get_argument('sort', None)
-        show_ids = models.Show_fan.get_all(user_id)
-        if show_ids:
-            shows = yield self.get_shows(show_ids)
-        else:
-            shows = Pagination(
-                page=int(self.get_argument('page', 1)),
-                per_page=int(self.get_argument('per_page', constants.PER_PAGE)),
-                total=0,
-                records=[],
-            )
-        self.write_object(
-            shows
-        )
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def put(self, user_id, show_id):
-        yield self._put(user_id, show_id)
-        self.set_status(204)
-
-    @concurrent.run_on_executor
-    def _put(self, user_id, show_id):
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        with new_session() as session:
-            show = session.query(models.Show).get(show_id)
-            if not show:
-                raise exceptions.Show_unknown()
-            show.become_fan(
-                user_id,
-            )
-            session.commit()
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def delete(self, user_id, show_id):
-        yield self._delete(user_id, user_id)
-        self.set_status(204)
-
-    @concurrent.run_on_executor
-    def _delete(self, user_id, show_id):            
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        with new_session() as session:
-            show = session.query(models.Show).get(show_id)
-            if not show:
-                raise exceptions.Show_unknown()
-            show.unfan(
-                user_id
-            )
-            session.commit()
-
-    def post(self):
-        raise HTTPError(405)
-
-class Fans_handler(Fan_of_handler):
-
-    def get(self, show_id):
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
-        pipe = database.redis.pipeline()
-        name = models.Show_fan._show_cache_name.format(show_id)
-        pipe.zcard(name)
-        pipe.zrevrange(
-            name=name,
-            start=(page - 1) * per_page,
-            end=per_page,
-        )
-        total_count, user_ids = pipe.execute()
-        self.write_object(Pagination(
-            page=page,
-            per_page=per_page,
-            total=total_count,
-            records=models.User.get(user_ids),
-        ))
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def put(self, show_id, user_id):        
-        yield self._put(user_id=user_id, show_id=show_id)
-        self.set_status(204)
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def delete(self, show_id, user_id):
-        yield self._delete(user_id=user_id, show_id=show_id)
-        self.set_status(204)
 
 class Update_handler(base.Handler):
 

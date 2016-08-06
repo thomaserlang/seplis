@@ -75,10 +75,10 @@ class Show(Base):
         }
 
     def to_elasticsearch(self):
-        '''Sends the show's info to ES.
+        """Sends the show's info to ES.
 
         This method is automatically called after update or insert.
-        '''
+        """
         if not self.id:
             raise Exception('can\'t add the show to ES without an ID.')        
         session = orm.Session.object_session(self)
@@ -99,14 +99,14 @@ class Show(Base):
         self.to_elasticsearch()
 
     def update_externals(self):
-        '''Saves the shows externals to the database and the cache.
+        """Saves the shows externals to the database and the cache.
         Checks for duplicates.
 
         This method must be called when the show's externals has 
         been modified.
 
         :raises: exceptions.Show_external_duplicated()
-        '''
+        """
         externals_query = self.session.query(
             Show_external,
         ).filter(
@@ -141,7 +141,7 @@ class Show(Base):
             external.show_id = self.id
 
     def cleanup_externals(self):
-        '''Removes externals with None as value.'''
+        """Removes externals with None as value."""
         popkeys = [key for key, value in self.externals.items() \
             if not value]
         if popkeys:
@@ -149,7 +149,7 @@ class Show(Base):
                 self.externals.pop(k)
 
     def update_seasons(self):
-        '''Counts the number of episodes per season.
+        """Counts the number of episodes per season.
         Sets the value in the variable `self.seasons`.
 
         Must be called if one or more episodes for the show has
@@ -169,9 +169,9 @@ class Show(Base):
                     'total': 22,
                 }
             ]
-        '''
+        """
         session = orm.Session.object_session(self)
-        rows = session.execute('''
+        rows = session.execute("""
             SELECT 
                 season,
                 min(number) as `from`,
@@ -182,7 +182,7 @@ class Show(Base):
             WHERE
                 show_id = :show_id
             GROUP BY season;
-        ''', {
+        """, {
             'show_id': self.id,
         })
         seasons = []
@@ -198,12 +198,12 @@ class Show(Base):
         self.seasons = seasons
 
     def check_importers(self):
-        '''Checks that all the importer values is registered as externals.
+        """Checks that all the importer values is registered as externals.
 
         :param show: `Show()`
         :raises: `exceptions.Show_external_field_missing()`
         :raises: `exceptions.Show_importer_not_in_external()`
-        '''
+        """
         importers = self.serialize_importers()
         if not importers or not any(importers.values()):
             return
@@ -218,10 +218,10 @@ class Show(Base):
 
     @classmethod
     def show_id_by_external(self, external_title, external_value):
-        '''
+        """
 
         :returns: int
-        '''
+        """
         if not external_value or not external_title:
             return
         show_id = database.redis.get(Show_external.format_cache_key(
@@ -232,26 +232,6 @@ class Show(Base):
             return
         return int(show_id)
 
-    def become_fan(self, user_id):
-        session = orm.Session.object_session(self)
-        if Show_fan.is_fan(show_id=self.id, user_id=user_id):
-            return
-        fan = Show_fan(
-            show_id=self.id,
-            user_id=user_id,
-        )
-        session.add(fan)
-
-    def unfan(self, user_id):
-        session = orm.Session.object_session(self)
-        if not Show_fan.is_fan(show_id=self.id, user_id=user_id):
-            return
-        fan = session.query(Show_fan).filter(
-            Show_fan.show_id == self.id,
-            Show_fan.user_id == user_id,
-        ).first()
-        if fan:
-            session.delete(fan)
 
 class Show_fan(Base):
     __tablename__ = 'show_fans'
@@ -274,36 +254,38 @@ class Show_fan(Base):
         onupdate=datetime.utcnow,
     )
 
-    _show_cache_name = 'shows:{}:fans'
-    _user_cache_name = 'users:{}:fan_of'
+    @staticmethod
+    def ck_show_users(show_id):
+        """ A sorted set of user ids with the `created_at` as the sort key.
+        http://redis.io/commands#sorted_set
+        """
+        return 'shows:{}:fans'.format(show_id)
+
+    @staticmethod
+    def ck_user_shows(user_id):
+        """ A sorted set of show ids with the `created_at` as the sort key.
+        http://redis.io/commands#sorted_set
+        """
+        return 'users:{}:fan_of'.format(user_id)
 
     def cache(self):
-        session = orm.Session.object_session(self)
-        session.pipe.zadd(
-            self.show_cache_name, 
+        self.session.pipe.zadd(
+            self.ck_show_users(self.show_id), 
             self.created_at.timestamp() if self.created_at else datetime.utcnow().timestamp(),
             self.user_id,
         )
-        session.pipe.zadd(
-            self.user_cache_name,              
+        self.session.pipe.zadd(
+            self.ck_user_shows(self.user_id),              
             self.created_at.timestamp() if self.created_at else datetime.utcnow().timestamp(),
             self.show_id,
         )
 
-    @property
-    def show_cache_name(self):
-        return self._show_cache_name.format(self.show_id)
-
-    @property
-    def user_cache_name(self):
-        return self._user_cache_name.format(self.user_id)
-
     def incr_fan(self, amount):
-        '''Increments the fans/fan of counter for the user and the show.
+        """Increments the fans/fan of counter for the user and the show.
         Automatically called on insert and delete.
 
         :param amount: int
-        '''
+        """
         self.session.pipe.hincrby('shows:{}'.format(self.show_id), 'fans', amount)
         self.session.pipe.hincrby('users:{}:stats'.format(self.user_id), 'fan_of', amount)
         self.session.es_bulk.append({
@@ -329,35 +311,35 @@ class Show_fan(Base):
         self.incr_fan(1)
 
     def after_delete(self):
-        self.session.pipe.zrem(self.show_cache_name, self.user_id)
-        self.session.pipe.zrem(self.user_cache_name, self.show_id)
+        self.session.pipe.zrem(self.ck_show_users(self.show_id), self.user_id)
+        self.session.pipe.zrem(self.ck_user_shows(self.user_id), self.show_id)
         self.incr_fan(-1)
-
+        
     @classmethod
     def is_fan(cls, user_id, show_id):
-        '''Check if the user is a fan of one or more shows.
+        """Check if the user is a fan of one or more shows.
 
         :param user_id: int
         :param show_id: int or list of int
         :returns: bool or list of bool
-        '''
+        """
         show_ids = show_id if isinstance(show_id, list) else [show_id]
         pipe = database.redis.pipeline()
         for id_ in show_ids:
-            pipe.zrank(cls._user_cache_name.format(user_id), id_)
+            pipe.zrank(cls.ck_user_shows(user_id), id_)
         a = pipe.execute()
         result = [True if id_ != None else False for id_ in a]
         return result if isinstance(show_id, list) else result[0]
 
     @classmethod
     def get_all(cls, user_id):
-        '''Returns a list of all the show ids the user is a fan of.
+        """Returns a list of all the show ids the user is a fan of.
 
         :user_id: int
         :returns: list of int
-        '''
+        """
         show_ids = database.redis.zrevrange(
-            cls._user_cache_name.format(user_id),
+            cls.ck_user_shows(user_id),
             start=0,
             end=-1
         )
@@ -403,7 +385,7 @@ class Show_external(Base):
         session.pipe.delete(name)
 
     def after_upsert(self):
-        '''Updates the cache for externals'''
+        """Updates the cache for externals"""
         title_hist = get_history(self, 'title')
         value_hist = get_history(self, 'value')
         show_id = get_history(self, 'show_id')

@@ -32,7 +32,10 @@ class Test_etw(Testbase):
         self.assertEqual(len(shows), 0, shows)
 
         # Become a fan of the show
-        response = self.put('/1/shows/{}/fans/{}'.format(show['id'], self.current_user.id))
+        response = self.put('/1/users/{}/fan-of/{}'.format(
+            self.current_user.id,
+            show['id'], 
+        ))
         self.assertEqual(response.code, 204, response.body)
 
         # Test that the show and the first episode shows up

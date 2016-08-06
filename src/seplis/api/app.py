@@ -99,15 +99,6 @@ class Application(tornado.web.Application):
             ),
 
             URLSpec(
-                r'/1/shows/([0-9]+)/fans', 
-                seplis.api.handlers.show.Fans_handler
-            ),
-            URLSpec(
-                r'/1/shows/([0-9]+)/fans/([0-9]+)', 
-                seplis.api.handlers.show.Fans_handler
-            ),
-
-            URLSpec(
                 r'/1/users', 
                 seplis.api.handlers.user.Handler
             ),
@@ -127,11 +118,11 @@ class Application(tornado.web.Application):
         
             URLSpec(
                 r'/1/users/([0-9]+)/fan-of', 
-                seplis.api.handlers.show.Fan_of_handler
+                seplis.api.handlers.user_fan_of.Handler
             ),
             URLSpec(
                 r'/1/users/([0-9]+)/fan-of/([0-9]+)', 
-                seplis.api.handlers.show.Fan_of_handler
+                seplis.api.handlers.user_fan_of.Handler
             ),
             URLSpec(
                 r'/1/users/([0-9]+)/stats', 
