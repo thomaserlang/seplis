@@ -5,7 +5,7 @@ const propTypes = {
     class: React.PropTypes.string,
 }
 
-const defaultTypes = {
+const defaultProps = {
     class: 'col-xs-6 col-sm-4 col-md-3 col-margin'
 }
 
@@ -35,6 +35,6 @@ class List extends React.Component {
     }
 }
 List.propTypes = propTypes;
-List.defaultTypes = defaultTypes;
+List.defaultProps = defaultProps;
 
 export default List;
