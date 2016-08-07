@@ -1,29 +1,33 @@
-import logging
 import copy
-from seplis.api.handlers import base
-from seplis.api import constants, exceptions
+import good
+from . import base
 from seplis import schemas, utils
-from seplis.api.decorators import authenticated
-from seplis.config import config
-from seplis.api.connections import database
-from seplis.api import models
+from seplis.api import constants, exceptions, models
 from datetime import datetime, timedelta
-from tornado import gen, web
-from tornado.concurrent import run_on_executor
 from collections import OrderedDict
 
 class Handler(base.Handler):
 
-    @gen.coroutine
-    def get(self, user_id):        
-        episodes = yield self.get_episodes(user_id)
+    __arguments_schema__ = good.Schema({
+        'days_back': good.Any(
+            good.All(good.Coerce(int), good.Range(min=0, max=7)),
+            good.Default(1),
+        ),
+        'days_ahead': good.Any(
+            good.All(good.Coerce(int), good.Range(min=0, max=14)),
+            good.Default(7)
+        ),
+    }, default_keys=good.Required)
+
+    async def get(self, user_id):        
+        episodes = await self.get_episodes(user_id)
         if not episodes:
             self.write_object([])
             return
         ids = []
         [ids.append(episode['show_id']) for episode in episodes \
             if episode['show_id'] not in ids]
-        shows = yield self.get_shows(ids)
+        shows = await self.get_shows(ids)
         shows = {show['id']: show for show in shows}
         airdates = OrderedDict()
         airdate_shows = OrderedDict()
@@ -49,14 +53,13 @@ class Handler(base.Handler):
         self.write_object([{'air_date': ad, 'shows': airdates[ad]}\
             for ad in airdates])
 
-    @gen.coroutine
-    def get_episodes(self, user_id):        
-        offset_days = int(self.get_argument('from_date', 1))
-        days = int(self.get_argument('to_date', 7))
+    async def get_episodes(self, user_id):
+        args = self.validate_arguments()
         should_be = self.get_should_filter(user_id)
         if not should_be:
             return []
-        episodes = yield self.es('/episodes/episode/_search',
+        now = datetime.utcnow().date()
+        episodes = await self.es('/episodes/episode/_search',
             body={
                 'filter': {
                     'bool': {
@@ -64,10 +67,10 @@ class Handler(base.Handler):
                         'must': {
                             'range': {
                                 'air_date': {
-                                    'gte': (datetime.utcnow().date() - \
-                                        timedelta(days=offset_days)).isoformat(),
-                                    'lte': (datetime.utcnow().date() + \
-                                        timedelta(days=days)).isoformat(),
+                                    'gte': (now - \
+                                        timedelta(days=args['days_back'])).isoformat(),
+                                    'lte': (now + \
+                                        timedelta(days=args['days_ahead'])).isoformat(),
                                 }
                             }
                         }
