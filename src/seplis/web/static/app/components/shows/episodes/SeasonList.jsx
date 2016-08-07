@@ -90,9 +90,9 @@ class SeasonList extends React.Component {
                         {this.state.episodes.map((item, index) => (
                             <div                            
                                 key={item.number} 
-                                className="col-xs-12 col-md-6 col-lg-4"
+                                className="col-xs-12 col-md-6 col-lg-4 flex-min-width"
                             >
-                                <div className="hidden-sm-down m-b-1" />
+                                <div className="hidden-sm-down m-b-1 flex-min-width" />
                                 <EpisodeListItem 
                                     showId={this.props.showId}
                                     episode={item} 
