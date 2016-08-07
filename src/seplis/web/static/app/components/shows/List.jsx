@@ -8,11 +8,11 @@ class List extends React.Component {
 
     renderShow(show) {
         return (
-            <div key={show.id} className="col-xs-3 col-margin">
+            <div key={show.id} className="col-xs-6 col-sm-4 col-md-3 col-margin">
                 <a href={`/show/${show.id}`}>
                     <img 
-                        src={show.poster_image!=null?show.poster_image.url + '@SX360':''} 
-                        width="100%" 
+                        src={show.poster_image!=null?show.poster_image.url + '@SX269':''} 
+                        className="img-fluid"
                     />
                 </a>
             </div>

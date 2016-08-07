@@ -70,12 +70,12 @@ class FanOf extends React.Component {
         return (
             <span>
                 <div className="row">
-                    <div className="col-xs-12 col-md-10">
+                    <div className="col-xs-12 col-sm-9 col-md-10">
                         <h1>
                             Fan of {this.state.totalCount} shows
                         </h1>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-sm-3 col-md-2">
                         <Pagination 
                             jqXHR={this.state.jqXHR} 
                             onPageChange={this.onPageChange}
