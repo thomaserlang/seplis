@@ -84,8 +84,8 @@ class FanOf extends React.Component {
                 </div>
                 <ShowList shows={this.state.shows} />
                 <div className="row">
-                    <div className="col-md-10" />
-                    <div className="col-md-2">
+                    <div className="col-sm-9 col-md-10" />
+                    <div className="col-sm-3 col-md-2">
                         <Pagination 
                             jqXHR={this.state.jqXHR} 
                             onPageChange={this.onPageChange}
