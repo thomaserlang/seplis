@@ -3,6 +3,7 @@ import {request} from 'api';
 import {getUserId} from 'utils';
 import Loader from 'components/Loader';
 import ShowList from 'components/shows/List';
+import ShowsRecentlyWatched from 'components/shows/RecentlyWatched';
 
 const oneDay = 24*60*60*1000;
 const weekdays = [
@@ -68,15 +69,8 @@ class AirDates extends React.Component {
         }
     }
 
-    render() {
-        if (this.state.loading)
-            return (
-                <span>
-                    <h1>Air dates</h1>
-                    <Loader />
-                </span>
-            );
-        if (this.state.data.length == 0) 
+    renderAirDates() {
+        if (this.state.data.length == 0)
             return (
                 <div className="alert alert-info">
                     <h1>There's nothing to watch this week!</h1>
@@ -84,22 +78,34 @@ class AirDates extends React.Component {
                     Well, you're properly not a fan of any shows that has 
                     episodes airing this week.
                 </div>
-            )
+            );
+        else
+            return (
+                <span>
+                    <h1>Air dates</h1>
+                    {this.state.data.map(a => (
+                    <span key={a.air_date}>
+                        <h3 className="header" title={a.air_date}>
+                            {this.renderHeaderDate(a.air_date)}
+                        </h3>
+                        <ShowList 
+                            shows={a.shows} 
+                            class="col-margin col-xs-4 col-sm-3 col-md-2"
+                        />
+                    </span>
+                    ))}
+                </span>
+            );
+    }
+
+    render() {
         return (
             <span>
-                {this.state.data.map(a => (
-                <span key={a.air_date}>
-                    <h3 className="header" title={a.air_date}>
-                        {this.renderHeaderDate(a.air_date)}
-                    </h3>
-                    <ShowList 
-                        shows={a.shows} 
-                        class="col-margin col-xs-4 col-sm-3 col-md-2"
-                    />
-                </span>
-                ))}
+            <ShowsRecentlyWatched />
+            <h2>Air dates</h2>
+            {this.state.loading?<Loader />:this.renderAirDates()}
             </span>
-        );
+        )
     }
 }
 
