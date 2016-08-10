@@ -24,10 +24,6 @@ const navbarItemsLeft = [
                 accessLevel: 0,
             },
             {
-                name: 'Index',
-                url: '/show-index',
-            },
-            {
                 name: 'New show',
                 url: '/show-new',
                 accessLevel: 2,
