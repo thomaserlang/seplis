@@ -9,7 +9,7 @@ const propTypes = {
     displaySeason: React.PropTypes.bool,
 }
 
-const defaultTypes = {
+const defaultProps = {
     displaySeason: true,
 }
 
@@ -91,6 +91,6 @@ class EpisodeListItem extends React.Component {
     }
 }
 EpisodeListItem.propTypes = propTypes;
-EpisodeListItem.defaultTypes = defaultTypes;
+EpisodeListItem.defaultProps = defaultProps;
 
 export default EpisodeListItem;
