@@ -59,6 +59,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.react.Handler),
 
             URLSpec(r'/fan-of', seplis.web.handlers.react.Handler),
+            URLSpec(r'/air-dates', seplis.web.handlers.react.Handler),
 
             URLSpec(r'/sign-in', seplis.web.handlers.sign_in.Handler),
             URLSpec(r'/api/sign-in', seplis.web.handlers.sign_in.API_handler),
@@ -82,7 +83,6 @@ class Application(tornado.web.Application):
             URLSpec(r'/user-tags', seplis.web.handlers.tag.Relation_handler),
             URLSpec(r'/users/([0-9]+)/tags/shows', seplis.web.handlers.tag.Shows_handler, name='user_tagged_shows'),
 
-            URLSpec(r'/air-dates', seplis.web.handlers.air_dates.Handler),
             URLSpec(r'/etw', seplis.web.handlers.etw.Handler),
 
             URLSpec(r'/user/play-servers', seplis.web.handlers.user.play_servers.Handler),
