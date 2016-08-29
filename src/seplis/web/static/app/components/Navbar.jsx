@@ -11,11 +11,6 @@ const navbarItemsLeft = [
         accessLevel: 0,
     },
     {
-        name: 'ETW',
-        url: '/etw',
-        accessLevel: 0,
-    },
-    {
         name: 'Shows',
         items: [
             {
