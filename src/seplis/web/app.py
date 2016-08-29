@@ -59,7 +59,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/show-edit/([0-9]+)', seplis.web.handlers.react.Handler),
 
             URLSpec(r'/fan-of', seplis.web.handlers.react.Handler),
-            URLSpec(r'/air-dates', seplis.web.handlers.react.Handler),
+            URLSpec(r'/main', seplis.web.handlers.react.Handler),
 
             URLSpec(r'/sign-in', seplis.web.handlers.sign_in.Handler),
             URLSpec(r'/api/sign-in', seplis.web.handlers.sign_in.API_handler),

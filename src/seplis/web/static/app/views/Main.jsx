@@ -16,7 +16,7 @@ const weekdays = [
     'Saturday',
 ];
 
-class AirDates extends React.Component {
+class Main extends React.Component {
 
     constructor(props) {
         super();
@@ -69,7 +69,7 @@ class AirDates extends React.Component {
         }
     }
 
-    renderAirDates() {
+    renderMain() {
         if (this.state.data.length == 0)
             return (
                 <div className="alert alert-info">
@@ -82,7 +82,6 @@ class AirDates extends React.Component {
         else
             return (
                 <span>
-                    <h1>Air dates</h1>
                     {this.state.data.map(a => (
                     <span key={a.air_date}>
                         <h3 className="header" title={a.air_date}>
@@ -103,10 +102,10 @@ class AirDates extends React.Component {
             <span>
             <ShowsRecentlyWatched />
             <h2>Air dates</h2>
-            {this.state.loading?<Loader />:this.renderAirDates()}
+            {this.state.loading?<Loader />:this.renderMain()}
             </span>
         )
     }
 }
 
-export default AirDates;
+export default Main;

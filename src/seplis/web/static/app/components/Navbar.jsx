@@ -6,8 +6,8 @@ import './Navbar.scss';
 
 const navbarItemsLeft = [
     {
-        name: 'Air dates',
-        url: '/air-dates',
+        name: 'Main',
+        url: '/main',
         accessLevel: 0,
     },
     {

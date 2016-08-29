@@ -10,7 +10,7 @@ import ShowEdit from './views/show/Edit';
 import ShowNew from './views/show/New';
 
 import FanOf from './views/FanOf';
-import AirDates from './views/AirDates';
+import Main from './views/Main';
 
 export default (
     <Router history={browserHistory}>
@@ -23,6 +23,6 @@ export default (
         </Route>
         <Route path="/show-new" component={ShowNew} />
         <Route path="/fan-of" component={FanOf} />
-        <Route path="/air-dates" component={AirDates} />
+        <Route path="/main" component={Main} />
       </Router>
 );
