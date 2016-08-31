@@ -1,6 +1,7 @@
 import React from 'react';
 import {request} from 'api';
 import {isAuthed, getUserLevel} from 'utils';
+import Search from './Search';
 
 import './Navbar.scss';
 
@@ -24,6 +25,9 @@ const navbarItemsLeft = [
                 accessLevel: 2,
             }
         ]
+    },
+    {
+        name: 'Search',
     }
 ]
 
@@ -33,6 +37,8 @@ class Navbar extends React.Component {
         if (('accessLevel' in item) && 
             (getUserLevel() < item.accessLevel))
             return;
+        if (item.name == 'Search')
+            return <Search key="Search" />
         if ('items' in item) {
             return (                
                 <li key={item.name} className="nav-item dropdown">
