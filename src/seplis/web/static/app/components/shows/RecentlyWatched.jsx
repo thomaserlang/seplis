@@ -38,7 +38,7 @@ class RecentlyWatched extends React.Component {
     render() {
         return (
             <span>
-                <h2>Recently watched</h2>     
+                <h2 className="header">Recently watched</h2>     
                 <ShowList 
                     shows={this.state.shows} 
                     class="col-margin col-xs-4 col-sm-3 col-md-2"

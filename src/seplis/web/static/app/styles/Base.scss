@@ -16,7 +16,11 @@ $fa-font-path: "~font-awesome/fonts";
 h1,
 h2 {
     margin-top:0;
-    color:#f60;
+}
+
+h3, 
+h4 {
+    color: #428bca;
 }
 
 a, 
@@ -39,11 +43,11 @@ a.btn {
 }
 
 .col-margin {
-    margin-bottom: 1rem;
+    margin-bottom: 1rem !important;
 }
 
 .header {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #6C6C6C;
     margin-top: 0;
     margin-bottom: 0;
     padding-bottom: 9px;

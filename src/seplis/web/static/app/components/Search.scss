@@ -4,22 +4,22 @@
 
     input[type=text] {
         width: 500px;
-        background-color: #555555;
+        background-color: #414141;
         color:#fff;
-        border: 1px solid #ccc;
+        border: 1px solid #6C6C6C;
 
         &:focus {
             outline-width: 0 !important;
             outline: none !important;
-            border: 1px solid #ccc;
+            border: 1px solid #6C6C6C;
         }
     }
 
     .suggest {
         font-size: 1.1rem;
-        border: 1px solid #ccc;
+        border: 1px solid #6C6C6C;
         border-top: none;
-        background-color: #fff;
+        background-color: #414141;
         position: absolute;
         z-index: 1000;
         width: 100%;
@@ -29,9 +29,9 @@
 
         .row {
             height: 100px;
-            color: #000;
+            color: #ccc;
             cursor: pointer;
-            border-bottom: 1px solid #ccc;
+            border-bottom: 1px solid #6C6C6C;
             &:last-child {
                 border: none;
             }
@@ -41,7 +41,7 @@
         }
 
         .selected {
-            background-color: #E3E3E3;
+            background-color: #6A6A6A;
         }
     }
 }
