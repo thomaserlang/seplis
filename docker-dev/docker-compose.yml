@@ -8,6 +8,7 @@ services:
       - "./es_config:/usr/share/elasticsearch/config"
   redis:
     image: "redis:3-alpine"
+    command: redis-server --appendonly yes
     ports:
       - "6379:6379"
   percona:
