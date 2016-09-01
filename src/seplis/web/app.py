@@ -50,7 +50,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(static_path, 'favicon.ico')}),
             URLSpec(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
 
-            URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/air-dates"}),
+            URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/main"}),
+            URLSpec(r"/air-dates", tornado.web.RedirectHandler, {"url": "/main"}),
 
 
             URLSpec(r'/show-new', seplis.web.handlers.react.Handler),
