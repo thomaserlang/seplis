@@ -5,65 +5,67 @@ import Search from './Search';
 
 import './Navbar.scss';
 
-const navbarItemsLeft = [
-    {
-        name: 'Main',
-        url: '/main',
-        accessLevel: 0,
-    },
-    {
-        name: 'Shows',
-        items: [
-            {
-                name: 'Fan of',
-                url: '/fan-of',
-                accessLevel: 0,
-            },
-            {
-                name: 'New show',
-                url: '/show-new',
-                accessLevel: 2,
-            }
-        ]
-    },
-    {
-        name: 'Search',
-    }
-]
-
 class Navbar extends React.Component {
 
-    renderItem(item) {
-        if (('accessLevel' in item) && 
-            (getUserLevel() < item.accessLevel))
-            return;
-        if (item.name == 'Search')
-            return <Search key="Search" />
-        if ('items' in item) {
-            return (                
-                <li key={item.name} className="nav-item dropdown">
-                    <a 
-                        className="nav-link dropdown-toggle" 
-                        data-toggle="dropdown"
-                        href="#"
-                    >
-                        {item.name}                        
-                    </a>
-                    <div className="dropdown-menu">
-                        {item.items.map((item, i) => (
-                            <a key={item.name} className="dropdown-item" href={item.url}>
-                                {item.name}
-                            </a>
-                        ))}
-                    </div>
-                </li>
-            )
-        }
+    renderShowDropdown() {
         return (
-            <li key={item.name} className="nav-item">
-                <a href={item.url} className="nav-link">
-                    {item.name}
+            <li className="nav-item dropdown">
+                <a 
+                    className="nav-link dropdown-toggle" 
+                    data-toggle="dropdown"
+                    href="#"
+                >
+                    Shows                      
                 </a>
+                <div className="dropdown-menu">
+                    <a className="dropdown-item" href="/fan-of">Fan of</a>
+                    <a className="dropdown-item" href="/show-new">New show</a>
+                </div>
+            </li>
+        )
+    }
+
+    renderLeft() {
+        return (
+            <span>
+                <li className="nav-item">
+                    <a 
+                        className="nav-link" 
+                        href="/main"
+                    >
+                        Main
+                    </a>
+                </li>
+                {this.renderShowDropdown()}
+            </span>
+        )
+    }
+
+    renderRight() {
+        return (
+            <div className="pull-xs-right">
+                <li className="nav-item">
+                    {this.renderUserMenu()}
+                </li>
+                
+            </div>
+        )
+    }
+
+    renderUserMenu() {
+        return (
+            <li className="nav-item dropdown">
+                <a 
+                    className="nav-link dropdown-toggle" 
+                    data-toggle="dropdown"
+                    href="#"
+                >
+                    <i className="fa fa-user"></i>                      
+                </a>
+                <div className="dropdown-menu dropdown-menu-right">
+                    <a className="dropdown-item" href="/settings">Settings</a>
+                    <a className="dropdown-item" href="/sign-out">Sign out</a>
+                </div>
             </li>
         )
     }
@@ -72,10 +74,19 @@ class Navbar extends React.Component {
         return (
             <nav className="navbar navbar-seplis">
                 <div className="container">
-                    <ul className="nav navbar-nav">
-                        {navbarItemsLeft.map((item, i) => (
-                            this.renderItem(item)
-                        ))}
+                    <ul className="nav navbar-nav row">
+
+                        <div className="col-xs-6 col-md-3">
+                            {this.renderLeft()}
+                        </div>
+
+                        <div className="col-xs-6 col-md-3 col-md-push-6">
+                            {this.renderRight()}
+                        </div>
+                        <div className="col-xs-12 col-md-6 col-md-pull-3">
+                            <Search key="Search" />
+                        </div>
+
                     </ul>
                 </div>
             </nav>
