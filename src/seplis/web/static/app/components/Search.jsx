@@ -16,6 +16,7 @@ class Search extends React.Component {
         this.onMouseOver = this.mouseOver.bind(this);
         this.onMouseOut = this.mouseOut.bind(this);
         this.onSubmit = this.submit.bind(this);
+        this.onClick = this.click.bind(this);
         this.state = {
             results: [],
             display: false,
@@ -63,9 +64,8 @@ class Search extends React.Component {
                 this.setNextSelectedId(1);
                 break;
             case KEY_ENTER:
-                if (this.state.selectedResultId) {
-                    location.href = `/show/${this.state.selectedResultId}`
-                }
+                if (this.state.selectedResultId)
+                    location.href = `/show/${this.state.selectedResultId}`;
                 break;
         }
     }
@@ -118,6 +118,11 @@ class Search extends React.Component {
         e.preventDefault();
     }
 
+    click(e) {
+        if (this.state.selectedResultId)
+            location.href = `/show/${this.state.selectedResultId}`;
+    }
+
     resultClassName(result) {
         let className = 'row';
         if (result.id == this.state.selectedResultId)
@@ -140,7 +145,7 @@ class Search extends React.Component {
                     ref={(ref) => this.suggestNode = ref}
                 >
                     {this.state.results.map(r => (
-                        <a 
+                        <div 
                             key={r.id}
                             id={`sresult-${r.id}`}
                             data-id={r.id}
@@ -148,17 +153,17 @@ class Search extends React.Component {
                             className={this.resultClassName(r)}
                             onMouseOver={this.onMouseOver}
                             onMouseOut={this.onMouseOut}
+                            onClick={this.onClick}
                         >
                             <div className="col-xs-2">
                                 <img 
                                     src={r.poster_image!=null?r.poster_image.url + '@SY100':''} 
-                                    width="100%"
                                 />
                             </div>
-                            <div className="col-sm-10">
+                            <div className="col-xs-10">
                                 {r.title}
                             </div>
-                        </a>
+                        </div>
                     ))}
                 </div>
             </form>
