@@ -44,10 +44,7 @@ class Navbar extends React.Component {
     renderRight() {
         return (
             <div className="pull-xs-right">
-                <li className="nav-item">
-                    {this.renderUserMenu()}
-                </li>
-                
+                {this.renderUserMenu()}                
             </div>
         )
     }
