@@ -131,6 +131,7 @@ class Access_handler(base.Handler):
     @gen.coroutine
     def put(self, user_id, server_id, access_user_id):
         yield self.give_access(server_id, access_user_id)
+        self.set_status(204)
 
     @run_on_executor
     def give_access(self, server_id, access_user_id):
@@ -144,7 +145,7 @@ class Access_handler(base.Handler):
     @gen.coroutine
     def delete(self, user_id, server_id, access_user_id):
         yield self.remove_access(server_id, access_user_id)
-        self.set_status(201)
+        self.set_status(204)
 
     @run_on_executor
     def remove_access(self, server_id, access_user_id):
