@@ -195,6 +195,7 @@ class Change_password_handler(base.Handler):
         user_id = user_id if user_id else self.current_user.id
         self.check_user_edit(user_id)
         yield self.change_password(user_id)
+        self.set_status(204)
 
     @run_on_executor
     def change_password(self, user_id):
