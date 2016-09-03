@@ -11,6 +11,8 @@ import ShowNew from './views/show/New';
 
 import FanOf from './views/FanOf';
 import Main from './views/Main';
+import Account from './views/Account';
+import Password from './views/Password';
 
 export default (
     <Router history={browserHistory}>
@@ -24,5 +26,7 @@ export default (
         <Route path="/show-new" component={ShowNew} />
         <Route path="/fan-of" component={FanOf} />
         <Route path="/main" component={Main} />
+        <Route path="/account" component={Account} />
+        <Route path="/password" component={Password} />
       </Router>
 );

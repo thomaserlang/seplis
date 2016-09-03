@@ -61,12 +61,13 @@ class Application(tornado.web.Application):
 
             URLSpec(r'/fan-of', seplis.web.handlers.react.Handler),
             URLSpec(r'/main', seplis.web.handlers.react.Handler),
+            URLSpec(r'/account', seplis.web.handlers.react.Handler),
+            URLSpec(r'/password', seplis.web.handlers.react.Handler),
 
             URLSpec(r'/sign-in', seplis.web.handlers.sign_in.Handler),
             URLSpec(r'/api/sign-in', seplis.web.handlers.sign_in.API_handler),
             URLSpec(r'/sign-up', seplis.web.handlers.sign_in.Sign_up_handler),
             URLSpec(r'/api/sign-up', seplis.web.handlers.sign_in.API_sign_up_handler),
-            URLSpec(r'/settings', seplis.web.handlers.settings.Handler),
             URLSpec(r'/sign-out', seplis.web.handlers.sign_in.Sign_out_handler),
 
             URLSpec(r'/show-index', seplis.web.handlers.show.Index_handler),
