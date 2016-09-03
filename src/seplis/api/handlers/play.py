@@ -54,6 +54,7 @@ class Server_handler(base.Handler):
     @gen.coroutine
     def delete(self, user_id, id_):
         yield self.remove(id_)
+        self.set_status(204)
 
     @run_on_executor
     def remove(self, id_):
