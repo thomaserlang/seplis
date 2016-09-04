@@ -44,7 +44,8 @@ class Navbar extends React.Component {
     renderRight() {
         return (
             <div className="pull-xs-right">
-                {this.renderUserMenu()}                
+                {this.renderUserMenu()}
+                {this.renderNotAuthedMenu()}            
             </div>
         )
     }
@@ -67,6 +68,31 @@ class Navbar extends React.Component {
                     <a className="dropdown-item" href="/sign-out">Sign out</a>
                 </div>
             </li>
+        )
+    }
+
+    renderNotAuthedMenu() {
+        if (isAuthed()) 
+            return;
+        return (
+            <span>
+                <li className="nav-item">
+                    <a 
+                        className="nav-link" 
+                        href="/create-user"
+                    >
+                        Create a user
+                    </a>
+                </li>
+                <li className="nav-item">
+                    <a 
+                        className="nav-link" 
+                        href="/sign-in"
+                    >
+                        Sign in
+                    </a>
+                </li>
+            </span>
         )
     }
 
