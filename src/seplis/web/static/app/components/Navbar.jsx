@@ -64,7 +64,7 @@ class Navbar extends React.Component {
                 </a>
                 <div className="dropdown-menu dropdown-menu-right">
                     <a className="dropdown-item" href="/account">Account</a>
-                    <a className="dropdown-item" href="/account">Play servers</a>
+                    <a className="dropdown-item" href="/play-servers">Play servers</a>
                     <a className="dropdown-item" href="/sign-out">Sign out</a>
                 </div>
             </li>
