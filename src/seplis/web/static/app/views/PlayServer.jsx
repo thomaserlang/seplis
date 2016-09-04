@@ -179,7 +179,7 @@ class PlayServer extends React.Component {
                     type="text"
                     name="name"
                     className="form-control dark-form-control" 
-                    placeholder="Username or email"
+                    placeholder="Username"
                 />
                 </div>
                 <div className="col-xs-4">
