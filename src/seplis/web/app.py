@@ -63,6 +63,8 @@ class Application(tornado.web.Application):
             URLSpec(r'/main', seplis.web.handlers.react.Handler),
             URLSpec(r'/account', seplis.web.handlers.react.Handler),
             URLSpec(r'/password', seplis.web.handlers.react.Handler),
+            URLSpec(r'/play-servers', seplis.web.handlers.react.Handler),
+            URLSpec(r'/play-server', seplis.web.handlers.react.Handler),
 
             URLSpec(r'/sign-in', seplis.web.handlers.sign_in.Handler),
             URLSpec(r'/api/sign-in', seplis.web.handlers.sign_in.API_handler),

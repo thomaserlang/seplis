@@ -13,6 +13,8 @@ import FanOf from './views/FanOf';
 import Main from './views/Main';
 import Account from './views/Account';
 import Password from './views/Password';
+import PlayServers from './views/PlayServers';
+import PlayServer from './views/PlayServer';
 
 export default (
     <Router history={browserHistory}>
@@ -28,5 +30,7 @@ export default (
         <Route path="/main" component={Main} />
         <Route path="/account" component={Account} />
         <Route path="/password" component={Password} />
+        <Route path="/play-servers" component={PlayServers} />
+        <Route path="/play-server" component={PlayServer} />
       </Router>
 );
