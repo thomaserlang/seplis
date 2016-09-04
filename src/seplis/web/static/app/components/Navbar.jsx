@@ -81,7 +81,7 @@ class Navbar extends React.Component {
                         className="nav-link" 
                         href="/create-user"
                     >
-                        Create a user
+                        Create user
                     </a>
                 </li>
                 <li className="nav-item">
