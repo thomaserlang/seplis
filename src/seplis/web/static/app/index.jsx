@@ -11,9 +11,5 @@ export default{
         Routes: require('./Routes.jsx'),
         apiClientSettings: apiClientSettings,
         Navbar: require('./components/Navbar.jsx'),
-        views: {
-            Show: require('./views/show/Show.jsx'),
-            SignIn: require('./views/SignIn.jsx'),
-        }
     }
 };

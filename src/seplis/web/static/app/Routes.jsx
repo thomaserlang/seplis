@@ -9,6 +9,8 @@ import ShowEdit from './views/show/Edit';
 
 import ShowNew from './views/show/New';
 
+import SignIn from './views/SignIn';
+
 import FanOf from './views/FanOf';
 import Main from './views/Main';
 import Account from './views/Account';
@@ -18,6 +20,7 @@ import PlayServer from './views/PlayServer';
 
 export default (
     <Router history={browserHistory}>
+        <Route path="/sign-in" component={SignIn} />
         <Route path="/show/:showId" component={Show}>
             <IndexRedirect to="/show/:showId/main" />
             <Route path="main" component={ShowMain} />
