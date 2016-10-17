@@ -15,7 +15,7 @@ services:
     image: "percona:5.7"
     command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci]
     environment:
-      - MYSQL_ROOT_PASSWORD=Esedb123
+      - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=seplis
     ports:
       - "3306:3306"
