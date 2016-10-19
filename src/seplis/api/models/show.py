@@ -44,7 +44,7 @@ class Show(Base):
     def serialize(self):
         return {
             'id': self.id,
-            'title': self.title,
+            'title': self.title or '',
             'description': {
                 'text': self.description_text,
                 'title': self.description_title,
