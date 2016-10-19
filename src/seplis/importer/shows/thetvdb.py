@@ -100,6 +100,8 @@ class Thetvdb(Show_importer_base):
                     if banner['Rating'] else float(0)):
                 if banner['BannerType'] != 'poster':
                     continue
+                if banner['Language'] != 'en':
+                    continue
                 images.append({
                     'external_name': 'thetvdb',
                     'external_id': str(banner['id']),
