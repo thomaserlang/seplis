@@ -3,16 +3,16 @@ var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var path = require('path');
 var autoprefixer = require('autoprefixer');
 
-var staticPath = path.resolve('./src/seplis/web/static');
-var nodeModulesPath = path.resolve('./node_modules');
+var staticPath = path.resolve(__dirname, 'src/seplis/web/static');
+var nodeModulesPath = path.resolve(__dirname, 'node_modules');
 
 module.exports = {
     devtool: "source-map",
     entry: {
-        app: staticPath+'/app',
+        app: path.resolve(staticPath, 'app'),
         vendor: [
             'jquery',
-            'bootstrap/dist/js/umd/dropdown',
+            'bootstrap/js/dist/dropdown',
             'react',
             'react-dom',
             'react-router',
@@ -26,11 +26,11 @@ module.exports = {
         extensions: ['', '.js', '.jsx', '.scss', '.css'],
         
         root: [
-            staticPath+'/app',
+            path.resolve(staticPath, 'app'),
         ]
     },
     output: {
-        path: staticPath+'/dist',
+        path: path.resolve(staticPath, 'dist'),
         filename: '[name].js',
         sourceMapFilename: '[file].map',
         libraryTarget: 'var',

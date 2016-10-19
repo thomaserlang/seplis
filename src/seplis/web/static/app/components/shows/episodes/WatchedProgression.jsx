@@ -3,7 +3,7 @@ import SelectSeasonEpisode from './SelectSeasonEpisode';
 import {request} from 'api';
 import {getUserId} from 'utils';
 
-import 'bootstrap/dist/js/umd/dropdown';
+import 'bootstrap/js/dist/dropdown';
 
 const propTypes = {
     showId: React.PropTypes.number.isRequired,
