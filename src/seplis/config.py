@@ -151,3 +151,6 @@ def load(path=None):
                 )
             else:
                 config['play']['ffmpeg_logfile'] = None
+    if config['play']['temp_folder']:
+        if not os.path.exists(config['play']['temp_folder']):
+            os.makedirs(config['play']['temp_folder'])
