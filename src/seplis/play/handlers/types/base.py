@@ -64,7 +64,8 @@ def set_audio(handler, metadata, ffmpeg_args):
     arg = {'-map': '0:a:0'}
     if audio_lang:
         sub_index = stream_index_by_lang(metadata, 'audio', audio_lang)
-        arg = {'-map': '0:a:{}'.format(sub_index['group_index'])}
+        if sub_index:
+            arg = {'-map': '0:a:{}'.format(sub_index['group_index'])}
     ffmpeg_args.append(arg)
 
 def set_subtitle(handler, metadata, ffmpeg_args):
