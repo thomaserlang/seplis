@@ -13,11 +13,12 @@ sessions = {}
 def start(handler, settings, metadata):
     handler.set_header('Content-Type', 'application/x-mpegURL')
     session = handler.get_argument('session')
-    if handler.get_argument('ping', None):
+    action = handler.get_argument('action', None)
+    if action == 'ping':
         ping(handler, session)
         handler.finish()
         return
-    if handler.get_argument('close', None):
+    elif action == 'close':
         close(session)
         handler.finish()
         return

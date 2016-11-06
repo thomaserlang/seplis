@@ -8,6 +8,10 @@ from . import base
 __all__ = ['start']
 
 def start(handler, settings, metadata):
+    action = handler.get_argument('action', None)
+    if action:
+        handler.finish()
+        return
     def receive_data(*args):
         data = handler.process.stdout.read(8192)
         if data: 
@@ -39,6 +43,8 @@ def start(handler, settings, metadata):
     handler.ioloop.add_handler(handler.fd, receive_data, handler.ioloop.READ)
 
 def connection_close(self):
+    if not hasattr(self, 'process'):
+        return
     if self.process.returncode is not None:
         return
     self.process.stdout.close()
