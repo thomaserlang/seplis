@@ -5,9 +5,15 @@
         <title>{{ title }}</title>
         
         <!-- <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600" rel="stylesheet" type="text/css"> !-->
+        {% if config['debug'] %}
+        <link rel="stylesheet" href="{{config['client']['public_api_url'][:-5]}}:8080/app.css">
+        <script type="text/javascript" src="{{config['client']['public_api_url'][:-5]}}:8080/vendor.js"></script>
+        <script type="text/javascript" src="{{config['client']['public_api_url'][:-5]}}:8080/app.js"></script>
+        {% else %}
         <link rel="stylesheet" href="/static/dist/app.css">
         <script type="text/javascript" src="/static/dist/vendor.js"></script>
         <script type="text/javascript" src="/static/dist/app.js"></script>
+        {% end %}
 
         <script type="text/javascript">
             for (var n in window.exports.default) {
