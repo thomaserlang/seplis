@@ -26,7 +26,7 @@ export function request(url, options = {}) {
         data = JSON.stringify(data);
     }
     
-    if ((!url.startsWith('https')) && (!localRequest)) {
+    if ((!url.startsWith('http')) && (!localRequest)) {
         url = apiClientSettings.baseUrl + url;
     }
 
