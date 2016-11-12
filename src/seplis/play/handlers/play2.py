@@ -5,7 +5,7 @@ import os
 from .types import pipe, hls
 from ua_parser import user_agent_parser
 
-from seplis import config
+from seplis import config, utils
 from seplis.play.decorators import new_session
 from seplis.play import models
 
@@ -14,15 +14,7 @@ class Play_handler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def get(self):
         self.ioloop = tornado.ioloop.IOLoop.current()
-        with new_session() as session:
-            episode = session.query(
-                models.Episode.meta_data,
-            ).filter(
-                models.Episode.show_id == self.get_argument('show_id'),
-                models.Episode.number == self.get_argument('number'),
-            ).first()
-            metadata = episode.meta_data
-
+        metadata = get_metadata(self.get_argument('play_id'))
         settings = get_device_settings(self)
         if settings['type'] == 'pipe':
             pipe.start(self, settings, metadata)
@@ -41,11 +33,27 @@ class File_handler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
         set_header(self)
 
+class Metadata_handler(tornado.web.RequestHandler):
+
+    def get(self):
+        metadata = get_metadata(self.get_argument('play_id'))
+        if not metadata:
+            self.set_status(404)
+            self.write('{"error": "No episode found"}')
+            return
+        self.write(metadata)
+
+    def options(self):
+        pass
+
+    def set_default_headers(self):
+        set_header(self)
+
 def set_header(self):
     self.set_header('Cache-Control', 'no-cache, must-revalidate')
     self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
     self.set_header('Access-Control-Allow-Origin', '*')
-    self.set_header('Access-Control-Allow-Headers', 'User-Agent')
+    self.set_header('Access-Control-Allow-Headers', 'User-Agent, Content-Type')
     self.set_header('Access-Control-Allow-Methods', 'GET')
     self.set_header('Access-Control-Expose-Headers', 'Content-Type')
 
@@ -60,6 +68,25 @@ def get_device_settings(handler):
             agent['user_agent']['family']
         ))
     return settings
+
+def get_metadata(play_id):
+    data = decode_play_id(play_id)
+    with new_session() as session:
+        episode = session.query(
+            models.Episode.meta_data,
+        ).filter(
+            models.Episode.show_id == data['show_id'],
+            models.Episode.number == data['number'],
+        ).first()
+        return episode.meta_data
+
+def decode_play_id(play_id):
+    return utils.json_loads(tornado.web.decode_signed_value(
+        secret=config['play']['secret'],
+        name='play_id',
+        value=play_id,
+        max_age_days=0.3,
+    ))
 
 device_settings = {
     'Other': {
