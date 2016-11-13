@@ -43,7 +43,6 @@ def start(handler, settings, metadata):
     }
     wait_for_media(handler, metadata, path, session)
 
-
 def wait_for_media(handler, metadata, path, session, times=0):
     times = 0
     ts_files = 0
@@ -88,15 +87,14 @@ def cleanup(session):
     if session not in sessions:
         return
     s = sessions[session]
-    logging.info(s['process'].returncode)
     if s['process'].returncode is None:
         s['process'].terminate()
         s['process'].wait()
-    path = os.path.dirname(s['temp_folder'])
+    path = s['temp_folder']
     if os.path.exists(path):
         shutil.rmtree(path)
     else:
-        logging.warning('Path: {} not found, can\'t delete it'.format(s['temp_folder']))            
+        logging.warning('Path: {} not found, can\'t delete it'.format(path))            
     tornado.ioloop.IOLoop.current().remove_timeout(s['call_later'])
     del sessions[session]
 
