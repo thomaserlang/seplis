@@ -104,8 +104,7 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     args = base.ffmpeg_base_args(handler, settings, metadata)
     args.extend([
         {'-f': 'hls'},
-        {'-c:a': 'libfaac'},
-        {'-strict': '-2'},
+        {'-c:a': 'aac'},
         {'-cutoff': '15000'},
         {'-ac': '2'},
         {'-hls_flags': 'omit_endlist'},
