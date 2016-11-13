@@ -28,6 +28,9 @@ class Play_handler(tornado.web.RequestHandler):
         if hasattr(self, 'event_connection_close'):
             self.event_connection_close()
 
+    def options(self):
+        pass
+
 class File_handler(tornado.web.StaticFileHandler):
 
     def set_default_headers(self):
