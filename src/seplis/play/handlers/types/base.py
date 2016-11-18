@@ -20,6 +20,7 @@ def ffmpeg_base_args(handler, settings, metadata):
         {'-loglevel': 'quiet'},        
         {'-map': '0:v:0'},
         {'-preset': 'ultrafast'},
+        {'-c:a': 'aac'},
         {'-pix_fmt': settings['transcode_pixel_format']},
     ]
     start_time = handler.get_argument('start_time', None)
