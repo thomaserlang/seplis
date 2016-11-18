@@ -24,8 +24,11 @@ def start(handler, settings, metadata):
         return
     temp_folder = setup_temp_folder(session)
     path = os.path.join(temp_folder, 'media.m3u8')
+    media_file = 'media.m3u8'
+    if handler.agent['os']['family'] == 'iOS':
+        media_file = 'media2.m3u8'
     if session in sessions:        
-        wait_for_media(handler, metadata, path, session)
+        wait_for_media(handler, metadata, path, media_file, session)
         return
     process = subprocess.Popen(
         ffmpeg_start(temp_folder, handler, settings, metadata),
@@ -41,9 +44,11 @@ def start(handler, settings, metadata):
         'temp_folder': temp_folder,
         'call_later': call_later,
     }
-    wait_for_media(handler, metadata, path, session)
+    if media_file == 'media2.m3u8':
+        generate_media(handler, metadata, path)
+    wait_for_media(handler, metadata, path, media_file, session)
 
-def wait_for_media(handler, metadata, path, session, times=0):
+def wait_for_media(handler, metadata, path, media_file, session, times=0):
     times = 0
     ts_files = 0
     if os.path.exists(path):
@@ -59,6 +64,7 @@ def wait_for_media(handler, metadata, path, session, times=0):
             handler,
             metadata,
             path,
+            media_file,
             session,
             times,
         )
@@ -66,11 +72,28 @@ def wait_for_media(handler, metadata, path, session, times=0):
     media = [
         '#EXTM3U',
         '#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1',
-        '/hls/{}/media.m3u8'.format(session),
+        '/hls/{}/{}'.format(session, media_file),
     ]
     for s in media:
         handler.write(s+'\n')
     handler.finish()
+    
+def generate_media(handler, metadata, path):
+    with open(os.path.dirname(path)+'/media2.m3u8', 'w') as f:
+        start_time = int(handler.get_argument('start_time', 0))
+        duration = float(metadata['format']['duration']) - start_time
+        f.write('#EXTM3U\n')
+        f.write('#EXT-X-VERSION:3\n')
+        f.write('#EXT-X-TARGETDURATION:3\n')
+        f.write('#EXT-X-MEDIA-SEQUENCE:0\n')
+        for i in range(0, int(duration/config['play']['segment_time'])):
+            f.write('#EXTINF:3,\n')
+            f.write('{}'.format(i).zfill(5)+'.ts\n')
+        rest = duration % config['play']['segment_time']
+        if rest > 0:
+            f.write('#EXTINF:{},\n'.format(int(rest)))
+            f.write('{}'.format(i+1).zfill(5)+'.ts\n')
+        f.write('#EXT-X-ENDLIST')
 
 def ping(handler, session):
     if session not in sessions:
@@ -99,16 +122,16 @@ def cleanup(session):
     del sessions[session]
 
 def ffmpeg_start(temp_folder, handler, settings, metadata):
+    session = handler.get_argument('session')
     args = base.ffmpeg_base_args(handler, settings, metadata)
+    if handler.agent['os']['family'] == 'iOS':
+        base.change_ffmpeg_arg('-c:v', args, settings['transcode_codec'])
     args.extend([
         {'-f': 'hls'},
-        {'-c:a': 'aac'},
-        {'-cutoff': '15000'},
-        {'-ac': '2'},
-        {'-hls_flags': 'omit_endlist'},
-        {'-hls_allow_cache': '0'},
+        {'-hls_flags': 'round_durations'},
         {'-hls_list_size': '0'},
         {'-hls_time': str(config['play']['segment_time'])},
+        {'-force_key_frames': 'expr:gte(t,n_forced*{})'.format(config['play']['segment_time'])},
         {'-hls_segment_filename': os.path.join(temp_folder, '%05d.ts')},
         {os.path.join(temp_folder, 'media.m3u8'): None},
     ])

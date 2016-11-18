@@ -14,7 +14,7 @@ class Play_handler(tornado.web.RequestHandler):
     @tornado.web.asynchronous
     def get(self):
         self.ioloop = tornado.ioloop.IOLoop.current()
-        self.agent = user_agent_parser.Parse(handler.request.headers['User-Agent'])
+        self.agent = user_agent_parser.Parse(self.request.headers['User-Agent'])
         metadata = get_metadata(self.get_argument('play_id'))
         settings = get_device_settings(self)
         if settings['type'] == 'pipe':
@@ -64,7 +64,7 @@ def set_header(self):
 def get_device_settings(handler):
     device = handler.get_argument('device', None)
     if not device:
-        device = self.agent['user_agent']['family']
+        device = handler.agent['user_agent']['family']
     settings = device_settings.get(device)
     if not settings:
         raise tornado.web.HTTPError(400, 'Device: {} not supported'.format(

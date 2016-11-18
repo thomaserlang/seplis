@@ -57,11 +57,6 @@ def ffmpeg_start(handler, settings, metadata):
     args = base.ffmpeg_base_args(handler, settings, metadata)
     args.extend([
         {'-f': 'matroska'},
-        {'-c:a': 'aac'},
-        {'-strict': '-2'},
-        {'-cutoff': '15000'},
-        {'-ac': '2'},
-        {'-ab': '193k'},
         {'-': None},
     ])
     if base.find_ffmpeg_arg('-c:v', args) == 'copy':
