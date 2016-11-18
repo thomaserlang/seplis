@@ -45,6 +45,11 @@ def find_ffmpeg_arg(key, ffmpeg_args):
         if key in a:
             return a[key]
 
+def change_ffmpeg_arg(key, ffmpeg_args, new_value):
+    for a in ffmpeg_args:
+        if key in a:
+            a[key] = new_value
+
 def set_video_codec(settings, metadata, has_subtitle, ffmpeg_args):
     def video_stream():
         for stream in metadata['streams']:
