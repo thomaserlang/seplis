@@ -84,12 +84,15 @@ def get_metadata(play_id):
         return episode.meta_data
 
 def decode_play_id(play_id):
-    return utils.json_loads(tornado.web.decode_signed_value(
+    data = tornado.web.decode_signed_value(
         secret=config['play']['secret'],
         name='play_id',
         value=play_id,
         max_age_days=0.3,
-    ))
+    )
+    if not data:
+        raise HTTPError(400, 'Play id invalid')
+    return utils.json_loads(data)
 
 device_settings = {
     'Other': {
