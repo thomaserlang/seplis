@@ -26,9 +26,10 @@ class Handler(base.Handler):
             user_id=user_id,
             show_id=show_id,
         )
-        if not data:
-            raise exceptions.User_show_subtitle_lang_not_found()
-        self.write_object(data)
+        if data:
+            self.write_object(data)
+        else:
+            self.set_status(204)
 
     @authenticated(constants.LEVEL_USER)
     @gen.coroutine
