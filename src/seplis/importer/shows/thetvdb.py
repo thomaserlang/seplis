@@ -219,7 +219,7 @@ class Thetvdb(Show_importer_base):
         if date == '0000-00-00':
             return None
         try:
-            return parser.parse(date).strftime('%Y-%m-%d')
+            return parser.parse(date).date().isoformat()
         except ValueError as e:
             logging.exception('Parsing date "{}"'.format(date))
         return None
