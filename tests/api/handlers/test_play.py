@@ -61,7 +61,7 @@ class test_play_handler(Testbase):
             self.current_user.id, 
             server['id']
         ))
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 204)
 
         # get
         response = self.get('/1/users/{}/play-servers/{}'.format(
@@ -114,7 +114,7 @@ class test_play_handler(Testbase):
             self.current_user.id, 
             servers[0]['id']
         ))
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 204)
         response = self.get('/1/users/{}/play-servers'.format(
             self.current_user.id
         ))
