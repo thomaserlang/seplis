@@ -40,12 +40,10 @@ def _iso_datetime(value):
 
     Otherwise, return None.
     """
-    if isinstance(value, datetime.datetime):
-        return isoformat(value)
-    elif isinstance(value, datetime.time):
-        return value.strftime('%H:%M:%S')
+    if isinstance(value, (datetime.datetime, datetime.time)):
+        return value.isoformat()+'Z'
     elif isinstance(value, datetime.date):
-        return value.strftime('%Y-%m-%d')
+        return value.isoformat()
 
 def isoformat(dt):
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
