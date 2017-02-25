@@ -64,7 +64,7 @@ _Episode_schema = {
     good.Required('number'): good.All(good.Coerce(int), good.Range(min=1)),
     good.Optional('season'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
     good.Optional('episode'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
-    'air_date': good.Any(None, date_()),
+    'air_date': good.Maybe(date_()),
     'description': good.Any(None, Description_schema),
     'runtime': good.Maybe(good.Coerce(int)),
 }
@@ -82,7 +82,7 @@ _Show_schema = {
     'description': good.Any(None, Description_schema),
     'premiered': good.Any(None, date_()),
     'ended': good.Any(None, date_()),
-    good.Optional('episodes'): good.Any([Episode_schema]),
+    good.Optional('episodes'): [Episode_schema],
     'externals': good.Any(None, External_schema),
     'importers': good.Any(None, Importer_schema),
     'status': good.Coerce(int),
