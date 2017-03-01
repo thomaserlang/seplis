@@ -68,7 +68,7 @@ def get_device_settings(handler):
     settings = device_settings.get(device)
     if not settings:
         raise tornado.web.HTTPError(400, 'Device: {} not supported'.format(
-            agent['user_agent']['family']
+            handler.agent['user_agent']['family']
         ))
     return settings
 
@@ -110,6 +110,17 @@ device_settings = {
         'codec_names': [
             'h264',
             'webm',
+        ],
+        'pixel_formats': [
+            'yuv420p',
+        ],
+        'transcode_codec': 'libx264',
+        'transcode_pixel_format': 'yuv420p',
+        'type': 'pipe',
+    },
+    'Chrome Mobile': {
+        'codec_names': [
+            'h264',
         ],
         'pixel_formats': [
             'yuv420p',
