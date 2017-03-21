@@ -68,8 +68,9 @@ class Handler(base.Handler):
             episode_number=episode_number,
         )
         if not w:
-            raise exceptions.Not_found('the user has not watched this episode')
-        self.write_object(w)
+            self.set_status(204)
+        else:
+            self.write_object(w)
 
 class Range_handler(base.Handler):
 
