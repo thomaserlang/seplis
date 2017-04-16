@@ -137,7 +137,7 @@ class ChromecastBar extends React.Component {
             loading: (event.value == 'BUFFERING' || event.value == 'IDLE'),
         });
         if (event.value == 'IDLE')
-            this.setState({info: null});
+            this.setState({info: null, loading: false});
         if (event.value == 'BUFFERING' || event.value == 'PLAYING') {
             if (!this.state.info)
                 this.cast.getSession().sendMessage(
