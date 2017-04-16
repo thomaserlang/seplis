@@ -147,36 +147,40 @@ class EditFields extends React.Component {
 
     render() {
         return (
-            <span>
-                <h3>General</h3>
-                <fieldset className="form-group">
-                    <label>Alternative titles</label>
-                    <EditAlternativeTitles 
-                        options={this.state.alternative_titles} 
-                    />
-                </fieldset>
+            <div className="row">
+                <div className="col-md-6">
+                    <h3>Externals</h3>
+                    {this.renderExternals()}
 
-                <fieldset className="form-group">
-                    <label>Episode type</label>
-                    <select 
-                        name="episode_type"
-                        className="form-control"
-                        defaultValue={this.state.episode_type}
-                    >
-                        <option value="1">Absolute number</option>
-                        <option value="2">Season episode</option>
-                        <option value="3">Air date</option>
-                    </select>
-                </fieldset>
+                    <h3>Importers</h3>
+                    {importerTypes.map((type) => (
+                        this.renderImporter(type)
+                    ))}
+                </div>
 
-                <h3>Externals</h3>
-                {this.renderExternals()}
+                <div className="col-md-6">
+                    <h3>General</h3>
+                    <fieldset className="form-group">
+                        <label>Alternative titles</label>
+                        <EditAlternativeTitles 
+                            options={this.state.alternative_titles} 
+                        />
+                    </fieldset>
 
-                <h3>Importers</h3>
-                {importerTypes.map((type) => (
-                    this.renderImporter(type)
-                ))}
-            </span>
+                    <fieldset className="form-group">
+                        <label>Episode type</label>
+                        <select 
+                            name="episode_type"
+                            className="form-control"
+                            defaultValue={this.state.episode_type}
+                        >
+                            <option value="1">Absolute number</option>
+                            <option value="2">Season episode</option>
+                            <option value="3">Air date</option>
+                        </select>
+                    </fieldset>
+                </div>
+            </div>
         )
     }
 }
