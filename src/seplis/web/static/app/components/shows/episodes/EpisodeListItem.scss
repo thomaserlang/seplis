@@ -19,5 +19,8 @@
     }
     .play-button {
         font-size: 28px; 
+        .fa {
+            pointer-events: none;
+        }
     }
 }

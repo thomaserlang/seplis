@@ -19,7 +19,7 @@ class Main extends React.Component {
             return;
         }
         return (
-            <div className="col-xs-12 col-lg-4 col-margin">
+            <div className="col-12 col-lg-4 col-margin">
                 <h4 className="header">
                     Air dates
                 </h4>
@@ -32,9 +32,9 @@ class Main extends React.Component {
 
     renderNextToWatch() {
         return (
-            <div className="col-xs-12 col-lg-8 col-margin">
+            <div className="col-12 col-lg-8 col-margin">
                 <div className="row">
-                    <div className="col-xs-12 col-margin">
+                    <div className="col-12 col-margin">
                     <h4 className="header">
                         To watch
                     </h4>
@@ -43,7 +43,7 @@ class Main extends React.Component {
                         numberOfEpisodes={2}
                     />                
                     </div>
-                    <div className="col-xs-12">
+                    <div className="col-12">
                     <h4 className="header default-margin-top">
                         Previous watched
                     </h4>

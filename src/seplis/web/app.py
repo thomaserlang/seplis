@@ -65,12 +65,12 @@ class Application(tornado.web.Application):
             URLSpec(r'/password', seplis.web.handlers.react.Handler),
             URLSpec(r'/play-servers', seplis.web.handlers.react.Handler),
             URLSpec(r'/play-server', seplis.web.handlers.react.Handler),
+            URLSpec(r'/show/([0-9]+)/episode/([0-9]+)/play', seplis.web.handlers.react.Handler_without_menu_no_container),
 
             URLSpec(r'/sign-in', seplis.web.handlers.react.Handler_without_menu),
             URLSpec(r'/create-user', seplis.web.handlers.react.Handler_without_menu),
 
             URLSpec(r'/show-index', seplis.web.handlers.show.Index_handler),
-            URLSpec(r'/show/([0-9]+)/episode/([0-9]+)/play', seplis.web.handlers.play_episode.Handler),
 
             URLSpec(r'/api/show-new', seplis.web.handlers.show.API_new_handler),
             URLSpec(r'/api/show-edit/([0-9]+)', seplis.web.handlers.show.API_edit_handler),

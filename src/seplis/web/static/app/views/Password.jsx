@@ -80,10 +80,10 @@ class Password extends React.Component {
     render() {
         return (
             <div className="row">
-                <div className="col-xs-12">
+                <div className="col-12">
                     <h1 className="col-margin">Change password</h1>
                 </div>
-                <div className="col-xs-12 col-sm-8 col-md-6">
+                <div className="col-12 col-sm-8 col-md-6">
                     {this.renderSuccess()}
                     {this.renderError()}
                     <form method="post" onSubmit={this.onSubmit}>

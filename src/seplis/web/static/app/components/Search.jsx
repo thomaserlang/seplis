@@ -132,7 +132,7 @@ class Search extends React.Component {
 
     render() {
         return (
-            <form id="search" className="form-inline" onSubmit={this.onSubmit}>
+            <form id="search" className="form-inline " onSubmit={this.onSubmit}>
                 <input 
                     className="form-control" 
                     type="text" 
@@ -155,12 +155,12 @@ class Search extends React.Component {
                             onMouseOut={this.onMouseOut}
                             onClick={this.onClick}
                         >
-                            <div className="col-xs-2">
+                            <div className="col-2">
                                 <img 
                                     src={r.poster_image!=null?r.poster_image.url + '@SY100':''} 
                                 />
                             </div>
-                            <div className="col-xs-10">
+                            <div className="col-10">
                                 {r.title}
                             </div>
                         </div>

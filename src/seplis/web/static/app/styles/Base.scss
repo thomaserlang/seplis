@@ -4,9 +4,7 @@ $enable-rounded: false;
 $body-bg: #26282E;
 $body-color: #fff;
 $headings-margin-bottom: 0.5rem;
-$grid-gutter-width: 1rem;
-
-$font-family-sans-serif: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$grid-gutter-width-base: 15px;
 
 @import "bootstrap/scss/bootstrap";
 

@@ -77,10 +77,13 @@ class EpisodeListItem extends React.Component {
                         episodeNumber={this.props.episode.number}
                         watched={this.props.episode.user_watched}
                     />
-                    <div className="pull-right">
+                    <div className="float-right">
                         <a 
-                            href={this.getPlayUrl()} 
+                            href={this.getPlayUrl()}
                             className="play-button"
+                            data-type="episode"
+                            data-show-id={this.props.showId}
+                            data-episode-number={this.props.episode.number}
                         >
                             <i className="fa fa-play-circle"></i>
                         </a>

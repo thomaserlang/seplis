@@ -12,10 +12,10 @@ class Account extends React.Component {
     render() {
         return (
             <div className="row">
-                <div className="col-xs-12">
+                <div className="col-12">
                     <h1>Account</h1>
                 </div>
-                <div className="col-xs-12">
+                <div className="col-12">
                     <a href="/password">Change password</a>
                 </div>
             </div>

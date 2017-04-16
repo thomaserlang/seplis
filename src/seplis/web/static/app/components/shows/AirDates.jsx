@@ -88,7 +88,7 @@ class Main extends React.Component {
                         </h3>
                         <ShowList 
                             shows={a.shows} 
-                            class="col-margin col-xs-4 col-sm-3 col-md-2"
+                            class="col-margin col-4 col-sm-3 col-md-2"
                         />
                     </span>
                     ))}

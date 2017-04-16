@@ -61,7 +61,7 @@ class PlayServers extends React.Component {
         if (this.state.loading)
             return <Loader />;
         return (
-            <div className="col-xs-12 col-sm-7 col-md-5">
+            <div className="col-12 col-sm-7 col-md-5">
                 <Link 
                     to="/play-server"
                     className="btn btn-success col-margin"
@@ -76,7 +76,7 @@ class PlayServers extends React.Component {
     render() {
         return (
             <div className="row">
-                <div className="col-xs-12">
+                <div className="col-12">
                     <h1 className="col-margin">Play servers</h1>
                 </div>
                 {this.render2()}

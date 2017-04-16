@@ -16,17 +16,19 @@ def start(handler, settings, metadata):
     action = handler.get_argument('action', None)
     if action == 'ping':
         ping(handler, session)
+        handler.set_status(204)
         handler.finish()
         return
-    elif action == 'close':
-        close(session)
+    elif action == 'cancel':
+        cancel(session)
+        handler.set_status(204)
         handler.finish()
         return
     temp_folder = setup_temp_folder(session)
     path = os.path.join(temp_folder, 'media.m3u8')
     media_file = 'media.m3u8'
-    if handler.agent['os']['family'] == 'iOS':
-        media_file = 'media2.m3u8'
+    #if handler.agent['os']['family'] == 'iOS':
+    #    media_file = 'media2.m3u8'
     if session in sessions:        
         wait_for_media(handler, metadata, path, media_file, session)
         return
@@ -36,7 +38,7 @@ def start(handler, settings, metadata):
     )
     call_later = handler.ioloop.call_later(
         config['play']['session_timeout'],
-        cleanup,
+        cancel,
         session,
     )
     sessions[session] = {
@@ -101,11 +103,11 @@ def ping(handler, session):
     handler.ioloop.remove_timeout(sessions[session]['call_later'])
     sessions[session]['call_later'] = handler.ioloop.call_later(
         config['play']['session_timeout'],
-        cleanup,
+        cancel,
         session,
     )
 
-def cleanup(session):
+def cancel(session):
     logging.info('Closing session: {}'.format(session))
     if session not in sessions:
         return

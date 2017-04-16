@@ -10,6 +10,7 @@ __all__ = ['start']
 def start(handler, settings, metadata):
     action = handler.get_argument('action', None)
     if action:
+        handler.set_status(204)
         handler.finish()
         return
     def receive_data(*args):

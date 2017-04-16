@@ -6,7 +6,7 @@ const propTypes = {
 }
 
 const defaultProps = {
-    class: 'col-xs-6 col-sm-4 col-md-3 col-margin'
+    class: 'col-6 col-sm-4 col-md-3 col-margin'
 }
 
 class List extends React.Component {

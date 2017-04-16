@@ -1,0 +1,147 @@
+import React from 'react';
+import ClassNames from 'classnames';
+import './AudioSubBar.scss';
+
+const propTypes = {
+    metadata: React.PropTypes.object,
+    onAudioChange: React.PropTypes.func,
+    onSubtitleChange: React.PropTypes.func,
+    bottom: React.PropTypes.bool,
+}
+
+class AudioSubBar extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            show: false,
+        }
+        this.audio = [];
+        this.subtitles = [];
+        this.parseMetadata();
+
+        this.onClick = this.click.bind(this);
+
+        this.onAudioClick = this.audioClick.bind(this);
+        this.onSubtitleClick = this.subtitleClick.bind(this);
+    }
+
+    parseMetadata() {
+        for (let stream of this.props.metadata.streams) {
+            if (!('tags' in stream))
+                continue;
+            if (!('language' in stream.tags))
+                continue;
+            let s = {
+                language: stream.tags.language,
+                title: stream.tags.title || stream.tags.language,
+                index: stream.index,
+            }
+            switch(stream.codec_type) {
+                case 'subtitle': this.subtitles.push(s); break;
+                case 'audio': this.audio.push(s); break;
+            }
+        }
+    }
+
+    click(event) {
+        this.setState({show: !this.state.show});
+    }
+
+    subtitleClick(event) {
+        event.preventDefault();
+        this.setState({show: false});
+        if (this.props.onSubtitleChange)
+            this.props.onSubtitleChange(
+                event.target.getAttribute('data-data')
+            );
+    }
+
+    audioClick(event) {
+        event.preventDefault();
+        this.setState({show: false});
+        if (this.props.onAudioChange)
+            this.props.onAudioChange(
+                event.target.getAttribute('data-data')
+            );
+    }
+
+    renderSubtitles() {
+        if (this.subtitles.length == 0)
+            return;
+        return (
+            <span>
+                <p className="title">Subtitles</p>
+                <p><a href="#" onClick={this.onSubtitleClick} data-data="">None</a></p>
+                {this.subtitles.map(l => (
+                    <p key={l.index}>
+                        <a 
+                            href="#" 
+                            onClick={this.onSubtitleClick}
+                            data-data={`${l.language}:${l.index}`}
+                        >
+                            {l.title}
+                        </a>
+                    </p>
+                ))}
+            </span>
+        )
+    }
+
+    renderAudio() {
+        if (this.audio.length <= 1)
+            return;
+        return (
+            <span>
+                <p className="title">Audio</p>
+                {this.audio.map(l => (
+                    <p key={l.index}>                        
+                        <a 
+                            href="#" 
+                            onClick={this.onAudioClick}
+                            data-data={`${l.language}:${l.index}`}
+                        >
+                            {l.title}
+                        </a>
+                    </p>
+                ))}
+            </span>
+        )
+    }
+
+    renderAudioSubtitles() {
+        if (!this.state.show)
+            return;
+        let cls = ClassNames({
+            'audio-subtitles': true,
+            'audio-subtitles-bottom': this.props.bottom,
+        });
+        return (
+            <div 
+                className={cls} 
+                ref={(ref) => this.audioSubtitlesElem = ref}
+            >
+                {this.renderSubtitles()}
+                {this.renderAudio()}
+            </div>
+        )
+    }
+
+    render() {
+        if ((this.audio.length <= 1) && (this.subtitles.length == 0))
+            return null;
+        return (
+            <span
+                onClick={this.onClick}
+                ref={(ref) => this.icon = ref}
+            >
+                <span className="fa fa-cc" />
+                {this.renderAudioSubtitles()}
+            </span>
+        )
+    }
+}
+AudioSubBar.propTypes = propTypes;
+
+export default AudioSubBar;
+

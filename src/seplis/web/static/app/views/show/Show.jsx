@@ -35,7 +35,7 @@ class Show extends React.Component {
         return (
             <div>
                 <div className="row">
-                    <div className="col-xs-12">
+                    <div className="col-12">
                         <div className="btn-fan__pull-left">
                             <FanButton showId={show.id} isFan={show.is_fan || false} />
                         </div>
@@ -46,16 +46,16 @@ class Show extends React.Component {
                         </h1>
                     </div> 
 
-                    <div className="col-xs-4 hidden-sm-up" />
-                    <div className="col-xs-4 col-sm-4 col-md-4 col-margin">
+                    <div className="col-4 hidden-sm-up" />
+                    <div className="col-4 col-sm-4 col-md-4 col-margin">
                         <img 
                             src={show.poster_image!=null?show.poster_image.url + '@SX360':''} 
                             width="100%" 
                         />
                     </div>
-                    <div className="col-xs-4 hidden-sm-up" />
+                    <div className="col-4 hidden-sm-up" />
 
-                    <div className="col-xs-12 col-sm-8">
+                    <div className="col-12 col-sm-8">
                         <ShowNav showId={parseInt(this.state.show.id)} />
                         {React.cloneElement(this.props.children, {show: show})}
                     </div>

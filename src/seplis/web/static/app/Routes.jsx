@@ -6,6 +6,7 @@ import ShowMain from './views/show/Main';
 import ShowSeasons from './views/show/Seasons';
 import ShowInfo from './views/show/Info';
 import ShowEdit from './views/show/Edit';
+import PlayEpisode from './views/show/PlayEpisode';
 
 import ShowNew from './views/show/New';
 
@@ -30,6 +31,7 @@ export default (
             <Route path="seasons" component={ShowSeasons} />
             <Route path="edit" component={ShowEdit} />
         </Route>
+        <Route path="/show/:showId/episode/:number/play" component={PlayEpisode} />
         <Route path="/show-new" component={ShowNew} />
         <Route path="/fan-of" component={FanOf} />
         <Route path="/main" component={Main} />

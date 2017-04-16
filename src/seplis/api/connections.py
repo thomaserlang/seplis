@@ -12,6 +12,7 @@ from rq import Queue
 
 class Database:
     def __init__(self):
+        logging.info(config['api']['database'])
         self.engine = create_engine(
             config['api']['database'],
             convert_unicode=True,

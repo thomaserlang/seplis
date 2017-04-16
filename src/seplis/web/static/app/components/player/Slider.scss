@@ -1,0 +1,23 @@
+.player-slider-wrapper {
+    flex: 1;
+    margin-right: 10px;
+    cursor: pointer;
+    height: 45px;
+
+    .slider {
+        position: relative;
+        width: 100%;
+        top: 50%;
+        margin-top: -2.5px;
+        height: 5px;
+        background-color: #2E2E2E;
+        pointer-events: none; 
+
+        .progress {
+            position: relative;
+            height: 5px;
+            background-color:#428bca;
+            width: 0;
+        }
+    }
+}

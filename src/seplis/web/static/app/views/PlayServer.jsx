@@ -174,7 +174,7 @@ class PlayServer extends React.Component {
     renderGiveAccessForm() {
         return (
             <form className="col-margin row" onSubmit={this.onGiveAccess}>
-                <div className="col-xs-6">
+                <div className="col-6">
                 <input 
                     type="text"
                     name="name"
@@ -182,7 +182,7 @@ class PlayServer extends React.Component {
                     placeholder="Username"
                 />
                 </div>
-                <div className="col-xs-4">
+                <div className="col-4">
                 <button className="btn btn-success">
                     Give access
                 </button>
@@ -235,7 +235,7 @@ class PlayServer extends React.Component {
         if (this.state.loading > 0)
             return <Loader />
         return (
-            <div className="col-xs-12 col-sm-8 col-md-6">
+            <div className="col-12 col-sm-8 col-md-6">
                 {this.renderError()}
                 <form 
                     method="post" 
@@ -289,7 +289,7 @@ class PlayServer extends React.Component {
     render() {
         return (
             <div className="row">
-                <div className="col-xs-12">
+                <div className="col-12">
                     <h1 className="col-margin">Play server</h1>
                 </div>
                 {this.render2()}

@@ -1,0 +1,76 @@
+.player {
+    background-color: #000;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 1;
+
+    video {
+        z-index: 2;
+        position: fixed; 
+        width: 100%; 
+        height: 100%;
+    }
+
+    .controls {
+        position: fixed;
+        bottom: 0;
+        z-index: 5;
+        width: 100%;
+        user-select: none;
+        display: flex;
+        background-color: rgba(0, 0, 0, 0.2);
+
+        .control {
+            font-size: 30px;
+            cursor: pointer;
+            min-width: 50px;
+            text-align: center;
+
+            &:empty{
+                display: none;
+            }
+
+            .fa {
+                width: 50px;
+                height: 45px;
+                line-height: 45px;
+            }
+
+            a {
+                color: #fff;
+            }
+
+            a:hover {
+                text-decoration: none;
+            }
+
+            .castbutton {
+                width: 30px;
+            }
+        }
+
+        .control-spacer {
+            flex: 1;
+        }
+
+        .control-text {
+            font-size: 14px;
+            height: 45px;
+            line-height: 45px;
+            margin-right: 10px;
+            overflow: hidden;
+        }
+
+        .control-text-title {
+            font-size: 18px;
+        }
+    }
+
+    .controls-top {        
+        bottom: auto;
+        top: 0;
+    }
+}

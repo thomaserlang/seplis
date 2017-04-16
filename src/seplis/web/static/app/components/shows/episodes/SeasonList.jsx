@@ -69,30 +69,30 @@ class SeasonList extends React.Component {
     render() {
         return (
             <div className="row show-season-list">
-                <div className="col-xs-12 m-b-1">
-                    <div className="pull-xs-right">
+                <div className="col-12 mb-3">
+                    <div className="float-right">
                         <WatchedProgression 
                             showId={this.props.showId}
                             seasons={this.props.seasons}
                         />
                     </div>
                 </div>
-                <div className="col-xs-12">
+                <div className="col-12">
                     <SelectSeason                    
                         seasons={this.props.seasons}
                         selectedSeason={this.state.seasonNumber}
                         onChange={this.onSeasonChange}
                     />
                 </div>
-                <div className="col-xs-12 hidden-md-up m-b-1" />
-                <div className="col-xs-12">
+                <div className="col-12 hidden-md-up mb-3" />
+                <div className="col-12">
                     <div className="row">
                         {this.state.episodes.map((item, index) => (
                             <div                            
                                 key={item.number} 
-                                className="col-xs-12 col-md-6 col-lg-4"
+                                className="col-12 col-md-6 col-lg-4"
                             >
-                                <div className="hidden-sm-down m-b-1" />
+                                <div className="hidden-sm-down mb-3" />
                                 <EpisodeListItem 
                                     showId={this.props.showId}
                                     episode={item} 

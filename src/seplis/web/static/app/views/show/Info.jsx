@@ -14,7 +14,7 @@ class Info extends React.Component {
     renderGeneral() {
         let show = this.props.show;
         return (
-            <div className="col-xs-12">
+            <div className="col-12">
                 <table className="table table-sm borderless">
                     <tbody>
                     <tr><th>Status</th><td>{this.statusToText(show.status)}</td></tr>
@@ -30,7 +30,7 @@ class Info extends React.Component {
     renderDescription() {
         let desc = this.props.show.description;
         return (
-            <div className="col-xs-12 col-md-12">
+            <div className="col-12 col-md-12">
                 <p className="text-justify">
                     {desc.text}
                     <br />

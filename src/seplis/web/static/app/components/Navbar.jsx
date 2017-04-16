@@ -2,6 +2,8 @@ import React from 'react';
 import {request} from 'api';
 import {isAuthed, getUserLevel} from 'utils';
 import Search from './Search';
+import ChromecastIcon from './player/ChromecastIcon';
+import ChromecastBar from './player/ChromecastBar';
 
 import './Navbar.scss';
 
@@ -25,28 +27,16 @@ class Navbar extends React.Component {
         )
     }
 
-    renderLeft() {
+    renderMain() {
         return (
-            <span>
-                <li className="nav-item">
-                    <a 
-                        className="nav-link" 
-                        href="/main"
-                    >
-                        Main
-                    </a>
-                </li>
-                {this.renderShowDropdown()}
-            </span>
-        )
-    }
-
-    renderRight() {
-        return (
-            <div className="pull-xs-right">
-                {this.renderUserMenu()}
-                {this.renderNotAuthedMenu()}            
-            </div>
+            <li className="nav-item">
+                <a 
+                    className="nav-link" 
+                    href="/main"
+                >
+                    Main
+                </a>
+            </li>
         )
     }
 
@@ -71,48 +61,66 @@ class Navbar extends React.Component {
         )
     }
 
-    renderNotAuthedMenu() {
+    renderChromecast() {
+        if (!isAuthed())
+            return;
+        return (
+            <li className="nav-item">                    
+                <span
+                    className="nav-link"
+                    style={{
+                        paddingBottom: 0,
+                    }}
+                >   <ChromecastBar />
+                    <ChromecastIcon />
+                </span>
+            </li>
+        )    
+    }
+
+    renderSignIn() {
         if (isAuthed()) 
             return;
         return (
-            <span>
-                <li className="nav-item">
-                    <a 
-                        className="nav-link" 
-                        href="/create-user"
-                    >
-                        Create user
-                    </a>
-                </li>
-                <li className="nav-item">
-                    <a 
-                        className="nav-link" 
-                        href="/sign-in"
-                    >
-                        Sign in
-                    </a>
-                </li>
-            </span>
+            <li className="nav-item">
+                <a 
+                    className="nav-link" 
+                    href="/sign-in"
+                >
+                    Sign in
+                </a>
+            </li>
+        )
+    }
+
+    renderCreateUser() {
+        if (isAuthed()) 
+            return;
+        return (
+            <li className="nav-item">
+                <a 
+                    className="nav-link" 
+                    href="/create-user"
+                >
+                    Create user
+                </a>
+            </li>
         )
     }
 
     render() {
         return (
-            <nav className="navbar navbar-seplis">
-                <div className="container">
-                    <ul className="nav navbar-nav row">
+            <nav className="navbar navbar-toggleable-xl navbar-seplis">
+                <div className="container mr-auto mt-2 mt-lg-0">
+                    <ul className="nav navbar-nav">
+                        {this.renderMain()}
+                        {this.renderShowDropdown()}
 
-                        <div className="col-xs-6 col-md-3">
-                            {this.renderLeft()}
-                        </div>
-
-                        <div className="col-xs-6 col-md-3 col-md-push-6">
-                            {this.renderRight()}
-                        </div>
-                        <div className="col-xs-12 col-md-6 col-md-pull-3">
-                            <Search key="Search" />
-                        </div>
-
+                        {this.renderChromecast()}
+                        
+                        {this.renderCreateUser()}
+                        {this.renderSignIn()}
+                        {this.renderUserMenu()}
                     </ul>
                 </div>
             </nav>
