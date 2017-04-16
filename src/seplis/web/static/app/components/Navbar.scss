@@ -1,13 +1,15 @@
 .navbar-seplis {
     background-color: #428bca;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
 
-    .nav-item {
-        .nav-link {
-            color: #FFFFFF;
-            
-            &:hover {
-                color: #fff;
-            }
+    .link {
+        color: #FFFFFF;
+        padding: 2rem 0.5rem;
+        line-height: 38px;
+        
+        &:hover {
+            color: #fff;
         }
     }
 }

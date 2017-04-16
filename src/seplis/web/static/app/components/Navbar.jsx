@@ -11,9 +11,9 @@ class Navbar extends React.Component {
 
     renderShowDropdown() {
         return (
-            <li className="nav-item dropdown">
+            <span className="dropdown">
                 <a 
-                    className="nav-link dropdown-toggle" 
+                    className="link dropdown-toggle" 
                     data-toggle="dropdown"
                     href="#"
                 >
@@ -23,20 +23,18 @@ class Navbar extends React.Component {
                     <a className="dropdown-item" href="/fan-of">Fan of</a>
                     <a className="dropdown-item" href="/show-new">New show</a>
                 </div>
-            </li>
+            </span>
         )
     }
 
     renderMain() {
         return (
-            <li className="nav-item">
-                <a 
-                    className="nav-link" 
-                    href="/main"
-                >
-                    Main
-                </a>
-            </li>
+            <a 
+                className="link" 
+                href="/main"
+            >
+                Main
+            </a>
         )
     }
 
@@ -44,9 +42,9 @@ class Navbar extends React.Component {
         if (!isAuthed())
             return;
         return (
-            <li className="nav-item dropdown">
+            <span className="dropdown">
                 <a 
-                    className="nav-link dropdown-toggle" 
+                    className="link dropdown-toggle" 
                     data-toggle="dropdown"
                     href="#"
                 >
@@ -57,24 +55,18 @@ class Navbar extends React.Component {
                     <a className="dropdown-item" href="/play-servers">Play servers</a>
                     <a className="dropdown-item" href="/sign-out">Sign out</a>
                 </div>
-            </li>
+            </span>
         )
     }
 
     renderChromecast() {
         if (!isAuthed())
             return;
-        return (
-            <li className="nav-item">                    
-                <span
-                    className="nav-link"
-                    style={{
-                        paddingBottom: 0,
-                    }}
-                >   <ChromecastBar />
-                    <ChromecastIcon />
-                </span>
-            </li>
+        return (               
+            <span className="link">
+                <ChromecastBar />
+                <ChromecastIcon />
+            </span>
         )    
     }
 
@@ -82,14 +74,12 @@ class Navbar extends React.Component {
         if (isAuthed()) 
             return;
         return (
-            <li className="nav-item">
-                <a 
-                    className="nav-link" 
-                    href="/sign-in"
-                >
-                    Sign in
-                </a>
-            </li>
+            <a 
+                className="link" 
+                href="/sign-in"
+            >
+                Sign in
+            </a>
         )
     }
 
@@ -97,31 +87,38 @@ class Navbar extends React.Component {
         if (isAuthed()) 
             return;
         return (
-            <li className="nav-item">
-                <a 
-                    className="nav-link" 
-                    href="/create-user"
-                >
-                    Create user
-                </a>
-            </li>
+            <a 
+                className="link" 
+                href="/create-user"
+            >
+                Create user
+            </a>
         )
     }
 
     render() {
         return (
-            <nav className="navbar navbar-toggleable-xl navbar-seplis">
-                <div className="container mr-auto mt-2 mt-lg-0">
-                    <ul className="nav navbar-nav">
-                        {this.renderMain()}
-                        {this.renderShowDropdown()}
+            <nav className="navbar-seplis">
+                <div className="container">
+                    <div className="row">
+                        <div className="col-6 col-md-3">
+                            {this.renderMain()}
+                            {this.renderShowDropdown()}
+                        </div>                        
 
-                        {this.renderChromecast()}
-                        
-                        {this.renderCreateUser()}
-                        {this.renderSignIn()}
-                        {this.renderUserMenu()}
-                    </ul>
+                        <div className="col-6 col-md-3 push-md-6">
+                            <div className="float-right">
+                                {this.renderChromecast()}                            
+                                {this.renderCreateUser()}
+                                {this.renderSignIn()}
+                                {this.renderUserMenu()}
+                            </div>
+                        </div>
+
+                        <div className="col-12 col-md-6 pull-md-3">
+                            <Search key="Search" />
+                        </div>
+                    </div>
                 </div>
             </nav>
         )
