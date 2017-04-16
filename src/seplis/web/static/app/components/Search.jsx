@@ -124,7 +124,7 @@ class Search extends React.Component {
     }
 
     resultClassName(result) {
-        let className = 'row';
+        let className = 'result';
         if (result.id == this.state.selectedResultId)
             className += ' selected';
         return className;
@@ -155,13 +155,13 @@ class Search extends React.Component {
                             onMouseOut={this.onMouseOut}
                             onClick={this.onClick}
                         >
-                            <div className="col-2">
+                            <div className="img">
                                 <img 
                                     src={r.poster_image!=null?r.poster_image.url + '@SY100':''} 
                                 />
                             </div>
-                            <div className="col-10">
-                                {r.title}
+                            <div className="title">
+                                {r.title} ({r.premiered?r.premiered.substring(0, 4):''})
                             </div>
                         </div>
                     ))}
