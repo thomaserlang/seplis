@@ -37,7 +37,7 @@ class ShowNav extends React.Component {
                         Seasons
                     </Link>
                 </li>
-                <li className="nav-item float-right">
+                <li className="nav-item ml-auto">
                     <Link 
                         className="nav-link" 
                         to={`/show/${this.props.showId}/edit`}
