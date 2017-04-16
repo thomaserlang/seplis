@@ -1,0 +1,16 @@
+.show-header {
+    margin-bottom: 0.5rem;
+
+    .title {
+        line-height: 42px;
+        font-size: 20px;
+
+        @media (min-width: 730px) {
+            font-size: 26px;
+        }
+
+        @media (min-width: 992px) {
+            font-size: 36px;
+        }
+    }
+}

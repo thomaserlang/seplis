@@ -6,6 +6,8 @@ import Loader from 'components/Loader';
 import FanButton from 'components/shows/FanButton';
 import ShowNav from 'components/shows/ShowNav';
 
+import './Show.scss';
+
 const propTypes = {
     params: React.PropTypes.object.isRequired,
 }
@@ -35,15 +37,15 @@ class Show extends React.Component {
         return (
             <div>
                 <div className="row">
-                    <div className="col-12">
+                    <div className="col-12 show-header">
                         <div className="btn-fan__pull-left">
                             <FanButton showId={show.id} isFan={show.is_fan || false} />
                         </div>
-                        <h1>
+                        <div className="title">
                             {show.title}
                             &nbsp;
                             <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>
-                        </h1>
+                        </div>
                     </div> 
 
                     <div className="col-4 hidden-sm-up" />
