@@ -1,6 +1,8 @@
 import React from 'react';
 import {Link} from 'react-router';
 
+import './ShowNav.scss';
+
 let propTypes = {
     showId: React.PropTypes.number.isRequired,
 }
@@ -9,7 +11,7 @@ class ShowNav extends React.Component {
 
     render() {
         return (
-            <ul className="nav nav-tabs col-margin">
+            <ul className="nav nav-tabs col-margin nav-seplis">
                 <li className="nav-item">
                     <Link 
                         className="nav-link"                        
