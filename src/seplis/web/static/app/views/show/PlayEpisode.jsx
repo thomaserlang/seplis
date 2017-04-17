@@ -231,7 +231,7 @@ class PlayEpisode extends React.Component {
     }    
  
     getPlayUrl() {
-        return `${this.state.playServer.play_server.url}/play2`+
+        return `${this.state.playServer.play_server.url}/play`+
             `?play_id=${this.state.playServer.play_id}`+
             `&session=${this.session}`
     }

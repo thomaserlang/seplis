@@ -108,7 +108,7 @@ class Player extends React.Component {
     }
 
     getPlayUrl() {
-        return `${this.props.playServerUrl}/play2`+
+        return `${this.props.playServerUrl}/play`+
             `?play_id=${this.props.playId}`+
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+

@@ -136,7 +136,7 @@ class ChromecastLoad {
                     () => {},
                     (error) => {console.log(error);},
                 );
-                let playUrl = result[0].playServer.play_server.url+'/play2'+
+                let playUrl = result[0].playServer.play_server.url+'/play'+
                     '?play_id='+result[0].playServer.play_id;
                 playUrl += `&session=${guid()}`;
                 if (startTime)
