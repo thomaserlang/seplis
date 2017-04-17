@@ -19,6 +19,7 @@ config = {
         'port': 8002,
         'max_workers': 5,
         'image_url': 'https://images.seplis.net',
+        'base_url': 'https://api.seplis.net',
     },
     'web': {
         'url': 'https://seplis.net',
