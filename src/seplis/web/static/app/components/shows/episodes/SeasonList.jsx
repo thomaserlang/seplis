@@ -30,6 +30,8 @@ class SeasonList extends React.Component {
     }
 
     getEpisodes() {
+        if (this.props.seasons.length < 1) 
+            return;
         var position = $(window).scrollTop();
         this.setState({episodes: []});
         let season = this.seasonEpisodeNumbers(this.state.seasonNumber);
@@ -67,6 +69,12 @@ class SeasonList extends React.Component {
     }
 
     render() {
+        if (this.props.seasons.length < 1) 
+            return (
+                <div className="alert alert-warning">
+                    <strong>This show has 0 episodes.</strong>  
+                </div>
+            );
         return (
             <div className="row show-season-list">
                 <div className="col-12 mb-3">
