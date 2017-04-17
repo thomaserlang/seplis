@@ -4,6 +4,7 @@ import {request} from 'api';
 import {getUserId} from 'utils';
 
 import 'bootstrap/js/src/dropdown';
+import './WatchedProgression.scss';
 
 const propTypes = {
     showId: React.PropTypes.number.isRequired,
@@ -105,15 +106,15 @@ class WatchedProgression extends React.Component {
 
     render() {
         return (
-            <div className="dropdown">
+            <div className="dropdown watched-progression">
                 <button 
-                    className="btn btn-dark btn-transparent" 
+                    className="btn btn-dark btn-transparent dropdown-toggle" 
                     data-toggle="dropdown"
                     onClick={this.dropdownButtonClick}
                 >
                     Set progression
                 </button>
-                <div className="dropdown-menu">                    
+                <div className="dropdown-menu dropdown-menu-right">                    
                     {this.state.showForm?this.renderForm():''}
                 </div>
             </div>
