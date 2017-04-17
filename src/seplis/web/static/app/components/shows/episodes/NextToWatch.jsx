@@ -2,7 +2,7 @@ import React from 'react';
 import {request} from 'api';
 import {isAuthed} from 'utils';
 import EpisodeListItem from './EpisodeListItem';
-import {EVENT_EPISODE_WATCHED_STATUS} from 'events';
+import {EVENT_EPISODE_WATCHED_STATUS} from 'seplis/events';
 
 const propTypes = {
     showId: React.PropTypes.number.isRequired,

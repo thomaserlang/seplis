@@ -26,7 +26,10 @@ module.exports = {
         modules: [
             path.resolve(staticPath, 'app'),
             'node_modules'
-        ]
+        ],
+        alias: {
+            seplis: path.resolve(staticPath, 'app'),
+        }
     },
     output: {
         path: path.resolve(staticPath, 'dist'),

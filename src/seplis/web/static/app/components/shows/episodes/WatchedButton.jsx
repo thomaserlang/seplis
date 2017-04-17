@@ -2,7 +2,7 @@ import React from 'react';
 import ClassNames from 'classnames'; 
 import {getUserId} from 'utils';
 import {request} from 'api';
-import {trigger_episode_watched_status} from 'events';
+import {trigger_episode_watched_status} from 'seplis/events';
 
 import 'bootstrap/js/src/dropdown';
 import './WatchedButton.scss';
