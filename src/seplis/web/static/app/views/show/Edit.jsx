@@ -34,7 +34,6 @@ class Edit extends React.Component {
             data: data,
             method: 'PUT',
         }).success(show => {
-            console.log(show);
             this.setState({success: show})
         }).error(e => {
             console.log(e.responseJSON);

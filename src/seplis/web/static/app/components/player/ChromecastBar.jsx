@@ -83,7 +83,6 @@ class ChromecastBar extends React.Component {
     }
 
     castStateChanged(event) {
-        console.log(event);
         switch (event.field) {
             case 'playerState':
                 this.playerStateChanged(event);
@@ -119,7 +118,6 @@ class ChromecastBar extends React.Component {
     }
 
     receiveCastInfo(namespace, message) {
-        console.log('receiveCastInfo');
         this.setState({
             info: JSON.parse(message),
         }, () => {
@@ -162,7 +160,6 @@ class ChromecastBar extends React.Component {
     }
 
     sliderNewTime(newTime) {
-        console.log('pause');
         this.cast.pause(() => {
             this.setState({
                 loading: true,

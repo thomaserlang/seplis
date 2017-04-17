@@ -33,7 +33,6 @@ class New extends React.Component {
             console.log(show);
             this.setState({success: show})
         }).error(e => {
-            console.log(e.responseJSON);
             this.setState({error: e.responseJSON});
         }).always(() => {
             this.setState({loading: false});

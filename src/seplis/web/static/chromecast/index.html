@@ -56,17 +56,14 @@
                 mediaManager['onLoadOrig'](event);
                 var senders = castReceiverManager.getSenders();
                 for (var i in senders) {
-                    console.log(senders[i]);
                     messageInfo.send(senders[i], currentInfo);
                 }
-                console.log(castReceiverManager.getSenders());
             }
 
             mediaManager['onEndedOrig'] = mediaManager.onEnded;
             mediaManager.onEnded = function() {
                 currentInfo = null;
                 token = null;
-                console.log('onEnded');
                 mediaManager['onEndedOrig']();
             }
 

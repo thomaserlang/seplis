@@ -38,7 +38,6 @@ class ChromecastLoad {
                     chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
                 );
                 chrome.cast.initialize(apiConfig, () => {
-                    console.log('initialized');
                     ChromecastLoad.initialized = true;
                     for (let obj of ChromecastLoad.initList) {
                         obj.initCast(isAvailable);
@@ -145,7 +144,6 @@ class ChromecastLoad {
                     playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`;
                     playUrl += `&audio_lang=${result[5].audio_lang || ''}`;
                 }
-                console.log(playUrl);
                 let request = new chrome.cast.media.LoadRequest(
                     this._playEpisodeMediaInfo(playUrl, result[2], result[3])
                 );
@@ -197,7 +195,6 @@ ChromecastLoad.events = events;
 ChromecastLoad.timerGetCurrentTime = null;
 
 function sessionListener(session) {
-    console.log('sessionListener');
     ChromecastLoad.session = session;
     if (session.media.length != 0) {
         mediaListener(session.media[0]);
@@ -222,7 +219,6 @@ function sessionUpdateListener(event) {
 }
 
 function mediaListener(mediaSession) {
-    console.log('mediaListener');
     ChromecastLoad.mediaSession = mediaSession;
     mediaSession.addUpdateListener(mediaSessionUpdateListener);        
     dispatchEvent(events.CURRENT_TIME, ChromecastLoad.mediaSession.getEstimatedTime());            
@@ -231,7 +227,6 @@ function mediaListener(mediaSession) {
 }
 
 function mediaSessionUpdateListener() {
-    console.log('mediaSessionUpdateListener');
     dispatchEvent(
         events.PLAYER_STATE, 
         ChromecastLoad.mediaSession.playerState
@@ -239,7 +234,6 @@ function mediaSessionUpdateListener() {
 }
 
 function receiverListener(state) {
-    console.log('receiverListener');
     if (state == 'available')
         dispatchEvent(events.AVAILABLE, true)
     else        
@@ -247,8 +241,7 @@ function receiverListener(state) {
 }
 
 function mediaStatusUpdateListener(isAlive) {
-    console.log(isAlive);
-    console.log('mediaStatusUpdateListener');
+
 }
 
 function dispatchEvent(event, data) {    

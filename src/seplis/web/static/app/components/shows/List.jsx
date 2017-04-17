@@ -16,7 +16,7 @@ class List extends React.Component {
             <div key={show.id} className={this.props.class}>
                 <a href={`/show/${show.id}`}>
                     <img 
-                        src={show.poster_image!=null?show.poster_image.url + '@SX269':''} 
+                        src={show.poster_image!=null?show.poster_image.url + '@SX166':''} 
                         className="img-fluid"
                     />
                 </a>
