@@ -22,7 +22,7 @@ class Test_episode_watched(Testbase):
             1
         )
         response = self.get(url)
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 204)
 
         response = self.put(
             url, 

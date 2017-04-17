@@ -125,7 +125,7 @@ class Test_episode(Testbase):
             show_id,
             1
         ))
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 204)
         response = self.get('/1/shows/{}/episodes/1'.format(show_id))
         self.assertEqual(response.code, 404, response.body)
 

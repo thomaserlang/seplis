@@ -21,9 +21,9 @@ class Test_episode_watching(Testbase):
             show['id'],
             1
         )
-
+        # Return 204 if the episode has not been watched
         response = self.get(url)
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 204)
 
         response = self.put(
             url, 
