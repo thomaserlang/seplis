@@ -34,7 +34,10 @@ class Edit extends React.Component {
             data: data,
             method: 'PUT',
         }).success(show => {
-            this.setState({success: show})
+            this.setState({success: show});
+            request(`/1/shows/${this.props.show.id}/update`, {
+                method: 'POST',
+            });
         }).error(e => {
             console.log(e.responseJSON);
             this.setState({error: e.responseJSON});
@@ -56,7 +59,7 @@ class Edit extends React.Component {
         if (!this.state.success) return '';
         return (
             <div className="alert alert-success">
-                The show has successfully been updated.
+                The show was successfully updated.
             </div>
         )
     }
