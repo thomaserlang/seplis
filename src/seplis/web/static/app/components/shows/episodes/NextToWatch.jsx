@@ -38,11 +38,6 @@ class NextToWatch extends React.Component {
             `/1/shows/${this.props.showId}/episodes/to-watch`
         ).success(episode => {
             this.setState({episode: episode});
-        }).error(error => {
-            // No more episodes to watch
-            if (error.responseJSON.code === 1301) {
-                this.setState({episode: null});
-            }
         });
     }
 

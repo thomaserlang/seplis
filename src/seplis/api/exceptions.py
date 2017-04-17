@@ -152,15 +152,6 @@ class User_episode_not_watched(API_exception):
             message='You have not watched this episode',
         )
 
-class User_no_episode_to_watch(API_exception):
-
-    def __init__(self):
-        super().__init__(
-            status_code=204,
-            code=1301, 
-            message='No episodes to watch',
-        )
-
 class Show_unknown(API_exception):
 
     def __init__(self):

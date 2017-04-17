@@ -11,8 +11,9 @@ class Handler(base.Handler):
             show_id,
         )
         if not episode:
-            raise exceptions.User_no_episode_to_watch()
-        self.write_object(episode)
+            self.set_status(204)
+        else:
+            self.write_object(episode)
 
     async def episode_to_watch(self, user_id, show_id):
         """Returns which episode to watch for a show.
