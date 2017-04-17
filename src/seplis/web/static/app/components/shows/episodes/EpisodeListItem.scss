@@ -7,11 +7,14 @@
     border-bottom: 1px solid #515151;
 
     .title {
-        font-size:18px;
+        font-size: 18px;
         font-weight: bolder;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+    .meta {
+        font-size: 14px;
     }
     .button-bar {
         margin-top: 5px;
