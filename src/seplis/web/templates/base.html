@@ -3,15 +3,10 @@
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
         <title>{{ title }}</title>
-        {% if config['debug'] %}
-        <link rel="stylesheet" href="{{config['client']['public_api_url'][:-5]}}:8080/app.css">
-        <script type="text/javascript" src="{{config['client']['public_api_url'][:-5]}}:8080/vendor.js"></script>
-        <script type="text/javascript" src="{{config['client']['public_api_url'][:-5]}}:8080/app.js"></script>
-        {% else %}
+
         <link rel="stylesheet" href="/static/dist/app.css">
         <script type="text/javascript" src="/static/dist/vendor.js"></script>
         <script type="text/javascript" src="/static/dist/app.js"></script>
-        {% end %}
 
         <script type="text/javascript">
             for (var n in window.exports.default) {
@@ -41,8 +36,5 @@
             {% block body %}{% end %}
         </div>
         {% block body_outside %}{% end %}
-        {% if config['debug'] %}
-            <script src="{{config['client']['public_api_url'][:-5]}}:8080/webpack-dev-server.js"></script>
-        {% end %}
     </body>
 </html>
