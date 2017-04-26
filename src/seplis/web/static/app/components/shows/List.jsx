@@ -6,7 +6,7 @@ const propTypes = {
 }
 
 const defaultProps = {
-    class: 'col-6 col-sm-4 col-md-3 col-margin'
+    class: 'col-4 col-sm-3 col-md-2 col-margin'
 }
 
 class List extends React.Component {
@@ -16,7 +16,7 @@ class List extends React.Component {
             <div key={show.id} className={this.props.class}>
                 <a href={`/show/${show.id}`}>
                     <img 
-                        src={show.poster_image!=null?show.poster_image.url + '@SX166':''} 
+                        src={show.poster_image!=null?show.poster_image.url + '@SX180':''} 
                         className="img-fluid"
                     />
                 </a>
