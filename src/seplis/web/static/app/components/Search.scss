@@ -29,6 +29,10 @@
         overflow: hidden;
         overflow-y: auto;
 
+        &:empty {
+            display: none;
+        }
+
         .result {
             color: #ccc;
             cursor: pointer;
