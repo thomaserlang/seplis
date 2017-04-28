@@ -77,7 +77,7 @@ class SeasonList extends React.Component {
             );
         return (
             <div className="row show-season-list">
-                <div className="col-12 mb-3">
+                <div className="col-12 col-md-3 push-md-9 mb-1">
                     <div className="float-right">
                         <WatchedProgression 
                             showId={this.props.showId}
@@ -85,7 +85,7 @@ class SeasonList extends React.Component {
                         />
                     </div>
                 </div>
-                <div className="col-12">
+                <div className="col-12 col-md-4 pull-md-3">
                     <SelectSeason                    
                         seasons={this.props.seasons}
                         selectedSeason={this.state.seasonNumber}
