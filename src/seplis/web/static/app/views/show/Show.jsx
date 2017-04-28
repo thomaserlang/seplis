@@ -48,8 +48,7 @@ class Show extends React.Component {
                         </div>
                     </div> 
 
-                    <div className="col-4 hidden-sm-up" />
-                    <div className="col-4 col-sm-4 col-md-4 col-margin">
+                    <div className="col-4 col-sm-4 col-md-4 col-margin hidden-xs-down">
                         <img 
                             src={show.poster_image!=null?show.poster_image.url + '@SX360':''} 
                             width="100%" 
