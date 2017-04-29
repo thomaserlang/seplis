@@ -224,11 +224,17 @@ class ChromecastBar extends React.Component {
                 </div>
                 <div className="controls">
                     {this.renderPlayControl()}
+                    <div className="control-text">
+                        {secondsToTime(this.state.currentTime)}
+                    </div>
                     <Slider
                         duration={this.getDuration()}
                         onReturnCurrentTime={this.onSliderReturnCurrentTime}
                         onNewTime={this.onSliderNewTime}
                     />
+                    <div className="control-text">
+                        {secondsToTime(this.getDuration())}
+                    </div>
                     <div className="control">
                         <AudioSubBar 
                             metadata={this.state.info.metadata}
