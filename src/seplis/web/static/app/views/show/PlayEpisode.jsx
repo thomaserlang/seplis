@@ -18,6 +18,7 @@ class PlayEpisode extends React.Component {
             loadingLang: true,
             loadingStartTime: true,
             playServer: null,
+            playServerError: null,
             show: null,
             episode: null,
             nextEpisode: null,
@@ -83,6 +84,11 @@ class PlayEpisode extends React.Component {
                 playServer: obj.playServer,
                 metadata: obj.metadata,
             });
+        }).catch((error) => {
+            this.setState({
+                loadingPlayServers: false,
+                playServerError: error,
+            })
         });
     }
  
@@ -242,12 +248,30 @@ class PlayEpisode extends React.Component {
             `?play_id=${this.state.playServer.play_id}`+
             `&session=${this.session}`
     }
- 
+
+    renderPlayServerError() {
+        return (
+            <div 
+                className="alert alert-warning" 
+                style={{width: '75%', margin: 'auto', marginTop: '100px'}}
+            >
+                <h3>{this.state.playServerError.message}</h3>
+
+                Go back to <a href={`/show/${this.showId}`}>
+                    {this.state.show.title}
+                </a>
+            </div>
+        )
+    }
+
     render() {
         if (this.state.loadingPlayServers || this.state.loadingShow ||
             this.state.loadingEpisode || this.state.loadingNextEpisode ||
             this.state.loadingLang || this.state.loadingStartTime)
             return <Loader />;
+        if (this.state.playServerError) {
+            return this.renderPlayServerError();
+        }
         this.loadCast();
         return <Player 
             playServerUrl={`${this.state.playServer.play_server.url}`}
