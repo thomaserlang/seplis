@@ -6,6 +6,7 @@ import VolumeBar from './VolumeBar';
 import AudioSubBar from './AudioSubBar.jsx';
 import Slider from './Slider.jsx';
 import ChromecastIcon from './ChromecastIcon';
+import Loader from 'seplis/components/Loader';
 import {secondsToTime} from 'utils';
 import './Player.scss';
 
@@ -60,6 +61,7 @@ class Player extends React.Component {
             showControls: true,
             audio: this.props.audio_lang,
             subtitle: this.props.subtitle_lang,
+            loading: false,
         }
     }
 
@@ -68,6 +70,7 @@ class Player extends React.Component {
         this.video.addEventListener('pause', this.pauseEvent.bind(this));
         this.video.addEventListener('play', this.playEvent.bind(this));
         this.video.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this));
+        this.video.addEventListener('error', this.playError.bind(this));
         this.setPingTimer();
         this.video.volume = this.volume;
         this.video.load();
@@ -139,10 +142,16 @@ class Player extends React.Component {
     playEvent() {
         this.setState({
             playing: true,
+            loading: true,
         });
     }
 
+    playError() {
+        this.setState({loading: false});
+    }
+
     timeupdateEvent(e) {
+        this.setState({loading: false});
         if (!this.video.paused) {
             let time = this.video.currentTime;
             if (this.video.seekable.length <= 1 || this.video.seekable.end(0) <= 1)
@@ -194,8 +203,12 @@ class Player extends React.Component {
         this.setState({fullscreen: !this.state.fullscreen});
     }
 
-    getTimeleftText() {
-        return secondsToTime(parseInt(this.duration - this.state.time));
+    getDurationText() {
+        return secondsToTime(parseInt(this.duration));
+    }
+
+    getCurrentTimeText() {
+        return secondsToTime(parseInt(this.state.time));
     }
 
     renderPlayNext() {
@@ -310,13 +323,16 @@ class Player extends React.Component {
                     >
                     </span>
                 </div>
+                <div className="control-text">
+                    {this.getCurrentTimeText()}
+                </div>
                 <Slider 
                     duration={this.duration}
                     onReturnCurrentTime={this.onSliderReturnCurrentTime}
                     onNewTime={this.onSliderNewTime}
                 />
-                <div className="control-text">
-                    {this.getTimeleftText()}
+                <div className="control-text" title="Timeleft">
+                    {this.getDurationText()}
                 </div>
                 <div className="control">
                     <span 
@@ -329,9 +345,15 @@ class Player extends React.Component {
         )
     }
 
+    renderLoading() {
+        if (!this.state.loading)
+            return null;
+        return <Loader hcenter={true} />
+    }
+
     render() {
         return (
-            <div className="player">                
+            <div className="player">  
                 <div className="overlay">
                     <video 
                         className="video" 
@@ -343,6 +365,7 @@ class Player extends React.Component {
                     />
                     {this.renderControlsTop()}
                     {this.renderControlsBottom()}
+                    {this.renderLoading()}
                 </div>
             </div>
         )
