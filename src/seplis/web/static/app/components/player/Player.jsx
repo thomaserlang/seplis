@@ -79,10 +79,17 @@ class Player extends React.Component {
         document.ontouchstart = document.onmousemove;
         document.ontouchmove = this.touchMove.bind(this);
         document.onclick = this.click.bind(this);
+        document.onkeypress = this.keypress.bind(this);
+    }
+
+    keypress(e) {
+        if (e.code == 'Space')
+            this.playPauseClick();
     }
 
     click(e) {
         this.setState({showControls: !this.state.showControls});
+        this.setHideControlsTimer();
     }
 
     setPingTimer() {
@@ -92,7 +99,9 @@ class Player extends React.Component {
         }, 30000);
     }
 
-    setHideControlsTimer() {
+    setHideControlsTimer(timeout) {
+        if (timeout == undefined)
+            timeout = 6000;
         clearTimeout(this.hideControlsTimer);
         this.hideControlsTimer = setTimeout(() => {
             if (this.video.paused)
@@ -100,7 +109,7 @@ class Player extends React.Component {
             this.setState({
                 showControls: false,
             });
-        }, 6000);
+        }, timeout);
     }
 
     mouseMove(e) {
@@ -126,8 +135,10 @@ class Player extends React.Component {
     }
 
     playPauseClick() {
-        if (this.video.paused) 
+        if (this.video.paused) {
             this.video.play();
+            this.setHideControlsTimer(2000);
+        }
         else
             this.video.pause();
     }
