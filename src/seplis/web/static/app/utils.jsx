@@ -53,5 +53,5 @@ export function secondsToTime(secs) {
         minutes = "0"+minutes;
     if (seconds < 10)
         seconds = "0"+seconds;
-    return (hours>0?hours+':':'')+minutes+':'+seconds;
+    return (hours>0?hours+':':'')+minutes+':'+Math.round(seconds);
 }
