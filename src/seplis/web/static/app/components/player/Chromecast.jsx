@@ -134,6 +134,7 @@ class Chromecast {
                         show: result[2],
                         episode: result[3],
                         startTime: startTime,
+                        apiUrl: seplis.apiClientSettings.baseUrl,
                     },
                     () => {},
                     (error) => {console.log(error);},

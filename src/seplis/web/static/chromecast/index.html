@@ -2,7 +2,10 @@
     <head>
         <title>SEPLIS CAST</title>
             <script src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
-
+            <script
+              src="https://code.jquery.com/jquery-3.2.1.min.js"
+              integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+              crossorigin="anonymous"></script>
             <style>
                 body {
                     background-color: #000; 
@@ -47,6 +50,8 @@
         <script>
             var currentInfo = null;
             var token = null;
+            var lastSavedTime = 0;
+            var watchedIncremented = false;
 
             var mediaElement = document.getElementById('media');
             var mediaManager = new cast.receiver.MediaManager(mediaElement);
@@ -94,6 +99,47 @@
             }
 
             castReceiverManager.start();
+
+            $('video').on('timeupdate', function(){
+                if (!currentInfo)
+                    return;
+                let time = Math.floor(this.currentTime);
+                if (this.seekable.length <= 1 || this.seekable.end(0) <= 1)
+                    time += currentInfo['startTime'];
+                if (lastSavedTime == time)
+                    return;
+                lastSavedTime = time;
+                if ((time % 10) != 0)
+                    return;
+
+                let duration = parseInt(currentInfo['metadata']['format']['duration']);
+                let watched = (((time / 100) * 10) > (duration-time));
+
+                let url = currentInfo['apiUrl'] +
+                    '/1/shows/'+currentInfo['show']['id'].toString()+
+                    '/episodes/'+currentInfo['episode']['number'].toString();
+                let putData = {};
+                if (watched) {
+                    if (!watchedIncremented) {
+                        watchedIncremented = true;
+                        url += '/watched';
+                    }
+                } else {
+                    watchedIncremented = false;
+                    url += '/watching';
+                    putData['position'] = time;
+                }
+                $.ajax({
+                    url: url,
+                    type: 'PUT',
+                    data: JSON.stringify(putData),
+                    dataType: 'json',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer '+token,
+                    }
+                });
+            });
         </script>
     </body>
 </html>
