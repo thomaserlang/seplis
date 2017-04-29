@@ -104,7 +104,7 @@ class Player extends React.Component {
             timeout = 6000;
         clearTimeout(this.hideControlsTimer);
         this.hideControlsTimer = setTimeout(() => {
-            if (this.video.paused)
+            if (this.video.paused || this.state.loading)
                 return;
             this.setState({
                 showControls: false,
