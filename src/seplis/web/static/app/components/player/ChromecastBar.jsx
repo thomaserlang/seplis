@@ -1,6 +1,6 @@
 import React from 'react';
 import ClassNames from 'classnames';
-import ChromecastLoad from './ChromecastLoad';
+import Chromecast from './Chromecast';
 import Slider from './Slider';
 import AudioSubBar from './AudioSubBar.jsx';
 import {episodeTitle, getUserId, secondsToTime} from 'utils';
@@ -30,7 +30,7 @@ class ChromecastBar extends React.Component {
     }
 
     componentDidMount() {
-        this.cast = new ChromecastLoad();
+        this.cast = new Chromecast();
         this.cast.load(this.initCast.bind(this));
     }
 

@@ -10,7 +10,7 @@ var events = {
     CURRENT_TIME: 'currentTime',
 };
 
-class ChromecastLoad {
+class Chromecast {
  
     constructor() {
         this.loaded = false;
@@ -18,7 +18,7 @@ class ChromecastLoad {
 
     load(onInit) {
         this.onInit = onInit;
-        if (!ChromecastLoad.initialized) {
+        if (!Chromecast.initialized) {
             this.loadCastScript();
         } else {
             this.initCast(true);
@@ -26,10 +26,10 @@ class ChromecastLoad {
     }
  
     loadCastScript() {
-        ChromecastLoad.initList.push(this);
-        if (ChromecastLoad.loaded)
+        Chromecast.initList.push(this);
+        if (Chromecast.loaded)
             return;
-        ChromecastLoad.loaded = true;
+        Chromecast.loaded = true;
         window['__onGCastApiAvailable'] = (isAvailable) => {
             // Temp fix for cast not reconnecting randomly
             setTimeout(() => {
@@ -41,8 +41,8 @@ class ChromecastLoad {
                     chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
                 );
                 chrome.cast.initialize(apiConfig, () => {
-                    ChromecastLoad.initialized = true;
-                    for (let obj of ChromecastLoad.initList) {
+                    Chromecast.initialized = true;
+                    for (let obj of Chromecast.initList) {
                         obj.initCast(isAvailable);
                     }
                 });
@@ -66,40 +66,40 @@ class ChromecastLoad {
     }
 
     isConnected() {
-        if (!ChromecastLoad.session)
+        if (!Chromecast.session)
             return false;
-        return ChromecastLoad.session.status == 'connected';
+        return Chromecast.session.status == 'connected';
     }
 
     getSession() {
-        return ChromecastLoad.session;
+        return Chromecast.session;
     }
 
     getMediaSession() {
-        return ChromecastLoad.mediaSession;
+        return Chromecast.mediaSession;
     }
 
     getFriendlyName() {
-        return ChromecastLoad.session.receiver.friendlyName;
+        return Chromecast.session.receiver.friendlyName;
     }
 
     getCurrentTime() {
-        return ChromecastLoad.mediaSession.getEstimatedTime();
+        return Chromecast.mediaSession.getEstimatedTime();
     }
 
     playOrPause(success, error) {
-        if (ChromecastLoad.mediaSession.playerState == 'PLAYING')
+        if (Chromecast.mediaSession.playerState == 'PLAYING')
             this.pause(success, error)
         else
             this.play(success, error);
     }    
 
     play(success, error) {
-        ChromecastLoad.mediaSession.play(null, success, error);
+        Chromecast.mediaSession.play(null, success, error);
     }
 
     pause(success, error) {
-        ChromecastLoad.mediaSession.pause(null, success, error);
+        Chromecast.mediaSession.pause(null, success, error);
     }
 
     playEpisode(showId, episodeNumber, startTime) {
@@ -174,39 +174,39 @@ class ChromecastLoad {
     }
 
     addEventListener(event, func) {
-        if (!(event in ChromecastLoad.eventListener))
-            ChromecastLoad.eventListener[event] = [];
-        let e = ChromecastLoad.eventListener[event] ;
-        if (!ChromecastLoad.eventListener[event].includes(func))
-            ChromecastLoad.eventListener[event].push(func);
+        if (!(event in Chromecast.eventListener))
+            Chromecast.eventListener[event] = [];
+        let e = Chromecast.eventListener[event] ;
+        if (!Chromecast.eventListener[event].includes(func))
+            Chromecast.eventListener[event].push(func);
     }
  
     removeEventListener(event, func) {
-        let e = ChromecastLoad.eventListener[event] || [];
+        let e = Chromecast.eventListener[event] || [];
         let i = e.indexOf(func);
         if (i > 0)
             e.splice(i, 1);
     }
 }
-ChromecastLoad.initialized = false;
-ChromecastLoad.loaded = false;
-ChromecastLoad.initList = [];
-ChromecastLoad.session = null;
-ChromecastLoad.mediaSession = null;
-ChromecastLoad.eventListener = {};
-ChromecastLoad.events = events;
-ChromecastLoad.timerGetCurrentTime = null;
+Chromecast.initialized = false;
+Chromecast.loaded = false;
+Chromecast.initList = [];
+Chromecast.session = null;
+Chromecast.mediaSession = null;
+Chromecast.eventListener = {};
+Chromecast.events = events;
+Chromecast.timerGetCurrentTime = null;
 
 function sessionListener(session) {
-    ChromecastLoad.session = session;
+    Chromecast.session = session;
     if (session.media.length != 0) {
         mediaListener(session.media[0]);
     }
-    ChromecastLoad.timerGetCurrentTime = setInterval(() => {
-        if (!ChromecastLoad.mediaSession)
+    Chromecast.timerGetCurrentTime = setInterval(() => {
+        if (!Chromecast.mediaSession)
             return;
-        if (ChromecastLoad.mediaSession.playerState == 'PLAYING')
-            dispatchEvent(events.CURRENT_TIME, ChromecastLoad.mediaSession.getEstimatedTime());            
+        if (Chromecast.mediaSession.playerState == 'PLAYING')
+            dispatchEvent(events.CURRENT_TIME, Chromecast.mediaSession.getEstimatedTime());            
     }, 1000);
     session.addMediaListener(mediaListener);
     session.addUpdateListener(sessionUpdateListener);
@@ -214,17 +214,17 @@ function sessionListener(session) {
 }
 
 function sessionUpdateListener(event) {
-    if (ChromecastLoad.session.status !== chrome.cast.SessionStatus.CONNECTED) {
-        ChromecastLoad.session = null;
-        ChromecastLoad.mediaSession = null;
+    if (Chromecast.session.status !== chrome.cast.SessionStatus.CONNECTED) {
+        Chromecast.session = null;
+        Chromecast.mediaSession = null;
         dispatchEvent(events.IS_CONNECTED, false);
     }
 }
 
 function mediaListener(mediaSession) {
-    ChromecastLoad.mediaSession = mediaSession;
+    Chromecast.mediaSession = mediaSession;
     mediaSession.addUpdateListener(mediaSessionUpdateListener);        
-    dispatchEvent(events.CURRENT_TIME, ChromecastLoad.mediaSession.getEstimatedTime());            
+    dispatchEvent(events.CURRENT_TIME, Chromecast.mediaSession.getEstimatedTime());            
     // Chrome iOS fix
     mediaSessionUpdateListener()
 }
@@ -232,7 +232,7 @@ function mediaListener(mediaSession) {
 function mediaSessionUpdateListener() {
     dispatchEvent(
         events.PLAYER_STATE, 
-        ChromecastLoad.mediaSession.playerState
+        Chromecast.mediaSession.playerState
     );
 }
 
@@ -257,7 +257,7 @@ function dispatchEvent(event, data) {
 }
 
 function _dispatchEvent(event, data) {
-    let e = ChromecastLoad.eventListener[event] || [];
+    let e = Chromecast.eventListener[event] || [];
     e.forEach(f => {
         try {
             f(data);
@@ -267,4 +267,4 @@ function _dispatchEvent(event, data) {
     });
 }
  
-export default ChromecastLoad;
+export default Chromecast;

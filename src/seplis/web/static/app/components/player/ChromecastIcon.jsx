@@ -1,5 +1,5 @@
 import React from 'react';
-import ChromecastLoad from './ChromecastLoad';
+import Chromecast from './Chromecast';
 
 import './ChromecastIcon.scss';
 
@@ -15,7 +15,7 @@ class ChromecastIcon extends React.Component {
 
     componentDidMount() {
         this.onConnected = this.connected.bind(this);
-        this.cast = new ChromecastLoad();
+        this.cast = new Chromecast();
         this.cast.load(this.onCastInit.bind(this));
         this.iconClick = this.castIconClick.bind(this);
     }

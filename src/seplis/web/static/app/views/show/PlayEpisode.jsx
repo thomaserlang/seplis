@@ -1,7 +1,7 @@
 import React from 'react';
 import Player, {getPlayServer} from 'components/player/Player';
 import Loader from 'components/Loader';
-import ChromecastLoad from 'components/player/ChromecastLoad';
+import Chromecast from 'components/player/Chromecast';
 import {request} from 'api';
 import {apiClientSettings} from 'api.jsx';
 import {pad, getUserId, episodeTitle, guid} from 'utils';
@@ -227,7 +227,8 @@ class PlayEpisode extends React.Component {
     loadCast() {
         if (this.cast)
             return;    
-        this.cast = new ChromecastLoad(this.initCast.bind(this));
+        this.cast = new Chromecast();
+        this.cast.load(this.initCast.bind(this));
     }    
  
     getPlayUrl() {
