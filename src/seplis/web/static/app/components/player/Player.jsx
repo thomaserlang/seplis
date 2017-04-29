@@ -386,7 +386,13 @@ export function getPlayServer(url) {
             url
         ).success(playServers => {
             var selected = false;
+            var i = 0;
+            if (playServers.length == 0) {
+                reject({code: 1, message: 'No play servers.'});
+                return;
+            }
             for (var s of playServers) {
+                i += 1;
                 request(s.play_server.url+'/metadata', {
                     query: {
                         play_id: s.play_id,
@@ -399,6 +405,11 @@ export function getPlayServer(url) {
                         playServer: s, 
                         metadata: metadata,
                     });
+                }).always(() => {
+                    i -= 1;
+                    if ((i == 0) && (selected == false)) {
+                        reject({code: 2, message: 'The episode is not on any of your play servers.'});
+                    }
                 });
             }
         });
