@@ -16,6 +16,11 @@ class Play_handler(tornado.web.RequestHandler):
         self.ioloop = tornado.ioloop.IOLoop.current()
         self.agent = user_agent_parser.Parse(self.request.headers['User-Agent'])
         metadata = get_metadata(self.get_argument('play_id'))
+        if not metadata:
+            self.set_status(404)
+            self.write('{"error": "No episode found"}')
+            self.finish()
+            return
         settings = get_device_settings(self)
         if settings['type'] == 'pipe':
             pipe.start(self, settings, metadata)
@@ -81,7 +86,7 @@ def get_metadata(play_id):
             models.Episode.show_id == data['show_id'],
             models.Episode.number == data['number'],
         ).first()
-        return episode.meta_data
+        return episode.meta_data if episode else None
 
 def decode_play_id(play_id):
     data = tornado.web.decode_signed_value(
