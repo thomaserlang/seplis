@@ -191,6 +191,7 @@ class Player extends React.Component {
                 document.webkitCancelFullScreen();
             }
         }
+        this.setState({fullscreen: !this.state.fullscreen});
     }
 
     getTimeleftText() {
@@ -245,10 +246,16 @@ class Player extends React.Component {
         return this.state.time;
     }
 
+    showControlsVisibility() {
+        return this.state.showControls?'visible':'hidden';
+    }
+
     renderControlsTop() {
-        if (!this.state.showControls) return;
         return (
-            <div className="controls controls-top">
+            <div 
+                className="controls controls-top" 
+                style={{visibility: this.showControlsVisibility()}}
+            >
                 <div className="control">
                     <a 
                         className="fa fa-times" 
@@ -281,7 +288,6 @@ class Player extends React.Component {
     }
 
     renderControlsBottom() {
-        if (!this.state.showControls) return;
         let playPause = ClassNames({
             fa: true,
             'fa-pause': this.state.playing,
@@ -293,7 +299,10 @@ class Player extends React.Component {
             'fa-arrows-alt': !this.state.fullscreen,
         });
         return (
-            <div className="controls">
+            <div 
+                className="controls" 
+                style={{visibility: this.showControlsVisibility()}}
+            >
                 <div className="control">
                     <span 
                         className={playPause}
@@ -324,7 +333,6 @@ class Player extends React.Component {
         return (
             <div className="player">                
                 <div className="overlay">
-                    {this.renderControlsTop()}
                     <video 
                         className="video" 
                         preload="none" 
@@ -333,7 +341,7 @@ class Player extends React.Component {
                         controls={false}
                         ref={(ref) => this.video = ref}
                     />
-
+                    {this.renderControlsTop()}
                     {this.renderControlsBottom()}
                 </div>
             </div>
