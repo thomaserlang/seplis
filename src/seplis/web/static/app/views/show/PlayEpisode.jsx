@@ -35,6 +35,7 @@ class PlayEpisode extends React.Component {
         this.session = guid();
         this.lastPos = 0;
         this.cast = null;
+        this.markedAsWatched = false;
     }
  
     componentDidMount() {
@@ -56,10 +57,15 @@ class PlayEpisode extends React.Component {
         let duration = parseInt(this.state.metadata['format']['duration']);
         let watched = (((time / 100) * 10) > (duration-time));
         if (watched) {
-            request(`/1/shows/${this.showId}/episodes/${this.number}/watched`, {
-                method: 'PUT',
-            });
+            if (!this.markedAsWatched) {
+                request(`/1/shows/${this.showId}/episodes/${this.number}/watched`, {
+                    method: 'PUT',
+                }).success(() => {
+                    this.markedAsWatched = true;
+                });
+            }
         } else {
+            this.markedAsWatched = false;
             request(`/1/shows/${this.showId}/episodes/${this.number}/watching`, {
                 method: 'PUT',
                 data: {
