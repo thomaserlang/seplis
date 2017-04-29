@@ -1,11 +1,20 @@
 .loader {
     margin: 75px auto;
-    border-top: 12px solid rgba(255, 255, 255, 0.1);
-    border-right: 12px solid rgba(255, 255, 255, 0.1);
-    border-bottom: 12px solid rgba(255, 255, 255, 0.1);
-    border-left: 12px solid #767676;
+    border-top: 12px solid rgba(255, 255, 255, 0.4);
+    border-right: 12px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 12px solid rgba(255, 255, 255, 0.4);
+    border-left: 12px solid #007CE8;
     transform: translateZ(0);
     animation: load8 1.5s infinite linear;
+}
+.loader-hcenter {
+    position: absolute;
+    z-index: 2147483647;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
 }
 .loader,
 .loader:after {
