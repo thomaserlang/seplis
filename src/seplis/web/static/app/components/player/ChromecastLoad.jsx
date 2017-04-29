@@ -12,9 +12,12 @@ var events = {
 
 class ChromecastLoad {
  
-    constructor(onInit) {
-        this.onInit = onInit;
+    constructor() {
         this.loaded = false;
+    }
+
+    load(onInit) {
+        this.onInit = onInit;
         if (!ChromecastLoad.initialized) {
             this.loadCastScript();
         } else {
@@ -180,7 +183,7 @@ class ChromecastLoad {
  
     removeEventListener(event, func) {
         let e = ChromecastLoad.eventListener[event] || [];
-        i = e.indexOf(func);
+        let i = e.indexOf(func);
         if (i > 0)
             e.splice(i, 1);
     }

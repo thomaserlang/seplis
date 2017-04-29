@@ -30,7 +30,8 @@ class ChromecastBar extends React.Component {
     }
 
     componentDidMount() {
-        this.cast = new ChromecastLoad(this.initCast.bind(this));
+        this.cast = new ChromecastLoad();
+        this.cast.load(this.initCast.bind(this));
     }
 
     componentWillUnmount() {
