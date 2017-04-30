@@ -1,5 +1,5 @@
 import React from 'react';
-import Moment from 'moment';
+import Fecha from 'fecha';
 import {request} from 'api';
 
 import './LatestEpisodesSideBar.scss';
@@ -40,7 +40,7 @@ class LatestEpisodesSideBar extends React.Component {
     }
 
     getEpisodes() {
-        let dateUTC = Moment.utc().format('YYYY-MM-DD');
+        let dateUTC = Fecha.format(new Date().getTime(), 'YYYY-MM-DD');
         request(`/1/shows/${this.props.showId}/episodes`, {
             query: {
                 q: `air_date:[${dateUTC} TO *]`,
