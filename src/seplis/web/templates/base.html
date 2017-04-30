@@ -23,7 +23,17 @@
     </head>
     <body>
         {% block menu %}
-            {% module menu(menu_id=menu_id) %}
+        <div id="navbar"></div>
+        <script>
+            $(function(){
+                ReactDOM.render(
+                    React.createElement(
+                        seplis.Navbar.default, {}
+                    ), 
+                    document.getElementById('navbar')
+                );
+            });
+        </script>
         {% end %}
         <div class="container">
             <noscript>
