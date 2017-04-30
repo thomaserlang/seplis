@@ -3,8 +3,8 @@ $enable-rounded: false;
 
 $body-bg: #26282E;
 $body-color: #fff;
-$headings-margin-bottom: 1rem;
-$grid-gutter-width-base: 15px;
+$headings-margin-bottom: 0.5rem;
+$grid-gutter-width-base: 0.5rem;
 
 @import "bootstrap/scss/bootstrap";
 
@@ -13,13 +13,13 @@ $fa-font-path: "~font-awesome/fonts";
 
 h1,
 h2 {
-    margin-top:0;
+    margin-top: 0;
 }
 
 a, 
 a.btn {
     &:hover {
-        color:#428bca;
+        color: #428bca;
     }
 }
 
