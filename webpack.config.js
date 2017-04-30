@@ -10,8 +10,8 @@ module.exports = {
         app: path.resolve(staticPath, 'app'),
         vendor: [
             'jquery',
-            'bootstrap/js/dist/util',
-            'bootstrap/js/dist/dropdown',
+            'bootstrap/js/src/util',
+            'bootstrap/js/src/dropdown',
             'react',
             'react-dom',
             'react-router',
@@ -62,7 +62,6 @@ module.exports = {
                       'react',
                     ],
                 },
-                include: staticPath,
             },
             {
                 test: /\.(scss|css)/,
