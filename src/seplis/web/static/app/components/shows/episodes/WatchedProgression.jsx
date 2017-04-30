@@ -3,7 +3,7 @@ import SelectSeasonEpisode from './SelectSeasonEpisode';
 import {request} from 'api';
 import {getUserId} from 'utils';
 
-import 'bootstrap/js/src/dropdown';
+import 'bootstrap/js/dist/dropdown';
 import './WatchedProgression.scss';
 
 const propTypes = {

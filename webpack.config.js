@@ -9,9 +9,8 @@ module.exports = {
     entry: {
         app: path.resolve(staticPath, 'app'),
         vendor: [
-            'jquery',
-            'bootstrap/js/src/util',
-            'bootstrap/js/src/dropdown',
+            'bootstrap/js/dist/util',
+            'bootstrap/js/dist/dropdown',
             'react',
             'react-dom',
             'react-router',

@@ -4,7 +4,7 @@ import {getUserId} from 'utils';
 import {request} from 'api';
 import {trigger_episode_watched_status} from 'seplis/events';
 
-import 'bootstrap/js/src/dropdown';
+import 'bootstrap/js/dist/dropdown';
 import './WatchedButton.scss';
 
 const propTypes = {
