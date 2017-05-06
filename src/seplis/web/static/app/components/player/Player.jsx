@@ -72,13 +72,13 @@ class Player extends React.Component {
         this.video.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this));
         this.video.addEventListener('error', this.playError.bind(this));
         this.video.addEventListener('waiting', this.playWaiting.bind(this));
+        this.video.addEventListener('click', this.playClick.bind(this));
         this.setPingTimer();
         this.video.volume = this.volume;
         this.video.load();
         document.onmousemove = this.mouseMove.bind(this);
         document.ontouchstart = document.onmousemove;
         document.ontouchmove = this.touchMove.bind(this);
-        document.onclick = this.click.bind(this);
         document.onkeypress = this.keypress.bind(this);
     }
 
@@ -87,7 +87,7 @@ class Player extends React.Component {
             this.playPauseClick();
     }
 
-    click(e) {
+    playClick(e) {
         this.setState({showControls: !this.state.showControls});
         this.setHideControlsTimer();
     }
