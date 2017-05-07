@@ -19,11 +19,27 @@ class Search extends React.Component {
         this.onClick = this.click.bind(this);
         this.state = {
             results: [],
-            display: false,
+            show: false,
             selectedResultId: null,
         }
         this.requesting = null;
         this.selectedResultId = null;
+        this.onDocumentClick = this.documentClick.bind(this);
+    }
+
+    componentDidMount() {        
+        document.addEventListener('click', this.onDocumentClick);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('click', this.onDocumentClick);
+    }
+
+    documentClick(e) {
+        console.log(this.form.contains(e.target));
+        if (!this.form.contains(e.target)) {
+            this.setState({show: false});
+        }
     }
 
     inputChanged(e) {
@@ -33,7 +49,7 @@ class Search extends React.Component {
         if (val == '') {
             this.setState({
                 results: [],
-                display: false,
+                show: false,
                 selectedResultId: null,
             });
             return;
@@ -48,7 +64,7 @@ class Search extends React.Component {
             this.suggestNode.scrollTop = 0;
             this.setState({
                 results: data,
-                display: true,
+                show: true,
                 selectedResultId: null,
             });
             this.setNextSelectedId(0);
@@ -132,7 +148,12 @@ class Search extends React.Component {
 
     render() {
         return (
-            <form id="search" className="form-inline " onSubmit={this.onSubmit}>
+            <form 
+                id="search" 
+                className="form-inline" 
+                onSubmit={this.onSubmit}                
+                ref={(ref) => this.form = ref}
+            >
                 <input 
                     className="form-control" 
                     type="text" 
@@ -143,6 +164,7 @@ class Search extends React.Component {
                 <div 
                     className="suggest"
                     ref={(ref) => this.suggestNode = ref}
+                    style={{display:this.state.show?'block':'none'}}
                 >
                     {this.state.results.map(r => (
                         <div 
