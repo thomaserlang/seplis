@@ -490,7 +490,9 @@ def rebuild_episodes():
 def rebuild_episode_watched():
     with new_session() as session:
         for item in session.query(Episode_watched).order_by(
-                Episode_watched.updated_at
+                Episode_watched.updated_at,
+                Episode_watched.show_id,
+                Episode_watched.episode_number,
             ).yield_per(10000):
             item.cache()
         session.commit()
