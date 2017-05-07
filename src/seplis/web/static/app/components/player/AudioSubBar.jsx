@@ -1,12 +1,13 @@
 import React from 'react';
 import ClassNames from 'classnames';
+import PropTypes from 'prop-types';
 import './AudioSubBar.scss';
 
 const propTypes = {
-    metadata: React.PropTypes.object,
-    onAudioChange: React.PropTypes.func,
-    onSubtitleChange: React.PropTypes.func,
-    bottom: React.PropTypes.bool,
+    metadata: PropTypes.object,
+    onAudioChange: PropTypes.func,
+    onSubtitleChange: PropTypes.func,
+    bottom: PropTypes.bool,
 }
 
 class AudioSubBar extends React.Component {
@@ -24,6 +25,21 @@ class AudioSubBar extends React.Component {
 
         this.onAudioClick = this.audioClick.bind(this);
         this.onSubtitleClick = this.subtitleClick.bind(this);
+        this.onDocumentClick = this.documentClick.bind(this);
+    }
+
+    componentDidMount() {    
+        document.addEventListener('click', this.onDocumentClick);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('click', this.onDocumentClick);
+    }
+    
+    documentClick(e) {
+        if (!this.icon.contains(e.target)) {
+            this.setState({show: false});
+        }
     }
 
     parseMetadata() {
@@ -111,7 +127,7 @@ class AudioSubBar extends React.Component {
 
     renderAudioSubtitles() {
         if (!this.state.show)
-            return;
+            return null;
         let cls = ClassNames({
             'audio-subtitles': true,
             'audio-subtitles-bottom': this.props.bottom,
@@ -132,10 +148,9 @@ class AudioSubBar extends React.Component {
             return null;
         return (
             <span
-                onClick={this.onClick}
                 ref={(ref) => this.icon = ref}
             >
-                <span className="fa fa-cc" />
+                <span className="fa fa-cc" onClick={this.onClick} />
                 {this.renderAudioSubtitles()}
             </span>
         )

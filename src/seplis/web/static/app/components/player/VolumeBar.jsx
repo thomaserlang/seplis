@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ClassNames from 'classnames';
 
 import './VolumeBar.scss';
 
 const propTypes = {
-    onChange: React.PropTypes.func,
+    onChange: PropTypes.func,
 }
 
 class VolumeBar extends React.Component {
@@ -20,12 +21,24 @@ class VolumeBar extends React.Component {
             show: false,
             muted: false,
         }
+        this.onDocumentClick = this.documentClick.bind(this);
     }
 
     componentDidMount() {
         let volume = localStorage.getItem('volume') || 1;
         if (this.props.onChange)
             this.props.onChange(volume);
+        document.addEventListener('click', this.onDocumentClick);
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('click', this.onDocumentClick);
+    }
+    
+    documentClick(e) {
+        if (!this.icon.contains(e.target)) {
+            this.setState({show: false});
+        }
     }
 
     sliderMouseDown(event) {
