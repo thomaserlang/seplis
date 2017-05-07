@@ -30,7 +30,6 @@ class New extends React.Component {
             data: data,
             method: 'POST',
         }).success(show => {
-            console.log(show);
             this.setState({success: show})
         }).error(e => {
             this.setState({error: e.responseJSON});

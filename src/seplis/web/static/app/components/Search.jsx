@@ -36,7 +36,6 @@ class Search extends React.Component {
     }
 
     documentClick(e) {
-        console.log(this.form.contains(e.target));
         if (!this.form.contains(e.target)) {
             this.setState({show: false});
         }
