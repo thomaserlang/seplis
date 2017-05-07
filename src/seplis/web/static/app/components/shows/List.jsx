@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const propTypes = {
-    shows: React.PropTypes.array.isRequired,
-    class: React.PropTypes.string,
+    shows: PropTypes.array.isRequired,
+    class: PropTypes.string,
 }
 
 const defaultProps = {
@@ -16,10 +17,13 @@ class List extends React.Component {
             <div key={show.id} className={this.props.class}>
                 <a href={`/show/${show.id}`}>
                     <img 
+                        title={show.title}
+                        alt={show.title}
                         src={show.poster_image!=null?show.poster_image.url + '@SX180':''} 
                         className="img-fluid"
                     />
                 </a>
+                <a href={`/show/${show.id}`}>{show.title}</a>
             </div>
         )
     }
