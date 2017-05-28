@@ -42,6 +42,7 @@ class RecentlyWatched extends React.Component {
                 <h2 className="header">Recently watched</h2>     
                 <ShowList 
                     shows={this.state.shows} 
+                    mobile_xscroll={true}
                 />
             </span>
         )

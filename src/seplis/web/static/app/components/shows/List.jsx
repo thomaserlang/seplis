@@ -1,20 +1,22 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
+import './List.scss';
+
 const propTypes = {
     shows: PropTypes.array.isRequired,
-    class: PropTypes.string,
+    mobile_xscroll: PropTypes.bool,
 }
 
 const defaultProps = {
-    class: 'col-4 col-sm-3 col-md-2 col-margin'
+    mobile_xscroll: false,
 }
 
 class List extends React.Component {
 
     renderShow(show) {
         return (
-            <div key={show.id} className={this.props.class}>
+            <div key={show.id} className="col-4 col-sm-3 col-md-2 col-margin">
                 <a href={`/show/${show.id}`}>
                     <img 
                         title={show.title}
@@ -29,7 +31,7 @@ class List extends React.Component {
 
     render() {
         return (
-            <div className="row">
+            <div className="row showlist-scroll">
                 {this.props.shows.map(show => (
                     this.renderShow(show)
                 ))}

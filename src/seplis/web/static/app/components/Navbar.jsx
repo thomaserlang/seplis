@@ -38,6 +38,17 @@ class Navbar extends React.Component {
         )
     }
 
+    renderAirDates() {
+        return (
+            <a 
+                className="link" 
+                href="/air-dates"
+            >
+                Air dates
+            </a>
+        )
+    }
+
     renderUserMenu() {
         if (!isAuthed())
             return;
@@ -103,6 +114,7 @@ class Navbar extends React.Component {
                     <div className="row">
                         <div className="col-6 col-md-3">
                             {this.renderMain()}
+                            {this.renderAirDates()}
                             {this.renderShowDropdown()}
                         </div>                        
 

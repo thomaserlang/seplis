@@ -8,7 +8,6 @@ class Main extends React.Component {
         return (
             <span>
             <ShowsRecentlyWatched />
-            <ShowsAirDates />
             </span>
         )
     }

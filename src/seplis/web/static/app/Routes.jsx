@@ -15,6 +15,7 @@ import CreateUser from './views/CreateUser';
 
 import FanOf from './views/FanOf';
 import Main from './views/Main';
+import AirDates from './views/AirDates';
 import Account from './views/Account';
 import Password from './views/Password';
 import PlayServers from './views/PlayServers';
@@ -35,6 +36,7 @@ export default (
         <Route path="/show-new" component={ShowNew} />
         <Route path="/fan-of" component={FanOf} />
         <Route path="/main" component={Main} />
+        <Route path="/air-dates" component={AirDates} />
         <Route path="/account" component={Account} />
         <Route path="/password" component={Password} />
         <Route path="/play-servers" component={PlayServers} />

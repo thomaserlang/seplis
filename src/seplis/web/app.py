@@ -27,8 +27,6 @@ class Application(tornado.web.Application):
             URLSpec(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
 
             URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/main"}),
-            URLSpec(r"/air-dates", tornado.web.RedirectHandler, {"url": "/main"}),
-
 
             URLSpec(r'/show-new', react.Handler),
             URLSpec(r'/show.*/([0-9]+)', react.Handler),
@@ -37,6 +35,7 @@ class Application(tornado.web.Application):
 
             URLSpec(r'/fan-of', react.Handler),
             URLSpec(r'/main', react.Handler),
+            URLSpec(r'/air-dates', react.Handler),
             URLSpec(r'/account', react.Handler),
             URLSpec(r'/password', react.Handler),
             URLSpec(r'/play-servers', react.Handler),
