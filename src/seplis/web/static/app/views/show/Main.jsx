@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import NextToWatch from 'components/shows/episodes/NextToWatch';
 import LatestEpisodesSideBar from 'components/shows/episodes/LatestEpisodesSideBar';
 import EpisodeLastWatched from 'components/shows/episodes/EpisodeLastWatched'
 
 const propTypes = {
-    show: React.PropTypes.object.isRequired,
+    show: PropTypes.object.isRequired,
 }
 
 class Main extends React.Component {

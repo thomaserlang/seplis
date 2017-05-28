@@ -1,9 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import LinkParser from 'parse-link-header';
 
 const propTypes = {
-    jqXHR: React.PropTypes.object.isRequired,
-    onPageChange: React.PropTypes.func,
+    jqXHR: PropTypes.object.isRequired,
+    onPageChange: PropTypes.func,
 }
 
 class Pagination extends React.Component {

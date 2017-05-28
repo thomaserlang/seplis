@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ClassNames from 'classnames'; 
 import {getUserId} from 'utils';
 import {request} from 'api';
@@ -8,9 +9,9 @@ import 'bootstrap/js/src/dropdown';
 import './WatchedButton.scss';
 
 const propTypes = {
-    showId: React.PropTypes.number.isRequired,
-    episodeNumber: React.PropTypes.number.isRequired,
-    watched: React.PropTypes.object,
+    showId: PropTypes.number.isRequired,
+    episodeNumber: PropTypes.number.isRequired,
+    watched: PropTypes.object,
 }
 
 class WatchedButton extends React.Component {

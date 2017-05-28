@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {withRouter} from 'react-router';
 import Loader from 'components/Loader';
 import {requireAuthed, getUserId} from 'utils';
 import {request} from 'api';
 
 const propTypes = {
-    location: React.PropTypes.object.isRequired,
+    location: PropTypes.object.isRequired,
 }
 
 class PlayServer extends React.Component {

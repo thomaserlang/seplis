@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ClassNames from 'classnames';
 import {getUserId} from 'utils';
 import {request} from 'api';
@@ -6,8 +7,8 @@ import {request} from 'api';
 import './FanButton.scss';
 
 const propTypes = {
-    showId: React.PropTypes.number.isRequired,
-    isFan: React.PropTypes.bool.isRequired,
+    showId: PropTypes.number.isRequired,
+    isFan: PropTypes.bool.isRequired,
 }
 
 class FanButton extends React.Component {

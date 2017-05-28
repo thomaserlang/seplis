@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import EditFields from 'components/shows/EditFields';
 import Serialize from 'form-serialize';
 import {unflatten} from 'flat';
 import {request} from 'api';
 
 const propTypes = {
-    show: React.PropTypes.object,
+    show: PropTypes.object,
 }
 
 class Edit extends React.Component {

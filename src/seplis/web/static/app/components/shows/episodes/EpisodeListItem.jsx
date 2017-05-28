@@ -1,12 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import './EpisodeListItem.scss';
 import WatchedButton from './WatchedButton';
 
 const propTypes = {
-    showId: React.PropTypes.number.isRequired,
-    episode: React.PropTypes.object.isRequired,
-    displaySeason: React.PropTypes.bool,
+    showId: PropTypes.number.isRequired,
+    episode: PropTypes.object.isRequired,
+    displaySeason: PropTypes.bool,
 }
 
 const defaultProps = {

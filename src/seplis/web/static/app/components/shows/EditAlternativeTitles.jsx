@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import $ from 'jquery';
 import 'select2';
 import 'select2/dist/css/select2.css';
 
 const propTypes = {
-    options: React.PropTypes.arrayOf(React.PropTypes.string),
+    options: PropTypes.arrayOf(PropTypes.string),
 }
 
 const defaultProps = {

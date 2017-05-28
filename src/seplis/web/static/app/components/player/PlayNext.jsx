@@ -1,9 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const propTypes = {
-    title: React.PropTypes.string,
-    description: React.PropTypes.string,
-    url: React.PropTypes.string,
+    title: PropTypes.string,
+    description: PropTypes.string,
+    url: PropTypes.string,
 }
 
 class PlayNext extends React.Component {

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import {request} from 'api';
 import {isAuthed} from 'utils';
@@ -9,9 +10,9 @@ import WatchedProgression from './WatchedProgression';
 import SelectSeason from './SelectSeason';
 
 const propTypes = {
-    'showId': React.PropTypes.number.isRequired,
-    'seasons': React.PropTypes.array.isRequired,
-    'seasonNumber': React.PropTypes.number.isRequired,
+    'showId': PropTypes.number.isRequired,
+    'seasons': PropTypes.array.isRequired,
+    'seasonNumber': PropTypes.number.isRequired,
 }
 
 class SeasonList extends React.Component {

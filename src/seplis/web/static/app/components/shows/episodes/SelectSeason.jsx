@@ -1,9 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const propTypes = {
-    seasons: React.PropTypes.array.isRequired,
-    selectedSeason: React.PropTypes.number,
-    onChange: React.PropTypes.func,
+    seasons: PropTypes.array.isRequired,
+    selectedSeason: PropTypes.number,
+    onChange: PropTypes.func,
 }
 
 class SelectSeason extends React.Component {

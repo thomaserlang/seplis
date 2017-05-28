@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {Link} from 'react-router';
 
 import './ShowNav.scss';
 
 let propTypes = {
-    showId: React.PropTypes.number.isRequired,
+    showId: PropTypes.number.isRequired,
 }
 
 class ShowNav extends React.Component {

@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import ClassNames from 'classnames';
 import {request} from 'api';
 import PlayNext from './PlayNext';
@@ -11,20 +12,20 @@ import {secondsToTime} from 'utils';
 import './Player.scss';
 
 const propTypes = {
-    playServerUrl: React.PropTypes.string,
-    playId: React.PropTypes.string,
-    session: React.PropTypes.string,
-    startTime: React.PropTypes.number,
-    metadata: React.PropTypes.object,
-    info: React.PropTypes.object,
-    nextInfo: React.PropTypes.object,
-    backToInfo: React.PropTypes.object,
-    currentInfo: React.PropTypes.object,
-    onAudioChange: React.PropTypes.func,
-    onSubtitleChange: React.PropTypes.func,
-    audio_lang: React.PropTypes.string,
-    subtitle_lang: React.PropTypes.string,
-    onTimeUpdate: React.PropTypes.func,
+    playServerUrl: PropTypes.string,
+    playId: PropTypes.string,
+    session: PropTypes.string,
+    startTime: PropTypes.number,
+    metadata: PropTypes.object,
+    info: PropTypes.object,
+    nextInfo: PropTypes.object,
+    backToInfo: PropTypes.object,
+    currentInfo: PropTypes.object,
+    onAudioChange: PropTypes.func,
+    onSubtitleChange: PropTypes.func,
+    audio_lang: PropTypes.string,
+    subtitle_lang: PropTypes.string,
+    onTimeUpdate: PropTypes.func,
 }
 
 const defaultProps = {

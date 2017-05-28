@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {request} from 'api';
 import {isAuthed} from 'utils';
 
@@ -9,7 +10,7 @@ import ShowNav from 'components/shows/ShowNav';
 import './Show.scss';
 
 const propTypes = {
-    params: React.PropTypes.object.isRequired,
+    params: PropTypes.object.isRequired,
 }
 
 class Show extends React.Component {

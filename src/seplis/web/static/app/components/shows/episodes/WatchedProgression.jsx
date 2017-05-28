@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import SelectSeasonEpisode from './SelectSeasonEpisode';
 import {request} from 'api';
 import {getUserId} from 'utils';
@@ -7,8 +8,8 @@ import 'bootstrap/js/src/dropdown';
 import './WatchedProgression.scss';
 
 const propTypes = {
-    showId: React.PropTypes.number.isRequired,
-    seasons: React.PropTypes.array.isRequired,
+    showId: PropTypes.number.isRequired,
+    seasons: PropTypes.array.isRequired,
 }
 
 class WatchedProgression extends React.Component {

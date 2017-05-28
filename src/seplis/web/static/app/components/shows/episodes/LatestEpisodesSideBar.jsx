@@ -1,12 +1,13 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Fecha from 'fecha';
 import {request} from 'api';
 
 import './LatestEpisodesSideBar.scss';
 
 const propTypes = {
-    showId: React.PropTypes.number.isRequired,
-    numberOfEpisodes: React.PropTypes.number,
+    showId: PropTypes.number.isRequired,
+    numberOfEpisodes: PropTypes.number,
 }
 
 const defaultProps = {

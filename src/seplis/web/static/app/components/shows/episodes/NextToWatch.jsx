@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {request} from 'api';
 import {isAuthed} from 'utils';
 import EpisodeListItem from './EpisodeListItem';
 import {EVENT_EPISODE_WATCHED_STATUS} from 'seplis/events';
 
 const propTypes = {
-    showId: React.PropTypes.number.isRequired,
+    showId: PropTypes.number.isRequired,
 }
 
 class NextToWatch extends React.Component {

@@ -1,10 +1,11 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import {getUserId} from 'utils';
 import {request} from 'api';
 import ShowList from './List';
 
 const propTypes = {
-    amount: React.PropTypes.number,
+    amount: PropTypes.number,
 }
 
 const defaultProps = {

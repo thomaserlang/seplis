@@ -1,9 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import EditAlternativeTitles from './EditAlternativeTitles';
 import {request} from 'api';
 
 const propTypes = {
-    show: React.PropTypes.object,
+    show: PropTypes.object,
 }
 
 const externals = [

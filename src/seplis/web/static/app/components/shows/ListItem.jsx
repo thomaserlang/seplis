@@ -1,7 +1,8 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 const propTypes = {
-    show: React.PropTypes.object.isRequired,
+    show: PropTypes.object.isRequired,
 }
 
 class ListItem extends React.Component {

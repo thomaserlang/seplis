@@ -1,11 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 import './Slider.scss';
 
 const propTypes = {
-    duration: React.PropTypes.number.isRequired,
-    onReturnCurrentTime: React.PropTypes.func.isRequired,
-    onNewTime: React.PropTypes.func.isRequired,
+    duration: PropTypes.number.isRequired,
+    onReturnCurrentTime: PropTypes.func.isRequired,
+    onNewTime: PropTypes.func.isRequired,
 }
 
 class Slider extends React.Component {
