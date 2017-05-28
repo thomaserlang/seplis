@@ -23,7 +23,6 @@ class List extends React.Component {
                         className="img-fluid"
                     />
                 </a>
-                <a href={`/show/${show.id}`}>{show.title}</a>
             </div>
         )
     }
