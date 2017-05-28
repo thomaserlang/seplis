@@ -69,6 +69,7 @@ class Player extends React.Component {
         this.video.addEventListener('timeupdate', this.timeupdateEvent.bind(this));
         this.video.addEventListener('pause', this.pauseEvent.bind(this));
         this.video.addEventListener('play', this.playEvent.bind(this));
+        this.video.addEventListener('loadstart', this.playEvent.bind(this));
         this.video.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this));
         this.video.addEventListener('error', this.playError.bind(this));
         this.video.addEventListener('waiting', this.playWaiting.bind(this));
