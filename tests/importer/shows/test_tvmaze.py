@@ -3,6 +3,7 @@ import responses
 import nose
 import mock
 import xmltodict
+from datetime import datetime
 from unittest import TestCase
 from seplis.importer.shows.tvmaze import Tvmaze
 from seplis import schemas
@@ -118,6 +119,8 @@ class test_tvmaze(TestCase):
         tvmaze = Tvmaze()
         episodes = tvmaze.episodes(show_id)
         schemas.validate([schemas.Episode_schema], episodes)
+        self.assertEqual(episodes[0]['air_date'], datetime(2014, 4, 16).date())
+        self.assertEqual(episodes[0]['air_time'], datetime(2014, 4, 16, 2).time())
 
     @responses.activate
     def test_incremental_updates(self):
