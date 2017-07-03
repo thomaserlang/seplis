@@ -50,14 +50,12 @@ class HTTPData(object):
 
     def all(self):
         s = self
-        data = []
         while True:
             for d in s.data:
-                data.append(d)
+                yield d
             if not s.next:
                 break
             s = s.client.get(s.next, timeout=self.timeout)
-        return data
         
     @gen.coroutine
     def all_async(self):
