@@ -36,17 +36,20 @@ class JsonEncoder(json.JSONEncoder):
 
 def _iso_datetime(value):
     """
-    If value appears to be something datetime-like, return it in ISO format.
+    If value appears to be something datetime-like, return it in ISO 8601 format.
 
     Otherwise, return None.
     """
     if isinstance(value, (datetime.datetime, datetime.time)):
-        return value.isoformat()+'Z'
+        return isoformat(value)
     elif isinstance(value, datetime.date):
         return value.isoformat()
 
 def isoformat(dt):
-    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    r = dt.isoformat()
+    if not dt.tzinfo:
+        r += 'Z'
+    return r
         
 def json_dumps(obj, **kwargs):
     '''

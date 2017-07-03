@@ -1,7 +1,7 @@
 import re
 import aniso8601
 import good
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil import parser
 from seplis.api import constants
 
@@ -13,7 +13,7 @@ def validate(schema, d, *arg, **args):
 def iso8601():
     def f(v):    
         try:
-            return parser.parse(v)
+            return aniso8601.parse_datetime(v)
         except:
             raise good.Invalid('invalid iso 8601 datetime {}'.format(v))
     return f
@@ -65,6 +65,7 @@ _Episode_schema = {
     good.Optional('season'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
     good.Optional('episode'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
     'air_date': good.Maybe(date_()),
+    'air_time': good.Maybe(time_()),
     'description': good.Any(None, Description_schema),
     'runtime': good.Maybe(good.Coerce(int)),
 }

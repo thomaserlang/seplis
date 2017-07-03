@@ -16,7 +16,8 @@ class Episode(Base):
     show_id = sa.Column(sa.Integer, primary_key=True)
     number = sa.Column(sa.Integer, primary_key=True)
     title = sa.Column(sa.String(200), unique=True)
-    air_date = sa.Column(sa.Date)    
+    air_date = sa.Column(sa.Date)
+    air_time = sa.Column(sa.Time)
     description_text = sa.Column(sa.Text)
     description_title = sa.Column(sa.String(45))
     description_url = sa.Column(sa.String(200))
@@ -38,6 +39,7 @@ class Episode(Base):
             'episode': self.episode,
             'runtime': self.runtime,
             'air_date': self.air_date,
+            'air_time': self.air_time,
         }
 
     def to_elasticsearch(self):
@@ -45,6 +47,7 @@ class Episode(Base):
 
         This method is automatically called after update or insert.
         ''' 
+        print(self.serialize())
         self.session.es_bulk.append({
             '_index': 'episodes',
             '_type': 'episode',

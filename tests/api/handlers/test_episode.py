@@ -20,6 +20,7 @@ class Test_episode(Testbase):
                     'number': 1,
                     'title': 'Episode 1',
                     'air_date': '2014-01-01',
+                    'air_time': '22:00',
                     'description': {
                         'text': 'Test description.'
                     },
@@ -40,10 +41,11 @@ class Test_episode(Testbase):
         self.assertEqual(episode['description'], {
             'text': 'Test description.',
             'url': None,
-            'title': None,
-            
+            'title': None,            
         })
         self.assertEqual(episode['runtime'], 30)
+        self.assertEqual(episode['air_date'], '2014-01-01')
+        self.assertEqual(episode['air_time'], '22:00:00Z')
 
         # test that we can patch the description        
         response = self.patch('/1/shows/{}'.format(show_id), {
