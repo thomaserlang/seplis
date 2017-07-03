@@ -26,7 +26,7 @@ class Episode(Base):
     runtime = sa.Column(sa.Integer)
 
     def serialize(self):
-        return {
+        r = {
             'show_id': self.show_id,
             'number': self.number,
             'title': self.title,
@@ -40,7 +40,11 @@ class Episode(Base):
             'runtime': self.runtime,
             'air_date': self.air_date,
             'air_time': self.air_time,
+            'air_datetime': None,
         }
+        if self.air_date and self.air_time:
+            r['air_datetime'] = datetime.combine(self.air_date, self.air_time)
+        return r
 
     def to_elasticsearch(self):
         '''Sends the episodes's info to ES.
