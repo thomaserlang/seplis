@@ -54,7 +54,6 @@ class Episode(Base):
 
         This method is automatically called after update or insert.
         ''' 
-        print(self.serialize())
         self.session.es_bulk.append({
             '_index': 'episodes',
             '_type': 'episode',
