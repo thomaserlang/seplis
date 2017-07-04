@@ -165,6 +165,8 @@ class Test_episode_append_fields(Testbase):
         episode = utils.json_loads(response.body)
         self.assertTrue('user_watched' in episode)
         self.assertEqual(episode['user_watched'], None)
+        self.assertEqual(episode['air_time'], None)
+        self.assertEqual(episode['air_datetime'], '2003-09-23T00:00:00Z')
 
         # test multi episodes
         response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))

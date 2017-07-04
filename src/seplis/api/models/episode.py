@@ -8,7 +8,7 @@ from seplis.api.connections import database
 from seplis.api.decorators import new_session, auto_pipe, auto_session
 from seplis.api.base.pagination import Pagination
 from seplis.api import exceptions, rebuild_cache, constants
-from datetime import datetime
+from datetime import datetime, time
 
 class Episode(Base):
     __tablename__ = 'episodes'
@@ -42,8 +42,11 @@ class Episode(Base):
             'air_time': self.air_time,
             'air_datetime': None,
         }
-        if self.air_date and self.air_time:
-            r['air_datetime'] = datetime.combine(self.air_date, self.air_time)
+        if self.air_date:
+            r['air_datetime'] = datetime.combine(
+                self.air_date, 
+                self.air_time if self.air_time else time(0, 0, 0),
+            )
         return r
 
     def to_elasticsearch(self):
