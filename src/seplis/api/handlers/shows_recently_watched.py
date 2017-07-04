@@ -1,6 +1,5 @@
 import logging
 from . import base
-from tornado import gen
 from seplis import schemas, utils
 from seplis.api import constants, exceptions, models
 from seplis.api.decorators import authenticated, new_session, auto_session
@@ -8,8 +7,7 @@ from seplis.api.connections import database
 
 class Handler(base.Handler):
 
-    @gen.coroutine
-    def get(self, user_id):
+    async def get(self, user_id):
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         pagination = models.Episode_watched.show_recently(
@@ -27,10 +25,10 @@ class Handler(base.Handler):
                     w['id'],
                     w['user_watching']['episode_number'] if w['user_watching'] else 0
                 ))
-            show_docs = yield self.es('/shows/show/_mget', body={
+            show_docs = await self.es('/shows/show/_mget', body={
                 'ids': show_ids,
             })
-            episode_docs = yield self.es('/episodes/episode/_mget', body={
+            episode_docs = await self.es('/episodes/episode/_mget', body={
                 'ids': episode_ids,
             })
             episode_ids = []
