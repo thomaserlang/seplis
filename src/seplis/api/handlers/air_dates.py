@@ -55,25 +55,25 @@ class Handler(base.Handler):
 
     async def get_episodes(self, user_id):
         args = self.validate_arguments()
-        should_be = self.get_should_filter(user_id)
-        if not should_be:
+        show_ids = models.Show_fan.get_all(user_id)
+        if not show_ids:
             return []
         now = datetime.utcnow().date()
         episodes = await self.es('/episodes/episode/_search',
             body={
-                'filter': {
+                'query': {
                     'bool': {
-                        'should': should_be,
-                        'must': {
-                            'range': {
+                        'filter': [
+                            {'terms': { 'show_id': show_ids }},
+                            {'range': {
                                 'air_date': {
                                     'gte': (now - \
                                         timedelta(days=args['days_back'])).isoformat(),
                                     'lte': (now + \
                                         timedelta(days=args['days_ahead'])).isoformat(),
                                 }
-                            }
-                        }
+                            }}
+                        ]
                     }
                 }
             },
@@ -85,11 +85,3 @@ class Handler(base.Handler):
         )
         return [episode['_source'] \
             for episode in episodes['hits']['hits']]
-
-    def get_should_filter(self, user_id):
-        show_ids = models.Show_fan.get_all(user_id)
-        return [{
-            'term': {
-                'show_id': int(id_),
-            }
-        } for id_ in show_ids]
