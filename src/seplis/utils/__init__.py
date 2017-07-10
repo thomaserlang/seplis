@@ -29,8 +29,8 @@ class JsonEncoder(json.JSONEncoder):
             return iso
         if isinstance(value, set):
             return list(value)
-        if hasattr(value, 'to_dict'):
-            return value.to_dict()    
+        if hasattr(value, 'serialize'):
+            return value.serialize()    
         if isinstance(value, bytes):
             return value.decode('utf-8')
         return super(JsonEncoder, self).default(value)
