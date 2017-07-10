@@ -13,6 +13,7 @@ import uuid
 import io
 import sqlalchemy as sa
 
+from . import sqlalchemy
 from .validate import *
 
 def random_key():

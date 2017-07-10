@@ -16,66 +16,6 @@ from .user import User, Token, User_show_subtitle_lang
 from .app import App
 from .play_server import Play_server
 
-def sort_parser(sort, sort_lookup, sort_list=None):
-    '''
-    Parses a list of string sort types to SQLAlchemy field sorts.
-
-    Example:
-
-        sort_lookup = {
-            'journal_entry_id': models.Journal_entry.id,
-            'patient': {
-                'first_name': models.Patient.first_name,
-            }
-        }
-
-        sort = sort_parser(
-            'patient.first_name, -journal_entry_id',
-            sort_lookup
-        )
-
-        session.query(
-            models.Patient,
-            models.Journal_entry,
-        ).order_by(
-            *sort
-        )
-
-    :param sort: [`str`]
-    :param sort_lookup: [`SQLAlchemy model field`]
-    :returns: [`SQLAlchemy model sort field`]
-    '''
-    if sort_list == None:
-        sort_list = []
-    sort = filter(None, sort.split(','))
-    for s in sort:
-        if '.' in s:
-            sub = s.split('.', 1)
-            key = sub[0]
-            if not isinstance(sort_lookup[key], dict):
-                continue
-            if len(sub) == 2:
-                sort_parser(sub[1], sort_lookup[key], sort_list)
-            continue
-        sort_type = asc
-        s = s.strip()
-        if s.endswith(':desc'):
-            sort_type = desc
-            s = s[:-5]
-        elif s.endswith(':asc'):
-            s = s[:-4]
-        if s not in sort_lookup or isinstance(sort_lookup[s], dict):
-            raise exceptions.Sort_not_allowed(s)
-        sort_list.append(
-            sort_type(
-                sort_lookup[s]
-            )
-        )
-    return sort_list
-
-
-
-
 class Tag(Base):
     __tablename__ = 'tags'
 

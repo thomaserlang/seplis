@@ -6,7 +6,7 @@ from seplis.utils import json_dumps, json_loads
 from urllib.parse import urlencode
 from tornado.httpclient import HTTPRequest
 from tornado.testing import AsyncHTTPTestCase
-from seplis.api.connections import database, setup_event_listeners
+from seplis.api.connections import database
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from seplis.api.app import Application
@@ -33,8 +33,7 @@ class Testbase(AsyncHTTPTestCase):
         database.__init__()
         connection = database.engine.connect()
         self.trans = connection.begin()
-        database.session = sessionmaker(bind=connection)
-        setup_event_listeners(database.session)
+        database.setup_sqlalchemy_session(connection)
         database.redis.flushdb()
         elasticcreate.create_indices()
 
