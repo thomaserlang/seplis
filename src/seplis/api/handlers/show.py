@@ -2,7 +2,8 @@ import logging
 from seplis import schemas, tasks
 from seplis.api import constants, exceptions, models
 from seplis.api.handlers import base, utils as handler_utils
-from seplis.api.decorators import authenticated, new_session, auto_session
+from seplis.api.decorators import authenticated, new_session, auto_session, \
+    run_on_executor
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
 from tornado.httpclient import HTTPError
@@ -151,23 +152,21 @@ class Handler(base.Handler):
                 overwrite=False,
             )
 
-    @gen.coroutine
-    def get_show(self, show_id):
+    async def get_show(self, show_id):
         append_fields = self.get_append_fields(self.allowed_append_fields)
-        result = yield self.es('/shows/show/{}'.format(show_id))                
+        result = await self.es('/shows/show/{}'.format(show_id))                
         if not result['found']:
             raise exceptions.Not_found('unknown show')
         show = result['_source']
         if 'is_fan' in append_fields:
-            self.append_is_fan([show])
+            await self.append_is_fan([show])
         if 'user_watching' in append_fields:
-            yield self.append_user_watching([show])
+            await self.append_user_watching([show])
         if show['poster_image']:
             self.image_wrapper(result['_source']['poster_image'])
         return show
 
-    @gen.coroutine
-    def get_shows(self, show_ids=None):
+    async def get_shows(self, show_ids=None):
         append_fields = self.get_append_fields(self.allowed_append_fields)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
@@ -191,7 +190,7 @@ class Handler(base.Handler):
                     'values': show_ids,
                 }
             }
-        result = yield self.es(
+        result = await self.es(
             '/shows/show/_search',
             body=body,
             query=req,
@@ -203,9 +202,9 @@ class Handler(base.Handler):
                 self.image_wrapper(show['_source']['poster_image'])
         shows = list(shows.values())
         if 'is_fan' in append_fields:
-            self.append_is_fan(shows)
+            await self.append_is_fan(shows)
         if 'user_watching' in append_fields:
-            yield self.append_user_watching(shows)
+            await self.append_user_watching(shows)
         p = Pagination(
             page=page,
             per_page=per_page,
@@ -280,16 +279,20 @@ class Handler(base.Handler):
             }
         }
 
+    @run_on_executor
     def append_is_fan(self, shows, user_id=None):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        is_fan = models.Show_fan.is_fan(
-            user_id=user_id,
-            show_id=[show['id'] for show in shows],
-        )
-        for f, show in zip(is_fan, shows):
-            show['is_fan'] = f
+        with new_session() as session:
+            rows = session.query(models.Show_fan.show_id).filter(
+                models.Show_fan.user_id == user_id,
+            ).all()
+            if not rows:
+                return
+            show_ids = set([r.show_id for r in rows])
+        for show in shows:
+            show['is_fan'] = show['id'] in show_ids
 
     async def append_user_watching(self, shows, user_id=None):
         if not user_id:

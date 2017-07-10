@@ -232,120 +232,6 @@ class Show(Base):
             return
         return int(show_id)
 
-
-class Show_fan(Base):
-    __tablename__ = 'show_fans'
-
-    show_id = sa.Column(
-        sa.Integer,
-        sa.ForeignKey('shows.id'), 
-        primary_key=True, 
-        autoincrement=False,
-    )
-    user_id = sa.Column(
-        sa.Integer, 
-        sa.ForeignKey('users.id'),
-        primary_key=True, 
-        autoincrement=False,
-    )
-    created_at = sa.Column(
-        sa.DateTime, 
-        default=datetime.utcnow, 
-        onupdate=datetime.utcnow,
-    )
-
-    @staticmethod
-    def ck_show_users(show_id):
-        """ A sorted set of user ids with the `created_at` as the sort key.
-        http://redis.io/commands#sorted_set
-        """
-        return 'shows:{}:fans'.format(show_id)
-
-    @staticmethod
-    def ck_user_shows(user_id):
-        """ A sorted set of show ids with the `created_at` as the sort key.
-        http://redis.io/commands#sorted_set
-        """
-        return 'users:{}:fan_of'.format(user_id)
-
-    def cache(self):
-        self.session.pipe.zadd(
-            self.ck_show_users(self.show_id), 
-            self.created_at.timestamp() if self.created_at else datetime.utcnow().timestamp(),
-            self.user_id,
-        )
-        self.session.pipe.zadd(
-            self.ck_user_shows(self.user_id),              
-            self.created_at.timestamp() if self.created_at else datetime.utcnow().timestamp(),
-            self.show_id,
-        )
-
-    def incr_fan(self, amount):
-        """Increments the fans/fan of counter for the user and the show.
-        Automatically called on insert and delete.
-
-        :param amount: int
-        """
-        self.session.pipe.hincrby('shows:{}'.format(self.show_id), 'fans', amount)
-        self.session.pipe.hincrby('users:{}:stats'.format(self.user_id), 'fan_of', amount)
-        self.session.es_bulk.append({
-            '_op_type': 'update',
-            '_index': 'shows',
-            '_type': 'show',
-            '_retry_on_conflict': 3,
-            '_id': self.show_id,
-            'script': 'ctx._source.fans += {}'.format(amount),
-        })
-        self.session.execute(Show.__table__.update()\
-            .where(Show.__table__.c.id==self.show_id)\
-            .values(fans=Show.__table__.c.fans + amount)
-        )
-        from seplis.api.models import User
-        self.session.execute(User.__table__.update()\
-            .where(User.__table__.c.id == self.user_id)\
-            .values(fan_of=User.__table__.c.fan_of + amount)
-        )
-
-    def after_upsert(self):
-        self.cache()
-        self.incr_fan(1)
-
-    def after_delete(self):
-        self.session.pipe.zrem(self.ck_show_users(self.show_id), self.user_id)
-        self.session.pipe.zrem(self.ck_user_shows(self.user_id), self.show_id)
-        self.incr_fan(-1)
-        
-    @classmethod
-    def is_fan(cls, user_id, show_id):
-        """Check if the user is a fan of one or more shows.
-
-        :param user_id: int
-        :param show_id: int or list of int
-        :returns: bool or list of bool
-        """
-        show_ids = show_id if isinstance(show_id, list) else [show_id]
-        pipe = database.redis.pipeline()
-        for id_ in show_ids:
-            pipe.zrank(cls.ck_user_shows(user_id), id_)
-        a = pipe.execute()
-        result = [True if id_ != None else False for id_ in a]
-        return result if isinstance(show_id, list) else result[0]
-
-    @classmethod
-    def get_all(cls, user_id):
-        """Returns a list of all the show ids the user is a fan of.
-
-        :user_id: int
-        :returns: list of int
-        """
-        show_ids = database.redis.zrevrange(
-            cls.ck_user_shows(user_id),
-            start=0,
-            end=-1
-        )
-        return [int(id_) for id_ in show_ids]
-
-
 class Show_external(Base):
     __tablename__ = 'show_externals'
 
@@ -413,13 +299,6 @@ def rebuild_shows():
     with new_session() as session:
         for item in session.query(Show).yield_per(10000):
             item.to_elasticsearch()
-        session.commit()
-
-@rebuild_cache.register('show_fans')
-def rebuild_fans():
-    with new_session() as session: 
-        for item in session.query(Show_fan).yield_per(10000):
-            item.cache()
         session.commit()
 
 @rebuild_cache.register('show_externals')

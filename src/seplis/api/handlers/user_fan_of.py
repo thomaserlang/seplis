@@ -1,3 +1,4 @@
+import sqlalchemy as sa
 from seplis.api.handlers import base
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
@@ -8,28 +9,8 @@ class Handler(base.Pagination_handler):
 
     async def get(self, user_id):
         super().get()
-        pipe = database.redis.pipeline()
-        name = models.Show_fan.ck_user_shows(user_id)
-        pipe.zcard(name)
-        start = (self.page - 1) * self.per_page
-        pipe.zrevrange(
-            name=name,
-            start=start,
-            end=(start+self.per_page) - 1,
-        )
-        total_records, show_ids = pipe.execute()
-        shows = []
-        if show_ids:
-            show_lookup = await self.es('/shows/show/_mget', body={
-                'ids': show_ids,
-            })
-            shows = [d['_source'] for d in show_lookup['docs']]
-        self.write_object(Pagination(
-            page=self.page,
-            per_page=self.per_page,
-            records=shows,
-            total=total_records,
-        ))
+        d = await self.fan_of(user_id)
+        self.write_object(d)
 
     @authenticated(constants.LEVEL_USER)
     async def put(self, user_id, show_id):
@@ -42,10 +23,22 @@ class Handler(base.Pagination_handler):
         self.set_status(204)
 
     @run_on_executor
-    def fan(self, user_id, show_id):
-        if self.redis.zrank(models.Show_fan.ck_user_shows(user_id), show_id) != None:
-            return
+    def fan_of(self, user_id):
         with new_session() as session:
+            pagination = session.query(models.Show).filter(
+                models.Show_fan.user_id == user_id,
+                models.Show_fan.show_id == models.Show.id,
+            ).order_by(
+                sa.desc(models.Show_fan.created_at), 
+                sa.desc(models.Show_fan.show_id),
+            ).paginate(page=self.page, per_page=self.per_page)
+            return pagination
+
+    @run_on_executor
+    def fan(self, user_id, show_id):
+        with new_session() as session:            
+            if session.query(models.Show_fan).get((show_id, user_id)):
+                return
             fan = models.Show_fan(
                 user_id=user_id,
                 show_id=show_id,
@@ -55,8 +48,6 @@ class Handler(base.Pagination_handler):
 
     @run_on_executor
     def unfan(self, user_id, show_id):
-        if self.redis.zrank(models.Show_fan.ck_user_shows(user_id), show_id) == None:
-            return
         with new_session() as session:
             fan = session.query(models.Show_fan).filter(
                 models.Show_fan.user_id == user_id,
