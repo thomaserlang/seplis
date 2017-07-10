@@ -45,7 +45,7 @@ class HTTPData(object):
         if 'X-Total-Pages' in response.headers:
             self.pages = int(response.headers['X-Total-Pages'])
 
-    def to_dict(self):
+    def serialize(self):
         return self.data
 
     def all(self):
