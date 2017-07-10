@@ -9,7 +9,6 @@ import seplis.api.handlers.base
 import seplis.api.handlers.show
 import seplis.api.handlers.user
 import seplis.api.handlers.app
-import seplis.api.handlers.tag
 import seplis.api.handlers.episode
 import seplis.api.handlers.image
 import seplis.api.handlers.play
@@ -162,27 +161,6 @@ class Application(tornado.web.Application):
             URLSpec(
                 r'/1/users/([0-9]+)/etw', 
                 seplis.api.handlers.etw.Handler
-            ),
-
-            URLSpec(
-                r'/1/users/([0-9]+)/tags', 
-                seplis.api.handlers.tag.User_types_handler
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/shows/([0-9]+)', 
-                seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/([0-9]+)/shows/([0-9]+)', 
-                seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/shows', 
-                seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/([0-9]+)/shows', 
-                seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}
             ),
 
             URLSpec(

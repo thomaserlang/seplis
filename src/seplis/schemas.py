@@ -123,10 +123,6 @@ Token_type_password = good.Schema({
     'client_id': str,
 })
 
-User_tag_relation_schema = good.Schema({
-    'name': good.All(str, good.Length(min=1, max=50)),
-})
-
 _Image = {
     'external_name': good.All(str, good.Length(min=1, max=45)),
     'external_id': good.All(str, good.Length(min=1, max=45)),
