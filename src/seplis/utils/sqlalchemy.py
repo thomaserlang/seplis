@@ -1,7 +1,26 @@
 from seplis.utils import *
 from seplis.api import exceptions
+from seplis.api.base.pagination import Pagination
 
 import sqlalchemy as sa
+from sqlalchemy import orm
+
+class Base_query(orm.Query):
+ 
+    def paginate(self, page=1, per_page=25):
+        records = self.limit(per_page).offset((page-1)*per_page).all()
+        if page == 1 and len(records) < per_page:
+            total = len(records)
+        else:
+            total = self.order_by(None).count()
+ 
+        pagination = Pagination(
+            page=page,
+            per_page=per_page,
+            total=total,
+            records=records,
+        )
+        return pagination
 
 def sort_parser(sort, sort_lookup, sort_list=None):
     """
@@ -90,34 +109,35 @@ def setup_before_after_events(session):
         def after_insert(self):
             self.save_to_cache()
     """
+    def _after_flush(session, flush_context):
+        for target in session.new:
+            if hasattr(target, 'after_insert'): 
+                target.after_insert()
+            if hasattr(target, 'after_upsert'): 
+                target.after_upsert()
+        for target in session.dirty:
+            if hasattr(target, 'after_update'):
+                target.after_update()
+            if hasattr(target, 'after_upsert'): 
+                target.after_upsert()
+        for target in session.deleted:
+            if hasattr(target, 'after_delete'):
+                target.after_delete()
+
+    def _before_flush(session, flush_context, instances):
+        for target in session.new:
+            if hasattr(target, 'before_insert'): 
+                target.before_insert()
+            if hasattr(target, 'before_upsert'): 
+                target.before_upsert()
+        for target in session.dirty:
+            if hasattr(target, 'before_update'):
+                target.before_update()
+            if hasattr(target, 'before_upsert'): 
+                target.before_upsert()
+        for target in session.deleted:
+            if hasattr(target, 'before_delete'):
+                target.before_delete()
+
     sa.event.listen(session, 'before_flush', _before_flush)
     sa.event.listen(session, 'after_flush', _after_flush)
-def _after_flush(session, flush_context):
-    for target in session.new:
-        if hasattr(target, 'after_insert'): 
-            target.after_insert()
-        if hasattr(target, 'after_upsert'): 
-            target.after_upsert()
-    for target in session.dirty:
-        if hasattr(target, 'after_update'):
-            target.after_update()
-        if hasattr(target, 'after_upsert'): 
-            target.after_upsert()
-    for target in session.deleted:
-        if hasattr(target, 'after_delete'):
-            target.after_delete()
-
-def _before_flush(session, flush_context, instances):
-    for target in session.new:
-        if hasattr(target, 'before_insert'): 
-            target.before_insert()
-        if hasattr(target, 'before_upsert'): 
-            target.before_upsert()
-    for target in session.dirty:
-        if hasattr(target, 'before_update'):
-            target.before_update()
-        if hasattr(target, 'before_upsert'): 
-            target.before_upsert()
-    for target in session.deleted:
-        if hasattr(target, 'before_delete'):
-            target.before_delete()

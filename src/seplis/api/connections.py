@@ -41,6 +41,7 @@ class Database:
     def setup_sqlalchemy_session(self, connection):
         self.session = sessionmaker(
             bind=connection,
+            query_cls=utils.sqlalchemy.Base_query,
         )
         utils.sqlalchemy.setup_before_after_events(self.session)
         event.listen(self.session, 'after_commit', event_commit_es_bulk_and_pipe)
