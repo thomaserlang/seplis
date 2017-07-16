@@ -1,6 +1,6 @@
 import React from 'react';
 import ShowsRecentlyWatched from 'components/shows/RecentlyWatched';
-import ShowsAirDates from 'components/shows/AirDates';
+import ShowsCountdown from 'components/shows/Countdown';
 
 class Main extends React.Component {
 
@@ -8,6 +8,7 @@ class Main extends React.Component {
         return (
             <span>
             <ShowsRecentlyWatched />
+            <ShowsCountdown />
             </span>
         )
     }
