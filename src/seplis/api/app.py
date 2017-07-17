@@ -22,6 +22,7 @@ import seplis.api.handlers.user_show_subtitle_lang
 import seplis.api.handlers.user_fan_of
 import seplis.api.handlers.shows_countdown
 import seplis.api.handlers.shows_recently_aired
+import seplis.api.handlers.shows_etw
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -148,6 +149,10 @@ class Application(tornado.web.Application):
                 r'/1/users/([0-9]+)/shows-countdown', 
                 seplis.api.handlers.shows_countdown.Handler
             ),
+            URLSpec(
+                r'/1/users/([0-9]+)/shows-etw', 
+                seplis.api.handlers.shows_etw.Handler
+            ),        
         
             URLSpec(
                 r'/1/shows/([0-9]+)/episodes/([0-9]+)/watched', 
