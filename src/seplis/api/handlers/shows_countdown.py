@@ -29,6 +29,7 @@ class Handler(base.Pagination_handler):
                 models.Episode.number == episodes.c.episode_number,
             ).order_by(
                 models.Episode.air_date,
+                models.Episode.air_time,
                 models.Episode.show_id,
             ).paginate(page=self.page, per_page=self.per_page)
             p.records = [{
