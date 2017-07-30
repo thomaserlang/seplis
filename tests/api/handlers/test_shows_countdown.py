@@ -59,11 +59,10 @@ class Test_shows_countdown(Testbase):
         response = self.get('/1/users/{}/shows-countdown'.format(self.current_user.id))
         self.assertEqual(response.code, 200, response.body)
         shows = utils.json_loads(response.body)
-        self.assertEqual(shows[0]['show']['title'], 'Test show 1')
-        self.assertEqual(shows[0]['episode']['number'], 2)
+
         self.assertEqual(len(shows), 1)
-
-
+        self.assertEqual(shows[0]['show']['title'], 'Test show 1')
+        self.assertEqual(shows[0]['episode']['number'], 3)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

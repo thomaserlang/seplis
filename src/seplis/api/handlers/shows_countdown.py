@@ -23,7 +23,7 @@ class Handler(base.Pagination_handler):
                 models.Episode.show_id == models.Show_fan.show_id,
                 func.addtime(
                     models.Episode.air_date,
-                    models.Episode.air_time,
+                    func.ifnull(models.Episode.air_time, '00:00:00'),
                 ) > datetime.utcnow(),
             ).group_by(models.Episode.show_id).subquery()
             p = session.query(models.Show, models.Episode).filter(
