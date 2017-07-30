@@ -285,7 +285,15 @@ class Image_no_data(API_exception):
             status_code=400,
             code=2003,
             message='No image data assigned. Please upload an image',
-        )  
+        )
+
+class Image_wrong_size(API_exception):
+    def __init__(self, width, height):
+        API_exception.__init__(self,
+            status_code=400,
+            code=2004,
+            message='The image width and height must be: {}X{}'.format(width, height),
+        )    
         
 class File_upload_no_files(API_exception):
 

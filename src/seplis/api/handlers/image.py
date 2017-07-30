@@ -33,7 +33,7 @@ class Handler(base.Handler):
             session.commit()
             return image.serialize()
 
-    @authenticated(constants.LEVEL_EDIT_SHOW)    
+    @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
     def put(self, relation_id, image_id):
         image = yield self._put(image_id)
@@ -50,7 +50,7 @@ class Handler(base.Handler):
             session.commit()
             return image.serialize()
 
-    @authenticated(constants.LEVEL_EDIT_SHOW)    
+    @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
     def delete(self, relation_id, image_id):
         yield self._delete(image_id)
@@ -153,4 +153,7 @@ class Data_handler(file_upload.Handler):
             image.hash = files[0]['hash']
             image.width = files[0]['width']
             image.height = files[0]['height']
+            if image.type == constants.IMAGE_TYPE_POSTER:
+                if (image.width != 680) or (image.height != 1000):
+                    raise exceptions.Image_wrong_size(680, 1000)
             session.commit()
