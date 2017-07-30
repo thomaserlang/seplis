@@ -2,7 +2,6 @@
 import responses
 import nose
 import mock
-import xmltodict
 from datetime import datetime
 from unittest import TestCase
 from seplis.importer.shows.tvmaze import Tvmaze
