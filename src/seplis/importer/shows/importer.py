@@ -366,7 +366,6 @@ def _show_info_changes(show_original, show_new):
     """
     changes = {}
     skip_fields = (
-        'externals',
         'importers',
         'episodes',
     )
