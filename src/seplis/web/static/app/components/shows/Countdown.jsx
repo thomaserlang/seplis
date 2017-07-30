@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getUserId} from 'utils';
+import {getUserId, dateInDays} from 'utils';
 import {request} from 'api';
 
 import './List.scss';
@@ -41,7 +41,7 @@ class Countdown extends React.Component {
         let episode = item.episode;
         return (
             <div key={show.id} className="col-4 col-sm-3 col-md-2 col-margin">
-                <div>{episode.air_date}</div>
+                <div>In {dateInDays(episode.air_datetime)}</div>
                 <a href={`/show/${show.id}`}>
                     <img 
                         title={show.title}

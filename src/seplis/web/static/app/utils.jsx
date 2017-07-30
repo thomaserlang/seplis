@@ -55,3 +55,25 @@ export function secondsToTime(secs) {
         seconds = "0"+seconds;
     return (hours>0?hours+':':'')+minutes+':'+seconds;
 }
+
+export function dateInDays(dt) {
+    console.log(dt);
+    if (typeof(dt) == "string") {
+        dt = new Date(dt);
+    }
+    let secs = Math.abs(dt-new Date().getTime())/1000;
+    let r = '';
+    let days = Math.floor(secs/86400);
+    let hours = Math.floor((secs-(days * 86400))/3600);
+    let minutes = Math.floor((secs-(days * 86400)-(hours*3600))/60);
+    if (days > 0) {
+        r = days + ((days == 1)?' day':' days');
+    }
+    if (hours > 0) {
+        r += ' ' + hours + ((hours == 1)?' hour':' hours');
+    }
+    if ((days < 1) && (hours < 1)) {
+        r = minutes + ((minutes == 1)?' minute':' minutes');
+    }
+    return r.trim();
+}

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getUserId} from 'utils';
+import {getUserId, episodeTitle} from 'utils';
 import {request} from 'api';
 
 import './List.scss';
@@ -41,7 +41,6 @@ class EpisodesToWatchBar extends React.Component {
         let episode = item.episode;
         return (
             <div key={show.id} className="col-4 col-sm-3 col-md-2 col-margin">
-                <div>{episode.number}</div>
                 <a href={`/show/${show.id}`}>
                     <img 
                         title={show.title}
@@ -50,6 +49,7 @@ class EpisodesToWatchBar extends React.Component {
                         className="img-fluid"
                     />
                 </a>
+                <div>{episodeTitle(show, episode)}</div>
             </div>
         )
     }
