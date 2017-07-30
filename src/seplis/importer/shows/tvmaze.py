@@ -32,7 +32,7 @@ class Tvmaze(Show_importer_base):
                 'title': 'TVmaze',
                 'url': show['url'],
             }
-        externals = {key: str(show['externals'][key]) for key in show['externals']}
+        externals = {key: str(show['externals'][key]) for key in show['externals'] if show['externals'][key]}
         externals[self.external_name] = str(show['id'])
         return {
             'title': show['name'],
