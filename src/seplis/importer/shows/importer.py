@@ -387,7 +387,6 @@ def _show_info_changes(show_original, show_new):
             changes[s] = show_new[s]
     return changes
 
-
 def _show_episode_changes(episodes_original, episodes_new):
     """Compares two episode list of dicts for changes.
     If the return is an empty list there is no
