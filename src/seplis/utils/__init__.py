@@ -48,7 +48,7 @@ def _iso_datetime(value):
 
 def isoformat(dt):
     r = dt.isoformat()
-    if not dt.tzinfo:
+    if isinstance(dt, datetime.datetime) and not dt.tzinfo:
         r += 'Z'
     return r
         
