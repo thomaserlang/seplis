@@ -164,9 +164,10 @@ def update_show_episodes(show):
     ``show`` must be a show dict.
 
     """
-    episodes = client.get(
+    episodes = list(client.get(
         '/shows/{}/episodes?per_page=500'.format(show['id'])
-    ).all()
+    ).all())
+
     imp_episodes = call_importer(
         external_name=show['importers']['episodes'],
         method='episodes',
@@ -174,8 +175,8 @@ def update_show_episodes(show):
     ) or []
 
     _cleanup_episodes(show['id'], episodes, imp_episodes)
-
     changes = _show_episode_changes(episodes, imp_episodes)
+
     if changes:
         logging.info('Updating show "{}" episodes'.format(show['id']))
         client.patch(
