@@ -48,6 +48,7 @@ class FanOf extends React.Component {
         request(`/1/users/${userId}/fan-of`, {
             query: {
                 page: this.state.page,
+                per_page: 60,
             }
         }).success((shows, textStatus, jqXHR) => {
             this.setState({
