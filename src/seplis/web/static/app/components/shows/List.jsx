@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import ClassNames from 'classnames';
 
 import './List.scss';
 
@@ -30,8 +31,12 @@ class List extends React.Component {
     }
 
     render() {
+        let c = ClassNames({
+            row: true,
+            'showlist-scroll': this.props.mobile_xscroll,
+        });
         return (
-            <div className="row showlist-scroll">
+            <div className={c}>
                 {this.props.shows.map(show => (
                     this.renderShow(show)
                 ))}
