@@ -57,7 +57,6 @@ export function secondsToTime(secs) {
 }
 
 export function dateInDays(dt) {
-    console.log(dt);
     if (typeof(dt) == "string") {
         dt = new Date(dt);
     }

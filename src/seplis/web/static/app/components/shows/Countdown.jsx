@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getUserId, dateInDays} from 'utils';
+import CountdownShow from './CountdownShow.jsx';
+import {getUserId} from 'utils';
 import {request} from 'api';
 
 import './List.scss';
@@ -36,31 +37,17 @@ class Countdown extends React.Component {
         });
     }
 
-    renderItem(item) {
-        let show = item.show;
-        let episode = item.episode;
-        return (
-            <div key={show.id} className="col-4 col-sm-3 col-md-2 col-margin">
-                <div>In {dateInDays(episode.air_datetime)}</div>
-                <a href={`/show/${show.id}`}>
-                    <img 
-                        title={show.title}
-                        alt={show.title}
-                        src={show.poster_image!=null?show.poster_image.url + '@SX180':''} 
-                        className="img-fluid"
-                    />
-                </a>
-            </div>
-        )
-    }
-
     render() {
         return (
             <span>
                 <h2 className="header">Countdown</h2>
                 <div className="row showlist-scroll">
                     {this.state.items.map(item => (
-                        this.renderItem(item)
+                        <CountdownShow 
+                            key={item.show.id} 
+                            show={item.show}
+                            episode={item.episode}
+                        />
                     ))}
                 </div>
             </span>
