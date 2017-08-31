@@ -75,3 +75,14 @@ a.btn {
 div {
     min-width: 0;
 }
+
+.showlist-xscroll {
+    margin-bottom: $headings-margin-bottom;
+    .row {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        .col-margin {
+            margin-bottom: 0px !important;
+        }
+    }
+}

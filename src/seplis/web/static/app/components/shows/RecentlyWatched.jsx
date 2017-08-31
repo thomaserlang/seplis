@@ -5,11 +5,11 @@ import {request} from 'api';
 import ShowList from './List';
 
 const propTypes = {
-    amount: PropTypes.number,
+    perPage: PropTypes.number,
 }
 
 const defaultProps = {
-    amount: 6,
+    perPage: 6,
 }
 
 class RecentlyWatched extends React.Component {
@@ -28,7 +28,7 @@ class RecentlyWatched extends React.Component {
     getData() {
         request(`/1/users/${getUserId()}/shows-recently-watched`, {
             query: {
-                'per_page': this.props.amount,
+                'per_page': this.props.perPage,
             },
         }).success(data => {
             this.setState({shows: data});
@@ -38,13 +38,7 @@ class RecentlyWatched extends React.Component {
 
     render() {
         return (
-            <span>
-                <h2 className="header">Recently watched</h2>     
-                <ShowList 
-                    shows={this.state.shows} 
-                    mobile_xscroll={true}
-                />
-            </span>
+            <ShowList shows={this.state.shows} />
         )
     }
 }

@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import {getUserId, episodeTitle} from 'utils';
 import {request} from 'api';
 
-import './List.scss';
-
 const propTypes = {
     perPage: PropTypes.number,
 }
@@ -13,7 +11,7 @@ const defaultProps = {
     perPage: 6,
 }
 
-class EpisodesToWatchBar extends React.Component {
+class EpisodesToWatch extends React.Component {
 
     constructor(props) {
         super();
@@ -56,18 +54,15 @@ class EpisodesToWatchBar extends React.Component {
 
     render() {
         return (
-            <span>
-                <h2 className="header">Episodes To Watch</h2>
-                <div className="row showlist-scroll">
-                    {this.state.items.map(item => (
-                        this.renderItem(item)
-                    ))}
-                </div>
-            </span>
+            <div className="row">
+                {this.state.items.map(item => (
+                    this.renderItem(item)
+                ))}
+            </div>
         )
     }
 }
-EpisodesToWatchBar.propTypes = propTypes;
-EpisodesToWatchBar.defaultProps = defaultProps;
+EpisodesToWatch.propTypes = propTypes;
+EpisodesToWatch.defaultProps = defaultProps;
 
-export default EpisodesToWatchBar;
+export default EpisodesToWatch;

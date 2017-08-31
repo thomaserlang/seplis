@@ -13,7 +13,7 @@ const defaultProps = {
     perPage: 6,
 }
 
-class RecentlyAiredBar extends React.Component {
+class RecentlyAired extends React.Component {
 
     constructor(props) {
         super();
@@ -56,18 +56,15 @@ class RecentlyAiredBar extends React.Component {
 
     render() {
         return (
-            <span>
-                <h2 className="header">Recently Aired</h2>
-                <div className="row showlist-scroll">
-                    {this.state.items.map(item => (
-                        this.renderItem(item)
-                    ))}
-                </div>
-            </span>
+            <div className="row">
+                {this.state.items.map(item => (
+                    this.renderItem(item)
+                ))}
+            </div>
         )
     }
 }
-RecentlyAiredBar.propTypes = propTypes;
-RecentlyAiredBar.defaultProps = defaultProps;
+RecentlyAired.propTypes = propTypes;
+RecentlyAired.defaultProps = defaultProps;
 
-export default RecentlyAiredBar;
+export default RecentlyAired;

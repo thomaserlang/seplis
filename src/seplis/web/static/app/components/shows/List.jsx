@@ -33,7 +33,7 @@ class List extends React.Component {
     render() {
         let c = ClassNames({
             row: true,
-            'showlist-scroll': this.props.mobile_xscroll,
+            'showlist-xscroll': this.props.mobile_xscroll,
         });
         return (
             <div className={c}>
