@@ -36,7 +36,7 @@ class Countdown extends React.Component {
 
     renderShow(show, episode) {
         return (
-            <div key={show.id} className="col-4 col-sm-3 col-md-2 col-margin">
+            <div key={show.id} className="col-4 col-md-3 col-lg-2 col-margin">
                 <div>In {dateInDays(episode.air_datetime)}</div>
                 <a href={`/show/${show.id}`}>
                     <img 

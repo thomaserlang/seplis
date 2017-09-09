@@ -96,12 +96,9 @@ class Main extends React.Component {
     }
 
     render() {
-        return (
-            <span>
-            <h2>Air dates</h2>
-            {this.state.loading?<Loader />:this.renderMain()}
-            </span>
-        )
+        if (this.state.loading)
+            return <Loader />;
+        return this.renderMain();
     }
 }
 

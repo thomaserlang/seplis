@@ -38,7 +38,7 @@ class EpisodesToWatch extends React.Component {
         let show = item.show;
         let episode = item.episode;
         return (
-            <div key={show.id} className="col-4 col-sm-3 col-md-2 col-margin">
+            <div key={show.id} className="col-4 col-md-3 col-lg-2 col-margin">
                 <a href={`/show/${show.id}`}>
                     <img 
                         title={show.title}
