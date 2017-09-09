@@ -1,0 +1,10 @@
+
+.slider {
+    .row {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        .col-margin {
+            margin-bottom: 0px !important;
+        }
+    }
+}

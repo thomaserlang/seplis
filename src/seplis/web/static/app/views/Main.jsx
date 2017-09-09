@@ -10,23 +10,23 @@ class Main extends React.Component {
         return (
             <span>
             <h2 className="header">Recently watched</h2>    
-            <div className="showlist-xscroll">
-                <ShowsRecentlyWatched perPage={12} />
+            <div className="slider col-margin">
+                <ShowsRecentlyWatched perPage={6} />
             </div>
 
             <h2 className="header">Countdown</h2>
-            <div className="showlist-xscroll">
-                <ShowsCountdown perPage={12} />
+            <div className="slider col-margin">
+                <ShowsCountdown perPage={6} />
             </div>
             
             <h2 className="header">Recently Aired</h2>
-            <div className="showlist-xscroll">
-                <ShowsRecentlyAired perPage={12} />
+            <div className="slider col-margin">
+                <ShowsRecentlyAired perPage={6} />
             </div>
 
             <h2 className="header">Episodes To Watch</h2>
-            <div className="showlist-xscroll">
-                <ShowsEpisodesToWatch perPage={12} />
+            <div className="slider col-margin">
+                <ShowsEpisodesToWatch perPage={6} />
             </div>
             </span>
         )
