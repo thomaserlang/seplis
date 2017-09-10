@@ -5,7 +5,7 @@ import ClassNames from 'classnames';
 import './Loader.scss';
 
 const propTypes = {
-    hcenter: PropTypes.boolean,
+    hcenter: PropTypes.bool,
 }
 
 const defaultProps = {
