@@ -44,7 +44,7 @@ class SeasonList extends React.Component {
         }
         request(`/1/shows/${this.props.showId}/episodes`, {
             query: query,
-        }).success((episodes) => {
+        }).done((episodes) => {
             this.setState({episodes: episodes}, () => {
                 $(window).scrollTop(position);
             });            
@@ -77,8 +77,9 @@ class SeasonList extends React.Component {
                 </div>
             );
         return (
-            <div className="row show-season-list">
-                <div className="col-12 col-md-3 push-md-9 col-margin">
+            <span>
+            <div className="row">
+                <div className="col-12 col-sm-auto ml-auto order-md-12 mb-2 mb-md-0">
                     <div className="float-right">
                         <WatchedProgression 
                             showId={this.props.showId}
@@ -86,14 +87,16 @@ class SeasonList extends React.Component {
                         />
                     </div>
                 </div>
-                <div className="col-12 col-md-4 pull-md-3">
+                <div className="col-12 col-md-4">
                     <SelectSeason                    
                         seasons={this.props.seasons}
                         selectedSeason={this.state.seasonNumber}
                         onChange={this.onSeasonChange}
                     />
                 </div>
-                <div className="col-12 hidden-md-up col-margin" />
+            </div>
+            <div className="row show-season-list">
+                <div className="col-12 d-md-none col-margin" />
                 <div className="col-12">
                     <div className="row">
                         {this.state.episodes.map((item, index) => (
@@ -101,7 +104,7 @@ class SeasonList extends React.Component {
                                 key={item.number} 
                                 className="col-12 col-md-6 col-lg-4"
                             >
-                                <div className="hidden-sm-down col-margin" />
+                                <div className="d-none d-md-block col-margin" />
                                 <EpisodeListItem 
                                     showId={this.props.showId}
                                     episode={item} 
@@ -111,6 +114,7 @@ class SeasonList extends React.Component {
                     </div>
                 </div>
             </div>
+            </span>
         );
     }
 }

@@ -87,7 +87,7 @@ class EditFields extends React.Component {
         request('/api/tvmaze-show-lookup', {
             localRequest:true,
             query: query,
-        }).success(data => {
+        }).done(data => {
             let s = {'externals.tvmaze': data.id}
             for (let key in data.externals) {
                 if (`externals.${key}` in this.state) {

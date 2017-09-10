@@ -24,10 +24,10 @@ class Password extends React.Component {
                 'password': this.password.value,
                 'new_password': this.newPassword.value,
             }
-        }).error(e => {
+        }).fail(e => {
             this.password.focus();
             this.setState({error: e.responseJSON, loading: false});
-        }).success(() => {
+        }).done(() => {
             this.setState({success: true, loading: false});
         }).always(() => {            
             this.password.value = '';

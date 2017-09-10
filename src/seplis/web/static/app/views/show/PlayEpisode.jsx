@@ -61,7 +61,7 @@ class PlayEpisode extends React.Component {
             if (!this.markedAsWatched) {
                 request(`/1/shows/${this.showId}/episodes/${this.number}/watched`, {
                     method: 'PUT',
-                }).success(() => {
+                }).done(() => {
                     this.markedAsWatched = true;
                 });
             }
@@ -95,7 +95,7 @@ class PlayEpisode extends React.Component {
     getShow() {
         request(
             `/1/shows/${this.showId}`
-        ).success(data => {
+        ).done(data => {
             this.setState({show: data});
         }).always(() => {
             this.setState({loadingShow: false});
@@ -106,7 +106,7 @@ class PlayEpisode extends React.Component {
         let number = parseInt(this.number);
         request(
             `/1/shows/${this.showId}/episodes/${number}`
-        ).success(data => {
+        ).done(data => {
             this.setState({episode: data});
         }).always(() => {
             this.setState({loadingEpisode: false});
@@ -117,7 +117,7 @@ class PlayEpisode extends React.Component {
         let number = parseInt(this.number) + 1;
         request(
             `/1/shows/${this.showId}/episodes/${number}`
-        ).success(data => {
+        ).done(data => {
             this.setState({nextEpisode: data});
         }).always(() => {
             this.setState({loadingNextEpisode: false});
@@ -127,7 +127,7 @@ class PlayEpisode extends React.Component {
     getLanguage() {
         request(
             `/1/users/${getUserId()}/subtitle-lang/shows/${this.showId}`
-        ).success(data => {
+        ).done(data => {
             if (!data)
                 data = {};
             this.setState({
@@ -142,7 +142,7 @@ class PlayEpisode extends React.Component {
     getStartTime() {
         request(
             `/1/shows/${this.showId}/episodes/${this.number}/watched`
-        ).success(data => {
+        ).done(data => {
             if (data) {
                 this.setState({
                     startTime: data.position,

@@ -59,7 +59,7 @@ class Search extends React.Component {
                 per_page: 10,
                 fields: 'title,premiered,poster_image',
             }
-        }).success(data => {
+        }).done(data => {
             this.suggestNode.scrollTop = 0;
             this.setState({
                 results: data,

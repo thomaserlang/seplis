@@ -195,7 +195,7 @@ class Player extends React.Component {
     changeVideoState(state) {
         request(
             this.getPlayUrl()+'&action=cancel'
-        ).success(() => {
+        ).done(() => {
             this.setState(state, () => {
                 this.video.load();
                 this.video.play();
@@ -407,7 +407,7 @@ export function getPlayServer(url) {
     return new Promise((resolve, reject) => {
         request(
             url
-        ).success(playServers => {
+        ).done(playServers => {
             var selected = false;
             var i = 0;
             if (playServers.length == 0) {
@@ -420,7 +420,7 @@ export function getPlayServer(url) {
                     query: {
                         play_id: s.play_id,
                     }
-                }).success(metadata => {
+                }).done(metadata => {
                     if (selected) 
                         return;
                     selected = true;

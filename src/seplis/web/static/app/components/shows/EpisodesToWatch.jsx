@@ -29,7 +29,7 @@ class EpisodesToWatch extends React.Component {
             query: {
                 'per_page': this.props.perPage,
             },
-        }).success(data => {
+        }).done(data => {
             this.setState({items: data});
         });
     }

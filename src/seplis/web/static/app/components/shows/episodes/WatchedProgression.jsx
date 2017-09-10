@@ -4,6 +4,7 @@ import SelectSeasonEpisode from './SelectSeasonEpisode';
 import {request} from 'api';
 import {getUserId} from 'utils';
 
+import 'popper.js';
 import 'bootstrap/js/src/dropdown';
 import './WatchedProgression.scss';
 
@@ -41,7 +42,7 @@ class WatchedProgression extends React.Component {
     getNextToWatch() {
         request(
             `/1/shows/${this.props.showId}/episodes/to-watch`
-        ).success(episode => {
+        ).done(episode => {
             if (this.state.showForm === false)
                 // Render the form and it's options before 
                 // setting the selected value. Otherwise it will not work.
@@ -50,7 +51,7 @@ class WatchedProgression extends React.Component {
                 fromNumber: episode.number,
                 toNumber: episode.number,
             });
-        }).error(error => {
+        }).fail(error => {
             if (error.responseJSON.code === 1301) {
                 this.setState({showForm:true});
             }
@@ -66,9 +67,9 @@ class WatchedProgression extends React.Component {
         request(
             `/1/shows/${id}/episodes/${fromN}-${toN}/watched`,
             {method: 'PUT'}
-        ).error(() => {
+        ).fail(() => {
             this.setState({'saving': false});
-        }).success(() => {
+        }).done(() => {
             location.reload();
         });
     }

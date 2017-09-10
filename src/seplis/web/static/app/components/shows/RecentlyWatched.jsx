@@ -30,7 +30,7 @@ class RecentlyWatched extends React.Component {
             query: {
                 'per_page': this.props.perPage,
             },
-        }).success(data => {
+        }).done(data => {
             this.setState({shows: data});
         });
     }

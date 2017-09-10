@@ -10,6 +10,7 @@ module.exports = {
         app: path.resolve(staticPath, 'app'),
         vendor: [
             'jquery',
+            'popper.js',
             'bootstrap/js/src/util',
             'bootstrap/js/src/dropdown',
             'react',
@@ -48,7 +49,9 @@ module.exports = {
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
-            "window.jQuery": "jquery"
+            Popper: ['popper.js', 'default'],
+            Util: "exports-loader?Util!bootstrap/js/src/util",
+            Dropdown: "exports-loader?Dropdown!bootstrap/js/src/dropdown",
         }),
     ],
     module: {

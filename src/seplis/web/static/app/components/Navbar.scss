@@ -1,13 +1,13 @@
 .navbar-seplis {
     background-color: #428bca;
     margin-bottom: 0.5rem;
-    padding: 0.5rem 0;
+    padding: 0.3rem 0;
 
     .link {
         color: #FFFFFF;
-        padding: 2rem 0.5rem;
+        padding: 0.5rem 0.5rem;
         line-height: 38px;
-        
+        cursor: pointer;
         &:hover {
             color: #fff;
         }

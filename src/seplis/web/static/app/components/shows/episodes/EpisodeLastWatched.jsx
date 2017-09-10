@@ -30,7 +30,7 @@ class EpisodeLastWatched extends React.Component {
             return;
         request(
             `/1/shows/${this.props.showId}/episodes/last-watched`
-        ).success(episode => {
+        ).done(episode => {
             this.setState({episode: episode});
         })
     }

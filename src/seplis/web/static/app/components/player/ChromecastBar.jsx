@@ -67,7 +67,7 @@ class ChromecastBar extends React.Component {
         request(`/1/users/${getUserId()}/subtitle-lang/shows/${show.id}`, {
             method: 'PATCH',
             data: data,
-        }).success(() => {
+        }).done(() => {
             this.cast.playEpisode(show.id, episode.number, this.state.currentTime);
         });
     }

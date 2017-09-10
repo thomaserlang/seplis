@@ -26,7 +26,7 @@ class PlayServers extends React.Component {
             body: {
                 per_page: 100,
             }
-        }).success(data => {
+        }).done(data => {
             this.setState({playServers: data, loading: false});
         });
     }

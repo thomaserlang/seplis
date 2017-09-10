@@ -45,7 +45,7 @@ class Main extends React.Component {
                     />                
                     </div>
                     <div className="col-12">
-                    <h4 className="header default-margin-top">
+                    <h4 className="header">
                         Previous watched
                     </h4>
                     <EpisodeLastWatched showId={parseInt(this.props.show.id)} />

@@ -15,7 +15,6 @@ class Navbar extends React.Component {
                 <a 
                     className="link dropdown-toggle" 
                     data-toggle="dropdown"
-                    href="#"
                 >
                     Shows                      
                 </a>
@@ -57,7 +56,6 @@ class Navbar extends React.Component {
                 <a 
                     className="link dropdown-toggle" 
                     data-toggle="dropdown"
-                    href="#"
                 >
                     <i className="fa fa-user"></i>                      
                 </a>
@@ -112,22 +110,20 @@ class Navbar extends React.Component {
             <nav className="navbar-seplis">
                 <div className="container">
                     <div className="row">
-                        <div className="col-6 col-md-3">
+                        <div className="col-auto">
                             {this.renderMain()}
                             {this.renderAirDates()}
                             {this.renderShowDropdown()}
                         </div>                        
 
-                        <div className="col-6 col-md-3 push-md-6">
-                            <div className="float-right">
-                                {this.renderChromecast()}                            
-                                {this.renderCreateUser()}
-                                {this.renderSignIn()}
-                                {this.renderUserMenu()}
-                            </div>
+                        <div className="col-auto ml-auto order-sm-2 order-md-12">
+                            {this.renderChromecast()}                            
+                            {this.renderCreateUser()}
+                            {this.renderSignIn()}
+                            {this.renderUserMenu()}
                         </div>
 
-                        <div className="col-12 col-md-6 pull-md-3">
+                        <div className="col-12 col-md-6 m-auto order-sm-12 order-md-2">
                             <Search key="Search" />
                         </div>
                     </div>

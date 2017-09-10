@@ -50,7 +50,7 @@ class FanOf extends React.Component {
                 page: this.state.page,
                 per_page: 60,
             }
-        }).success((shows, textStatus, jqXHR) => {
+        }).done((shows, textStatus, jqXHR) => {
             this.setState({
                 shows: shows,
                 loading: false,

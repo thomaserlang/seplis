@@ -28,7 +28,7 @@ class Show extends React.Component {
         }
         request(`/1/shows/${parseInt(this.props.params.showId)}`, {
             query: query,
-        }).success(show => {
+        }).done(show => {
             this.setState({show: show});
         });
     }
@@ -49,13 +49,13 @@ class Show extends React.Component {
                         </div>
                     </div> 
 
-                    <div className="col-4 col-sm-4 col-md-4 col-margin hidden-xs-down">
+                    <div className="col-4 col-sm-4 col-md-4 col-margin d-none d-sm-block">
                         <img 
                             src={show.poster_image!=null?show.poster_image.url + '@SX360':''} 
                             width="100%" 
                         />
                     </div>
-                    <div className="col-4 hidden-sm-up" />
+                    <div className="col-4 d-sm-none" />
 
                     <div className="col-12 col-sm-8">
                         <ShowNav showId={parseInt(this.state.show.id)} />

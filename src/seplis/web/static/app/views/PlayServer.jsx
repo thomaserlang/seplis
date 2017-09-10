@@ -48,9 +48,9 @@ class PlayServer extends React.Component {
         this.incLoading(1);
         request(
             `/1/users/${getUserId()}/play-servers/${this.props.location.query.id}`
-        ).error(e => {
+        ).fail(e => {
             // TODO: display the error...
-        }).success(data => {
+        }).done(data => {
             this.setState({playServer: data});
         }).always(() => {
             this.incLoading(-1);
@@ -61,9 +61,9 @@ class PlayServer extends React.Component {
         this.incLoading(1);
         request(
             `/1/users/${getUserId()}/play-servers/${this.props.location.query.id}/users`
-        ).error(e => {
+        ).fail(e => {
             // TODO: display the error...
-        }).success(data => {
+        }).done(data => {
             this.setState({users: data});
         }).always(() => {
             this.incLoading(-1);
@@ -83,9 +83,9 @@ class PlayServer extends React.Component {
                 url: this.url.value,
                 secret: this.secret.value,
             }
-        }).error(e => {
+        }).fail(e => {
             this.setState({error: e.responseJSON});
-        }).success(data => {
+        }).done(data => {
             this.props.router.push(`/play-server?id=${data.id}`);
         });
     }
@@ -96,9 +96,9 @@ class PlayServer extends React.Component {
             return;
         request(`/1/users/${getUserId()}/play-servers/${this.props.location.query.id}`, {
             method: 'DELETE',
-        }).error(e => {
+        }).fail(e => {
             this.setState({error: e.responseJSON});
-        }).success(() => {
+        }).done(() => {
             this.props.router.push('/play-servers');
         });
     }
@@ -110,9 +110,9 @@ class PlayServer extends React.Component {
             query: {
                 q: value,
             }
-        }).error(e => {
+        }).fail(e => {
             alert(e.message);
-        }).success(data => {
+        }).done(data => {
             if (data.length != 1) {
                 alert(`Unknown user: ${value}`);
                 return;
@@ -120,9 +120,9 @@ class PlayServer extends React.Component {
             let id = this.props.location.query.id;
             request(`/1/users/${getUserId()}/play-servers/${id}/users/${data[0].id}`, {
                method: 'PUT',
-            }).error(e => {
+            }).fail(e => {
                 alert(e.message);
-            }).success(() => {
+            }).done(() => {
                 this.getUsersWithAccess();
             });
         });
@@ -133,9 +133,9 @@ class PlayServer extends React.Component {
         let id = this.props.location.query.id;
         request(`/1/users/${getUserId()}/play-servers/${id}/users/${e.target.userId.value}`, {
            method: 'DELETE',
-        }).error(e => {
+        }).fail(e => {
             alert(e.message);
-        }).success(() => {
+        }).done(() => {
             this.getUsersWithAccess();
         });
     }

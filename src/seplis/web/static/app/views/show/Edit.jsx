@@ -34,12 +34,12 @@ class Edit extends React.Component {
         request(`/1/shows/${this.props.show.id}`, {
             data: data,
             method: 'PUT',
-        }).success(show => {
+        }).done(show => {
             this.setState({success: show});
             request(`/1/shows/${this.props.show.id}/update`, {
                 method: 'POST',
             });
-        }).error(e => {
+        }).fail(e => {
             this.setState({error: e.responseJSON});
         }).always(() => {
             this.setState({loading: false});

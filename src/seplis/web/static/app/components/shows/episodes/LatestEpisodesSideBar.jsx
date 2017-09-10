@@ -48,7 +48,7 @@ class LatestEpisodesSideBar extends React.Component {
                 per_page: this.props.numberOfEpisodes,
                 sort: 'number:asc',
             }
-        }).success((episodes) => {
+        }).done((episodes) => {
             this.setState({episodes:episodes});
         });
     }

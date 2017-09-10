@@ -26,19 +26,19 @@ class SignIn extends React.Component {
                 email: this.state.email,
                 password: this.state.password,
             }
-        }).error(e => {
+        }).fail(e => {
             this.setState({
                 error: e.responseJSON.message,
                 password: '',
             });
-        }).success(data => {
+        }).done(data => {
             localStorage.setItem('access_token', data.access_token);
             this.saveUserIdAndRedirect();
         });
     }
 
     saveUserIdAndRedirect() {
-        request('/1/users/current').success(user => {
+        request('/1/users/current').done(user => {
             localStorage.setItem('user_id', user.id);
             localStorage.setItem('user_level', user.level);
             location.href = '/';

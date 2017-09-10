@@ -31,7 +31,7 @@ class Main extends React.Component {
 
     getData() {
         request(`/1/users/${getUserId()}/air-dates`)
-            .success((data) => {
+            .done((data) => {
                 this.setState({
                     loading: false,
                     data: data,

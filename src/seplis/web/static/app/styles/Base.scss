@@ -4,7 +4,7 @@ $enable-rounded: false;
 $body-bg: #26282E;
 $body-color: #fff;
 $headings-margin-bottom: 1rem;
-$grid-gutter-width-base: 1rem;
+$grid-gutter-width: 1rem;
 
 @import "bootstrap/scss/bootstrap";
 @import "./slider.scss";
@@ -15,6 +15,10 @@ $fa-font-path: "~font-awesome/fonts";
 h1,
 h2 {
     margin-top: 0;
+}
+
+p {
+    margin-bottom: 0;
 }
 
 a {
@@ -60,7 +64,7 @@ a.btn {
     border-bottom: 1px solid #6C6C6C;
     margin-top: 0;
     margin-bottom: 0;
-    padding-bottom: 9px;
+    padding-bottom: 3px;
 }
 
 .borderless, 

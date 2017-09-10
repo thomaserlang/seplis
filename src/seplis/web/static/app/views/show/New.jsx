@@ -29,9 +29,9 @@ class New extends React.Component {
         request('/1/shows', {
             data: data,
             method: 'POST',
-        }).success(show => {
+        }).done(show => {
             this.setState({success: show})
-        }).error(e => {
+        }).fail(e => {
             this.setState({error: e.responseJSON});
         }).always(() => {
             this.setState({loading: false});

@@ -27,11 +27,11 @@ class CreateUser extends React.Component {
                 email: email,
                 password: password,
             }
-        }).error(e => {
+        }).fail(e => {
             this.setState({
                 error: e.responseJSON,
             });
-        }).success(data => {
+        }).done(data => {
             localStorage.setItem('user_id', data.id);
             localStorage.setItem('user_level', data.level);
             this.signin(email, password);
@@ -46,11 +46,11 @@ class CreateUser extends React.Component {
                 email: email,
                 password: password,
             }
-        }).error(e => {
+        }).fail(e => {
             this.setState({
                 error: e.responseJSON,
             });
-        }).success(data => {
+        }).done(data => {
             localStorage.setItem('access_token', data.access_token);
             location.href = '/';
         });

@@ -29,7 +29,7 @@ class NextToWatch extends React.Component {
         if (!isAuthed()) {
             request(
                 `/1/shows/${this.props.showId}/episodes/1`
-            ).success(episode => {
+            ).done(episode => {
                 this.setState({episode: episode});
             });
             return;
@@ -37,7 +37,7 @@ class NextToWatch extends React.Component {
 
         request(
             `/1/shows/${this.props.showId}/episodes/to-watch`
-        ).success(episode => {
+        ).done(episode => {
             this.setState({episode: episode});
         });
     }
