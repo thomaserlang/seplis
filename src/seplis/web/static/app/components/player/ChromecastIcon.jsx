@@ -15,6 +15,7 @@ class ChromecastIcon extends React.Component {
 
     componentDidMount() {
         this.onConnected = this.connected.bind(this);
+        this.onDeviceAvailable = this.deviceAvailable.bind(this);
         this.cast = new Chromecast();
         this.cast.load(this.onCastInit.bind(this));
         this.iconClick = this.castIconClick.bind(this);
@@ -25,8 +26,12 @@ class ChromecastIcon extends React.Component {
     }
 
     onCastInit() {
-        this.setState({available: true});
         this.cast.addEventListener('isConnected', this.onConnected);
+        this.cast.addEventListener('isAvailable', this.onDeviceAvailable);
+    }
+
+    deviceAvailable(e) {
+        this.setState({available: e.value});        
     }
 
     connected(e) {
