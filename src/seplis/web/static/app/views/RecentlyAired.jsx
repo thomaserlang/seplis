@@ -1,28 +1,27 @@
 import React from 'react';
 import {browserHistory} from 'react-router';
 import {request} from 'api';
-import {getUserId} from 'utils';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
-import ShowList from 'components/shows/List.jsx';
+import ShowsRecentlyAired from 'components/shows/RecentlyAired.jsx';
+import {getItems} from 'components/shows/RecentlyAired.jsx';
 
-class FanOf extends React.Component {
+class RecentlyAired extends React.Component {
 
     constructor(props) {
         super(props);
         this.onPageChange = this.pageChange.bind(this);
         this.state = {
             loading: true,
-            shows: [],
+            items: [],
             jqXHR: null,
-            totalCount: '...',
             page: this.props.location.query.page || 1,
         }
     }
 
     setBrowserPath() {
         browserHistory.push({
-            pathname: '/fan-of',
+            pathname: '/recently-aired',
             query: { 
                 page: this.state.page,
             },
@@ -35,28 +34,21 @@ class FanOf extends React.Component {
             loading: true,
         }, () => {
             this.setBrowserPath();
-            this.getShows();
+            this.getItems();
         });
     }
 
     componentDidMount() {
-        this.getShows();
+        this.getItems();
     }
 
-    getShows() {
-        let userId = getUserId();
-        request(`/1/users/${userId}/fan-of`, {
-            query: {
-                page: this.state.page,
-                per_page: 60,
-            }
-        }).done((shows, textStatus, jqXHR) => {
+    getItems() {
+        getItems(60, this.state.page).then((data) => {
             this.setState({
-                shows: shows,
+                items: data.items,
+                jqXHR: data.jqXHR,
                 loading: false,
-                jqXHR: jqXHR,
-                totalCount: jqXHR.getResponseHeader('X-Total-Count'),
-            });
+            })
         });
     }
 
@@ -64,17 +56,24 @@ class FanOf extends React.Component {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2>Fan of {this.state.totalCount} shows</h2>
+                    <h2>Recently aired</h2>
                     <Loader />
                 </span>
             );
+        if (this.state.items.length == 0)
+            return (
+                <span>
+                    <h2>Recently aired</h2>
+                    <div className="alert alert-info">
+                        No recently aired episodes from shows you are a fan of.
+                    </div>
+                </span>
+            )
         return (
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2>
-                            Fan of {this.state.totalCount} shows
-                        </h2>
+                        <h2>Recently aired</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 
@@ -83,7 +82,7 @@ class FanOf extends React.Component {
                         />
                     </div>
                 </div>
-                <ShowList shows={this.state.shows} />
+                <ShowsRecentlyAired items={this.state.items} />
                 <div className="row">
                     <div className="col-sm-9 col-md-10" />
                     <div className="col-sm-3 col-md-2">
@@ -98,4 +97,4 @@ class FanOf extends React.Component {
     }
 }
 
-export default FanOf;
+export default RecentlyAired;
