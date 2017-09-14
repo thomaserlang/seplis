@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Fecha from 'fecha';
 import {request} from 'api';
+import {dateInDays} from 'utils';
 
 import './LatestEpisodesSideBar.scss';
 
@@ -53,6 +54,12 @@ class LatestEpisodesSideBar extends React.Component {
         });
     }
 
+    renderCountdown(episode) {
+        if (!episode.air_datetime)
+            return '';
+        return ' · In '+dateInDays(episode.air_datetime);
+    }
+
     render() {
         if (this.state.episodes.length == 0) {
             return (
@@ -66,7 +73,7 @@ class LatestEpisodesSideBar extends React.Component {
                         {i == 0?<p className="next-episode">Next Episode</p>: ''}
                         <p>{item.title}</p>
                         <p>{this.renderEpisodeNumber(item)}</p>
-                        <p>{item.air_date}</p>
+                        <p>{item.air_date} {this.renderCountdown(item)}</p>
                     </div>
                 ))}
             </div>
