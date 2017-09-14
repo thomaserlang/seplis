@@ -4,7 +4,6 @@ import Loader from 'components/Loader';
 import {requireAuthed, getUserId} from 'utils';
 import {request} from 'api';
 
-
 class PlayServers extends React.Component {
 
     constructor(props) {

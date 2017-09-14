@@ -1,7 +1,6 @@
 import React from 'react';
 import {requireAuthed} from 'utils';
 
-
 class Account extends React.Component {
 
     constructor(props) {

@@ -3,8 +3,14 @@ import ShowsRecentlyWatched from 'components/shows/RecentlyWatched';
 import ShowsCountdown from 'components/shows/Countdown';
 import ShowsRecentlyAired from 'components/shows/RecentlyAired';
 import ShowsEpisodesToWatch from 'components/shows/EpisodesToWatch';
+import {requireAuthed} from 'utils';
 
 class Main extends React.Component {
+    
+    constructor(props) {
+        super(props);
+        requireAuthed();
+    }
 
     render() {
         return (

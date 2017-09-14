@@ -5,11 +5,13 @@ import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import ShowsRecentlyAired from 'components/shows/RecentlyAired.jsx';
 import {getItems} from 'components/shows/RecentlyAired.jsx';
+import {requireAuthed} from 'utils';
 
 class RecentlyAired extends React.Component {
 
     constructor(props) {
         super(props);
+        requireAuthed();
         this.onPageChange = this.pageChange.bind(this);
         this.state = {
             loading: true,

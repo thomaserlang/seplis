@@ -12,6 +12,7 @@ export function requireAuthed() {
 }
 
 export function getUserId() {
+    requireAuthed();
     return localStorage.getItem('user_id') || 0;
 }
 
@@ -19,7 +20,7 @@ export function getUserLevel() {
     return localStorage.getItem('user_level') || null;
 }
 
-export function pad (str, max) {
+export function pad(str, max) {
   str = str.toString();
   return str.length < max ? pad("0" + str, max) : str;
 }

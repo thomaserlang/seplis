@@ -5,11 +5,13 @@ import {getUserId} from 'utils';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import ShowList from 'components/shows/List.jsx';
+import {requireAuthed} from 'utils';
 
 class FanOf extends React.Component {
 
     constructor(props) {
         super(props);
+        requireAuthed();
         this.onPageChange = this.pageChange.bind(this);
         this.state = {
             loading: true,
