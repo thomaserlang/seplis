@@ -37,6 +37,7 @@ class AudioSubBar extends React.Component {
     }
     
     documentClick(e) {
+        if (this.icon == undefined) return;
         if (!this.icon.contains(e.target)) {
             this.setState({show: false});
         }
