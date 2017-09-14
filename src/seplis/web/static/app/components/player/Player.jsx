@@ -75,12 +75,11 @@ class Player extends React.Component {
         this.video.addEventListener('error', this.playError.bind(this));
         this.video.addEventListener('waiting', this.playWaiting.bind(this));
         this.video.addEventListener('click', this.playClick.bind(this));
+        this.video.addEventListener('touchstart', this.playClick.bind(this));
         this.setPingTimer();
         this.video.volume = this.volume;
         this.video.load();
         document.onmousemove = this.mouseMove.bind(this);
-        document.ontouchstart = document.onmousemove;
-        document.ontouchmove = this.touchMove.bind(this);
         document.onkeypress = this.keypress.bind(this);
     }
 
@@ -90,6 +89,10 @@ class Player extends React.Component {
     }
 
     playClick(e) {
+        event.stopPropagation();
+        event.preventDefault();
+        if (this.video.paused || this.state.loading)
+            return;
         this.setState({showControls: !this.state.showControls});
         this.setHideControlsTimer();
     }
@@ -115,16 +118,12 @@ class Player extends React.Component {
     }
 
     mouseMove(e) {
+        e.stopImmediatePropagation();
         if (this.state.showControls) return;
         this.setState({
             showControls: true,
         });
         this.setHideControlsTimer();
-    }
-
-    touchMove(e) {
-        // disable scroll bounce effect on iOS
-        e.preventDefault();
     }
 
     getPlayUrl() {
