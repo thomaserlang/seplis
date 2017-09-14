@@ -77,6 +77,11 @@ a.btn {
     display: none !important;
 }
 
+.text-nowrap-hide {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
 div {
     min-width: 0;
 }
