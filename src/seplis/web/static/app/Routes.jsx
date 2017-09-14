@@ -15,6 +15,9 @@ import CreateUser from './views/CreateUser';
 
 import FanOf from './views/FanOf';
 import RecentlyAired from './views/RecentlyAired';
+import RecentlyWatched from './views/RecentlyWatched';
+import Countdown from './views/Countdown';
+import EpisodesToWatch from './views/EpisodesToWatch';
 import Main from './views/Main';
 import AirDates from './views/AirDates';
 import Account from './views/Account';
@@ -37,6 +40,9 @@ export default (
         <Route path="/show-new" component={ShowNew} />
         <Route path="/fan-of" component={FanOf} />
         <Route path="/recently-aired" component={RecentlyAired} />
+        <Route path="/recently-watched" component={RecentlyWatched} />
+        <Route path="/countdown" component={Countdown} />
+        <Route path="/episodes-to-watch" component={EpisodesToWatch} />
         <Route path="/main" component={Main} />
         <Route path="/air-dates" component={AirDates} />
         <Route path="/account" component={Account} />

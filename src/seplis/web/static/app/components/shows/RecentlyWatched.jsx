@@ -6,10 +6,14 @@ import ShowList from './List';
 
 const propTypes = {
     perPage: PropTypes.number,
+    page: PropTypes.number,
+    items: PropTypes.array,
 }
 
 const defaultProps = {
     perPage: 6,
+    page: 1,
+    items: null,
 }
 
 class RecentlyWatched extends React.Component {
@@ -22,19 +26,18 @@ class RecentlyWatched extends React.Component {
     }
 
     componentDidMount() {
-        this.getData();
+        if (!this.props.items) {
+            this.getData();
+        } else {
+            this.setState({shows: this.props.items});
+        }
     }
 
     getData() {
-        request(`/1/users/${getUserId()}/shows-recently-watched`, {
-            query: {
-                'per_page': this.props.perPage,
-            },
-        }).done(data => {
-            this.setState({shows: data});
+        getItems(this.props.perPage, this.props.page).then((data) => {
+            this.setState({shows: data.items});
         });
     }
-
 
     render() {
         return (
@@ -46,3 +49,18 @@ RecentlyWatched.propTypes = propTypes;
 RecentlyWatched.defaultProps = defaultProps;
 
 export default RecentlyWatched;
+
+export function getItems(perPage, page) {
+    return new Promise((resolve, reject) => {
+        request(`/1/users/${getUserId()}/shows-recently-watched`, {
+            query: {
+                'per_page': perPage,
+                page: page,
+            },
+        }).done((data, textStatus, jqXHR) => {
+            resolve({items: data, jqXHR: jqXHR});
+        }).fail((e) => {
+            reject(e);
+        })
+    })
+}

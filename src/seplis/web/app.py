@@ -35,6 +35,9 @@ class Application(tornado.web.Application):
 
             URLSpec(r'/fan-of', react.Handler),
             URLSpec(r'/recently-aired', react.Handler),
+            URLSpec(r'/recently-watched', react.Handler),
+            URLSpec(r'/countdown', react.Handler),
+            URLSpec(r'/episodes-to-watch', react.Handler),
             URLSpec(r'/main', react.Handler),
             URLSpec(r'/air-dates', react.Handler),
             URLSpec(r'/account', react.Handler),

@@ -20,7 +20,10 @@ class Navbar extends React.Component {
                 </a>
                 <div className="dropdown-menu">
                     <a className="dropdown-item" href="/fan-of">Fan of</a>
+                    <a className="dropdown-item" href="/episodes-to-watch">Episodes to Watch</a>
                     <a className="dropdown-item" href="/recently-aired">Recently Aired</a>
+                    <a className="dropdown-item" href="/recently-watched">Recently Watched</a>
+                    <a className="dropdown-item" href="/countdown">Countdown</a>
                     <div className="dropdown-divider"></div>
                     <a className="dropdown-item" href="/show-new">New show</a>
                 </div>

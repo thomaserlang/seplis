@@ -5,10 +5,14 @@ import {request} from 'api';
 
 const propTypes = {
     perPage: PropTypes.number,
+    page: PropTypes.number,
+    items: PropTypes.array,
 }
 
 const defaultProps = {
     perPage: 6,
+    page: 1,
+    items: null,
 }
 
 class Countdown extends React.Component {
@@ -21,16 +25,16 @@ class Countdown extends React.Component {
     }
 
     componentDidMount() {
-        this.getData();
+        if (!this.props.items) {
+            this.getData();
+        } else {
+            this.setState({items: this.props.items});
+        }
     }
 
     getData() {
-        request(`/1/users/${getUserId()}/shows-countdown`, {
-            query: {
-                'per_page': this.props.perPage,
-            },
-        }).done(data => {
-            this.setState({items: data});
+        getItems(this.props.perPage, this.props.page).then((data) => {
+            this.setState({items: data.items});
         });
     }
 
@@ -64,3 +68,18 @@ Countdown.propTypes = propTypes;
 Countdown.defaultProps = defaultProps;
 
 export default Countdown;
+
+export function getItems(perPage, page) {
+    return new Promise((resolve, reject) => {
+        request(`/1/users/${getUserId()}/shows-countdown`, {
+            query: {
+                'per_page': perPage,
+                page: page,
+            },
+        }).done((data, textStatus, jqXHR) => {
+            resolve({items: data, jqXHR: jqXHR});
+        }).fail((e) => {
+            reject(e);
+        })
+    })
+}
