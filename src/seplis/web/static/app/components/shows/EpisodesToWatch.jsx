@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getUserId, episodeTitle} from 'utils';
+import {getUserId, episodeNumber} from 'utils';
 import {request} from 'api';
 
 const propTypes = {
@@ -51,7 +51,7 @@ class EpisodesToWatch extends React.Component {
                         className="img-fluid"
                     />
                 </a>
-                <div>{episodeTitle(show, episode)}</div>
+                <div>{episodeNumber(show, episode)}</div>
             </div>
         )
     }

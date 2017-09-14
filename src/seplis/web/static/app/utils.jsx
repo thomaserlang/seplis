@@ -25,6 +25,14 @@ export function pad(str, max) {
   return str.length < max ? pad("0" + str, max) : str;
 }
 
+export function episodeNumber(show, episode) {
+    switch (show.episode_type) {
+        case 1: return`Episode ${episode.number}`; break;
+        case 2: return`S${pad(episode.season,2)} · E${pad(episode.episode, 2)} (${episode.number})`; break;
+        case 3: return`Airdate: ${episode.air_date}`; break;
+    }
+}
+
 export function episodeTitle(show, episode) {
     switch (show.episode_type) {
         case 1: return`${episode.number}: ${episode.title}`; break;
