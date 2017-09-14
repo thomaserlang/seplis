@@ -70,7 +70,6 @@ class Player extends React.Component {
         this.video.addEventListener('timeupdate', this.timeupdateEvent.bind(this));
         this.video.addEventListener('pause', this.pauseEvent.bind(this));
         this.video.addEventListener('play', this.playEvent.bind(this));
-        this.video.addEventListener('loadstart', this.playEvent.bind(this));
         this.video.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this));
         this.video.addEventListener('error', this.playError.bind(this));
         this.video.addEventListener('waiting', this.playWaiting.bind(this));
@@ -81,6 +80,7 @@ class Player extends React.Component {
         this.video.load();
         document.onmousemove = this.mouseMove.bind(this);
         document.onkeypress = this.keypress.bind(this);
+        document.onbeforeunload = this.beforeUnload.bind(this);
     }
 
     keypress(e) {
@@ -192,12 +192,26 @@ class Player extends React.Component {
     }
 
     changeVideoState(state) {
-        request(
-            this.getPlayUrl()+'&action=cancel'
-        ).done(() => {
+        this.cancelPlayUrl().then(() => {
             this.setState(state, () => {
                 this.video.load();
                 this.video.play();
+            });
+        });
+    }
+
+    beforeUnload() {
+        this.cancelPlayUrl();
+    }
+
+    cancelPlayUrl() {
+        return new Promise((resolve, reject) => {
+            request(
+                this.getPlayUrl()+'&action=cancel'
+            ).done(() => {
+                resolve();
+            }).fail(e => {
+                reject(e);
             });
         });
     }
