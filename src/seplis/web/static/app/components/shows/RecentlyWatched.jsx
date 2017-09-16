@@ -40,6 +40,12 @@ class RecentlyWatched extends React.Component {
     }
 
     render() {
+        if (this.state.shows.length == 0) 
+            return (
+                <div className="alert alert-info">
+                    You have not watched any shows yet!
+                </div>
+            );
         return (
             <ShowList shows={this.state.shows} />
         )

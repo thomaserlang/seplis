@@ -62,15 +62,6 @@ class RecentlyWatched extends React.Component {
                     <Loader />
                 </span>
             );
-        if (this.state.items.length == 0)
-            return (
-                <span>
-                    <h2>Recently watched</h2>
-                    <div className="alert alert-info">
-                        You have not watched any shows yet!
-                    </div>
-                </span>
-            )
         return (
             <span>
                 <div className="row">

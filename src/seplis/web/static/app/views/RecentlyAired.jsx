@@ -62,15 +62,6 @@ class RecentlyAired extends React.Component {
                     <Loader />
                 </span>
             );
-        if (this.state.items.length == 0)
-            return (
-                <span>
-                    <h2>Recently aired</h2>
-                    <div className="alert alert-info">
-                        No recently aired episodes from shows you are a fan of.
-                    </div>
-                </span>
-            )
         return (
             <span>
                 <div className="row">

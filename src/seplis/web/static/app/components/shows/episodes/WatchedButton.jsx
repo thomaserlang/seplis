@@ -107,7 +107,7 @@ class WatchedButton extends React.Component {
                     data-toggle={this.state.times>0?'dropdown':''}
                     onClick={this.onWatchedClick}
                 >
-                    Watched 
+                    Watched
                 </button>
                 <button className="btn btn-times">
                     {this.state.times} 

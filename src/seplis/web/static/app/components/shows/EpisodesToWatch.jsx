@@ -57,6 +57,12 @@ class EpisodesToWatch extends React.Component {
     }
 
     render() {
+        if (this.state.items.length == 0)
+            return (
+                <div className="alert alert-info">
+                    You have zero episodes to watch! :(
+                </div>
+            );
         return (
             <div className="row">
                 {this.state.items.map(item => (

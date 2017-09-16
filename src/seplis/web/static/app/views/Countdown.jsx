@@ -62,15 +62,6 @@ class Countdown extends React.Component {
                     <Loader />
                 </span>
             );
-        if (this.state.items.length == 0)
-            return (
-                <span>
-                    <h2>Countdown</h2>
-                    <div className="alert alert-info">
-                        None of the shows you follow have episodes airing! :(
-                    </div>
-                </span>
-            )
         return (
             <span>
                 <div className="row">

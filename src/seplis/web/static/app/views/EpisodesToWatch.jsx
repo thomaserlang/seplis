@@ -62,15 +62,6 @@ class EpisodesToWatch extends React.Component {
                     <Loader />
                 </span>
             );
-        if (this.state.items.length == 0)
-            return (
-                <span>
-                    <h2>Episodes to Watch</h2>
-                    <div className="alert alert-info">
-                        You have zero episodes to watch! :(
-                    </div>
-                </span>
-            )
         return (
             <span>
                 <div className="row">
