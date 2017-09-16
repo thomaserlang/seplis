@@ -65,7 +65,7 @@ class EpisodeListItem extends React.Component {
                     className="title" 
                     title={this.props.episode.title}
                 >
-                    {this.props.episode.title}
+                    {this.props.episode.title?this.props.episode.title:'TBA'}
                 </div>
                 <div className="meta">
                     {this.renderEpisodeNumber()}
