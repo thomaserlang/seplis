@@ -8,8 +8,7 @@ from seplis.api import constants, models
 from seplis.api.decorators import new_session
 from datetime import datetime, date
 
-
-class test_shows_recently_watched(Testbase):
+class Test_shows_watched(Testbase):
 
     def test(self):
         self.login(constants.LEVEL_EDIT_SHOW)
@@ -32,7 +31,7 @@ class test_shows_recently_watched(Testbase):
             ))
             self.assertEqual(response.code, 200)
 
-        response = self.get('/1/users/{}/shows-recently-watched'.format(self.current_user.id))
+        response = self.get('/1/users/{}/shows-watched'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         shows = utils.json_loads(response.body)
         self.assertEqual(len(shows), 3, shows)
@@ -42,7 +41,7 @@ class test_shows_recently_watched(Testbase):
 
         # test pagination
         for i, show_id in enumerate(reversed(show_ids)):
-            response = self.get('/1/users/{}/shows-recently-watched'.format(
+            response = self.get('/1/users/{}/shows-watched'.format(
                 self.current_user.id
             ), {
                 'per_page': 1,
@@ -63,7 +62,7 @@ class test_shows_recently_watched(Testbase):
             show_ids[0],
             show_ids[0], # the episode number is the same as the show id.
         ))
-        response = self.get('/1/users/{}/shows-recently-watched'.format(
+        response = self.get('/1/users/{}/shows-watched'.format(
             self.current_user.id
         ))
         self.assertEqual(response.code, 200)

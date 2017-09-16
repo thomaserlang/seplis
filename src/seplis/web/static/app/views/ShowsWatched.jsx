@@ -3,11 +3,11 @@ import {browserHistory} from 'react-router';
 import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
-import ShowsRecentlyAired from 'components/shows/RecentlyWatched.jsx';
-import {getItems} from 'components/shows/RecentlyWatched.jsx';
+import Watched from 'components/shows/Watched.jsx';
+import {getItems} from 'components/shows/Watched.jsx';
 import {requireAuthed} from 'utils';
 
-class RecentlyWatched extends React.Component {
+class ShowsWatched extends React.Component {
 
     constructor(props) {
         super(props);
@@ -18,6 +18,7 @@ class RecentlyWatched extends React.Component {
             items: [],
             jqXHR: null,
             page: this.props.location.query.page || 1,
+            totalCount: '...',
         }
     }
 
@@ -50,6 +51,7 @@ class RecentlyWatched extends React.Component {
                 items: data.items,
                 jqXHR: data.jqXHR,
                 loading: false,
+                totalCount: data.jqXHR.getResponseHeader('X-Total-Count'),
             })
         });
     }
@@ -58,15 +60,15 @@ class RecentlyWatched extends React.Component {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2>Recently watched</h2>
+                    <h2>Watched {this.state.totalCount} shows</h2>
                     <Loader />
                 </span>
             );
         return (
             <span>
                 <div className="row">
-                    <div className="col-12 col-sm-9 col-md-10">
-                        <h2>Recently watched</h2>
+                    <div className="col-12 col-sm-9 col-md-10">                        
+                        <h2>Watched {this.state.totalCount} shows</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 
@@ -75,7 +77,7 @@ class RecentlyWatched extends React.Component {
                         />
                     </div>
                 </div>
-                <ShowsRecentlyAired items={this.state.items} />
+                <Watched items={this.state.items} />
                 <div className="row">
                     <div className="col-sm-9 col-md-10" />
                     <div className="col-sm-3 col-md-2">
@@ -90,4 +92,4 @@ class RecentlyWatched extends React.Component {
     }
 }
 
-export default RecentlyWatched;
+export default ShowsWatched;

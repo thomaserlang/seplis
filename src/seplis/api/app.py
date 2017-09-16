@@ -12,7 +12,7 @@ import seplis.api.handlers.app
 import seplis.api.handlers.episode
 import seplis.api.handlers.image
 import seplis.api.handlers.play
-import seplis.api.handlers.shows_recently_watched
+import seplis.api.handlers.shows_watched
 import seplis.api.handlers.air_dates
 import seplis.api.handlers.episode_watched
 import seplis.api.handlers.episode_watching
@@ -136,8 +136,8 @@ class Application(tornado.web.Application):
             ),
 
             URLSpec(
-                r'/1/users/([0-9]+)/shows-recently-watched', 
-                seplis.api.handlers.shows_recently_watched.Handler,
+                r'/1/users/([0-9]+)/shows-watched', 
+                seplis.api.handlers.shows_watched.Handler,
             ),      
 
             URLSpec(

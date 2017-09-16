@@ -16,7 +16,7 @@ const defaultProps = {
     items: null,
 }
 
-class RecentlyWatched extends React.Component {
+class Watched extends React.Component {
 
     constructor(props) {
         super();
@@ -51,14 +51,14 @@ class RecentlyWatched extends React.Component {
         )
     }
 }
-RecentlyWatched.propTypes = propTypes;
-RecentlyWatched.defaultProps = defaultProps;
+Watched.propTypes = propTypes;
+Watched.defaultProps = defaultProps;
 
-export default RecentlyWatched;
+export default Watched;
 
 export function getItems(perPage, page) {
     return new Promise((resolve, reject) => {
-        request(`/1/users/${getUserId()}/shows-recently-watched`, {
+        request(`/1/users/${getUserId()}/shows-watched`, {
             query: {
                 'per_page': perPage,
                 page: page,

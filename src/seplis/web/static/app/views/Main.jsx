@@ -1,5 +1,5 @@
 import React from 'react';
-import ShowsRecentlyWatched from 'components/shows/RecentlyWatched';
+import ShowsWatched from 'components/shows/Watched';
 import ShowsCountdown from 'components/shows/Countdown';
 import ShowsRecentlyAired from 'components/shows/RecentlyAired';
 import ShowsEpisodesToWatch from 'components/shows/EpisodesToWatch';
@@ -17,7 +17,7 @@ class Main extends React.Component {
             <span>
             <h2 className="header">Recently watched</h2>    
             <div className="slider col-margin">
-                <ShowsRecentlyWatched perPage={6} />
+                <ShowsWatched perPage={6} />
             </div>
 
             <h2 className="header">Countdown</h2>
