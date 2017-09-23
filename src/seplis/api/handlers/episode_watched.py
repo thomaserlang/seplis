@@ -95,14 +95,9 @@ class Range_handler(base.Handler):
                 models.Episode.number >= from_,
                 models.Episode.number <= to,
             ).order_by(asc(models.Episode.number)).all()
-
-            # TODO: fix the commit order...
+            if not episodes:
+                return
             for episode in episodes:
-                if episode == episodes[-1]:
-                    continue# skip the last episode
-                episode.watched(self.current_user.id, times=times, position=0)
-            if episodes:
-                session.commit()
                 episode.watched(self.current_user.id, times=times, position=0)
                 session.commit()
 

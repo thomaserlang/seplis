@@ -121,6 +121,9 @@ class Episode(Base):
         else:
             times = ew.times + times            
             times = times if times > 0 else 0
+            if times == 0:
+                self.session.delete(ew)
+                return
             ew.position = position
             ew.times = times
         return {
@@ -196,6 +199,9 @@ class Episode_watched(Base):
     updated_at = sa.Column(sa.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed = sa.Column(utils.YesNoBoolean(), default=False)
 
+    def serialize(self):
+        return utils.row_to_dict(self)
+
     def after_upsert(self):
         self.cache()
 
@@ -211,8 +217,16 @@ class Episode_watched(Base):
         self.cr_latest_data()
         self.cr_watched_shows()
         self.cr_watched_show_episodes()
-
         self.inc_watched_stats(-self.times)
+
+        # Set the last watched episode
+        ep = self.session.query(Episode_watched).filter(
+            Episode_watched.user_id == self.user_id,
+            Episode_watched.show_id == self.show_id,
+            Episode_watched.episode_number < self.episode_number,
+        ).order_by(sa.desc(Episode_watched.episode_number)).first()
+        if ep:
+            ep.cache()
 
     @staticmethod
     def ck_data(user_id, show_id, episode_number):
@@ -270,7 +284,7 @@ class Episode_watched(Base):
         )
         self.session.pipe.zadd(
             key, 
-            self.updated_at.timestamp(), 
+            self.updated_at.replace(microsecond=self.episode_number).timestamp(), 
             str(self.episode_number),
         )
     def cr_watched_show_episodes(self):

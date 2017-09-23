@@ -1,3 +1,4 @@
+import logging
 from . import base
 from seplis.api import models, exceptions, constants
 from seplis.api.connections import database
@@ -16,7 +17,7 @@ class Handler(base.Handler):
                 self.current_user.id,
                 show_id,
             ),
-            0, 2
+            0, 1
         )
         if not ids:
             return
@@ -28,7 +29,7 @@ class Handler(base.Handler):
         watched = watched_list[0]
         episode_number = ids[0]
         
-        if not watched['completed']:
+        if watched['position'] > 0:
             if len(watched_list) == 2:
                 watched = watched_list[1]
                 episode_number = ids[1]

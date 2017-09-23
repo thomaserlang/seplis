@@ -16,9 +16,12 @@ class NextToWatch extends React.Component {
         this.state = {
             episode: null,
         }
-        this.get();
         this.eventGet = this.get.bind(this);
         document.addEventListener(EVENT_EPISODE_WATCHED_STATUS, this.eventGet);
+    }
+    
+    componentDidMount() {
+        this.get();        
     }
 
     componentWillUnmount() {
