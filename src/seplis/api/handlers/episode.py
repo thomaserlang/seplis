@@ -53,19 +53,19 @@ class Handler(base.Handler):
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', 'number:asc')
         body = {
-            'filter': {
-                'term': {
-                    'show_id': show_id,
+            'query': {
+                'bool': {
+                    'must': [
+                        {'term': {'show_id': show_id}}
+                    ]
                 }
             }
         }
         if q:
-            body.update({
-                'query': {
-                    'query_string': {
-                        'default_field': 'title',
-                        'query': q,
-                    }
+            body['query']['bool']['must'].append({
+                'query_string': {
+                    'default_field': 'title',
+                    'query': q,
                 }
             })
         result = yield self.es(
