@@ -108,15 +108,6 @@ class Current_handler(Handler):
     def delete(self):
         raise HTTPError(405) 
 
-class Stats_handler(base.Handler):
-
-    def get(self, user_id):
-        s = {key: 0 for key in constants.USER_STAT_FIELDS}
-        stats = database.redis.hgetall('users:{}:stats'.format(user_id))
-        for key in stats:
-            s[key] = int(stats[key])
-        self.write_object(s)
-
 class Token_handler(base.Handler):
 
     @gen.coroutine

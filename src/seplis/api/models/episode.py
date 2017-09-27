@@ -327,67 +327,6 @@ class Episode_watched(Base):
         self.cs_watched_show_episodes()
         self.cs_watched_shows()
 
-        t = get_history(self, 'times')
-        if t.added or t.deleted:
-            a = t.added[0] if t.added else 0
-            d = t.deleted[0] if t.deleted else 0
-            self.inc_watched_stats(a-d)
-    
-    def inc_watched_stats(self, times):
-        '''Increments the users total episode watched count 
-        with `times`. To decrement use negative numbers.
-
-        This method is automatically called when inserting, 
-        updating or deleting.
-
-        :param times: int
-        :returns: int
-        '''
-        t = self.session.pipe.hincrby(
-            name='users:{}:stats'.format(self.user_id),
-            key='episodes_watched',
-            amount=times,
-        )
-
-    @classmethod
-    @auto_session
-    @auto_pipe
-    def update_minutes_spent(cls, user_id, pipe=None, session=None):
-        '''Updates the users total minutes spent.
-        Must be called after marking one or more episodes as watched.
-
-        :param user_id: int
-        :param pipe: redis pipe
-        :param session: sqlalchemy session
-        '''
-        result = session.execute('''
-            SELECT 
-                sum(
-                    if(isnull(e.runtime),
-                        ifnull(s.runtime, 0),
-                        e.runtime
-                    ) * ew.times
-                ) as minutes,
-                min(ew.times) as times
-            FROM
-                episodes_watched ew,
-                shows s,
-                episodes e
-            WHERE
-                ew.user_id = :user_id
-                    and e.show_id = ew.show_id
-                    and e.number = ew.episode_number
-                    and s.id = e.show_id;
-        ''', {
-            'user_id': user_id,
-        })
-        result = result.first()
-        pipe.hset(
-            name='users:{}:stats'.format(user_id),
-            key='minutes_spent',
-            value=result['minutes'] if result['minutes'] else 0,
-        )
-
     @classmethod
     def cache_get(cls, user_id, show_id, episode_number):
         '''Retrieves watched status for episodes specified by
