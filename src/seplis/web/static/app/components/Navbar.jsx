@@ -19,11 +19,12 @@ class Navbar extends React.Component {
                     Shows                      
                 </a>
                 <div className="dropdown-menu">
+                    <a className="dropdown-item" href="/countdown">Countdown</a>
                     <a className="dropdown-item" href="/fan-of">Fan of</a>
                     <a className="dropdown-item" href="/episodes-to-watch">Episodes to Watch</a>
                     <a className="dropdown-item" href="/recently-aired">Recently Aired</a>
                     <a className="dropdown-item" href="/shows-watched">Watched</a>
-                    <a className="dropdown-item" href="/countdown">Countdown</a>
+                    <a className="dropdown-item" href="/user-show-stats">Stats</a>
                     <div className="dropdown-divider"></div>
                     <a className="dropdown-item" href="/show-new">New show</a>
                 </div>
@@ -65,7 +66,6 @@ class Navbar extends React.Component {
                     <i className="fa fa-user"></i>                      
                 </a>
                 <div className="dropdown-menu dropdown-menu-right">
-                    <a className="dropdown-item" href="/user-show-stats">Show stats</a>
                     <a className="dropdown-item" href="/account">Account</a>
                     <a className="dropdown-item" href="/play-servers">Play servers</a>
                     <div className="dropdown-divider"></div>
