@@ -15,6 +15,7 @@ class Handler(base.Handler):
     @authenticated(constants.LEVEL_PROGRESS)
     @gen.coroutine
     def put(self, show_id, episode_number):
+        self.set_status(204)
         yield self._put(show_id, episode_number)
 
     @run_on_executor
@@ -33,7 +34,6 @@ class Handler(base.Handler):
                 position=int(self.request.body['position']),
             )
             session.commit()
-
 
     @authenticated(constants.LEVEL_PROGRESS)
     def get(self, show_id, episode_number):

@@ -31,7 +31,7 @@ class Test_episode_watching(Testbase):
                 'position': 200,
             }
         )
-        self.assertEqual(response.code, 200, response.body)
+        self.assertEqual(response.code, 204, response.body)
 
         response = self.get(url)
         self.assertEqual(response.code, 200)

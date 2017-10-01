@@ -29,7 +29,7 @@ class Test_next_to_watch(Testbase):
         response = self.put('/1/shows/{}/episodes/{}/watching'.format(show_id,1), 
             {'position': 200}
         )
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 204)
 
         # Since we have not completed the first episode 
         # and it's the only episode we have watched the result
@@ -45,7 +45,7 @@ class Test_next_to_watch(Testbase):
         response = self.put('/1/shows/{}/episodes/{}/watching'.format(show_id,2), 
             {'position': 202}
         )
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 204)
         response = self.get('/1/shows/{}/episodes/last-watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         data = utils.json_loads(response.body)

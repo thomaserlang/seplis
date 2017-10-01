@@ -42,7 +42,7 @@ class Test_next_to_watch(Testbase):
                 'position': 200,
             }
         )
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 204)
 
         # next to watch should be episode 1 at position 200
         ntw = json_loads(self.get(next_to_watch_url).body)
