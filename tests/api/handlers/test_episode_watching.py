@@ -25,20 +25,24 @@ class Test_episode_watching(Testbase):
         response = self.get(url)
         self.assertEqual(response.code, 204)
 
-        response = self.put(
-            url, 
-            {
-                'position': 200,
-            }
-        )
+        response = self.put(url, {'position': 200})
         self.assertEqual(response.code, 204, response.body)
-
         response = self.get(url)
         self.assertEqual(response.code, 200)
         w = json_loads(response.body)
         self.assertEqual(w['completed'], False)        
         self.assertEqual(w['times'], 0)
         self.assertEqual(w['position'], 200)        
+        self.assertTrue(w['updated_at'] is not None)
+
+        response = self.put(url, {'position': 201})
+        self.assertEqual(response.code, 204, response.body)
+        response = self.get(url)
+        self.assertEqual(response.code, 200)
+        w = json_loads(response.body)
+        self.assertEqual(w['completed'], False)        
+        self.assertEqual(w['times'], 0)
+        self.assertEqual(w['position'], 201)        
         self.assertTrue(w['updated_at'] is not None)
 
 if __name__ == '__main__':

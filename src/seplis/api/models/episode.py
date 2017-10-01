@@ -119,13 +119,14 @@ class Episode(Base):
             )
             self.session.add(ew)
         else:
-            times = ew.times + times            
-            times = times if times > 0 else 0
-            if times == 0:
+            new_times = ew.times + times
+            if new_times < 0:
+                new_times = 0
+            if (times != 0) and (new_times == 0) and (position == 0):
                 self.session.delete(ew)
                 return
             ew.position = position
-            ew.times = times
+            ew.times = new_times
         return {
             'times': ew.times,
             'position': ew.position,
