@@ -217,7 +217,6 @@ class Episode_watched(Base):
         self.cr_latest_data()
         self.cr_watched_shows()
         self.cr_watched_show_episodes()
-        self.inc_watched_stats(-self.times)
 
         # Set the last watched episode
         ep = self.session.query(Episode_watched).filter(
