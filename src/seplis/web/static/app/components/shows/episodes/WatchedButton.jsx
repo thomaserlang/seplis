@@ -98,6 +98,7 @@ class WatchedButton extends React.Component {
             btn: true,
             'btn-watched': true,
             watched: this.state.times>0,
+            watching: this.state.position>0,
         });
         return (
             <div className="btn-group btn-episode-watched-group dropdown">
