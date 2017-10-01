@@ -33,7 +33,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/show/([0-9]+)/[^/]+', react.Handler),
             URLSpec(r'/show-edit/([0-9]+)', react.Handler),
 
-            URLSpec(r'/user-show-stats', react.Handler),
+            URLSpec(r'/user-shows-stats', react.Handler),
             URLSpec(r'/fan-of', react.Handler),
             URLSpec(r'/recently-aired', react.Handler),
             URLSpec(r'/shows-watched', react.Handler),

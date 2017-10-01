@@ -3,7 +3,7 @@ import Loader from 'components/Loader';
 import {requireAuthed, getUserId} from 'utils';
 import {request} from 'api';
 
-class UserShowStats extends React.Component {
+class UserShowsStats extends React.Component {
 
     constructor(props) {
         super(props);
@@ -54,4 +54,4 @@ class UserShowStats extends React.Component {
     }
 }
 
-export default UserShowStats;
+export default UserShowsStats;

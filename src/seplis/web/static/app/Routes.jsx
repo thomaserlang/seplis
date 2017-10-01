@@ -24,7 +24,7 @@ import Account from './views/Account';
 import Password from './views/Password';
 import PlayServers from './views/PlayServers';
 import PlayServer from './views/PlayServer';
-import UserShowStats from './views/UserShowStats';
+import UserShowsStats from './views/UserShowsStats';
 
 export default (
     <Router history={browserHistory}>
@@ -50,6 +50,6 @@ export default (
         <Route path="/password" component={Password} />
         <Route path="/play-servers" component={PlayServers} />
         <Route path="/play-server" component={PlayServer} />
-        <Route path="/user-show-stats" component={UserShowStats} />
+        <Route path="/user-shows-stats" component={UserShowsStats} />
       </Router>
 );
