@@ -5,45 +5,13 @@ from seplis.api import models, exceptions, constants
 
 class Handler(base.Handler):
 
-    async def get(self, user_id):
-        fan_of = await self.query_fan_of(user_id)
-        episodes = await self.query_episodes(user_id)
-        shows_watched = await self.query_shows_watched(user_id)
-        data = fan_of
-        data.update(episodes)
-        data.update(shows_watched)
+    @authenticated(constants.LEVEL_PROGRESS)
+    async def get(self, show_id):
+        data = await self.query_episodes(show_id)
         self.write_object(data)
 
     @run_on_executor
-    def query_fan_of(self, user_id):
-        with new_session() as session:
-            r = session.query(
-                sa.func.count(models.Show_fan.show_id).label('user_fan_of'),
-            ).filter(
-                models.Show_fan.user_id == user_id,
-            ).first()
-            if not r:
-                return {'fan_of': 0}
-            return {
-                'fan_of': r.user_fan_of or 0,
-            }
-
-    @run_on_executor
-    def query_shows_watched(self, user_id):
-        with new_session() as session:
-            r = session.query(
-                sa.func.count(models.Episode_watched.show_id).label('shows_watched'),
-            ).filter(
-                models.Episode_watched.user_id == user_id,
-            ).group_by(models.Episode_watched.show_id).first()
-            if not r:
-                return {'shows_watched': 0}
-            return {
-                'shows_watched': r.shows_watched or 0,
-            }
-
-    @run_on_executor
-    def query_episodes(self, user_id):
+    def query_episodes(self, show_id):
         with new_session() as session:
             r = session.query(
                 sa.func.sum(models.Episode_watched.times).label('episodes_watched'),
@@ -55,7 +23,8 @@ class Handler(base.Handler):
                         )
                 ).label('episodes_watched_minutes'),
             ).filter(
-                models.Episode_watched.user_id == user_id,
+                models.Episode_watched.user_id == self.current_user.id,
+                models.Episode_watched.show_id == show_id,
                 models.Episode.show_id == models.Episode_watched.show_id,
                 models.Episode.number == models.Episode_watched.episode_number,
                 models.Show.id == models.Episode_watched.show_id,

@@ -24,6 +24,7 @@ import seplis.api.handlers.shows_countdown
 import seplis.api.handlers.shows_recently_aired
 import seplis.api.handlers.shows_etw
 import seplis.api.handlers.user_shows_stats
+import seplis.api.handlers.user_show_stats
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -68,6 +69,10 @@ class Application(tornado.web.Application):
             URLSpec(
                 r'/1/shows/([0-9,]+)', 
                 seplis.api.handlers.show.Multi_handler
+            ),
+            URLSpec(
+                r'/1/shows/([0-9]+)/user-stats', 
+                seplis.api.handlers.user_show_stats.Handler
             ),
             URLSpec(
                 r'/1/shows/([0-9]+)/episodes', 

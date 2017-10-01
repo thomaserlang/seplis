@@ -30,24 +30,36 @@ class Test(Testbase):
             episode2 = episode2.serialize()
             episode3 = episode3.serialize()
 
-        response = self.get('/1/shows/{}/user-stats'.format(show['id']))
-        self.assertEqual(response.code, 200, response.body)
+        response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
+        self.assertEqual(response.code, 200)
         data = utils.json_loads(response.body)
+        self.assertEqual(data['fan_of'], 0)
         self.assertEqual(data['episodes_watched'], 0)
         self.assertEqual(data['episodes_watched_minutes'], 0)
+
+        # become a fan
+        self.put('/1/users/{}/fan-of/{}'.format(
+            self.current_user.id, show['id'],
+        ))
+
+        response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
+        self.assertEqual(response.code, 200)
+        data = utils.json_loads(response.body)
+        self.assertEqual(data['fan_of'], 1)
 
         # watched time
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show['id'],1))
         self.assertEqual(response.code, 200)
-        response = self.get('/1/shows/{}/user-stats'.format(show['id']))
+        response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         data = utils.json_loads(response.body)
         self.assertEqual(data['episodes_watched'], 1, data)
         self.assertEqual(data['episodes_watched_minutes'], 30, data)
 
+
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show['id'],1))
         self.assertEqual(response.code, 200)
-        response = self.get('/1/shows/{}/user-stats'.format(show['id']))
+        response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         data = utils.json_loads(response.body)
         self.assertEqual(data['episodes_watched'], 2, data)
@@ -55,7 +67,7 @@ class Test(Testbase):
 
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show['id'],2))
         self.assertEqual(response.code, 200)
-        response = self.get('/1/shows/{}/user-stats'.format(show['id']))
+        response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         data = utils.json_loads(response.body)
         self.assertEqual(data['episodes_watched'], 3, data)
@@ -63,7 +75,7 @@ class Test(Testbase):
 
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show['id'],3))
         self.assertEqual(response.code, 200)
-        response = self.get('/1/shows/{}/user-stats'.format(show['id']))
+        response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         data = utils.json_loads(response.body)
         self.assertEqual(data['episodes_watched'], 4, data)
