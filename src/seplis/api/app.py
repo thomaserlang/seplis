@@ -23,7 +23,7 @@ import seplis.api.handlers.user_fan_of
 import seplis.api.handlers.shows_countdown
 import seplis.api.handlers.shows_recently_aired
 import seplis.api.handlers.shows_etw
-import seplis.api.handlers.user_show_stats
+import seplis.api.handlers.user_shows_stats
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -128,7 +128,7 @@ class Application(tornado.web.Application):
             ),
             URLSpec(
                 r'/1/users/([0-9]+)/show-stats',
-                seplis.api.handlers.user_show_stats.Handler
+                seplis.api.handlers.user_shows_stats.Handler
             ),
 
             URLSpec(
