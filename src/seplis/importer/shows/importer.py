@@ -26,7 +26,7 @@ def update_show_by_id(show_id):
         return 
     update_show(show)
 
-def update_shows_all(from_show_id=1):
+def update_shows_all(from_show_id=1, do_async=False):
     shows = client.get('/shows', {
         'sort': 'id',
         'q': 'id:[{} TO *]'.format(from_show_id),
@@ -35,7 +35,10 @@ def update_shows_all(from_show_id=1):
     for show in shows.all():
         try:
             logging.info('Show: {}'.format(show['id']))
-            update_show(show)
+            if do_async:
+                client.post('/shows/{}/update'.format(show['id']))
+            else:
+                update_show(show)
         except (
             KeyboardInterrupt, 
             SystemExit, 

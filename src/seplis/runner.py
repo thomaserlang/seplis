@@ -71,11 +71,12 @@ def update_show(show_id):
 
 @cli.command()
 @click.option('--from_id', default=1, help='which show to start from')
-def update_shows_all(from_id):    
+@click.option('--async', is_flag=True, help='send the update task to the workers')
+def update_shows_all(from_id, async):
     import seplis.importer
     logger.set_logger('importer_update_shows_all.log', to_sentry=True)
     try:
-        seplis.importer.shows.update_shows_all(from_id)
+        seplis.importer.shows.update_shows_all(from_id, do_async=async)
     except:
         logging.exception('update_shows_all')
 
