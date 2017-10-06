@@ -280,7 +280,7 @@ def _upload_image(show_id, image):
     r = requests.put(
         client.url+'/shows/{}/images/{}/data'.format(show_id, image['id']),
         files={
-            'image': r.raw,
+            image['source_url'][image['source_url'].rfind("/")+1:]: r.raw,
         },
         headers={
             'Authorization': 'Bearer {}'.format(client.access_token),
