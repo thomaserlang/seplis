@@ -54,7 +54,7 @@ config = {
 
         'ffmpeg_folder': '/usr/src/ffmpeg/',
         'ffmpeg_threads': 1,
-        'ffmpeg_loglevel': '16',
+        'ffmpeg_loglevel': '8',
         'ffmpeg_logfile': '%p-%t.log',
 
         'port': 8003,
