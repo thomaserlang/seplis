@@ -22,3 +22,9 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Font
+*.eot binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
