@@ -74,15 +74,15 @@ External_schema = good.Schema({
     good.All(good.Length(min=1, max=45)):good.Any(None, good.All(good.Coerce(str), good.Length(min=1, max=45)))
 }, default_keys=good.Optional)
 Importer_schema = good.Schema(
-    {key: good.Any(None, good.All(str, good.Length(min=1, max=45))) \
+    {key: good.Maybe(good.All(str, good.Length(min=1, max=45))) \
         for key in constants.IMPORTER_TYPE_NAMES},
     default_keys=good.Optional,
 )
 _Show_schema = {
-    'title': str,
-    'description': good.Any(None, Description_schema),
-    'premiered': good.Any(None, date_()),
-    'ended': good.Any(None, date_()),
+    'title': good.Maybe(str),
+    'description': good.Maybe(Description_schema),
+    'premiered': good.Maybe(date_()),
+    'ended': good.Maybe(date_()),
     good.Optional('episodes'): [Episode_schema],
     'externals': good.Any(None, External_schema),
     'importers': good.Any(None, Importer_schema),
