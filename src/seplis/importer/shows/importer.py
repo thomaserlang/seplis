@@ -287,6 +287,15 @@ def _upload_image(show_id, image):
         }
     )
     if r.status_code != 200:
+        # Delete the image from the database if the image could not 
+        # be uploaded        
+        client.delete('/shows/{}/images/{}'.format(show_id, image['id']))
+        data = r.json()
+        if r.code in (2004, 2101):
+            logging.error(
+                r.message+'\n\n'+image['source_url']
+            )
+            return False
         raise Importer_upload_image_exception(
             'Failed to upload data for image {}. '
             'Status code: {}. Error: {}'.format(
