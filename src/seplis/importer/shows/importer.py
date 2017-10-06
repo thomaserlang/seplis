@@ -231,9 +231,9 @@ def update_show_images(show):
             for image in imp_images:
                 key = '{}-{}'.format(image['external_name'], image['external_id'])
                 if key not in image_external_ids:
-                    images_added.append(
-                        _save_image(show['id'], image)
-                    )
+                    si = _save_image(show['id'], image)
+                    if si:
+                        images_added.append(si)
                 else:
                     i = image_external_ids[key]
                     if not i['hash']:
@@ -253,8 +253,8 @@ def _save_image(show_id, image):
         '/shows/{}/images'.format(show_id), 
         image
     )
-    _upload_image(show_id, saved_image)
-    return saved_image
+    if _upload_image(show_id, saved_image):
+        return saved_image
 
 def _upload_image(show_id, image):
     """Uploads the image specified in `image['source_url']`
@@ -291,9 +291,9 @@ def _upload_image(show_id, image):
         # be uploaded        
         client.delete('/shows/{}/images/{}'.format(show_id, image['id']))
         data = r.json()
-        if r.code in (2004, 2101):
+        if data['code'] in (2004, 2101):
             logging.error(
-                r.message+'\n\n'+image['source_url']
+                data['message']+'\n\n'+image['source_url']
             )
             return False
         raise Importer_upload_image_exception(
