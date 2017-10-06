@@ -14,7 +14,7 @@
             }
             seplis.apiClientSettings.baseUrl = "{{config['client']['public_api_url']}}";
             seplis.apiClientSettings.clientId = "{{config['client']['id']}}";
-
+            seplis.Chromecast.appId = "{{config['web']['chromecast_appid']}}";
             $(function(){
                 {% block jsready %}{% end %}
             });
