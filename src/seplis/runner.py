@@ -80,8 +80,9 @@ def update_shows_all(from_id):
         logging.exception('update_shows_all')
 
 @cli.command()
-def worker():
-    logger.set_logger('worker.log')
+@click.option('-n', default=1, help='worker number')
+def worker(n):
+    logger.set_logger('worker-{}.log'.format(n))
     import seplis.tasks.worker
     try:
         seplis.tasks.worker.main()
