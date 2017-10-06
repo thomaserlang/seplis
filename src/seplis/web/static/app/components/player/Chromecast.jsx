@@ -33,7 +33,7 @@ class Chromecast {
         window['__onGCastApiAvailable'] = (isAvailable) => {
             // Temp fix for cast not reconnecting randomly
             setTimeout(() => {
-                let sessionRequest = new chrome.cast.SessionRequest('45718FC5');
+                let sessionRequest = new chrome.cast.SessionRequest(Chromecast.appId);
                 let apiConfig = new chrome.cast.ApiConfig(
                     sessionRequest,
                     sessionListener,
@@ -157,7 +157,7 @@ class Chromecast {
                         mediaListener(mediaSession);
                         resolve(mediaSession); 
                     },
-                    (e) => { reject(e); },
+                    (e) => { reject(e); },Chromecast
                 );
             });
         });
@@ -197,6 +197,7 @@ Chromecast.mediaSession = null;
 Chromecast.eventListener = {};
 Chromecast.events = events;
 Chromecast.timerGetCurrentTime = null;
+Chromecast.appId = '';
 
 function sessionListener(session) {
     Chromecast.session = session;

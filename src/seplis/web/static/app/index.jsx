@@ -2,6 +2,7 @@ import './styles/Base.scss';
 import './styles/FormBase.scss';
 
 import {apiClientSettings} from './api.jsx';
+import Chromecast from 'components/player/Chromecast';
 
 export default{
     React: require('react'),
@@ -11,5 +12,6 @@ export default{
         Routes: require('./Routes.jsx'),
         apiClientSettings: apiClientSettings,
         Navbar: require('./components/Navbar.jsx'),
+        Chromecast: Chromecast,
     }
 };
