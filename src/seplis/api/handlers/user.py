@@ -108,15 +108,6 @@ class Current_handler(Handler):
     def delete(self):
         raise HTTPError(405) 
 
-class Stats_handler(base.Handler):
-
-    def get(self, user_id):
-        s = {key: 0 for key in constants.USER_STAT_FIELDS}
-        stats = database.redis.hgetall('users:{}:stats'.format(user_id))
-        for key in stats:
-            s[key] = int(stats[key])
-        self.write_object(s)
-
 class Token_handler(base.Handler):
 
     @gen.coroutine
@@ -195,6 +186,7 @@ class Change_password_handler(base.Handler):
         user_id = user_id if user_id else self.current_user.id
         self.check_user_edit(user_id)
         yield self.change_password(user_id)
+        self.set_status(204)
 
     @run_on_executor
     def change_password(self, user_id):

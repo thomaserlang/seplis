@@ -1,0 +1,59 @@
+.btn-episode-watched-group {
+
+    .btn {
+        background-color:#414141;
+        color:#E2E2E2;
+        border: 1px solid #6C6C6C;
+        border-radius:0;
+        outline:0;
+        
+        &:hover, &:active {    
+            background-color: #373737;
+            outline: 0;
+        }
+    }
+
+    .btn:active{
+        outline:0;
+    }
+
+    .btn-times {
+        cursor: default;
+        &:hover, &:active {    
+            background-color: #414141;
+            outline: 0;
+        }
+    }
+
+    .dropdown-menu {
+        top: -20px;
+        right: -7px;
+        min-width:42px;
+
+        li {
+            text-align: center;
+            font-size: 18px;
+            cursor: pointer;
+            padding:2px;
+        }
+    }
+
+    .watched {
+        background-color: #068223;
+        &:hover {
+            background-color: #008F21;
+        }
+    }
+
+    .watching {
+        background: linear-gradient(90deg, #068223 56%, #414141 44%);
+    }
+
+    .fa-plus {
+        color:#1DC25B;
+    }
+
+    .fa-minus {
+        color:#FF332F;
+    }
+}

@@ -19,6 +19,7 @@ config = {
         'port': 8002,
         'max_workers': 5,
         'image_url': 'https://images.seplis.net',
+        'base_url': 'https://api.seplis.net',
     },
     'web': {
         'url': 'https://seplis.net',
@@ -151,3 +152,6 @@ def load(path=None):
                 )
             else:
                 config['play']['ffmpeg_logfile'] = None
+    if config['play']['temp_folder']:
+        if not os.path.exists(config['play']['temp_folder']):
+            os.makedirs(config['play']['temp_folder'])

@@ -20,6 +20,7 @@ class Test_episode(Testbase):
                     'number': 1,
                     'title': 'Episode 1',
                     'air_date': '2014-01-01',
+                    'air_time': '22:00',
                     'description': {
                         'text': 'Test description.'
                     },
@@ -40,10 +41,11 @@ class Test_episode(Testbase):
         self.assertEqual(episode['description'], {
             'text': 'Test description.',
             'url': None,
-            'title': None,
-            
+            'title': None,            
         })
         self.assertEqual(episode['runtime'], 30)
+        self.assertEqual(episode['air_date'], '2014-01-01')
+        self.assertEqual(episode['air_time'], '22:00:00')
 
         # test that we can patch the description        
         response = self.patch('/1/shows/{}'.format(show_id), {
@@ -110,8 +112,7 @@ class Test_episode(Testbase):
         self.assertEqual(response.code, 200)
         # we need to test that deleting an episode also delets all relations
         # to watched episodes.
-        response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(
-            self.current_user.id, 
+        response = self.put('/1/shows/{}/episodes/{}/watched'.format(
             show_id, 
             1
         ))
@@ -122,12 +123,11 @@ class Test_episode(Testbase):
         ))
         self.assertEqual(response.code, 201)
 
-        response = self.get('/1/users/{}/watched/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        response = self.get('/1/shows/{}/episodes/{}/watched'.format(
             show_id,
             1
         ))
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 204)
         response = self.get('/1/shows/{}/episodes/1'.format(show_id))
         self.assertEqual(response.code, 404, response.body)
 
@@ -156,6 +156,9 @@ class Test_episode_append_fields(Testbase):
             }
         )
         self.assertEqual(response.code, 200)
+        self.get('http://{}/episodes/_refresh'.format(
+            config['api']['elasticsearch']
+        ))
 
         # we haven't watched any episodes so user_watched should be None
 
@@ -165,18 +168,21 @@ class Test_episode_append_fields(Testbase):
         episode = utils.json_loads(response.body)
         self.assertTrue('user_watched' in episode)
         self.assertEqual(episode['user_watched'], None)
+        self.assertEqual(episode['air_time'], None)
+        self.assertEqual(episode['air_datetime'], '2003-09-23T00:00:00Z')
 
         # test multi episodes
         response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)
+        self.assertEqual(len(episodes), 2, episodes)
         for episode in episodes:
             self.assertTrue('user_watched' in episode)
             self.assertEqual(episode['user_watched'], None)
 
         # Let's watch some episodes
         for number in [1,2]:
-            response = self.put('/1/users/{}/watched/shows/{}/episodes/{}'.format(self.current_user.id, show_id, number))
+            response = self.put('/1/shows/{}/episodes/{}/watched'.format(show_id, number))
             self.assertEqual(response.code, 200, 'Run: {}'.format(number))
 
 
@@ -191,17 +197,19 @@ class Test_episode_append_fields(Testbase):
         response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)
+        self.assertEqual(len(episodes), 2)
         for episode in episodes:
             self.assertTrue('user_watched' in episode)
             self.assertEqual(episode['user_watched']['times'], 1)
 
 
-        # test that we can watch a interval of episodes at a time
-        response = self.put('/1/users/{}/watched/shows/{}/episodes/1-2'.format(self.current_user.id, show_id))
-        self.assertEqual(response.code, 200)
+        # test that we can watch a range of episodes at a time
+        response = self.put('/1/shows/{}/episodes/1-2/watched'.format(show_id))
+        self.assertEqual(response.code, 204)
         response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)
+        self.assertEqual(len(episodes), 2)
         for episode in episodes:
             self.assertTrue('user_watched' in episode)
             self.assertEqual(episode['user_watched']['times'], 2)

@@ -33,7 +33,7 @@ class Handler(base.Handler):
             session.commit()
             return image.serialize()
 
-    @authenticated(constants.LEVEL_EDIT_SHOW)    
+    @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
     def put(self, relation_id, image_id):
         image = yield self._put(image_id)
@@ -50,7 +50,7 @@ class Handler(base.Handler):
             session.commit()
             return image.serialize()
 
-    @authenticated(constants.LEVEL_EDIT_SHOW)    
+    @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
     def delete(self, relation_id, image_id):
         yield self._delete(image_id)
@@ -91,28 +91,20 @@ class Handler(base.Handler):
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', 'id:asc')
         body = {
-            'filter': {
-                'and': [
-                    {
-                        'term': {
-                            '_relation_type': self.relation_type,
-                        }
-                    },
-                    {
-                        'term': {
-                            '_relation_id': int(relation_id),
-                        }
-                    },
-                ]
-                                
+            'query': {
+                'bool': {
+                    'must': [
+                        {'term': {'_relation_type': self.relation_type}},
+                        {'term': {'_relation_id': int(relation_id)}},
+                    ]
+                }                                
             }
         }
         if q:
-            body.update({
-                'query': {
-                    'query_string': {
-                        'query': q,
-                    }
+            body['query']['bool']['must'].append({
+                'query_string': {
+                    'default_field': 'title',
+                    'query': q,
                 }
             })
         result = yield self.es(
@@ -153,4 +145,7 @@ class Data_handler(file_upload.Handler):
             image.hash = files[0]['hash']
             image.width = files[0]['width']
             image.height = files[0]['height']
+            if image.type == constants.IMAGE_TYPE_POSTER:
+                if (image.width != 680) or (image.height != 1000):
+                    raise exceptions.Image_wrong_size(680, 1000)
             session.commit()

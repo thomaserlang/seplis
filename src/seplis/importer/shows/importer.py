@@ -164,9 +164,10 @@ def update_show_episodes(show):
     ``show`` must be a show dict.
 
     """
-    episodes = client.get(
+    episodes = list(client.get(
         '/shows/{}/episodes?per_page=500'.format(show['id'])
-    ).all()
+    ).all())
+
     imp_episodes = call_importer(
         external_name=show['importers']['episodes'],
         method='episodes',
@@ -174,8 +175,8 @@ def update_show_episodes(show):
     ) or []
 
     _cleanup_episodes(show['id'], episodes, imp_episodes)
-
     changes = _show_episode_changes(episodes, imp_episodes)
+
     if changes:
         logging.info('Updating show "{}" episodes'.format(show['id']))
         client.patch(
@@ -244,7 +245,7 @@ def update_show_images(show):
     if (('poster_image' in show) and not show['poster_image']):
         _set_latest_image_as_primary(
             show['id'],
-            image_id=images_added[-1]['id'] if images_added else None,
+            image_id=images_added[0]['id'] if images_added else None,
         )
 
 def _save_image(show_id, image):
@@ -366,7 +367,6 @@ def _show_info_changes(show_original, show_new):
     """
     changes = {}
     skip_fields = (
-        'externals',
         'importers',
         'episodes',
     )
@@ -386,7 +386,6 @@ def _show_info_changes(show_original, show_new):
         elif s not in show_original and s in show_new:
             changes[s] = show_new[s]
     return changes
-
 
 def _show_episode_changes(episodes_original, episodes_new):
     """Compares two episode list of dicts for changes.

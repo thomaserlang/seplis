@@ -3,6 +3,7 @@ import json
 from tornado import httpclient, gen, ioloop, web
 from urllib.parse import urljoin, urlencode
 from seplis import utils, config
+from .exceptions import API_error
 from functools import partial
 
 TIMEOUT = 60 # seconds
@@ -44,19 +45,17 @@ class HTTPData(object):
         if 'X-Total-Pages' in response.headers:
             self.pages = int(response.headers['X-Total-Pages'])
 
-    def to_dict(self):
+    def serialize(self):
         return self.data
 
     def all(self):
         s = self
-        data = []
         while True:
             for d in s.data:
-                data.append(d)
+                yield d
             if not s.next:
                 break
             s = s.client.get(s.next, timeout=self.timeout)
-        return data
         
     @gen.coroutine
     def all_async(self):
@@ -146,7 +145,7 @@ class Async_client(object):
         return data
 
     @gen.coroutine
-    def get(self, uri, data=None, headers=None, timeout=TIMEOUT):     
+    def get(self, uri, data=None, headers=None, timeout=TIMEOUT, all_=False):     
         if data != None:
             if isinstance(data, dict):
                 data = urlencode(data, True)
@@ -157,6 +156,8 @@ class Async_client(object):
             headers=headers,
             timeout=timeout,
         )
+        if isinstance(r, HTTPData) and all_:
+            r = yield r.all_async()
         return r
 
     @gen.coroutine
@@ -252,31 +253,3 @@ class Client(Async_client):
             headers=headers,
             timeout=timeout,
         ))
-
-class API_error(web.HTTPError):
-
-    def __init__(self, status_code, code, message, errors=None, extra=None):
-        web.HTTPError.__init__(self, status_code, message)
-        self.status_code = status_code
-        self.code = code
-        self.errors = errors
-        self.message = message
-        self.extra = extra
-
-    def __str__(self):
-        result = '{} ({})'.format(self.message, self.code)
-        if self.errors:
-            result += '\n\nErrors:\n'
-            result += json.dumps(
-                self.errors,
-                indent=4, 
-                separators=(',', ': ')
-            )
-        if self.extra:
-            result += '\n\nExtra:\n'
-            result += json.dumps(
-                self.extra,
-                indent=4, 
-                separators=(',', ': ')
-            )
-        return result

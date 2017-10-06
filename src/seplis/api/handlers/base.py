@@ -12,7 +12,6 @@ from tornado import gen
 from urllib.parse import urljoin
 from datetime import datetime
 from raven.contrib.tornado import SentryMixin
-from tornado.httpclient import AsyncHTTPClient, HTTPError
 from seplis import utils, schemas
 from seplis.api.decorators import new_session
 from seplis.api.connections import database
@@ -41,7 +40,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match, If-Unmodified-Since, X-Requested-With')
         self.set_header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
-        self.set_header('Access-Control-Expose-Headers', 'ETag, Link, X-Total-Count, X-Total-Pages')
+        self.set_header('Access-Control-Expose-Headers', 'ETag, Link, X-Total-Count, X-Total-Pages, X-Page')
         self.set_header('Access-Control-Max-Age', '86400')
         self.set_header('Access-Control-Allow-Credentials', 'true')
 
@@ -119,10 +118,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
     def write_pagination(self, pagination):
         links = pagination.links_header_format(
             urljoin(
-                '{}://{}'.format(
-                    self.request.protocol,
-                    self.request.host,
-                ), 
+                config['api']['base_url'],
                 self.request.path
             ), 
             self.request.query_arguments,
@@ -131,6 +127,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             self.set_header('Link', links)
         self.set_header('X-Total-Count', pagination.total)
         self.set_header('X-Total-Pages', pagination.pages)
+        self.set_header('X-Page', pagination.page)
         self.write_object(pagination.records)
 
     @property
@@ -141,35 +138,8 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
     def redis(self):
         return database.redis
 
-    @gen.coroutine
-    def es(self, url, query={}, body={}):
-        http_client = AsyncHTTPClient()         
-        if not url.startswith('/'):
-            url = '/'+url
-        for arg in query:
-            if not isinstance(query[arg], list):
-                query[arg] = [query[arg]]
-        try:
-            response = yield http_client.fetch(
-                'http://{}{}?{}'.format(
-                    config['api']['elasticsearch'],
-                    url,
-                    utils.url_encode_tornado_arguments(query) \
-                        if query else '',
-                ),
-                method='POST' if body else 'GET',
-                body=utils.json_dumps(body) if body else None,
-            )
-            return utils.json_loads(response.body)
-        except HTTPError as e:
-            try:
-                extra = utils.json_loads(e.response.body)
-            except:
-                extra = {'error': e.response.body.decode('utf-8')}
-            raise exceptions.Elasticsearch_exception(
-                e.code,
-                extra,
-            )
+    async def es(self, url, query={}, body={}):
+        return await database.es_get(url, query, body)
 
     def get_current_user(self):
         auth = self.request.headers.get('Authorization', None)
@@ -188,29 +158,15 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
 
     def _validate(self, data, schema, **kwargs):
         try:
-            if schema == None:
-                schema = getattr(self, '__schema__', None)
-                if schema == None:
-                    raise Exception('missing validation schema')
-            if not isinstance(schema, good.Schema):        
-                schema = good.Schema(schema, **kwargs)
-            return schema(data)    
-        except good.MultipleInvalid as ee:
-            data = []
-            for e in ee:
-                data.append({
-                    'field': u'.'.join(str(x) for x in e.path),
-                    'message': e.message,
-                })
-            raise exceptions.Validation_exception(errors=data)
-        except good.Invalid as e:
-            data = [{
-                'field': u'.'.join(str(x) for x in e.path),
-                'message': e.message,
-            }]            
-            raise exceptions.Validation_exception(errors=data)
+            return utils.validate_schema(schema, data, **kwargs)  
+        except utils.Validation_exception as e:
+            raise exceptions.Validation_exception(errors=e.errors)
 
     def validate(self, schema=None, **kwargs):
+        if schema == None:
+            schema = getattr(self, '__schema__', None)
+            if schema == None:
+                raise Exception('missing validation schema')
         return self._validate(
             self.request.body,
             schema,
@@ -218,8 +174,12 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         )
 
     def validate_arguments(self, schema=None, **kwargs):
+        if schema == None:
+            schema = getattr(self, '__arguments_schema__', None)
+            if schema == None:
+                raise Exception('missing validation schema')
         return self._validate(
-            utils.tornado_arguments_to_unicode(self.request.arguments),
+            tornado.escape.recursive_unicode(self.request.arguments),
             schema,
             **kwargs
         )
@@ -368,3 +328,27 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             'ids': episode_ids
         })
         return [d.get('_source') for d in result['docs']]
+
+class Pagination_handler(Handler):
+
+    __arguments_schema__ = good.Schema({
+        'per_page': good.Any(
+            good.All(
+                [good.All(good.Coerce(int), good.Range(min=1))],
+                good.Length(max=1),
+            ),
+            good.Default([constants.PER_PAGE])
+        ),
+        'page': good.Any(
+            good.All(
+                [good.All(good.Coerce(int), good.Range(min=1))],
+                good.Length(max=1),
+            ),
+            good.Default([1])
+        ),
+    }, default_keys=good.Required)
+
+    def get(self, *args, **kwargs):
+        args = self.validate_arguments()
+        self.per_page = args['per_page'][0]
+        self.page = args['page'][0]

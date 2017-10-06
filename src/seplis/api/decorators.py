@@ -1,5 +1,6 @@
 import functools
 import sqlalchemy.orm.session
+import tornado.platform.asyncio
 from tornado.web import HTTPError
 from seplis.api import exceptions
 from seplis.api.connections import database
@@ -80,3 +81,27 @@ def new_session():
         raise
     finally:
         s.close()
+
+def run_on_executor(method):
+    """Run a method in a new thread.
+    Compatible with AsyncIO async await.
+
+    Example:
+
+        class Handler(base.Handler):
+
+            async get(self):
+                data = await self.get_data()
+                self.write_object(data)
+
+            @run_on_executor
+            def get_data():
+                // Some database query
+                return data
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        return tornado.platform.asyncio.to_tornado_future(
+            self.executor.submit(method, self, *args, **kwargs)
+        )
+    return wrapper

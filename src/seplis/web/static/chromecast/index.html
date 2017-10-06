@@ -1,486 +1,145 @@
-<!DOCTYPE html>
 <html>
-<head>
-    <title>SEPLIS</title>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/cast/sdk/libs/mediaplayer/0.7.0/media_player.js"></script>
-    <style>
-        video {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            left: 0;
-            top: 0;
-            opacity: 1;
-            z-index: 1;
-            visibility: visible;
-        }
-    </style>
-</head>
-<body>
-    <video id="receiverVideoElement"></video>
-
-    <script type="text/javascript">
-        "use strict";
-
-        window.castReceiverManager = null;
-        window.mediaManager = null;
-        window.messageBus = null;
-        window.mediaElement = null;
-        window.mediaHost = null;
-        window.mediaProtocol = null;
-        window.mediaPlayer = null;
-        window.connectedCastSenders = []; // {senderId:'', channel:obj}
-
-        var data = null;
-        var watchedIncremented = false;
-        var lastPosStored = -1;
-        var lastEpisodeId = null;
-
-        $('video').on('timeupdate', function(){
-            if (!data)
-                return;
-            var offsetDuration = 0;
-            if (data['method'] == 'transcode')
-                offsetDuration = data['start_time'];
-            if (((data['start_time'] / 100) * 10) > data['duration']-data['start_time'])
-                return;
-            var time = offsetDuration + parseInt(this.currentTime);
-            if (((time % 10) == 0) && (lastPosStored != time) && 
-                (time > 0) && !watchedIncremented) {
-                lastPosStored = time;
-                var times = 0;
-                if (((time / 100) * 10) > (data['duration']-time)) {
-                    watchedIncremented = true;
-                    times = 1;
-                    time = 0;
+    <head>
+        <title>SEPLIS CAST</title>
+            <script src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+            <script
+              src="https://code.jquery.com/jquery-3.2.1.min.js"
+              integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+              crossorigin="anonymous"></script>
+            <style>
+                body {
+                    background-color: #000; 
+                    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
                 }
-                var url = data['api_url'];
-                var url1 = '/1/users/'+data['user_id'].toString();
-                var url2 = '/shows/'+data['show']['id'].toString()+
-                        '/episodes/'+data['episode']['number'];
-                var dpos = {};
-                if (times == 0) {
-                    url += url1 + '/watching'+ url2;
-                    dpos['position'] = time;
-                } else {                    
-                    url += url1 + '/watched'+ url2;
-                    dpos['times'] = 1;
+
+                #media {
+                    
+                }
+
+                #logocenter {
+                    position: relative;
+                    top: 50%;
+                    transform: translateY(-50%);
+                }
+
+                #logocenter .text {
+                    text-align: center;
+                    font-size: 200px;
+                    color: #428bca;
+                }
+
+                video {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    left: 0;
+                    top: 0;
+                    opacity: 1;
+                    z-index: 1;
+                    visibility: visible;
+                }
+            </style>
+    </head>
+    <body>
+        <video id="media"></video>
+        <div id="logocenter">
+            <div class="text">
+                SEPLIS
+            </div>
+        </div>
+        <script>
+            var currentInfo = null;
+            var token = null;
+            var lastSavedTime = 0;
+            var watchedIncremented = false;
+
+            var mediaElement = document.getElementById('media');
+            var mediaManager = new cast.receiver.MediaManager(mediaElement);
+
+            mediaManager['onLoadOrig'] = mediaManager.onLoad;
+            mediaManager.onLoad = function(event) {
+                mediaManager['onLoadOrig'](event);
+                var senders = castReceiverManager.getSenders();
+                for (var i in senders) {
+                    messageInfo.send(senders[i], currentInfo);
+                }
+            }
+
+            mediaManager['onEndedOrig'] = mediaManager.onEnded;
+            mediaManager.onEnded = function() {
+                currentInfo = null;
+                token = null;
+                mediaManager['onEndedOrig']();
+            }
+
+            var castReceiverManager = cast.receiver.CastReceiverManager.getInstance();         
+
+            var messageInfo = castReceiverManager.getCastMessageBus(
+                'urn:x-cast:net.seplis.cast.info',
+                cast.receiver.CastMessageBus.MessageType.JSON
+            );
+            messageInfo.onMessage = function(event) {
+                currentInfo = event.data;
+                token = currentInfo.token;
+                delete currentInfo['token'];
+            }
+
+            var messageSendInfo = castReceiverManager.getCastMessageBus(
+                'urn:x-cast:net.seplis.cast.sendinfo',
+                cast.receiver.CastMessageBus.MessageType.JSON
+            );
+            messageSendInfo.onMessage = function(event) {
+                if (!currentInfo)
+                    return;
+                messageInfo.send(event.senderId, currentInfo);
+            }
+
+            castReceiverManager.onSenderConnected = function(event) {
+                messageInfo.send(event.senderId, currentInfo);
+            }
+
+            castReceiverManager.start();
+
+            $('video').on('timeupdate', function(){
+                if (!currentInfo)
+                    return;
+                let time = Math.floor(this.currentTime);
+                if (this.seekable.length <= 1 || this.seekable.end(0) <= 1)
+                    time += currentInfo['startTime'];
+                if (lastSavedTime == time)
+                    return;
+                lastSavedTime = time;
+                if ((time % 10) != 0)
+                    return;
+
+                let duration = parseInt(currentInfo['metadata']['format']['duration']);
+                let watched = (((time / 100) * 10) > (duration-time));
+
+                let url = currentInfo['apiUrl'] +
+                    '/1/shows/'+currentInfo['show']['id'].toString()+
+                    '/episodes/'+currentInfo['episode']['number'].toString();
+                let putData = {};
+                if (watched) {
+                    if (!watchedIncremented) {
+                        watchedIncremented = true;
+                        url += '/watched';
+                    }
+                } else {
+                    watchedIncremented = false;
+                    url += '/watching';
+                    putData['position'] = time;
                 }
                 $.ajax({
                     url: url,
-                    type: 'put',
-                    data: JSON.stringify(dpos),
+                    type: 'PUT',
+                    data: JSON.stringify(putData),
                     dataType: 'json',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer '+data['token'],
+                        'Authorization': 'Bearer '+token,
                     }
-                }).error(function(obj, text_status){
-                    console.log(obj);
                 });
-            }
-        });
-
-        // Initialize the receiver SDK before starting the app-specific logic
-        
-        window.mediaElement = document.getElementById('receiverVideoElement');
-        window.mediaElement.autoplay = true;
-        
-        /**
-         * Sets the log verbosity level.
-         *
-         * Debug logging (all messages).
-         * DEBUG
-         *
-         * Verbose logging (sender messages).
-         * VERBOSE
-         *
-         * Info logging (events, general logs).
-         * INFO
-         *
-         * Error logging (errors).
-         * ERROR
-         *
-         * No logging.
-         * NONE
-         **/
-        cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.ERROR);
-
-        window.castReceiverManager = cast.receiver.CastReceiverManager.getInstance();
-
-        /**
-         * Called to process 'ready' event. Only called after calling castReceiverManager.start(config) and the
-         * system becomes ready to start receiving messages.
-         *
-         * @param {cast.receiver.CastReceiverManager.Event} event - can be null
-         *
-         * There is no default handler
-         */
-        window.castReceiverManager.onReady = function(event) {
-
-        }
-
-        /**
-         * If provided, it processes the 'senderconnected' event.
-         * Called to process the 'senderconnected' event.
-         * @param {cast.receiver.CastReceiverManager.Event} event - can be null
-         *
-         * There is no default handler
-         */
-        window.castReceiverManager.onSenderConnected = function(event) {
-
-        }
-
-        /**
-         * If provided, it processes the 'senderdisconnected' event.
-         * Called to process the 'senderdisconnected' event.
-         * @param {cast.receiver.CastReceiverManager.Event} event - can be null
-         *
-         * There is no default handler
-         */
-        window.castReceiverManager.onSenderDisconnected = function(event) {
-            var senders = window.castReceiverManager.getSenders();
-            //If last sender explicity disconnects, turn off
-            if(senders.length == 0 && event.reason == cast.receiver.system.DisconnectReason.REQUESTED_BY_SENDER)
-              window.close();
-        }
-
-        /**
-         * If provided, it processes the 'systemvolumechanged' event.
-         * Called to process the 'systemvolumechanged' event.
-         * @param {cast.receiver.CastReceiverManager.Event} event - can be null
-         *
-         * There is no default handler
-         */
-        window.castReceiverManager.onSystemVolumeChanged = function(event) {
-
-        }
-
-        /**
-         * Called to process the 'visibilitychanged' event.
-         *
-         * Fired when the visibility of the application has changed (for example
-         * after a HDMI Input change or when the TV is turned off/on and the cast
-         * device is externally powered). Note that this API has the same effect as
-         * the webkitvisibilitychange event raised by your document, we provided it
-         * as CastReceiverManager API for convenience and to avoid a dependency on a
-         * webkit-prefixed event.
-         *
-         * @param {cast.receiver.CastReceiverManager.Event} event - can be null
-         *
-         * There is no default handler for this event type.
-         */
-        window.castReceiverManager.onVisibilityChanged = function(event) {
-            /** check if visible and pause media if not - add a timer to tear down after a period of time
-               if visibilty does not change back **/
-            if (event.isVisible) { // It is visible
-                window.mediaElement.play(); // Resume media playback
-                window.clearTimeout(window.timeout); // Turn off the timeout
-                window.timeout = null;
-            } else {
-                window.mediaElement.pause(); // Pause playback
-                window.timeout = window.setTimeout(function(){window.close();}, 600000); // 10 Minute timeout
-            }
-        }
-        
-
-        window.messageBus = window.castReceiverManager.getCastMessageBus(
-            'urn:x-cast:net.seplis.cast.data',
-            cast.receiver.CastMessageBus.MessageType.JSON
-        );
-
-        window.messageBus.onMessage = function(event) {
-            switch (event.data.method) {
-                case 'setdata':
-                    data = event.data.data; 
-                    break;
-                case 'getdata':
-                    window.messageBus.send(
-                        event.senderId,
-                        {
-                            'method': 'setdata',
-                            'data': data
-                        }
-                    );
-                    break;
-            }
-        }
-
-        // This class is used to send/receive media messages/events using the media protocol/namesapce (urn:x-cast:com.google.cast.media).
-        window.mediaManager = new cast.receiver.MediaManager(window.mediaElement);
-
-        /**
-         * Called when the media ends.
-         *
-         * mediaManager.resetMediaElement(cast.receiver.media.IdleReason.FINISHED);
-         **/
-        window.mediaManager['onEndedOrig'] = window.mediaManager.onEnded;
-        /**
-         * Called when the media ends
-         */
-        window.mediaManager.onEnded = function() {
-            window.mediaManager['onEndedOrig']();
-        }
-
-        /**
-         * Default implementation of onError.
-         *
-         * mediaManager.resetMediaElement(cast.receiver.media.IdleReason.ERROR)
-         **/
-        window.mediaManager['onErrorOrig'] = window.mediaManager.onError;
-        /**
-         * Called when there is an error not triggered by a LOAD request
-         * @param obj
-         */
-        window.mediaManager.onError = function(obj) {
-            window.mediaManager['onErrorOrig'](obj);
-        }
-
-        /**
-         * Processes the get status event.
-         *
-         * Sends a media status message to the requesting sender (event.data.requestId)
-         **/
-        window.mediaManager['onGetStatusOrig'] = window.mediaManager.onGetStatus;
-        /**
-         * Processes the get status event.
-         * @param event
-         */
-        window.mediaManager.onGetStatus = function(event) {
-            window.mediaManager['onGetStatusOrig'](event);
-        }
-
-        /**
-         * Default implementation of onLoadMetadataError.
-         *
-         * mediaManager.resetMediaElement(cast.receiver.media.IdleReason.ERROR, false);
-         * mediaManager.sendLoadError(cast.receiver.media.ErrorType.LOAD_FAILED);
-         **/
-        window.mediaManager['onLoadMetadataErrorOrig'] = window.mediaManager.onLoadMetadataError;
-        /**
-         * Called when load has had an error, overridden to handle application specific logic.
-         * @param event
-         */
-        window.mediaManager.onLoadMetadataError = function(event) {
-            window.mediaManager['onLoadMetadataErrorOrig'](event);
-        }
-
-        /**
-         * Default implementation of onMetadataLoaded
-         *
-         * Passed a cast.receiver.MediaManager.LoadInfo event object
-         * Sets the mediaElement.currentTime = loadInfo.message.currentTime
-         * Sends the new status after a LOAD message has been completed succesfully.
-         * Note: Applications do not normally need to call this API.
-         * When the application overrides onLoad, it may need to manually declare that
-         * the LOAD request was sucessful. The default implementaion will send the new
-         * status to the sender when the video/audio element raises the
-         * 'loadedmetadata' event.
-         * The default behavior may not be acceptable in a couple scenarios:
-         *
-         * 1) When the application does not want to declare LOAD succesful until for
-         *    example 'canPlay' is raised (instead of 'loadedmetadata').
-         * 2) When the application is not actually loading the media element (for
-         *    example if LOAD is used to load an image).
-         **/
-        window.mediaManager['onLoadMetadataOrig'] = window.mediaManager.onLoadMetadataLoaded;
-        /**
-         * Called when load has completed, overridden to handle application specific logic.
-         * @param event
-         */
-        window.mediaManager.onLoadMetadataLoaded = function(event) {
-            window.mediaManager['onLoadMetadataOrig'](event);
-        }
-
-        /**
-         * Processes the pause event.
-         *
-         * mediaElement.pause();
-         * Broadcast (without sending media information) to all senders that pause has happened.
-         **/
-        window.mediaManager['onPauseOrig'] = window.mediaManager.onPause;
-        /**
-         * Process pause event
-         * @param event
-         */
-        window.mediaManager.onPause = function(event) {
-            window.mediaManager['onPauseOrig'](event);
-        }
-
-        /**
-         * Default - Processes the play event.
-         *
-         * mediaElement.play();
-         *
-         **/
-        window.mediaManager['onPlayOrig'] = window.mediaManager.onPlay;
-        /**
-         * Process play event
-         * @param event
-         */
-        window.mediaManager.onPlay = function(event) {
-            window.mediaManager['onPlayOrig'](event);
-        }
-
-        /**
-         * Default implementation of the seek event.
-         * Sets the mediaElement.currentTime to event.data.currentTime.
-         * If the event.data.resumeState is cast.receiver.media.SeekResumeState.PLAYBACK_START and the mediaElement is paused then
-         * call mediaElement.play(). Otherwise if event.data.resumeState is cast.receiver.media.SeekResumeState.PLAYBACK_PAUSE and
-         * the mediaElement is not paused, call mediaElement.pause().
-         * Broadcast (without sending media information) to all senders that seek has happened.
-         **/
-        window.mediaManager['onSeekOrig'] = window.mediaManager.onSeek;
-        /**
-         * Process seek event
-         * @param event
-         */
-        window.mediaManager.onSeek = function(event) {
-            window.mediaManager['onSeekOrig'](event);
-        }
-
-        /**
-         * Default implementation of the set volume event.
-         * Checks event.data.volume.level is defined and sets the mediaElement.volume to the value
-         * Checks event.data.volume.muted is defined and sets the mediaElement.muted to the value
-         * Broadcasts (without sending media information) to all senders that the volume has changed.
-         **/
-        window.mediaManager['onSetVolumeOrig'] = window.mediaManager.onSetVolume;
-        /**
-         * Process set volume event
-         * @param event
-         */
-        window.mediaManager.onSetVolume = function(event) {
-            window.mediaManager['onSetVolumeOrig'](event);
-        }
-
-        /**
-         * Processes the stop event.
-         *
-         * window.mediaManager.resetMediaElement(cast.receiver.media.IdleReason.CANCELLED, true, event.data.requestId);
-         *
-         * Resets Media Element to IDLE state. After this call the mediaElement
-         * properties will change, paused will be true, currentTime will be zero and
-         * the src attribute will be empty. This only needs to be manually called if the
-         * developer wants to override the default behavior of onError, onStop or
-         * onEnded, for example.
-         **/
-        window.mediaManager['onStopOrig'] = window.mediaManager.onStop;
-        /**
-         * Process stop event
-         * @param event
-         */
-        window.mediaManager.onStop = function(event) {
-            window.mediaManager['onStopOrig'](event);
-        }
-
-        /**
-         * Default implementation for the load event.
-         *
-         * Sets the mediaElement.autoplay to false.
-         * Checks that data.media and data.media.contentId are valid then sets the mediaElement.src to the
-         * data.media.contentId.
-         *
-         * Checks the data.autoplay value:
-         *   - if undefined sets mediaElement.autoplay = true
-         *   - if has value then sets mediaElement.autoplay to that value
-         **/
-        window.mediaManager['onLoadOrig'] = window.mediaManager.onLoad;
-        /**
-         * Processes the load event.
-         * @param event
-         */
-        window.mediaManager.onLoad = function(event) {
-            // TODO - setup for load here
-            // TODO - if there is an error during load: call mediaManager.sendLoadError to notify sender
-            // TODO - if there is no error call mediaManager.sendLoadCompleteComplete
-            // TODO - call mediaManager.setMediaInformation(MediaInformation)
-
-            if(window.mediaPlayer !== null) {
-                window.mediaPlayer.unload(); // Ensure unload before loading again
-            }
-
-            if (event.data['media'] && event.data['media']['contentId']) {
-                var url = event.data['media']['contentId'];
-
-                lastPosStored = -1;
-                var eid = ''+data['show']['id']+data['episode']['number'];
-                if (eid != lastEpisodeId) {
-                    watchedIncremented = false;
-                    lastEpisodeId = eid;
-                }
-
-                window.mediaHost = new cast.player.api.Host({
-                    'mediaElement': window.mediaElement,
-                    'url': url
-                });
-
-                window.mediaHost.onError = function (errorCode) {
-                    if (window.mediaPlayer !== null) {
-                        window.mediaPlayer.unload();
-                    }
-                }
-
-                var initialTimeIndexSeconds = event.data['media']['currentTime'] || 0;
-                // TODO: real code would know what content it was going to access and this would not be here.
-                var protocol = null;
-
-                var parser = document.createElement('a');
-                parser.href = url;
-
-                var ext = ext = parser.pathname.split('.').pop();
-                if (ext === 'm3u8') {
-                    protocol =  cast.player.api.CreateHlsStreamingProtocol(window.mediaHost);
-                } else if (ext === 'mpd') {
-                    protocol = cast.player.api.CreateDashStreamingProtocol(window.mediaHost);
-                } else if (ext === 'ism/') {
-                    protocol = cast.player.api.CreateSmoothStreamingProtocol(window.mediaHost);
-                }
-
-                if (protocol === null) {
-                    // Call on original handler
-                    window.mediaManager['onLoadOrig'](event); // Call on the original callback
-                } else {
-                    // Advanced Playback - HLS, MPEG DASH, SMOOTH STREAMING
-                    // Player registers to listen to the media element events through the mediaHost property of the
-                    // mediaElement
-                    window.mediaPlayer = new cast.player.api.Player(window.mediaHost);
-                    window.mediaPlayer.load(protocol, initialTimeIndexSeconds);
-                }
-            }
-        }
-
-        /**
-         * Application config
-         **/
-        var appConfig = new cast.receiver.CastReceiverManager.Config();
-
-        /**
-         * Text that represents the application status. It should meet
-         * internationalization rules as may be displayed by the sender application.
-         * @type {string|undefined}
-         **/
-        appConfig.statusText = 'Ready to play';
-
-        /**
-         * Maximum time in seconds before closing an idle
-         * sender connection. Setting this value enables a heartbeat message to keep
-         * the connection alive. Used to detect unresponsive senders faster than
-         * typical TCP timeouts. The minimum value is 5 seconds, there is no upper
-         * bound enforced but practically it's minutes before platform TCP timeouts
-         * come into play. Default value is 10 seconds.
-         * @type {number|undefined}
-         **/
-        //appConfig.maxInactivity = 6000; // 100 minutes for testing, use default 10sec in prod by not setting this value
-
-        /**
-         * Initializes the system manager. The application should call this method when
-         * it is ready to start receiving messages, typically after registering
-         * to listen for the events it is interested on.
-         */
-        window.castReceiverManager.start(appConfig);
-    </script>
-</body>
+            });
+        </script>
+    </body>
 </html>

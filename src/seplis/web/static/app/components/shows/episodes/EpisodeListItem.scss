@@ -1,0 +1,29 @@
+.episode-box-list-item {
+    width: 100%;
+    padding-left:5px;
+    padding-right:5px;
+    background-color: #414141;
+    color:#E2E2E2;
+    border-bottom: 1px solid #515151;
+
+    .title {
+        font-size: 18px;
+        font-weight: bolder;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .meta {
+        font-size: 14px;
+    }
+    .button-bar {
+        margin-top: 5px;
+        margin-bottom: 5px;
+    }
+    .play-button {
+        font-size: 28px; 
+        .fa {
+            pointer-events: none;
+        }
+    }
+}

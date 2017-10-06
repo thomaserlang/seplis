@@ -17,29 +17,32 @@ class Test_episode_watching(Testbase):
         })
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
-        url = '/1/users/{}/watching/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        url = '/1/shows/{}/episodes/{}/watching'.format(
             show['id'],
             1
         )
-
+        # Return 204 if the episode has not been watched
         response = self.get(url)
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 204)
 
-        response = self.put(
-            url, 
-            {
-                'position': 200,
-            }
-        )
-        self.assertEqual(response.code, 200, response.body)
-
+        response = self.put(url, {'position': 200})
+        self.assertEqual(response.code, 204, response.body)
         response = self.get(url)
         self.assertEqual(response.code, 200)
         w = json_loads(response.body)
         self.assertEqual(w['completed'], False)        
         self.assertEqual(w['times'], 0)
         self.assertEqual(w['position'], 200)        
+        self.assertTrue(w['updated_at'] is not None)
+
+        response = self.put(url, {'position': 201})
+        self.assertEqual(response.code, 204, response.body)
+        response = self.get(url)
+        self.assertEqual(response.code, 200)
+        w = json_loads(response.body)
+        self.assertEqual(w['completed'], False)        
+        self.assertEqual(w['times'], 0)
+        self.assertEqual(w['position'], 201)        
         self.assertTrue(w['updated_at'] is not None)
 
 if __name__ == '__main__':

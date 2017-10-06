@@ -137,6 +137,28 @@ def play_server():
     import seplis.play.app
     seplis.play.app.main()
 
+@cli.command()
+def dev_server():
+    logger.set_logger('dev_server', to_sentry=False)
+    import seplis.dev_server
+    seplis.dev_server.main()
+
+@cli.command()
+def build_release():
+    import subprocess, os
+    logger.set_logger('build_release', to_sentry=False)
+    base_path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+    )
+    node_bin = os.path.join(base_path, 'node_modules/.bin')
+    subprocess.call([
+        node_bin+'/webpack', 
+        '-p', 
+        '--progress',
+        '--config',
+        os.path.join(base_path, 'webpack.config.js'),
+    ])
+
 def main():
     cli()
 

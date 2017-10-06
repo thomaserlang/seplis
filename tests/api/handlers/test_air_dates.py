@@ -72,10 +72,7 @@ class Test_air_dates(Testbase):
         })
         self.assertEqual(response.code, 201)
         show_2 = utils.json_loads(response.body) 
-        response = self.get('http://{}/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
-        self.assertEqual(response.code, 200)
+        self.refresh_es()
 
         # The user must be a fan of the show before they should show up
         # in the user's air dates calender.
@@ -84,19 +81,29 @@ class Test_air_dates(Testbase):
         airdates = utils.json_loads(response.body)
         self.assertEqual(len(airdates), 0)
 
-        # Let's become a fan of the shows.
-        for show_id in [show_1['id'], show_2['id']]:
-            response = self.put('/1/users/{}/fan-of/{}'.format(self.current_user.id, show_id), {
-                'user_id': self.current_user.id,
-            })        
-            self.assertEqual(response.code, 200, response.body)
+        # Become fan of the first show
+        response = self.put('/1/users/{}/fan-of/{}'.format(self.current_user.id, show_1['id'])) 
+        self.assertEqual(response.code, 204, response.body)
+
+        # Check air dates only from the show the user is a fan of
+        self.refresh_es()
+        response = self.get('/1/users/{}/air-dates'.format(self.current_user.id))
+        self.assertEqual(response.code, 200, response.body)
+        airdates = utils.json_loads(response.body)
+        self.assertEqual(len(airdates), 1, airdates)
+
+        self.assertEqual(airdates[0]['air_date'], episode_airdates[0])
+        self.assertEqual(airdates[0]['shows'][0]['id'], show_1['id'])
+        self.assertEqual(airdates[0]['shows'][0]['episodes'][0]['number'], 1)
+
+        # Become fan of the second show
+        response = self.put('/1/users/{}/fan-of/{}'.format(self.current_user.id, show_2['id'])) 
+        self.assertEqual(response.code, 204, response.body)
 
         # Let's get our air dates calendar.        
-        self.get('http://{}/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
-        response = self.get('/1/users/{}/air-dates?per_page=5'.format(self.current_user.id))
-        self.assertEqual(response.code, 200)
+        self.refresh_es()
+        response = self.get('/1/users/{}/air-dates'.format(self.current_user.id))
+        self.assertEqual(response.code, 200, response.body)
         airdates = utils.json_loads(response.body)
         self.assertEqual(len(airdates), 2, airdates)
 

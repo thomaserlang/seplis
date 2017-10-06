@@ -1,23 +1,30 @@
 import os.path
 import seplis
+import asyncio
 import tornado.web
 import tornado.httpserver
 import tornado.ioloop
+import tornado.platform.asyncio
 import seplis.api.handlers.base
 import seplis.api.handlers.show
 import seplis.api.handlers.user
 import seplis.api.handlers.app
-import seplis.api.handlers.tag
 import seplis.api.handlers.episode
 import seplis.api.handlers.image
 import seplis.api.handlers.play
-import seplis.api.handlers.shows_recently_watched
+import seplis.api.handlers.shows_watched
 import seplis.api.handlers.air_dates
 import seplis.api.handlers.episode_watched
 import seplis.api.handlers.episode_watching
-import seplis.api.handlers.next_to_watch
-import seplis.api.handlers.etw
+import seplis.api.handlers.episode_to_watch
+import seplis.api.handlers.episode_last_watched
 import seplis.api.handlers.user_show_subtitle_lang
+import seplis.api.handlers.user_fan_of
+import seplis.api.handlers.shows_countdown
+import seplis.api.handlers.shows_recently_aired
+import seplis.api.handlers.shows_etw
+import seplis.api.handlers.user_shows_stats
+import seplis.api.handlers.user_show_stats
 from seplis.api import constants
 from seplis.logger import logger
 from tornado.options import define, options
@@ -64,6 +71,10 @@ class Application(tornado.web.Application):
                 seplis.api.handlers.show.Multi_handler
             ),
             URLSpec(
+                r'/1/shows/([0-9]+)/user-stats', 
+                seplis.api.handlers.user_show_stats.Handler
+            ),
+            URLSpec(
                 r'/1/shows/([0-9]+)/episodes', 
                 seplis.api.handlers.episode.Handler
             ),
@@ -95,15 +106,6 @@ class Application(tornado.web.Application):
             ),
 
             URLSpec(
-                r'/1/shows/([0-9]+)/fans', 
-                seplis.api.handlers.show.Fans_handler
-            ),
-            URLSpec(
-                r'/1/shows/([0-9]+)/fans/([0-9]+)', 
-                seplis.api.handlers.show.Fans_handler
-            ),
-
-            URLSpec(
                 r'/1/users', 
                 seplis.api.handlers.user.Handler
             ),
@@ -123,15 +125,15 @@ class Application(tornado.web.Application):
         
             URLSpec(
                 r'/1/users/([0-9]+)/fan-of', 
-                seplis.api.handlers.show.Fan_of_handler
+                seplis.api.handlers.user_fan_of.Handler
             ),
             URLSpec(
                 r'/1/users/([0-9]+)/fan-of/([0-9]+)', 
-                seplis.api.handlers.show.Fan_of_handler
+                seplis.api.handlers.user_fan_of.Handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/stats', 
-                seplis.api.handlers.user.Stats_handler
+                r'/1/users/([0-9]+)/show-stats',
+                seplis.api.handlers.user_shows_stats.Handler
             ),
 
             URLSpec(
@@ -140,50 +142,43 @@ class Application(tornado.web.Application):
             ),
 
             URLSpec(
-                r'/1/users/([0-9]+)/shows-recently-watched', 
-                seplis.api.handlers.shows_recently_watched.Handler,
+                r'/1/users/([0-9]+)/shows-watched', 
+                seplis.api.handlers.shows_watched.Handler,
+            ),      
+
+            URLSpec(
+                r'/1/users/([0-9]+)/shows-recently-aired', 
+                seplis.api.handlers.shows_recently_aired.Handler,
+            ),           
+
+            URLSpec(
+                r'/1/users/([0-9]+)/shows-countdown', 
+                seplis.api.handlers.shows_countdown.Handler
+            ),
+            URLSpec(
+                r'/1/users/([0-9]+)/shows-etw', 
+                seplis.api.handlers.shows_etw.Handler
             ),
         
             URLSpec(
-                r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)', 
+                r'/1/shows/([0-9]+)/episodes/([0-9]+)/watched', 
                 seplis.api.handlers.episode_watched.Handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/watched/shows/([0-9]+)/episodes/([0-9]+)-([0-9]+)', 
+                r'/1/shows/([0-9]+)/episodes/([0-9]+)-([0-9]+)/watched', 
                 seplis.api.handlers.episode_watched.Range_handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/watching/shows/([0-9]+)/episodes/([0-9]+)', 
+                r'/1/shows/([0-9]+)/episodes/([0-9]+)/watching', 
                 seplis.api.handlers.episode_watching.Handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/next-to-watch/shows/([0-9]+)', 
-                seplis.api.handlers.next_to_watch.Handler
+                r'/1/shows/([0-9]+)/episodes/to-watch', 
+                seplis.api.handlers.episode_to_watch.Handler
             ),
             URLSpec(
-                r'/1/users/([0-9]+)/etw', 
-                seplis.api.handlers.etw.Handler
-            ),
-
-            URLSpec(
-                r'/1/users/([0-9]+)/tags', 
-                seplis.api.handlers.tag.User_types_handler
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/shows/([0-9]+)', 
-                seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/([0-9]+)/shows/([0-9]+)', 
-                seplis.api.handlers.tag.Relation_handler, {'type_': 'shows'}
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/shows', 
-                seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}
-            ),
-            URLSpec(
-                r'/1/users/([0-9]+)/tags/([0-9]+)/shows', 
-                seplis.api.handlers.tag.Relations_handler, {'type_': 'shows'}
+                r'/1/shows/([0-9]+)/episodes/last-watched', 
+                seplis.api.handlers.episode_last_watched.Handler
             ),
 
             URLSpec(
@@ -242,9 +237,14 @@ class Application(tornado.web.Application):
 
 def main():
     logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
+
+    tornado.platform.asyncio.AsyncIOMainLoop().install()
+    ioloop = asyncio.get_event_loop()
+
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(seplis.config['api']['port'])
-    tornado.ioloop.IOLoop.instance().start()
+
+    ioloop.run_forever()
 
 if __name__ == '__main__':
     import seplis

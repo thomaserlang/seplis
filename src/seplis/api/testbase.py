@@ -1,12 +1,12 @@
 import os
 import redis
+import logging
 from seplis import config, config_load, utils
 from seplis.utils import json_dumps, json_loads
 from urllib.parse import urlencode
 from tornado.httpclient import HTTPRequest
 from tornado.testing import AsyncHTTPTestCase
-from seplis.api.connections import database, setup_event_listeners
-from seplis.logger import logger
+from seplis.api.connections import database
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from seplis.api.app import Application
@@ -26,14 +26,14 @@ class Testbase(AsyncHTTPTestCase):
         super(Testbase, self).setUp()
         config_load()
         config['logging']['path'] = None
-        logger.set_logger('test-api.log')
+        logger = logging.getLogger('raven')
+        logger.setLevel(logging.ERROR)
         # recreate the database connection
         # with params from the loaded config.
         database.__init__()
         connection = database.engine.connect()
         self.trans = connection.begin()
-        database.session = sessionmaker(bind=connection)
-        setup_event_listeners(database.session)
+        database.setup_sqlalchemy_session(connection)
         database.redis.flushdb()
         elasticcreate.create_indices()
 

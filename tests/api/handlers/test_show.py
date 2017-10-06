@@ -295,7 +295,7 @@ class test_show(Testbase):
                 'episodes': 'seplis_old',
             }
         })
-        self.assertEqual(response.code, 400, response.body)
+        self.assertEqual(response.code, 201, response.body)
 
     def test_episode_type(self):
         show_id = self.new_show()
@@ -338,6 +338,41 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)
         self.assertEqual(len(episodes), 1, response.body)
+
+
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 0',
+                    'season': 0,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 400, response.body)
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 0',
+                    'episode': 0,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 400, response.body)
+
+        # Allow season and episode None
+        response = self.patch('/1/shows/{}'.format(show_id), {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 0',
+                    'season': None,
+                    'episode': None,
+                }
+            ]
+        })
+        self.assertEqual(response.code, 200, response.body)
 
     def test_search(self):
         show_id1 = self.new_show()
@@ -508,115 +543,6 @@ class test_show(Testbase):
         self.assertEqual(response.code, 200)
         stats = utils.json_loads(response.body)
         self.assertEqual(stats['fan_of'], expected_count)
-
-    def test_fan_and_watching(self):        
-        self.login(constants.LEVEL_EDIT_SHOW)
-        response = self.post('/1/shows', {
-            'title': 'test show',
-            'status': 1,
-            'episodes': [
-                {
-                    'number': 1,
-                }
-            ]
-        })
-        self.assertEqual(response.code, 201)
-        show = utils.json_loads(response.body)
-        show_id = show['id']
-        self.get('http://{}/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
-
-        self._test_fan_count(0)
-
-        # Let's become a fan of the show.
-        # We run it twice to check for duplication bug.
-        for i in [1,2]:
-            response = self.put('/1/shows/{}/fans/{}'.format(show_id, self.current_user.id))
-            self.assertEqual(response.code, 200, response.body)
-            response = self.get('/1/shows/{}?append=is_fan'.format(show_id))
-            self.assertEqual(response.code, 200)
-            show = utils.json_loads(response.body)
-            self.assertEqual(show['fans'], 1)
-            self.assertEqual(show['is_fan'], True)
-
-        self._test_fan_count(1)
-
-        # Let's test that we haven't overwritten any essential data.
-        response = self.get('/1/shows/{}'.format(show_id))
-        self.assertEqual(response.code, 200)
-        show = utils.json_loads(response.body)
-        self.assertTrue('title' in show)
-        self.assertEqual(show['title'], 'test show')
-
-        # Let's check that we can find the user in the shows fan
-        # list.
-        response = self.get('/1/shows/{}/fans'.format(show_id))
-        self.assertEqual(response.code, 200, response.body)
-        fans = utils.json_loads(response.body)
-        self.assertEqual(fans[0]['id'], self.current_user.id)
-
-        # Let's check that we can find the show in the users
-        # fan of list.
-        response = self.get('/1/users/{}/fan-of?append=user_watching'.format(self.current_user.id))
-        self.assertEqual(response.code, 200, response.body)
-        fan_of = utils.json_loads(response.body)
-        self.assertEqual(fan_of[0]['id'], show_id)
-        self.assertEqual(fan_of[0]['user_watching'], None)
-
-        # When searching for fans we should be able to append the is_fan field.
-        response = self.get('/1/shows?q=id:{}&append=is_fan'.format(show_id))
-        self.assertEqual(response.code, 200, response.body)
-        shows = utils.json_loads(response.body)
-        self.assertEqual(shows[0]['id'], show_id)
-        self.assertEqual(shows[0]['is_fan'], True)
-
-        # Let's watch a part of an episode and see if it shows up
-        # in the user_watching field.
-        response = self.put('/1/users/{}/watching/shows/{}/episodes/{}'.format(
-            self.current_user.id,
-            show_id,
-            1
-        ), {
-            'position': 120,
-        })
-        self.assertEqual(response.code, 200)        
-        response = self.get('/1/users/{}/fan-of?append=user_watching'.format(self.current_user.id))
-        self.assertEqual(response.code, 200, response.body)
-        fan_of = utils.json_loads(response.body)
-        self.assertEqual(fan_of[0]['id'], show_id)
-        self.assertTrue(fan_of[0]['user_watching'] != None)
-        self.assertEqual(fan_of[0]['user_watching']['position'], 120)
-        self.assertEqual(fan_of[0]['user_watching']['episode']['number'], 1)
-
-        # When searching for shows we should be able to append the user_watching field.
-        response = self.get('/1/shows?q=id:{}&append=user_watching'.format(show_id))
-        self.assertEqual(response.code, 200, response.body)
-        shows = utils.json_loads(response.body)
-        self.assertEqual(shows[0]['id'], show_id)
-        self.assertEqual(shows[0]['user_watching']['episode']['number'], 1)
-
-        # Now unfan the show.
-        # Run it twice to check for duplication bug.
-        for i in [1,2]:
-            response = self.delete('/1/shows/{}/fans/{}'.format(
-                show_id,
-                self.current_user.id
-            ))
-            self.assertEqual(response.code, 200, response.body)        
-            response = self.get('/1/shows/{}'.format(show_id))
-            self.assertEqual(response.code, 200)
-            show = utils.json_loads(response.body)
-            self.assertEqual(show['fans'], 0)
-            
-        self._test_fan_count(0)
-
-        # Let's test that we haven't overwritten any essential data.
-        response = self.get('/1/shows/{}'.format(show_id))
-        self.assertEqual(response.code, 200)
-        show = utils.json_loads(response.body)
-        self.assertTrue('title' in show)
-        self.assertEqual(show['title'], 'test show')
 
     def test_add_image(self):
         self.login(constants.LEVEL_EDIT_SHOW)

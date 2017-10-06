@@ -22,8 +22,8 @@ class asyncclient_class(MagicMock):
                         "stored": True, 
                         "hash": "17fb3ee9dac3969819af794c1fd11fbd0e02ca3d0e86b9f0c0365f13fa27d225",
                         "type": "image",
-                        "width": 100,
-                        "height": 150,
+                        "width": 680,
+                        "height": 1000,
                     }               
                 ])
             )
@@ -81,8 +81,8 @@ class test_show_image(Testbase):
         self.assertEqual(response.code, 200)
         image = utils.json_loads(response.body)
         self.assertEqual(image['hash'], '17fb3ee9dac3969819af794c1fd11fbd0e02ca3d0e86b9f0c0365f13fa27d225')
-        self.assertEqual(image['width'], 100)
-        self.assertEqual(image['height'], 150)
+        self.assertEqual(image['width'], 680)
+        self.assertEqual(image['height'], 1000)
 
         # update the source
         response = self.put('/1/shows/{}/images/{}'.format(show['id'], image['id']), {

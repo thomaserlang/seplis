@@ -37,7 +37,7 @@ class Handler(base.Handler):
             raise exceptions.Not_found('the episode was not found')
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
-            result['_source']['user_watched'] = models.Episode_watched.get(
+            result['_source']['user_watched'] = models.Episode_watched.cache_get(
                 user_id=self.current_user.id,
                 show_id=show_id,
                 episode_number=number,
@@ -53,19 +53,19 @@ class Handler(base.Handler):
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', 'number:asc')
         body = {
-            'filter': {
-                'term': {
-                    'show_id': show_id,
+            'query': {
+                'bool': {
+                    'must': [
+                        {'term': {'show_id': show_id}}
+                    ]
                 }
             }
         }
         if q:
-            body.update({
-                'query': {
-                    'query_string': {
-                        'default_field': 'title',
-                        'query': q,
-                    }
+            body['query']['bool']['must'].append({
+                'query_string': {
+                    'default_field': 'title',
+                    'query': q,
                 }
             })
         result = yield self.es(
@@ -85,7 +85,7 @@ class Handler(base.Handler):
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
             numbers = list(episodes.keys())
-            watched = models.Episode_watched.get(
+            watched = models.Episode_watched.cache_get(
                 user_id=self.current_user.id,
                 show_id=show_id,
                 episode_number=numbers,

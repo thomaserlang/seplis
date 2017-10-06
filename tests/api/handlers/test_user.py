@@ -58,9 +58,6 @@ class test_user(Testbase):
         user2 = utils.json_loads(response.body)
         self.assertEqual(user2['name'], 'test___')
         self.assertFalse('email' in user2)
-        user.pop('email')
-        user.pop('level')
-        self.assertEqual(user2, user)
 
         # check that we can get the current user.
         # when we retrieve our own user name the email 
@@ -231,7 +228,7 @@ class Test_change_password(Testbase):
             'password': 'password',
             'new_password': 'password123',
         })
-        self.assertEqual(response.code, 200, response.body)
+        self.assertEqual(response.code, 204, response.body)
 
         # Test that our session has not expired
         response = self.get('/1/users/current')
@@ -257,7 +254,7 @@ class Test_change_password(Testbase):
             'password': 'password123',
             'new_password': 'password321',
         })
-        self.assertEqual(response.code, 200, response.body)
+        self.assertEqual(response.code, 204, response.body)
         with new_session() as session:
             tokens = session.query(models.Token).filter(
                 models.Token.user_id == self.current_user.id

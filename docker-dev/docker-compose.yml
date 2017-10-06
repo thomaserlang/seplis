@@ -1,0 +1,23 @@
+version: '2'
+services:
+  elasticsearch:
+    image: "elasticsearch:5"
+    ports:
+      - "9200:9200"
+  redis:
+    image: "redis:3-alpine"
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+  mariadb:
+    image: "mariadb:latest"
+    command: [mysqld, --character-set-server=utf8mb4, --collation-server=utf8mb4_unicode_ci]
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=seplis
+    ports:
+      - "3306:3306"
+  storitch:
+    image: "thomaserlang/storitch:latest"
+    ports:
+      - "3000:80"

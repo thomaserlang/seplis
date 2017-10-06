@@ -1,0 +1,40 @@
+.loader {
+    margin: 75px auto;
+    border-top: 12px solid rgba(255, 255, 255, 0.4);
+    border-right: 12px solid rgba(255, 255, 255, 0.4);
+    border-bottom: 12px solid rgba(255, 255, 255, 0.4);
+    border-left: 12px solid #007CE8;
+    transform: translateZ(0);
+    animation: load8 1.5s infinite linear;
+}
+.loader-hcenter {
+    position: absolute;
+    z-index: 2147483647;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+.loader,
+.loader:after {
+    border-radius: 50%;
+    width: 130px;
+    height: 130px;
+}
+@-webkit-keyframes load8 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+@keyframes load8 {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

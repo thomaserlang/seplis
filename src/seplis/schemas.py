@@ -1,7 +1,7 @@
 import re
 import aniso8601
 import good
-from datetime import datetime
+from datetime import datetime, timedelta
 from dateutil import parser
 from seplis.api import constants
 
@@ -13,7 +13,7 @@ def validate(schema, d, *arg, **args):
 def iso8601():
     def f(v):    
         try:
-            return parser.parse(v)
+            return aniso8601.parse_datetime(v)
         except:
             raise good.Invalid('invalid iso 8601 datetime {}'.format(v))
     return f
@@ -60,17 +60,18 @@ Description_schema = good.Schema({
     'url':  good.Maybe(str),
 }, default_keys=good.Optional)
 _Episode_schema = {
-    'title': good.Any(str, None),
-    good.Required('number'): good.All(int, good.Range(min=1)),
-    good.Optional('season'): good.Maybe(int),
-    good.Optional('episode'): good.Maybe(int),
+    'title': good.Maybe(str),
+    good.Required('number'): good.All(good.Coerce(int), good.Range(min=1)),
+    good.Optional('season'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
+    good.Optional('episode'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
     'air_date': good.Maybe(date_()),
-    'description': good.Maybe(Description_schema),
-    'runtime': good.Maybe(int),
+    'air_time': good.Maybe(time_()),
+    'description': good.Any(None, Description_schema),
+    'runtime': good.Maybe(good.Coerce(int)),
 }
 Episode_schema = good.Schema(_Episode_schema, default_keys=good.Optional)
 External_schema = good.Schema({
-    good.All(good.Length(min=1, max=45)):good.Maybe(good.All(str, good.Length(min=1, max=45)))
+    good.All(good.Length(min=1, max=45)):good.Any(None, good.All(good.Coerce(str), good.Length(min=1, max=45)))
 }, default_keys=good.Optional)
 Importer_schema = good.Schema(
     {key: good.Maybe(good.All(str, good.Length(min=1, max=45))) \
@@ -83,14 +84,14 @@ _Show_schema = {
     'premiered': good.Maybe(date_()),
     'ended': good.Maybe(date_()),
     good.Optional('episodes'): [Episode_schema],
-    'externals': good.Maybe(External_schema),
-    'importers': good.Maybe(Importer_schema),
-    'status': int,
-    'runtime': good.Maybe(int),
+    'externals': good.Any(None, External_schema),
+    'importers': good.Any(None, Importer_schema),
+    'status': good.Coerce(int),
+    'runtime': good.Maybe(good.Coerce(int)),
     'genres': [str],
     'alternative_titles': [str],
-    'poster_image_id': good.Maybe(int),
-    'episode_type': good.All(int, SHOW_EPISODE_TYPE()),   
+    'poster_image_id': good.Maybe(good.Coerce(int)),
+    'episode_type': good.All(good.Coerce(int), SHOW_EPISODE_TYPE()),   
 }
 Show_schema = good.Schema(_Show_schema, default_keys=good.Optional)
 
@@ -120,10 +121,6 @@ Token_type_password = good.Schema({
     'email': str,
     'password': str,
     'client_id': str,
-})
-
-User_tag_relation_schema = good.Schema({
-    'name': good.All(str, good.Length(min=1, max=50)),
 })
 
 _Image = {

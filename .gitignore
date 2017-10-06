@@ -44,6 +44,8 @@ coverage.xml
 *.sublime-project
 *.sublime-workspace
 *.db
+node_modules/
+!src/seplis/web/static/dist/
 
 # Rope
 .ropeproject
@@ -54,3 +56,6 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+*.swp
+*.orig

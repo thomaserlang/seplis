@@ -17,13 +17,12 @@ class Test_episode_watched(Testbase):
         })
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
-        url = '/1/users/{}/watched/shows/{}/episodes/{}'.format(
-            self.current_user.id,
+        url = '/1/shows/{}/episodes/{}/watched'.format(
             show['id'],
             1
         )
         response = self.get(url)
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 204)
 
         response = self.put(
             url, 

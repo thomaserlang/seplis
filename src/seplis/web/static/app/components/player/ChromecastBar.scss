@@ -1,0 +1,57 @@
+#castbar {    
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    z-index: 1030;
+    width: 100%;
+    background-color: #000;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-top:1px solid #ccc;
+
+    .text {
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .controls {
+        display: flex;        
+        user-select: none;
+        
+        .control {
+            font-size: 30px;
+            cursor: pointer;
+            min-width: 50px;
+
+            &:empty{
+                display: none;
+            }
+
+            .fa {
+                width: 50px;
+                height: 45px;
+                line-height: 45px;
+                text-align: center;
+            }
+
+            a {
+                color: #fff;
+            }
+
+            a:hover {
+                text-decoration: none;
+            }
+        }
+        .control-text {
+            font-size: 14px;
+            height: 45px;
+            line-height: 45px;
+            margin-right: 10px;
+            overflow: hidden;
+        }
+    }
+}
+
+body {
+    margin-bottom: 100px;
+}

@@ -1,7 +1,8 @@
 import requests
 import logging
 import re
-import time
+import time, aniso8601
+from dateutil import tz
 from seplis.api import constants
 from dateutil import parser
 from .base import Show_importer_base, register_importer
@@ -31,7 +32,7 @@ class Tvmaze(Show_importer_base):
                 'title': 'TVmaze',
                 'url': show['url'],
             }
-        externals = {key: str(show['externals'][key]) for key in show['externals']}
+        externals = {key: str(show['externals'][key]) for key in show['externals'] if show['externals'][key]}
         externals[self.external_name] = str(show['id'])
         return {
             'title': show['name'],
@@ -41,6 +42,7 @@ class Tvmaze(Show_importer_base):
             'status': self.parse_status(show['status']),
             'runtime': show['runtime'],
             'genres': show['genres'],
+            'premiered': show['premiered'],
         }
 
     @staticmethod
@@ -74,13 +76,24 @@ class Tvmaze(Show_importer_base):
             return
         data = r.json()
         episodes = []
-        for i, episode in enumerate(data):
+        i = 0
+        for episode in data:
+            if episode['season'] == 0:
+                continue
+            if episode['number'] == 0:
+                continue
+            i += 1
+            if episode['airstamp']:
+                episode['airstamp'] = aniso8601.parse_datetime(episode['airstamp'])
+                if episode['airstamp'].tzinfo:
+                    episode['airstamp'] = episode['airstamp'].astimezone(tz.tzutc())
             episodes.append({
-                'number': i+1,
+                'number': i,
                 'title': episode['name'],
                 'season': episode['season'],
                 'episode': episode['number'],
-                'air_date': episode['airdate'] if episode['airdate'] else None,
+                'air_date': episode['airstamp'].date().isoformat() if episode['airstamp'] else None,
+                'air_time': episode['airstamp'].time().isoformat() if episode['airstamp'] else None,
                 'description': None if not episode['summary'] else {
                     'text': re.sub('<[^>]*>', '', episode['summary']),
                     'title': 'TVmaze',

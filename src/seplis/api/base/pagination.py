@@ -41,7 +41,7 @@ class Pagination(object):
     def links_header_format(self, uri, arguments):
         return ', '.join(['<{}>; rel="{}"'.format(urn, rel) for rel, urn in self.links(uri, arguments).items()])
 
-    def to_dict(self):
+    def serialize(self):
         return self.__dict__
 
     @classmethod

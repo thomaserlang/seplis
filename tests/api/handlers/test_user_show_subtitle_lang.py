@@ -14,7 +14,7 @@ class Test_handler(Testbase):
             show_id
         )
         response = self.get(url)
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 204)
 
         response = self.put(url, {
             'subtitle_lang': 'eng',

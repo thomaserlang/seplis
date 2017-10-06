@@ -1,8 +1,9 @@
 import logging
-from seplis import schemas, utils
+from seplis import schemas, tasks
 from seplis.api import constants, exceptions, models
-from seplis.api.handlers import base
-from seplis.api.decorators import authenticated, new_session, auto_session
+from seplis.api.handlers import base, utils as handler_utils
+from seplis.api.decorators import authenticated, new_session, auto_session, \
+    run_on_executor
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
 from tornado.httpclient import HTTPError
@@ -19,11 +20,11 @@ class Handler(base.Handler):
     @gen.coroutine
     def get(self, show_id=None):
         if show_id:
-            shows = yield self.get_show(show_id)
-            self.write_object(shows)
-        else:
-            show = yield self.get_shows()
+            show = yield self.get_show(show_id)
             self.write_object(show)
+        else:
+            shows = yield self.get_shows()
+            self.write_object(shows)
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine    
@@ -34,6 +35,11 @@ class Handler(base.Handler):
             )
         show = yield self._post()
         self.set_status(201)
+        database.queue.enqueue(
+            tasks.update_show,
+            self.access_token,
+            int(show['id']),
+        )
         self.write_object(show) 
 
     @concurrent.run_on_executor
@@ -146,23 +152,21 @@ class Handler(base.Handler):
                 overwrite=False,
             )
 
-    @gen.coroutine
-    def get_show(self, show_id):
+    async def get_show(self, show_id):
         append_fields = self.get_append_fields(self.allowed_append_fields)
-        result = yield self.es('/shows/show/{}'.format(show_id))                
+        result = await self.es('/shows/show/{}'.format(show_id))                
         if not result['found']:
-            raise exceptions.Show_unknown()
+            raise exceptions.Not_found('unknown show')
         show = result['_source']
         if 'is_fan' in append_fields:
-            self.append_is_fan([show])
+            await self.append_is_fan([show])
         if 'user_watching' in append_fields:
-            yield self.append_user_watching([show])
+            await self.append_user_watching([show])
         if show['poster_image']:
             self.image_wrapper(result['_source']['poster_image'])
         return show
 
-    @gen.coroutine
-    def get_shows(self, show_ids=None):
+    async def get_shows(self, show_ids=None):
         append_fields = self.get_append_fields(self.allowed_append_fields)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
@@ -185,8 +189,8 @@ class Handler(base.Handler):
                 'ids':{
                     'values': show_ids,
                 }
-            }        
-        result = yield self.es(
+            }
+        result = await self.es(
             '/shows/show/_search',
             body=body,
             query=req,
@@ -198,9 +202,9 @@ class Handler(base.Handler):
                 self.image_wrapper(show['_source']['poster_image'])
         shows = list(shows.values())
         if 'is_fan' in append_fields:
-            self.append_is_fan(shows)
+            await self.append_is_fan(shows)
         if 'user_watching' in append_fields:
-            yield self.append_user_watching(shows)
+            await self.append_user_watching(shows)
         p = Pagination(
             page=page,
             per_page=per_page,
@@ -269,39 +273,26 @@ class Handler(base.Handler):
             }
         }
 
+    @run_on_executor
     def append_is_fan(self, shows, user_id=None):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        is_fan = models.Show_fan.is_fan(
-            user_id=user_id,
-            show_id=[show['id'] for show in shows],
-        )
-        for f, show in zip(is_fan, shows):
-            show['is_fan'] = f
+        with new_session() as session:
+            rows = session.query(models.Show_fan.show_id).filter(
+                models.Show_fan.user_id == user_id,
+            ).all()
+            if not rows:
+                return
+            show_ids = set([r.show_id for r in rows])
+        for show in shows:
+            show['is_fan'] = show['id'] in show_ids
 
-    @gen.coroutine
-    def append_user_watching(self, shows, user_id=None):
-        show_ids = [show['id'] for show in shows]
+    async def append_user_watching(self, shows, user_id=None):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
-        watching = models.Episode_watched.show_get(
-            user_id=user_id,
-            show_id=show_ids,
-        )
-        episode_ids = []
-        # get the episodes that the user is watching
-        episode_ids = ['{}-{}'.format(id_, w['number'] if w else 0)\
-            for id_, w in zip(show_ids, watching)]
-        episodes = yield self.get_episodes(episode_ids)
-        for w, show, episode in zip(watching, shows, episodes):
-            if w:
-                w['episode'] = episode
-                show['user_watching'] = w
-            else:
-                show['user_watching'] = None
-
+        await handler_utils.show.append_user_watching(user_id, shows)
 
 class Multi_handler(base.Handler):
 
@@ -337,106 +328,12 @@ class External_handler(Handler):
     def delete(self, title, value): 
         raise HTTPError(405)     
 
-
-        
-class Fan_of_handler(Handler):
-
-    @gen.coroutine
-    def get(self, user_id):
-        show_ids = database.redis.smembers(models.Show_fan._user_cache_name.format(
-            user_id
-        ))
-        if show_ids:
-            shows = yield self.get_shows(show_ids)
-        else:
-            shows = Pagination(
-                page=int(self.get_argument('page', 1)),
-                per_page=int(self.get_argument('per_page', constants.PER_PAGE)),
-                total=0,
-                records=[],
-            )
-        self.write_object(
-            shows
-        )
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def put(self, user_id, show_id):
-        yield self._put(user_id, show_id)
-
-    @concurrent.run_on_executor
-    def _put(self, user_id, show_id):
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        with new_session() as session:
-            show = session.query(models.Show).get(show_id)
-            if not show:
-                raise exceptions.Show_unknown()
-            show.become_fan(
-                user_id,
-            )
-            session.commit()
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def delete(self, user_id, show_id):
-        yield self._delete(user_id, user_id)
-
-    @concurrent.run_on_executor
-    def _delete(self, user_id, show_id):            
-        if int(user_id) != self.current_user.id:
-            self.check_edit_another_user_right()
-        with new_session() as session:
-            show = session.query(models.Show).get(show_id)
-            if not show:
-                raise exceptions.Show_unknown()
-            show.unfan(
-                user_id
-            )
-            session.commit()
-
-    def post(self):
-        raise HTTPError(405)
-
-class Fans_handler(Fan_of_handler):
-
-    def get(self, show_id):
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
-        pipe = database.redis.pipeline()
-        name = models.Show_fan._show_cache_name.format(show_id)
-        pipe.scard(name)
-        pipe.sort(
-            name=name,
-            start=(page - 1) * per_page,
-            num=per_page,
-            by='nosort',
-        )
-        total_count, user_ids = pipe.execute()
-        self.write_object(Pagination(
-            page=page,
-            per_page=per_page,
-            total=total_count,
-            records=models.User.get(user_ids),
-        ))
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def put(self, show_id, user_id):        
-        yield self._put(user_id=user_id, show_id=show_id)
-
-    @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def delete(self, show_id, user_id):
-        yield self._delete(user_id=user_id, show_id=show_id)
-
 class Update_handler(base.Handler):
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     def post(self, show_id):
-        from seplis.tasks.update_show import update_show
         job = database.queue.enqueue(
-            update_show, 
+            tasks.update_show,
             self.access_token,
             int(show_id),
         )

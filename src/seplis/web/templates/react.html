@@ -1,0 +1,10 @@
+{% extends base.html %}
+{% block body %}
+    <div id="main"></div>
+    <script>
+        ReactDOM.render(
+          seplis.Routes.default,
+          document.getElementById('main')
+        );
+    </script>
+{% end %}
