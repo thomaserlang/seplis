@@ -295,7 +295,7 @@ def _upload_image(show_id, image):
         client.delete('/shows/{}/images/{}'.format(show_id, image['id']))
         data = r.json()
         if data['code'] in (2004, 2101):
-            logging.notice(
+            logging.warning(
                 data['message']+'\n\n'+image['source_url']
             )
             return False
