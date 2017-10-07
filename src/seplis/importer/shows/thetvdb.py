@@ -78,11 +78,12 @@ class Thetvdb(Show_importer_base):
             if r.status_code == 200:
                 data = r.json()
                 if data['data']:
-                    episodes.extend(self.parse_episodes(data['data']))
+                    episodes.extend(
+                        self.parse_episodes(data['data'], len(episodes))
+                    )
             else:
-                print(r.status_code)
                 break
-        return episodes
+        return episodes if episodes else None
 
     def images(self, show_id):        
         r = requests.get(
@@ -129,7 +130,7 @@ class Thetvdb(Show_importer_base):
             return 1
         return 1
 
-    def parse_episodes(self, episodes):
+    def parse_episodes(self, episodes, ep_count):
         _episodes = []
         for episode in episodes:
             try:
@@ -137,8 +138,8 @@ class Thetvdb(Show_importer_base):
                     continue
                 if episode['airedEpisodeNumber'] == 0:
                     continue
-                if not episode['absoluteNumber']:
-                    continue
+                ep_count += 1
+                episode['absoluteNumber'] = ep_count
                 _episodes.append(self.parse_episode(episode))
             except ValueError as e:
                 logging.exception('Parsing episode "{}" faild with error: {}'.format(date))
