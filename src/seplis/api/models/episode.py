@@ -65,12 +65,6 @@ class Episode(Base):
         self.to_elasticsearch()
 
     def after_delete(self):
-        ews = self.session.query(Episode_watched).filter(
-            Episode_watched.show_id == self.show_id,
-            Episode_watched.episode_number == self.number,
-        ).all()
-        for ew in ews:
-            self.session.delete(ew) 
         self.session.es_bulk.append({
             '_op_type': 'delete',
             '_index': 'episodes',
