@@ -96,7 +96,7 @@ def decode_play_id(play_id):
         max_age_days=0.3,
     )
     if not data:
-        raise HTTPError(400, 'Play id invalid')
+        raise tornado.web.HTTPError(400, 'Play id invalid')
     return utils.json_loads(data)
 
 device_settings = {
