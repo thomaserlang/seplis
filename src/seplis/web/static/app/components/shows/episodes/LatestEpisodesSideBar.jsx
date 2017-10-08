@@ -70,7 +70,6 @@ class LatestEpisodesSideBar extends React.Component {
             <div className="latest-episodes-side-bar">
                 {this.state.episodes.map((item, i) => (
                     <div key={item.number} className="item">
-                        {i == 0?<p className="next-episode">Next Episode</p>: ''}
                         <p>{item.title}</p>
                         <p>{this.renderEpisodeNumber(item)}</p>
                         <p>{item.air_date} {this.renderCountdown(item)}</p>

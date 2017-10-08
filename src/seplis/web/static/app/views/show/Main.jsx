@@ -22,7 +22,7 @@ class Main extends React.Component {
         return (
             <div className="col-12 col-lg-4 col-margin">
                 <h4 className="header">
-                    Air dates
+                    Next to air
                 </h4>
                 <LatestEpisodesSideBar
                     showId={parseInt(this.props.show.id)}
