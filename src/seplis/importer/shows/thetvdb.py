@@ -79,13 +79,13 @@ class Thetvdb(Show_importer_base):
                 data = r.json()
                 if data['data']:
                     episodes.extend(
-                        self.parse_episodes(
-                            data['data'], 
-                            len(episodes) if not data['data'][0]['absoluteNumber'] else None
-                        )
+                        self.parse_episodes(data['data'])
                     )
             else:
                 break
+        episodes = sorted(episodes, key=lambda k: (k['season'], k['episode']))
+        for i, e in enumerate(episodes):
+            e['number'] = i + 1
         return episodes if episodes else None
 
     def images(self, show_id):        
@@ -133,18 +133,13 @@ class Thetvdb(Show_importer_base):
             return 1
         return 1
 
-    def parse_episodes(self, episodes, ep_count):
+    def parse_episodes(self, episodes):
         _episodes = []
         for episode in episodes:
             try:
                 if episode['airedSeason'] == 0:
                     continue
                 if episode['airedEpisodeNumber'] == 0:
-                    continue
-                if ep_count != None:
-                    ep_count += 1
-                    episode['absoluteNumber'] = ep_count
-                if not episode['absoluteNumber']:
                     continue
                 _episodes.append(self.parse_episode(episode))
             except ValueError as e:
