@@ -11,7 +11,7 @@ passlib==1.6.5
 raven==5.8.1
 redis==2.10.5
 requests==2.8.1
-rq==0.5.6
+rq==0.8.2
 tornado==4.4.1
 urllib3==1.9
 good==0.0.7-0
