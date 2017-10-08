@@ -249,13 +249,26 @@ class PlayEpisode extends React.Component {
             `&session=${this.session}`
     }
 
+    renderPlayServerErrorMessage() {
+        if (this.state.playServerError.code == 2) {
+            return (
+                <span>
+                    <b>
+                    {this.state.show.title} {episodeTitle(this.state.show, this.state.episode)}
+                    </b> is not on any of your play servers.
+                </span>
+            )
+        }
+        return this.state.playServerError.message;
+    }
+
     renderPlayServerError() {
         return (
             <div 
                 className="alert alert-warning" 
                 style={{width: '75%', margin: 'auto', marginTop: '100px'}}
             >
-                <h3>{this.state.playServerError.message}</h3>
+                <h3>{this.renderPlayServerErrorMessage()}</h3>
 
                 Go back to <a href={`/show/${this.showId}`}>
                     {this.state.show.title}

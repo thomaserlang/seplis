@@ -444,7 +444,7 @@ export function getPlayServer(url) {
                 }).always(() => {
                     i -= 1;
                     if ((i == 0) && (selected == false)) {
-                        reject({code: 2, message: 'The episode is not on any of your play servers.'});
+                        reject({code: 2, message: 'This episode is not on any of your play servers.'});
                     }
                 });
             }
