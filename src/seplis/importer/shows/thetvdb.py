@@ -79,7 +79,10 @@ class Thetvdb(Show_importer_base):
                 data = r.json()
                 if data['data']:
                     episodes.extend(
-                        self.parse_episodes(data['data'], len(episodes))
+                        self.parse_episodes(
+                            data['data'], 
+                            len(episodes) if not data['data'][0]['absoluteNumber'] else None
+                        )
                     )
             else:
                 break
@@ -138,8 +141,11 @@ class Thetvdb(Show_importer_base):
                     continue
                 if episode['airedEpisodeNumber'] == 0:
                     continue
-                ep_count += 1
-                episode['absoluteNumber'] = ep_count
+                if ep_count != None:
+                    ep_count += 1
+                    episode['absoluteNumber'] = ep_count
+                if not episode['absoluteNumber']:
+                    continue
                 _episodes.append(self.parse_episode(episode))
             except ValueError as e:
                 logging.exception('Parsing episode "{}" faild with error: {}'.format(date))
