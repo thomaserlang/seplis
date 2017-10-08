@@ -46,7 +46,7 @@ class New extends React.Component {
                 return (
                     <div className="alert alert-danger">
                         {this.state.error.message}.<br />
-                        <a href={`/1/show/${this.state.error.extra.show.id}`}>
+                        <a href={`/show/${this.state.error.extra.show.id}`}>
                             Go to {title}
                         </a>.
                     </div>
