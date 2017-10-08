@@ -12,7 +12,7 @@ class Handler(base.Handler):
     __arguments_schema__ = good.Schema({
         'days_back': good.Any(
             good.All(good.Coerce(int), good.Range(min=0, max=7)),
-            good.Default(1),
+            good.Default(2),
         ),
         'days_ahead': good.Any(
             good.All(good.Coerce(int), good.Range(min=0, max=14)),
