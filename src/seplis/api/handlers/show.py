@@ -334,8 +334,9 @@ class Update_handler(base.Handler):
     def post(self, show_id):
         job = database.queue.enqueue(
             tasks.update_show,
-            self.access_token,
             int(show_id),
+            timeout=600,
+            result_ttl=0,
         )
         self.write_object({
             'job_id': job.id,
