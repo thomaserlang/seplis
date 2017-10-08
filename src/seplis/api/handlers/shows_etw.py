@@ -21,6 +21,8 @@ class Handler(base.Pagination_handler):
                 func.max(models.Episode_watched.episode_number).label('episode_number'),
             ).filter(
                 models.Episode_watched.user_id == user_id,
+                models.Show_fan.user_id == models.Episode_watched.user_id,
+                models.Show_fan.show_id == models.Episode_watched.show_id,
                 models.Episode_watched.times > 0,
             ).group_by(models.Episode_watched.show_id).subquery()
 
