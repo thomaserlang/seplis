@@ -346,7 +346,7 @@ class Pagination_handler(Handler):
             ),
             good.Default([1])
         ),
-    }, default_keys=good.Required)
+    }, default_keys=good.Required, extra_keys=good.Allow,)
 
     def get(self, *args, **kwargs):
         args = self.validate_arguments()
