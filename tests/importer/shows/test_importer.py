@@ -273,9 +273,13 @@ class Test__upload_image(TestCase):
             stream=True,
         )
         upload_url = client.url+'/shows/1/images/1/data'
-        responses.add(responses.PUT, upload_url, status=500)
-        with self.assertRaises(Importer_upload_image_exception):
-            _upload_image(1, image)
+        delete_url = client.url + '/shows/1/images/1'
+        responses.add(responses.PUT, upload_url, status=500, body='{"code": 1}')
+        with mock.patch('seplis.importer.shows.importer.client') as c:
+            c.url = client.url
+            with self.assertRaises(Importer_upload_image_exception):
+                _upload_image(1, image)
+            self.assertTrue(c.delete.called)
 
         # Test successfully
         upload_url = client.url+'/shows/2/images/1/data'
