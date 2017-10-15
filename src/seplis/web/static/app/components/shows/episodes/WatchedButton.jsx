@@ -44,12 +44,13 @@ class WatchedButton extends React.Component {
         this.setState({times: ++this.state.times});
         request(this.watchedApiEndpoint(), {
             method: 'PUT', 
-        }).done(() => {
+        }).done((data) => {
             trigger_episode_watched_status(
                 'incr', 
                 this.props.showId, 
                 this.props.episodeNumber
             );
+            this.setState(data);
         }).fail(() => {            
             this.setState({times: --this.state.times});
         });
@@ -61,12 +62,13 @@ class WatchedButton extends React.Component {
         request(this.watchedApiEndpoint(), {
             data: {times: -1},
             method: 'PUT', 
-        }).done(() => {
+        }).done((data) => {
             trigger_episode_watched_status(
                 'decr', 
                 this.props.showId, 
                 this.props.episodeNumber
             );
+            this.setState(data);
         }).fail(() => {            
             this.setState({times: ++this.state.times});
         });
