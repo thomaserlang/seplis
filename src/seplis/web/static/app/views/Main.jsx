@@ -15,22 +15,22 @@ class Main extends React.Component {
     render() {
         return (
             <span>
-            <h2 className="header">Recently watched</h2>    
+            <h2 className="header"><a href="/shows-watched">Recently watched</a></h2>    
             <div className="slider col-margin">
                 <ShowsWatched perPage={6} />
             </div>
 
-            <h2 className="header">Countdown</h2>
+            <h2 className="header"><a href="/countdown">Countdown</a></h2>
             <div className="slider col-margin">
                 <ShowsCountdown perPage={6} />
             </div>
             
-            <h2 className="header">Recently Aired</h2>
+            <h2 className="header"><a href="/recently-aired">Recently Aired</a></h2>
             <div className="slider col-margin">
                 <ShowsRecentlyAired perPage={6} />
             </div>
 
-            <h2 className="header">Episodes To Watch</h2>
+            <h2 className="header"><a href="/episodes-to-watch">Episodes To Watch</a></h2>
             <div className="slider col-margin">
                 <ShowsEpisodesToWatch perPage={6} />
             </div>
