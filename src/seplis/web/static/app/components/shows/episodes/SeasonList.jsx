@@ -13,6 +13,7 @@ const propTypes = {
     'showId': PropTypes.number.isRequired,
     'seasons': PropTypes.array.isRequired,
     'seasonNumber': PropTypes.number.isRequired,
+    onSeasonChange: PropTypes.func,
 }
 
 class SeasonList extends React.Component {
@@ -61,10 +62,16 @@ class SeasonList extends React.Component {
     }
 
     onSeasonChange(e) {
+        var seasonNum = parseInt(e.target.value);
         this.setState(
-            {seasonNumber: parseInt(e.target.value)}, 
+            {seasonNumber: seasonNum}, 
             ()=> {
-                this.getEpisodes();
+                if (this.props.onSeasonChange) {
+                    this.props.onSeasonChange(seasonNum);
+                }
+                else {
+                    this.getEpisodes();
+                }
             }
         );
     }
