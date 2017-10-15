@@ -3,6 +3,7 @@ import ClassNames from 'classnames';
 import Chromecast from './Chromecast';
 import Slider from './Slider';
 import AudioSubBar from './AudioSubBar.jsx';
+import PlayNext from './PlayNext';
 import {episodeTitle, getUserId, secondsToTime} from 'utils';
 import {request} from 'api';
 
@@ -121,12 +122,14 @@ class ChromecastBar extends React.Component {
     receiveCastInfo(namespace, message) {
         this.setState({
             info: JSON.parse(message),
+            playNextEpisode: null,
         }, () => {
             if (this.cast.getMediaSession()) {
                 this.currentTimeChanged({
                     value: this.cast.getMediaSession().getEstimatedTime()
                 });
             }
+            this.getPlayNextEpisode();
         });
     }
 
@@ -144,6 +147,18 @@ class ChromecastBar extends React.Component {
                     {}
                 );   
         }
+    }
+
+    getPlayNextEpisode() {
+        if (!this.state.info)
+            return;
+        let number = parseInt(this.state.info.episode.number) + 1;
+        let showId = this.state.info.show.id;
+        request(
+            `/1/shows/${showId}/episodes/${number}`
+        ).done(data => {
+            this.setState({nextEpisode: data});
+        });
     }
 
     currentTimeChanged(event) {
@@ -210,6 +225,29 @@ class ChromecastBar extends React.Component {
         );
     }
 
+    getPlayNextInfo() {
+        if (!this.state.info || !this.state.info.show || !this.state.nextEpisode) 
+            return null;
+        let show = this.state.info.show;
+        let episode = this.state.nextEpisode;
+        let title = episodeTitle(show, episode);
+        return {
+            title: title,
+            url: `/show/${show.id}/episode/${episode.number}/play`
+        }
+    }
+
+    renderPlayNext() {
+        let info = this.getPlayNextInfo();
+        if (!info) return;
+        return <div className="control">
+            <PlayNext
+                title={info.title}
+                url={info.url}
+            />
+        </div>
+    }
+
     renderPlaying() {
         let show = this.state.info.show;
         let episode = this.state.info.episode;
@@ -243,6 +281,7 @@ class ChromecastBar extends React.Component {
                             onSubtitleChange={this.onSubtitleChange}
                         />
                     </div>
+                    {this.renderPlayNext()}
                 </div>
             </div>
             </div>
