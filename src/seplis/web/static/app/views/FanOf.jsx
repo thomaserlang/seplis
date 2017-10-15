@@ -24,7 +24,7 @@ class FanOf extends React.Component {
 
     setBrowserPath() {
         browserHistory.push({
-            pathname: '/fan-of',
+            pathname: this.props.location.pathname,
             query: { 
                 page: this.state.page,
             },

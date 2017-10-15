@@ -23,7 +23,7 @@ class RecentlyAired extends React.Component {
 
     setBrowserPath() {
         browserHistory.push({
-            pathname: '/recently-aired',
+            pathname: this.props.location.pathname,
             query: { 
                 page: this.state.page,
             },

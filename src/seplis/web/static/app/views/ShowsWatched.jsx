@@ -24,7 +24,7 @@ class ShowsWatched extends React.Component {
 
     setBrowserPath() {
         browserHistory.push({
-            pathname: '/recently-watched',
+            pathname: this.props.location.pathname,
             query: { 
                 page: this.state.page,
             },

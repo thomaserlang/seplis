@@ -23,7 +23,7 @@ class EpisodesToWatch extends React.Component {
 
     setBrowserPath() {
         browserHistory.push({
-            pathname: '/episodes-to-watch',
+            pathname: this.props.location.pathname,
             query: { 
                 page: this.state.page,
             },

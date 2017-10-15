@@ -23,7 +23,7 @@ class Countdown extends React.Component {
 
     setBrowserPath() {
         browserHistory.push({
-            pathname: '/countdown',
+            pathname: this.props.location.pathname,
             query: { 
                 page: this.state.page,
             },
