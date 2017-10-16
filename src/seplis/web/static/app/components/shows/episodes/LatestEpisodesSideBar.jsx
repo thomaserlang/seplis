@@ -57,7 +57,13 @@ class LatestEpisodesSideBar extends React.Component {
     renderCountdown(episode) {
         if (!episode.air_datetime)
             return '';
-        return ' · In '+dateInDays(episode.air_datetime);
+        let dt = new Date(episode.air_datetime);
+        let m = dt-new Date().getTime();
+        if (m > 0) {
+            return ' · In '+dateInDays(episode.air_datetime);
+        } else {
+            return ' · '+dateInDays(episode.air_datetime)+' ago';     
+        }
     }
 
     render() {
