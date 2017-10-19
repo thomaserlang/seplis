@@ -89,7 +89,6 @@ class Player extends React.Component {
     }
 
     playClick(e) {
-        event.stopPropagation();
         event.preventDefault();
         if (this.video.paused || this.state.loading)
             return;
@@ -118,7 +117,6 @@ class Player extends React.Component {
     }
 
     mouseMove(e) {
-        e.stopImmediatePropagation();
         if (this.state.showControls) return;
         this.setState({
             showControls: true,

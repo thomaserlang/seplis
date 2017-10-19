@@ -14,7 +14,7 @@ class VolumeBar extends React.Component {
         super(props);        
         this.onSliderMouseMove = this.sliderMouseMove.bind(this);
         this.onSliderClick = this.sliderClick.bind(this);
-        this.onClick = this.click.bind(this);
+        this.onIconClick = this.iconClick.bind(this);
 
         this.state = {
             percent: (localStorage.getItem('volume') || 1)*100,
@@ -41,16 +41,13 @@ class VolumeBar extends React.Component {
         }
     }
 
-    sliderMouseDown(event) {
-        this.sliderDrag = true;
-    }
-
     sliderMouseMove(event) {
         if (event.buttons != 1) return;
         this.onSliderClick(event);
     }
 
     sliderClick(event) {
+        console.log('sliderClick');
         event.preventDefault();
         event.stopPropagation();
         let scrubber = event.target.querySelector('.scrubber');
@@ -71,7 +68,7 @@ class VolumeBar extends React.Component {
         localStorage.setItem('volume', volume);
     }
 
-    click(event) {
+    iconClick(event) {
         this.setState({show: !this.state.show});
     }
 
@@ -108,8 +105,7 @@ class VolumeBar extends React.Component {
         return (
             <span 
                 className={volume} 
-                onClick={this.onClick}
-                onMouseLeave={this.onMouseLeave}
+                onClick={this.onIconClick}
                 ref={(ref) => this.icon = ref}
             >
                 {this.renderBar()}
