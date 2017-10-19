@@ -47,7 +47,6 @@ class VolumeBar extends React.Component {
     }
 
     sliderClick(event) {
-        console.log('sliderClick');
         event.preventDefault();
         event.stopPropagation();
         let scrubber = event.target.querySelector('.scrubber');
