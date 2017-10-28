@@ -55,7 +55,7 @@ config = {
         'ffmpeg_folder': '/usr/src/ffmpeg/',
         'ffmpeg_threads': 1,
         'ffmpeg_loglevel': '8',
-        'ffmpeg_logfile': '%p-%t.log',
+        'ffmpeg_logfile': None,
 
         'port': 8003,
         'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
