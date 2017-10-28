@@ -97,6 +97,7 @@ class Player extends React.Component {
     }
 
     setPingTimer() {
+        clearTimeout(this.pingTimer);
         this.pingTimer = setTimeout(() => {
             request(this.getPlayUrl()+'&action=ping');
             this.setPingTimer();
@@ -106,7 +107,6 @@ class Player extends React.Component {
     setHideControlsTimer(timeout) {
         if (timeout == undefined)
             timeout = 6000;
-        clearTimeout(this.hideControlsTimer);
         this.hideControlsTimer = setTimeout(() => {
             if (this.video.paused || this.state.loading)
                 return;
@@ -135,11 +135,19 @@ class Player extends React.Component {
 
     playPauseClick() {
         if (this.video.paused) {
-            this.video.play();
+            this.setPingTimer();
+            if (this.video.src != this.getPlayUrl()) {
+                this.changeVideoState({
+                    startTime: this.state.time,
+                });
+            } else {
+                this.video.play();
+            }
             this.setHideControlsTimer(2000);
         }
-        else
+        else {
             this.video.pause();
+        }
     }
 
     fullscreenchangeEvent() {
@@ -153,6 +161,8 @@ class Player extends React.Component {
             playing: false,
             showControls: true,
         });
+        clearTimeout(this.pingTimer);
+        this.video.src = '';
     }
 
     playEvent() {
@@ -192,6 +202,8 @@ class Player extends React.Component {
     changeVideoState(state) {
         this.cancelPlayUrl().then(() => {
             this.setState(state, () => {
+                this.setPingTimer();
+                this.video.src = this.getPlayUrl();
                 this.video.load();
                 this.video.play();
             });
