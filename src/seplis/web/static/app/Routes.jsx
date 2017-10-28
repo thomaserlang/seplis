@@ -12,6 +12,7 @@ import PlayEpisode from './views/show/PlayEpisode';
 import ShowNew from './views/show/New';
 
 import SignIn from './views/SignIn';
+import SignOut from './views/SignOut';
 import CreateUser from './views/CreateUser';
 
 import FanOf from './views/FanOf';
@@ -30,6 +31,7 @@ import UserShowsStats from './views/UserShowsStats';
 export default (
     <Router history={browserHistory}>
         <Route path="/sign-in" component={SignIn} />
+        <Route path="/sign-out" component={SignOut} />
         <Route path="/create-user" component={CreateUser} />
         <Route path="/show/:showId" component={Show}>
             <IndexRedirect to="/show/:showId/main" />

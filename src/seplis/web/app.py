@@ -48,6 +48,7 @@ class Application(tornado.web.Application):
             URLSpec(r'/show/([0-9]+)/episode/([0-9]+)/play', react.Handler_without_menu_no_container),
 
             URLSpec(r'/sign-in', react.Handler_without_menu),
+            URLSpec(r'/sign-out', react.Handler_without_menu),
             URLSpec(r'/create-user', react.Handler_without_menu),
 
             URLSpec(r'/api/tvmaze-show-lookup', tvmaze_lookup.Handler),
