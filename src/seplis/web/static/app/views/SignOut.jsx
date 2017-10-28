@@ -1,6 +1,6 @@
 import React from 'react';
 
-class Signout extends React.Component {
+class SignOut extends React.Component {
 
     componentDidMount() {
         localStorage.removeItem('access_token');
@@ -14,4 +14,4 @@ class Signout extends React.Component {
     }
 }
 
-export default Signout;
+export default SignOut;
