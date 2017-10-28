@@ -108,7 +108,9 @@
                     time += currentInfo['startTime'];
                 if (lastSavedTime == time)
                     return;
-                lastSavedTime = time;
+                lastSavedTime = time;                
+                if (time < 10)
+                    return;
                 if ((time % 10) != 0)
                     return;
 

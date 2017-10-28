@@ -53,6 +53,8 @@ class PlayEpisode extends React.Component {
         if (time == this.lastPos) 
             return;
         this.lastPos = time;
+        if (time < 10)
+            return;
         if ((time % 10) != 0) 
             return;
         let duration = parseInt(this.state.metadata['format']['duration']);
