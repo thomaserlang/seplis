@@ -37,7 +37,6 @@ class Handler(base.Handler):
         self.set_status(201)
         database.queue.enqueue(
             tasks.update_show,
-            self.access_token,
             int(show['id']),
         )
         self.write_object(show) 
