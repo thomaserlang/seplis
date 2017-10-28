@@ -42,6 +42,9 @@ class File_handler(tornado.web.StaticFileHandler):
     def set_default_headers(self):
         set_header(self)
 
+    def should_return_304(self):
+        return False
+
 class Metadata_handler(tornado.web.RequestHandler):
 
     def get(self):
