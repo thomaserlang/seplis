@@ -100,7 +100,7 @@ class Player extends React.Component {
         this.pingTimer = setTimeout(() => {
             request(this.getPlayUrl()+'&action=ping');
             this.setPingTimer();
-        }, 30000);
+        }, 1000);
     }
 
     setHideControlsTimer(timeout) {
