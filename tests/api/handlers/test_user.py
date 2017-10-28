@@ -179,12 +179,9 @@ class test_user(Testbase):
             level=0,
         ))
         self.refresh_es()
-        response = self.get('/1/users')
-        self.assertEqual(response.code, 200, response.body)
-        self.assertEqual(len(utils.json_loads(response.body)), 2)
         
         # test that we can search for a user
-        response = self.get('/1/users?q=test___2')
+        response = self.get('/1/users?username=test___2')
         self.assertEqual(response.code, 200, response.body) 
         user = utils.json_loads(response.body)[0]
         self.assertEqual(user['name'], 'test___2')

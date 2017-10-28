@@ -54,44 +54,16 @@ class Handler(base.Handler):
                 raise exceptions.Not_found('the user was not found')
             self.write_object(self.user_wrapper(user))
 
-    @gen.coroutine    
+    @run_on_executor
     def get_users(self):
-        q = self.get_argument('q', None)
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
-        sort = self.get_argument('sort', '_score')
-        query = {
-            'from': ((page - 1) * per_page),
-            'size': per_page,
-            'sort': sort,
-            'search_type': 'dfs_query_then_fetch',
-        }
-        body = {}
-        if q:
-            body['query'] = {
-                'bool': {
-                    'should': [
-                        {'match': {'name.suggest': {
-                            'query': q, 
-                            'operator': 'and',
-                        }}}, 
-                    ],
-                },
-            }
-            body['track_scores'] = True
-        result = yield self.es(
-            '/users/user/_search',
-            body=body,
-            query=query,
-        )
-        users = [user['_source'] for user in result['hits']['hits']]
-        p = Pagination(
-            page=page,
-            per_page=per_page,
-            total=result['hits']['total'],
-            records=self.user_wrapper(users),
-        )
-        return p
+        username = self.get_argument('username')
+        with new_session() as session:
+            user = session.query(models.User).filter(
+                models.User.name == username,
+            ).first()
+            if user:
+                return [self.user_wrapper(user.serialize())]
+            return []
 
 class Current_handler(Handler):
 

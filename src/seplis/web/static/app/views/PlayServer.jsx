@@ -108,7 +108,7 @@ class PlayServer extends React.Component {
         var value = e.target.name.value;
         request('/1/users', {
             query: {
-                q: value,
+                username: value,
             }
         }).fail(e => {
             alert(e.message);
