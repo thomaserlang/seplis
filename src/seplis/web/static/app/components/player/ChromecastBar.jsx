@@ -16,7 +16,7 @@ class ChromecastBar extends React.Component {
         this.state = {
             connected: false,
             deviceName: "",
-            playing: false,
+            playerState: '',
             info: null,
             currentTime: 0,
             loading: false,
@@ -135,18 +135,17 @@ class ChromecastBar extends React.Component {
 
     playerStateChanged(event) {
         this.setState({
-            playing: (event.value == 'PLAYING'),
-            loading: (event.value == 'BUFFERING' || event.value == 'IDLE'),
+            playerState: event.value,
+            loading: (event.value == 'BUFFERING'),
         });
-        if (event.value == 'IDLE')
-            this.setState({info: null, loading: false});
-        if (event.value == 'BUFFERING' || event.value == 'PLAYING') {
-            if (!this.state.info)
-                this.cast.getSession().sendMessage(
-                    'urn:x-cast:net.seplis.cast.sendinfo', 
-                    {}
-                );   
+        if (event.value == 'IDLE') {
+            this.setState({loading: false});
         }
+        if (!this.state.info)
+            this.cast.getSession().sendMessage(
+                'urn:x-cast:net.seplis.cast.sendinfo', 
+                {}
+            );
     }
 
     getPlayNextEpisode() {
@@ -203,8 +202,8 @@ class ChromecastBar extends React.Component {
         }
         let playPause = ClassNames({
             fa: true,
-            'fa-pause': this.state.playing,
-            'fa-play': !this.state.playing,
+            'fa-pause': this.state.playerState == 'PLAYING',
+            'fa-play': this.state.playerState != 'PLAYING',
         });
         return (
             <div className="control">
@@ -256,7 +255,7 @@ class ChromecastBar extends React.Component {
             <div className="container">
                 <div className="text">
                     <b>Playing on {this.state.deviceName}:</b> 
-                    &nbsp; {show.title} - {episodeTitle(show, episode)}
+                    &nbsp;{show.title} - {episodeTitle(show, episode)}
                 </div>
                 <div className="controls">
                 </div>
@@ -288,6 +287,27 @@ class ChromecastBar extends React.Component {
         )
     }
 
+    renderFinished() {
+        let show = this.state.info.show;
+        let episode = this.state.info.episode;
+        let playNext = this.getPlayNextInfo();
+        if (!playNext) return;
+        return (
+            <div id="castbar">
+            <div className="container">
+                <div className="text">
+                    <b>{this.state.deviceName}</b>
+                    <br />
+                    <b>Play next episode:</b> 
+                    &nbsp;<a href={playNext['url']}>
+                        {show.title} - {playNext['title']}
+                    </a>
+                </div>
+            </div>
+            </div>
+        )
+    }
+
     renderLoading() {
         if (!this.state.loading)
             return;
@@ -301,6 +321,7 @@ class ChromecastBar extends React.Component {
             <div className="text">
                 <b>Ready to cast on {this.state.deviceName}</b> <br />
                 {this.renderLoading()}
+                {this.renderPlayNext()}
             </div>
             </div>
             </div>
@@ -311,6 +332,8 @@ class ChromecastBar extends React.Component {
         if ((!this.cast) || (!this.state.connected)) {
             return null;
         }
+        if (this.state.info && this.state.playerState == 'IDLE')
+            return this.renderFinished();
         if (this.state.info)
             return this.renderPlaying();
         return this.renderReadyToPlay();
