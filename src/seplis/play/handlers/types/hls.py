@@ -11,9 +11,12 @@ __all__ = ['start']
 sessions = {}
 
 def start(handler, settings, metadata):
+    logging.debug('HLS')
     handler.set_header('Content-Type', 'application/x-mpegURL')
     session = handler.get_argument('session')
     action = handler.get_argument('action', None)
+    if action:        
+        logging.debug('Action: {}'.format(action))
     if action == 'ping':
         ping(handler, session)
         handler.set_status(204)
@@ -32,6 +35,7 @@ def start(handler, settings, metadata):
     if session in sessions:        
         wait_for_media(handler, metadata, path, media_file, session)
         return
+    logging.debug('Creating new HLS file: {}'.format(path))
     process = subprocess.Popen(
         ffmpeg_start(temp_folder, handler, settings, metadata),
         env=base.subprocess_env(),
@@ -45,7 +49,7 @@ def start(handler, settings, metadata):
         'process': process,
         'temp_folder': temp_folder,
         'call_later': call_later,
-    }
+    }    
     if media_file == 'media2.m3u8':
         generate_media(handler, metadata, path)
     wait_for_media(handler, metadata, path, media_file, session)
@@ -54,6 +58,7 @@ def wait_for_media(handler, metadata, path, media_file, session, times=0):
     times = 0
     ts_files = 0
     if os.path.exists(path):
+        logging.debug('Found {}'.format(path))
         with open(path, 'r') as f:
             for line in f:
                 if '.ts' in line:

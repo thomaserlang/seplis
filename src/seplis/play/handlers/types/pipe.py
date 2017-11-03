@@ -8,8 +8,10 @@ from . import base
 __all__ = ['start']
 
 def start(handler, settings, metadata):
+    logging.debug('Pipe')
     action = handler.get_argument('action', None)
     if action:
+        logging.debug('Action: {}'.format(action))
         handler.set_status(204)
         handler.finish()
         return
@@ -41,13 +43,18 @@ def start(handler, settings, metadata):
         env=base.subprocess_env(),
     )
     handler.fd = handler.process.stdout.fileno()
+    logging.debug('Process started. Fileno: {}'.format(handler.fd))
     handler.ioloop.add_handler(handler.fd, receive_data, handler.ioloop.READ)
 
 def connection_close(self):
+    logging.debug('Connection close requested')
     if not hasattr(self, 'process'):
+        logging.debug('No process attr')
         return
     if self.process.returncode is not None:
+        logging.debug('No process returncode')
         return
+    logging.debug('Closing the FFmpeg process')
     self.process.stdout.close()
     self.process.terminate()
     self.process.wait()
@@ -62,4 +69,5 @@ def ffmpeg_start(handler, settings, metadata):
     ])
     if base.find_ffmpeg_arg('-c:v', args) == 'copy':
         args.insert(1, {'-noaccurate_seek': None})
+    logging.debug('FFmpeg start args: {}'.format(args))
     return base.to_subprocess_arguments(args)

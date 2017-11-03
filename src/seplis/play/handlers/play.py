@@ -73,6 +73,7 @@ def get_device_settings(handler):
     device = handler.get_argument('device', None)
     if not device:
         device = handler.agent['user_agent']['family']
+    logging.debug('Device: {}'.format(device))
     settings = device_settings.get(device)
     if not settings:
         raise tornado.web.HTTPError(400, 'Device: {} not supported'.format(
