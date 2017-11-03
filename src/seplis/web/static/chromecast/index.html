@@ -106,6 +106,8 @@
                 let time = Math.floor(this.currentTime);
                 if (this.seekable.length <= 1 || this.seekable.end(0) <= 1)
                     time += currentInfo['startTime'];
+                if (currentInfo['startTime'] == time)
+                    return;
                 if (lastSavedTime == time)
                     return;
                 lastSavedTime = time;                
