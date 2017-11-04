@@ -2,6 +2,7 @@
     <head>
         <title>SEPLIS CAST</title>
             <script src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+            <script src="//www.gstatic.com/cast/sdk/libs/mediaplayer/1.0.0/media_player.js"></script>
             <script
               src="https://code.jquery.com/jquery-3.2.1.min.js"
               integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
@@ -48,27 +49,54 @@
             </div>
         </div>
         <script>
+            var player = null;
+            var host = null;
             var currentInfo = null;
             var token = null;
             var lastSavedTime = 0;
             var watchedIncremented = false;
+            var pingTimer = null;
+            var currentPlayingUrl = null;
 
             var mediaElement = document.getElementById('media');
             var mediaManager = new cast.receiver.MediaManager(mediaElement);
-
-            mediaManager['onLoadOrig'] = mediaManager.onLoad;
+            
+            mediaManager['onLoadOrig'] = mediaManager.onLoad.bind(mediaManager);
             mediaManager.onLoad = function(event) {
-                mediaManager['onLoadOrig'](event);
+                lastSavedTime = 0;
                 var senders = castReceiverManager.getSenders();
                 for (var i in senders) {
                     messageInfo.send(senders[i], currentInfo);
                 }
+
+                if (player !== null) {
+                    player.unload();
+                    player = null;
+                }
+                console.log(event.data['media']);
+                console.log(event.data['media']['contentId']);
+                if (event.data['media'] && event.data['media']['contentId']) {
+                    console.log('Starting media application');
+                    var url = event.data['media']['contentId'];
+                    currentPlayingUrl = url;
+                    startPingTimer();
+                    var initStart = event.data['media']['currentTime'] || 0;
+                    mediaElement.autoplay = event.data['autoplay'] || true;
+                    host = new cast.player.api.Host({
+                        'mediaElement': mediaElement, 
+                        'url': url
+                    });
+                    var protocol = cast.player.api.CreateHlsStreamingProtocol(host);
+                    player = new cast.player.api.Player(host);
+                    player.load(protocol, initStart);
+                }
             }
 
-            mediaManager['onEndedOrig'] = mediaManager.onEnded;
+            mediaManager['onEndedOrig'] = mediaManager.onEnded.bind(mediaManager);
             mediaManager.onEnded = function() {
                 currentInfo = null;
                 token = null;
+                currentPlayingUrl = null;
                 mediaManager['onEndedOrig']();
             }
 
@@ -144,6 +172,16 @@
                     }
                 });
             });
+
+            function startPingTimer() {
+                clearTimeout(pingTimer);
+                if (!currentPlayingUrl)
+                    return;
+                pingTimer = setTimeout(() => {
+                    $.get(currentPlayingUrl+'&action=ping');
+                    startPingTimer();
+                }, 2000);
+            }
         </script>
     </body>
 </html>
