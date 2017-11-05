@@ -141,7 +141,9 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
         {'-hls_segment_filename': os.path.join(temp_folder, '%05d.ts')},
         {os.path.join(temp_folder, 'media.m3u8'): None},
     ])
-    return base.to_subprocess_arguments(args)
+    r = base.to_subprocess_arguments(args)
+    logging.debug('FFmpeg start args: {}'.format(r))
+    return r
 
 def setup_temp_folder(session):
     temp_folder = os.path.join(config['play']['temp_folder'], session)

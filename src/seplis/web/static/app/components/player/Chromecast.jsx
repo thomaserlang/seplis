@@ -142,7 +142,6 @@ class Chromecast {
                 let playUrl = result[0].playServer.play_server.url+'/play'+
                     '?play_id='+result[0].playServer.play_id;
                 playUrl += `&session=${guid()}`;
-                playUrl += `&device=Chromecast%20HLS`;
                 if (startTime)
                     playUrl += `&start_time=${startTime}`;
                 if (result[5]) {

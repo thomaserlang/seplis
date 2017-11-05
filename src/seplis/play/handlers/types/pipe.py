@@ -69,5 +69,6 @@ def ffmpeg_start(handler, settings, metadata):
     ])
     if base.find_ffmpeg_arg('-c:v', args) == 'copy':
         args.insert(1, {'-noaccurate_seek': None})
-    logging.debug('FFmpeg start args: {}'.format(args))
-    return base.to_subprocess_arguments(args)
+    r = base.to_subprocess_arguments(args)
+    logging.debug('FFmpeg start args: {}'.format(r))
+    return r
