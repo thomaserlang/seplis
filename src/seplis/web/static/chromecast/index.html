@@ -50,13 +50,18 @@
             var token = null;
             var lastSavedTime = 0;
             var watchedIncremented = false;
-
+            var prevShowIdEpisode = null;
             var mediaElement = document.getElementById('media');
             var mediaManager = new cast.receiver.MediaManager(mediaElement);
             
             mediaManager['onLoadOrig'] = mediaManager.onLoad.bind(mediaManager);
             mediaManager.onLoad = function(event) {
                 lastSavedTime = 0;
+                let id = currentInfo['show']['id'].toString() +
+                         currentInfo['episode']['number'].toString();
+                if (prevShowIdEpisode != id)
+                    watchedIncremented = false;
+                prevShowIdEpisode = id;
                 var senders = castReceiverManager.getSenders();
                 for (var i in senders) {
                     messageInfo.send(senders[i], currentInfo);
@@ -127,6 +132,8 @@
                     if (!watchedIncremented) {
                         watchedIncremented = true;
                         url += '/watched';
+                    } else {
+                        return;
                     }
                 } else {
                     watchedIncremented = false;
