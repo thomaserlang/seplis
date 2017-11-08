@@ -9,12 +9,15 @@
     .title {
         font-size: 18px;
         font-weight: bolder;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+
     }
     .meta {
         font-size: 14px;
+    }
+    .title, .meta {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .button-bar {
         margin-top: 5px;
