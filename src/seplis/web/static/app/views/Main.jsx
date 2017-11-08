@@ -29,7 +29,10 @@ class Main extends React.Component {
     }
 
     getData() {
-        this.setState({loading: true});
+        this.setState({
+            loading: true,
+            failed: false,
+        });
         Promise.all([
             getWatched(6, 1),
             getCountdown(6, 1),
