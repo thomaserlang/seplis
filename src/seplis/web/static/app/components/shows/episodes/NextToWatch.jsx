@@ -18,6 +18,7 @@ class NextToWatch extends React.Component {
         }
         this.eventGet = this.get.bind(this);
         document.addEventListener(EVENT_EPISODE_WATCHED_STATUS, this.eventGet);
+        document.addEventListener('visibilitychange', this.eventGet);
     }
     
     componentDidMount() {
@@ -26,9 +27,11 @@ class NextToWatch extends React.Component {
 
     componentWillUnmount() {
         document.removeEventListener(EVENT_EPISODE_WATCHED_STATUS, this.eventGet);
+        document.removeEventListener('visibilitychange', this.eventGet);
     }
 
     get(event={}) {
+        if (document.hidden) return;
         if (!isAuthed()) {
             request(
                 `/1/shows/${this.props.showId}/episodes/1`

@@ -6,6 +6,7 @@ import AudioSubBar from './AudioSubBar.jsx';
 import PlayNext from './PlayNext';
 import {episodeTitle, getUserId, secondsToTime} from 'utils';
 import {request} from 'api';
+import {trigger_episode_watched_status} from 'seplis/events';
 
 import './ChromecastBar.scss';
 
@@ -145,6 +146,9 @@ class ChromecastBar extends React.Component {
                 'urn:x-cast:net.seplis.cast.sendinfo', 
                 {}
             );
+        if (event.value == 'IDLE') {
+            trigger_episode_watched_status('refresh', 0, 0);
+        }
     }
 
     getPlayNextEpisode() {
