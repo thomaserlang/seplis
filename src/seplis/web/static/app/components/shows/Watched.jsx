@@ -34,7 +34,7 @@ class Watched extends React.Component {
     }
 
     getData() {
-        getItems(this.props.perPage, this.props.page).then((data) => {
+        getWatched(this.props.perPage, this.props.page).then((data) => {
             this.setState({shows: data.items});
         });
     }
@@ -56,7 +56,7 @@ Watched.defaultProps = defaultProps;
 
 export default Watched;
 
-export function getItems(perPage, page) {
+export function getWatched(perPage, page) {
     return new Promise((resolve, reject) => {
         request(`/1/users/${getUserId()}/shows-watched`, {
             query: {

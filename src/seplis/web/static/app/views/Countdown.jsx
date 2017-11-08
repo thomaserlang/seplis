@@ -4,7 +4,7 @@ import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import ShowsRecentlyAired from 'components/shows/Countdown.jsx';
-import {getItems} from 'components/shows/Countdown.jsx';
+import {getCountdown} from 'components/shows/Countdown.jsx';
 import {requireAuthed} from 'utils';
 
 class Countdown extends React.Component {
@@ -45,7 +45,7 @@ class Countdown extends React.Component {
     }
 
     getItems() {
-        getItems(60, this.state.page).then((data) => {
+        getCountdown(60, this.state.page).then((data) => {
             this.setState({
                 items: data.items,
                 jqXHR: data.jqXHR,

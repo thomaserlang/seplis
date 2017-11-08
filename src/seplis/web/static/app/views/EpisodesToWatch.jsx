@@ -4,7 +4,7 @@ import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import ShowsRecentlyAired from 'components/shows/EpisodesToWatch.jsx';
-import {getItems} from 'components/shows/EpisodesToWatch.jsx';
+import {getEpisodesToWatch} from 'components/shows/EpisodesToWatch.jsx';
 import {requireAuthed} from 'utils';
 
 class EpisodesToWatch extends React.Component {
@@ -45,7 +45,7 @@ class EpisodesToWatch extends React.Component {
     }
 
     getItems() {
-        getItems(60, this.state.page).then((data) => {
+        getEpisodesToWatch(60, this.state.page).then((data) => {
             this.setState({
                 items: data.items,
                 jqXHR: data.jqXHR,

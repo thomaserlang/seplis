@@ -1,8 +1,9 @@
 import React from 'react';
-import ShowsWatched from 'components/shows/Watched';
-import ShowsCountdown from 'components/shows/Countdown';
-import ShowsRecentlyAired from 'components/shows/RecentlyAired';
-import ShowsEpisodesToWatch from 'components/shows/EpisodesToWatch';
+import Loader from 'seplis/components/Loader';
+import ShowsWatched, {getWatched} from 'components/shows/Watched';
+import ShowsCountdown, {getCountdown} from 'components/shows/Countdown';
+import ShowsRecentlyAired, {getRecentlyAired} from 'components/shows/RecentlyAired';
+import ShowsEpisodesToWatch, {getEpisodesToWatch} from 'components/shows/EpisodesToWatch';
 import {requireAuthed} from 'utils';
 
 class Main extends React.Component {
@@ -14,11 +15,40 @@ class Main extends React.Component {
         document.addEventListener('visibilitychange', this.visChange);
         this.state = {
             key: 0,
+            loading: true,
+            failed: false,
         }
+    }
+
+    componentDidMount() {
+        this.getData();   
     }
 
     componentWillUnmount() {
         document.removeEventListener('visibilitychange', this.visChange);
+    }
+
+    getData() {
+        Promise.all([
+            getWatched(6, 1),
+            getCountdown(6, 1),
+            getRecentlyAired(6, 1),
+            getEpisodesToWatch(6, 1),
+        ]).then((result) => {
+            this.setState({
+                'loading': false,
+                'failed': false,
+                'watched': result[0].items,
+                'countdown': result[1].items,
+                'recentlyWatched': result[2].items,
+                'episodesToWatch': result[3].items,
+            })
+        }).catch(() => {
+            this.setState({
+                loading: false,
+                failed: true,
+            })
+        });
     }
 
     visibilitychange() {
@@ -29,26 +59,34 @@ class Main extends React.Component {
     }
 
     render() {
+        if (this.state.failed)
+            return (
+                <div className="alert alert-warning">
+                    Failed to load, try refreshing.
+                </div>
+            )
+        if (this.state.loading)
+            return <Loader />;
         return (
             <span>
             <h2 className="header"><a href="/shows-watched">Recently watched</a></h2>    
             <div className="slider col-margin">
-                <ShowsWatched key={`sw-${this.state.key}`} perPage={6} />
+                <ShowsWatched key={`sw-${this.state.key}`} items={this.state.watched} />
             </div>
 
             <h2 className="header"><a href="/countdown">Countdown</a></h2>
             <div className="slider col-margin">
-                <ShowsCountdown key={`sc-${this.state.key}`} perPage={6} />
+                <ShowsCountdown key={`sc-${this.state.key}`} items={this.state.countdown} />
             </div>
             
             <h2 className="header"><a href="/recently-aired">Recently Aired</a></h2>
             <div className="slider col-margin">
-                <ShowsRecentlyAired key={`sra-${this.state.key}`} perPage={6} />
+                <ShowsRecentlyAired key={`sra-${this.state.key}`} items={this.state.recentlyWatched} />
             </div>
 
             <h2 className="header"><a href="/episodes-to-watch">Episodes To Watch</a></h2>
             <div className="slider col-margin">
-                <ShowsEpisodesToWatch  key={`etw-${this.state.key}`} perPage={6} />
+                <ShowsEpisodesToWatch key={`etw-${this.state.key}`} items={this.state.episodesToWatch} />
             </div>
             </span>
         )

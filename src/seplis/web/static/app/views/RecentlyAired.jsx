@@ -4,7 +4,7 @@ import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import ShowsRecentlyAired from 'components/shows/RecentlyAired.jsx';
-import {getItems} from 'components/shows/RecentlyAired.jsx';
+import {getRecentlyAired} from 'components/shows/RecentlyAired.jsx';
 import {requireAuthed} from 'utils';
 
 class RecentlyAired extends React.Component {
@@ -45,7 +45,7 @@ class RecentlyAired extends React.Component {
     }
 
     getItems() {
-        getItems(60, this.state.page).then((data) => {
+        getRecentlyAired(60, this.state.page).then((data) => {
             this.setState({
                 items: data.items,
                 jqXHR: data.jqXHR,

@@ -33,7 +33,7 @@ class Countdown extends React.Component {
     }
 
     getData() {
-        getItems(this.props.perPage, this.props.page).then((data) => {
+        getCountdown(this.props.perPage, this.props.page).then((data) => {
             this.setState({items: data.items});
         });
     }
@@ -75,7 +75,7 @@ Countdown.defaultProps = defaultProps;
 
 export default Countdown;
 
-export function getItems(perPage, page) {
+export function getCountdown(perPage, page) {
     return new Promise((resolve, reject) => {
         request(`/1/users/${getUserId()}/shows-countdown`, {
             query: {

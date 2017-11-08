@@ -4,7 +4,7 @@ import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import Watched from 'components/shows/Watched.jsx';
-import {getItems} from 'components/shows/Watched.jsx';
+import {getWatched} from 'components/shows/Watched.jsx';
 import {requireAuthed} from 'utils';
 
 class ShowsWatched extends React.Component {
@@ -46,7 +46,7 @@ class ShowsWatched extends React.Component {
     }
 
     getItems() {
-        getItems(60, this.state.page).then((data) => {
+        getWatched(60, this.state.page).then((data) => {
             this.setState({
                 items: data.items,
                 jqXHR: data.jqXHR,
