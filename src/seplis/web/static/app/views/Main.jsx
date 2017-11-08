@@ -10,6 +10,22 @@ class Main extends React.Component {
     constructor(props) {
         super(props);
         requireAuthed();
+        this.visChange = this.visibilitychange.bind(this);
+        document.addEventListener('visibilitychange', this.visChange);
+        this.state = {
+            key: 0,
+        }
+    }
+
+    componentWillUnmount() {
+        document.removeEventListener('visibilitychange', this.visChange);
+    }
+
+    visibilitychange() {
+        if (document.hidden) return;
+        this.setState({
+            key: this.state.key + 1,
+        })
     }
 
     render() {
@@ -17,22 +33,22 @@ class Main extends React.Component {
             <span>
             <h2 className="header"><a href="/shows-watched">Recently watched</a></h2>    
             <div className="slider col-margin">
-                <ShowsWatched perPage={6} />
+                <ShowsWatched key={`sw-${this.state.key}`} perPage={6} />
             </div>
 
             <h2 className="header"><a href="/countdown">Countdown</a></h2>
             <div className="slider col-margin">
-                <ShowsCountdown perPage={6} />
+                <ShowsCountdown key={`sc-${this.state.key}`} perPage={6} />
             </div>
             
             <h2 className="header"><a href="/recently-aired">Recently Aired</a></h2>
             <div className="slider col-margin">
-                <ShowsRecentlyAired perPage={6} />
+                <ShowsRecentlyAired key={`sra-${this.state.key}`} perPage={6} />
             </div>
 
             <h2 className="header"><a href="/episodes-to-watch">Episodes To Watch</a></h2>
             <div className="slider col-margin">
-                <ShowsEpisodesToWatch perPage={6} />
+                <ShowsEpisodesToWatch  key={`etw-${this.state.key}`} perPage={6} />
             </div>
             </span>
         )
