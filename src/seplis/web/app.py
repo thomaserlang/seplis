@@ -4,7 +4,7 @@ import tornado.web
 import tornado.httpserver
 import tornado.ioloop
 import seplis.web.handlers.react
-from .handlers import react, tvmaze_lookup
+from .handlers import react, tvmaze_lookup, base
 from seplis.logger import logger
 from tornado.web import URLSpec
 
@@ -14,17 +14,15 @@ class Application(tornado.web.Application):
         static_path = os.path.join(os.path.dirname(__file__), 'static')
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),
-            static_path=static_path,
             debug=config['debug'],
             autoescape=None,
             xsrf_cookies=True,
             cookie_secret=config['web']['cookie_secret'],
             login_url='/sign-in',
         )
-
         urls = [
             URLSpec(r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(static_path, 'favicon.ico')}),
-            URLSpec(r'/static/(.*)', tornado.web.StaticFileHandler, {'path': static_path}),
+            URLSpec(r'/static/(.*)', base.File_handler, {'path': static_path}),
 
             URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/main"}),
 

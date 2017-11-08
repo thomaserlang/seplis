@@ -10,8 +10,14 @@ class Handler_unauthenticated(web.RequestHandler):
     def is_api(self):
         return False
 
+    def set_default_headers(self):
+        if self.application.settings['debug']:
+            self.set_header('Cache-Control', 'no-cache, must-revalidate')
+            self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
+
     def initialize(self, *arg, **args):
         super().initialize()
+
     def get_template_namespace(self):
         namespace = web.RequestHandler.get_template_namespace(self)
         namespace.update(
@@ -19,6 +25,18 @@ class Handler_unauthenticated(web.RequestHandler):
             config=config,
         )
         return namespace
+
+class File_handler(web.StaticFileHandler):
+
+    def get_cache_time(self, path, modified, mime_type):
+        if self.application.settings['debug']:
+            return -1
+        return super().get_cache_time(path, modified, mime_type)
+
+    def set_extra_headers(self, path):
+        if self.application.settings['debug']:
+            self.set_header('Cache-Control', 'no-cache, must-revalidate')
+            self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
 
 class API_handler(Handler_unauthenticated):
     
