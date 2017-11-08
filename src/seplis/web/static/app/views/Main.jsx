@@ -21,7 +21,7 @@ class Main extends React.Component {
     }
 
     componentDidMount() {
-        this.getData();   
+        this.getData();
     }
 
     componentWillUnmount() {
@@ -29,6 +29,7 @@ class Main extends React.Component {
     }
 
     getData() {
+        this.setState({loading: true});
         Promise.all([
             getWatched(6, 1),
             getCountdown(6, 1),
@@ -47,15 +48,14 @@ class Main extends React.Component {
             this.setState({
                 loading: false,
                 failed: true,
+                key: this.state.key + 1,
             })
         });
     }
 
     visibilitychange() {
         if (document.hidden) return;
-        this.setState({
-            key: this.state.key + 1,
-        })
+        this.getData();
     }
 
     render() {
