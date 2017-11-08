@@ -32,10 +32,12 @@ class Handler(base.Handler):
     def query_shows_watched(self, user_id):
         with new_session() as session:
             r = session.query(
-                sa.func.count(models.Episode_watched.show_id).label('shows_watched'),
+                sa.func.count(sa.func.distinct(
+                    models.Episode_watched.show_id
+                )).label('shows_watched'),
             ).filter(
                 models.Episode_watched.user_id == user_id,
-            ).group_by(models.Episode_watched.show_id).first()
+            ).first()
             if not r:
                 return {'shows_watched': 0}
             return {

@@ -16,6 +16,12 @@ class Test(Testbase):
             )
             session.add(show)
             session.flush()
+            show2 = models.Show(
+                title='Test show 2',
+                runtime=30,
+            )
+            session.add(show2)
+            session.flush()
 
             episode1 = models.Episode(show_id=show.id, number=1)
             session.add(episode1)
@@ -23,12 +29,16 @@ class Test(Testbase):
             session.add(episode2)
             episode3 = models.Episode(show_id=show.id, number=3, runtime=40)
             session.add(episode3)
+            episode4 = models.Episode(show_id=show2.id, number=4)
+            session.add(episode4)
             session.commit()
 
             show = show.serialize()
+            show2 = show2.serialize()
             episode1 = episode1.serialize()
             episode2 = episode2.serialize()
             episode3 = episode3.serialize()
+            episode4 = episode4.serialize()
 
         response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
@@ -80,6 +90,16 @@ class Test(Testbase):
         data = utils.json_loads(response.body)
         self.assertEqual(data['episodes_watched'], 4, data)
         self.assertEqual(data['episodes_watched_minutes'], 130, data)
+        self.assertEqual(data['shows_watched'], 1, data)
+
+        response = self.put('/1/shows/{}/episodes/{}/watched'.format(show2['id'],4))
+        self.assertEqual(response.code, 200)
+        response = self.get('/1/users/{}/show-stats'.format(self.current_user.id))
+        self.assertEqual(response.code, 200)
+        data = utils.json_loads(response.body)
+        self.assertEqual(data['episodes_watched'], 5, data)
+        self.assertEqual(data['episodes_watched_minutes'], 160, data)
+        self.assertEqual(data['shows_watched'], 2, data)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
