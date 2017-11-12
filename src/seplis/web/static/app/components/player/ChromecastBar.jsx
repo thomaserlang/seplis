@@ -168,6 +168,7 @@ class ChromecastBar extends React.Component {
             return;
         let info = this.state.info;
         info['episode'] = this.state.nextEpisode;
+        info['startTime'] = 0;
         this.setState({
             nextEpisode: null,
             info: info,
@@ -183,6 +184,11 @@ class ChromecastBar extends React.Component {
         ).catch(() => {
             this.setState({changingTime: false});
         }).then(() => {
+            // iOS fix
+            this.cast.getSession().sendMessage(
+                'urn:x-cast:net.seplis.cast.sendinfo', 
+                {}
+            );
             this.setState({changingTime: false});
         }); 
     }
@@ -203,6 +209,7 @@ class ChromecastBar extends React.Component {
 
     sliderNewTime(newTime) {
         this.cast.pause(() => {
+            this.state.info['startTime'] = newTime;
             this.setState({
                 loading: true,
                 currentTime: newTime,
@@ -215,6 +222,11 @@ class ChromecastBar extends React.Component {
             ).catch(() => {
                 this.setState({changingTime: false});
             }).then(() => {
+                // iOS fix
+                this.cast.getSession().sendMessage(
+                    'urn:x-cast:net.seplis.cast.sendinfo', 
+                    {}
+                );
                 this.setState({changingTime: false});
             });            
         });
