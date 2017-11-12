@@ -51,7 +51,7 @@ class EpisodesToWatch extends React.Component {
                         className="img-fluid"
                     />
                 </a>
-                <div>{episodeNumber(show, episode)}</div>
+                <div className="black-box">{episodeNumber(show, episode)}</div>
             </div>
         )
     }

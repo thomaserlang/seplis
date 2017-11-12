@@ -57,7 +57,7 @@ class Stats extends React.Component {
             <span>
                 {this.renderUserStats()}
                 
-                <h2 className="mb-1">Show stats</h2>
+                <h2 className="header">Show stats</h2>
                 <table className="table table-striped">
                     <tbody>
                     <tr><th width="200px">Total episodes</th><td>{episodeCount}</td></tr>

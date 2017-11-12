@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getUserId} from 'utils';
+import {getUserId, episodeNumber} from 'utils';
 import {request} from 'api';
 
 import './List.scss';
@@ -45,7 +45,6 @@ class RecentlyAired extends React.Component {
         let episode = item.episode;
         return (
             <div key={show.id} className="col-4 col-md-3 col-lg-2 col-margin">
-                <div>{episode.air_date}</div>
                 <a href={`/show/${show.id}`}>
                     <img 
                         title={show.title}
@@ -54,6 +53,7 @@ class RecentlyAired extends React.Component {
                         className="img-fluid"
                     />
                 </a>
+                <div className="black-box">{episodeNumber(show, episode)}</div>
             </div>
         )
     }

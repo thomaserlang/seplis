@@ -74,7 +74,7 @@ class FanOf extends React.Component {
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2>
+                        <h2 className="header">
                             Fan of {this.state.totalCount} shows
                         </h2>
                     </div>

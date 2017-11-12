@@ -58,7 +58,7 @@ class Countdown extends React.Component {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2>Countdown</h2>
+                    <h2 className="header">Countdown</h2>
                     <Loader />
                 </span>
             );
@@ -66,7 +66,7 @@ class Countdown extends React.Component {
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2>Countdown</h2>
+                        <h2 className="header">Countdown</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 

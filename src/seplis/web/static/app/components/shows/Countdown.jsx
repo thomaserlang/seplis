@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getUserId, dateInDays} from 'utils';
+import {getUserId, dateInDays, episodeNumber} from 'utils';
 import {request} from 'api';
 
 const propTypes = {
@@ -41,7 +41,7 @@ class Countdown extends React.Component {
     renderShow(show, episode) {
         return (
             <div key={show.id} className="col-4 col-md-3 col-lg-2 col-margin">
-                <div className="text-nowrap-hide">In {dateInDays(episode.air_datetime)}</div>
+                <div className="black-box">In {dateInDays(episode.air_datetime)}</div>
                 <a href={`/show/${show.id}`}>
                     <img 
                         title={show.title}
@@ -50,6 +50,7 @@ class Countdown extends React.Component {
                         className="img-fluid"
                     />
                 </a>
+                <div className="black-box">{episodeNumber(show, episode)}</div>
             </div>
         )
     }

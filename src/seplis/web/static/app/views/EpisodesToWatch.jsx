@@ -3,7 +3,7 @@ import {browserHistory} from 'react-router';
 import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
-import ShowsRecentlyAired from 'components/shows/EpisodesToWatch.jsx';
+import EpisodesToWatchList from 'components/shows/EpisodesToWatch.jsx';
 import {getEpisodesToWatch} from 'components/shows/EpisodesToWatch.jsx';
 import {requireAuthed} from 'utils';
 
@@ -58,7 +58,7 @@ class EpisodesToWatch extends React.Component {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2>Episodes to Watch</h2>
+                    <h2 className="header">Episodes to Watch</h2>
                     <Loader />
                 </span>
             );
@@ -66,7 +66,7 @@ class EpisodesToWatch extends React.Component {
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2>Episodes to Watch</h2>
+                        <h2 className="header">Episodes to Watch</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 
@@ -75,7 +75,7 @@ class EpisodesToWatch extends React.Component {
                         />
                     </div>
                 </div>
-                <ShowsRecentlyAired items={this.state.items} />
+                <EpisodesToWatchList items={this.state.items} />
                 <div className="row">
                     <div className="col-sm-9 col-md-10" />
                     <div className="col-sm-3 col-md-2">

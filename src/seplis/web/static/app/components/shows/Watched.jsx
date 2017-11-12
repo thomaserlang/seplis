@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {getUserId} from 'utils';
+import {getUserId, episodeNumber} from 'utils';
 import {request} from 'api';
-import ShowList from './List';
 
 const propTypes = {
     perPage: PropTypes.number,
@@ -39,6 +38,22 @@ class Watched extends React.Component {
         });
     }
 
+    renderShow(show, episode) {
+        return (
+            <div key={show.id} className="col-4 col-md-3 col-lg-2 col-margin">
+                <a href={`/show/${show.id}`}>
+                    <img 
+                        title={show.title}
+                        alt={show.title}
+                        src={show.poster_image!=null?show.poster_image.url + '@SX180':''} 
+                        className="img-fluid"
+                    />
+                </a>
+                <div className="black-box">{episodeNumber(show, episode)}</div>
+            </div>
+        )
+    }
+
     render() {
         if (this.state.shows.length == 0) 
             return (
@@ -46,8 +61,13 @@ class Watched extends React.Component {
                     You have not watched any shows yet!
                 </div>
             );
+        console.log(this.state.shows);
         return (
-            <ShowList shows={this.state.shows} />
+            <div className="row">
+                {this.state.shows.map(item => (
+                    this.renderShow(item, item.user_watching.episode)
+                ))}
+            </div>
         )
     }
 }

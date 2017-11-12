@@ -61,7 +61,6 @@ a.btn {
 }
 
 .header {
-    border-bottom: 1px solid #6C6C6C;
     margin-top: 0;
     margin-bottom: 0;
     padding-bottom: 3px;
@@ -84,4 +83,12 @@ a.btn {
 
 div {
     min-width: 0;
+}
+
+.black-box {
+    background-color: #000;     
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
 }
