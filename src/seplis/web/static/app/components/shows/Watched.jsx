@@ -61,7 +61,6 @@ class Watched extends React.Component {
                     You have not watched any shows yet!
                 </div>
             );
-        console.log(this.state.shows);
         return (
             <div className="row">
                 {this.state.shows.map(item => (
