@@ -3,14 +3,14 @@
 
     .title {
         line-height: 45px;
-        font-size: 20px;
+        font-size: 24px;
 
         @media (min-width: 730px) {
             font-size: 26px;
         }
 
         @media (min-width: 992px) {
-            font-size: 36px;
+            font-size: 30px;
         }
     }
 }
