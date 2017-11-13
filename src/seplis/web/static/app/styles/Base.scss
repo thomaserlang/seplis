@@ -6,6 +6,21 @@ $body-color: #fff;
 $headings-margin-bottom: 1rem;
 $grid-gutter-width: 1rem;
 
+$font-family-sans-serif:
+    "Open Sans",
+    // Safari for OS X and iOS (San Francisco)
+    -apple-system,
+    // Chrome >= 56 for OS X (San Francisco), Windows, Linux and Android
+    system-ui,
+    // Chrome < 56 for OS X (San Francisco)
+    BlinkMacSystemFont,
+    // Windows
+    "Segoe UI",
+    // Android
+    "Roboto",
+    // Basic web fallback
+    "Helvetica Neue", Arial, sans-serif !default;
+
 @import "bootstrap/scss/bootstrap";
 @import "./slider.scss";
 
@@ -13,9 +28,11 @@ $fa-font-path: "~font-awesome/fonts";
 @import "font-awesome/scss/font-awesome";
 
 h1,
-h2 {
+h2,
+h3,
+h4 {
     margin-top: 0;
-
+    font-weight: 200;
 }
 
 p {
