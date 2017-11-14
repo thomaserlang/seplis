@@ -1,8 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import WatchedButton from './WatchedButton';
+import Chromecast from 'seplis/components/player/Chromecast';
 
 import './EpisodeListItem.scss';
-import WatchedButton from './WatchedButton';
 
 const propTypes = {
     showId: PropTypes.number.isRequired,
@@ -15,6 +16,23 @@ const defaultProps = {
 }
 
 class EpisodeListItem extends React.Component {
+
+    constructor(props) {
+        super(props);
+        this.onPlayClick = this.playClick.bind(this);
+    }
+
+    playClick(e) {
+        if (Chromecast.session && (Chromecast.session.status == 'connected')) {
+            let cc = new Chromecast();
+            cc.playEpisode(
+                this.props.showId,
+                this.props.episode.number
+            );
+        } else {
+            location.href = this.getPlayUrl();
+        }
+    }
 
     renderEpisodeNumber() {
         if (this.props.episode.episode) {
@@ -78,16 +96,11 @@ class EpisodeListItem extends React.Component {
                         episodeNumber={this.props.episode.number}
                         watched={this.props.episode.user_watched}
                     />
-                    <div className="float-right">
-                        <a 
-                            href={this.getPlayUrl()}
-                            className="play-button"
-                            data-type="episode"
-                            data-show-id={this.props.showId}
-                            data-episode-number={this.props.episode.number}
-                        >
-                            <i className="fa fa-play-circle"></i>
-                        </a>
+                    <div 
+                        className="play-button float-right"
+                        onClick={this.onPlayClick}
+                    >
+                        <i className="fa fa-play-circle"></i>
                     </div>
                 </div>
             </div>
