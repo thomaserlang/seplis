@@ -83,7 +83,7 @@ class Main extends React.Component {
                 <span>
                     {this.state.data.map(a => (
                     <span key={a.air_date}>
-                        <h3 className="header" title={a.air_date}>
+                        <h3 className="header header-border" title={a.air_date}>
                             {this.renderHeaderDate(a.air_date)}
                         </h3>
                         <ShowList 

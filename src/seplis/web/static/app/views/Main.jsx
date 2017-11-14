@@ -72,22 +72,30 @@ class Main extends React.Component {
             return <Loader />;
         return (
             <span>
-            <h2 className="header"><a href="/shows-watched">Recently watched</a></h2>    
+            <h2 className="header header-border">
+                <a href="/shows-watched">Recently watched</a>
+            </h2>    
             <div className="slider mb-2">
                 <ShowsWatched key={`sw-${this.state.key}`} items={this.state.watched} />
             </div>
 
-            <h2 className="header"><a href="/recently-aired">Recently Aired</a></h2>
+            <h2 className="header header-border">
+                <a href="/recently-aired">Recently Aired</a>
+            </h2>
             <div className="slider mb-2">
                 <ShowsRecentlyAired key={`sra-${this.state.key}`} items={this.state.recentlyWatched} />
             </div>
 
-            <h2 className="header"><a href="/countdown">Countdown</a></h2>
+            <h2 className="header header-border">
+                <a href="/countdown">Countdown</a>
+            </h2>
             <div className="slider mb-2">
                 <ShowsCountdown key={`sc-${this.state.key}`} items={this.state.countdown} />
             </div>            
 
-            <h2 className="header"><a href="/episodes-to-watch">Episodes To Watch</a></h2>
+            <h2 className="header header-border">
+                <a href="/episodes-to-watch">Episodes To Watch</a>
+            </h2>
             <div className="slider mb-2">
                 <ShowsEpisodesToWatch key={`etw-${this.state.key}`} items={this.state.episodesToWatch} />
             </div>
