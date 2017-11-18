@@ -21,7 +21,6 @@ class Application(tornado.web.Application):
             login_url='/sign-in',
         )
         urls = [
-            URLSpec(r'/favicon.ico', tornado.web.StaticFileHandler, {'path': os.path.join(static_path, 'favicon.ico')}),
             URLSpec(r'/static/(.*)', base.File_handler, {'path': static_path}),
 
             URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/main"}),
