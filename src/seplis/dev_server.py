@@ -3,6 +3,13 @@ from subprocess import list2cmdline
 from honcho.manager import Manager
 from seplis.logger import logger
 
+watchdog_installed = False
+try:
+    import watchdog
+    watchdog_installed = True
+except:
+    pass
+
 def main():
     src_path = os.path.dirname(os.path.realpath(__file__))
     base_path = os.path.normpath(
@@ -17,6 +24,10 @@ def main():
         ('worker', ['python', 'runner.py', 'worker'], src_path),
         ('webpack', [node_bin+'/webpack', '-d', '-w'], base_path),
     ]
+    if watchdog_installed:
+        start.append(
+            ('play_scan_watch', ['python', 'runner.py', 'play_scan_watch'], src_path),
+        )
 
     manager = Manager()
     for name, cmd, cwd in start:
