@@ -19,22 +19,7 @@ class Show extends React.Component {
         super(props);
         this.state = {
             show: document.seplis_tv_show,
-            is_fan: false,
         };
-    }
-
-    componentDidMount() {
-        this.getIsFan();
-    }
-
-    getIsFan() {
-        if (!isAuthed()) 
-            return;
-        request(
-            `/1/users/${getUserId()}/fan-of/${parseInt(this.props.params.showId)}`
-        ).done(is_fan => {
-            this.setState({is_fan: is_fan.is_fan});
-        });
     }
 
     renderShow() {
