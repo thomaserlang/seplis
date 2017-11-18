@@ -20,6 +20,7 @@ module.exports = {
             'select2',
             'flat',
             'form-serialize',
+            'hls.js',
         ],
     },
     resolve: {
