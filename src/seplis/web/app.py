@@ -27,9 +27,9 @@ class Application(tornado.web.Application):
             URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/main"}),
 
             URLSpec(r'/show-new', react.Handler),
-            URLSpec(r'/show.*/([0-9]+)', react.Handler),
-            URLSpec(r'/show/([0-9]+)/[^/]+', react.Handler),
-            URLSpec(r'/show-edit/([0-9]+)', react.Handler),
+            URLSpec(r'/show.*/([0-9]+)', react.Handler_tv_show),
+            URLSpec(r'/show/([0-9]+)/[^/]+', react.Handler_tv_show),
+            URLSpec(r'/show-edit/([0-9]+)', react.Handler_tv_show),
 
             URLSpec(r'/user-shows-stats', react.Handler),
             URLSpec(r'/fan-of', react.Handler),

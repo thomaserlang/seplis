@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ClassNames from 'classnames';
-import {getUserId} from 'utils';
+import {isAuthed,getUserId} from 'utils';
 import {request} from 'api';
 
 import './FanButton.scss';
 
 const propTypes = {
     showId: PropTypes.number.isRequired,
-    isFan: PropTypes.bool.isRequired,
+    isFan: PropTypes.bool,
 }
 
 class FanButton extends React.Component {
@@ -21,6 +21,11 @@ class FanButton extends React.Component {
         this.onClick = this.onClick.bind(this);
     }
 
+    componentDidMount() {
+        if (this.props.isFan == undefined)
+            this.getIsFan();
+    }
+
     onClick(e) {
         e.preventDefault();
         this.setState({isFan: !this.state.isFan});
@@ -29,6 +34,16 @@ class FanButton extends React.Component {
         }).fail(() => {            
             this.setState({isFan: !this.state.isFan});
         })
+    }
+
+    getIsFan() {
+        if (!isAuthed()) 
+            return;
+        request(
+            `/1/users/${getUserId()}/fan-of/${parseInt(this.props.showId)}`
+        ).done(is_fan => {
+            this.setState({isFan: is_fan.is_fan});
+        });
     }
 
     render() {

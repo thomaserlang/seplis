@@ -1,0 +1,26 @@
+{% extends base.html %}
+{% block title %}    
+    <title>{{escape(show['title'])}} - SEPLIS</title>
+{% end %}
+{% block head %}
+    {% if show['description'] %}
+    <meta name="description" content="{{escape(show['description']['text'])}}" />
+    {% end %}
+
+    {% if show['poster_image'] %}
+    <meta property="og:image" content="{{show['poster_image']['url']}}" />
+    {% end %}
+
+    <script>
+        document.seplis_tv_show = {{utils.json_dumps(show)}};
+    </script>
+{% end %}
+{% block body %}
+    <div id="main"></div>
+    <script>
+        ReactDOM.render(
+          seplis.Routes.default,
+          document.getElementById('main')
+        );
+    </script>
+{% end %}

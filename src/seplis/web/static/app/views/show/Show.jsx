@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {request} from 'api';
-import {isAuthed} from 'utils';
+import {isAuthed, getUserId} from 'utils';
 
 import Loader from 'components/Loader';
 import FanButton from 'components/shows/FanButton';
@@ -17,19 +17,23 @@ class Show extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {show: null};
-        this.getShow();
+        this.state = {
+            show: document.seplis_tv_show,
+            is_fan: false,
+        };
     }
 
-    getShow() {
-        let query = {};
-        if (isAuthed()) {
-            query.append = 'is_fan';
-        }
-        request(`/1/shows/${parseInt(this.props.params.showId)}`, {
-            query: query,
-        }).done(show => {
-            this.setState({show: show});
+    componentDidMount() {
+        this.getIsFan();
+    }
+
+    getIsFan() {
+        if (!isAuthed()) 
+            return;
+        request(
+            `/1/users/${getUserId()}/fan-of/${parseInt(this.props.params.showId)}`
+        ).done(is_fan => {
+            this.setState({is_fan: is_fan.is_fan});
         });
     }
 
@@ -40,7 +44,7 @@ class Show extends React.Component {
                 <div className="row">
                     <div className="col-12 show-header">
                         <div className="btn-fan__pull-left">
-                            <FanButton showId={show.id} isFan={show.is_fan || false} />
+                            <FanButton showId={show.id} />
                         </div>
                         <div className="title">
                             {show.title}
@@ -68,7 +72,7 @@ class Show extends React.Component {
 
     renderShowImporting() {
         setTimeout(() => {
-            this.getShow();
+            location.reload();
         }, 5000);
         return (
             <center>
