@@ -104,10 +104,13 @@ class Player extends React.Component {
         }
         this.hls = new Hls({
             enableWorker: false,
+            startLevel: 0,
+            manifestLoadingTimeOut: 30000,
+            debug: true,
         });
         this.hls.loadSource(url);
         this.hls.attachMedia(this.video);
-        this.hls.on(Hls.Events.MANIFEST_PARSED,function() {
+        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
             this.video.play();
         });
     }
@@ -202,8 +205,8 @@ class Player extends React.Component {
     }
 
     timeupdateEvent(e) {
-        this.setState({loading: false});
         if (!this.video.paused) {
+            this.setState({loading: false});
             let time = this.video.currentTime;
             if (this.video.seekable.length <= 1 || this.video.seekable.end(0) <= 1)
                 time += this.state.startTime;
@@ -221,10 +224,11 @@ class Player extends React.Component {
     }
 
     changeVideoState(state) {
+        this.setState({'loading': true});
         this.cancelPlayUrl().then(() => {
             this.setState(state, () => {
-                this.setPingTimer();
                 this.loadStream(this.getPlayUrl());
+                this.setPingTimer();
             });
         });
     }
@@ -423,7 +427,7 @@ class Player extends React.Component {
                     <video 
                         className="video" 
                         preload="none" 
-                        autoPlay={true}
+                        autoPlay={false}
                         controls={false}
                         ref={(ref) => this.video = ref}
                     />

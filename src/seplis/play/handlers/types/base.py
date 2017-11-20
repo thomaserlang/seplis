@@ -21,6 +21,7 @@ def ffmpeg_base_args(handler, settings, metadata):
         {'-map': '0:v:0'},
         {'-preset': 'ultrafast'},
         {'-c:a': 'aac'},
+        {'-ac': '2'},
         {'-pix_fmt': settings['transcode_pixel_format']},
     ]
     start_time = handler.get_argument('start_time', None)
@@ -104,6 +105,7 @@ def get_subtitle_args(handler, metadata):
     subtitle_lang = handler.get_argument('subtitle_lang', None)
     if not subtitle_lang:
         return
+    logging.debug('Looking for subtitle language: {}'.format(subtitle_lang))
     sub_index = stream_index_by_lang(metadata, 'subtitle', subtitle_lang)
     if not sub_index:
         return
@@ -120,6 +122,7 @@ def get_subtitle_args(handler, metadata):
     if start_time:
         args.insert(1, '-ss')
         args.insert(2, str(start_time))
+    logging.debug('Subtitle args: {}'.format(' '.join(args)))
     return args
 
 def stream_index_by_lang(metadata, codec_type, lang):

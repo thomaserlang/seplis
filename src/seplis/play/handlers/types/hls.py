@@ -28,10 +28,8 @@ def start(handler, settings, metadata):
         handler.finish()
         return
     temp_folder = setup_temp_folder(session)
-    path = os.path.join(temp_folder, 'media.m3u8')
     media_file = 'media.m3u8'
-    #if handler.agent['os']['family'] == 'iOS':
-    #    media_file = 'media2.m3u8'
+    path = os.path.join(temp_folder, media_file)
     if session in sessions:        
         wait_for_media(handler, metadata, path, media_file, session)
         return
@@ -39,6 +37,7 @@ def start(handler, settings, metadata):
     process = subprocess.Popen(
         ffmpeg_start(temp_folder, handler, settings, metadata),
         env=base.subprocess_env(),
+        cwd=temp_folder,
     )
     call_later = handler.ioloop.call_later(
         config['play']['session_timeout'],
@@ -49,9 +48,7 @@ def start(handler, settings, metadata):
         'process': process,
         'temp_folder': temp_folder,
         'call_later': call_later,
-    }    
-    if media_file == 'media2.m3u8':
-        generate_media(handler, metadata, path)
+    }
     wait_for_media(handler, metadata, path, media_file, session)
 
 def wait_for_media(handler, metadata, path, media_file, session, times=0):
@@ -60,9 +57,9 @@ def wait_for_media(handler, metadata, path, media_file, session, times=0):
     if os.path.exists(path):
         with open(path, 'r') as f:
             for line in f:
-                if '.ts' in line:
+                if not '#' in line:
                     ts_files += 1    
-    if not os.path.exists(path) or (ts_files < 4):
+    if not os.path.exists(path) or (ts_files < 3):
         times += 1
         handler.ioloop.call_later(
             0.05,
@@ -83,23 +80,6 @@ def wait_for_media(handler, metadata, path, media_file, session, times=0):
     for s in media:
         handler.write(s+'\n')
     handler.finish()
-    
-def generate_media(handler, metadata, path):
-    with open(os.path.dirname(path)+'/media2.m3u8', 'w') as f:
-        start_time = int(handler.get_argument('start_time', 0))
-        duration = float(metadata['format']['duration']) - start_time
-        f.write('#EXTM3U\n')
-        f.write('#EXT-X-VERSION:3\n')
-        f.write('#EXT-X-TARGETDURATION:3\n')
-        f.write('#EXT-X-MEDIA-SEQUENCE:0\n')
-        for i in range(0, int(duration/config['play']['segment_time'])):
-            f.write('#EXTINF:3,\n')
-            f.write('{}'.format(i).zfill(5)+'.ts\n')
-        rest = duration % config['play']['segment_time']
-        if rest > 0:
-            f.write('#EXTINF:{},\n'.format(int(rest)))
-            f.write('{}'.format(i+1).zfill(5)+'.ts\n')
-        f.write('#EXT-X-ENDLIST')
 
 def ping(handler, session):
     if session not in sessions:
@@ -128,21 +108,18 @@ def cancel(session):
     del sessions[session]
 
 def ffmpeg_start(temp_folder, handler, settings, metadata):
-    session = handler.get_argument('session')
     args = base.ffmpeg_base_args(handler, settings, metadata)
     if handler.agent['os']['family'] == 'iOS':
         base.change_ffmpeg_arg('-c:v', args, settings['transcode_codec'])
     args.extend([
         {'-f': 'hls'},
-        {'-hls_flags': 'round_durations'},
         {'-hls_list_size': '0'},
         {'-hls_time': str(config['play']['segment_time'])},
         {'-force_key_frames': 'expr:gte(t,n_forced*{})'.format(config['play']['segment_time'])},
-        {'-hls_segment_filename': os.path.join(temp_folder, '%05d.ts')},
         {os.path.join(temp_folder, 'media.m3u8'): None},
     ])
     r = base.to_subprocess_arguments(args)
-    logging.debug('FFmpeg start args: {}'.format(r))
+    logging.debug('FFmpeg start args: {}'.format(' '.join(r)))
     return r
 
 def setup_temp_folder(session):
@@ -150,3 +127,9 @@ def setup_temp_folder(session):
     if not os.path.exists(temp_folder):
         os.makedirs(temp_folder)
     return temp_folder
+
+def tornado_auto_reload():
+    for session in list(sessions):
+        cancel(session)
+import tornado.autoreload
+tornado.autoreload.add_reload_hook(tornado_auto_reload)

@@ -59,41 +59,8 @@ config = {
 
         'port': 8003,
         'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
-        'segment_time': 3,
+        'segment_time': 2,
         'session_timeout': 5, # Timeout for HLS sessions
-        'devices':{
-            'chrome': {
-                'names':    [
-                    'h264',
-                    'webm',
-                ],
-                'pix_fmt': [
-                    'yuv420p',
-                ],
-                'default_codec': 'libx264',
-                'type': 'stream',
-            },
-            'default': {
-                'names':    [
-                    'h264',
-                ],
-                'pix_fmt': [
-                    'yuv420p',
-                ],
-                'default_codec': 'libx264',
-                'type': 'stream',
-            },
-            'hlsmp4': {
-                'names':    [
-                    'h264',
-                ],
-                'pix_fmt': [
-                    'yuv420p',
-                ],
-                'default_codec': 'libx264',
-                'type': 'hls',
-            },
-        }, 
         'x-accel': False,
     },
 }
