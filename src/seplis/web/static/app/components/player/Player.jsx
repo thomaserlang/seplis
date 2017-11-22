@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Hls from 'hls.js';
 import ClassNames from 'classnames';
 import {request} from 'api';
 import PlayNext from './PlayNext';
@@ -41,6 +42,7 @@ class Player extends React.Component {
         this.onPlayPauseClick = this.playPauseClick.bind(this);
         this.duration = parseInt(props.metadata.format.duration);
         this.pingTimer = null;
+        this.hls = null;
         this.onFullscreenClick = this.fullscreenClick.bind(this);
         this.onVolumeChange = this.volumeChange.bind(this);
 
@@ -77,10 +79,40 @@ class Player extends React.Component {
         this.video.addEventListener('touchstart', this.playClick.bind(this));
         this.setPingTimer();
         this.video.volume = this.volume;
-        this.video.load();
+        this.loadStream(this.getPlayUrl());
         document.onmousemove = this.mouseMove.bind(this);
         document.onkeypress = this.keypress.bind(this);
         document.onbeforeunload = this.beforeUnload.bind(this);
+    }
+
+    loadStream(url) {
+        this.setState({loading: true});
+        if (!Hls.isSupported()) {
+            this.video.src = url;
+            this.video.load();
+            this.video.play();
+            return;
+        }
+
+        if (this.hls) {
+            this.hls.destroy();
+            if (this.hls.bufferTimer) {
+                clearInterval(this.hls.bufferTimer);
+                this.hls.bufferTimer = undefined;
+            }
+            this.hls = null;
+        }
+        this.hls = new Hls({
+            enableWorker: false,
+            startLevel: 0,
+            manifestLoadingTimeOut: 30000,
+            debug: true,
+        });
+        this.hls.loadSource(url);
+        this.hls.attachMedia(this.video);
+        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            this.video.play();
+        });
     }
 
     keypress(e) {
@@ -130,19 +162,13 @@ class Player extends React.Component {
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
-            `&audio_lang=${this.state.audio || ''}`
+            `&audio_lang=${this.state.audio || ''}`+
+            `&device=hls`;
     }
 
     playPauseClick() {
         if (this.video.paused) {
-            this.setPingTimer();
-            if (this.video.src != this.getPlayUrl()) {
-                this.changeVideoState({
-                    startTime: this.state.time,
-                });
-            } else {
-                this.video.play();
-            }
+            this.video.play();
             this.setHideControlsTimer(2000);
         }
         else {
@@ -161,8 +187,6 @@ class Player extends React.Component {
             playing: false,
             showControls: true,
         });
-        clearTimeout(this.pingTimer);
-        this.video.src = '';
     }
 
     playEvent() {
@@ -181,8 +205,8 @@ class Player extends React.Component {
     }
 
     timeupdateEvent(e) {
-        this.setState({loading: false});
         if (!this.video.paused) {
+            this.setState({loading: false});
             let time = this.video.currentTime;
             if (this.video.seekable.length <= 1 || this.video.seekable.end(0) <= 1)
                 time += this.state.startTime;
@@ -200,12 +224,11 @@ class Player extends React.Component {
     }
 
     changeVideoState(state) {
+        this.setState({'loading': true});
         this.cancelPlayUrl().then(() => {
             this.setState(state, () => {
+                this.loadStream(this.getPlayUrl());
                 this.setPingTimer();
-                this.video.src = this.getPlayUrl();
-                this.video.load();
-                this.video.play();
             });
         });
     }
@@ -404,8 +427,7 @@ class Player extends React.Component {
                     <video 
                         className="video" 
                         preload="none" 
-                        autoPlay={true}
-                        src={this.getPlayUrl()}
+                        autoPlay={false}
                         controls={false}
                         ref={(ref) => this.video = ref}
                     />
@@ -424,7 +446,6 @@ export default Player;
 export function getPlayServer(url) {
     /* `url` must be a url to the play servers. 
         Example: /1/shows/1/episodes/1/play-servers.
-
         Returns a promise.
     */
     return new Promise((resolve, reject) => {
