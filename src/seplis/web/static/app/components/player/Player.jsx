@@ -188,7 +188,6 @@ class Player extends React.Component {
     }
 
     fullscreenchangeEvent() {
-        console.log('fullscreen change');
         this.setState({
             fullscreen: !!(document.fullScreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement || document.fullscreenElement),
         });
