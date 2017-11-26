@@ -77,12 +77,17 @@ class Player extends React.Component {
         this.video.addEventListener('waiting', this.playWaiting.bind(this));
         this.video.addEventListener('click', this.playClick.bind(this));
         this.video.addEventListener('touchstart', this.playClick.bind(this));
+        this.video.addEventListener('loadeddata', this.loadedEvent.bind(this));
         this.setPingTimer();
         this.video.volume = this.volume;
         this.loadStream(this.getPlayUrl());
         document.onmousemove = this.mouseMove.bind(this);
         document.onkeypress = this.keypress.bind(this);
         document.onbeforeunload = this.beforeUnload.bind(this);
+    }
+
+    loadedEvent(e) {
+        this.setState({loading: false});
     }
 
     loadStream(url) {
