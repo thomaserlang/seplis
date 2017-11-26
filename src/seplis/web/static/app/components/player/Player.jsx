@@ -106,6 +106,7 @@ class Player extends React.Component {
             enableWorker: false,
             startLevel: 0,
             manifestLoadingTimeOut: 30000,
+            maxSeekHole: 12,
             debug: true,
         });
         this.hls.loadSource(url);

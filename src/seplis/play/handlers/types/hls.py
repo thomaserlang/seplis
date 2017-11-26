@@ -114,8 +114,8 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     args.extend([
         {'-f': 'hls'},
         {'-hls_list_size': '0'},
+        {'-hls_flags': 'round_durations'},
         {'-hls_time': str(config['play']['segment_time'])},
-        {'-force_key_frames': 'expr:gte(t,n_forced*{})'.format(config['play']['segment_time'])},
         {os.path.join(temp_folder, 'media.m3u8'): None},
     ])
     r = base.to_subprocess_arguments(args)
