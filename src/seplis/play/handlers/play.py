@@ -104,7 +104,7 @@ def decode_play_id(play_id):
     return utils.json_loads(data)
 
 device_settings = {
-    'Other': {
+    'hls': {
         'codec_names': [
             'h264',
         ],
