@@ -109,8 +109,6 @@ def cancel(session):
 
 def ffmpeg_start(temp_folder, handler, settings, metadata):
     args = base.ffmpeg_base_args(handler, settings, metadata)
-    if handler.agent['os']['family'] == 'iOS':
-        base.change_ffmpeg_arg('-c:v', args, settings['transcode_codec'])
     args.extend([
         {'-f': 'hls'},
         {'-hls_list_size': '0'},
