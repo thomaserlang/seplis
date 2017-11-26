@@ -59,7 +59,7 @@ def wait_for_media(handler, metadata, path, media_file, session, times=0):
             for line in f:
                 if not '#' in line:
                     ts_files += 1    
-    if not os.path.exists(path) or (ts_files < 3):
+    if not os.path.exists(path) or (ts_files < 1):
         times += 1
         handler.ioloop.call_later(
             0.05,
