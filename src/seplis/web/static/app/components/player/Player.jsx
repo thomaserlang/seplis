@@ -132,7 +132,7 @@ class Player extends React.Component {
     }
 
     playClick(e) {
-        event.preventDefault();
+        e.preventDefault();
         if (this.video.paused || this.state.loading)
             return;
         this.setState({showControls: !this.state.showControls});
@@ -150,6 +150,7 @@ class Player extends React.Component {
     setHideControlsTimer(timeout) {
         if (timeout == undefined)
             timeout = 6000;
+        clearTimeout(this.hideControlsTimer);
         this.hideControlsTimer = setTimeout(() => {
             if (this.video.paused || this.state.loading)
                 return;
@@ -262,14 +263,15 @@ class Player extends React.Component {
 
     fullscreenClick(event) {
         if (!this.state.fullscreen) {
-            if (this.video.requestFullScreen) {
-                this.video.requestFullScreen();
-            } else if (this.video.mozRequestFullScreen) {
-                this.video.mozRequestFullScreen();
-            } else if (this.video.webkitRequestFullScreen) {
-                this.video.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
-            } else if (this.video.webkitEnterFullscreen) {
-                this.video.webkitEnterFullscreen();
+            let elem = document.getElementById('player');
+            if (elem.requestFullScreen) {
+                elem.requestFullScreen();
+            } else if (elem.mozRequestFullScreen) {
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullScreen) {
+                elem.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+            } else if (elem.webkitEnterFullscreen) {
+                elem.webkitEnterFullscreen();
             }
         } else {
             if (document.cancelFullScreen) {
@@ -433,7 +435,7 @@ class Player extends React.Component {
 
     render() {
         return (
-            <div className="player">  
+            <div id="player">  
                 <div className="overlay">
                     <video 
                         className="video" 
