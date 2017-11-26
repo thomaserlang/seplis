@@ -72,7 +72,12 @@ class Player extends React.Component {
         this.video.addEventListener('timeupdate', this.timeupdateEvent.bind(this));
         this.video.addEventListener('pause', this.pauseEvent.bind(this));
         this.video.addEventListener('play', this.playEvent.bind(this));
-        this.video.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this));
+        
+        document.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this));
+        document.addEventListener('webkitfullscreenchange', this.fullscreenchangeEvent.bind(this));
+        document.addEventListener('mozfullscreenchange', this.fullscreenchangeEvent.bind(this));
+        document.addEventListener('msfullscreenchange', this.fullscreenchangeEvent.bind(this));
+        
         this.video.addEventListener('error', this.playError.bind(this));
         this.video.addEventListener('waiting', this.playWaiting.bind(this));
         this.video.addEventListener('click', this.playClick.bind(this));
@@ -112,7 +117,7 @@ class Player extends React.Component {
             startLevel: 0,
             manifestLoadingTimeOut: 30000,
             maxSeekHole: 12,
-            debug: true,
+            debug: false,
         });
         this.hls.loadSource(url);
         this.hls.attachMedia(this.video);
@@ -183,8 +188,9 @@ class Player extends React.Component {
     }
 
     fullscreenchangeEvent() {
+        console.log('fullscreen change');
         this.setState({
-            fullscreen: document.fullScreen,
+            fullscreen: !!(document.fullScreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement || document.fullscreenElement),
         });
     }
 
