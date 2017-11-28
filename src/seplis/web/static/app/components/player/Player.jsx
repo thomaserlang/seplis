@@ -124,6 +124,31 @@ class Player extends React.Component {
         this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
             this.video.play();
         });
+        this.hls.on(Hls.Events.ERROR, this.hlsError.bind(this));
+    }
+
+    hlsError(event, data) {
+        console.warn(data);
+        if(data.fatal) {
+            console.log('fatal error :' + data.details);
+            switch(data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                    console.log("fatal network error encountered, try to recover");
+                    hls.startLoad();
+                    break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                    console.log("fatal media error encountered, try to recover");
+                    this.handleMediaError();
+                    break;
+            }
+        }
+    }
+
+    handleMediaError() {
+        this.setState({loading: true});
+        console.log('handleMediaError');
+        this.hls.recoverMediaError();
+        this.video.play();
     }
 
     keypress(e) {
@@ -208,8 +233,12 @@ class Player extends React.Component {
         });
     }
 
-    playError() {
+    playError(e) {
         this.setState({loading: false});
+        console.warn(e.currentTarget.error)
+        if (e.currentTarget.error.code == e.currentTarget.error.MEDIA_ERR_DECODE) {
+            this.handleMediaError();
+        }
     }
 
     playWaiting() {
