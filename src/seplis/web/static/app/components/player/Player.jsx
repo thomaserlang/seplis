@@ -134,7 +134,7 @@ class Player extends React.Component {
             switch(data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     console.log("fatal network error encountered, try to recover");
-                    hls.startLoad();
+                    this.hls.startLoad();
                     break;
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     console.log("fatal media error encountered, try to recover");
