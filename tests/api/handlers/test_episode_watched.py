@@ -17,19 +17,11 @@ class Test_episode_watched(Testbase):
         })
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
-        url = '/1/shows/{}/episodes/{}/watched'.format(
-            show['id'],
-            1
-        )
+        url = '/1/shows/{}/episodes/{}/watched'.format(show['id'], 1)
         response = self.get(url)
         self.assertEqual(response.code, 204)
 
-        response = self.put(
-            url, 
-            {
-                'times': 2,
-            }
-        )
+        response = self.put(url, {'times': 2})
         self.assertEqual(response.code, 200, response.body)
 
         response = self.get(url)

@@ -45,5 +45,10 @@ class Test_episode_watching(Testbase):
         self.assertEqual(w['position'], 201)        
         self.assertTrue(w['updated_at'] is not None)
 
+        response = self.delete(url)
+        self.assertEqual(response.code, 204, response.body)
+        response = self.get(url)
+        self.assertEqual(response.code, 204, response.body)
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

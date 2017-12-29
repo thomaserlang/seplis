@@ -10,12 +10,9 @@ class Test_next_to_watch(Testbase):
         self.login(constants.LEVEL_EDIT_SHOW)
         response = self.post('/1/shows', {
             'episodes': [
-                {
-                    'number': 1,
-                },
-                {
-                    'number': 2,
-                },
+                {'number': 1},
+                {'number': 2},
+                {'number': 3},
             ],
         })
         self.assertEqual(response.code, 201, response.body)
@@ -34,13 +31,8 @@ class Test_next_to_watch(Testbase):
 
         # set episode 1 as watching
         response = self.put(
-            '/1/shows/{}/episodes/{}/watching'.format(
-                show['id'],
-                1
-            ), 
-            {
-                'position': 200,
-            }
+            '/1/shows/{}/episodes/{}/watching'.format(show['id'], 1), 
+            {'position': 200}
         )
         self.assertEqual(response.code, 204)
 
@@ -51,10 +43,7 @@ class Test_next_to_watch(Testbase):
 
         # complete episode 1
         response = self.put(
-            '/1/shows/{}/episodes/{}/watched'.format(
-                show['id'],
-                1
-            )
+            '/1/shows/{}/episodes/{}/watched'.format(show['id'], 1)
         )        
         self.assertEqual(response.code, 200, response.body)
 
@@ -62,6 +51,33 @@ class Test_next_to_watch(Testbase):
         ntw = json_loads(self.get(next_to_watch_url).body)
         self.assertEqual(ntw['number'], 2)
         self.assertEqual(ntw['user_watched'], None)
+
+        response = self.put(
+            '/1/shows/{}/episodes/{}/watched'.format(show['id'], 3)
+        )        
+        self.assertEqual(response.code, 200, response.body)
+        response = self.put(
+            '/1/shows/{}/episodes/{}/watching'.format(show['id'], 3), 
+            {'position': 200}
+        )
+        self.assertEqual(response.code, 204)
+        ntw = json_loads(self.get(next_to_watch_url).body)
+        self.assertEqual(ntw['number'], 3)
+
+
+        # TODO: last watched and next to watch should not be the same
+        response = self.delete(
+            '/1/shows/{}/episodes/{}/watching'.format(show['id'], 3)
+        )
+        self.assertEqual(response.code, 204, response.body)
+
+        ntw = json_loads(self.get(next_to_watch_url).body)
+        self.assertEqual(ntw['number'], 3)
+
+        response = self.get('/1/shows/{}/episodes/last-watched'.format(show['id']))
+        self.assertEqual(response.code, 200)
+        ntw = json_loads(response.body)
+        self.assertEqual(ntw['number'], 3)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

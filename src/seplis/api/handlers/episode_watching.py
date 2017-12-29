@@ -1,10 +1,8 @@
 import good
 from seplis.api.handlers import base
-from seplis.api.decorators import authenticated, new_session
+from seplis.api.decorators import authenticated, new_session, run_on_executor
 from seplis.api import models, exceptions, constants
 from seplis import schemas
-from tornado import gen, web
-from tornado.concurrent import run_on_executor
 
 class Handler(base.Handler):
 
@@ -13,10 +11,27 @@ class Handler(base.Handler):
     })
 
     @authenticated(constants.LEVEL_PROGRESS)
-    @gen.coroutine
-    def put(self, show_id, episode_number):
+    def get(self, show_id, episode_number):
+        w = models.Episode_watched.cache_get(
+            user_id=self.current_user.id,
+            show_id=show_id,
+            episode_number=episode_number,
+        )
+        if not w:
+            self.set_status(204)
+        else:
+            self.write_object(w)
+
+    @authenticated(constants.LEVEL_PROGRESS)
+    async def put(self, show_id, episode_number):
+        await self._put(show_id, episode_number)
         self.set_status(204)
-        yield self._put(show_id, episode_number)
+
+    @authenticated(constants.LEVEL_PROGRESS)
+    async def delete(self, show_id, episode_number):
+        self.request.body = {'position': 0}
+        await self._put(show_id, episode_number)
+        self.set_status(204)
 
     @run_on_executor
     def _put(self, show_id, episode_number):
@@ -34,15 +49,3 @@ class Handler(base.Handler):
                 position=int(self.request.body['position']),
             )
             session.commit()
-
-    @authenticated(constants.LEVEL_PROGRESS)
-    def get(self, show_id, episode_number):
-        w = models.Episode_watched.cache_get(
-            user_id=self.current_user.id,
-            show_id=show_id,
-            episode_number=episode_number,
-        )
-        if not w:
-            self.set_status(204)
-        else:
-            self.write_object(w)

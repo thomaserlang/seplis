@@ -56,25 +56,44 @@ class WatchedButton extends React.Component {
         });
     }    
     onWatchedDecr(e) {
-        if (this.state.times === 0) 
-            return;
-        this.setState({times: --this.state.times});
-        request(this.watchedApiEndpoint(), {
-            data: {times: -1},
-            method: 'PUT', 
-        }).done((data) => {
-            trigger_episode_watched_status(
-                'decr', 
-                this.props.showId, 
-                this.props.episodeNumber
-            );
-            this.setState(data);
-        }).fail(() => {            
-            this.setState({times: ++this.state.times});
-        });
+        if (this.state.position > 0) {
+            request(this.watchedApiEndpoint()
+                .replace('watched', 'watching'), {
+                method: 'DELETE', 
+            }).done((data) => {
+                trigger_episode_watched_status(
+                    'decr', 
+                    this.props.showId, 
+                    this.props.episodeNumber
+                );
+                this.setState({position: 0});
+            });
+        } else if (this.state.times > 0) { 
+            this.setState({times: --this.state.times});
+            request(this.watchedApiEndpoint(), {
+                data: {times: -1},
+                method: 'PUT', 
+            }).done((data) => {
+                trigger_episode_watched_status(
+                    'decr', 
+                    this.props.showId, 
+                    this.props.episodeNumber
+                );
+                if (data) {
+                    this.setState(data);
+                } else {
+                    this.setState({
+                        times: 0,
+                        position: 0,
+                    });
+                }
+            }).fail(() => {            
+                this.setState({times: ++this.state.times});
+            });
+        }
     }
     onWatchedClick(e) {
-        if (this.state.times !== 0) 
+        if ((this.state.times > 0) || (this.state.position > 0))
             return;
         this.onWatchedIncr(e);
     }
@@ -102,12 +121,13 @@ class WatchedButton extends React.Component {
             watched: this.state.times>0,
             watching: this.state.position>0,
         });
+        let dropdown = (this.state.times>0) || (this.state.position>0);
         return (
             <div className="btn-group btn-episode-watched-group dropdown">
                 {this.renderDropdown()}
                 <button 
                     className={btnClass}
-                    data-toggle={this.state.times>0?'dropdown':''}
+                    data-toggle={dropdown?'dropdown':''}
                     onClick={this.onWatchedClick}
                 >
                     Watched

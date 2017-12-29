@@ -110,15 +110,18 @@ class Episode(Base):
                 user_id=user_id,
                 position=position,
                 times=times,
+                updated_at=datetime.utcnow(),
             )
             self.session.add(ew)
         else:
             new_times = ew.times + times
             if new_times < 0:
                 new_times = 0
-            if (times != 0) and (new_times == 0) and (position == 0):
+            if (new_times == 0) and (position == 0):
                 self.session.delete(ew)
                 return
+            if (times > 0) or (position > 0):
+                ew.updated_at = datetime.utcnow()
             ew.position = position
             ew.times = new_times
         return {
@@ -191,7 +194,7 @@ class Episode_watched(Base):
     episode_number = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     times = sa.Column(sa.Integer, default=0)
     position = sa.Column(sa.Integer)
-    updated_at = sa.Column(sa.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = sa.Column(sa.DateTime)
     completed = sa.Column(utils.YesNoBoolean(), default=False)
 
     def serialize(self):
@@ -201,7 +204,6 @@ class Episode_watched(Base):
         self.cache()
 
     def before_upsert(self):
-        self.updated_at = datetime.utcnow()
         times_hist = get_history(self, 'times')
         self.completed = True \
             if times_hist.added and times_hist.added[0] > 0 else \
@@ -212,13 +214,16 @@ class Episode_watched(Base):
         self.cr_latest_data()
         self.cr_watched_shows()
         self.cr_watched_show_episodes()
+        self._set_new_last_watched()
 
-        # Set the last watched episode
+    def _set_new_last_watched(self):
         ep = self.session.query(Episode_watched).filter(
             Episode_watched.user_id == self.user_id,
             Episode_watched.show_id == self.show_id,
-            Episode_watched.episode_number < self.episode_number,
-        ).order_by(sa.desc(Episode_watched.episode_number)).first()
+            Episode_watched.episode_number != self.episode_number,
+        ).order_by(
+            sa.desc(Episode_watched.episode_number),
+        ).first()
         if ep:
             ep.cache()
 
@@ -315,11 +320,22 @@ class Episode_watched(Base):
     def cache(self):
         """Sends the user's episode watched info to redis.
         This method is automatically called after update or insert.
-        """ 
+        """
+        times_hist = get_history(self, 'times')        
+        position_hist = get_history(self, 'position')
         self.cs_data()
-        self.cs_latest_data()
-        self.cs_watched_show_episodes()
-        self.cs_watched_shows()
+        if (times_hist.unchanged and position_hist.added and \
+            position_hist.added[0] == 0) or \
+            (times_hist.added and times_hist.deleted and \
+                times_hist.added[0] < times_hist.deleted[0]):
+            key = self.ck_latest_data(self.user_id, self.show_id)
+            ep = database.redis.hget(key, 'episode_number')
+            if ep and int(ep) == self.episode_number:
+                database.redis.hset(key, 'position', '0')
+        else:
+            self.cs_latest_data()
+            self.cs_watched_show_episodes()
+            self.cs_watched_shows()
 
     @classmethod
     def cache_get(cls, user_id, show_id, episode_number):

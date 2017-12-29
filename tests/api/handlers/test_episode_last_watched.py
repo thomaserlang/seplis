@@ -64,5 +64,30 @@ class Test_next_to_watch(Testbase):
         self.assertEqual(data['user_watched']['position'], 0)
         self.assertEqual(data['user_watched']['times'], 1)
 
+
+        # set episode 1 as watched
+        response = self.put('/1/shows/{}/episodes/{}/watched'.format(show_id,1))
+        # unwatch episode 2
+        response = self.put('/1/shows/{}/episodes/{}/watched'.format(show_id,2), {
+            'times': -1,
+        })
+        self.assertEqual(response.code, 200)
+        # episode 1 should now be the last watched
+        response = self.get('/1/shows/{}/episodes/last-watched'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(data['number'], 1)
+
+        # watch episode 2 twice
+        response = self.put('/1/shows/{}/episodes/{}/watched'.format(show_id,2), {
+            'times': 2,
+        })
+        self.assertEqual(response.code, 200)
+        response = self.get('/1/shows/{}/episodes/last-watched'.format(show_id))
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(data['number'], 2)
+        self.assertEqual(data['user_watched']['position'], 0)
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
