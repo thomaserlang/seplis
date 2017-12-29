@@ -46,7 +46,10 @@
     }
 
     .watching {
-        background: linear-gradient(90deg, #068223 56%, #414141 44%);
+        background: linear-gradient(90deg, #428bca 56%, #414141 44%);
+    }    
+    .watching-watched {
+        background: linear-gradient(90deg, #428bca 56%, #068223 44%);
     }
 
     .fa-plus {

@@ -115,19 +115,20 @@ class WatchedButton extends React.Component {
     }
 
     render() {
+        let dropdown = (this.state.times>0) || (this.state.position>0);
         let btnClass = ClassNames({
             btn: true,
             'btn-watched': true,
             watched: this.state.times>0,
             watching: this.state.position>0,
+            'watching-watched': this.state.position>0 && this.state.times>0,
         });
-        let dropdown = (this.state.times>0) || (this.state.position>0);
         return (
             <div className="btn-group btn-episode-watched-group dropdown">
                 {this.renderDropdown()}
                 <button 
                     className={btnClass}
-                    data-toggle={dropdown?'dropdown':''}
+                    data-toggle={dropdown?'dropdown':'none'}
                     onClick={this.onWatchedClick}
                 >
                     Watched
