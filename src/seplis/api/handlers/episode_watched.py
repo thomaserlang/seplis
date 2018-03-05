@@ -1,10 +1,10 @@
 import logging
 import good
+from datetime import datetime
 from seplis.api.handlers import base
-from seplis.api.decorators import authenticated, new_session
+from seplis.api.decorators import authenticated, new_session, run_on_executor
 from seplis.api import models, exceptions, constants
 from tornado import gen, web
-from tornado.concurrent import run_on_executor
 from sqlalchemy import asc
 
 class Handler(base.Handler):
@@ -16,81 +16,120 @@ class Handler(base.Handler):
         ),
     }, default_keys=good.Optional)
 
+
     @authenticated(constants.LEVEL_PROGRESS)
-    @gen.coroutine
-    def put(self, show_id, episode_number):
-        w = yield self._put(show_id, episode_number)
-        self.write_object(models.Episode_watched.cache_get(
-            user_id=self.current_user.id,
+    async def get(self, show_id, episode_number):
+        w = await self._get(
             show_id=show_id,
             episode_number=episode_number,
-        ))
+        )
+        if w:
+            self.write_object(w)
+        else:
+            self.set_status(204)
+
+    @authenticated(constants.LEVEL_PROGRESS)
+    async def put(self, show_id, episode_number):
+        w = await self._put(show_id, episode_number)
+        if w:
+            self.write_object(w)
+        else:
+            self.set_status(204)
+
+    @authenticated(0)
+    async def delete(self, show_id, episode_number):
+        await self._delete(show_id, episode_number)
+        self.set_status(204)
+
+    @run_on_executor
+    def _get(self, show_id, episode_number):
+        with new_session() as session:
+            ew = session.query(models.Episode_watched).filter(
+                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.episode_number == episode_number,
+                models.Episode_watched.user_id == self.current_user.id,
+            ).first()
+            if ew:
+                return ew.serialize()
 
     @run_on_executor
     def _put(self, show_id, episode_number):
-        self.validate(self.__schema__)
+        data = self.validate()
         with new_session() as session:
-            episode = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number == episode_number,
-            ).first()
-            if not episode:
-                raise exceptions.Episode_unknown()
-            episode.watched(
+            ew = set_watched(
+                session=session,
                 user_id=self.current_user.id,
-                times=int(self.request.body.get('times', 1)),
-                position=0,
+                show_id=show_id,
+                episode_number=episode_number,
+                times=data.get('times', 1),
             )
             session.commit()
-
-    @authenticated(0)
-    @gen.coroutine
-    def delete(self, show_id, episode_number):
-        yield self._delete(show_id, episode_number)
+            if ew:
+                return ew.serialize()
 
     @run_on_executor
     def _delete(self, show_id, episode_number):
         with new_session() as session:
-            episode = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number == episode_number,
+            ew = session.query(models.Episode_watched).filter(
+                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.episode_number == episode_number,
+                models.Episode_watched.user_id == self.current_user.id,
             ).first()
-            if not episode:
-                raise exceptions.Episode_unknown()
-            episode.unwatch(self.current_user.id)
+            if ew:
+                ew.set_prev_as_watching()
+                session.delete(ew)
             session.commit()
 
-    @authenticated(constants.LEVEL_USER)
-    def get(self, show_id, episode_number):
-        w = models.Episode_watched.cache_get(
-            user_id=self.current_user.id,
+def set_watched(session, user_id, show_id, episode_number, times):
+    episode = session.query(models.Episode).filter(
+        models.Episode.show_id == show_id,
+        models.Episode.number == episode_number,
+    ).first()
+    if not episode:
+        raise exceptions.Episode_unknown()
+
+    ew = session.query(models.Episode_watched).filter(
+        models.Episode_watched.show_id == show_id,
+        models.Episode_watched.episode_number == episode_number,
+        models.Episode_watched.user_id == user_id,
+    ).first()
+
+    if not ew:
+        ew = models.Episode_watched(
             show_id=show_id,
             episode_number=episode_number,
+            user_id=user_id,
+            times=0,
         )
-        if not w:
-            self.set_status(204)
-        else:
-            self.write_object(w)
+        session.add(ew)
+
+    if ew.times < ew.times+times:
+        ew.watched_at = datetime.utcnow()
+        ew.set_as_watching()
+
+    ew.times += times
+    ew.position = 0
+    
+    if ew.times <= 0:
+        ew.set_prev_as_watching()
+        session.delete(ew)
+        return None
+    return ew
 
 class Range_handler(base.Handler):
 
     @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def put(self, show_id, from_, to):
-        yield self._put(
-            show_id, 
-            int(from_), 
-            int(to),
-        )
+    async def put(self, show_id, from_, to):
+        await self._put(show_id, int(from_), int(to))
         self.set_status(204)
 
     @run_on_executor
     def _put(self, show_id, from_, to):
-        self.validate(Handler.__schema__)
-        times = int(self.request.body.get('times', 1))
+        data = self.validate(Handler.__schema__)
+        times = data.get('times', 1)
         episode = None
         with new_session() as session:
-            episodes = session.query(models.Episode).filter(
+            episodes = session.query(models.Episode.number).filter(
                 models.Episode.show_id == show_id,
                 models.Episode.number >= from_,
                 models.Episode.number <= to,
@@ -98,27 +137,31 @@ class Range_handler(base.Handler):
             if not episodes:
                 return
             for episode in episodes:
-                episode.watched(self.current_user.id, times=times, position=0)
-                session.commit()
+                set_watched(
+                    session=session,
+                    user_id=self.current_user.id,
+                    show_id=show_id,
+                    episode_number=episode.number,
+                    times=times,
+                )
+            session.commit()
 
     @authenticated(constants.LEVEL_USER)
     @gen.coroutine
-    def delete(self, show_id, from_, to):
-        yield self._delete(
-            show_id, 
-            int(from_), 
-            int(to),
-        )
+    async def delete(self, show_id, from_, to):
+        await self._delete(show_id, int(from_), int(to))
         self.set_status(204)
 
     @run_on_executor
     def _delete(self, show_id, from_, to):
         with new_session() as session:
-            episodes = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
-                models.Episode.number >= from_,
-                models.Episode.number <= to,
-            ).order_by(asc(models.Episode.number)).all()
-            for episode in episodes:
-                episode.unwatch(self.current_user.id)
+            ews = session.query(models.Episode_watched).filter(
+                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.user_id == self.current_user.id,
+                models.Episode_watched.episode_number >= from_,
+                models.Episode_watched.episode_number <= to,
+            ).order_by(asc(models.Episode_watched.episode_number)).all()
+            for ew in ews:
+                ew.set_prev_as_watching()
+                session.delete(ew)
             session.commit()

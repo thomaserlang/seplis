@@ -1,44 +1,44 @@
 import logging
+from sqlalchemy import desc
 from . import base
 from seplis import schemas, utils
 from seplis.api import constants, exceptions, models
-from seplis.api.decorators import authenticated, new_session, auto_session
+from seplis.api.decorators import authenticated, new_session, run_on_executor
 from seplis.api.connections import database
 
-class Handler(base.Handler):
+class Handler(base.Pagination_handler):
 
     async def get(self, user_id):
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
-        pagination = models.Episode_watched.show_recently(
-            user_id=int(user_id),
-            per_page=per_page,
-            page=page,
-        )
-        # fill with show and episode info.
-        if pagination.records:
-            show_ids = []
-            episode_ids = []
-            for w in pagination.records:
-                show_ids.append(w['id'])
-                episode_ids.append('{}-{}'.format(
-                    w['id'],
-                    w['user_watching']['episode_number'] if w['user_watching'] else 0
-                ))
-            show_docs = await self.es('/shows/show/_mget', body={
-                'ids': show_ids,
-            })
-            episode_docs = await self.es('/episodes/episode/_mget', body={
-                'ids': episode_ids,
-            })
-            episode_ids = []
-            for w, show, episode in zip(
-                pagination.records, 
-                show_docs['docs'], 
-                episode_docs['docs']
-            ):
-                if show['found']:
-                    w.update(show['_source'])
-                if episode['found']:
-                    w['user_watching']['episode'] = episode['_source']
-        self.write_object(pagination)
+        super().get()
+        r = await self.get_shows(user_id)
+        self.write_object(r)
+
+    @run_on_executor
+    def get_shows(self, user_id):
+        with new_session() as session:
+            elw = models.Episode_watching
+            ew = models.Episode_watched
+            p = session.query(
+                models.Show,
+                models.Episode_watched,
+                models.Episode,
+            ).filter(
+                elw.user_id == user_id,
+                ew.user_id == elw.user_id,
+                ew.show_id == elw.show_id,
+                ew.episode_number == elw.episode_number,            
+                models.Show.id == elw.show_id,
+                models.Episode.show_id == elw.show_id,
+                models.Episode.number == elw.episode_number,
+            ).order_by(
+                desc(ew.watched_at), desc(elw.show_id)
+            ).paginate(self.page, self.per_page)
+
+            records = []
+            for r in p.records:
+                d = r.Show.serialize()
+                d['user_watching'] = r.Episode_watched.serialize()
+                d['user_watching']['episode'] = r.Episode.serialize()
+                records.append(d)
+            p.records = records
+            return p

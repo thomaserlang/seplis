@@ -79,8 +79,8 @@ class Test_shows_watched(Testbase):
         response = self.get('/1/users/{}/shows-watched'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         shows = utils.json_loads(response.body)
-        self.assertEqual(shows[0]['id'], show_ids[1])
-        self.assertEqual(shows[1]['id'], show_ids[2])
+        self.assertEqual(shows[0]['id'], show_ids[2])
+        self.assertEqual(shows[1]['id'], show_ids[1])
 
         response = self.put('/1/shows/{0}/episodes/{0}/watched'.format(
             show_ids[2]# the episode number is the same as the show id.
@@ -97,7 +97,7 @@ class Test_shows_watched(Testbase):
             show_ids[1]# the episode number is the same as the show id.
         ))
         self.assertEqual(response.code, 204)
-
+  
         response = self.get('/1/users/{}/shows-watched'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         shows = utils.json_loads(response.body)

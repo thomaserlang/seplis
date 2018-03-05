@@ -64,20 +64,18 @@ class Test_next_to_watch(Testbase):
         ntw = json_loads(self.get(next_to_watch_url).body)
         self.assertEqual(ntw['number'], 3)
 
-
-        # TODO: last watched and next to watch should not be the same
         response = self.delete(
-            '/1/shows/{}/episodes/{}/watching'.format(show['id'], 3)
+            '/1/shows/{}/episodes/{}/watched'.format(show['id'], 3)
         )
         self.assertEqual(response.code, 204, response.body)
 
         ntw = json_loads(self.get(next_to_watch_url).body)
-        self.assertEqual(ntw['number'], 3)
+        self.assertEqual(ntw['number'], 2)
 
         response = self.get('/1/shows/{}/episodes/last-watched'.format(show['id']))
         self.assertEqual(response.code, 200)
         ntw = json_loads(response.body)
-        self.assertEqual(ntw['number'], 3)
+        self.assertEqual(ntw['number'], 1)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

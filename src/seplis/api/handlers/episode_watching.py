@@ -1,4 +1,5 @@
 import good
+from datetime import datetime
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session, run_on_executor
 from seplis.api import models, exceptions, constants
@@ -11,16 +12,22 @@ class Handler(base.Handler):
     })
 
     @authenticated(constants.LEVEL_PROGRESS)
-    def get(self, show_id, episode_number):
-        w = models.Episode_watched.cache_get(
-            user_id=self.current_user.id,
-            show_id=show_id,
-            episode_number=episode_number,
-        )
+    async def get(self, show_id, episode_number):
+        w = await self._get(show_id, episode_number)
         if not w:
             self.set_status(204)
         else:
             self.write_object(w)
+
+    @run_on_executor
+    def _get(self, show_id, episode_number):
+        with new_session() as session:
+            r = session.query(models.Episode_watched).filter(
+                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.episode_number == episode_number,
+            ).first()
+            if r:
+                return r.serialize()            
 
     @authenticated(constants.LEVEL_PROGRESS)
     async def put(self, show_id, episode_number):
@@ -30,22 +37,53 @@ class Handler(base.Handler):
     @authenticated(constants.LEVEL_PROGRESS)
     async def delete(self, show_id, episode_number):
         self.request.body = {'position': 0}
-        await self._put(show_id, episode_number)
+        await self.reset_position(show_id, episode_number)
         self.set_status(204)
 
     @run_on_executor
     def _put(self, show_id, episode_number):
-        self.validate(self.__schema__)
-        with new_session() as session:
+        data = self.validate(self.__schema__)
+        with new_session() as session:            
             episode = session.query(models.Episode).filter(
                 models.Episode.show_id == show_id,
                 models.Episode.number == episode_number,
             ).first()
             if not episode:
                 raise exceptions.Episode_unknown()
-            episode.watched(
-                user_id=self.current_user.id,
-                times=0,
-                position=int(self.request.body['position']),
-            )
+
+            ew = session.query(models.Episode_watched).filter(
+                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.episode_number == episode_number,
+                models.Episode_watched.user_id == self.current_user.id,
+            ).first()
+            if not ew:
+                ew = models.Episode_watched(
+                    show_id=show_id,
+                    episode_number=episode_number,
+                    user_id=self.current_user.id,
+                )
+                session.add(ew)
+            ew.position = data['position']
+            if ew.position > 0:
+                ew.watched_at = datetime.utcnow()
+                ew.set_as_watching()
+            else:
+                ew.set_prev_as_watching()
+                if ew.times == 0 and ew.position == 0:
+                    session.delete(ew)
             session.commit()
+
+    @run_on_executor
+    def reset_position(self, show_id, episode_number):
+        with new_session() as session:
+            ew = session.query(models.Episode_watched).filter(
+                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.episode_number == episode_number,
+                models.Episode_watched.user_id == self.current_user.id,
+            ).first()
+            if ew:
+                ew.position = 0
+                if ew.times == 0:
+                    ew.set_prev_as_watching()
+                    session.delete(ew)
+                session.commit()

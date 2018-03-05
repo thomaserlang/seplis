@@ -1,6 +1,7 @@
 from . import base
 from seplis.api import exceptions, constants, models
-from seplis.api.decorators import authenticated
+from seplis.api.decorators import authenticated, new_session, run_on_executor
+from sqlalchemy import or_, and_
 
 class Handler(base.Handler):
 
@@ -15,7 +16,8 @@ class Handler(base.Handler):
         else:
             self.write_object(episode)
 
-    async def episode_to_watch(self, user_id, show_id):
+    @run_on_executor
+    def episode_to_watch(self, user_id, show_id):
         """Returns which episode to watch for a show.
 
         * Return episode 1 if the user has not watched any episodes.
@@ -38,22 +40,42 @@ class Handler(base.Handler):
             }
 
         """
-        watching = models.Episode_watched.cache_get_show(
-            user_id=user_id, 
-            show_id=show_id,
-        )
-        number = 1
-        if watching:
-            if watching['completed']:
-                number = watching['episode_number'] + 1
-            else:
-                number = watching['episode_number']
-        episode = await models.Episode.es_get(show_id, number)
-        if not episode:
-            return
-        episode['user_watched'] = models.Episode_watched.cache_get(
-            user_id=user_id,
-            show_id=show_id,
-            episode_number=number,
-        )
-        return episode
+        with new_session() as session:
+            ew = session.query(
+                models.Episode_watched.episode_number,
+                models.Episode_watched.position,
+            ).filter(
+                models.Episode_watching.user_id == user_id,
+                models.Episode_watching.show_id == show_id,
+                models.Episode_watched.show_id == models.Episode_watching.show_id,
+                models.Episode_watched.user_id == models.Episode_watching.user_id,
+                models.Episode_watched.episode_number ==\
+                    models.Episode_watching.episode_number,
+            ).first()
+
+            episode_number = 1
+            if ew:
+                episode_number = ew.episode_number
+                if ew.position == 0:
+                    episode_number += 1
+
+            e = session.query(
+                models.Episode,
+                models.Episode_watched,
+            ).filter(
+                models.Episode.show_id == show_id,
+                models.Episode.number == episode_number,
+            ).outerjoin(
+                (models.Episode_watched, and_(
+                    models.Episode_watched.user_id == user_id,
+                    models.Episode_watched.show_id == models.Episode.show_id,
+                    models.Episode_watched.episode_number == models.Episode.number,
+                ))
+            ).first()
+            if not e:
+               return
+            episode = e.Episode.serialize()
+            episode['user_watched'] = None
+            if e.Episode_watched:
+                episode['user_watched'] = e.Episode_watched.serialize()
+            return episode

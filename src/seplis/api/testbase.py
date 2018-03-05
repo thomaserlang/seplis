@@ -28,6 +28,10 @@ class Testbase(AsyncHTTPTestCase):
         config['logging']['path'] = None
         logger = logging.getLogger('raven')
         logger.setLevel(logging.ERROR)
+        logger = logging.getLogger('elasticsearch')
+        logger.setLevel(logging.ERROR)
+        logger = logging.getLogger('urllib3')
+        logger.setLevel(logging.ERROR)
         # recreate the database connection
         # with params from the loaded config.
         database.__init__()

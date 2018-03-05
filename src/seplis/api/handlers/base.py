@@ -350,5 +350,5 @@ class Pagination_handler(Handler):
 
     def get(self, *args, **kwargs):
         args = self.validate_arguments()
-        self.per_page = args['per_page'][0]
-        self.page = args['page'][0]
+        self.per_page = args.pop('per_page', [0])[0]
+        self.page = args.pop('page', [0])[0]

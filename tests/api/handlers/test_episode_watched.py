@@ -26,11 +26,15 @@ class Test_episode_watched(Testbase):
 
         response = self.get(url)
         self.assertEqual(response.code, 200)
-        w = json_loads(response.body)
-        self.assertEqual(w['completed'], True)        
+        w = json_loads(response.body)     
         self.assertEqual(w['times'], 2)
         self.assertEqual(w['position'], 0)        
-        self.assertTrue(w['updated_at'] is not None)
+        self.assertTrue(w['watched_at'] is not None)
+
+        response = self.delete(url)
+        self.assertEqual(response.code, 204)
+        response = self.get(url)
+        self.assertEqual(response.code, 204)
 
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

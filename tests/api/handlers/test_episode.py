@@ -185,7 +185,6 @@ class Test_episode_append_fields(Testbase):
             response = self.put('/1/shows/{}/episodes/{}/watched'.format(show_id, number))
             self.assertEqual(response.code, 200, 'Run: {}'.format(number))
 
-
         # test single episode
         response = self.get('/1/shows/{}/episodes/1?append=user_watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)

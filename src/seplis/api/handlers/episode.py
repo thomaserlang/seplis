@@ -3,7 +3,7 @@ import json
 from seplis.api.handlers import base
 from seplis.api import constants, exceptions, models
 from seplis import schemas, utils
-from seplis.api.decorators import authenticated, auto_session, auto_pipe, new_session
+from seplis.api.decorators import authenticated, new_session, run_on_executor
 from seplis.config import config
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
@@ -37,11 +37,13 @@ class Handler(base.Handler):
             raise exceptions.Not_found('the episode was not found')
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
-            result['_source']['user_watched'] = models.Episode_watched.cache_get(
-                user_id=self.current_user.id,
-                show_id=show_id,
-                episode_number=number,
-            )
+            with new_session() as session:
+                ew = session.query(models.Episode_watched).filter(
+                    models.Episode_watched.user_id == self.current_user.id,
+                    models.Episode_watched.show_id == show_id,
+                    models.Episode_watched.episode_number == number,
+                ).first()
+                result['_source']['user_watched'] = ew.serialize() if ew else None
         self.write_object(
             self.episode_wrapper(result['_source'])
         )
@@ -84,14 +86,7 @@ class Handler(base.Handler):
 
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
-            numbers = list(episodes.keys())
-            watched = models.Episode_watched.cache_get(
-                user_id=self.current_user.id,
-                show_id=show_id,
-                episode_number=numbers,
-            )
-            for w, number in zip(watched, numbers):
-                episodes[number]['user_watched'] = w
+            yield self.get_episode_watched(show_id, episodes)
         p = Pagination(
             page=page,
             per_page=per_page,
@@ -101,6 +96,20 @@ class Handler(base.Handler):
             ),
         )
         self.write_object(p)
+
+    @run_on_executor
+    def get_episode_watched(self, show_id, episodes):
+        numbers = list(episodes.keys())
+        with new_session() as session:
+            ew = session.query(models.Episode_watched).filter(
+                models.Episode_watched.user_id == self.current_user.id,
+                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.episode_number.in_(numbers),
+            ).all()
+            for i in episodes:
+                episodes[i]['user_watched'] = None
+            for e in ew:
+                episodes[e.episode_number]['user_watched'] = e.serialize()
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine

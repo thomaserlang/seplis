@@ -71,7 +71,7 @@ class Test_next_to_watch(Testbase):
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show_id,2), {
             'times': -1,
         })
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 204)
         # episode 1 should now be the last watched
         response = self.get('/1/shows/{}/episodes/last-watched'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
