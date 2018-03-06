@@ -15,7 +15,7 @@ import seplis.api.handlers.play
 import seplis.api.handlers.shows_watched
 import seplis.api.handlers.air_dates
 import seplis.api.handlers.episode_watched
-import seplis.api.handlers.episode_watching
+import seplis.api.handlers.episode_position
 import seplis.api.handlers.episode_to_watch
 import seplis.api.handlers.episode_last_watched
 import seplis.api.handlers.user_show_subtitle_lang
@@ -169,8 +169,8 @@ class Application(tornado.web.Application):
                 seplis.api.handlers.episode_watched.Range_handler
             ),
             URLSpec(
-                r'/1/shows/([0-9]+)/episodes/([0-9]+)/watching', 
-                seplis.api.handlers.episode_watching.Handler
+                r'/1/shows/([0-9]+)/episodes/([0-9]+)/position', 
+                seplis.api.handlers.episode_position.Handler
             ),
             URLSpec(
                 r'/1/shows/([0-9]+)/episodes/to-watch', 

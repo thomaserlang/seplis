@@ -26,7 +26,7 @@ class Test_next_to_watch(Testbase):
         self.assertEqual(response.body, b'')
 
         # set episode 1 as watching
-        response = self.put('/1/shows/{}/episodes/{}/watching'.format(show_id,1), 
+        response = self.put('/1/shows/{}/episodes/{}/position'.format(show_id,1), 
             {'position': 200}
         )
         self.assertEqual(response.code, 204)
@@ -42,7 +42,7 @@ class Test_next_to_watch(Testbase):
         # Start watching episode 2.
         # Episode 1 should now be the latest watched even though it 
         # is not completed.
-        response = self.put('/1/shows/{}/episodes/{}/watching'.format(show_id,2), 
+        response = self.put('/1/shows/{}/episodes/{}/position'.format(show_id,2), 
             {'position': 202}
         )
         self.assertEqual(response.code, 204)

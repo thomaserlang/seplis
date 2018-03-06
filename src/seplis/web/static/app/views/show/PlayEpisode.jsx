@@ -69,7 +69,7 @@ class PlayEpisode extends React.Component {
             }
         } else {
             this.markedAsWatched = false;
-            request(`/1/shows/${this.showId}/episodes/${this.number}/watching`, {
+            request(`/1/shows/${this.showId}/episodes/${this.number}/position`, {
                 method: 'PUT',
                 data: {
                     'position': time,

@@ -4,7 +4,7 @@ from seplis.api.testbase import Testbase
 from seplis.utils import json_dumps, json_loads
 from seplis.api import constants
 
-class Test_episode_watching(Testbase):
+class Test_episode_position(Testbase):
 
     def test(self):
         self.login(constants.LEVEL_EDIT_SHOW)
@@ -17,7 +17,7 @@ class Test_episode_watching(Testbase):
         })
         self.assertEqual(response.code, 201, response.body)
         show = json_loads(response.body)
-        url = '/1/shows/{}/episodes/{}/watching'.format(
+        url = '/1/shows/{}/episodes/{}/position'.format(
             show['id'],
             1
         )

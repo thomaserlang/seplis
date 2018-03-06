@@ -31,7 +31,7 @@ class Test_next_to_watch(Testbase):
 
         # set episode 1 as watching
         response = self.put(
-            '/1/shows/{}/episodes/{}/watching'.format(show['id'], 1), 
+            '/1/shows/{}/episodes/{}/position'.format(show['id'], 1), 
             {'position': 200}
         )
         self.assertEqual(response.code, 204)
@@ -57,7 +57,7 @@ class Test_next_to_watch(Testbase):
         )        
         self.assertEqual(response.code, 200, response.body)
         response = self.put(
-            '/1/shows/{}/episodes/{}/watching'.format(show['id'], 3), 
+            '/1/shows/{}/episodes/{}/position'.format(show['id'], 3), 
             {'position': 200}
         )
         self.assertEqual(response.code, 204)

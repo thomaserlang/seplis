@@ -71,7 +71,7 @@ class Test_shows_watched(Testbase):
 
         # test that resetting the position does not changed the show watched
         # order
-        response = self.put('/1/shows/{0}/episodes/{0}/watching'.format(
+        response = self.put('/1/shows/{0}/episodes/{0}/position'.format(
             show_ids[1]# the episode number is the same as the show id.
         ), {'position': 10})
         self.assertEqual(response.code, 204)
@@ -93,7 +93,7 @@ class Test_shows_watched(Testbase):
         self.assertEqual(shows[0]['id'], show_ids[2])
         self.assertEqual(shows[1]['id'], show_ids[1])
 
-        response = self.delete('/1/shows/{0}/episodes/{0}/watching'.format(
+        response = self.delete('/1/shows/{0}/episodes/{0}/position'.format(
             show_ids[1]# the episode number is the same as the show id.
         ))
         self.assertEqual(response.code, 204)
