@@ -58,7 +58,7 @@ class WatchedButton extends React.Component {
     onWatchedDecr(e) {
         if (this.state.position > 0) {
             request(this.watchedApiEndpoint()
-                .replace('watched', 'watching'), {
+                .replace('watched', 'position'), {
                 method: 'DELETE', 
             }).done((data) => {
                 trigger_episode_watched_status(
