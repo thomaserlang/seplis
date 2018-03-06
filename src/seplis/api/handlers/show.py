@@ -1,7 +1,7 @@
 import logging
 from seplis import schemas, tasks
 from seplis.api import constants, exceptions, models
-from seplis.api.handlers import base, utils as handler_utils
+from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session, auto_session, \
     run_on_executor
 from seplis.api.base.pagination import Pagination
