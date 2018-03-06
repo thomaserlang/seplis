@@ -144,7 +144,7 @@ class Range_handler(base.Handler):
                     episode_number=episode.number,
                     times=times,
                 )
-            session.commit()
+                session.commit()
 
     @authenticated(constants.LEVEL_USER)
     @gen.coroutine
