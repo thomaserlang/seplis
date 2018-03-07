@@ -145,7 +145,6 @@ class Player extends React.Component {
 
     handleMediaError() {
         this.setState({loading: true});
-        console.log('handleMediaError');
         this.hls.recoverMediaError();
         this.video.play();
     }
