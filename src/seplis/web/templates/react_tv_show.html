@@ -2,10 +2,10 @@
 {% block title %}    
     <title>{{escape(show['title'])}} - SEPLIS</title>
     <meta name="og:title" content="{{escape(show['title'])}}" />
-    {% if show['description'] %}
+    <meta property="og:type" content="video.tv_show" />
+    {% if show['description'] and show['description']['text'] %}
     <meta name="description" content="{{escape(show['description']['text'])}}" />
     <meta name="og:description" content="{{escape(show['description']['text'])}}" />
-    <meta property="og:type" content="video.tv_show" />
     {% end %}
     {% if show['poster_image'] %}
     <meta property="og:image" content="{{show['poster_image']['url']}}" />
