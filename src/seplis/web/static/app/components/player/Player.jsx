@@ -116,10 +116,7 @@ class Player extends React.Component {
             enableWorker: false,
             startLevel: 0,
             manifestLoadingTimeOut: 30000,
-            maxSeekHole: 12,
             debug: false,
-            maxMaxBufferLength: 300,
-            maxBufferLength: 60,
         });
         this.hls.loadSource(url);
         this.hls.attachMedia(this.video);
