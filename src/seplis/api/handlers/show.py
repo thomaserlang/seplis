@@ -1,9 +1,8 @@
 import logging
-from seplis import schemas, tasks
+from seplis import schemas, tasks, utils
 from seplis.api import constants, exceptions, models
 from seplis.api.handlers import base
-from seplis.api.decorators import authenticated, new_session, auto_session, \
-    run_on_executor
+from seplis.api.decorators import authenticated, new_session, run_on_executor
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
 from tornado.httpclient import HTTPError

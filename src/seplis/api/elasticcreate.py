@@ -17,7 +17,7 @@ def create_indices():
             },
             'tokenizer': {
                 'autocomplete_ngram': { 
-                    'type': 'nGram',
+                    'type': 'ngram',
                     'min_gram': 1,
                     'max_gram': 10,
                 },
@@ -26,19 +26,19 @@ def create_indices():
                 'autocomplete_index': {
                     'type' : 'custom',
                     'tokenizer': 'autocomplete_ngram',
+                    'char_filter': ['strip_apostrophe'],
                     'filter': [
                         'lowercase',
                         'asciifolding',
-                        'word_delimiter',
                     ],
                 },
                 'autocomplete_search': {
-                    'type' : 'custom',
+                    'type' : 'standard',
                     'tokenizer': 'standard',
+                    'char_filter': ['strip_apostrophe'],
                     'filter': [
                         'lowercase',
                         'asciifolding',
-                        'word_delimiter',
                     ],
                 },
                 'title_search': {
@@ -48,7 +48,6 @@ def create_indices():
                     'filter': [
                         'lowercase',
                         'asciifolding',
-                        'word_delimiter',
                     ],
                 },
             },
