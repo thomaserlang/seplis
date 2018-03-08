@@ -56,12 +56,12 @@ class EpisodeListItem extends React.Component {
     renderAirDate() {
         if (this.props.episode.air_date) {
             return (
-                <date 
+                <span 
                     className="air-date" 
                     title={this.props.episode.air_date}
                 >
                     {this.props.episode.air_date}
-                </date> 
+                </span> 
             )
         } else {
             return (

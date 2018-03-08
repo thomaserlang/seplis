@@ -22,7 +22,7 @@ def main():
         ('web', ['python', 'runner.py', 'web'], src_path),
         ('play_server', ['python', 'runner.py', 'play_server'], src_path),
         ('worker', ['python', 'runner.py', 'worker'], src_path),
-        ('webpack', [node_bin+'/webpack', '-d', '-w'], base_path),
+        ('webpack', [node_bin+'/webpack-cli', '-d', '-w'], base_path),
     ]
     if watchdog_installed:
         start.append(

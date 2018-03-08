@@ -1,6 +1,6 @@
 var webpack = require('webpack');
 var path = require('path');
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var MiniCssExtractPlugin = require("mini-css-extract-plugin");
 var staticPath = path.resolve(__dirname, 'src/seplis/web/static');
 var nodeModulesPath = path.resolve(__dirname, 'node_modules');
 
@@ -8,20 +8,6 @@ module.exports = {
     devtool: "source-map",
     entry: {
         app: path.resolve(staticPath, 'app'),
-        vendor: [
-            'jquery',
-            'popper.js',
-            'bootstrap/js/src/util',
-            'bootstrap/js/src/dropdown',
-            'react',
-            'react-dom',
-            'react-router',
-            'fecha',
-            'select2',
-            'flat',
-            'form-serialize',
-            'hls.js',
-        ],
     },
     resolve: {
         extensions: ['.js', '.jsx', '.scss', '.css'],        
@@ -41,10 +27,7 @@ module.exports = {
         library: 'exports',
     },
     plugins: [
-        new webpack.optimize.CommonsChunkPlugin({
-            names: ['vendor']
-        }),
-        new ExtractTextPlugin({
+        new MiniCssExtractPlugin({
             'filename': 'app.css'
         }),
         new webpack.ProvidePlugin({
@@ -70,13 +53,12 @@ module.exports = {
             },
             {
                 test: /\.(scss|css)/,
-                use: ExtractTextPlugin.extract({
-                    use: [
-                        'css-loader?sourceMap',
-                        'postcss-loader',
-                        'sass-loader?includePaths[]='+nodeModulesPath,
-                    ]
-                }),
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    'css-loader?sourceMap',
+                    'postcss-loader',
+                    'sass-loader?includePaths[]='+nodeModulesPath,
+                ]
             },
             {
                 test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -96,4 +78,16 @@ module.exports = {
             }
         ]
     },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                vendor: {
+                    test: /node_modules/, 
+                    name: "vendor",
+                    chunks: "initial",
+                    enforce: true
+                }
+            }
+        }
+    }
 }
