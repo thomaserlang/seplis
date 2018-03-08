@@ -43,11 +43,12 @@ def create_indices():
                 },
                 'title_search': {
                     'type' : 'custom',
-                    'tokenizer': 'keyword',
+                    'tokenizer': 'standard',
                     'char_filter': ['strip_apostrophe'],
                     'filter': [
                         'lowercase',
                         'asciifolding',
+                        'word_delimiter',
                     ],
                 },
             },

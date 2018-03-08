@@ -101,7 +101,8 @@ def run_on_executor(method):
     """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        return tornado.platform.asyncio.to_tornado_future(
-            self.executor.submit(method, self, *args, **kwargs)
+        return self.application.ioloop.run_in_executor(
+            self.application.executor,
+            functools.partial(method, self, *args, **kwargs)
         )
     return wrapper

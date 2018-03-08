@@ -36,7 +36,7 @@ class Application(tornado.web.Application):
 
     def __init__(self, **args):
         settings = dict(
-            debug=seplis.config['debug'],
+            debug=False,
             autoescape=None,
             xsrf_cookies=False,
         )
@@ -229,6 +229,7 @@ class Application(tornado.web.Application):
         self.executor = ThreadPoolExecutor(
             max_workers=seplis.config['api']['max_workers']
         )
+        self.ioloop = tornado.ioloop.IOLoop.current()
         self.sentry_client = AsyncSentryClient(
             seplis.config['sentry_dsn'],
             raise_send_errors=True
@@ -238,13 +239,10 @@ class Application(tornado.web.Application):
 def main():
     logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
 
-    tornado.platform.asyncio.AsyncIOMainLoop().install()
-    ioloop = asyncio.get_event_loop()
-
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(seplis.config['api']['port'])
 
-    ioloop.run_forever()
+    tornado.ioloop.IOLoop.current().start()
 
 if __name__ == '__main__':
     import seplis
