@@ -28,7 +28,7 @@ module.exports = {
     },
     plugins: [
         new MiniCssExtractPlugin({
-            'filename': 'app.css'
+            filename: "[name].css",
         }),
         new webpack.ProvidePlugin({
             $: "jquery",
@@ -83,8 +83,8 @@ module.exports = {
             cacheGroups: {
                 vendor: {
                     test: /node_modules/, 
-                    name: "vendor",
-                    chunks: "initial",
+                    name: 'vendor',
+                    chunks: 'all',
                     enforce: true
                 }
             }
