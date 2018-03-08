@@ -49,6 +49,26 @@ class test_user(Testbase):
         self.assertEqual(response.code, 201)
         user = utils.json_loads(response.body)
 
+        # test duplication email
+        response = self.post('/1/users', {
+            'name': 'test___2',
+            'email': 'test@email.com',
+            'password': '123456',
+        })
+        self.assertEqual(response.code, 400)
+        error = utils.json_loads(response.body)
+        self.assertEqual(error['code'], 1501)
+
+        # test duplication username
+        response = self.post('/1/users', {
+            'name': 'test___',
+            'email': 'test2@email.com',
+            'password': '123456',
+        })
+        self.assertEqual(response.code, 400)
+        error = utils.json_loads(response.body)
+        self.assertEqual(error['code'], 1502)
+
         # login and test that we can retrieve the user.
         # because our user does not have a high enough level to view the email
         # it should not be there.
@@ -64,6 +84,7 @@ class test_user(Testbase):
         # should be visible.
         response = self.get('/1/users/current')
         self.assertEqual(response.code, 200)
+        print(response.body)
         user3 = utils.json_loads(response.body)
         self.assertEqual(user3['email'], self.current_user.email)
 

@@ -3,13 +3,12 @@ import time
 import good
 from sqlalchemy import or_
 from tornado import gen
-from tornado.concurrent import run_on_executor
 from tornado.web import HTTPError
 from seplis.api.handlers import base
 from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
 from seplis.api import exceptions, constants, models
-from seplis.api.decorators import authenticated, new_session
+from seplis.api.decorators import authenticated, new_session, run_on_executor
 from seplis.api import exceptions
 from seplis import schemas
 from passlib.hash import pbkdf2_sha256
@@ -17,16 +16,34 @@ from datetime import datetime, timedelta
 from seplis import utils
 
 class Handler(base.Handler):
-    '''
-    Handles user stuff...
-    '''
-    @gen.coroutine
-    def post(self, user_id=None):
+
+    __schema__ = good.Schema({
+        'name': good.All(
+            str, 
+            good.Length(min=1, max=45), 
+            good.Match(re.compile(r'^[a-z0-9-_]+$', re.I),
+            message='must only contain a-z, 0-9, _ and -')
+        ),    
+        'email': good.All(str, good.Length(min=1, max=100), schemas.validate_email),
+        'password': good.All(str, good.Length(min=6)),
+    })
+
+    async def get(self, user_id=None):
+        if not user_id:
+            users = await self.get_users()
+            self.write_object(users)
+        else:
+            user = models.User.get(user_id)
+            if not user:
+                raise exceptions.Not_found('the user was not found')
+            self.write_object(self.user_wrapper(user))
+
+    async def post(self, user_id=None):
         if user_id: 
             raise exceptions.Parameter_restricted(
                 'user_id must not be set.'
             )
-        user = yield self.create()
+        user = await self.create()
         self.set_status(201)
         self.write_object(user)
 
@@ -34,6 +51,19 @@ class Handler(base.Handler):
     def create(self):
         user = self.validate(schemas.User_schema)
         with new_session() as session:
+
+            u = session.query(models.User.id).filter(
+                models.User.email == user['email']
+            ).first()
+            if u:
+                raise exceptions.User_email_duplicate()
+
+            u = session.query(models.User.id).filter(
+                models.User.name == user['name']
+            ).first()
+            if u:
+                raise exceptions.User_username_duplicate()
+
             user = models.User(
                 name=user['name'],
                 email=user['email'],
@@ -42,17 +72,6 @@ class Handler(base.Handler):
             session.add(user)
             session.commit()
             return user.serialize()
-
-    @gen.coroutine
-    def get(self, user_id=None):
-        if not user_id:
-            users = yield self.get_users()
-            self.write_object(users)
-        else:
-            user = models.User.get(user_id)
-            if not user:
-                raise exceptions.Not_found('the user was not found')
-            self.write_object(self.user_wrapper(user))
 
     @run_on_executor
     def get_users(self):
@@ -68,8 +87,8 @@ class Handler(base.Handler):
 class Current_handler(Handler):
 
     @authenticated(0)
-    def get(self):
-        super().get(self.current_user.id)
+    async def get(self):
+        await super().get(self.current_user.id)
 
     def post(self):
         raise HTTPError(405)
@@ -82,12 +101,11 @@ class Current_handler(Handler):
 
 class Token_handler(base.Handler):
 
-    @gen.coroutine
-    def post(self):
+    async def post(self):
         data = self.validate(schemas.Token)
         token = None
         if data['grant_type'] == 'password':
-            token = yield self.grant_type_password()
+            token = await self.grant_type_password()
         if not token:
             raise exceptions.OAuth_unsuported_grant_type_exception(
                 data['grant_type']
@@ -125,9 +143,8 @@ class Token_handler(base.Handler):
 class Progress_token_handler(base.Handler):
 
     @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def get(self):
-        token = yield self.get_token()
+    async def get(self):
+        token = await self.get_token()
         self.write_object({
             'token': token,
         })
@@ -153,11 +170,10 @@ class Change_password_handler(base.Handler):
     })
 
     @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def post(self, user_id=None):
+    async def post(self, user_id=None):
         user_id = user_id if user_id else self.current_user.id
         self.check_user_edit(user_id)
-        yield self.change_password(user_id)
+        await self.change_password(user_id)
         self.set_status(204)
 
     @run_on_executor

@@ -95,17 +95,6 @@ _Show_schema = {
 }
 Show_schema = good.Schema(_Show_schema, default_keys=good.Optional)
 
-User_schema = good.Schema({
-    'name': good.All(
-        str, 
-        good.Length(min=1, max=45), 
-        good.Match(re.compile(r'^[a-z0-9-_]+$', re.I),
-        message='must only contain a-z, 0-9, _ and -')
-    ),    
-    'email': good.All(str, good.Length(min=1, max=100), validate_email),
-    'password': good.All(str, good.Length(min=6)),
-})
-
 App_schema = good.Schema({
     'name': good.All(str, good.Length(min=1, max=45)),
     'redirect_uri': good.All(str, good.Length(1, max=45)),
