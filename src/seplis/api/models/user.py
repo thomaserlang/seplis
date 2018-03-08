@@ -173,12 +173,6 @@ class User(Base):
         self.session.pipe.set(self.cache_name_email, self.id)
         self.session.pipe.set(self.cache_name_name, self.id)
         self.session.pipe.set(self.cache_name_id_password, self.password)  
-        self.session.es_bulk.append({
-            '_index': 'users',
-            '_type': 'user',
-            '_id': self.id,
-            '_source': utils.json_dumps(user),
-        })
 
     def cache_user_default_stats(self):
         '''Defaults the user's stats field to 0.

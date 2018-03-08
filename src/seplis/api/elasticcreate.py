@@ -196,35 +196,5 @@ def create_indices():
         }
     })
 
-    database.es.indices.create('users', body={
-        'settings': settings,
-        'mappings': {
-            'user': {
-                'properties': {
-                    'id': { 'type': 'integer' },
-                    'name': {
-                        'type': 'string',
-                        'analyzer': 'title_search',
-                        'fields': {
-                            'raw' : {
-                                'type': 'string', 
-                                'index': 'not_analyzed',
-                            },
-                            'suggest': {
-                                'type': 'string', 
-                                'analyzer': 'autocomplete_index',
-                                'search_analyzer': 'autocomplete_search',
-                            }
-                        }
-                    },
-                    'email': { 'type': 'string' },
-                    'level': { 'type': 'integer' },
-                    'created_at': { 'type':  'date' },
-                }
-            }
-        }
-    })
-
-
 if __name__ == '__main__':
     create_indices()
