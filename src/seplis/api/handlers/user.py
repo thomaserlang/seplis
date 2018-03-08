@@ -1,6 +1,5 @@
 import logging
-import time
-import good
+import time, re, good
 from sqlalchemy import or_
 from tornado import gen
 from tornado.web import HTTPError
@@ -49,9 +48,8 @@ class Handler(base.Handler):
 
     @run_on_executor
     def create(self):
-        user = self.validate(schemas.User_schema)
+        user = self.validate()
         with new_session() as session:
-
             u = session.query(models.User.id).filter(
                 models.User.email == user['email']
             ).first()
