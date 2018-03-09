@@ -5,8 +5,9 @@ from seplis.api import models, exceptions
 from seplis import schemas
 from tornado import gen
 from tornado.concurrent import run_on_executor
+from . import base
 
-class Handler(seplis.api.handlers.base.Handler):
+class Handler(base.Handler):
     '''
     Handles app stuff...
     '''
