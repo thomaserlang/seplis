@@ -16,6 +16,14 @@ from seplis import utils
 
 class Handler(base.Handler):
 
+    async def get(self, user_id):
+        user = models.User.get(user_id)
+        if not user:
+            raise exceptions.Not_found('the user was not found')
+        self.write_object(self.user_wrapper(user))
+
+class Collection_handler(base.Handler):
+
     __schema__ = good.Schema({
         'name': good.All(
             str, 
@@ -27,15 +35,9 @@ class Handler(base.Handler):
         'password': good.All(str, good.Length(min=6)),
     })
 
-    async def get(self, user_id=None):
-        if not user_id:
-            users = await self.get_users()
-            self.write_object(users)
-        else:
-            user = models.User.get(user_id)
-            if not user:
-                raise exceptions.Not_found('the user was not found')
-            self.write_object(self.user_wrapper(user))
+    async def get(self):
+        users = await self.get_users()
+        self.write_object(users)
 
     async def post(self, user_id=None):
         if user_id: 
@@ -45,6 +47,17 @@ class Handler(base.Handler):
         user = await self.create()
         self.set_status(201)
         self.write_object(user)
+
+    @run_on_executor
+    def get_users(self):
+        username = self.get_argument('username')
+        with new_session() as session:
+            user = session.query(models.User).filter(
+                models.User.name == username,
+            ).first()
+            if user:
+                return [self.user_wrapper(user.serialize())]
+            return []
 
     @run_on_executor
     def create(self):
@@ -70,17 +83,6 @@ class Handler(base.Handler):
             session.add(user)
             session.commit()
             return user.serialize()
-
-    @run_on_executor
-    def get_users(self):
-        username = self.get_argument('username')
-        with new_session() as session:
-            user = session.query(models.User).filter(
-                models.User.name == username,
-            ).first()
-            if user:
-                return [self.user_wrapper(user.serialize())]
-            return []
 
 class Current_handler(Handler):
 
