@@ -6,6 +6,7 @@ from seplis.api import models, exceptions, constants
 class Handler(base.Handler):
 
     async def get(self, user_id):
+        user_id = self.user_id_or_current(user_id)
         fan_of = await self.query_fan_of(user_id)
         episodes = await self.query_episodes(user_id)
         shows_watched = await self.query_shows_watched(user_id)

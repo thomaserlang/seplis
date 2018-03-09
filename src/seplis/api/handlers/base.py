@@ -230,9 +230,15 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             self.check_edit_another_user_right()
         return True
 
-    @authenticated(constants.LEVEL_USER)
+    @authenticated(-100)
     def is_logged_in(self):
         pass
+
+    def user_id_or_current(self, user_id):
+        if not user_id or user_id == 'current':
+            self.is_logged_in()
+            user_id = self.current_user.id
+        return user_id
 
     def get_append_fields(self, allowed_append_fields):
         append_fields = list(

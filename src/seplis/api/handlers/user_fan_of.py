@@ -9,6 +9,7 @@ class Handler(base.Pagination_handler):
 
     async def get(self, user_id, show_id=None):
         super().get()
+        user_id = self.user_id_or_current(user_id)
         if not show_id:
             d = await self.fan_of(user_id)
         else:

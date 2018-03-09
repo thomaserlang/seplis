@@ -9,6 +9,7 @@ from seplis.api.connections import database
 class Handler(base.Pagination_handler):
 
     async def get(self, user_id):
+        user_id = self.user_id_or_current(user_id) 
         super().get()
         r = await self.get_shows(user_id)
         self.write_object(r)

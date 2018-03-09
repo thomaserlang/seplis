@@ -17,6 +17,7 @@ from seplis import utils
 class Handler(base.Handler):
 
     async def get(self, user_id):
+        user_id = self.user_id_or_current(user_id)
         user = models.User.get(user_id)
         if not user:
             raise exceptions.Not_found('the user was not found')

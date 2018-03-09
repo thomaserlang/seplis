@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 class Handler(base.Pagination_handler):
 
     async def get(self, user_id):
+        user_id = self.user_id_or_current(user_id) 
         super().get()
         shows = await self.shows(user_id)
         self.write_object(shows)

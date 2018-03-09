@@ -20,7 +20,8 @@ class Handler(base.Handler):
         ),
     }, default_keys=good.Required)
 
-    async def get(self, user_id):        
+    async def get(self, user_id):
+        user_id = self.user_id_or_current(user_id)   
         shows_episodes = await self.get_shows_episodes(user_id)
         if not shows_episodes:
             self.write_object([])
