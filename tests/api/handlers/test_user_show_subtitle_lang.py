@@ -9,10 +9,7 @@ class Test_handler(Testbase):
 
     def test(self):
         show_id = self.new_show()
-        url = '/1/users/{}/subtitle-lang/shows/{}'.format(
-            self.current_user.id,
-            show_id
-        )
+        url = '/1/shows/{}/user-subtitle-lang'.format(show_id)
         response = self.get(url)
         self.assertEqual(response.code, 204)
 

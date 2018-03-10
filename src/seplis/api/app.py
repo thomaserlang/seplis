@@ -22,7 +22,8 @@ urls = [
     U(r'/1/shows/([0-9]+)/images', h.image.Handler, {'relation_type': 'show'}),
     U(r'/1/shows/([0-9]+)/images/([0-9]+)', h.image.Handler),
     U(r'/1/shows/([0-9]+)/images/([0-9]+)/data', h.image.Data_handler),
-    U(r'/1/shows/([0-9]+)/update', h.show.Update_handler),
+    U(r'/1/shows/([0-9]+)/update', h.show.Update_handler),    
+    U(r'/1/shows/([0-9]+)/user-subtitle-lang', h.user_show_subtitle_lang.Handler),
     U(r'/1/shows/([0-9]+)/episodes', h.episode.Handler),
     U(r'/1/shows/([0-9]+)/episodes/to-watch', h.episode_to_watch.Handler),
     U(r'/1/shows/([0-9]+)/episodes/last-watched', h.episode_last_watched.Handler),
@@ -48,7 +49,6 @@ urls = [
     U(r'/1/users/([a-z0-9]+)/play-servers', h.play.Server_handler),       
     U(r'/1/users/([a-z0-9]+)/play-servers/([0-9]+)/users', h.play.Access_handler),     
     U(r'/1/users/([a-z0-9]+)/play-servers/([0-9]+)/users/([0-9]+)', h.play.Access_handler),
-    U(r'/1/users/([a-z0-9]+)/subtitle-lang/shows/([0-9]+)', h.user_show_subtitle_lang.Handler),
 
     U(r'/1/apps', h.app.Handler),
     U(r'/1/apps/([0-9]+)', h.app.Handler),

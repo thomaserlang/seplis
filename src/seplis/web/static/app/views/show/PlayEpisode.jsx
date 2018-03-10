@@ -4,7 +4,7 @@ import Loader from 'components/Loader';
 import Chromecast from 'components/player/Chromecast';
 import {request} from 'api';
 import {apiClientSettings} from 'api.jsx';
-import {pad, getUserId, episodeTitle, guid} from 'utils';
+import {pad, episodeTitle, guid} from 'utils';
  
 class PlayEpisode extends React.Component {
  
@@ -128,7 +128,7 @@ class PlayEpisode extends React.Component {
  
     getLanguage() {
         request(
-            `/1/users/${getUserId()}/subtitle-lang/shows/${this.showId}`
+            `/1/shows/${this.showId}/user-subtitle-lang`
         ).done(data => {
             if (!data)
                 data = {};
@@ -176,7 +176,7 @@ class PlayEpisode extends React.Component {
     }
  
     saveSub(data) {
-        request(`/1/users/${getUserId()}/subtitle-lang/shows/${this.showId}`, {
+        request(`/1/shows/${this.showId}/user-subtitle-lang`, {
             method: 'PATCH',
             data: data,
         })

@@ -1,6 +1,6 @@
 import {getPlayServer} from './Player';
 import {request} from 'api';
-import {getUserId, guid} from 'utils';
+import {guid} from 'utils';
 
 var events = {
     ANY_CHANGED: 'anyChanged',
@@ -116,7 +116,7 @@ class Chromecast {
                 request(`/1/shows/${showId}`),
                 request(`/1/shows/${showId}/episodes/${episodeNumber}`),
                 request(`/1/shows/${showId}/episodes/${episodeNumber}/watched`),
-                request(`/1/users/${getUserId()}/subtitle-lang/shows/${showId}`),
+                request(`/1/shows/${showId}/user-subtitle-lang`),
             ]).then((result) => {
                 if (!startTime) {
                     if (result[4])

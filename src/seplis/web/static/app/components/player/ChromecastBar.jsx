@@ -4,7 +4,7 @@ import Chromecast from './Chromecast';
 import Slider from './Slider';
 import AudioSubBar from './AudioSubBar.jsx';
 import PlayNext from './PlayNext';
-import {episodeTitle, getUserId, secondsToTime} from 'utils';
+import {episodeTitle, secondsToTime} from 'utils';
 import {request} from 'api';
 import {trigger_episode_watched_status} from 'seplis/events';
 
@@ -68,7 +68,7 @@ class ChromecastBar extends React.Component {
     subAudioSubSave(data) {
         var show = this.state.info.show;
         var episode = this.state.info.episode;
-        request(`/1/users/${getUserId()}/subtitle-lang/shows/${show.id}`, {
+        request(`/1/shows/${show.id}/user-subtitle-lang`, {
             method: 'PATCH',
             data: data,
         }).done(() => {
