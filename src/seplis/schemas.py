@@ -122,13 +122,6 @@ _Image = {
 Image_required = good.Schema(_Image, default_keys=good.Required)
 Image_optional = good.Schema(_Image, default_keys=good.Optional)
 
-Play_server = good.Schema({
-    'name': good.All(str, good.Length(min=1, max=45)),
-    'url': good.All(str, good.Length(min=1, max=200)),
-    'secret': good.All(str, good.Length(min=1, max=200)),
-})
-
-
 Config_play_scan = good.Schema(
     good.Any(
         None, 

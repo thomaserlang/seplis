@@ -1,15 +1,11 @@
-import logging
-import json
+import sqlalchemy as sa
 from seplis.api.handlers import base
 from seplis.api import constants, exceptions, models
 from seplis import schemas, utils
 from seplis.api.decorators import authenticated, new_session, run_on_executor
-from seplis.config import config
 from seplis.api.base.pagination import Pagination
-from seplis.api.connections import database
 from datetime import datetime, timedelta
-from tornado import gen, web
-from tornado.concurrent import run_on_executor
+from tornado import gen, web, concurrent
 from collections import OrderedDict
 
 class Handler(base.Handler):
@@ -97,7 +93,7 @@ class Handler(base.Handler):
         )
         self.write_object(p)
 
-    @run_on_executor
+    @concurrent.run_on_executor
     def get_episode_watched(self, show_id, episodes):
         numbers = list(episodes.keys())
         with new_session() as session:
@@ -117,7 +113,7 @@ class Handler(base.Handler):
         yield self._delete(show_id, number)
         self.set_status(201)
 
-    @run_on_executor
+    @concurrent.run_on_executor
     def _delete(self, show_id, number):
         with new_session() as session:
             e = session.query(models.Episode).filter(
@@ -132,38 +128,31 @@ class Handler(base.Handler):
 class Play_servers_handler(base.Handler):
 
     @authenticated(constants.LEVEL_USER)
-    @gen.coroutine
-    def get(self, show_id, number):
-        page = int(self.get_argument('page', 1))
-        per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        servers = models.Play_server.by_user_id(
-            user_id=self.current_user.id,
-            access_to=True,
-            page=page,
-            per_page=per_page,
-        )
-        servers.records = yield self.get_play_ids(
-            show_id,
-            number,
-            servers.records,
-        )
-        self.write_object(servers)
+    async def get(self, show_id, number):
+        d = await self._get(show_id, number)
+        self.write_object(d)
 
     @run_on_executor
-    def get_play_ids(self, show_id, number, servers):
-        results = []
-        for server in servers:
-            results.append({
-                'play_id': web.create_signed_value(
-                    secret=server['secret'],
-                    name='play_id',
-                    value=utils.json_dumps({
-                        'show_id': int(show_id),
-                        'number': int(number),
-                    }),
-                    version=2,
-                ),
-                'play_server': server,
-            })
-            server.pop('secret')
-        return results
+    def _get(self, show_id, number):
+        with new_session() as session:
+            p = session.query(models.Play_server).filter(
+                models.Play_access.user_id == self.current_user.id,
+                models.Play_server.id == models.Play_access.play_server_id,
+            ).options(
+                sa.orm.undefer_group('secret')
+            ).all()
+            playids = []
+            for s in p:
+                playids.append({
+                    'play_id': web.create_signed_value(
+                        secret=s.secret,
+                        name='play_id',
+                        value=utils.json_dumps({
+                            'show_id': int(show_id),
+                            'number': int(number),
+                        }),
+                        version=2,
+                    ),
+                    'play_url': s.url,
+                })
+            return playids

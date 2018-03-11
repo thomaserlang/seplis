@@ -217,7 +217,7 @@ class Test_play_servers(Testbase):
         self.assertEqual(response.code, 201, response.body)
         show = utils.json_loads(response.body)
 
-        response = self.post('/1/users/{}/play-servers'.format(self.current_user.id), {
+        response = self.post('/1/play-servers'.format(self.current_user.id), {
             'name': 'Thomas',
             'url': 'http://example.net',
             'secret': 'SOME SECRET',
@@ -233,7 +233,7 @@ class Test_play_servers(Testbase):
         self.assertEqual(response.code, 200)
         servers = utils.json_loads(response.body)
         self.assertEqual(len(servers), 1)
-        self.assertEqual(servers[0]['play_server']['id'], server['id'])
+        self.assertEqual(servers[0]['play_url'], 'http://example.net')
         self.assertTrue(servers[0]['play_id'])
 
 if __name__ == '__main__':

@@ -305,10 +305,17 @@ class dotdict(dict):
     
     __delattr__= dict.__delitem__
 
-
 def row_to_dict(row):
-    return {c.name: getattr(row, c.name) \
-        for c in row.__table__.columns}
+    ir = sa.inspect(row)
+    if ir.expired:
+        session = getattr(row, 'session')
+        if session:
+            session.refresh(row)
+    unloaded = ir.unloaded
+    return {attr.key: attr.value 
+        for attr in ir.attrs 
+            if not attr.key.startswith('_') 
+                and attr.key not in unloaded}
 
 def _None_check_str(v):
     '''Converts 'None' to None.

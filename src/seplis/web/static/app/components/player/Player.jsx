@@ -501,7 +501,7 @@ export function getPlayServer(url) {
             }
             for (var s of playServers) {
                 i += 1;
-                request(s.play_server.url+'/metadata', {
+                request(s.play_url+'/metadata', {
                     query: {
                         play_id: s.play_id,
                     }

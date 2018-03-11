@@ -246,7 +246,7 @@ class PlayEpisode extends React.Component {
     }    
  
     getPlayUrl() {
-        return `${this.state.playServer.play_server.url}/play`+
+        return `${this.state.playServer.play_url}/play`+
             `?play_id=${this.state.playServer.play_id}`+
             `&session=${this.session}`
     }
@@ -289,7 +289,7 @@ class PlayEpisode extends React.Component {
         }
         this.loadCast();
         return <Player 
-            playServerUrl={`${this.state.playServer.play_server.url}`}
+            playServerUrl={`${this.state.playServer.play_url}`}
             playId={this.state.playServer.play_id}
             metadata={this.state.metadata}
             info={this.getInfo()}

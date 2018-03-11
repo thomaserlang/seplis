@@ -3,7 +3,7 @@ from . import show
 from . import user
 from . import app
 from . import episode
-from . import play
+from . import play_server
 from . import shows_watched
 from . import air_dates
 from . import episode_watched
