@@ -1,7 +1,7 @@
 import React from 'react';
 import {Link} from 'react-router';
 import Loader from 'components/Loader';
-import {requireAuthed, getUserId} from 'utils';
+import {requireAuthed} from 'utils';
 import {request} from 'api';
 
 class PlayServers extends React.Component {
@@ -21,7 +21,7 @@ class PlayServers extends React.Component {
 
     getPlayServers() {
         this.setState({loading: true});
-        request(`/1/users/${getUserId()}/play-servers`, {
+        request(`/1/play-servers`, {
             body: {
                 per_page: 100,
             }

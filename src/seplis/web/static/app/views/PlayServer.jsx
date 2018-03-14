@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {withRouter} from 'react-router';
 import Loader from 'components/Loader';
-import {requireAuthed, getUserId} from 'utils';
+import {requireAuthed} from 'utils';
 import {request} from 'api';
 
 const propTypes = {
@@ -47,7 +47,7 @@ class PlayServer extends React.Component {
     getPlayServer() {
         this.incLoading(1);
         request(
-            `/1/users/${getUserId()}/play-servers/${this.props.location.query.id}`
+            `/1/play-servers/${this.props.location.query.id}`
         ).fail(e => {
             // TODO: display the error...
         }).done(data => {
@@ -60,7 +60,7 @@ class PlayServer extends React.Component {
     getUsersWithAccess() {
         this.incLoading(1);
         request(
-            `/1/users/${getUserId()}/play-servers/${this.props.location.query.id}/users`
+            `/1/play-servers/${this.props.location.query.id}/users`
         ).fail(e => {
             // TODO: display the error...
         }).done(data => {
@@ -72,7 +72,7 @@ class PlayServer extends React.Component {
 
     onSubmit(e) {
         e.preventDefault();
-        let url = `/1/users/${getUserId()}/play-servers`;
+        let url = `/1/play-servers`;
         if (this.props.location.query.id) {
             url += `/${this.props.location.query.id}`;
         }
@@ -94,7 +94,7 @@ class PlayServer extends React.Component {
         e.preventDefault();
         if (!confirm('Are you sure you wan\'t to delete this play server?'))
             return;
-        request(`/1/users/${getUserId()}/play-servers/${this.props.location.query.id}`, {
+        request(`/1/play-servers/${this.props.location.query.id}`, {
             method: 'DELETE',
         }).fail(e => {
             this.setState({error: e.responseJSON});
@@ -118,7 +118,7 @@ class PlayServer extends React.Component {
                 return;
             }
             let id = this.props.location.query.id;
-            request(`/1/users/${getUserId()}/play-servers/${id}/users/${data[0].id}`, {
+            request(`/1/play-servers/${id}/users/${data[0].id}`, {
                method: 'PUT',
             }).fail(e => {
                 alert(e.message);
@@ -131,7 +131,7 @@ class PlayServer extends React.Component {
     onRemoveUserAccess(e) {
         e.preventDefault();
         let id = this.props.location.query.id;
-        request(`/1/users/${getUserId()}/play-servers/${id}/users/${e.target.userId.value}`, {
+        request(`/1/play-servers/${id}/users/${e.target.userId.value}`, {
            method: 'DELETE',
         }).fail(e => {
             alert(e.message);
@@ -148,11 +148,11 @@ class PlayServer extends React.Component {
                 </div>
             );
         return (
-            <table className="table">
+            <table className="table table-sm">
                 <tbody>
                     {this.state.users.map(u => (
                         <tr key={u.id}>
-                            <td>{u.name}</td>
+                            <td style={{verticalAlign: 'middle'}}>{u.name}</td>
                             <td width="10px" className="text-xs-right">
                                 <form onSubmit={this.onRemoveUserAccess}>
                                     <input 
@@ -160,7 +160,7 @@ class PlayServer extends React.Component {
                                         name="userId"
                                         value={u.id}
                                     />
-                                    <button type="submit" className="btn-link">
+                                    <button type="submit" className="btn btn-danger" title="Delete user">
                                         <i className="fa fa-times"></i>
                                     </button>
                                 </form>
