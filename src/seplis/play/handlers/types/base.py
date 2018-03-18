@@ -30,6 +30,8 @@ def ffmpeg_base_args(handler, settings, metadata):
     has_subtitle = set_subtitle(handler, metadata, args)
     set_video_codec(settings, metadata, has_subtitle, args)
     set_audio(handler, metadata, args)
+    if find_ffmpeg_arg('-c:v', args) == 'copy':
+        args.insert(1, {'-noaccurate_seek': None})
     return args
 
 def to_subprocess_arguments(args):

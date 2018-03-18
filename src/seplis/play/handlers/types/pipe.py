@@ -67,8 +67,6 @@ def ffmpeg_start(handler, settings, metadata):
         {'-f': 'matroska'},
         {'-': None},
     ])
-    if base.find_ffmpeg_arg('-c:v', args) == 'copy':
-        args.insert(1, {'-noaccurate_seek': None})
     r = base.to_subprocess_arguments(args)
     logging.debug('FFmpeg start args: {}'.format(' '.join(r)))
     return r
