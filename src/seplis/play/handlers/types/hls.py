@@ -111,7 +111,6 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     args = base.ffmpeg_base_args(handler, settings, metadata)
     args.extend([
         {'-f': 'hls'},
-        {'-hls_segment_type': 'fmp4'},
         {'-hls_list_size': '0'},
         {'-hls_time': str(config['play']['segment_time'])},
         {os.path.join(temp_folder, 'media.m3u8'): None},
