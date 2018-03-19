@@ -66,6 +66,8 @@ class Player extends React.Component {
             subtitle: this.props.subtitle_lang,
             loading: false,
         }
+        
+        this.isChrome = !!window.chrome && !!window.chrome.webstore;
     }
 
     componentDidMount() {        
@@ -97,7 +99,7 @@ class Player extends React.Component {
 
     loadStream(url) {
         this.setState({loading: true});
-        if (!Hls.isSupported()) {
+        if (!Hls.isSupported() || this.isChrome) {
             this.video.src = url;
             this.video.load();
             this.video.play();
@@ -193,13 +195,17 @@ class Player extends React.Component {
     }
 
     getPlayUrl() {
-        return `${this.props.playServerUrl}/play`+
+        let s = `${this.props.playServerUrl}/play`+
             `?play_id=${this.props.playId}`+
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
-            `&audio_lang=${this.state.audio || ''}`+
-            `&device=hls`;
+            `&audio_lang=${this.state.audio || ''}`;
+        if (this.isChrome)
+            s += `&device=Chrome`
+        else
+            s += `&device=hls`;
+        return s;
     }
 
     playPauseClick() {
