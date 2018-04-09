@@ -1,5 +1,6 @@
 import logging
 import json
+import requests
 from tornado import httpclient, gen, ioloop, web
 from urllib.parse import urljoin, urlencode
 from seplis import utils, config
@@ -13,9 +14,6 @@ class HTTPData(object):
 
     def __init__(self, client, response, timeout=TIMEOUT):
         self.client = client
-        self.data = utils.json_loads(response.body) if \
-            response and response.body \
-                else None
         self.timeout = timeout
         self.link = {}
         self.next = None
@@ -24,21 +22,30 @@ class HTTPData(object):
         self.last = None
         self.count = None
         self.pages = None
+        self.data = None
 
         if not response:
             return
+
         links = {}
-        if 'Link' in response.headers:
-            links = utils.parse_link_header(
-                response.headers['Link']
-            )
+
+        if isinstance(response, requests.models.Response):
+            if response.text:
+                self.data = response.json()
+            links = response.links
+        else:
+            self.data = utils.json_loads(response.body) if \
+                response and response.body \
+                    else None
+            if 'Link' in response.headers:
+                links = utils.parse_link_header(
+                    response.headers['Link']
+                )
+
         for link in LINK_TYPES:
-            self.__dict__[link] = links.get(link)
-            if self.__dict__[link]:
-                self.__dict__[link] = urljoin(
-                    self.client.url, 
-                    self.__dict__[link]
-                ) 
+            l = links.get(link)
+            if l:
+                setattr(self, link, urljoin(self.client.url, l)) 
 
         if 'X-Total-Count' in response.headers:
             self.count = int(response.headers['X-Total-Count'])
@@ -203,53 +210,51 @@ class Async_client(object):
         )
         return r
 
-class Client(Async_client):
+class Client():
 
-    def get(self, uri, data=None, headers=None, timeout=TIMEOUT):
-        return self.io_loop.run_sync(partial(
-            Async_client.get, 
-            self, 
-            uri, 
-            data=data, 
-            headers=headers,
-            timeout=timeout,
-        ))    
+    def __init__(self, url, client_id=None, client_secret=None, 
+                 access_token=None, version='1'):
+        self.url = urljoin(url, str(version))
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.access_token = access_token
 
-    def delete(self, uri, headers=None, timeout=TIMEOUT):
-        return self.io_loop.run_sync(partial(
-            self._fetch, 
-            'DELETE', 
-            uri, 
-            headers=headers,
-            timeout=timeout,
-        ))
+    def _fetch(self, uri, method, timeout=TIMEOUT, params=None, headers=None, **kwargs):        
+        if not headers:
+            headers = {}
+        if 'Content-Type' not in headers:
+            headers['Content-Type'] = 'application/json'
+        if 'Accept' not in headers:
+            headers['Accept'] = 'application/json'
+        if ('Authorization' not in headers) and self.access_token:
+            headers['Authorization'] = 'Bearer {}'.format(self.access_token)
+        if uri.startswith('http'):
+            url = uri
+        else:
+            if not uri.startswith('/'):
+                uri = '/'+uri
+            url = self.url+uri
+        response = requests.request(method, url, params=params, headers=headers, **kwargs)
+        if 400 <= response.status_code <= 600:
+            if response.headers.get('Content-Type') == 'application/json':
+                raise API_error(status_code=response.status_code, **response.json())
+            raise Exception(response.text)
+        return HTTPData(self, response, timeout)
 
-    def post(self, uri, body={}, headers=None, timeout=TIMEOUT):
-        return self.io_loop.run_sync(partial(
-            self._fetch, 
-            'POST', 
-            uri, 
-            body, 
-            headers=headers,
-            timeout=timeout,
-        ))
+    def get(self, uri, params=None, timeout=TIMEOUT, **kwargs):
+        return self._fetch(uri, 'GET', timeout=timeout, params=params, **kwargs)
 
-    def put(self, uri, body={}, headers=None, timeout=TIMEOUT):
-        return self.io_loop.run_sync(partial(
-            self._fetch, 
-            'PUT', 
-            uri, 
-            body, 
-            headers=headers,
-            timeout=timeout,
-        ))
+    def delete(self, uri, timeout=TIMEOUT, **kwargs):
+        return self._fetch(uri, 'DELETE', timeout=timeout, **kwargs)
 
-    def patch(self, uri, body={}, headers=None, timeout=TIMEOUT):
-        return self.io_loop.run_sync(partial(
-            self._fetch, 
-            'PATCH', 
-            uri, 
-            body, 
-            headers=headers,
-            timeout=timeout,
-        ))
+    def post(self, uri, json=None, timeout=TIMEOUT, **kwargs):
+        return self._fetch(uri, 'POST', timeout=timeout, 
+            json=json, **kwargs)
+
+    def put(self, uri, json=None, timeout=TIMEOUT, **kwargs):        
+        return self._fetch(uri, 'PUT', timeout=timeout, 
+            json=json, **kwargs)
+
+    def patch(self, uri, json=None, timeout=TIMEOUT, **kwargs):
+        return self._fetch(uri, 'PATCH', timeout=timeout,
+            json=json, **kwargs)

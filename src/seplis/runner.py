@@ -38,6 +38,8 @@ def upgrade():
     import seplis.api.migrate
     try:
         seplis.api.migrate.upgrade()
+    except (KeyboardInterrupt, SystemExit):
+        raise 
     except:
         logging.exception('upgrade')
 
@@ -47,6 +49,8 @@ def rebuild_cache():
     import seplis.api.rebuild_cache
     try:
         seplis.api.rebuild_cache.main()
+    except (KeyboardInterrupt, SystemExit):
+        raise 
     except:
         logging.exception('rebuild_cache')
 
@@ -56,6 +60,8 @@ def update_shows():
     logger.set_logger('importer_update_shows.log', to_sentry=True)
     try:
         seplis.importer.shows.update_shows_incremental()
+    except (KeyboardInterrupt, SystemExit):
+        raise 
     except:
         logging.exception('importer_update_shows')
 
@@ -66,6 +72,8 @@ def update_show(show_id):
     logger.set_logger('importer_update_show_by_id.log', to_sentry=True)
     try:
         seplis.importer.shows.update_show_by_id(show_id)
+    except (KeyboardInterrupt, SystemExit):
+        raise 
     except:
         logging.exception('update_show_by_id')
 
@@ -77,6 +85,8 @@ def update_shows_all(from_id, async):
     logger.set_logger('importer_update_shows_all.log', to_sentry=True)
     try:
         seplis.importer.shows.update_shows_all(from_id, do_async=async)
+    except (KeyboardInterrupt, SystemExit):
+        raise 
     except:
         logging.exception('update_shows_all')
 
@@ -87,6 +97,8 @@ def worker(n):
     import seplis.tasks.worker
     try:
         seplis.tasks.worker.main()
+    except (KeyboardInterrupt, SystemExit):
+        raise 
     except:
         logging.exception('worker')
 

@@ -46,35 +46,47 @@ class Handler(PatternMatchingEventHandler):
             return episode
             
     def update(self, event):
-        item = self.parse(event)
-        if not item:
-            return
-        self.scanner.save_item(item)
-
-    def delete(self, event):
-        logging.debug('Delete: {}'.format(event.src_path))        
+        try:
+            item = self.parse(event)
+            if not item:
+                return
+            self.scanner.save_item(item)
+        except:
+            logging.exception('update') 
 
     def on_created(self, event):
         """Delay the update event to fix SFTP rename (create+delete)."""
         def _on_created(event):
             self.loop.call_later(1, self.update, event)
-        self.loop.call_soon_threadsafe(_on_created, event)
+        self.loop.call_soon(_on_created, event)
 
     def on_deleted(self, event):
-        item = self.parse(event)
-        if not item:
-            return
-        self.scanner.delete_item(item)
+        logging.info('Deleted')
+        try:
+            item = self.parse(event)
+            if not item:
+                return
+            self.scanner.delete_item(item)
+        except:
+            logging.exception('on_deleted')
 
     def on_moved(self, event):
-        self.update(event)
+        event.event_type = 'deleted'
+        try:
+            item = self.parse(event)
+            if item:
+                self.scanner.delete_item(item)
+            event.event_type = 'moved'
+            self.update(event)
+        except:
+            logging.exception('on_deleted')
 
     def on_modified(self, event):
         '''Modified gets called a bunch of times when a file is 
         being downloaded. 
         We'll overwrite the call_later event for every call.
         '''
-        self.loop.call_soon_threadsafe(self._modified, event)
+        self.loop.call_soon(self._modified, event)
 
     def _modified(self, event):
         if event.src_path in self.wait_list:
