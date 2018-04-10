@@ -235,7 +235,7 @@ class Client():
                 uri = '/'+uri
             url = self.url+uri
         response = requests.request(method, url, params=params, headers=headers, **kwargs)
-        if (400 <= response.status_code <= 600) and (response.code != 404):
+        if (400 <= response.status_code <= 600) and (response.status_code != 404):
             if response.headers.get('Content-Type') == 'application/json':
                 raise API_error(status_code=response.status_code, **response.json())
             raise Exception(response.text)
