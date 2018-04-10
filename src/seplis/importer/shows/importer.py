@@ -68,6 +68,8 @@ def update_shows_incremental():
 def _importer_incremental(importer):
     timestamp = time.time()    
     show_ids = _importer_incremental_updates_with_retry(importer)
+    if not show_ids:
+        return
     for show_id in show_ids:
         show = client.get('/shows/externals/{}/{}'.format(
             importer.external_name,

@@ -44,6 +44,8 @@ class HTTPData(object):
 
         for link in LINK_TYPES:
             l = links.get(link)
+            if isinstance(l, dict):
+                l = l['url']
             if l:
                 setattr(self, link, urljoin(self.client.url, l)) 
 
