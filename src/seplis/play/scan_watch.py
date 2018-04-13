@@ -1,5 +1,5 @@
 import logging, time
-import asyncio
+import asyncio, functools
 try:
     from watchdog.observers import Observer  
     from watchdog.events import PatternMatchingEventHandler  
@@ -15,14 +15,13 @@ from seplis import config
 
 class Handler(PatternMatchingEventHandler):
 
-    def __init__(self, scan_path, loop, type_='shows'):
+    def __init__(self, scan_path, type_='shows'):
         logging.debug('initiated')
         patterns = ['*.'+t for t in config['play']['media_types']]
         super().__init__(
             patterns=patterns,
         )
         self.type = type_
-        self.loop = loop
         self.wait_list = {}
         if type_ == 'shows':
             self.scanner = scan.Shows_scan(scan_path=scan_path)
@@ -55,13 +54,9 @@ class Handler(PatternMatchingEventHandler):
             logging.exception('update') 
 
     def on_created(self, event):
-        """Delay the update event to fix SFTP rename (create+delete)."""
-        def _on_created(event):
-            self.loop.call_later(1, self.update, event)
-        self.loop.call_soon(_on_created, event)
+        self.update(event)
 
     def on_deleted(self, event):
-        logging.info('Deleted')
         try:
             item = self.parse(event)
             if not item:
@@ -79,23 +74,7 @@ class Handler(PatternMatchingEventHandler):
             event.event_type = 'moved'
             self.update(event)
         except:
-            logging.exception('on_deleted')
-
-    def on_modified(self, event):
-        '''Modified gets called a bunch of times when a file is 
-        being downloaded. 
-        We'll overwrite the call_later event for every call.
-        '''
-        self.loop.call_soon(self._modified, event)
-
-    def _modified(self, event):
-        if event.src_path in self.wait_list:
-            self.wait_list[event.src_path].cancel()
-        self.wait_list[event.src_path] = self.loop.call_later(
-            5, 
-            self.update, 
-            event
-        )
+            logging.exception('on_moved')
 
 def main():
     if not config['play']['scan']:
@@ -111,12 +90,10 @@ def main():
                             path: /a/path/to/the/shows
             ''')
     obs = Observer()
-    loop = asyncio.get_event_loop()
     for s in config['play']['scan']:
         event_handler = Handler(
             scan_path=s['path'],
             type_=s['type'],
-            loop=loop,
         )
         obs.schedule(
             event_handler,
@@ -125,9 +102,8 @@ def main():
         )
     obs.start()
     try:
-        loop.run_forever()
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
         obs.stop()
-        loop.stop()
     obs.join()
-    loop.close()
