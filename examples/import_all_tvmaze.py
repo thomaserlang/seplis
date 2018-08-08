@@ -1,12 +1,19 @@
 import requests
 import logging
-from seplis import Client, config, config_load
+from seplis import Client, config, config_load, logger
 config_load()
 
+logger.logger.set_logger('test.log')
+    
 client = Client(
     url=config['client']['api_url'], 
     access_token=config['client']['access_token']
 )
+
+imdbids = []
+shows = client.get('shows?sort=id&per_page=500')
+for show in shows.all():
+    imdbids.append(show['externals'].get('imdb'))
 
 data = ['']
 page = 1
@@ -19,6 +26,9 @@ while (len(data) != 0):
         if 'imdb' not in show['externals']:
             continue
         if not show['externals']['imdb']:
+            continue
+        if str(show['externals']['imdb']) in imdbids:
+            logging.info('found imdb: {}'.format(show['externals']['imdb']))
             continue
         try:
             client.post('/shows', {
@@ -37,6 +47,6 @@ while (len(data) != 0):
                 show['id'],
             ))
         except Exception as e:
-            logging.error(str(e))
-            logging.exception('Failed to add show {}'.format(show))
+            #logging.error(str(e.message))
+            pass
     page += 1
