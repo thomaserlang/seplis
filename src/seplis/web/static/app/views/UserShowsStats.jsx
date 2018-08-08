@@ -1,6 +1,6 @@
 import React from 'react';
 import Loader from 'components/Loader';
-import {requireAuthed, getUserId} from 'utils';
+import {requireAuthed, getUserId, secondsToPretty} from 'utils';
 import {request} from 'api';
 
 class UserShowsStats extends React.Component {
@@ -44,7 +44,7 @@ class UserShowsStats extends React.Component {
                 <tr><th width="220px">Fan of</th>
                     <td>{this.state.stats.fan_of} shows</td></tr>
                 <tr><th>Time spent watching</th>
-                    <td>{Math.round(((this.state.stats.episodes_watched_minutes/60)*10))/10} hours</td></tr>
+                    <td>{secondsToPretty(this.state.stats.episodes_watched_minutes*60, true)}</td></tr>
                 <tr><th>Episodes watched</th>
                     <td>{this.state.stats.episodes_watched}</td></tr>
                 <tr><th>Watched episodes from</th>

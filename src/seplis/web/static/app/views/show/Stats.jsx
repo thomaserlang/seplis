@@ -1,6 +1,6 @@
 import React from 'react';
 import {request} from 'api';
-import {isAuthed} from 'utils';
+import {isAuthed, secondsToPretty} from 'utils';
 
 class Stats extends React.Component {
 
@@ -44,7 +44,7 @@ class Stats extends React.Component {
                     <tbody>
                     <tr><th width="200px">Episodes watched</th><td>{this.state.userStats.episodes_watched}</td></tr>
                     <tr><th>Time spent watching</th>
-                        <td>{Math.round(((this.state.userStats.episodes_watched_minutes/60)*10))/10} hours</td></tr>
+                        <td>{secondsToPretty(this.state.userStats.episodes_watched_minutes*60, true)}</td></tr>
                     </tbody>
                 </table>
             </span>
@@ -61,8 +61,8 @@ class Stats extends React.Component {
                 <table className="table table-striped">
                     <tbody>
                     <tr><th width="200px">Total episodes</th><td>{episodeCount}</td></tr>
-                    <tr><th>Hours worth of content</th>
-                        <td>{Math.round(((this.props.show.runtime*episodeCount/60)*10))/10} hours</td></tr>
+                    <tr><th>Total watchtime</th>
+                        <td>{secondsToPretty(this.props.show.runtime*episodeCount*60, true)}</td></tr>
                     </tbody>
                 </table>
             </span>

@@ -69,19 +69,47 @@ export function dateInDays(dt) {
     if (typeof(dt) == "string") {
         dt = new Date(dt);
     }
-    let secs = Math.abs(dt-new Date().getTime())/1000;
-    let r = '';
-    let days = Math.floor(secs/86400);
-    let hours = Math.floor((secs-(days * 86400))/3600);
-    let minutes = Math.floor((secs-(days * 86400)-(hours*3600))/60);
-    if (days > 0) {
-        r = days + ((days == 1)?' day':' days');
+    let seconds = Math.abs(dt-new Date().getTime())/1000;
+    let minutes, hours, days;
+    let l = [];
+    [minutes, seconds] = divmod(seconds, 60);
+    [hours, minutes] = divmod(minutes, 60);
+    [days, hours] = divmod(hours, 24);
+    if (days > 0) l.push(pluralize(days, 'day'));
+    if (hours > 0) l.push(pluralize(hours, 'hour'));
+    if ((minutes > 0) && (hours < 1) && (days < 1)) 
+        l.push(pluralize(minutes, 'minute'));
+    return l.join(' ');
+}
+
+export function secondsToPretty(seconds, showTotalHours) {
+    let totalHours = Math.round((((seconds/60)/60)*10))/10;
+    if (seconds < 60) return pluralize(seconds, 'second');
+    let minutes, hours, days, months, years;
+    [minutes, seconds] = divmod(seconds, 60);
+    [hours, minutes] = divmod(minutes, 60);
+    [days, hours] = divmod(hours, 24);
+    [months, days] = divmod(days, 30.42);
+    [years, months] = divmod(months, 12);
+    let l = [];
+    if (years > 0) l.push(pluralize(years, 'year'));
+    if (months > 0) l.push(pluralize(months, 'month'));
+    if (days > 0) l.push(pluralize(days, 'day'));
+    if (hours > 0) l.push(pluralize(hours, 'hour'));
+    if (minutes > 0) l.push(pluralize(minutes, 'minute'));
+    let r = l.join(', ');
+    if ((showTotalHours) && (totalHours >= 24)) {
+        let h = pluralize(totalHours, 'hour');
+        r = r + ` (${h})`;
     }
-    if (hours > 0) {
-        r += ' ' + hours + ((hours == 1)?' hour':' hours');
-    }
-    if ((days < 1) && (hours < 1)) {
-        r = minutes + ((minutes == 1)?' minute':' minutes');
-    }
-    return r.trim();
+    return r;
+}
+
+export function pluralize(num, word) {
+    if (num != 1) word = word + 's';
+    return `${num} ${word}`
+}
+
+export function divmod(a, b) {
+    return [Math.floor(a / b), a % b];
 }
