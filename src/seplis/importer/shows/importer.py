@@ -82,10 +82,13 @@ def _importer_incremental(importer):
             importer.external_name,
             show_id,
         ))
-        if importer.external_name in show['importers'].values():
-            update_show_with_retry(show)
-        else:
-            update_show_images(show)
+        try:
+            if importer.external_name in show['importers'].values():
+                update_show_with_retry(show)
+            else:
+                update_show_images(show)
+        except API_error:
+            logger.exception('incremental show update')
     importer.save_timestamp(timestamp)
 
 def _can_retry_update_show(exception):
