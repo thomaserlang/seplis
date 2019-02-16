@@ -61,15 +61,15 @@ def create_indices():
             'show': {
                 'properties': {
                     'title': {
-                        'type': 'string',
+                        'type': 'text',
                         'analyzer': 'title_search',
                         'fields': {
                             'raw' : {
-                                'type': 'string', 
-                                'index': 'not_analyzed',
+                                'type': 'keyword', 
+                                'index': True,
                             },
                             'suggest': {
-                                'type': 'string', 
+                                'type': 'text', 
                                 'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
                             },
@@ -84,14 +84,14 @@ def create_indices():
                         'dynamic' : False,
                         'properties' : {
                             'text': { 
-                                'type': 'string',
-                                'index': 'not_analyzed',
+                                'type': 'keyword',
+                                'index': True,
                             },
                             'url': { 
-                                'type': 'string',
+                                'type': 'text',
                             },
                             'title': { 
-                                'type': 'string',
+                                'type': 'text',
                             },
                         }
                     },
@@ -104,9 +104,9 @@ def create_indices():
                     'import_from': {
                         'dynamic': False,
                         'properties': {
-                            'info': { 'type': 'string' },
-                            'episodes': { 'type': 'string' },
-                            'images': { 'type': 'string' },
+                            'info': { 'type': 'text' },
+                            'episodes': { 'type': 'text' },
+                            'images': { 'type': 'text' },
                         },
                     },
                     'status': { 'type': 'integer' },
@@ -120,11 +120,11 @@ def create_indices():
                         },
                     },
                     'alternative_titles': {
-                        'type': 'string',
+                        'type': 'text',
                         'analyzer': 'title_search',
                         'fields': {
                             'suggest': {
-                                'type': 'string', 
+                                'type': 'text', 
                                 'analyzer': 'autocomplete_index',
                                 'search_analyzer': 'autocomplete_search',
                             },
@@ -135,7 +135,7 @@ def create_indices():
                         },
                     },
                     'genres': {
-                        'type': 'string',
+                        'type': 'text',
                     },                    
                     'episode_type': { 'type': 'integer' },
                     'created_at': { 'type': 'date' },
@@ -151,7 +151,7 @@ def create_indices():
             'episode': {
                 'properties' : {
                     'title': {
-                        'type': 'string',
+                        'type': 'text',
                     },
                     'number': { 'type': 'integer' },
                     'air_date': { 'type': 'date' },
@@ -159,11 +159,11 @@ def create_indices():
                         'dynamic' : False,
                         'properties' : {
                             'text': { 
-                                'type': 'string',
-                                'index': 'not_analyzed', 
+                                'type': 'keyword',
+                                'index': True, 
                             },
-                            'url': { 'type': 'string' },
-                            'title': { 'type': 'string' },
+                            'url': { 'type': 'text' },
+                            'title': { 'type': 'text' },
                         },
                     },
                     'season': { 'type': 'integer' },
@@ -180,15 +180,15 @@ def create_indices():
             'image': {
                 'properties' : {
                     'id': { 'type': 'integer' },
-                    'relation_type': { 'type': 'string' },
+                    'relation_type': { 'type': 'text' },
                     'relation_id': { 'type': 'integer' },
-                    'external_name': { 'type': 'string' },
-                    'external_id': { 'type': 'string' },
+                    'external_name': { 'type': 'text' },
+                    'external_id': { 'type': 'text' },
                     'height': { 'type': 'integer' },
                     'width': { 'type': 'integer' },
-                    'hash': { 'type': 'string' },
-                    'source_title': { 'type': 'string' },
-                    'source_url': { 'type': 'string' },
+                    'hash': { 'type': 'text' },
+                    'source_title': { 'type': 'text' },
+                    'source_url': { 'type': 'text' },
                     'type': { 'type': 'integer' },
                     'created_at': { 'type': 'date' },
                 },
