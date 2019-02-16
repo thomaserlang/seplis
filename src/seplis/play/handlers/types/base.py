@@ -19,7 +19,7 @@ def ffmpeg_base_args(handler, settings, metadata):
         {'-y': None},
         {'-loglevel': 'quiet'},        
         {'-map': '0:v:0'},
-        {'-preset': 'ultrafast'},
+        {'-preset': config['play']['ffmpeg_preset']},
         {'-c:a': 'aac'},
         {'-ac': '2'},
         {'-pix_fmt': settings['transcode_pixel_format']},

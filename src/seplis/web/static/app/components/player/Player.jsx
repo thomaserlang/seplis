@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Hls from 'hls.js';
 import ClassNames from 'classnames';
 import {request} from 'api';
 import PlayNext from './PlayNext';
@@ -115,10 +114,9 @@ class Player extends React.Component {
             this.hls = null;
         }
         this.hls = new Hls({
-            enableWorker: false,
             startLevel: 0,
             manifestLoadingTimeOut: 30000,
-            maxSeekHole: 12,
+            maxMaxBufferLength: 20,
             debug: false,
         });
         this.hls.loadSource(url);
