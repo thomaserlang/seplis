@@ -1,5 +1,5 @@
 PyMySQL==0.8.0
-PyYAML==3.13
+PyYAML==4.2b1
 SQLAlchemy==1.2.5
 alembic==0.9.8
 aniso8601==2.0.1
