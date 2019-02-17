@@ -1,9 +1,13 @@
 {
   "name": "SEPLIS",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/thomaserlang/seplis.git"
+  },
+  "scripts": {
+    "start": "webpack-cli -d -w",
+    "build": "webpack --mode production"
   },
   "dependencies": {
     "autoprefixer": "^8.1.0",
@@ -36,7 +40,7 @@
     "select2": "^4.0.5",
     "style-loader": "^0.20.2",
     "url-loader": "^1.0.1",
-    "webpack": "^4.1.1",
-    "webpack-cli": "^2.0.10"
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.2"
   }
 }

@@ -15,14 +15,13 @@ def main():
     base_path = os.path.normpath(
         os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
     )
-    node_bin = os.path.join(base_path, 'node_modules/.bin')
 
     start = [
         ('api', ['python', 'runner.py', 'api'], src_path),
         ('web', ['python', 'runner.py', 'web'], src_path),
         ('play_server', ['python', 'runner.py', 'play_server'], src_path),
         ('worker', ['python', 'runner.py', 'worker'], src_path),
-        ('webpack', [node_bin+'/webpack-cli', '-d', '-w'], base_path),
+        ('npm', ['npm', 'run', 'start'], base_path),
     ]
     if watchdog_installed:
         start.append(
