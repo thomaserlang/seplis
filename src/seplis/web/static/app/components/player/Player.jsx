@@ -128,8 +128,7 @@ class Player extends React.Component {
 
     hlsError(event, data) {
         console.warn(data);
-        if(data.fatal) {
-            console.log('fatal error :' + data.details);
+        if (data.fatal || (data.details == Hls.ErrorTypes.BUFFER_STALLED_ERROR)) {
             switch(data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     console.log("fatal network error encountered, try to recover");
@@ -138,6 +137,10 @@ class Player extends React.Component {
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     console.log("fatal media error encountered, try to recover");
                     this.handleMediaError();
+                    break;
+                default:
+                    // cannot recover
+                    this.hls.destroy();
                     break;
             }
         }
