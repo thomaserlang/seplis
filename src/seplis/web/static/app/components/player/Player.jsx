@@ -131,7 +131,7 @@ class Player extends React.Component {
 
     hlsError(event, data) {
         console.warn(data);
-        if (data.fatal || (data.details == Hls.ErrorTypes.BUFFER_STALLED_ERROR)) {
+        if (data.fatal) {
             switch(data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     console.log("fatal network error encountered, try to recover");
