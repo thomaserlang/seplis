@@ -57,6 +57,7 @@ config = {
         'ffmpeg_loglevel': '8',
         'ffmpeg_logfile': None,
         'ffmpeg_preset': 'veryfast',
+        'ffmpeg_enable_codec_copy': True,
 
         'port': 8003,
         'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
