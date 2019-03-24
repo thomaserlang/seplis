@@ -116,7 +116,6 @@ def get_subtitle_args(handler, metadata):
         '-vn',
         '-an',
         '-c:s', 'ass',
-        '-txt_format', 'text',
         '-map', '0:s:{}'.format(sub_index['group_index'])
     ]    
     start_time = handler.get_argument('start_time', None)
