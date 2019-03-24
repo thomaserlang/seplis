@@ -76,7 +76,7 @@ class SignIn extends React.Component {
                         required
                     />
                 </div>
-                <a className="btn" href="/create-user">Create user</a>
+                <a className="btn" href="/reset-password">Reset password</a>
                 <button 
                     type="submit" 
                     className="btn btn-primary pull-right"

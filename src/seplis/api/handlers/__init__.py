@@ -18,3 +18,4 @@ from . import shows_etw
 from . import user_shows_stats
 from . import user_show_stats
 from . import image
+from . import reset_password

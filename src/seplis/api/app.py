@@ -1,5 +1,5 @@
-import os.path
-from tornado import web, httpserver, ioloop
+import os.path, asyncio
+from tornado import web, httpserver
 from tornado.web import URLSpec as U
 from concurrent.futures import ThreadPoolExecutor
 from raven.contrib.tornado import AsyncSentryClient
@@ -36,6 +36,7 @@ urls = [
     U(r'/1/users', h.user.Collection_handler),
     U(r'/1/users/current', h.user.Current_handler),            
     U(r'/1/users/current/change-password', h.user.Change_password_handler),
+    U(r'/1/user-reset-password', h.reset_password.Handler),
     U(r'/1/users/([a-z0-9]+)', h.user.Handler),
     U(r'/1/users/([a-z0-9]+)/fan-of', h.user_fan_of.Handler),
     U(r'/1/users/([a-z0-9]+)/fan-of/([0-9]+)', h.user_fan_of.Handler),
@@ -59,16 +60,16 @@ urls = [
 
 class Application(web.Application):
 
-    def __init__(self, **args):
+    def __init__(self, ioloop, **args):
         settings = dict(
             debug=seplis.config['debug'],
             autoescape=None,
             xsrf_cookies=False,
-        ) 
+        )
+        self.ioloop = ioloop 
         self.executor = ThreadPoolExecutor(
             max_workers=seplis.config['api']['max_workers']
         )
-        self.ioloop = ioloop.IOLoop.current()
         self.sentry_client = AsyncSentryClient(
             seplis.config['sentry_dsn'],
             raise_send_errors=True
@@ -78,10 +79,11 @@ class Application(web.Application):
 def main():
     logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
 
-    http_server = httpserver.HTTPServer(Application())
+    ioloop = asyncio.get_event_loop()
+    http_server = httpserver.HTTPServer(Application(ioloop))
     http_server.listen(seplis.config['api']['port'])
 
-    ioloop.IOLoop.current().start()
+    ioloop.run_forever()
 
 if __name__ == '__main__':
     import seplis

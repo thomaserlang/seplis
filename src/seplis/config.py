@@ -65,6 +65,14 @@ config = {
         'session_timeout': 5, # Timeout for HLS sessions
         'x-accel': False,
     },
+    'smtp': {
+        'server': '127.0.0.1',
+        'port': 25,
+        'user': None,
+        'password': None,
+        'use_tls': False,
+        'from': 'support@seplis.net',
+    }
 }
 
 def load(path=None):
