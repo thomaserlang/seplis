@@ -1,17 +1,19 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {request} from 'api';
-import {isAuthed, getUserId} from 'utils';
+import React from 'react'
+import {Route, Link} from 'react-router-dom'
+import {request} from 'api'
+import {isAuthed, getUserId} from 'seplis/utils'
 
-import Loader from 'components/Loader';
-import FanButton from 'components/shows/FanButton';
-import ShowNav from 'components/shows/ShowNav';
+import Loader from 'seplis/components/Loader'
+import FanButton from 'seplis/components/shows/FanButton'
+import ShowNav from 'seplis/components/shows/ShowNav'
 
-import './Show.scss';
+import ShowMain from './Main'
+import ShowSeasons from './Seasons'
+import ShowStats from './Stats'
+import ShowInfo from './Info'
+import ShowEdit from './Edit'
 
-const propTypes = {
-    params: PropTypes.object.isRequired,
-}
+import './Show.scss'
 
 class Show extends React.Component {
 
@@ -48,7 +50,12 @@ class Show extends React.Component {
 
                     <div className="col-12 col-sm-8">
                         <ShowNav showId={parseInt(this.state.show.id)} />
-                        {React.cloneElement(this.props.children, {show: show})}
+                        <Route exact path="/show/:showId/" render={(props) => <ShowMain {...props} show={this.state.show} />} />
+                        <Route path="/show/:showId/main" render={(props) => <ShowMain {...props} show={this.state.show} />} />
+                        <Route path="/show/:showId/info" render={(props) => <ShowInfo {...props} show={this.state.show} />} />
+                        <Route path="/show/:showId/seasons" render={(props) => <ShowSeasons {...props} show={this.state.show} />} />
+                        <Route path="/show/:showId/stats" render={(props) => <ShowStats {...props} show={this.state.show} />} />
+                        <Route exact path="/show/:showId/edit" render={(props) => <ShowEdit {...props} show={this.state.show} />} />
                     </div>
                 </div>
             </div>
@@ -63,12 +70,12 @@ class Show extends React.Component {
             <center>
                 <h1>The show is currently in the import queue</h1>
                 <h2>Check back later!</h2>
-                <a 
+                <Link 
                     className="btn btn-warning" 
-                    href={`/show/${this.state.show.id}/edit`}
+                    to={`/show/${this.state.show.id}/edit`}
                 >
                     Edit show
-                </a>
+                </Link>
                 <Loader />
             </center>
         )
@@ -91,6 +98,5 @@ class Show extends React.Component {
         }
     }
 }
-Show.propTypes = propTypes;
 
 export default Show;

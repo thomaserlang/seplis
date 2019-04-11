@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {getUserId, dateInDays, episodeNumber} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import PropTypes from 'prop-types'
+import {getUserId, dateInDays, episodeNumber} from 'utils'
+import {request} from 'api'
 
 const propTypes = {
     perPage: PropTypes.number,
@@ -18,7 +18,7 @@ const defaultProps = {
 class Countdown extends React.Component {
 
     constructor(props) {
-        super();
+        super()
         this.state = {
             items: [],
         }
@@ -26,16 +26,16 @@ class Countdown extends React.Component {
 
     componentDidMount() {
         if (!this.props.items) {
-            this.getData();
+            this.getData()
         } else {
-            this.setState({items: this.props.items});
+            this.setState({items: this.props.items})
         }
     }
 
     getData() {
         getCountdown(this.props.perPage, this.props.page).then((data) => {
-            this.setState({items: data.items});
-        });
+            this.setState({items: data.items})
+        })
     }
 
     renderShow(show, episode) {
@@ -61,7 +61,7 @@ class Countdown extends React.Component {
                 <div className="alert alert-info">
                     None of the shows you follow have episodes airing! :(
                 </div>
-            );
+            )
         return (
             <div className="row">
                 {this.state.items.map(item => (
@@ -71,10 +71,10 @@ class Countdown extends React.Component {
         )
     }
 }
-Countdown.propTypes = propTypes;
-Countdown.defaultProps = defaultProps;
+Countdown.propTypes = propTypes
+Countdown.defaultProps = defaultProps
 
-export default Countdown;
+export default Countdown
 
 export function getCountdown(perPage, page) {
     return new Promise((resolve, reject) => {
@@ -84,9 +84,9 @@ export function getCountdown(perPage, page) {
                 page: page,
             },
         }).done((data, textStatus, jqXHR) => {
-            resolve({items: data, jqXHR: jqXHR});
+            resolve({items: data, jqXHR: jqXHR})
         }).fail((e) => {
-            reject(e);
+            reject(e)
         })
     })
 }

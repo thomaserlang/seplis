@@ -1,6 +1,6 @@
 .btn-fan, 
 .btn-fan:focus {
-    background-color: #414141;
+    background-color: #414141 !important;
     color: #E2E2E2;
     border: 1px solid #6C6C6C;
     outline: 0;
@@ -15,7 +15,7 @@
 
 .btn-fan__is-fan, 
 .btn-fan__is-fan:focus {
-    background-color: #068223;
+    background-color: #068223 !important;
     color: #E2E2E2;
     border: 1px solid #068223;
     &:hover, &:active {         

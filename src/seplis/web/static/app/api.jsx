@@ -27,7 +27,7 @@ export function request(url, options = {}) {
     }
     
     if ((!url.startsWith('http')) && (!localRequest)) {
-        url = apiClientSettings.baseUrl + url;
+        url = seplisBaseUrl + url;
     }
 
     if (query) {
@@ -41,7 +41,7 @@ export function request(url, options = {}) {
     let headers = {
         Accept: 'application/json; charset=utf-8',
     }
-    if (url.startsWith(apiClientSettings.baseUrl)) {
+    if (url.startsWith(seplisBaseUrl)) {
         let access_token = localStorage.getItem('access_token');
         if (access_token)
             headers.Authorization = `Bearer ${access_token}`;

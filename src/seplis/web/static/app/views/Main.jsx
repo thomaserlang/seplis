@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom'
 import Loader from 'seplis/components/Loader';
 import ShowsWatched, {getWatched} from 'components/shows/Watched';
 import ShowsCountdown, {getCountdown} from 'components/shows/Countdown';
@@ -73,28 +74,28 @@ class Main extends React.Component {
         return (
             <span>
             <h2 className="header header-border">
-                <a href="/shows-watched">Recently watched</a>
+                <Link to="/shows-watched">Recently watched</Link>
             </h2>    
             <div className="slider mb-2">
                 <ShowsWatched key={`sw-${this.state.key}`} items={this.state.watched} />
             </div>
 
             <h2 className="header header-border">
-                <a href="/recently-aired">Recently Aired</a>
+                <Link to="/recently-aired">Recently Aired</Link>
             </h2>
             <div className="slider mb-2">
                 <ShowsRecentlyAired key={`sra-${this.state.key}`} items={this.state.recentlyWatched} />
             </div>
 
             <h2 className="header header-border">
-                <a href="/countdown">Countdown</a>
+                <Link to="/countdown">Countdown</Link>
             </h2>
             <div className="slider mb-2">
                 <ShowsCountdown key={`sc-${this.state.key}`} items={this.state.countdown} />
             </div>            
 
             <h2 className="header header-border">
-                <a href="/episodes-to-watch">Episodes To Watch</a>
+                <Link to="/episodes-to-watch">Episodes To Watch</Link>
             </h2>
             <div className="slider mb-2">
                 <ShowsEpisodesToWatch key={`etw-${this.state.key}`} items={this.state.episodesToWatch} />

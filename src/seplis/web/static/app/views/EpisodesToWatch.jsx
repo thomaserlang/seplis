@@ -1,33 +1,38 @@
-import React from 'react';
-import {browserHistory} from 'react-router';
-import {request} from 'api';
-import Loader from 'components/Loader';
-import Pagination from 'components/Pagination';
-import EpisodesToWatchList from 'components/shows/EpisodesToWatch.jsx';
-import {getEpisodesToWatch} from 'components/shows/EpisodesToWatch.jsx';
-import {requireAuthed} from 'utils';
+import React from 'react'
+import {request} from 'api'
+import Loader from 'components/Loader'
+import Pagination from 'components/Pagination'
+import EpisodesToWatchList from 'components/shows/EpisodesToWatch.jsx'
+import {getEpisodesToWatch} from 'components/shows/EpisodesToWatch.jsx'
+import {requireAuthed, locationQuery} from 'utils'
 
 class EpisodesToWatch extends React.Component {
 
     constructor(props) {
-        super(props);
-        requireAuthed();
-        this.onPageChange = this.pageChange.bind(this);
+        super(props)
+        requireAuthed()
+        this.onPageChange = this.pageChange.bind(this)
         this.state = {
             loading: true,
             items: [],
             jqXHR: null,
-            page: this.props.location.query.page || 1,
+            page: locationQuery().page || 1,
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location !== prevProps.location) {
+            this.setState({
+                page: locationQuery().page || 1,
+                loading: true,
+            },() => {
+                this.getItems()
+            })
         }
     }
 
     setBrowserPath() {
-        browserHistory.push({
-            pathname: this.props.location.pathname,
-            query: { 
-                page: this.state.page,
-            },
-        });
+        this.props.history.push(`${this.props.location.pathname}?page=${this.state.page}`)
     }
 
     pageChange(e) {
@@ -35,13 +40,13 @@ class EpisodesToWatch extends React.Component {
             page: e.target.value,
             loading: true,
         }, () => {
-            this.setBrowserPath();
-            this.getItems();
-        });
+            this.setBrowserPath()
+            this.getItems()
+        })
     }
 
     componentDidMount() {
-        this.getItems();
+        this.getItems()
     }
 
     getItems() {
@@ -51,22 +56,22 @@ class EpisodesToWatch extends React.Component {
                 jqXHR: data.jqXHR,
                 loading: false,
             })
-        });
+        })
     }
 
     render() {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2 className="header">Episodes to Watch</h2>
+                    <h2>Episodes to Watch</h2>
                     <Loader />
                 </span>
-            );
+            )
         return (
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2 className="header">Episodes to Watch</h2>
+                        <h2>Episodes to Watch</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 
@@ -90,4 +95,4 @@ class EpisodesToWatch extends React.Component {
     }
 }
 
-export default EpisodesToWatch;
+export default EpisodesToWatch

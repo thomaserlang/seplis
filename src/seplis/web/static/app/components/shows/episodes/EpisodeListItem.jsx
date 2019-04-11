@@ -100,7 +100,7 @@ class EpisodeListItem extends React.Component {
                         className="play-button float-right"
                         onClick={this.onPlayClick}
                     >
-                        <i className="fa fa-play-circle"></i>
+                        <i className="fas fa-play-circle"></i>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {getUserId, episodeNumber} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import PropTypes from 'prop-types'
+import {getUserId, episodeNumber} from 'utils'
+import {request} from 'api'
 
 const propTypes = {
     perPage: PropTypes.number,
@@ -18,7 +18,7 @@ const defaultProps = {
 class EpisodesToWatch extends React.Component {
 
     constructor(props) {
-        super();
+        super()
         this.state = {
             items: [],
         }
@@ -26,21 +26,21 @@ class EpisodesToWatch extends React.Component {
 
     componentDidMount() {
         if (!this.props.items) {
-            this.getData();
+            this.getData()
         } else {
-            this.setState({items: this.props.items});
+            this.setState({items: this.props.items})
         }
     }
 
     getData() {
         getEpisodesToWatch(this.props.perPage, this.props.page).then((data) => {
-            this.setState({items: data.items});
-        });
+            this.setState({items: data.items})
+        })
     }
 
     renderItem(item) {
-        let show = item.show;
-        let episode = item.episode;
+        let show = item.show
+        let episode = item.episode
         return (
             <div key={show.id} className="col-4 col-md-3 col-lg-2 col-margin">
                 <a href={`/show/${show.id}`}>
@@ -62,7 +62,7 @@ class EpisodesToWatch extends React.Component {
                 <div className="alert alert-info">
                     You have zero episodes to watch! :(
                 </div>
-            );
+            )
         return (
             <div className="row">
                 {this.state.items.map(item => (
@@ -72,10 +72,10 @@ class EpisodesToWatch extends React.Component {
         )
     }
 }
-EpisodesToWatch.propTypes = propTypes;
-EpisodesToWatch.defaultProps = defaultProps;
+EpisodesToWatch.propTypes = propTypes
+EpisodesToWatch.defaultProps = defaultProps
 
-export default EpisodesToWatch;
+export default EpisodesToWatch
 
 export function getEpisodesToWatch(perPage, page) {
     return new Promise((resolve, reject) => {
@@ -85,9 +85,9 @@ export function getEpisodesToWatch(perPage, page) {
                 page: page,
             },
         }).done((data, textStatus, jqXHR) => {
-            resolve({items: data, jqXHR: jqXHR});
+            resolve({items: data, jqXHR: jqXHR})
         }).fail((e) => {
-            reject(e);
+            reject(e)
         })
     })
 }

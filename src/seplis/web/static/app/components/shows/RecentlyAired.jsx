@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {getUserId, episodeNumber} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import PropTypes from 'prop-types'
+import {getUserId, episodeNumber} from 'utils'
+import {request} from 'api'
 
-import './List.scss';
+import './List.scss'
 
 const propTypes = {
     perPage: PropTypes.number,
@@ -20,7 +20,7 @@ const defaultProps = {
 class RecentlyAired extends React.Component {
 
     constructor(props) {
-        super();
+        super()
         this.state = {
             items: [],
         }
@@ -28,21 +28,21 @@ class RecentlyAired extends React.Component {
 
     componentDidMount() {
         if (!this.props.items) {
-            this.getData();
+            this.getData()
         } else {
-            this.setState({items: this.props.items});
+            this.setState({items: this.props.items})
         }
     }
 
     getData() {
         getRecentlyAired(this.props.perPage, this.props.page).then((data) => {
-            this.setState({items: data.items});
-        });
+            this.setState({items: data.items})
+        })
     }
 
     renderItem(item) {
-        let show = item.show;
-        let episode = item.episode;
+        let show = item.show
+        let episode = item.episode
         return (
             <div key={show.id} className="col-4 col-md-3 col-lg-2 col-margin">
                 <a href={`/show/${show.id}`}>
@@ -64,7 +64,7 @@ class RecentlyAired extends React.Component {
                 <div className="alert alert-info">
                     No recently aired episodes from shows you are a fan of.
                 </div>
-            );
+            )
         return (
             <div className="row">
                 {this.state.items.map(item => (
@@ -74,10 +74,10 @@ class RecentlyAired extends React.Component {
         )
     }
 }
-RecentlyAired.propTypes = propTypes;
-RecentlyAired.defaultProps = defaultProps;
+RecentlyAired.propTypes = propTypes
+RecentlyAired.defaultProps = defaultProps
 
-export default RecentlyAired;
+export default RecentlyAired
 
 export function getRecentlyAired(perPage, page) {
     return new Promise((resolve, reject) => {
@@ -87,9 +87,9 @@ export function getRecentlyAired(perPage, page) {
                 page: page,
             },
         }).done((data, textStatus, jqXHR) => {
-            resolve({items: data, jqXHR: jqXHR});
+            resolve({items: data, jqXHR: jqXHR})
         }).fail((e) => {
-            reject(e);
+            reject(e)
         })
     })
 }

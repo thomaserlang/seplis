@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import {withRouter} from 'react-router';
 import Loader from 'components/Loader';
-import {requireAuthed} from 'utils';
+import {requireAuthed, locationQuery} from 'utils';
 import {request} from 'api';
 
 const propTypes = {
@@ -29,10 +29,11 @@ class PlayServer extends React.Component {
             },
             users: [],
         }
+        this.lq = locationQuery()
     }
 
     componentDidMount() {
-        if (this.props.location.query.id) {
+        if (this.lq.id) {
             this.getPlayServer();
             this.getUsersWithAccess();
         }
@@ -47,7 +48,7 @@ class PlayServer extends React.Component {
     getPlayServer() {
         this.incLoading(1);
         request(
-            `/1/play-servers/${this.props.location.query.id}`
+            `/1/play-servers/${this.lq.id}`
         ).fail(e => {
             // TODO: display the error...
         }).done(data => {
@@ -60,7 +61,7 @@ class PlayServer extends React.Component {
     getUsersWithAccess() {
         this.incLoading(1);
         request(
-            `/1/play-servers/${this.props.location.query.id}/users`
+            `/1/play-servers/${this.lq.id}/users`
         ).fail(e => {
             // TODO: display the error...
         }).done(data => {
@@ -73,11 +74,11 @@ class PlayServer extends React.Component {
     onSubmit(e) {
         e.preventDefault();
         let url = `/1/play-servers`;
-        if (this.props.location.query.id) {
-            url += `/${this.props.location.query.id}`;
+        if (this.lq.id) {
+            url += `/${this.lq.id}`;
         }
         request(url, {
-            method: this.props.location.query.id?'PUT':'POST',
+            method: this.lq.id?'PUT':'POST',
             data: {
                 name: this.name.value,
                 url: this.url.value,
@@ -94,7 +95,7 @@ class PlayServer extends React.Component {
         e.preventDefault();
         if (!confirm('Are you sure you wan\'t to delete this play server?'))
             return;
-        request(`/1/play-servers/${this.props.location.query.id}`, {
+        request(`/1/play-servers/${this.lq.id}`, {
             method: 'DELETE',
         }).fail(e => {
             this.setState({error: e.responseJSON});
@@ -117,7 +118,7 @@ class PlayServer extends React.Component {
                 alert(`Unknown user: ${value}`);
                 return;
             }
-            let id = this.props.location.query.id;
+            let id = this.lq.id;
             request(`/1/play-servers/${id}/users/${data[0].id}`, {
                method: 'PUT',
             }).fail(e => {
@@ -130,7 +131,7 @@ class PlayServer extends React.Component {
 
     onRemoveUserAccess(e) {
         e.preventDefault();
-        let id = this.props.location.query.id;
+        let id = this.lq.id;
         request(`/1/play-servers/${id}/users/${e.target.userId.value}`, {
            method: 'DELETE',
         }).fail(e => {
@@ -161,7 +162,7 @@ class PlayServer extends React.Component {
                                         value={u.id}
                                     />
                                     <button type="submit" className="btn btn-danger" title="Delete user">
-                                        <i className="fa fa-times"></i>
+                                        <i className="fas fa-times"></i>
                                     </button>
                                 </form>
                             </td>
@@ -193,7 +194,7 @@ class PlayServer extends React.Component {
     }
 
     renderUsersWithAccess() {
-        if (!this.props.location.query.id) return;
+        if (!this.lq.id) return;
         return (
             <span>
                 <h2 className="col-margin">Users with access</h2>
@@ -204,7 +205,7 @@ class PlayServer extends React.Component {
     }
 
     renderDeleteButton() {
-        if (!this.props.location.query.id) return;
+        if (!this.lq.id) return;
         return (
             <button className="btn btn-danger" onClick={this.onDelete}>
                 Delete

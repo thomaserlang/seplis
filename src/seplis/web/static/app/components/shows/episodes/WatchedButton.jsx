@@ -105,10 +105,10 @@ class WatchedButton extends React.Component {
                 role="menu"
             >
                 <li onClick={this.onWatchedIncr}>
-                    <i className="fa fa-plus"></i>
+                    <i className="fas fa-plus"></i>
                 </li>
                 <li onClick={this.onWatchedDecr}>
-                    <i className="fa fa-minus"></i>
+                    <i className="fas fa-minus"></i>
                 </li>
             </ul>
         )

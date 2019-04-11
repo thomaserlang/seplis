@@ -1,15 +1,15 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ClassNames from 'classnames';
-import {request} from 'api';
-import PlayNext from './PlayNext';
-import VolumeBar from './VolumeBar';
-import AudioSubBar from './AudioSubBar.jsx';
-import Slider from './Slider.jsx';
-import ChromecastIcon from './ChromecastIcon';
-import Loader from 'seplis/components/Loader';
-import {secondsToTime} from 'utils';
-import './Player.scss';
+import React from 'react'
+import PropTypes from 'prop-types'
+import ClassNames from 'classnames'
+import {request} from 'api'
+import PlayNext from './PlayNext'
+import VolumeBar from './VolumeBar'
+import AudioSubBar from './AudioSubBar.jsx'
+import Slider from './Slider.jsx'
+import ChromecastIcon from './ChromecastIcon'
+import Loader from 'seplis/components/Loader'
+import {secondsToTime} from 'utils'
+import './Player.scss'
 
 const propTypes = {
     playServerUrl: PropTypes.string,
@@ -37,22 +37,22 @@ const defaultProps = {
 class Player extends React.Component {
 
     constructor(props) {
-        super(props);
-        this.onPlayPauseClick = this.playPauseClick.bind(this);
-        this.duration = parseInt(props.metadata.format.duration);
-        this.pingTimer = null;
-        this.hls = null;
-        this.onFullscreenClick = this.fullscreenClick.bind(this);
-        this.onVolumeChange = this.volumeChange.bind(this);
+        super(props)
+        this.onPlayPauseClick = this.playPauseClick.bind(this)
+        this.duration = parseInt(props.metadata.format.duration)
+        this.pingTimer = null
+        this.hls = null
+        this.onFullscreenClick = this.fullscreenClick.bind(this)
+        this.onVolumeChange = this.volumeChange.bind(this)
 
-        this.onAudioChange = this.audioChange.bind(this);
-        this.onSubtitleChange = this.subtitleChange.bind(this);
+        this.onAudioChange = this.audioChange.bind(this)
+        this.onSubtitleChange = this.subtitleChange.bind(this)
 
-        this.volume = 1;
-        this.hideControlsTimer = null;
+        this.volume = 1
+        this.hideControlsTimer = null
 
-        this.onSliderReturnCurrentTime = this.sliderReturnCurrentTime.bind(this);
-        this.onSliderNewTime = this.sliderNewTime.bind(this);
+        this.onSliderReturnCurrentTime = this.sliderReturnCurrentTime.bind(this)
+        this.onSliderNewTime = this.sliderNewTime.bind(this)
 
         this.state = {
             playing: false,
@@ -66,131 +66,131 @@ class Player extends React.Component {
             loading: false,
         }
         
-        this.isChrome = !!window.chrome && !!window.chrome.webstore;
+        this.isChrome = !!window.chrome && !!window.chrome.webstore
     }
 
     componentDidMount() {        
-        this.video.addEventListener('timeupdate', this.timeupdateEvent.bind(this));
-        this.video.addEventListener('pause', this.pauseEvent.bind(this));
-        this.video.addEventListener('play', this.playEvent.bind(this));
+        this.video.addEventListener('timeupdate', this.timeupdateEvent.bind(this))
+        this.video.addEventListener('pause', this.pauseEvent.bind(this))
+        this.video.addEventListener('play', this.playEvent.bind(this))
         
-        document.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this));
-        document.addEventListener('webkitfullscreenchange', this.fullscreenchangeEvent.bind(this));
-        document.addEventListener('mozfullscreenchange', this.fullscreenchangeEvent.bind(this));
-        document.addEventListener('msfullscreenchange', this.fullscreenchangeEvent.bind(this));
+        document.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this))
+        document.addEventListener('webkitfullscreenchange', this.fullscreenchangeEvent.bind(this))
+        document.addEventListener('mozfullscreenchange', this.fullscreenchangeEvent.bind(this))
+        document.addEventListener('msfullscreenchange', this.fullscreenchangeEvent.bind(this))
         
-        this.video.addEventListener('error', this.playError.bind(this));
-        this.video.addEventListener('waiting', this.playWaiting.bind(this));
-        this.video.addEventListener('click', this.playClick.bind(this));
-        this.video.addEventListener('touchstart', this.playClick.bind(this));
-        this.video.addEventListener('loadeddata', this.loadedEvent.bind(this));
-        this.setPingTimer();
-        this.video.volume = this.volume;
-        this.loadStream(this.getPlayUrl());
-        document.onmousemove = this.mouseMove.bind(this);
-        document.onkeypress = this.keypress.bind(this);
-        document.onbeforeunload = this.beforeUnload.bind(this);
+        this.video.addEventListener('error', this.playError.bind(this))
+        this.video.addEventListener('waiting', this.playWaiting.bind(this))
+        this.video.addEventListener('click', this.playClick.bind(this))
+        this.video.addEventListener('touchstart', this.playClick.bind(this))
+        this.video.addEventListener('loadeddata', this.loadedEvent.bind(this))
+        this.setPingTimer()
+        this.video.volume = this.volume
+        this.loadStream(this.getPlayUrl())
+        document.onmousemove = this.mouseMove.bind(this)
+        document.onkeypress = this.keypress.bind(this)
+        document.onbeforeunload = this.beforeUnload.bind(this)
     }
 
     loadedEvent(e) {
-        this.setState({loading: false});
+        this.setState({loading: false})
     }
 
     loadStream(url) {
-        this.setState({loading: true});
+        this.setState({loading: true})
         if (!Hls.isSupported() || this.isChrome) {
-            this.video.src = url;
-            this.video.load();
-            this.video.play();
-            return;
+            this.video.src = url
+            this.video.load()
+            this.video.play()
+            return
         }
 
         if (this.hls) {
-            this.hls.destroy();
+            this.hls.destroy()
             if (this.hls.bufferTimer) {
-                clearInterval(this.hls.bufferTimer);
-                this.hls.bufferTimer = undefined;
+                clearInterval(this.hls.bufferTimer)
+                this.hls.bufferTimer = undefined
             }
-            this.hls = null;
+            this.hls = null
         }
         this.hls = new Hls({
             startLevel: 0,
             debug: false,
-        });
-        this.hls.loadSource(url);
-        this.hls.attachMedia(this.video);
+        })
+        this.hls.loadSource(url)
+        this.hls.attachMedia(this.video)
         this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
-            this.video.play();
-        });
-        this.hls.on(Hls.Events.ERROR, this.hlsError.bind(this));
+            this.video.play()
+        })
+        this.hls.on(Hls.Events.ERROR, this.hlsError.bind(this))
     }
 
     hlsError(event, data) {
-        console.warn(data);
+        console.warn(data)
         if (data.fatal) {
             switch(data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
-                    console.log("fatal network error encountered, try to recover");
-                    this.hls.startLoad();
-                    break;
+                    console.log('hls.js fatal network error encountered, try to recover')
+                    this.hls.loadSource(this.getPlayUrl())
+                    break
                 case Hls.ErrorTypes.MEDIA_ERROR:
-                    console.log("fatal media error encountered, try to recover");
-                    this.handleMediaError();
-                    break;
+                    console.log('hls.js fatal media error encountered, try to recover')
+                    this.handleMediaError()
+                    break
                 default:
-                    // cannot recover
-                    this.hls.destroy();
-                    break;
+                    console.log('hls.js could not recover')
+                    this.hls.destroy()
+                    break
             }
         }
     }
 
     handleMediaError() {
-        this.setState({loading: true});
-        this.hls.recoverMediaError();
-        this.video.play();
+        this.setState({loading: true})
+        this.hls.recoverMediaError()
+        this.video.play()
     }
 
     keypress(e) {
         if (e.code == 'Space')
-            this.playPauseClick();
+            this.playPauseClick()
     }
 
     playClick(e) {
-        e.preventDefault();
+        e.preventDefault()
         if (this.video.paused || this.state.loading)
-            return;
-        this.setState({showControls: !this.state.showControls});
-        this.setHideControlsTimer();
+            return
+        this.setState({showControls: !this.state.showControls})
+        this.setHideControlsTimer()
     }
 
     setPingTimer() {
-        clearTimeout(this.pingTimer);
+        clearTimeout(this.pingTimer)
         this.pingTimer = setTimeout(() => {
-            request(this.getPlayUrl()+'&action=ping');
-            this.setPingTimer();
-        }, 2000);
+            request(this.getPlayUrl()+'&action=ping')
+            this.setPingTimer()
+        }, 2000)
     }
 
     setHideControlsTimer(timeout) {
         if (timeout == undefined)
-            timeout = 6000;
-        clearTimeout(this.hideControlsTimer);
+            timeout = 6000
+        clearTimeout(this.hideControlsTimer)
         this.hideControlsTimer = setTimeout(() => {
             if (this.video.paused || this.state.loading)
-                return;
+                return
             this.setState({
                 showControls: false,
-            });
-        }, timeout);
+            })
+        }, timeout)
     }
 
     mouseMove(e) {
-        if (this.state.showControls) return;
+        if (this.state.showControls) return
         this.setState({
             showControls: true,
-        });
-        this.setHideControlsTimer();
+        })
+        this.setHideControlsTimer()
     }
 
     getPlayUrl() {
@@ -199,87 +199,87 @@ class Player extends React.Component {
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
-            `&audio_lang=${this.state.audio || ''}`;
+            `&audio_lang=${this.state.audio || ''}`
         if (this.isChrome)
             s += `&device=Chrome`
         else
-            s += `&device=hls`;
-        return s;
+            s += `&device=hls`
+        return s
     }
 
     playPauseClick() {
         if (this.video.paused) {
-            this.video.play();
-            this.setHideControlsTimer(2000);
+            this.video.play()
+            this.setHideControlsTimer(2000)
         }
         else {
-            this.video.pause();
+            this.video.pause()
         }
     }
 
     fullscreenchangeEvent() {
         this.setState({
             fullscreen: !!(document.fullScreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement || document.fullscreenElement),
-        });
+        })
     }
 
     pauseEvent() {
         this.setState({
             playing: false,
             showControls: true,
-        });
+        })
     }
 
     playEvent() {
         this.setState({
             playing: true,
             loading: true,
-        });
+        })
     }
 
     playError(e) {
-        this.setState({loading: false});
+        this.setState({loading: false})
         console.warn(e.currentTarget.error)
         if (e.currentTarget.error.code == e.currentTarget.error.MEDIA_ERR_DECODE) {
-            this.handleMediaError();
+            this.handleMediaError()
         }
     }
 
     playWaiting() {
-        this.setState({loading: true});
+        this.setState({loading: true})
     }
 
     timeupdateEvent(e) {
         if (!this.video.paused) {
-            this.setState({loading: false});
-            let time = this.video.currentTime;
+            this.setState({loading: false})
+            let time = this.video.currentTime
             if (this.video.seekable.length <= 1 || this.video.seekable.end(0) <= 1)
-                time += this.state.startTime;
+                time += this.state.startTime
             this.setState({
                 time: time,
                 playing: true,
             }, () => {
                 if (this.props.onTimeUpdate)
-                    this.props.onTimeUpdate(this.state.time);
-            });
+                    this.props.onTimeUpdate(this.state.time)
+            })
             if (!this.hideControlsTimer) {
-                this.setHideControlsTimer();
+                this.setHideControlsTimer()
             }
         }
     }
 
     changeVideoState(state) {
-        this.setState({'loading': true});
+        this.setState({'loading': true})
         this.cancelPlayUrl().then(() => {
             this.setState(state, () => {
-                this.loadStream(this.getPlayUrl());
-                this.setPingTimer();
-            });
-        });
+                this.loadStream(this.getPlayUrl())
+                this.setPingTimer()
+            })
+        })
     }
 
     beforeUnload() {
-        this.cancelPlayUrl();
+        this.cancelPlayUrl()
     }
 
     cancelPlayUrl() {
@@ -287,47 +287,47 @@ class Player extends React.Component {
             request(
                 this.getPlayUrl()+'&action=cancel'
             ).done(() => {
-                resolve();
+                resolve()
             }).fail(e => {
-                reject(e);
-            });
-        });
+                reject(e)
+            })
+        })
     }
 
     fullscreenClick(event) {
         if (!this.state.fullscreen) {
-            let elem = document.getElementById('player');
+            let elem = document.getElementById('player')
             if (elem.requestFullScreen) {
-                elem.requestFullScreen();
+                elem.requestFullScreen()
             } else if (elem.mozRequestFullScreen) {
-                elem.mozRequestFullScreen();
+                elem.mozRequestFullScreen()
             } else if (elem.webkitRequestFullScreen) {
-                elem.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+                elem.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
             } else if (elem.webkitEnterFullscreen) {
-                elem.webkitEnterFullscreen();
+                elem.webkitEnterFullscreen()
             }
         } else {
             if (document.cancelFullScreen) {
-                document.cancelFullScreen();
+                document.cancelFullScreen()
             } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
+                document.mozCancelFullScreen()
             } else if (document.webkitCancelFullScreen) {
-                document.webkitCancelFullScreen();
+                document.webkitCancelFullScreen()
             }
         }
-        this.setState({fullscreen: !this.state.fullscreen});
+        this.setState({fullscreen: !this.state.fullscreen})
     }
 
     getDurationText() {
-        return secondsToTime(parseInt(this.duration));
+        return secondsToTime(parseInt(this.duration))
     }
 
     getCurrentTimeText() {
-        return secondsToTime(parseInt(this.state.time));
+        return secondsToTime(parseInt(this.state.time))
     }
 
     renderPlayNext() {
-        if (!this.props.nextInfo) return;
+        if (!this.props.nextInfo) return
         return (
             <PlayNext
                 title={this.props.nextInfo.title}
@@ -337,45 +337,45 @@ class Player extends React.Component {
     }
 
     volumeChange(volume) {
-        this.volume = volume;
+        this.volume = volume
         if (this.video)
-            this.video.volume = volume;
+            this.video.volume = volume
     }
 
     audioChange(lang) {
         if (this.props.onAudioChange)
-            this.props.onAudioChange(lang);
+            this.props.onAudioChange(lang)
         this.changeVideoState({
             audio: lang,
             startTime: this.state.time,
-        });
+        })
     }
 
     subtitleChange(lang) {
         if (this.props.onSubtitleChange)
-            this.props.onSubtitleChange(lang);
+            this.props.onSubtitleChange(lang)
         this.changeVideoState({
             subtitle: lang,
             startTime: this.state.time,
-        });
+        })
     }
 
     sliderNewTime(newTime) {
-        this.video.pause();        
-        clearTimeout(this.hideControlsTimer);
-        this.hideControlsTimer = null;
+        this.video.pause()        
+        clearTimeout(this.hideControlsTimer)
+        this.hideControlsTimer = null
         this.changeVideoState({
             time: newTime,
             startTime: newTime,
-        });
+        })
     }
 
     sliderReturnCurrentTime() {
-        return this.state.time;
+        return this.state.time
     }
 
     showControlsVisibility() {
-        return this.state.showControls?'visible':'hidden';
+        return this.state.showControls?'visible':'hidden'
     }
 
     renderControlsTop() {
@@ -386,7 +386,7 @@ class Player extends React.Component {
             >
                 <div className="control">
                     <a 
-                        className="fa fa-times" 
+                        className="fas fa-times" 
                         href={this.props.backToInfo.url}
                         title={this.props.backToInfo.title}
                     />
@@ -420,12 +420,12 @@ class Player extends React.Component {
             fa: true,
             'fa-pause': this.state.playing,
             'fa-play': !this.state.playing,
-        });
+        })
         let fullscreen = ClassNames({
             fa: true,
             'fa-expand': this.state.fullscreen,
             'fa-arrows-alt': !this.state.fullscreen,
-        });
+        })
         return (
             <div 
                 className="controls" 
@@ -462,7 +462,7 @@ class Player extends React.Component {
 
     renderLoading() {
         if (!this.state.loading)
-            return null;
+            return null
         return <Loader hcenter={true} />
     }
 
@@ -485,9 +485,9 @@ class Player extends React.Component {
         )
     }
 }
-Player.propTypes = propTypes;
-Player.defaultProps = defaultProps;
-export default Player;
+Player.propTypes = propTypes
+Player.defaultProps = defaultProps
+export default Player
 
 export function getPlayServer(url) {
     /* `url` must be a url to the play servers. 
@@ -498,33 +498,33 @@ export function getPlayServer(url) {
         request(
             url
         ).done(playServers => {
-            var selected = false;
-            var i = 0;
+            var selected = false
+            var i = 0
             if (playServers.length == 0) {
-                reject({code: 1, message: 'No play servers.'});
-                return;
+                reject({code: 1, message: 'No play servers.'})
+                return
             }
             for (var s of playServers) {
-                i += 1;
+                i += 1
                 request(s.play_url+'/metadata', {
                     query: {
                         play_id: s.play_id,
                     }
                 }).done(metadata => {
                     if (selected) 
-                        return;
-                    selected = true;
+                        return
+                    selected = true
                     resolve({
                         playServer: s, 
                         metadata: metadata,
-                    });
+                    })
                 }).always(() => {
-                    i -= 1;
+                    i -= 1
                     if ((i == 0) && (selected == false)) {
-                        reject({code: 2, message: 'This episode is not on any of your play servers.'});
+                        reject({code: 2, message: 'This episode is not on any of your play servers.'})
                     }
-                });
+                })
             }
-        });
-    });
+        })
+    })
 }

@@ -22,35 +22,15 @@ class Application(tornado.web.Application):
         )
         urls = [
             URLSpec(r'/static/(.*)', base.File_handler, {'path': static_path}),
+            URLSpec(r'/api/tvmaze-show-lookup', tvmaze_lookup.Handler),
 
-            URLSpec(r"/", tornado.web.RedirectHandler, {"url": "/main"}),
-
-            URLSpec(r'/show-new', react.Handler),
             URLSpec(r'/show.*/([0-9]+)', react.Handler_tv_show),
             URLSpec(r'/show/([0-9]+)/[^/]+', react.Handler_tv_show),
             URLSpec(r'/show-edit/([0-9]+)', react.Handler_tv_show),
 
-            URLSpec(r'/user-shows-stats', react.Handler),
-            URLSpec(r'/fan-of', react.Handler),
-            URLSpec(r'/recently-aired', react.Handler),
-            URLSpec(r'/shows-watched', react.Handler),
-            URLSpec(r'/countdown', react.Handler),
-            URLSpec(r'/episodes-to-watch', react.Handler),
-            URLSpec(r'/main', react.Handler),
-            URLSpec(r'/air-dates', react.Handler),
-            URLSpec(r'/account', react.Handler),
-            URLSpec(r'/password', react.Handler),
-            URLSpec(r'/play-servers', react.Handler),
-            URLSpec(r'/play-server', react.Handler),
-            URLSpec(r'/show/([0-9]+)/episode/([0-9]+)/play', react.Handler_without_menu_no_container),
+            URLSpec(r'/', react.Handler),
+            URLSpec(r'/(.*)', react.Handler),
 
-            URLSpec(r'/sign-in', react.Handler_without_menu),
-            URLSpec(r'/sign-out', react.Handler_without_menu),
-            URLSpec(r'/create-user', react.Handler_without_menu),
-            URLSpec(r'/reset-password', react.Handler_without_menu),
-            URLSpec(r'/reset-password/.*', react.Handler_without_menu),
-
-            URLSpec(r'/api/tvmaze-show-lookup', tvmaze_lookup.Handler),
         ]
         tornado.web.Application.__init__(self, urls, **settings)
 

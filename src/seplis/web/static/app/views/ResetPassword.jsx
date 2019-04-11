@@ -1,51 +1,52 @@
-import React from 'react';
-import {renderError} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import {Link} from 'react-router-dom'
+import {renderError} from 'utils'
+import {request} from 'api'
 
 class ResetPassword extends React.Component {
 
     constructor(props) {
-        super(props);
+        super(props)
         this.state = {
             error: null,
             success: null,
             loading: false,
         }
-        this.submitEmail = this.submitEmail.bind(this);
-        this.submitReset = this.submitReset.bind(this);
+        this.submitEmail = this.submitEmail.bind(this)
+        this.submitReset = this.submitReset.bind(this)
     }
 
     submitEmail(e) {
         e.preventDefault()
-        this.setState({success: false, loading: true, error: null});
+        this.setState({success: false, loading: true, error: null})
         request('/1/user-reset-password', {
             query: {
                 'email': this.email.value,
             }
         }).fail(e => {
-            this.setState({error: e.responseJSON, loading: false});
+            this.setState({error: e.responseJSON, loading: false})
         }).done(() => {
-            this.setState({success: true, loading: false});
-        });
+            this.setState({success: true, loading: false})
+        })
     }
 
     submitReset(e) {
         e.preventDefault()
-        this.setState({success: false, loading: true, error: null});
+        this.setState({success: false, loading: true, error: null})
         request('/1/user-reset-password', {
             data: {
-                'key': this.props.params.key,
+                'key': this.props.match.params.key,
                 'new_password': this.password.value
             }
         }).fail(e => {
-            this.setState({error: e.responseJSON, loading: false});
+            this.setState({error: e.responseJSON, loading: false})
         }).done(() => {
-            this.setState({success: true, loading: false});
-        });
+            this.setState({success: true, loading: false})
+        })
     }
 
     renderSendSuccess() {
-        if (!this.state.success) return;
+        if (!this.state.success) return
         return (
             <div className="alert alert-success">
                 <strong>A reset link has been sent to your email.</strong>
@@ -57,13 +58,13 @@ class ResetPassword extends React.Component {
         if (this.state.loading == false)
             return (
                 <button type="submit" className="btn btn-primary pull-right">Submit</button>
-            );
+            )
         if (this.state.loading == true) 
             return (
                 <button type="submit" className="btn btn-primary pull-right" disabled={true}>
                     Working...
                 </button>
-            );        
+            )        
     }
 
     renderSendForm() {
@@ -74,12 +75,12 @@ class ResetPassword extends React.Component {
                 ref={(ref) => (this.email = ref)}
                 type="email"
                 name="email"
-                placeholder="user@example.net"
+                placeholder=""
                 className="form-control dark-form-control mb-4"
                 required={true}
                 autoFocus={true}
             />
-            <a className="btn" href="/sign-in">Sign in</a>
+            <Link className="btn" to="/sign-in">Sign in</Link>
             {this.renderButton()}
         </form>
     }
@@ -95,10 +96,10 @@ class ResetPassword extends React.Component {
     }
 
     renderResetSuccess() {
-        if (!this.state.success) return;
+        if (!this.state.success) return
         return (
             <div className="alert alert-success">
-                Your password has been changed. Sign in <a href="/sign-in">here</a>.
+                Your password has been changed. Sign in <Link to="/sign-in">here</Link>.
             </div>
         )
     }
@@ -130,11 +131,11 @@ class ResetPassword extends React.Component {
     }
 
     render() {
-        if (this.props.params.key)
+        if (this.props.match.params.key)
             return this.renderReset()
         return this.renderSend()
     }
 
 }
 
-export default ResetPassword;
+export default ResetPassword

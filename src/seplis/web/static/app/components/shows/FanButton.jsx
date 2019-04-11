@@ -60,9 +60,9 @@ class FanButton extends React.Component {
                 aria-label={this.state.isFan?'Unfan':'Become a Fan'}                
             >
                 {this.state.isFan?
-                    <span className="fa fa-star"></span>
+                    <span className="fas fa-star"></span>
                     :
-                    <span className="fa fa-star-o"></span>
+                    <span className="far fa-star"></span>
                 }
             </button>
         );

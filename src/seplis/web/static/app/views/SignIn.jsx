@@ -1,24 +1,24 @@
-import React from 'react';
-import $ from 'jquery';
-import {request, apiClientSettings} from 'api';
+import React from 'react'
+import {Link} from 'react-router-dom'
+import {request, apiClientSettings} from 'api'
 
-import 'styles/StandardForm.scss';
+import 'styles/StandardForm.scss'
 
 class SignIn extends React.Component {
 
     constructor(props) {
-        super(props);
+        super(props)
         this.state = {
             error: '',
             email: '',
             password: '',
         }
-        this.onSignIn = this.onSignIn.bind(this);
-        this.onDataChange = this.onDataChange.bind(this);
+        this.onSignIn = this.onSignIn.bind(this)
+        this.onDataChange = this.onDataChange.bind(this)
     }
 
     onSignIn(e) {
-        e.preventDefault();
+        e.preventDefault()
         request('/1/token', {
             data: {
                 client_id: apiClientSettings.clientId,
@@ -30,24 +30,24 @@ class SignIn extends React.Component {
             this.setState({
                 error: e.responseJSON.message,
                 password: '',
-            });
+            })
         }).done(data => {
-            localStorage.setItem('access_token', data.access_token);
-            this.saveUserIdAndRedirect();
-        });
+            localStorage.setItem('access_token', data.access_token)
+            this.saveUserIdAndRedirect()
+        })
     }
 
     saveUserIdAndRedirect() {
         request('/1/users/current').done(user => {
-            localStorage.setItem('user_id', user.id);
-            localStorage.setItem('user_level', user.level);
-            location.href = '/';
-        });
+            localStorage.setItem('user_id', user.id)
+            localStorage.setItem('user_level', user.level)
+            location.href = '/'
+        })
     }
 
     onDataChange(e) {
-        this.state[e.target.name] = e.target.value;
-        this.setState({error:''});
+        this.state[e.target.name] = e.target.value
+        this.setState({error:''})
     }
 
     renderForm() {
@@ -58,7 +58,7 @@ class SignIn extends React.Component {
                         name="email"
                         type="text"
                         className="form-control dark-form-control" 
-                        placeholder="Email or name"
+                        placeholder="Email or username"
                         onChange={this.onDataChange}
                         value={this.state.email}
                         autoFocus
@@ -76,7 +76,7 @@ class SignIn extends React.Component {
                         required
                     />
                 </div>
-                <a className="btn" href="/reset-password">Reset password</a>
+                <Link className="btn" to="/reset-password">Reset password</Link>
                 <button 
                     type="submit" 
                     className="btn btn-primary pull-right"
@@ -88,7 +88,7 @@ class SignIn extends React.Component {
     }
 
     renderError() {
-        if (!this.state.error) return;
+        if (!this.state.error) return
         return (
             <div 
                 className="alert alert-warning capitalize-first-letter" 
@@ -111,4 +111,4 @@ class SignIn extends React.Component {
     }
 }
 
-export default SignIn;
+export default SignIn

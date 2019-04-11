@@ -1,15 +1,15 @@
-import React from 'react';
-import Player, {getPlayServer} from 'components/player/Player';
-import Loader from 'components/Loader';
-import Chromecast from 'components/player/Chromecast';
-import {request} from 'api';
-import {apiClientSettings} from 'api.jsx';
-import {pad, episodeTitle, guid} from 'utils';
+import React from 'react'
+import Player, {getPlayServer} from 'seplis/components/player/Player'
+import Loader from 'seplis/components/Loader'
+import Chromecast from 'seplis/components/player/Chromecast'
+import {request} from 'seplis/api'
+import {apiClientSettings} from 'seplis/api.jsx'
+import {pad, episodeTitle, guid} from 'seplis/utils'
  
 class PlayEpisode extends React.Component {
  
     constructor(props) {
-        super(props);
+        super(props)
         this.state = {
             loadingPlayServers: true,
             loadingShow: true,
@@ -27,103 +27,102 @@ class PlayEpisode extends React.Component {
             metadata: null,
             startTime: 0,
         }        
-        this.onAudioChange = this.audioChange.bind(this);
-        this.onSubtitleChange = this.subtitleChange.bind(this);
-        this.onTimeUpdate = this.timeUpdate.bind(this);
- 
-        this.showId = this.props.params.showId;
-        this.number = this.props.params.number;
-        this.session = guid();
-        this.lastPos = 0;
-        this.cast = null;
-        this.markedAsWatched = false;
+        this.onAudioChange = this.audioChange.bind(this)
+        this.onSubtitleChange = this.subtitleChange.bind(this)
+        this.onTimeUpdate = this.timeUpdate.bind(this)
+        this.showId = this.props.match.params.showId
+        this.number = this.props.match.params.number
+        this.session = guid()
+        this.lastPos = 0
+        this.cast = null
+        this.markedAsWatched = false
     }
  
     componentDidMount() {
-        this.getShow();
-        this.getEpisode();
-        this.getPlayServers();
-        this.getNextEpisode();
-        this.getLanguage();
-        this.getStartTime();
+        this.getShow()
+        this.getEpisode()
+        this.getPlayServers()
+        this.getNextEpisode()
+        this.getLanguage()
+        this.getStartTime()
     }
  
     timeUpdate(time) {
-        time = Math.floor(time);
+        time = Math.floor(time)
         if (time == this.lastPos) 
-            return;
-        this.lastPos = time;
+            return
+        this.lastPos = time
         if (time < 10)
-            return;
+            return
         if ((time % 10) != 0) 
-            return;
-        let duration = parseInt(this.state.metadata['format']['duration']);
-        let watched = (((time / 100) * 10) > (duration-time));
+            return
+        let duration = parseInt(this.state.metadata['format']['duration'])
+        let watched = (((time / 100) * 10) > (duration-time))
         if (watched) {
             if (!this.markedAsWatched) {
                 request(`/1/shows/${this.showId}/episodes/${this.number}/watched`, {
                     method: 'PUT',
                 }).done(() => {
-                    this.markedAsWatched = true;
-                });
+                    this.markedAsWatched = true
+                })
             }
         } else {
-            this.markedAsWatched = false;
+            this.markedAsWatched = false
             request(`/1/shows/${this.showId}/episodes/${this.number}/position`, {
                 method: 'PUT',
                 data: {
                     'position': time,
                 }
-            });
+            })
         }
     }
  
     getPlayServers() {
-        let url = `/1/shows/${this.showId}/episodes/${this.number}/play-servers`;
+        let url = `/1/shows/${this.showId}/episodes/${this.number}/play-servers`
         getPlayServer(url).then((obj) => {
             this.setState({
                 loadingPlayServers: false,
                 playServer: obj.playServer,
                 metadata: obj.metadata,
-            });
+            })
         }).catch((error) => {
             this.setState({
                 loadingPlayServers: false,
                 playServerError: error,
             })
-        });
+        })
     }
  
     getShow() {
         request(
             `/1/shows/${this.showId}`
         ).done(data => {
-            this.setState({show: data});
+            this.setState({show: data})
         }).always(() => {
-            this.setState({loadingShow: false});
-        });        
+            this.setState({loadingShow: false})
+        })        
     }
  
     getEpisode() {
-        let number = parseInt(this.number);
+        let number = parseInt(this.number)
         request(
             `/1/shows/${this.showId}/episodes/${number}`
         ).done(data => {
-            this.setState({episode: data});
+            this.setState({episode: data})
         }).always(() => {
-            this.setState({loadingEpisode: false});
-        });
+            this.setState({loadingEpisode: false})
+        })
     }    
  
     getNextEpisode() {
-        let number = parseInt(this.number) + 1;
+        let number = parseInt(this.number) + 1
         request(
             `/1/shows/${this.showId}/episodes/${number}`
         ).done(data => {
-            this.setState({nextEpisode: data});
+            this.setState({nextEpisode: data})
         }).always(() => {
-            this.setState({loadingNextEpisode: false});
-        });
+            this.setState({loadingNextEpisode: false})
+        })
     }
  
     getLanguage() {
@@ -131,14 +130,14 @@ class PlayEpisode extends React.Component {
             `/1/shows/${this.showId}/user-subtitle-lang`
         ).done(data => {
             if (!data)
-                data = {};
+                data = {}
             this.setState({
                 audio_lang: data.audio_lang || null,
                 subtitle_lang: data.subtitle_lang || null,
-            });
+            })
         }).always(() => {
-            this.setState({loadingLang: false});
-        });
+            this.setState({loadingLang: false})
+        })
     }
  
     getStartTime() {
@@ -148,31 +147,31 @@ class PlayEpisode extends React.Component {
             if (data) {
                 this.setState({
                     startTime: data.position,
-                });
+                })
             } else {
                 this.setState({
                     startTime: 0,
-                });                
+                })                
             }
         }).always(() => {
-            this.setState({loadingStartTime: false});
-        });
+            this.setState({loadingStartTime: false})
+        })
     }
  
     audioChange(lang) {
         if (lang == '') 
-            lang = null;
+            lang = null
         this.saveSub({
             audio_lang: lang,
-        });
+        })
     } 
  
     subtitleChange(lang) {
         if (lang == '') 
-            lang = null;
+            lang = null
         this.saveSub({
             subtitle_lang: lang,
-        });
+        })
     }
  
     saveSub(data) {
@@ -183,21 +182,21 @@ class PlayEpisode extends React.Component {
     }
  
     getInfo() {
-        if (!this.state.show) return null;
+        if (!this.state.show) return null
         return {
             title: this.state.show.title,
         }
     }
  
     episodeTitle(show, episode) {
-        return episodeTitle(show, episode);
+        return episodeTitle(show, episode)
     }
  
     getPlayNextInfo() {
-        if (!this.state.show || !this.state.nextEpisode) return null;
-        let show = this.state.show;
-        let episode = this.state.nextEpisode;
-        let title = this.episodeTitle(show, episode);
+        if (!this.state.show || !this.state.nextEpisode) return null
+        let show = this.state.show
+        let episode = this.state.nextEpisode
+        let title = this.episodeTitle(show, episode)
         return {
             title: title,
             url: `/show/${show.id}/episode/${episode.number}/play`
@@ -205,7 +204,7 @@ class PlayEpisode extends React.Component {
     }
  
     getBackToInfo() {
-        if (!this.state.show) return null;
+        if (!this.state.show) return null
         return {
             title: `Back to: ${this.state.show.title}`,
             url: `/show/${this.showId}`
@@ -213,10 +212,10 @@ class PlayEpisode extends React.Component {
     }
  
     getCurrentInfo() {
-        if (!this.state.show || !this.state.episode) return null;
-        let show = this.state.show;
-        let title = `${show.title} - `;
-        title += this.episodeTitle(show, this.state.episode);
+        if (!this.state.show || !this.state.episode) return null
+        let show = this.state.show
+        let title = `${show.title} - `
+        title += this.episodeTitle(show, this.state.episode)
         return {
             title: title,
         }
@@ -227,22 +226,22 @@ class PlayEpisode extends React.Component {
             'isConnected',
             (e) => {
                 if (!e.value) 
-                    return;
+                    return
                 if (!confirm(`Play ${this.getCurrentInfo().title} on ${this.cast.getFriendlyName()}?`))
-                    return;
-                request(this.getPlayUrl()+'&action=cancel');
+                    return
+                request(this.getPlayUrl()+'&action=cancel')
                 this.cast.playEpisode(this.showId, this.number).then(() => {
-                    location.href = `/show/${this.showId}`;
-                });
+                    location.href = `/show/${this.showId}`
+                })
             },
-        );
+        )
     }
  
     loadCast() {
         if (this.cast)
-            return;    
-        this.cast = new Chromecast();
-        this.cast.load(this.initCast.bind(this));
+            return    
+        this.cast = new Chromecast()
+        this.cast.load(this.initCast.bind(this))
     }    
  
     getPlayUrl() {
@@ -261,7 +260,7 @@ class PlayEpisode extends React.Component {
                 </span>
             )
         }
-        return this.state.playServerError.message;
+        return this.state.playServerError.message
     }
 
     renderPlayServerError() {
@@ -283,11 +282,11 @@ class PlayEpisode extends React.Component {
         if (this.state.loadingPlayServers || this.state.loadingShow ||
             this.state.loadingEpisode || this.state.loadingNextEpisode ||
             this.state.loadingLang || this.state.loadingStartTime)
-            return <Loader />;
+            return <Loader />
         if (this.state.playServerError) {
-            return this.renderPlayServerError();
+            return this.renderPlayServerError()
         }
-        this.loadCast();
+        this.loadCast()
         return <Player 
             playServerUrl={`${this.state.playServer.play_url}`}
             playId={this.state.playServer.play_id}
@@ -303,7 +302,7 @@ class PlayEpisode extends React.Component {
             onTimeUpdate={this.onTimeUpdate}
             startTime={this.state.startTime}
             session={this.session}
-        />;
+        />
     }
 }
-export default PlayEpisode;
+export default PlayEpisode

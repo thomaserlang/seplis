@@ -24,9 +24,6 @@ $font-family-sans-serif:
 @import "bootstrap/scss/bootstrap";
 @import "./slider.scss";
 
-$fa-font-path: "~font-awesome/fonts";
-@import "font-awesome/scss/font-awesome";
-
 h1,
 h2,
 h3,
@@ -34,6 +31,7 @@ h4 {
     margin-top: 0;
     font-weight: 200;
 }
+
 
 p {
     margin-bottom: 0;
@@ -81,8 +79,9 @@ a.btn {
 .header {
     margin-top: 0;
     margin-bottom: 0;
-    padding-bottom: 3px;
+    padding-bottom: 0.5rem;
     font-size: 25px;
+    line-height: 25px;
 }
 .header-border {
     border-bottom: 1px solid #6C6C6C;

@@ -1,11 +1,10 @@
 import React from 'react';
-import {browserHistory} from 'react-router';
 import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import Watched from 'components/shows/Watched.jsx';
 import {getWatched} from 'components/shows/Watched.jsx';
-import {requireAuthed} from 'utils';
+import {requireAuthed, locationQuery} from 'utils';
 
 class ShowsWatched extends React.Component {
 
@@ -17,18 +16,24 @@ class ShowsWatched extends React.Component {
             loading: true,
             items: [],
             jqXHR: null,
-            page: this.props.location.query.page || 1,
+            page: locationQuery().page || 1,
             totalCount: '...',
+        }
+    }    
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location !== prevProps.location) {
+            this.setState({
+                page: locationQuery().page || 1,
+                loading: true,
+            },() => {
+                this.getItems()
+            })
         }
     }
 
     setBrowserPath() {
-        browserHistory.push({
-            pathname: this.props.location.pathname,
-            query: { 
-                page: this.state.page,
-            },
-        });
+        this.props.history.push(`${this.props.location.pathname}?page=${this.state.page}`)
     }
 
     pageChange(e) {
@@ -60,7 +65,7 @@ class ShowsWatched extends React.Component {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2 className="header">Watched {this.state.totalCount} shows</h2>
+                    <h2>Watched {this.state.totalCount} shows</h2>
                     <Loader />
                 </span>
             );
@@ -68,7 +73,7 @@ class ShowsWatched extends React.Component {
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">                        
-                        <h2 className="header">Watched {this.state.totalCount} shows</h2>
+                        <h2>Watched {this.state.totalCount} shows</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 

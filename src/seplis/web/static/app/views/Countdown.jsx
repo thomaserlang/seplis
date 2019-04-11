@@ -1,33 +1,38 @@
-import React from 'react';
-import {browserHistory} from 'react-router';
-import {request} from 'api';
-import Loader from 'components/Loader';
-import Pagination from 'components/Pagination';
-import ShowsRecentlyAired from 'components/shows/Countdown.jsx';
-import {getCountdown} from 'components/shows/Countdown.jsx';
-import {requireAuthed} from 'utils';
+import React from 'react'
+import {request} from 'api'
+import Loader from 'components/Loader'
+import Pagination from 'components/Pagination'
+import ShowsRecentlyAired from 'components/shows/Countdown.jsx'
+import {getCountdown} from 'components/shows/Countdown.jsx'
+import {requireAuthed, locationQuery} from 'utils'
 
 class Countdown extends React.Component {
 
     constructor(props) {
-        super(props);
-        requireAuthed();
-        this.onPageChange = this.pageChange.bind(this);
+        super(props)
+        requireAuthed()
+        this.onPageChange = this.pageChange.bind(this)
         this.state = {
             loading: true,
             items: [],
             jqXHR: null,
-            page: this.props.location.query.page || 1,
+            page: locationQuery().page || 1,
+        }
+    }    
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location !== prevProps.location) {
+            this.setState({
+                page: locationQuery().page || 1,
+                loading: true,
+            },() => {
+                this.getItems()
+            })
         }
     }
 
     setBrowserPath() {
-        browserHistory.push({
-            pathname: this.props.location.pathname,
-            query: { 
-                page: this.state.page,
-            },
-        });
+        this.props.history.push(`${this.props.location.pathname}?page=${this.state.page}`)
     }
 
     pageChange(e) {
@@ -35,13 +40,13 @@ class Countdown extends React.Component {
             page: e.target.value,
             loading: true,
         }, () => {
-            this.setBrowserPath();
-            this.getItems();
-        });
+            this.setBrowserPath()
+            this.getItems()
+        })
     }
 
     componentDidMount() {
-        this.getItems();
+        this.getItems()
     }
 
     getItems() {
@@ -51,22 +56,22 @@ class Countdown extends React.Component {
                 jqXHR: data.jqXHR,
                 loading: false,
             })
-        });
+        })
     }
 
     render() {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2 className="header">Countdown</h2>
+                    <h2>Countdown</h2>
                     <Loader />
                 </span>
-            );
+            )
         return (
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2 className="header">Countdown</h2>
+                        <h2>Countdown</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 
@@ -90,4 +95,4 @@ class Countdown extends React.Component {
     }
 }
 
-export default Countdown;
+export default Countdown

@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom'
 import {requireAuthed} from 'utils';
 
 class Account extends React.Component {
@@ -15,7 +16,7 @@ class Account extends React.Component {
                     <h1>Account</h1>
                 </div>
                 <div className="col-12">
-                    <a href="/password">Change password</a>
+                    <Link to="/password">Change password</Link>
                 </div>
             </div>
         )

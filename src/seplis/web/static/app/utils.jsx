@@ -1,3 +1,4 @@
+import querystring from 'query-string'
 
 export function isAuthed() {
     return (localStorage.getItem('access_token') !== null);
@@ -127,4 +128,8 @@ export function renderError(error) {
     return <div className="alert alert-danger capitalize-first-letter" role="alert">
         <div><b>Error:</b> {error.message}</div>
     </div>
+}
+
+export function locationQuery() {
+    return querystring.parse(location.search)
 }

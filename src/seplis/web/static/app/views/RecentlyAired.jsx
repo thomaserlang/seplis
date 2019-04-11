@@ -1,11 +1,10 @@
 import React from 'react';
-import {browserHistory} from 'react-router';
 import {request} from 'api';
 import Loader from 'components/Loader';
 import Pagination from 'components/Pagination';
 import ShowsRecentlyAired from 'components/shows/RecentlyAired.jsx';
 import {getRecentlyAired} from 'components/shows/RecentlyAired.jsx';
-import {requireAuthed} from 'utils';
+import {requireAuthed, locationQuery} from 'utils';
 
 class RecentlyAired extends React.Component {
 
@@ -17,17 +16,23 @@ class RecentlyAired extends React.Component {
             loading: true,
             items: [],
             jqXHR: null,
-            page: this.props.location.query.page || 1,
+            page: locationQuery().page || 1,
+        }
+    }    
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location !== prevProps.location) {
+            this.setState({
+                page: locationQuery().page || 1,
+                loading: true,
+            },() => {
+                this.getItems()
+            })
         }
     }
 
     setBrowserPath() {
-        browserHistory.push({
-            pathname: this.props.location.pathname,
-            query: { 
-                page: this.state.page,
-            },
-        });
+        this.props.history.push(`${this.props.location.pathname}?page=${this.state.page}`)
     }
 
     pageChange(e) {
@@ -58,7 +63,7 @@ class RecentlyAired extends React.Component {
         if (this.state.loading==true)
             return (
                 <span>
-                    <h2 className="header">Recently aired</h2>
+                    <h2>Recently aired</h2>
                     <Loader />
                 </span>
             );
@@ -66,7 +71,7 @@ class RecentlyAired extends React.Component {
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2 className="header">Recently aired</h2>
+                        <h2>Recently aired</h2>
                     </div>
                     <div className="col-sm-3 col-md-2">
                         <Pagination 

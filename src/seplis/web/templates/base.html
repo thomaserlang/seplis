@@ -7,54 +7,26 @@
         <link rel="icon" type="image/png" sizes="16x16" href="/static/img/favicon-16x16.png">
         <link rel="manifest" href="/static/img/manifest.json">
         <link rel="mask-icon" href="/static/img/safari-pinned-tab.svg" color="#428bca">
-        <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
         <meta name="theme-color" content="#428bca">
         {% block title %}
             <title>{{ title }}</title>
         {% end %}
         <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
-        <link rel="stylesheet" href="/static/dist/app.css?v=0.1.48">
-        <link rel="stylesheet" href="/static/dist/vendor.css?v=0.1.48">
-        <script type="text/javascript" src="/static/dist/vendor.js?v=0.1.48"></script>
-        <script type="text/javascript" src="/static/dist/app.js?v=0.1.48"></script>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
+        <link rel="stylesheet" href="/static/dist/vendor.css?v=0.1.49">
+        <link rel="stylesheet" href="/static/dist/app.css?v=0.1.49">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/0.12.4/hls.min.js" integrity="sha256-ApDw1hprlKyje9h0ZA7hcthuw3Q/PAphEGMDYmEHT5I=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="/static/dist/vendor.js?v=0.1.49"></script>
         <script type="text/javascript">
-            for (var n in window.exports.default) {
-                window[n] = window.exports.default[n];
-            }
-            seplis.apiClientSettings.baseUrl = "{{config['client']['public_api_url']}}";
-            seplis.apiClientSettings.clientId = "{{config['client']['id']}}";
-            seplis.Chromecast.appId = "{{config['web']['chromecast_appid']}}";
-            $(function(){
-                {% block jsready %}{% end %}
-            });
+            seplisBaseUrl = "{{config['client']['public_api_url']}}";
+            seplisChromecastAppId = "{{config['web']['chromecast_appid']}}";
         </script>
         {% block head %}{% end %}
     </head>
     <body>
-        {% block menu %}
-        <div id="navbar"></div>
-        <script>
-            $(function(){
-                ReactDOM.render(
-                    React.createElement(
-                        seplis.Navbar.default, {}
-                    ), 
-                    document.getElementById('navbar')
-                );
-            });
-        </script>
-        {% end %}
-        <div class="container">
-            <noscript>
-            <div class="alert alert-warning">
-                <strong>WARNING:</strong> JavaScript seems to be disabled in your browser.<br>
-                You won't be able to <strong>sign in</strong> or use the <strong>search form</strong> without enabling JavaScript.
-            </div>
-            </noscript>
-            <div id="errors"></div>
-            {% block body %}{% end %}
-        </div>
+        <div id="root"></div>
+        <script type="text/javascript" src="/static/dist/app.js?v=0.1.49"></script>
         {% block body_outside %}{% end %}
     </body>
 </html>

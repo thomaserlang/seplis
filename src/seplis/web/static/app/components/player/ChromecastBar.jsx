@@ -285,7 +285,7 @@ class ChromecastBar extends React.Component {
         if (!info) return;
         return <div className="control">
             <span 
-                className="fa fa-step-forward"
+                className="fas fa-step-forward"
                 onClick={this.clickPlayNextEpisode}
             />
         </div>

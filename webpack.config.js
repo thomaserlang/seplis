@@ -42,39 +42,16 @@ module.exports = {
         rules: [
             {
                 test: /\.(jsx|js)?$/,
+                exclude: /node_modules/,
                 loader: 'babel-loader',
-                options: {
-                    presets: [
-                      'react',
-                      'es2015',
-                      'stage-3',
-                    ],
-                },
             },
             {
                 test: /\.(scss|css)/,
                 use: [
                     MiniCssExtractPlugin.loader,
-                    'css-loader?sourceMap',
-                    'postcss-loader',
-                    'sass-loader?includePaths[]='+nodeModulesPath,
+                    { loader: 'css-loader', options: { url: false, sourceMap: true } },
+                    { loader: 'sass-loader', options: { sourceMap: true } }
                 ]
-            },
-            {
-                test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                use: [
-                    {
-                        loader: 'url-loader',
-                        options: {
-                            limit: 10000,
-                            mimetype: 'application/font-woff',
-                        }
-                    }
-                ]
-            },
-            { 
-                test: /\.(ttf|eot|svg)(\?v=[0-9]\.[0-9]\.[0-9])?$/, 
-                use: "file-loader",
             }
         ]
     },

@@ -1,14 +1,14 @@
-import React from 'react';
-import {Link} from 'react-router';
-import Loader from 'components/Loader';
-import {requireAuthed} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import Loader from 'components/Loader'
+import {Link} from "react-router-dom"
+import {requireAuthed} from 'utils'
+import {request} from 'api'
 
 class PlayServers extends React.Component {
 
     constructor(props) {
-        super(props);
-        requireAuthed();
+        super(props)
+        requireAuthed()
         this.state = {
             loading: true,
             playServers: [],
@@ -16,18 +16,18 @@ class PlayServers extends React.Component {
     }
 
     componentDidMount() {
-        this.getPlayServers();
+        this.getPlayServers()
     }
 
     getPlayServers() {
-        this.setState({loading: true});
+        this.setState({loading: true})
         request(`/1/play-servers`, {
             body: {
                 per_page: 100,
             }
         }).done(data => {
-            this.setState({playServers: data, loading: false});
-        });
+            this.setState({playServers: data, loading: false})
+        })
     }
 
     renderPlayServers() {
@@ -36,7 +36,7 @@ class PlayServers extends React.Component {
                 <div className="alert alert-info">
                     You have no play servers.
                 </div>
-            );
+            )
         return (
             <table className="table">
             <tbody>
@@ -46,7 +46,7 @@ class PlayServers extends React.Component {
                     <td>{s.url}</td>
                     <td width="10px">
                         <Link to={`/play-server?id=${s.id}`}>
-                            <i className="fa fa-pencil-square-o"></i>
+                            <i className="fas fa-pen-square"></i>
                         </Link>
                     </td>
                 </tr>
@@ -58,7 +58,7 @@ class PlayServers extends React.Component {
 
     render2() {
         if (this.state.loading)
-            return <Loader />;
+            return <Loader />
         return (
             <div className="col-12 col-sm-7 col-md-5">
                 <Link 
@@ -84,4 +84,4 @@ class PlayServers extends React.Component {
     }
 }
 
-export default PlayServers;
+export default PlayServers

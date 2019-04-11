@@ -1,17 +1,28 @@
-import './styles/Base.scss';
-import './styles/FormBase.scss';
+import React from 'react'
+import ReactDOM from 'react-dom'
 
-import {apiClientSettings} from './api.jsx';
-import Chromecast from 'components/player/Chromecast';
+import {BrowserRouter, Switch, Route} from "react-router-dom"
 
-export default{
-    React: require('react'),
-    ReactDOM: require('react-dom'),
-    $: require('jquery'),
-    seplis: {
-        Routes: require('./Routes.jsx'),
-        apiClientSettings: apiClientSettings,
-        Navbar: require('./components/Navbar.jsx'),
-        Chromecast: Chromecast,
-    }
-};
+import Index from './views/'
+import SignIn from './views/SignIn'
+import SignOut from './views/SignOut'
+import CreateUser from './views/CreateUser'
+import PlayEpisode from './views/show/PlayEpisode'
+
+import './styles/Base.scss'
+import './styles/FormBase.scss'
+
+import {apiClientSettings} from './api.jsx'
+import Chromecast from 'components/player/Chromecast'
+
+ReactDOM.render((
+    <BrowserRouter>
+        <Switch>
+            <Route exact path="/sign-in" component={SignIn} />
+            <Route exact path="/sign-out" component={SignOut} />
+            <Route exact path="/create-user" component={CreateUser} />
+            <Route exact path="/show/:showId/episode/:number/play" component={PlayEpisode} />
+            <Route path="/" component={Index} />            
+        </Switch>
+    </BrowserRouter>
+), document.getElementById('root'))

@@ -1,26 +1,27 @@
-import React from 'react';
-import {request, apiClientSettings} from 'api';
-import {withRouter} from 'react-router';
+import React from 'react'
+import {Link} from 'react-router-dom'
+import {request, apiClientSettings} from 'api'
+import {withRouter} from 'react-router'
 
-import 'styles/StandardForm.scss';
+import 'styles/StandardForm.scss'
 
 class CreateUser extends React.Component {
 
     constructor(props) {
-        super(props);
+        super(props)
         this.state = {
             error: null,
         }
-        this.onSubmit = this.onSubmit.bind(this);
+        this.onSubmit = this.onSubmit.bind(this)
     }
 
     onSubmit(e) {
-        e.preventDefault();
+        e.preventDefault()
         this.setState({
             error: null,
-        });
-        var email = e.target.email.value;
-        var password = e.target.password.value;
+        })
+        var email = e.target.email.value
+        var password = e.target.password.value
         request('/1/users', {
             data: {
                 name: e.target.name.value,
@@ -30,12 +31,12 @@ class CreateUser extends React.Component {
         }).fail(e => {
             this.setState({
                 error: e.responseJSON,
-            });
+            })
         }).done(data => {
-            localStorage.setItem('user_id', data.id);
-            localStorage.setItem('user_level', data.level);
-            this.signin(email, password);
-        });
+            localStorage.setItem('user_id', data.id)
+            localStorage.setItem('user_level', data.level)
+            this.signin(email, password)
+        })
     }
 
     signin(email, password) {
@@ -49,11 +50,11 @@ class CreateUser extends React.Component {
         }).fail(e => {
             this.setState({
                 error: e.responseJSON,
-            });
+            })
         }).done(data => {
-            localStorage.setItem('access_token', data.access_token);
-            location.href = '/';
-        });
+            localStorage.setItem('access_token', data.access_token)
+            location.href = '/'
+        })
     }
 
     renderForm() {
@@ -77,7 +78,7 @@ class CreateUser extends React.Component {
                         name="email"
                         type="text"
                         className="form-control dark-form-control" 
-                        placeholder="test@example.net"
+                        placeholder=""
                         required
                     />
                 </div>
@@ -92,7 +93,7 @@ class CreateUser extends React.Component {
                         required
                     />
                 </div>
-                <a className="btn" href="/sign-in">Sign in</a>
+                <Link className="btn" to="/sign-in">Sign in</Link>
                 <button 
                     type="submit" 
                     className="btn btn-primary pull-right"
@@ -104,7 +105,7 @@ class CreateUser extends React.Component {
     }
 
     renderError() {
-        if (!this.state.error) return;
+        if (!this.state.error) return
         return (
             <div className="alert alert-warning capitalize-first-letter">
                 <strong>{this.state.error.message}</strong>
@@ -113,7 +114,7 @@ class CreateUser extends React.Component {
     }
 
     renderFieldError(field) {
-        if ((!this.state.error) || ((!this.state.error.errors))) return;
+        if ((!this.state.error) || ((!this.state.error.errors))) return
         for (let error of this.state.error.errors) {
             if (error.field == field) {
                 return (
@@ -135,4 +136,4 @@ class CreateUser extends React.Component {
     }
 }
 
-export default withRouter(CreateUser);
+export default withRouter(CreateUser)

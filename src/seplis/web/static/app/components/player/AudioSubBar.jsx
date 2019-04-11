@@ -151,7 +151,7 @@ class AudioSubBar extends React.Component {
             <span
                 ref={(ref) => this.icon = ref}
             >
-                <span className="fa fa-cc" onClick={this.onClick} />
+                <span className="fas fa-closed-captioning" onClick={this.onClick} />
                 {this.renderAudioSubtitles()}
             </span>
         )

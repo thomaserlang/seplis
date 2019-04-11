@@ -1,7 +1,7 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {getUserId, episodeNumber} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import PropTypes from 'prop-types'
+import {getUserId, episodeNumber} from 'utils'
+import {request} from 'api'
 
 const propTypes = {
     perPage: PropTypes.number,
@@ -18,7 +18,7 @@ const defaultProps = {
 class Watched extends React.Component {
 
     constructor(props) {
-        super();
+        super()
         this.state = {
             shows: [],
         }
@@ -26,16 +26,16 @@ class Watched extends React.Component {
 
     componentDidMount() {
         if (!this.props.items) {
-            this.getData();
+            this.getData()
         } else {
-            this.setState({shows: this.props.items});
+            this.setState({shows: this.props.items})
         }
     }
 
     getData() {
         getWatched(this.props.perPage, this.props.page).then((data) => {
-            this.setState({shows: data.items});
-        });
+            this.setState({shows: data.items})
+        })
     }
 
     renderShow(show, episode) {
@@ -60,7 +60,7 @@ class Watched extends React.Component {
                 <div className="alert alert-info">
                     You have not watched any shows yet!
                 </div>
-            );
+            )
         return (
             <div className="row">
                 {this.state.shows.map(item => (
@@ -70,10 +70,10 @@ class Watched extends React.Component {
         )
     }
 }
-Watched.propTypes = propTypes;
-Watched.defaultProps = defaultProps;
+Watched.propTypes = propTypes
+Watched.defaultProps = defaultProps
 
-export default Watched;
+export default Watched
 
 export function getWatched(perPage, page) {
     return new Promise((resolve, reject) => {
@@ -83,9 +83,9 @@ export function getWatched(perPage, page) {
                 page: page,
             },
         }).done((data, textStatus, jqXHR) => {
-            resolve({items: data, jqXHR: jqXHR});
+            resolve({items: data, jqXHR: jqXHR})
         }).fail((e) => {
-            reject(e);
+            reject(e)
         })
     })
 }

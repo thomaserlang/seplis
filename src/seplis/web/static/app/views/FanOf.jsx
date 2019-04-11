@@ -1,34 +1,36 @@
-import React from 'react';
-import {browserHistory} from 'react-router';
-import {request} from 'api';
-import {getUserId} from 'utils';
-import Loader from 'components/Loader';
-import Pagination from 'components/Pagination';
-import ShowList from 'components/shows/List.jsx';
-import {requireAuthed} from 'utils';
+import React from 'react'
+import {request} from 'api'
+import {getUserId} from 'utils'
+import Loader from 'components/Loader'
+import Pagination from 'components/Pagination'
+import ShowList from 'components/shows/List.jsx'
+import {requireAuthed, locationQuery} from 'utils'
 
 class FanOf extends React.Component {
 
     constructor(props) {
-        super(props);
-        requireAuthed();
-        this.onPageChange = this.pageChange.bind(this);
+        super(props)
+        requireAuthed()
+        this.onPageChange = this.pageChange.bind(this)
         this.state = {
             loading: true,
-            shows: [],
+            items: [],
             jqXHR: null,
-            totalCount: '...',
-            page: this.props.location.query.page || 1,
+            page: locationQuery().page || 1,
+        }
+    }    
+
+    componentDidUpdate(prevProps) {
+        if (this.props.location !== prevProps.location) {
+            this.setState(
+                {page: locationQuery().page || 1},
+                () => {this.getShows()}
+            )
         }
     }
 
     setBrowserPath() {
-        browserHistory.push({
-            pathname: this.props.location.pathname,
-            query: { 
-                page: this.state.page,
-            },
-        });
+        this.props.history.push(`${this.props.location.pathname}?page=${this.state.page}`)
     }
 
     pageChange(e) {
@@ -36,17 +38,18 @@ class FanOf extends React.Component {
             page: e.target.value,
             loading: true,
         }, () => {
-            this.setBrowserPath();
-            this.getShows();
-        });
+            this.setBrowserPath()
+            this.getShows()
+        })
     }
 
     componentDidMount() {
-        this.getShows();
+        this.getShows()
     }
 
     getShows() {
-        let userId = getUserId();
+        let userId = getUserId()
+        this.setState({loading: true})
         request(`/1/users/${userId}/fan-of`, {
             query: {
                 page: this.state.page,
@@ -58,8 +61,8 @@ class FanOf extends React.Component {
                 loading: false,
                 jqXHR: jqXHR,
                 totalCount: jqXHR.getResponseHeader('X-Total-Count'),
-            });
-        });
+            })
+        })
     }
 
     render() {
@@ -69,12 +72,12 @@ class FanOf extends React.Component {
                     <h2>Fan of {this.state.totalCount} shows</h2>
                     <Loader />
                 </span>
-            );
+            )
         return (
             <span>
                 <div className="row">
                     <div className="col-12 col-sm-9 col-md-10">
-                        <h2 className="header">
+                        <h2>
                             Fan of {this.state.totalCount} shows
                         </h2>
                     </div>
@@ -100,4 +103,4 @@ class FanOf extends React.Component {
     }
 }
 
-export default FanOf;
+export default FanOf

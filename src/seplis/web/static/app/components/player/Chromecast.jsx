@@ -33,7 +33,7 @@ class Chromecast {
         window['__onGCastApiAvailable'] = (isAvailable) => {
             // Temp fix for cast not reconnecting randomly
             setTimeout(() => {
-                let sessionRequest = new chrome.cast.SessionRequest(Chromecast.appId);
+                let sessionRequest = new chrome.cast.SessionRequest(seplisChromecastAppId);
                 let apiConfig = new chrome.cast.ApiConfig(
                     sessionRequest,
                     sessionListener,
@@ -134,7 +134,7 @@ class Chromecast {
                         show: result[2],
                         episode: result[3],
                         startTime: startTime,
-                        apiUrl: seplis.apiClientSettings.baseUrl,
+                        apiUrl: seplisBaseUrl,
                     },
                     () => {},
                     (error) => {console.log(error);},
@@ -197,7 +197,6 @@ Chromecast.mediaSession = null;
 Chromecast.eventListener = {};
 Chromecast.events = events;
 Chromecast.timerGetCurrentTime = null;
-Chromecast.appId = '';
 
 function sessionListener(session) {
     Chromecast.session = session;

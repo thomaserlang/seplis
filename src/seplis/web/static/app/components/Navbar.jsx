@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router-dom'
 import {request} from 'api';
 import {isAuthed, getUserLevel} from 'utils';
 import Search from './Search';
@@ -19,14 +20,14 @@ class Navbar extends React.Component {
                     Shows                      
                 </a>
                 <div className="dropdown-menu">
-                    <a className="dropdown-item" href="/countdown">Countdown</a>
-                    <a className="dropdown-item" href="/fan-of">Fan of</a>
-                    <a className="dropdown-item" href="/episodes-to-watch">Episodes to Watch</a>
-                    <a className="dropdown-item" href="/recently-aired">Recently Aired</a>
-                    <a className="dropdown-item" href="/shows-watched">Watched</a>
-                    <a className="dropdown-item" href="/user-shows-stats">Stats</a>
+                    <Link className="dropdown-item" to="/countdown">Countdown</Link>
+                    <Link className="dropdown-item" to="/fan-of">Fan of</Link>
+                    <Link className="dropdown-item" to="/episodes-to-watch">Episodes to Watch</Link>
+                    <Link className="dropdown-item" to="/recently-aired">Recently Aired</Link>
+                    <Link className="dropdown-item" to="/shows-watched">Watched</Link>
+                    <Link className="dropdown-item" to="/user-shows-stats">Stats</Link>
                     <div className="dropdown-divider"></div>
-                    <a className="dropdown-item" href="/show-new">New show</a>
+                    <Link className="dropdown-item" to="/show-new">New show</Link>
                 </div>
             </span>
         )
@@ -34,23 +35,23 @@ class Navbar extends React.Component {
 
     renderMain() {
         return (
-            <a 
+            <Link 
                 className="link" 
-                href="/main"
+                to="/"
             >
                 Main
-            </a>
+            </Link>
         )
     }
 
     renderAirDates() {
         return (
-            <a 
+            <Link 
                 className="link" 
-                href="/air-dates"
+                to="/air-dates"
             >
                 Air dates
-            </a>
+            </Link>
         )
     }
 
@@ -63,13 +64,13 @@ class Navbar extends React.Component {
                     className="link dropdown-toggle" 
                     data-toggle="dropdown"
                 >
-                    <i className="fa fa-user"></i>                      
+                    <i className="fas fa-user"></i>                     
                 </a>
                 <div className="dropdown-menu dropdown-menu-right">
-                    <a className="dropdown-item" href="/account">Account</a>
-                    <a className="dropdown-item" href="/play-servers">Play servers</a>
+                    <Link className="dropdown-item" to="/account">Account</Link>
+                    <Link className="dropdown-item" to="/play-servers">Play servers</Link>
                     <div className="dropdown-divider"></div>
-                    <a className="dropdown-item" href="/sign-out">Sign out</a>
+                    <Link className="dropdown-item" to="/sign-out">Sign out</Link>
                 </div>
             </span>
         )
@@ -90,12 +91,12 @@ class Navbar extends React.Component {
         if (isAuthed()) 
             return;
         return (
-            <a 
+            <Link 
                 className="link" 
-                href="/sign-in"
+                to="/sign-in"
             >
                 Sign in
-            </a>
+            </Link>
         )
     }
 
@@ -103,12 +104,12 @@ class Navbar extends React.Component {
         if (isAuthed()) 
             return;
         return (
-            <a 
+            <Link 
                 className="link" 
-                href="/create-user"
+                to="/create-user"
             >
                 Create user
-            </a>
+            </Link>
         )
     }
 
