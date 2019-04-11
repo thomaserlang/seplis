@@ -93,11 +93,11 @@ export function secondsToPretty(seconds, showTotalHours) {
     [months, days] = divmod(days, 30.42);
     [years, months] = divmod(months, 12);
     let l = [];
-    if (years > 0) l.push(pluralize(years, 'year'));
-    if (months > 0) l.push(pluralize(months, 'month'));
-    if (days > 0) l.push(pluralize(days, 'day'));
-    if (hours > 0) l.push(pluralize(hours, 'hour'));
-    if (minutes > 0) l.push(pluralize(minutes, 'minute'));
+    if (years > 0) l.push(pluralize(Math.round(years), 'year'));
+    if (months > 0) l.push(pluralize(Math.round(months), 'month'));
+    if (days > 0) l.push(pluralize(Math.round(days), 'day'));
+    if (hours > 0) l.push(pluralize(Math.round(hours), 'hour'));
+    if (minutes > 0) l.push(pluralize(Math.round(minutes), 'minute'));
     let r = l.join(', ');
     if ((showTotalHours) && (totalHours >= 24)) {
         let h = pluralize(totalHours, 'hour');
