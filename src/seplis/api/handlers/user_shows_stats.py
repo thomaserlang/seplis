@@ -1,3 +1,4 @@
+import asyncio
 import sqlalchemy as sa
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session, run_on_executor
@@ -10,9 +11,11 @@ class Handler(base.Handler):
         fan_of = await self.query_fan_of(user_id)
         episodes = await self.query_episodes(user_id)
         shows_watched = await self.query_shows_watched(user_id)
+        shows_finished = await self.query_shows_finished(user_id)
         data = fan_of
         data.update(episodes)
         data.update(shows_watched)
+        data.update(shows_finished)
         self.write_object(data)
 
     @run_on_executor
@@ -72,3 +75,26 @@ class Handler(base.Handler):
             d['episodes_watched'] = int(r.episodes_watched) if r.episodes_watched else 0
             d['episodes_watched_minutes'] = int(r.episodes_watched_minutes) if r.episodes_watched else 0
             return d
+
+    @run_on_executor
+    def query_shows_finished(self, user_id):
+        with new_session() as session:
+            r = session.execute(sa.sql.text('''
+                SELECT 
+                    COUNT(total_episodes) AS shows_finished
+                FROM
+                    (SELECT 
+                        COUNT(ew.episode_number), s.total_episodes
+                    FROM
+                        shows s, episodes_watched ew
+                    WHERE
+                        ew.user_id = :user_id AND s.id = ew.show_id
+                    GROUP BY ew.show_id
+                    HAVING COUNT(ew.episode_number) = s.total_episodes) AS a;
+
+            '''), {'user_id': user_id}).fetchone()
+            if not r:
+                return 0
+            return {
+                'shows_finished': r['shows_finished'] if r else 0
+            }

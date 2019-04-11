@@ -13,12 +13,14 @@ class Test(Testbase):
             show = models.Show(
                 title='Test show',
                 runtime=30,
+                total_episodes=3,
             )
             session.add(show)
             session.flush()
             show2 = models.Show(
                 title='Test show 2',
                 runtime=30,
+                total_episodes=1,
             )
             session.add(show2)
             session.flush()
@@ -46,6 +48,7 @@ class Test(Testbase):
         self.assertEqual(data['fan_of'], 0)
         self.assertEqual(data['episodes_watched'], 0)
         self.assertEqual(data['episodes_watched_minutes'], 0)
+        self.assertEqual(data['shows_finished'], 0)
 
         # become a fan
         self.put('/1/users/{}/fan-of/{}'.format(
@@ -65,6 +68,7 @@ class Test(Testbase):
         data = utils.json_loads(response.body)
         self.assertEqual(data['episodes_watched'], 1, data)
         self.assertEqual(data['episodes_watched_minutes'], 30, data)
+        self.assertEqual(data['shows_finished'], 0)
 
 
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show['id'],1))
@@ -82,6 +86,8 @@ class Test(Testbase):
         data = utils.json_loads(response.body)
         self.assertEqual(data['episodes_watched'], 3, data)
         self.assertEqual(data['episodes_watched_minutes'], 90, data)
+        self.assertEqual(data['shows_finished'], 0)
+
 
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show['id'],3))
         self.assertEqual(response.code, 200)
@@ -91,6 +97,8 @@ class Test(Testbase):
         self.assertEqual(data['episodes_watched'], 4, data)
         self.assertEqual(data['episodes_watched_minutes'], 130, data)
         self.assertEqual(data['shows_watched'], 1, data)
+        self.assertEqual(data['shows_finished'], 1)
+
 
         response = self.put('/1/shows/{}/episodes/{}/watched'.format(show2['id'],4))
         self.assertEqual(response.code, 200)
@@ -100,6 +108,6 @@ class Test(Testbase):
         self.assertEqual(data['episodes_watched'], 5, data)
         self.assertEqual(data['episodes_watched_minutes'], 160, data)
         self.assertEqual(data['shows_watched'], 2, data)
-
+        self.assertEqual(data['shows_finished'], 2, data)
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

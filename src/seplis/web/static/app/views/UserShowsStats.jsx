@@ -49,6 +49,8 @@ class UserShowsStats extends React.Component {
                     <td>{this.state.stats.episodes_watched}</td></tr>
                 <tr><th>Watched episodes from</th>
                     <td>{this.state.stats.shows_watched} shows</td></tr>
+                <tr><th>Shows finished</th>
+                    <td>{this.state.stats.shows_finished}</td></tr>
                 </tbody>
             </table>
             </span>

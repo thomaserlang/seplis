@@ -60,13 +60,13 @@ urls = [
 
 class Application(web.Application):
 
-    def __init__(self, ioloop, **args):
+    def __init__(self, ioloop=None, **args):
         settings = dict(
             debug=seplis.config['debug'],
             autoescape=None,
             xsrf_cookies=False,
         )
-        self.ioloop = ioloop 
+        self.ioloop = ioloop or asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor(
             max_workers=seplis.config['api']['max_workers']
         )

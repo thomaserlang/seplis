@@ -40,6 +40,7 @@ class Show(Base):
         sa.Integer, 
         default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
     )
+    total_episodes = sa.Column(sa.Integer, default=0)
  
     def serialize(self):
         return {
@@ -65,6 +66,7 @@ class Show(Base):
             'poster_image': self.poster_image.serialize() \
                 if self.poster_image_id else None,
             'episode_type': self.episode_type,
+            'total_episodes': self.total_episodes,
         }
 
     def serialize_importers(self):
@@ -186,9 +188,11 @@ class Show(Base):
             'show_id': self.id,
         })
         seasons = []
+        total_episodes = 0
         for row in rows:
             if not row['season']:
                 continue
+            total_episodes += row['total']
             seasons.append({
                 'season': row['season'],
                 'from': row['from'],
@@ -196,6 +200,7 @@ class Show(Base):
                 'total': row['total'],
             })
         self.seasons = seasons
+        self.total_episodes = total_episodes
 
     def check_importers(self):
         """Checks that all the importer values is registered as externals.

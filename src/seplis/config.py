@@ -81,6 +81,7 @@ def load(path=None):
         './seplis.yaml',
         '../seplis.yaml',
         '../../seplis.yaml',
+        '../../../seplis.yaml',
         '/etc/seplis/seplis.yaml',
         '/etc/seplis.yaml',
     ]
