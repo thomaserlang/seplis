@@ -107,7 +107,7 @@ class Chromecast {
     playEpisode(showId, episodeNumber, startTime) {
         return new Promise((resolve, reject) => {
             if (!this.isConnected()) {
-                console.log('Not connected to a cast device.')
+                alert('Not connected to a cast device.')
                 reject()
                 return
             }
@@ -130,16 +130,29 @@ class Chromecast {
                     'urn:x-cast:net.seplis.cast.info',
                     {
                         play: result[0]['playServer'],
-                        metadata: result[0]['metadata'],
+                        metadata: {
+                            format: {
+                                duration: result[0]['metadata']['format']['duration'],
+                            },
+                        },
                         token: result[1]['token'],
                         type: 'episode',
-                        show: result[2],
-                        episode: result[3],
+                        show: {
+                            id: result[2]['id'],
+                            title: result[2]['title'],
+                            episode_type: result[2]['episode_type'],
+                        },
+                        episode: {
+                            number: result[3]['number'],
+                            title: result[3]['title'],
+                            season: result[3]['season'],
+                            episode: result[3]['episode'],
+                        },
                         startTime: startTime,
                         apiUrl: seplisBaseUrl,
                     },
                     () => {},
-                    (error) => {console.log(error)},
+                    (e) => {reject(e)},
                 )
                 let playUrl = result[0].playServer.play_url+'/play'+
                     '?play_id='+result[0].playServer.play_id
@@ -161,6 +174,8 @@ class Chromecast {
                     },
                     (e) => { reject(e) },Chromecast
                 )
+            }).catch((e) => {
+                reject(e)
             })
         })
     }

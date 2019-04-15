@@ -529,6 +529,9 @@ export function getPlayServer(url) {
                     }
                 })
             }
+        }).fail((e) => {
+            alert(e.message)
+            reject(e)
         })
     })
 }

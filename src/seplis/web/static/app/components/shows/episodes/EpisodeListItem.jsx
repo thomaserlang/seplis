@@ -28,7 +28,9 @@ class EpisodeListItem extends React.Component {
             cc.playEpisode(
                 this.props.showId,
                 this.props.episode.number
-            );
+            ).catch((e) => {
+                alert(e.message)
+            });
         } else {
             location.href = this.getPlayUrl();
         }

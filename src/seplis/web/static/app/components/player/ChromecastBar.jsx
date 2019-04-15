@@ -73,6 +73,8 @@ class ChromecastBar extends React.Component {
             data: data,
         }).done(() => {
             this.cast.playEpisode(show.id, episode.number, this.state.currentTime);
+        }).catch((e) => {
+            alert(e.message)
         });
     }
 
@@ -181,8 +183,9 @@ class ChromecastBar extends React.Component {
             this.state.info.show.id,
             this.state.nextEpisode.number,
             0,
-        ).catch(() => {
+        ).catch((e) => {
             this.setState({changingTime: false});
+            alert(e.message)
         }).then(() => {
             // iOS fix
             this.cast.getSession().sendMessage(
@@ -219,8 +222,9 @@ class ChromecastBar extends React.Component {
                 this.state.info.show.id,
                 this.state.info.episode.number,
                 newTime,
-            ).catch(() => {
+            ).catch((e) => {
                 this.setState({changingTime: false});
+                alert(e.message)
             }).then(() => {
                 // iOS fix
                 this.cast.getSession().sendMessage(
