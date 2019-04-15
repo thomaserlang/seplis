@@ -12,6 +12,7 @@ import ShowSeasons from './Seasons'
 import ShowStats from './Stats'
 import ShowInfo from './Info'
 import ShowEdit from './Edit'
+import Images from './Images'
 
 import './Show.scss'
 
@@ -50,12 +51,13 @@ class Show extends React.Component {
 
                     <div className="col-12 col-sm-8">
                         <ShowNav showId={parseInt(this.state.show.id)} />
-                        <Route exact path="/show/:showId/" render={(props) => <ShowMain {...props} show={this.state.show} />} />
+                        <Route exact path="/show/:showId" render={(props) => <ShowMain {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/main" render={(props) => <ShowMain {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/info" render={(props) => <ShowInfo {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/seasons" render={(props) => <ShowSeasons {...props} show={this.state.show} />} />
+                        <Route path="/show/:showId/images" render={(props) => <Images {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/stats" render={(props) => <ShowStats {...props} show={this.state.show} />} />
-                        <Route exact path="/show/:showId/edit" render={(props) => <ShowEdit {...props} show={this.state.show} />} />
+                        <Route path="/show/:showId/edit" render={(props) => <ShowEdit {...props} show={this.state.show} />} />
                     </div>
                 </div>
             </div>
