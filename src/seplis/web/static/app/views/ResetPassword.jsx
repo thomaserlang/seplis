@@ -71,11 +71,11 @@ class ResetPassword extends React.Component {
         if (this.state.success)
             return
         return <form onSubmit={this.submitEmail}>
+            <label>Email</label>
             <input 
                 ref={(ref) => (this.email = ref)}
                 type="email"
                 name="email"
-                placeholder=""
                 className="form-control dark-form-control mb-4"
                 required={true}
                 autoFocus={true}
