@@ -70,7 +70,7 @@ class Images extends React.Component {
             data: {
                 poster_image_id: e.target.getAttribute('image-id')
             },
-            method: 'PUT',
+            method: 'PATCH',
         }).done(() => {
             location.reload()
         }).fail((e) => {
