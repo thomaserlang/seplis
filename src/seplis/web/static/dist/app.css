@@ -185,7 +185,7 @@
       text-align: center; }
       #player .controls .control:empty {
         display: none; }
-      #player .controls .control .fa {
+      #player .controls .control .fa, #player .controls .control .fas {
         width: 50px;
         height: 45px;
         line-height: 45px; }
@@ -227,7 +227,8 @@
   border-top: 1px solid #ccc; }
   #castbar .text {
     font-size: 16px;
-    text-align: center; }
+    text-align: center;
+    white-space: nowrap; }
   #castbar a {
     color: #fff;
     cursor: pointer; }
@@ -242,7 +243,7 @@
       min-width: 50px; }
       #castbar .controls .control:empty {
         display: none; }
-      #castbar .controls .control .fa {
+      #castbar .controls .control .fa, #castbar .controls .control .fas {
         width: 50px;
         height: 45px;
         line-height: 45px;
@@ -300,9 +301,6 @@ body {
   float: left;
   margin-top: 5px;
   margin-right: 10px; }
-
-.nav-seplis .nav-link.active {
-  color: #fff; }
 
 .btn-episode-watched-group .btn {
   background-color: #414141;
@@ -372,7 +370,7 @@ body {
   .episode-box-list-item .play-button {
     cursor: pointer;
     font-size: 28px; }
-    .episode-box-list-item .play-button .fa {
+    .episode-box-list-item .play-button .fa, .episode-box-list-item .play-button .fas {
       pointer-events: none; }
 
 .latest-episodes-side-bar .item {
@@ -7251,6 +7249,9 @@ a.text-dark:hover, a.text-dark:focus {
   flex-wrap: nowrap; }
   .slider .row .col-margin {
     margin-bottom: 0px !important; }
+
+body {
+  margin-bottom: 110px; }
 
 h1,
 h2,
