@@ -47,6 +47,7 @@ class ShowsWatched extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `Shows Watched | SEPLIS`
         this.getItems();
     }
 

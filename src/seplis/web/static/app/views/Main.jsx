@@ -20,8 +20,9 @@ class Main extends React.Component {
             failed: false,
         }
     }
-
+    
     componentDidMount() {
+        document.title = `SEPLIS`
         this.getData();
     }
 

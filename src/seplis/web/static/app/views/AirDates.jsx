@@ -9,6 +9,9 @@ class AirDates extends React.Component {
         requireAuthed();
     }
 
+    componentDidMount() {
+        document.title = `Air Dates | SEPLIS`
+    }
 
     render() {
         return (

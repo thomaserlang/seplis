@@ -16,6 +16,7 @@ class Seasons extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `${this.props.show.title} - Seasons | SEPLIS`
         this.setQuerySeason()
     }
 
@@ -30,7 +31,7 @@ class Seasons extends React.Component {
         let season = parseInt(q.season) || null
 
         if (season) {
-            this.setState({season: season})
+            this.setSeason(season)
             return
         }
 
@@ -40,13 +41,18 @@ class Seasons extends React.Component {
             request(
                 `/1/shows/${this.props.show.id}/episodes/to-watch`
             ).done(episode => {
-                this.setState({season: episode?episode.season:season})
+                this.setSeason(episode?episode.season:season)
             }).fail(() => {
-                this.setState({season: season})
+                this.setSeason(season)
             })
         } else {
-            this.setState({season: season})
+            this.setSeason(season)            
         }
+    }
+
+    setSeason(season) {
+        document.title = `${this.props.show.title} - Season ${season} | SEPLIS`  
+        this.setState({season: season})         
     }
 
     seasonChange(season) {

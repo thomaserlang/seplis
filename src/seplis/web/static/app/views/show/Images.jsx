@@ -17,6 +17,7 @@ class Images extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `${this.props.show.title} - Images | SEPLIS`
         this.get()
     }
 

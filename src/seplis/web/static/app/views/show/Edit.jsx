@@ -21,6 +21,10 @@ class Edit extends React.Component {
         }
     }
 
+    componentDidMount() {
+        document.title = `${this.props.show.title} - Edit | SEPLIS`
+    }
+
     submit(e) {
         e.preventDefault();
         this.setState({

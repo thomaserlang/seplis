@@ -9,6 +9,10 @@ class Account extends React.Component {
         requireAuthed();
     }
 
+    componentDidMount() {
+        document.title = `Account Settings | SEPLIS`
+    }
+
     render() {
         return (
             <div className="row">

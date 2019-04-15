@@ -33,6 +33,7 @@ class PlayServer extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `Play Server | SEPLIS`
         if (this.lq.id) {
             this.getPlayServer();
             this.getUsersWithAccess();
@@ -53,6 +54,7 @@ class PlayServer extends React.Component {
             // TODO: display the error...
         }).done(data => {
             this.setState({playServer: data});
+            document.title = `Play Server: ${data.name} | SEPLIS`
         }).always(() => {
             this.incLoading(-1);
         });

@@ -15,6 +15,10 @@ class SignIn extends React.Component {
         }
         this.onSignIn = this.onSignIn.bind(this)
         this.onDataChange = this.onDataChange.bind(this)
+    }    
+
+    componentDidMount() {
+        document.title = `Sign In | SEPLIS`
     }
 
     onSignIn(e) {

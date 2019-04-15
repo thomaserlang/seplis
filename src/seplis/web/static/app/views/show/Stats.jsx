@@ -12,6 +12,7 @@ class Stats extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `${this.props.show.title} - Stats | SEPLIS`
         if (isAuthed()) 
             this.getUserStats();
     }

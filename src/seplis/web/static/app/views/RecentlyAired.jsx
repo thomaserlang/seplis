@@ -46,6 +46,7 @@ class RecentlyAired extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `Recently Aired | SEPLIS`
         this.getItems();
     }
 

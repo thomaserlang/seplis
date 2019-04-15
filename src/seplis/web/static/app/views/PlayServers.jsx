@@ -16,6 +16,7 @@ class PlayServers extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `Play Servers | SEPLIS`
         this.getPlayServers()
     }
 

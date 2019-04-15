@@ -44,6 +44,7 @@ class FanOf extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `Fan of | SEPLIS`
         this.getShows()
     }
 

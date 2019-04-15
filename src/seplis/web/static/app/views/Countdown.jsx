@@ -46,6 +46,7 @@ class Countdown extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `Countdown | SEPLIS`
         this.getItems()
     }
 

@@ -15,6 +15,7 @@ class UserShowsStats extends React.Component {
     }
 
     componentDidMount() {
+        document.title = `User Stats | SEPLIS`
         this.getStats();
     }
 

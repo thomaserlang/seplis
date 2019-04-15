@@ -3,6 +3,10 @@ import React from 'react';
 
 class Info extends React.Component {
     
+    componentDidMount() {
+        document.title = `${this.props.show.title} - Info | SEPLIS`
+    }
+
     statusToText(status) {
         switch (status) {
             case 1: return 'Running';

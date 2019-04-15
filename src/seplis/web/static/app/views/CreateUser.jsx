@@ -15,6 +15,10 @@ class CreateUser extends React.Component {
         this.onSubmit = this.onSubmit.bind(this)
     }
 
+    componentDidMount() {
+        document.title = `Create User | SEPLIS`
+    }
+
     onSubmit(e) {
         e.preventDefault()
         this.setState({

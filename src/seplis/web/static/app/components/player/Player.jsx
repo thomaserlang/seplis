@@ -69,7 +69,9 @@ class Player extends React.Component {
         this.isChrome = !!window.chrome && !!window.chrome.webstore
     }
 
-    componentDidMount() {        
+    componentDidMount() {      
+        document.title = `${this.props.currentInfo.title} | SEPLIS`
+
         this.video.addEventListener('timeupdate', this.timeupdateEvent.bind(this))
         this.video.addEventListener('pause', this.pauseEvent.bind(this))
         this.video.addEventListener('play', this.playEvent.bind(this))

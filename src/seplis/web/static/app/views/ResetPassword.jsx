@@ -16,6 +16,10 @@ class ResetPassword extends React.Component {
         this.submitReset = this.submitReset.bind(this)
     }
 
+    componentDidMount() {
+        document.title = `Reset Password | SEPLIS`
+    }
+
     submitEmail(e) {
         e.preventDefault()
         this.setState({success: false, loading: true, error: null})

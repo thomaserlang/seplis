@@ -16,6 +16,10 @@ class Password extends React.Component {
         this.onSubmit = this.onSubmit.bind(this);
     }
 
+    componentDidMount() {
+        document.title = `Change Password | SEPLIS`
+    }
+
     onSubmit(e) {
         e.preventDefault();
         this.setState({error:null, success: null, loading: true});

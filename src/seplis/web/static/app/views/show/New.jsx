@@ -16,6 +16,10 @@ class New extends React.Component {
             loading: false,
         }
     }
+    
+    componentDidMount() {
+        document.title = `New Show | SEPLIS`
+    }
 
     submit(e) {
         e.preventDefault()

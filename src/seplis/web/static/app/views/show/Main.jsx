@@ -15,6 +15,10 @@ class Main extends React.Component {
         super(props);
     } 
 
+    componentDidMount() {
+        document.title = `${this.props.show.title} | SEPLIS`
+    }
+
     renderAirDates() {
         if (this.props.show.status > 1) {
             return;
