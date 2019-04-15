@@ -57,11 +57,11 @@ class ResetPassword extends React.Component {
     renderButton() {
         if (this.state.loading == false)
             return (
-                <button type="submit" className="btn btn-primary pull-right">Submit</button>
+                <button type="submit" className="btn btn-primary ml-auto">Submit</button>
             )
         if (this.state.loading == true) 
             return (
-                <button type="submit" className="btn btn-primary pull-right" disabled={true}>
+                <button type="submit" className="btn btn-primary ml-auto" disabled={true}>
                     Working...
                 </button>
             )        
@@ -80,8 +80,10 @@ class ResetPassword extends React.Component {
                 required={true}
                 autoFocus={true}
             />
-            <Link className="btn" to="/sign-in">Sign in</Link>
-            {this.renderButton()}
+            <div className="d-flex">
+                <Link className="btn" to="/sign-in">Sign in</Link>
+                {this.renderButton()}
+            </div>
         </form>
     }
 

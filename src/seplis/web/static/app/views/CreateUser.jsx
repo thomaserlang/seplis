@@ -93,13 +93,15 @@ class CreateUser extends React.Component {
                         required
                     />
                 </div>
-                <Link className="btn" to="/sign-in">Sign in</Link>
-                <button 
-                    type="submit" 
-                    className="btn btn-primary pull-right"
-                >
-                    Create user
-                </button>
+                <div className="d-flex">
+                    <Link className="btn" to="/sign-in">Sign in</Link>
+                    <button 
+                        type="submit" 
+                        className="btn btn-primary ml-auto"
+                    >
+                        Create user
+                    </button>
+                </div>
             </form>
         )
     }

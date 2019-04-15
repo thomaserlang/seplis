@@ -76,13 +76,15 @@ class SignIn extends React.Component {
                         required
                     />
                 </div>
-                <Link className="btn" to="/reset-password">Reset password</Link>
-                <button 
-                    type="submit" 
-                    className="btn btn-primary pull-right"
-                >
-                    Sign in
-                </button>
+                <div className="d-flex">
+                    <Link className="btn" to="/reset-password">Reset password</Link>
+                    <button 
+                        type="submit" 
+                        className="btn btn-primary ml-auto"
+                    >
+                        Sign in
+                    </button>
+                </div>
             </form>
         )
     }

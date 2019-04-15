@@ -13,7 +13,6 @@ import Main from './Main'
 import AirDates from './AirDates'
 import Account from './Account'
 import Password from './Password'
-import ResetPassword from './ResetPassword'
 import PlayServers from './PlayServers'
 import PlayServer from './PlayServer'
 import UserShowsStats from './UserShowsStats'
@@ -37,8 +36,6 @@ class Index extends React.Component {
                 <Route path="/air-dates" component={AirDates} />
                 <Route path="/account" component={Account} />
                 <Route path="/password" component={Password} />
-                <Route path="/reset-password" component={ResetPassword} />
-                <Route path="/reset-password/:key" component={ResetPassword} />
                 <Route path="/play-servers" component={PlayServers} />
                 <Route path="/play-server" component={PlayServer} />
                 <Route path="/user-shows-stats" component={UserShowsStats} />
