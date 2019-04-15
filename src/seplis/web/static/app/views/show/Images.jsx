@@ -99,9 +99,13 @@ class Images extends React.Component {
             return <Loader />
 
         return <> 
-            <div className="row">
+            <div className="d-flex flex-wrap">
                 {this.state.images.map(i => (
-                    <div key={i.hash} className="col-1 col-sm-3 col-margin">
+                    <div 
+                        key={i.hash} 
+                        className="mr-3 mb-3" 
+                        style={{width:'170px'}}
+                    >
                         <a href={i.url+'@.jpg'} target="_blank">
                         <img 
                             title={this.props.show.title}
