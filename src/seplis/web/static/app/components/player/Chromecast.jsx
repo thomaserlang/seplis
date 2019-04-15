@@ -134,6 +134,7 @@ class Chromecast {
                             format: {
                                 duration: result[0]['metadata']['format']['duration'],
                             },
+                            streams: result[0]['metadata']['streams'],
                         },
                         token: result[1]['token'],
                         type: 'episode',
