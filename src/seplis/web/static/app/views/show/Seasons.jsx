@@ -38,7 +38,7 @@ class Seasons extends React.Component {
             season = this.props.show.seasons[0].season
         if (isAuthed()) {
             request(
-                `/1/shows/${this.props.show.id}/episodes/last-watched`
+                `/1/shows/${this.props.show.id}/episodes/to-watch`
             ).done(episode => {
                 this.setState({season: episode?episode.season:season})
             }).fail(() => {
