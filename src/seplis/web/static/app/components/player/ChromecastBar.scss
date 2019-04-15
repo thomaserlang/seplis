@@ -13,6 +13,7 @@
     .text {
         font-size: 16px;
         text-align: center;
+        white-space: nowrap;
     }
     
     a {
@@ -37,7 +38,7 @@
                 display: none;
             }
 
-            .fa {
+            .fa, .fas {
                 width: 50px;
                 height: 45px;
                 line-height: 45px;

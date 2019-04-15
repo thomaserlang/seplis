@@ -184,8 +184,8 @@ class ChromecastBar extends React.Component {
             this.state.nextEpisode.number,
             0,
         ).catch((e) => {
-            this.setState({changingTime: false});
             alert(e.message)
+            this.setState({changingTime: false});
         }).then(() => {
             // iOS fix
             this.cast.getSession().sendMessage(

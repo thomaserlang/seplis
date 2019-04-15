@@ -24,6 +24,11 @@ $font-family-sans-serif:
 @import "bootstrap/scss/bootstrap";
 @import "./slider.scss";
 
+body {
+    // For the chromecast bar
+    margin-bottom: 110px;
+}
+
 h1,
 h2,
 h3,
