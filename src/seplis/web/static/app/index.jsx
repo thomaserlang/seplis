@@ -22,7 +22,7 @@ ReactDOM.render((
             <Route exact path="/sign-in" component={SignIn} />
             <Route exact path="/sign-out" component={SignOut} />
             <Route exact path="/create-user" component={CreateUser} />
-            <Route path="/reset-password" component={ResetPassword} />
+            <Route exact path="/reset-password" component={ResetPassword} />
             <Route path="/reset-password/:key" component={ResetPassword} />
             <Route exact path="/show/:showId/episode/:number/play" component={PlayEpisode} />
             <Route path="/" component={Index} />            

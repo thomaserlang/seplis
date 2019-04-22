@@ -1,6 +1,6 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
-import {renderError} from 'utils'
+import RenderError from 'components/RenderError'
 import {request} from 'api'
 
 class ResetPassword extends React.Component {
@@ -95,7 +95,7 @@ class ResetPassword extends React.Component {
         return <div className="standard-form">
             <div className="logo">SEPLIS</div>
             <div className="title">Reset password</div>
-            {renderError(this.state.error)}
+            <RenderError error={this.state.error} />
             {this.renderSendForm()}
             {this.renderSendSuccess()}
         </div>
@@ -114,6 +114,7 @@ class ResetPassword extends React.Component {
         if (this.state.success)
             return
         return <form onSubmit={this.submitReset}>
+            <label>New password</label>
             <input 
                 ref={(ref) => (this.password = ref)}
                 type="password"
@@ -122,7 +123,9 @@ class ResetPassword extends React.Component {
                 required={true}
                 autoFocus={true}
             />
-            {this.renderButton()}
+            <div className="d-flex">
+                {this.renderButton()}
+            </div>
         </form>
     }
 
@@ -130,7 +133,7 @@ class ResetPassword extends React.Component {
         return <div className="standard-form">
             <div className="logo">SEPLIS</div>
             <div className="title">Reset password</div>
-            {renderError(this.state.error)}
+            <RenderError error={this.state.error} />
             {this.renderResetForm()}
             {this.renderResetSuccess()}
         </div>
