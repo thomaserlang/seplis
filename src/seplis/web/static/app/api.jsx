@@ -11,11 +11,6 @@ function handleError(error) {
     }
 }
 
-export var apiClientSettings = {
-    baseUrl: '',
-    clientId: '',
-};
-
 export function request(url, options = {}) {
     let query = $.param(options.query || '', true);
     let method = options.method || (options.data ? 'POST':'GET');

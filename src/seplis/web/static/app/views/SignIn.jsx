@@ -1,6 +1,6 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
-import {request, apiClientSettings} from 'api'
+import {request} from 'api'
 
 import 'styles/StandardForm.scss'
 
@@ -25,7 +25,7 @@ class SignIn extends React.Component {
         e.preventDefault()
         request('/1/token', {
             data: {
-                client_id: apiClientSettings.clientId,
+                client_id: seplisClientId,
                 grant_type: 'password',
                 email: this.state.email,
                 password: this.state.password,

@@ -3,7 +3,6 @@ import Player, {getPlayServer} from 'seplis/components/player/Player'
 import Loader from 'seplis/components/Loader'
 import Chromecast from 'seplis/components/player/Chromecast'
 import {request} from 'seplis/api'
-import {apiClientSettings} from 'seplis/api.jsx'
 import {pad, episodeTitle, guid} from 'seplis/utils'
  
 class PlayEpisode extends React.Component {
