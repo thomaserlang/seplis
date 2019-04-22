@@ -119,7 +119,7 @@ class Chromecast {
                 request(`/1/shows/${showId}/episodes/${episodeNumber}`),
                 request(`/1/shows/${showId}/episodes/${episodeNumber}/watched`),
                 request(`/1/shows/${showId}/user-subtitle-lang`),
-            ]).then((result) => {
+            ]).then(result => {
                 if (!startTime) {
                     if (result[4])
                         startTime = result[4].position
@@ -153,11 +153,14 @@ class Chromecast {
                         apiUrl: seplisBaseUrl,
                     },
                     () => {},
-                    (e) => {reject(e)},
+                    (e) => {
+                        reject(e)
+                    },
                 )
                 let playUrl = result[0].playServer.play_url+'/play'+
                     '?play_id='+result[0].playServer.play_id
                 playUrl += `&session=${guid()}`
+                playUrl += `&device=chromecast`
                 if (startTime)
                     playUrl += `&start_time=${startTime}`
                 if (result[5]) {
@@ -165,17 +168,19 @@ class Chromecast {
                     playUrl += `&audio_lang=${result[5].audio_lang || ''}`
                 }
                 let request = new chrome.cast.media.LoadRequest(
-                    this._playEpisodeMediaInfo(playUrl, result[2], result[3])
+                    this._playEpisodeMediaInfo(playUrl, result[2], result[3]),
                 )
                 this.getSession().loadMedia(
                     request,
-                    (mediaSession) => { 
+                    mediaSession => { 
                         mediaListener(mediaSession)
                         resolve(mediaSession) 
                     },
-                    (e) => { reject(e) },Chromecast
+                    e => { 
+                        reject(e) 
+                    }, Chromecast
                 )
-            }).catch((e) => {
+            }).catch(e => {
                 reject(e)
             })
         })
@@ -187,8 +192,12 @@ class Chromecast {
         mediaInfo.metadata.seriesTitle = show.title
         mediaInfo.metadata.title = episode.title
         mediaInfo.metadata.episode = episode.episode || episode.number
+        mediaInfo.metadata.season = episode.season
         mediaInfo.metadata.originalAirdate = episode.air_date
         mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.TV_SHOW
+        mediaInfo.metadata.images = [
+            {url:show.poster_image!=null?show.poster_image.url + '@SX180.jpg':''},
+        ]
         return mediaInfo
     }
 

@@ -1,156 +1,156 @@
 <html>
-    <head>
-        <title>SEPLIS CAST</title>
-            <script src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
-            <script
-              src="https://code.jquery.com/jquery-3.2.1.min.js"
-              integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
-              crossorigin="anonymous"></script>
-            <style>
-                body {
-                    background-color: #000; 
-                    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-                }
+<head>
+    <title>SEPLIS CAST</title>
 
-                #logocenter {
-                    position: relative;
-                    top: 50%;
-                    transform: translateY(-50%);
-                }
+    <style>
+        body {
+            --progress-color: #428bca;
+            --splash-image: url('/static/img/seplis_background.jpg');
+            --splash-size: cover;
+            --logo-image: url('/static/img/apple-touch-icon.png');
+            --playback-logo-image: url('/static/img/apple-touch-icon.png');
+        }
+    </style>
 
-                #logocenter .text {
-                    text-align: center;
-                    font-size: 200px;
-                    color: #428bca;
-                }
+    <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js" integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
+</head>
+<body>
+<cast-media-player></cast-media-player>
+<script>
+    var currentInfo = null
+    var token = null
+    var lastSavedTime = 0
+    var watchedIncremented = false
+    var prevShowIdEpisode = null
+    var playUrl = null
+    var ping = null
 
-                video {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    left: 0;
-                    top: 0;
-                    opacity: 1;
-                    z-index: 1;
-                    visibility: visible;
-                }
-            </style>
-    </head>
-    <body>
-        <video id="media"></video>
-        <div id="logocenter">
-            <div class="text">
-                SEPLIS
-            </div>
-        </div>
-        <script>
-            var player = null;
-            var host = null;
-            var currentInfo = null;
-            var token = null;
-            var lastSavedTime = 0;
-            var watchedIncremented = false;
-            var prevShowIdEpisode = null;
-            var mediaElement = document.getElementById('media');
-            var mediaManager = new cast.receiver.MediaManager(mediaElement);
+    const context = cast.framework.CastReceiverContext.getInstance()
+    const playerManager = context.getPlayerManager()
+
+    const INFO = 'urn:x-cast:net.seplis.cast.info'
+    context.addCustomMessageListener(INFO, event => {
+        currentInfo = event.data
+        token = currentInfo.token
+        delete currentInfo['token']
+    })
+
+    const SEND_INFO = 'urn:x-cast:net.seplis.cast.sendinfo'
+    context.addCustomMessageListener(SEND_INFO, event => {
+        context.sendCustomMessage(INFO, event.senderId, currentInfo)
+    })
+
+    context.addEventListener(
+        cast.framework.system.EventType.SENDER_CONNECTED,
+        event => {
+            context.sendCustomMessage(
+                INFO, 
+                event.senderId, 
+                currentInfo
+            )
+        }
+    )
+
+    playerManager.addEventListener(
+        cast.framework.events.EventType.REQUEST_LOAD,
+        event => {
+            lastSavedTime = 0
+            playUrl = event.requestData.media.contentId
+            clearInterval(ping)
+            // NOT NEEDED UNTILL I GET HLS TO WORK!
+            //ping = setInterval(() => {
+            //    $.get(playUrl+'&action=ping')
+            //}, 2000)
+            let id = currentInfo['show']['id'].toString() +
+                     currentInfo['episode']['number'].toString()
+            if (prevShowIdEpisode != id)
+            watchedIncremented = false
+            prevShowIdEpisode = id
+            var senders = context.getSenders()
+            for (var i in senders) {
+                context.sendCustomMessage(
+                    INFO, 
+                    senders[i].id, 
+                    currentInfo
+                )
+            }
+        }
+    )
+
+    playerManager.addEventListener(
+        [
+            cast.framework.events.EventType.ENDED,
+            cast.framework.events.EventType.MEDIA_FINISHED,
+        ],
+        event => {
+            currentInfo = null
+            token = null
+            currentPlayingUrl = null
+            playUrl = null
+            clearInterval(ping)
+        }
+    )
+
+    playerManager.addEventListener(
+        cast.framework.events.EventType.TIME_UPDATE,
+        event => {
+            if (!currentInfo)
+                return
+            let time = Math.floor(event.currentMediaTime)
             
-            mediaManager['onLoadOrig'] = mediaManager.onLoad.bind(mediaManager);
-            mediaManager.onLoad = function(event) {
-                lastSavedTime = 0;
-                let id = currentInfo['show']['id'].toString() +
-                         currentInfo['episode']['number'].toString();
-                if (prevShowIdEpisode != id)
-                    watchedIncremented = false;
-                prevShowIdEpisode = id;
-                var senders = castReceiverManager.getSenders();
-                for (var i in senders) {
-                    messageInfo.send(senders[i], currentInfo);
-                }
-                mediaManager['onLoadOrig'](event);
-            }
+            
+            // TODO: Find a way to check if the media is being transcoded on the fly
+            //console.log(playerManager.getLiveSeekableRange(e => {
+            //    console.log(e)
+            //}))
+            //if (playerManager.getLiveSeekableRange.length <= 1 || playerManager.getLiveSeekableRange.end(0) <= 1)
+            
+            time += currentInfo['startTime']
+            if (currentInfo['startTime'] == time)
+                return
+            if (lastSavedTime == time)
+                return
+            lastSavedTime = time                
+            if (time < 10)
+                return
+            if ((time % 10) != 0)
+                return
 
-            mediaManager['onEndedOrig'] = mediaManager.onEnded.bind(mediaManager);
-            mediaManager.onEnded = function() {
-                currentInfo = null;
-                token = null;
-                currentPlayingUrl = null;
-                mediaManager['onEndedOrig']();
-            }
+            let duration = parseInt(currentInfo['metadata']['format']['duration'])
+            let watched = (((time / 100) * 10) > (duration-time))
 
-            var castReceiverManager = cast.receiver.CastReceiverManager.getInstance();         
-
-            var messageInfo = castReceiverManager.getCastMessageBus(
-                'urn:x-cast:net.seplis.cast.info',
-                cast.receiver.CastMessageBus.MessageType.JSON
-            );
-            messageInfo.onMessage = function(event) {
-                currentInfo = event.data;
-                token = currentInfo.token;
-                delete currentInfo['token'];
-            }
-
-            var messageSendInfo = castReceiverManager.getCastMessageBus(
-                'urn:x-cast:net.seplis.cast.sendinfo',
-                cast.receiver.CastMessageBus.MessageType.JSON
-            );
-            messageSendInfo.onMessage = function(event) {
-                if (!currentInfo)
-                    return;
-                messageInfo.send(event.senderId, currentInfo);
-            }
-
-            castReceiverManager.onSenderConnected = function(event) {
-                messageInfo.send(event.senderId, currentInfo);
-            }
-
-            castReceiverManager.start();
-
-            $('video').on('timeupdate', function(){
-                if (!currentInfo)
-                    return;
-                let time = Math.floor(this.currentTime);
-                if (this.seekable.length <= 1 || this.seekable.end(0) <= 1)
-                    time += currentInfo['startTime'];
-                if (currentInfo['startTime'] == time)
-                    return;
-                if (lastSavedTime == time)
-                    return;
-                lastSavedTime = time;                
-                if (time < 10)
-                    return;
-                if ((time % 10) != 0)
-                    return;
-
-                let duration = parseInt(currentInfo['metadata']['format']['duration']);
-                let watched = (((time / 100) * 10) > (duration-time));
-
-                let url = currentInfo['apiUrl'] +
-                    '/1/shows/'+currentInfo['show']['id'].toString()+
-                    '/episodes/'+currentInfo['episode']['number'].toString();
-                let putData = {};
-                if (watched) {
-                    if (!watchedIncremented) {
-                        watchedIncremented = true;
-                        url += '/watched';
-                    } else {
-                        return;
-                    }
+            let url = currentInfo['apiUrl'] +
+                '/1/shows/'+currentInfo['show']['id'].toString()+
+                '/episodes/'+currentInfo['episode']['number'].toString()
+            let putData = {}
+            if (watched) {
+                if (!watchedIncremented) {
+                    watchedIncremented = true
+                    url += '/watched'
                 } else {
-                    watchedIncremented = false;
-                    url += '/position';
-                    putData['position'] = time;
+                    return
                 }
-                $.ajax({
-                    url: url,
-                    type: 'PUT',
-                    data: JSON.stringify(putData),
-                    dataType: 'json',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer '+token,
-                    }
-                });
-            });
-        </script>
-    </body>
+            } else {
+                watchedIncremented = false
+                url += '/position'
+                putData['position'] = time
+            }
+            $.ajax({
+                url: url,
+                type: 'PUT',
+                data: JSON.stringify(putData),
+                dataType: 'json',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer '+token,
+                }
+            })
+        }
+    )
+    //context.setLoggerLevel(cast.framework.LoggerLevel.DEBUG);
+
+    context.start()
+</script>        
+</body>
 </html>

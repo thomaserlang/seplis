@@ -29,7 +29,8 @@ class EpisodeListItem extends React.Component {
                 this.props.showId,
                 this.props.episode.number
             ).catch((e) => {
-                alert(e.message)
+                console.log(e)
+                alert('Error occurred trying to play the episode on your Chrome Cast')
             });
         } else {
             location.href = this.getPlayUrl();

@@ -12,7 +12,7 @@ sessions = {}
 
 def start(handler, settings, metadata):
     logging.debug('HLS')
-    handler.set_header('Content-Type', 'application/x-mpegURL')
+    handler.set_header('Content-Type', 'application/x-mpegurl')
     session = handler.get_argument('session')
     action = handler.get_argument('action', None)
     if action:        
@@ -114,6 +114,7 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     args.extend([
         {'-f': 'hls'},
         {'-hls_list_size': '0'},
+        #{'-hls_segment_type': 'fmp4'},
         {'-hls_time': str(config['play']['segment_time'])},
         {os.path.join(temp_folder, 'media.m3u8'): None},
     ])

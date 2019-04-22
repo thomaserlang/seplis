@@ -115,7 +115,7 @@ device_settings = {
         'transcode_pixel_format': 'yuv420p',
         'type': 'hls',
     },
-    'Chrome': {
+    'chromecast': {
         'codec_names': [
             'h264',
             'webm',
@@ -126,38 +126,5 @@ device_settings = {
         'transcode_codec': 'libx264',
         'transcode_pixel_format': 'yuv420p',
         'type': 'pipe',
-    },
-    'Chrome Mobile': {
-        'codec_names': [
-            'h264',
-        ],
-        'pixel_formats': [
-            'yuv420p',
-        ],
-        'transcode_codec': 'libx264',
-        'transcode_pixel_format': 'yuv420p',
-        'type': 'pipe',
-    },
-    'Mobile Safari': {
-        'codec_names': [
-            'h264',
-        ],
-        'pixel_formats': [
-            'yuv420p',
-        ],
-        'transcode_codec': 'libx264',
-        'transcode_pixel_format': 'yuv420p',
-        'type': 'hls',
-    },
-    'Chrome Mobile iOS': {
-        'codec_names': [
-            'h264',
-        ],
-        'pixel_formats': [
-            'yuv420p',
-        ],
-        'transcode_codec': 'libx264',
-        'transcode_pixel_format': 'yuv420p',
-        'type': 'hls',
     },
 }
