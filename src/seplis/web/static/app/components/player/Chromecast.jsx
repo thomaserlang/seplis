@@ -126,37 +126,30 @@ class Chromecast {
                     else
                         startTime = 0
                 }
-                this.getSession().sendMessage(
-                    'urn:x-cast:net.seplis.cast.info',
-                    {
-                        play: result[0]['playServer'],
-                        metadata: {
-                            format: {
-                                duration: result[0]['metadata']['format']['duration'],
-                            },
-                            streams: result[0]['metadata']['streams'],
+                let customData = {
+                    play: result[0]['playServer'],
+                    metadata: {
+                        format: {
+                            duration: result[0]['metadata']['format']['duration'],
                         },
-                        token: result[1]['token'],
-                        type: 'episode',
-                        show: {
-                            id: result[2]['id'],
-                            title: result[2]['title'],
-                            episode_type: result[2]['episode_type'],
-                        },
-                        episode: {
-                            number: result[3]['number'],
-                            title: result[3]['title'],
-                            season: result[3]['season'],
-                            episode: result[3]['episode'],
-                        },
-                        startTime: startTime,
-                        apiUrl: seplisBaseUrl,
+                        streams: result[0]['metadata']['streams'],
                     },
-                    () => {},
-                    (e) => {
-                        reject(e)
+                    token: result[1]['token'],
+                    type: 'episode',
+                    show: {
+                        id: result[2]['id'],
+                        title: result[2]['title'],
+                        episode_type: result[2]['episode_type'],
                     },
-                )
+                    episode: {
+                        number: result[3]['number'],
+                        title: result[3]['title'],
+                        season: result[3]['season'],
+                        episode: result[3]['episode'],
+                    },
+                    startTime: startTime,
+                    apiUrl: seplisBaseUrl,
+                }
                 let playUrl = result[0].playServer.play_url+'/play'+
                     '?play_id='+result[0].playServer.play_id
                 playUrl += `&session=${guid()}`
@@ -170,6 +163,7 @@ class Chromecast {
                 let request = new chrome.cast.media.LoadRequest(
                     this._playEpisodeMediaInfo(playUrl, result[2], result[3]),
                 )
+                request.customData = customData
                 this.getSession().loadMedia(
                     request,
                     mediaSession => { 

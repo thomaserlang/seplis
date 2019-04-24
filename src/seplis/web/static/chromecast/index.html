@@ -18,36 +18,39 @@
 <body>
 <cast-media-player></cast-media-player>
 <script>
-    var currentInfo = null
-    var token = null
+    var customData = null
     var lastSavedTime = 0
     var watchedIncremented = false
     var prevShowIdEpisode = null
-    var playUrl = null
-    var ping = null
 
     const context = cast.framework.CastReceiverContext.getInstance()
     const playerManager = context.getPlayerManager()
 
-    const INFO = 'urn:x-cast:net.seplis.cast.info'
-    context.addCustomMessageListener(INFO, event => {
-        currentInfo = event.data
-        token = currentInfo.token
-        delete currentInfo['token']
+    const SEND_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.send_custom_data'
+    const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
+
+    context.addCustomMessageListener(GET_CUSTOM_DATA, event => {
+
     })
 
-    const SEND_INFO = 'urn:x-cast:net.seplis.cast.sendinfo'
-    context.addCustomMessageListener(SEND_INFO, event => {
-        context.sendCustomMessage(INFO, event.senderId, currentInfo)
-    })
+    context.addCustomMessageListener(
+        SEND_CUSTOM_DATA, 
+        event => {
+            context.sendCustomMessage(
+                GET_CUSTOM_DATA, 
+                event.senderId, 
+                customData
+            )
+        }
+    )
 
     context.addEventListener(
         cast.framework.system.EventType.SENDER_CONNECTED,
         event => {
             context.sendCustomMessage(
-                INFO, 
+                GET_CUSTOM_DATA, 
                 event.senderId, 
-                currentInfo
+                customData
             )
         }
     )
@@ -55,59 +58,41 @@
     playerManager.addEventListener(
         cast.framework.events.EventType.REQUEST_LOAD,
         event => {
-            lastSavedTime = 0
-            playUrl = event.requestData.media.contentId
-            clearInterval(ping)
-            // NOT NEEDED UNTILL I GET HLS TO WORK!
-            //ping = setInterval(() => {
-            //    $.get(playUrl+'&action=ping')
-            //}, 2000)
-            let id = currentInfo['show']['id'].toString() +
-                     currentInfo['episode']['number'].toString()
+            customData = event.requestData.customData
+            lastSavedTime = customData.startTime
+            let id = customData['show']['id'].toString() +
+                     customData['episode']['number'].toString()
             if (prevShowIdEpisode != id)
-            watchedIncremented = false
+                watchedIncremented = false
             prevShowIdEpisode = id
             var senders = context.getSenders()
             for (var i in senders) {
                 context.sendCustomMessage(
-                    INFO, 
+                    GET_CUSTOM_DATA, 
                     senders[i].id, 
-                    currentInfo
+                    customData
                 )
             }
         }
     )
 
     playerManager.addEventListener(
-        [
-            cast.framework.events.EventType.ENDED,
-            cast.framework.events.EventType.MEDIA_FINISHED,
-        ],
-        event => {
-            currentInfo = null
-            token = null
-            currentPlayingUrl = null
-            playUrl = null
-            clearInterval(ping)
-        }
-    )
-
-    playerManager.addEventListener(
         cast.framework.events.EventType.TIME_UPDATE,
         event => {
-            if (!currentInfo)
+            if (!customData)
                 return
             let time = Math.floor(event.currentMediaTime)
-            
-            
+                        
             // TODO: Find a way to check if the media is being transcoded on the fly
+            // since if true the `event.currentMediaTime` will only
+            // hold the value since it started playing not the correct position
             //console.log(playerManager.getLiveSeekableRange(e => {
             //    console.log(e)
             //}))
             //if (playerManager.getLiveSeekableRange.length <= 1 || playerManager.getLiveSeekableRange.end(0) <= 1)
             
-            time += currentInfo['startTime']
-            if (currentInfo['startTime'] == time)
+            time += customData['startTime']
+            if (customData['startTime'] == time)
                 return
             if (lastSavedTime == time)
                 return
@@ -117,12 +102,12 @@
             if ((time % 10) != 0)
                 return
 
-            let duration = parseInt(currentInfo['metadata']['format']['duration'])
+            let duration = parseInt(customData['metadata']['format']['duration'])
             let watched = (((time / 100) * 10) > (duration-time))
 
-            let url = currentInfo['apiUrl'] +
-                '/1/shows/'+currentInfo['show']['id'].toString()+
-                '/episodes/'+currentInfo['episode']['number'].toString()
+            let url = customData['apiUrl'] +
+                '/1/shows/'+customData['show']['id'].toString()+
+                '/episodes/'+customData['episode']['number'].toString()
             let putData = {}
             if (watched) {
                 if (!watchedIncremented) {
@@ -143,12 +128,11 @@
                 dataType: 'json',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': 'Bearer '+token,
+                    'Authorization': 'Bearer '+customData.token,
                 }
             })
         }
     )
-    //context.setLoggerLevel(cast.framework.LoggerLevel.DEBUG);
 
     context.start()
 </script>        
