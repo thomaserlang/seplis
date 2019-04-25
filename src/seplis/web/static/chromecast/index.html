@@ -26,15 +26,10 @@
     const context = cast.framework.CastReceiverContext.getInstance()
     const playerManager = context.getPlayerManager()
 
-    const SEND_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.send_custom_data'
     const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
 
-    context.addCustomMessageListener(GET_CUSTOM_DATA, event => {
-
-    })
-
     context.addCustomMessageListener(
-        SEND_CUSTOM_DATA, 
+        GET_CUSTOM_DATA, 
         event => {
             context.sendCustomMessage(
                 GET_CUSTOM_DATA, 
