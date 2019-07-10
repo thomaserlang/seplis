@@ -345,7 +345,7 @@ class ChromecastBar extends React.Component {
                     <b>{this.state.deviceName}</b>
                     <br />
                     <b>Play next episode:</b> 
-                    &nbsp<a onClick={this.clickPlayNextEpisode}>
+                    &nbsp; <a onClick={this.clickPlayNextEpisode}>
                         {show.title} - {playNext['title']}
                     </a>
                 </div>
