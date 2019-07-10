@@ -89,6 +89,7 @@ class PlayServer extends React.Component {
         }).fail(e => {
             this.setState({error: e.responseJSON})
         }).done(data => {
+            this.setState({playServer: data, error: null})
             this.props.history.push(`/play-server/${data.id}`)
         })
     }

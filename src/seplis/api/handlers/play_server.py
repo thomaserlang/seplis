@@ -45,6 +45,8 @@ class Handler(base.Handler):
     @run_on_executor
     def _put(self, id_):
         data = self.validate()
+        if 'url' in data:
+            data['url'] = data['url'].rstrip('/')
         with new_session() as session:
             ps = session.query(models.Play_server).filter(
                 models.Play_server.id == id_,
@@ -102,6 +104,8 @@ class Collection_handler(base.Pagination_handler):
     @run_on_executor
     def _post(self):
         data = self.validate()
+        if 'url' in data:
+            data['url'] = data['url'].rstrip('/')
         with new_session() as session:
             ps = models.Play_server(
                 user_id=self.current_user.id,
