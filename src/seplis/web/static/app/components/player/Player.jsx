@@ -205,11 +205,8 @@ class Player extends React.Component {
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
-            `&audio_lang=${this.state.audio || ''}`
-        if (this.isChrome)
-            s += `&device=Chrome`
-        else
-            s += `&device=hls`
+            `&audio_lang=${this.state.audio || ''}`+
+            `&device=hls`
         return s
     }
 

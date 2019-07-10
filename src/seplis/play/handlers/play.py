@@ -118,7 +118,6 @@ device_settings = {
     'chromecast': {
         'codec_names': [
             'h264',
-            'webm',
         ],
         'pixel_formats': [
             'yuv420p',
