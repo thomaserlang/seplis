@@ -60,7 +60,8 @@ def set_video_codec(settings, metadata, has_subtitle, ffmpeg_args):
     if not stream:
         raise Exception('No video stream')
     codec = settings['transcode_codec']
-    if config['play']['ffmpeg_enable_codec_copy'] and not has_subtitle and \
+    if (config['play']['ffmpeg_enable_codec_copy'] or (settings['type'] == 'pipe')) and \
+        not has_subtitle and \
         stream['codec_name'] in settings['codec_names'] and \
         stream['pix_fmt'] in settings['pixel_formats']:
         codec = 'copy'
