@@ -1,9 +1,9 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import {withRouter} from 'react-router';
-import Loader from 'components/Loader';
-import {requireAuthed, locationQuery} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import PropTypes from 'prop-types'
+import {withRouter, Redirect} from 'react-router'
+import Loader from 'components/Loader'
+import {requireAuthed, locationQuery} from 'utils'
+import {request} from 'api'
 
 const propTypes = {
     location: PropTypes.object.isRequired,
@@ -12,12 +12,12 @@ const propTypes = {
 class PlayServer extends React.Component {
 
     constructor(props) {
-        super(props);
-        requireAuthed();
-        this.onSubmit = this.onSubmit.bind(this);
-        this.onDelete = this.onDelete.bind(this);
-        this.onGiveAccess = this.onGiveAccess.bind(this);
-        this.onRemoveUserAccess = this.onRemoveUserAccess.bind(this);
+        super(props)
+        requireAuthed()
+        this.onSubmit = this.onSubmit.bind(this)
+        this.onDelete = this.onDelete.bind(this)
+        this.onGiveAccess = this.onGiveAccess.bind(this)
+        this.onRemoveUserAccess = this.onRemoveUserAccess.bind(this)
         this.state = {
             loading: 0,
             error: null,
@@ -28,15 +28,15 @@ class PlayServer extends React.Component {
                 secret: '',
             },
             users: [],
+            redirect: null,
         }
-        this.lq = locationQuery()
     }
 
     componentDidMount() {
         document.title = `Play Server | SEPLIS`
-        if (this.lq.id) {
-            this.getPlayServer();
-            this.getUsersWithAccess();
+        if (this.props.match.params.serverId) {
+            this.getPlayServer()
+            this.getUsersWithAccess()
         }
     }
 
@@ -47,100 +47,100 @@ class PlayServer extends React.Component {
     }
 
     getPlayServer() {
-        this.incLoading(1);
+        this.incLoading(1)
         request(
-            `/1/play-servers/${this.lq.id}`
+            `/1/play-servers/${this.props.match.params.serverId}`
         ).fail(e => {
             // TODO: display the error...
         }).done(data => {
-            this.setState({playServer: data});
+            this.setState({playServer: data})
             document.title = `Play Server: ${data.name} | SEPLIS`
         }).always(() => {
-            this.incLoading(-1);
-        });
+            this.incLoading(-1)
+        })
     }
 
     getUsersWithAccess() {
-        this.incLoading(1);
+        this.incLoading(1)
         request(
-            `/1/play-servers/${this.lq.id}/users`
+            `/1/play-servers/${this.props.match.params.serverId}/users`
         ).fail(e => {
             // TODO: display the error...
         }).done(data => {
-            this.setState({users: data});
+            this.setState({users: data})
         }).always(() => {
-            this.incLoading(-1);
-        });
+            this.incLoading(-1)
+        })
     }
 
     onSubmit(e) {
-        e.preventDefault();
-        let url = `/1/play-servers`;
-        if (this.lq.id) {
-            url += `/${this.lq.id}`;
+        e.preventDefault()
+        let url = `/1/play-servers`
+        if (this.props.match.params.serverId) {
+            url += `/${this.props.match.params.serverId}`
         }
         request(url, {
-            method: this.lq.id?'PUT':'POST',
+            method: this.props.match.params.serverId?'PUT':'POST',
             data: {
                 name: this.name.value,
                 url: this.url.value,
                 secret: this.secret.value,
             }
         }).fail(e => {
-            this.setState({error: e.responseJSON});
+            this.setState({error: e.responseJSON})
         }).done(data => {
-            this.props.router.push(`/play-server?id=${data.id}`);
-        });
+            this.props.history.push(`/play-server/${data.id}`)
+        })
     }
 
     onDelete(e) {
-        e.preventDefault();
+        e.preventDefault()
         if (!confirm('Are you sure you wan\'t to delete this play server?'))
-            return;
-        request(`/1/play-servers/${this.lq.id}`, {
+            return
+        request(`/1/play-servers/${this.props.match.params.serverId}`, {
             method: 'DELETE',
         }).fail(e => {
-            this.setState({error: e.responseJSON});
+            this.setState({error: e.responseJSON})
         }).done(() => {
-            this.props.router.push('/play-servers');
-        });
+            this.props.history.push('/play-servers')
+        })
     }
 
     onGiveAccess(e) {
-        e.preventDefault();
-        var value = e.target.name.value;
+        e.preventDefault()
+        var value = e.target.name.value
         request('/1/users', {
             query: {
                 username: value,
             }
         }).fail(e => {
-            alert(e.message);
+            alert(e.message)
         }).done(data => {
             if (data.length != 1) {
-                alert(`Unknown user: ${value}`);
-                return;
+                alert(`Unknown user: ${value}`)
+                return
             }
-            let id = this.lq.id;
+            let id = this.props.match.params.serverId
             request(`/1/play-servers/${id}/users/${data[0].id}`, {
                method: 'PUT',
             }).fail(e => {
-                alert(e.message);
+                alert(e.message)
             }).done(() => {
-                this.getUsersWithAccess();
-            });
-        });
+                this.getUsersWithAccess()
+            })
+        })
     }
 
     onRemoveUserAccess(e) {
-        e.preventDefault();
-        let id = this.lq.id;
+        e.preventDefault()
+        let id = this.props.match.params.serverId
         request(`/1/play-servers/${id}/users/${e.target.userId.value}`, {
            method: 'DELETE',
         }).fail(e => {
-            alert(e.message);
+            alert(e.message)
         }).done(() => {
-            this.getUsersWithAccess();
-        });
+            this.getUsersWithAccess()
+        })
     }
 
     renderUsers() {
@@ -149,7 +149,7 @@ class PlayServer extends React.Component {
                 <div className="alert alert-info">
                     No one has access to this play server. 
                 </div>
-            );
+            )
         return (
             <table className="table table-sm">
                 <tbody>
@@ -196,7 +196,7 @@ class PlayServer extends React.Component {
     }
 
     renderUsersWithAccess() {
-        if (!this.lq.id) return;
+        if (!this.props.match.params.serverId) return
         return (
             <span>
                 <h2 className="col-margin">Users with access</h2>
@@ -207,7 +207,7 @@ class PlayServer extends React.Component {
     }
 
     renderDeleteButton() {
-        if (!this.lq.id) return;
+        if (!this.props.match.params.serverId) return
         return (
             <button className="btn btn-danger" onClick={this.onDelete}>
                 Delete
@@ -216,7 +216,7 @@ class PlayServer extends React.Component {
     }
 
     renderError() {
-        if (!this.state.error) return;
+        if (!this.state.error) return
         return (
             <div className="alert alert-warning capitalize-first-letter col-margin">
                 <strong>{this.state.error.message}</strong>
@@ -225,7 +225,7 @@ class PlayServer extends React.Component {
     }
 
     renderFieldError(field) {
-        if ((!this.state.error) || ((!this.state.error.errors))) return;
+        if ((!this.state.error) || ((!this.state.error.errors))) return
         for (let error of this.state.error.errors) {
             if (error.field == field) {
                 return (
@@ -301,6 +301,6 @@ class PlayServer extends React.Component {
         )
     }
 }
-PlayServer.propTypes = propTypes;
+PlayServer.propTypes = propTypes
 
-export default withRouter(PlayServer);
+export default PlayServer

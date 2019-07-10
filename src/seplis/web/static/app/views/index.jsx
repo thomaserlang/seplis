@@ -37,7 +37,8 @@ class Index extends React.Component {
                 <Route path="/account" component={Account} />
                 <Route path="/password" component={Password} />
                 <Route path="/play-servers" component={PlayServers} />
-                <Route path="/play-server" component={PlayServer} />
+                <Route path="/new-play-server" component={PlayServer} />
+                <Route path="/play-server/:serverId" component={PlayServer} />
                 <Route path="/user-shows-stats" component={UserShowsStats} />
 
             </div>

@@ -46,7 +46,7 @@ class PlayServers extends React.Component {
                     <td>{s.name}</td>
                     <td>{s.url}</td>
                     <td width="10px">
-                        <Link to={`/play-server?id=${s.id}`}>
+                        <Link to={`/play-server/${s.id}`}>
                             <i className="fas fa-pen-square"></i>
                         </Link>
                     </td>
@@ -63,7 +63,7 @@ class PlayServers extends React.Component {
         return (
             <div className="col-12 col-sm-7 col-md-5">
                 <Link 
-                    to="/play-server"
+                    to="/new-play-server"
                     className="btn btn-success col-margin"
                 >
                     New play server
