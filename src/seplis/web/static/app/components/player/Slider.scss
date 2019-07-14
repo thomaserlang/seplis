@@ -3,21 +3,37 @@
     margin-right: 10px;
     cursor: pointer;
     height: 45px;
+    position: relative;
 
     .slider {
-        position: relative;
         width: 100%;
         top: 50%;
         margin-top: -2.5px;
         height: 5px;
         background-color: #2E2E2E;
         pointer-events: none; 
+        position: relative;
+        z-index: 998;
 
         .progress {
-            position: relative;
+            z-index: 999;
+            position: absolute;
             height: 5px;
             background-color:#428bca;
             width: 0;
+        }
+
+    }
+    .hover-time {
+        z-index: 1000;
+        position: absolute;
+        bottom: 3rem;
+
+        .hover-time-box {
+            margin-left: -1.7rem;
+            padding: 0.1rem 0.5rem;
+
+            background-color: rgba(0, 0, 0, 0.7);
         }
     }
 }

@@ -272,12 +272,11 @@ class Player extends React.Component {
     }
 
     changeVideoState(state) {
-        this.setState({'loading': true})
+        state['loading'] = true
+        this.setState(state)
         this.cancelPlayUrl().then(() => {
-            this.setState(state, () => {
-                this.loadStream(this.getPlayUrl())
-                this.setPingTimer()
-            })
+            this.loadStream(this.getPlayUrl())
+            this.setPingTimer()
         })
     }
 

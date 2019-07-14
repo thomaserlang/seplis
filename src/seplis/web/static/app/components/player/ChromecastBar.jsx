@@ -200,20 +200,22 @@ class ChromecastBar extends React.Component {
             return
         if (this.cast.getMediaSession().items.length != 1)
             return
+        if (this.state.changingTime)
+            return
         let startTime = this.cast.getMediaSession().items[0].startTime
         if (startTime == 0 && this.state.info)
             time += this.state.info.startTime
         this.setState({currentTime: time})
     }
 
-    sliderNewTime(newTime) {
+    sliderNewTime(newTime) {            
+        this.state.info['startTime'] = newTime
+        this.setState({
+            loading: true,
+            currentTime: newTime,
+            changingTime: true,
+        })
         this.cast.pause(() => {
-            this.state.info['startTime'] = newTime
-            this.setState({
-                loading: true,
-                currentTime: newTime,
-                changingTime: true,
-            })
             this.cast.playEpisode(
                 this.state.info.show.id,
                 this.state.info.episode.number,
