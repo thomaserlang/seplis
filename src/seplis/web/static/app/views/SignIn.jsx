@@ -81,13 +81,16 @@ class SignIn extends React.Component {
                     />
                 </div>
                 <div className="d-flex">
-                    <Link className="btn" to="/reset-password">Reset password</Link>
+                    <Link className="btn" style={{paddingLeft:0}} to="/create-user">Create user</Link>
                     <button 
                         type="submit" 
                         className="btn btn-primary ml-auto"
                     >
                         Sign in
                     </button>
+                </div>
+                <div>
+                    <Link className="btn" style={{paddingLeft:0, fontSize:'16px'}} to="/reset-password">Reset password</Link>                    
                 </div>
             </form>
         )
