@@ -1,8 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ClassNames from 'classnames';
+import React from 'react'
+import PropTypes from 'prop-types'
+import ClassNames from 'classnames'
 
-import './VolumeBar.scss';
+import './VolumeBar.scss'
 
 const propTypes = {
     onChange: PropTypes.func,
@@ -11,68 +11,70 @@ const propTypes = {
 class VolumeBar extends React.Component {
 
     constructor(props) {
-        super(props);        
-        this.onSliderMouseMove = this.sliderMouseMove.bind(this);
-        this.onSliderClick = this.sliderClick.bind(this);
-        this.onIconClick = this.iconClick.bind(this);
+        super(props)        
+        this.onSliderMouseMove = this.sliderMouseMove.bind(this)
+        this.onSliderClick = this.sliderClick.bind(this)
+        this.onIconClick = this.iconClick.bind(this)
 
         this.state = {
             percent: (localStorage.getItem('volume') || 1)*100,
             show: false,
             muted: false,
         }
-        this.onDocumentClick = this.documentClick.bind(this);
+        this.onDocumentClick = this.documentClick.bind(this)
     }
 
     componentDidMount() {
-        let volume = localStorage.getItem('volume') || 1;
+        let volume = localStorage.getItem('volume') || 1
         if (this.props.onChange)
-            this.props.onChange(volume);
-        document.addEventListener('click', this.onDocumentClick);
+            this.props.onChange(volume)
+        document.addEventListener('click', this.onDocumentClick)
+        document.addEventListener('ontouchstart', this.onDocumentClick)
     }
 
     componentWillUnmount() {
-        document.removeEventListener('click', this.onDocumentClick);
+        document.removeEventListener('click', this.onDocumentClick)
+        document.removeEventListener('ontouchstart', this.onDocumentClick)
     }
     
     documentClick(e) {
         if (!this.icon.contains(e.target)) {
-            this.setState({show: false});
+            this.setState({show: false})
         }
     }
 
     sliderMouseMove(event) {
-        if (event.buttons != 1) return;
-        this.onSliderClick(event);
+        if (event.buttons != 1) return
+        this.onSliderClick(event)
     }
 
     sliderClick(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        let scrubber = event.target.querySelector('.scrubber');
-        let y = event.clientY;
-        y -= event.target.offsetTop + scrubber.offsetTop;
-        y = scrubber.offsetHeight - y;
+        event.preventDefault()
+        event.stopPropagation()
+        let scrubber = event.target.querySelector('.scrubber')
+        let y = event.clientY
+        y -= event.target.offsetTop + scrubber.offsetTop
+        y = scrubber.offsetHeight - y
         if (y > scrubber.offsetHeight)
-            y = scrubber.offsetHeight;
+            y = scrubber.offsetHeight
         if (y < 0)
-            y = 0;
-        let norm = 1 / scrubber.offsetHeight;
-        let volume = norm*y;
+            y = 0
+        let norm = 1 / scrubber.offsetHeight
+        let volume = norm*y
         if (volume < 0)
-            volume = 0;
-        this.setState({percent: volume*100});
+            volume = 0
+        this.setState({percent: volume*100})
         if (this.props.onChange)
-            this.props.onChange(volume);
-        localStorage.setItem('volume', volume);
+            this.props.onChange(volume)
+        localStorage.setItem('volume', volume)
     }
 
     iconClick(event) {
-        this.setState({show: !this.state.show});
+        this.setState({show: !this.state.show})
     }
 
     renderBar() {
-        if (!this.state.show) return;
+        if (!this.state.show) return
         return (
             <div 
                 className="volume-slider"
@@ -100,7 +102,7 @@ class VolumeBar extends React.Component {
             'fa-volume-down': (this.state.percent < 50) && 
                 (this.state.percent >= 1) && !this.state.muted,
             'fa-volume-off': (this.state.percent < 1) || this.state.muted,
-        });
+        })
         return (
             <span 
                 className={volume} 
@@ -113,6 +115,6 @@ class VolumeBar extends React.Component {
     }
 
 }
-VolumeBar.propTypes = propTypes;
+VolumeBar.propTypes = propTypes
 
-export default VolumeBar;
+export default VolumeBar

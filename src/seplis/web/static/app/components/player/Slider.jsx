@@ -46,8 +46,13 @@ class Slider extends React.Component {
     mouseMove = (event) => {
         let x = this.getEventXOffset(event)
         let norm = this.props.duration / this.slider.offsetWidth
-        var newTime = Math.trunc(norm*x)
-        this.setState({hoverTime: newTime})
+        let newTime = Math.trunc(norm*x)
+        if (newTime > this.props.duration)
+            newTime = this.props.duration
+        this.setState({
+            hoverTime: newTime,
+            drag: event.buttons == 1,
+        })
     }
 
     touchMove = (event) => {

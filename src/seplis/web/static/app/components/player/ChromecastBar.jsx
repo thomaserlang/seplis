@@ -230,7 +230,9 @@ class ChromecastBar extends React.Component {
                     {}
                 )
                 this.setState({changingTime: false})
-            })            
+            })
+        }, () => {            
+            this.setState({changingTime: false})
         })
     }
 
