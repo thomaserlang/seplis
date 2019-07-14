@@ -78,6 +78,8 @@ class Player extends React.Component {
         
         document.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this))
         document.addEventListener('webkitfullscreenchange', this.fullscreenchangeEvent.bind(this))
+        this.video.addEventListener('webkitendfullscreen', this.fullscreenchangeEvent.bind(this))
+        this.video.addEventListener('webkitenterfullscreen', this.fullscreenchangeEvent.bind(this))
         document.addEventListener('mozfullscreenchange', this.fullscreenchangeEvent.bind(this))
         document.addEventListener('msfullscreenchange', this.fullscreenchangeEvent.bind(this))
         
@@ -90,6 +92,7 @@ class Player extends React.Component {
         this.video.volume = this.volume
         this.loadStream(this.getPlayUrl())
         document.onmousemove = this.mouseMove.bind(this)
+        document.ontouchmove = this.mouseMove.bind(this)
         document.onkeypress = this.keypress.bind(this)
         document.onbeforeunload = this.beforeUnload.bind(this)
     }
@@ -192,7 +195,6 @@ class Player extends React.Component {
     }
 
     mouseMove(e) {
-        if (this.state.showControls) return
         this.setState({
             showControls: true,
         })
@@ -222,7 +224,11 @@ class Player extends React.Component {
 
     fullscreenchangeEvent() {
         this.setState({
-            fullscreen: !!(document.fullScreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement || document.fullscreenElement),
+            fullscreen: !!(document.fullScreen || 
+                           document.webkitIsFullScreen || 
+                           document.mozFullScreen || 
+                           document.msFullscreenElement || 
+                           document.fullscreenElement),
         })
     }
 
@@ -299,7 +305,9 @@ class Player extends React.Component {
     fullscreenClick(event) {
         if (!this.state.fullscreen) {
             let elem = document.getElementById('player')
-            if (elem.requestFullScreen) {
+            if (elem.enterFullscreen) {
+                elem.enterFullscreen()
+            } else if (elem.requestFullScreen) {
                 elem.requestFullScreen()
             } else if (elem.mozRequestFullScreen) {
                 elem.mozRequestFullScreen()
@@ -307,6 +315,8 @@ class Player extends React.Component {
                 elem.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
             } else if (elem.webkitEnterFullscreen) {
                 elem.webkitEnterFullscreen()
+            } else if (this.video.webkitEnterFullscreen) {
+                this.video.webkitEnterFullscreen()
             }
         } else {
             if (document.cancelFullScreen) {
