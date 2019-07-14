@@ -61,7 +61,8 @@ class Handler(base.Handler):
             u = session.query(models.User.id).filter(
                 models.User.email == email,
             ).first()
-            return u.id
+            if u:
+                return u.id
 
     @run_on_executor
     def create_reset_url(self, user_id):
