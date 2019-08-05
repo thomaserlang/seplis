@@ -61,7 +61,7 @@ config = {
 
         'port': 8003,
         'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
-        'segment_time': 2,
+        'segment_time': 5,
         'session_timeout': 5, # Timeout for HLS sessions
         'x-accel': False,
     },
