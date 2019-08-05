@@ -1,7 +1,7 @@
-import React from 'react';
-import ClassNames from 'classnames';
-import PropTypes from 'prop-types';
-import './AudioSubBar.scss';
+import React from 'react'
+import ClassNames from 'classnames'
+import PropTypes from 'prop-types'
+import './AudioSubBar.scss'
 
 const propTypes = {
     metadata: PropTypes.object,
@@ -13,79 +13,85 @@ const propTypes = {
 class AudioSubBar extends React.Component {
 
     constructor(props) {
-        super(props);
+        super(props)
         this.state = {
             show: false,
         }
-        this.audio = [];
-        this.subtitles = [];
-        this.parseMetadata();
+        this.audio = []
+        this.subtitles = []
+        this.parseMetadata()
 
-        this.onClick = this.click.bind(this);
+        this.onClick = this.click.bind(this)
 
-        this.onAudioClick = this.audioClick.bind(this);
-        this.onSubtitleClick = this.subtitleClick.bind(this);
-        this.onDocumentClick = this.documentClick.bind(this);
+        this.onAudioClick = this.audioClick.bind(this)
+        this.onSubtitleClick = this.subtitleClick.bind(this)
+        this.onDocumentClick = this.documentClick.bind(this)
     }
 
     componentDidMount() {    
-        document.addEventListener('click', this.onDocumentClick);
+        document.addEventListener('click', this.onDocumentClick)
     }
 
     componentWillUnmount() {
-        document.removeEventListener('click', this.onDocumentClick);
+        document.removeEventListener('click', this.onDocumentClick)
     }
     
     documentClick(e) {
-        if (this.icon == undefined) return;
-        if (!this.icon.contains(e.target)) {
-            this.setState({show: false});
-        }
+        if (this.icon == undefined) 
+            return
+        if (!this.icon.contains(e.target))
+            this.setState({show: false})
     }
 
     parseMetadata() {
         for (let stream of this.props.metadata.streams) {
             if (!('tags' in stream))
-                continue;
-            if (!('language' in stream.tags))
-                continue;
+                continue
+            let lang = null
+            if ('title' in stream.tags)
+                lang = stream.tags.title
+            if ('language' in stream.tags)
+                lang =  stream.tags.language
+            if (!lang)
+                continue
             let s = {
-                language: stream.tags.language,
-                title: stream.tags.title || stream.tags.language,
+                language: lang,
+                title: stream.tags.title || lang,
                 index: stream.index,
             }
+            console.log(s)
             switch(stream.codec_type) {
-                case 'subtitle': this.subtitles.push(s); break;
-                case 'audio': this.audio.push(s); break;
+                case 'subtitle': this.subtitles.push(s)
+                case 'audio': this.audio.push(s)
             }
         }
     }
 
     click(event) {
-        this.setState({show: !this.state.show});
+        this.setState({show: !this.state.show})
     }
 
     subtitleClick(event) {
-        event.preventDefault();
-        this.setState({show: false});
+        event.preventDefault()
+        this.setState({show: false})
         if (this.props.onSubtitleChange)
             this.props.onSubtitleChange(
                 event.target.getAttribute('data-data')
-            );
+            )
     }
 
     audioClick(event) {
-        event.preventDefault();
-        this.setState({show: false});
+        event.preventDefault()
+        this.setState({show: false})
         if (this.props.onAudioChange)
             this.props.onAudioChange(
                 event.target.getAttribute('data-data')
-            );
+            )
     }
 
     renderSubtitles() {
         if (this.subtitles.length == 0)
-            return;
+            return
         return (
             <span>
                 <p className="title">Subtitles</p>
@@ -107,7 +113,7 @@ class AudioSubBar extends React.Component {
 
     renderAudio() {
         if (this.audio.length <= 1)
-            return;
+            return
         return (
             <span>
                 <p className="title">Audio</p>
@@ -128,11 +134,11 @@ class AudioSubBar extends React.Component {
 
     renderAudioSubtitles() {
         if (!this.state.show)
-            return null;
+            return null
         let cls = ClassNames({
             'audio-subtitles': true,
             'audio-subtitles-bottom': this.props.bottom,
-        });
+        })
         return (
             <div 
                 className={cls} 
@@ -146,7 +152,7 @@ class AudioSubBar extends React.Component {
 
     render() {
         if ((this.audio.length <= 1) && (this.subtitles.length == 0))
-            return null;
+            return null
         return (
             <span
                 ref={(ref) => this.icon = ref}
@@ -157,7 +163,7 @@ class AudioSubBar extends React.Component {
         )
     }
 }
-AudioSubBar.propTypes = propTypes;
+AudioSubBar.propTypes = propTypes
 
-export default AudioSubBar;
+export default AudioSubBar
 

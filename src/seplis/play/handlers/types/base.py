@@ -136,19 +136,24 @@ def stream_index_by_lang(metadata, codec_type, lang):
         index = int(index)
         if index <= (len(metadata['streams']) - 1):
             stream = metadata['streams'][index]
-            if not ('tags' in stream and 'language' in stream['tags'] and \
-                stream['codec_type'] == codec_type and \
-                    stream['tags']['language'] == lang):
+            if 'tags' not in stream:
                 index = None
+            else:
+                l = stream['tags'].get('language') or stream['tags'].get('title')
+                if stream['codec_type'] != codec_type or l.lower() != lang.lower():
+                    index = None
         else:
             index = None
     for i, stream in enumerate(metadata['streams']):
         if stream['codec_type'] == codec_type:
             group_index += 1
-            if 'tags' in stream and 'language' in stream['tags']:
-                langs.append(stream['tags']['language'])
+            if 'tags' in stream:
+                l = stream['tags'].get('language') or stream['tags'].get('title')
+                if not l:
+                    continue
+                langs.append(l)
                 if not index or stream['index'] == index:
-                    if stream['tags']['language'] == lang:
+                    if l.lower() == lang.lower():
                         return {
                             'index': i,
                             'group_index': group_index,
