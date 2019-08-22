@@ -30,6 +30,8 @@ while (len(data) != 0):
         if str(show['externals']['imdb']) in imdbids:
             logging.info('found imdb: {}'.format(show['externals']['imdb']))
             continue
+        if show['language'] != 'English':
+            continue
         try:
             client.post('/shows', {
                 'externals': {
