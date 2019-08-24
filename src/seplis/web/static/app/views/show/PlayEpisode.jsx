@@ -3,7 +3,7 @@ import Player, {getPlayServer} from 'seplis/components/player/Player'
 import Loader from 'seplis/components/Loader'
 import Chromecast from 'seplis/components/player/Chromecast'
 import {request} from 'seplis/api'
-import {pad, episodeTitle, guid} from 'seplis/utils'
+import {pad, episodeTitle, guid, dateInDays} from 'seplis/utils'
  
 class PlayEpisode extends React.Component {
  
@@ -251,15 +251,32 @@ class PlayEpisode extends React.Component {
 
     renderPlayServerErrorMessage() {
         if (this.state.playServerError.code == 2) {
-            return (
-                <span>
-                    <b>
-                    {this.state.show.title} {episodeTitle(this.state.show, this.state.episode)}
-                    </b> is not on any of your play servers.
-                </span>
-            )
+            return <span>
+                    <h3>
+                        "{this.state.show.title} {episodeTitle(this.state.show, this.state.episode)}" is not on any of your play servers.
+                    </h3>
+                    {this.renderAirs()}
+            </span>
         }
         return this.state.playServerError.message
+    }
+
+    renderAirs() {
+        if (!this.state.episode.air_datetime)
+            return
+        let d = new Date(this.state.episode.air_datetime)
+        let now = new Date()
+        if ((now.getTime()-d.getTime()) > 3600*24)
+            return
+        if (now.getTime() < d.getTime()) {
+            return <div className="mb-2">
+                Airs in {dateInDays(this.state.episode.air_datetime)}
+            </div>
+        } else {
+            return <div>
+                Aired {dateInDays(this.state.episode.air_datetime)} ago
+            </div>
+        }
     }
 
     renderPlayServerError() {
@@ -268,7 +285,7 @@ class PlayEpisode extends React.Component {
                 className="alert alert-warning" 
                 style={{width: '75%', margin: 'auto', marginTop: '100px'}}
             >
-                <h3>{this.renderPlayServerErrorMessage()}</h3>
+                {this.renderPlayServerErrorMessage()}
 
                 Go back to <a href={`/show/${this.showId}`}>
                     {this.state.show.title}
