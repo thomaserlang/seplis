@@ -26,11 +26,10 @@ def update_show_by_id(show_id):
         return 
     update_show(show)
 
-def update_shows_all(from_show_id=1, do_async=False):
+def update_shows_all(from_show_id=0, do_async=False):
     shows = client.get('/shows', {
-        'sort': 'id',
-        'q': 'id:[{} TO *]'.format(from_show_id),
         'per_page': 500,
+        'from_id': from_show_id,
     })
     for show in shows.all():
         try:
