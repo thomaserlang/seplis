@@ -355,6 +355,8 @@ class Pagination_handler(Handler):
     }, default_keys=good.Required, extra_keys=good.Allow,)
 
     def get(self, *args, **kwargs):
-        args = self.validate_arguments()
+        args = self.validate_arguments(Pagination_handler.__arguments_schema__)
         self.per_page = args.pop('per_page', [0])[0]
         self.page = args.pop('page', [0])[0]
+        self.request.arguments.pop('per_page', None)
+        self.request.arguments.pop('page', None)

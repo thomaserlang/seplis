@@ -56,6 +56,8 @@ urls = [
     U(r'/1/apps/([0-9]+)', h.app.Handler),
     U(r'/1/token', h.user.Token_handler),
     U(r'/1/progress-token', h.user.Progress_token_handler),
+
+    U(r'/1/genres', h.genres.Handler),
 ]
 
 class Application(web.Application):

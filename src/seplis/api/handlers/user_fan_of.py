@@ -1,3 +1,4 @@
+import good
 import sqlalchemy as sa
 from seplis.api.handlers import base
 from seplis.api.base.pagination import Pagination
@@ -6,6 +7,10 @@ from seplis.api.decorators import new_session, run_on_executor, authenticated
 from seplis.api import models, constants
 
 class Handler(base.Pagination_handler):
+
+    __arguments_schema__ = good.Schema({
+        'genre': [str],
+    }, default_keys=good.Optional,)
 
     async def get(self, user_id, show_id=None):
         super().get()
@@ -28,15 +33,22 @@ class Handler(base.Pagination_handler):
 
     @run_on_executor
     def fan_of(self, user_id):
+        args = self.validate_arguments()
         with new_session() as session:
-            pagination = session.query(models.Show).filter(
+            query = session.query(models.Show).filter(
                 models.Show_fan.user_id == user_id,
                 models.Show_fan.show_id == models.Show.id,
             ).order_by(
                 sa.desc(models.Show_fan.created_at), 
                 sa.desc(models.Show_fan.show_id),
-            ).paginate(page=self.page, per_page=self.per_page)
-            return pagination
+            )
+            genres = args.get('genre')
+            if genres:
+                query = query.filter(
+                    models.Show_genre.show_id == models.Show_fan.show_id,
+                    models.Show_genre.genre.in_(genres),
+                )
+            return query.paginate(page=self.page, per_page=self.per_page)
 
     @run_on_executor
     def fan(self, user_id, show_id):

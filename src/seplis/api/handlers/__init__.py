@@ -1,21 +1,23 @@
-from . import base
-from . import show
-from . import user
-from . import app
-from . import episode
-from . import play_server
-from . import shows_watched
-from . import air_dates
-from . import episode_watched
-from . import episode_position
-from . import episode_to_watch
-from . import episode_last_watched
-from . import user_show_subtitle_lang
-from . import user_fan_of
-from . import shows_countdown
-from . import shows_recently_aired
-from . import shows_etw
-from . import user_shows_stats
-from . import user_show_stats
-from . import image
-from . import reset_password
+from . import (
+    show,
+    user,
+    app,
+    episode,
+    play_server,
+    shows_watched,
+    air_dates,
+    episode_watched,
+    episode_position,
+    episode_to_watch,
+    episode_last_watched,
+    user_show_subtitle_lang,
+    user_fan_of,
+    shows_countdown,
+    shows_recently_aired,
+    shows_etw,
+    user_shows_stats,
+    user_show_stats,
+    image,
+    reset_password,
+    genres,
+)

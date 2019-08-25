@@ -342,6 +342,15 @@ class Show_genre(Base):
     show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     genre = sa.Column(sa.String(100), primary_key=True)
 
+    def after_insert(self):
+        self.session.execute('INSERT IGNORE INTO genres (genre) VALUES (:genre);', {
+            'genre': self.genre,
+        })
+
+class Genre(Base):
+    __tablename__ = 'genres'
+    genre = sa.Column(sa.String(100), primary_key=True)
+
 @rebuild_cache.register('shows')
 def rebuild_shows():
     with new_session() as session:
