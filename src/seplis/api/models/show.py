@@ -41,6 +41,7 @@ class Show(Base):
         default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
     )
     total_episodes = sa.Column(sa.Integer, default=0)
+    language = sa.Column(sa.String(100))
  
     def serialize(self):
         return {
@@ -67,6 +68,7 @@ class Show(Base):
                 if self.poster_image_id else None,
             'episode_type': self.episode_type,
             'total_episodes': self.total_episodes,
+            'language': self.language,
         }
 
     def serialize_importers(self):
@@ -94,7 +96,9 @@ class Show(Base):
         self.check_importers()
         if get_history(self, 'externals').has_changes():
             self.cleanup_externals()    
-            self.update_externals()    
+            self.update_externals()          
+        if get_history(self, 'genres').has_changes():
+            self.update_genres()  
 
     def after_upsert(self):            
         self.to_elasticsearch()
@@ -200,8 +204,7 @@ class Show(Base):
                 }
             ]
         """
-        session = orm.Session.object_session(self)
-        rows = session.execute("""
+        rows = self.session.execute("""
             SELECT 
                 season,
                 min(number) as `from`,
@@ -229,6 +232,16 @@ class Show(Base):
             })
         self.seasons = seasons
         self.total_episodes = total_episodes
+
+    def update_genres(self):
+        self.session.query(Show_genre).filter(
+            Show_genre.show_id == self.id,
+        ).delete()
+        for genre in self.genres:
+            self.session.add(Show_genre(
+                show_id=self.id,
+                genre=genre,
+            ))
 
     def check_importers(self):
         """Checks that all the importer values is registered as externals.
@@ -283,32 +296,29 @@ class Show_external(Base):
         )
 
     def cache(self):
-        session = orm.Session.object_session(self)
         name = self.format_cache_key(
             self.title,
             self.value,
         )
-        session.pipe.set(
+        self.session.pipe.set(
             name, 
             self.show_id
         )
 
     def after_delete(self):
-        session = orm.Session.object_session(self)
         if not self.title or not self.value:
             return
         name = self.format_cache_key(
             self.title,
             self.value,
         )
-        session.pipe.delete(name)
+        self.session.pipe.delete(name)
 
     def after_upsert(self):
         """Updates the cache for externals"""
         title_hist = get_history(self, 'title')
         value_hist = get_history(self, 'value')
         show_id = get_history(self, 'show_id')
-        session = orm.Session.object_session(self)
         if title_hist.deleted or value_hist.deleted:
             title = title_hist.deleted[0] \
                 if title_hist.deleted else self.title
@@ -320,12 +330,17 @@ class Show_external(Base):
                 title,
                 value,
             )
-            session.pipe.delete(name)
+            self.session.pipe.delete(name)
         if title_hist.added or value_hist.added or show_id.added:
             if not self.title or not self.value:
                 return
             self.cache()
 
+class Show_genre(Base):
+    __tablename__ = 'show_genres'
+
+    show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
+    genre = sa.Column(sa.String(100), primary_key=True)
 
 @rebuild_cache.register('shows')
 def rebuild_shows():

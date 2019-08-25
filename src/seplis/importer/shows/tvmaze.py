@@ -43,6 +43,7 @@ class Tvmaze(Show_importer_base):
             'runtime': show['runtime'],
             'genres': show['genres'],
             'premiered': show['premiered'],
+            'language': show['language'],
         }
 
     @staticmethod

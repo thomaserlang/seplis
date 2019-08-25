@@ -92,6 +92,7 @@ _Show_schema = {
     'alternative_titles': [str],
     'poster_image_id': good.Maybe(good.Coerce(int)),
     'episode_type': good.All(good.Coerce(int), SHOW_EPISODE_TYPE()),   
+    'language': good.Maybe(good.All(str, good.Length(min=1, max=100))),
 }
 Show_schema = good.Schema(_Show_schema, default_keys=good.Optional)
 

@@ -25,6 +25,7 @@ class Info extends React.Component {
                     <tr><th width="100">Premiered</th><td>{show.premiered || 'unknown'}</td></tr>
                     <tr><th>Runtime</th><td>{show.runtime?show.runtime + ' minutes':'Unknown'}</td></tr>
                     <tr><th>Genres</th><td>{show.genres.join(', ')}</td></tr>
+                    <tr><th>Language</th><td>{show.language?show.language:'Unknown'}</td></tr>
                     </tbody>
                 </table>
             </div>
