@@ -76,7 +76,7 @@ class Handler(base.Handler):
         show = await self.update(show_id=show_id, overwrite=False)
         self.write_object(show)
 
-    @authenticated(constants.LEVEL_GOD)
+    @authenticated(constants.LEVEL_DELETE_SHOW)
     async def delete(self, show_id):
         await self._delete(show_id)
         self.set_status(204)

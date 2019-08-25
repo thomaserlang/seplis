@@ -106,12 +106,27 @@ class Show(Base):
             '_type': 'show',
             '_id': self.id,
         })
+
         from . import Episode
         episodes = self.session.query(Episode).filter(
             Episode.show_id == self.id,
         ).all()
         for e in episodes:
             self.session.delete(e)
+
+        externals = self.session.query(Show_external).filter(
+            Show_external.show_id == self.id,
+        ).all()
+        for e in externals:
+            self.session.delete(e)
+
+        from . import Image
+        images = self.session.query(Image).filter(
+            Image.relation_type == 'show',
+            Image.relation_id == self.id,
+        ).all()
+        for i in images:
+            self.session.delete(i)
 
     def update_externals(self):
         """Saves the shows externals to the database and the cache.
