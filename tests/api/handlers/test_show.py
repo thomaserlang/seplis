@@ -408,9 +408,6 @@ class test_show(Testbase):
         # there is no shows
         response = self.get('/1/shows/999999')
         self.assertEqual(response.code, 404, response.body)
-        # wrong sort
-        response = self.get('/1/shows?sort=a')
-        self.assertEqual(response.code, 400, response.body)
 
     def test_description(self):
         self.login(constants.LEVEL_EDIT_SHOW)

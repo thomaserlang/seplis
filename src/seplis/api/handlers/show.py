@@ -1,14 +1,11 @@
 import logging
-from seplis import schemas, tasks, utils
+from seplis import schemas, tasks, utils, config
 from seplis.api import constants, exceptions, models
 from seplis.api.handlers import base
 from seplis.api.decorators import authenticated, new_session, run_on_executor
-from seplis.api.base.pagination import Pagination
 from seplis.api.connections import database
 from tornado.httpclient import HTTPError
-from tornado import gen, concurrent
-from datetime import datetime
-from collections import OrderedDict
+from urllib.parse import urljoin
 
 class Handler(base.Handler):
 
@@ -16,23 +13,37 @@ class Handler(base.Handler):
         'is_fan',
         'user_watching',
     )
-    @gen.coroutine
-    def get(self, show_id=None):
+    async def get(self, show_id=None):
         if show_id:
-            show = yield self.get_show(show_id)
+            show = await self.get_show(show_id)
             self.write_object(show)
         else:
-            shows = yield self.get_shows()
-            self.write_object(shows)
+            q = self.get_argument('q', None)
+            title = self.get_argument('title', None)
+            title_suggest = self.get_argument('title_suggest', None)
+            if q or title or title_suggest:
+                shows = await self.search_show()
+                self.write_object(shows)
+            else:
+                shows = await self.get_shows()
+                if shows:
+                    logging.info(self.request.query_arguments)
+                    self.request.query_arguments['from_id'] = [str(shows[-1]['id'])]
+                    logging.info(self.request.query_arguments)
+                    n = urljoin(
+                        config['api']['base_url'],
+                        self.request.path
+                    ) + '?' + utils.url_encode_tornado_arguments(self.request.query_arguments)
+                    self.set_header('Link', f'<{n}>; rel="next"')
+                self.write_object(shows)
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine    
-    def post(self, show_id=None):
+    async def post(self, show_id=None):
         if show_id:
             raise exceptions.Parameter_restricted(
                 'show_id must not be set when creating a new one'
             )
-        show = yield self._post()
+        show = await self._post()
         self.set_status(201)
         database.queue.enqueue(
             tasks.update_show,
@@ -40,7 +51,7 @@ class Handler(base.Handler):
         )
         self.write_object(show) 
 
-    @concurrent.run_on_executor
+    @run_on_executor
     def _post(self):
         self.request.body = self.validate(schemas.Show_schema)
         with new_session() as session:
@@ -56,18 +67,16 @@ class Handler(base.Handler):
             return show.serialize()
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def put(self, show_id): 
-        show = yield self.update(show_id=show_id, overwrite=True)
+    async def put(self, show_id): 
+        show = await self.update(show_id=show_id, overwrite=True)
         self.write_object(show)
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def patch(self, show_id):        
-        show = yield self.update(show_id=show_id, overwrite=False)
+    async def patch(self, show_id):        
+        show = await self.update(show_id=show_id, overwrite=False)
         self.write_object(show)
 
-    @concurrent.run_on_executor
+    @run_on_executor
     def update(self, show_id=None, overwrite=False):
         self.request.body = self.validate(schemas.Show_schema)
         with new_session() as session: 
@@ -152,64 +161,61 @@ class Handler(base.Handler):
 
     async def get_show(self, show_id):
         append_fields = self.get_append_fields(self.allowed_append_fields)
-        result = await self.es('/shows/show/{}'.format(show_id))                
-        if not result['found']:
-            raise exceptions.Not_found('unknown show')
-        show = result['_source']
+        show = await self._get_show(show_id)
         if 'is_fan' in append_fields:
             await self.append_is_fan([show])
         if 'user_watching' in append_fields:
             await self.append_user_watching([show])
-        if show['poster_image']:
-            self.image_wrapper(result['_source']['poster_image'])
         return show
 
-    async def get_shows(self, show_ids=None):
-        append_fields = self.get_append_fields(self.allowed_append_fields)
+    @run_on_executor
+    def _get_show(self, show_id):
+        with new_session() as session:
+            show = session.query(models.Show).get(show_id)
+            if not show:
+                raise exceptions.Not_found('Unknown show')
+            show = show.serialize()
+            return show
+
+    @run_on_executor
+    def get_shows(self):
+        from_id = int(self.get_argument('from_id', 0))
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
-        page = int(self.get_argument('page', 1))
+        with new_session() as session:
+            shows = session.query(models.Show).filter(
+                models.Show.id > from_id,
+            ).limit(per_page).all()
+            return [show.serialize() for show in shows]
+
+    async def search_show(self):
+        append_fields = self.get_append_fields(self.allowed_append_fields)
+        per_page = int(self.get_argument('per_page', constants.PER_PAGE))        
         sort = self.get_argument('sort', '_score:desc,title.length:asc,premiered:desc')
         fields = self.get_argument('fields', None)
         fields = list(filter(None, fields.split(','))) if fields else None
         req = {
-            'from': ((page - 1) * per_page),
             'size': per_page,
-            'sort': sort,
             'search_type': 'dfs_query_then_fetch',
         }
         body = self.build_query()
+        if body:
+            req['sort'] = sort
         if fields:
             if 'id' not in fields:
                 fields.append('id')
             body['_source'] = fields
-        if show_ids:
-            body['filter'] = {
-                'ids':{
-                    'values': show_ids,
-                }
-            }
+
         result = await self.es(
             '/shows/show/_search',
             body=body,
             query=req,
         )
-        shows = OrderedDict()
-        for show in result['hits']['hits']:
-            shows[show['_source']['id']] = show['_source']
-            if show['_source'].get('poster_image'):
-                self.image_wrapper(show['_source']['poster_image'])
-        shows = list(shows.values())
+        shows = [r['_source'] for r in result['hits']['hits']]
         if 'is_fan' in append_fields:
             await self.append_is_fan(shows)
         if 'user_watching' in append_fields:
             await self.append_user_watching(shows)
-        p = Pagination(
-            page=page,
-            per_page=per_page,
-            total=result['hits']['total'],
-            records=shows,
-        )
-        return p
+        return shows
 
     def build_query(self):
         """Builds a query from either argument: `q`, `title` or `title_suggest`."""
@@ -308,17 +314,14 @@ class External_handler(Handler):
             raise exceptions.Not_found('show not found with external: {} with id: {}'.format(title, value))
         return show_id
 
-    @gen.coroutine
-    def get(self, title, value):
-        yield Handler.get(self, self._get(title, value))
+    async def get(self, title, value):
+        await Handler.get(self, self._get(title, value))
 
-    @gen.coroutine
-    def put(self, title, value): 
-        yield Handler.put(self, self._get(title, value))
+    async def put(self, title, value): 
+        await Handler.put(self, self._get(title, value))
 
-    @gen.coroutine
-    def patch(self, title, value): 
-        yield Handler.patch(self, self._get(title, value))
+    async def patch(self, title, value): 
+        await Handler.patch(self, self._get(title, value))
 
     def post(self, show_id=None):
         raise HTTPError(405)
