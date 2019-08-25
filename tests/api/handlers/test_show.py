@@ -331,9 +331,9 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200, response.body)
 
-        self.get('http://{}/episodes/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
+
+        self.refresh_es()
+
         response = self.get('/1/shows/{}/episodes'.format(show_id))
         self.assertEqual(response.code, 200, response.body)
         episodes = utils.json_loads(response.body)
@@ -373,6 +373,41 @@ class test_show(Testbase):
             ]
         })
         self.assertEqual(response.code, 200, response.body)
+
+
+    def test_delete(self):
+        show_id = self.new_show()
+        response = self.patch(f'/1/shows/{show_id}', {
+            'episodes': [
+                {
+                    'number': 1,
+                    'title': 'Episode 1',
+                    'air_date': '2014-01-01',
+                    'description': {
+                        'text': 'Test description.'
+                    }
+                },
+                {
+                    'number': 2,
+                    'title': 'Episode 2',
+                    'air_date': '2014-01-01',
+                    'description': {
+                        'text': 'Test description.'
+                    }
+                }
+            ]
+        })
+        self.assertEqual(response.code, 200, response.body)
+
+        response = self.delete(f'/1/shows/{show_id}')
+        self.assertEqual(response.code, 204)
+
+        self.refresh_es()
+
+        response = self.get(
+            f'http://{config["api"]["elasticsearch"]}/episodes/episode/{show_id}-1'
+        )
+        self.assertEqual(response.code, 404)
 
     def test_search(self):
         show_id1 = self.new_show()

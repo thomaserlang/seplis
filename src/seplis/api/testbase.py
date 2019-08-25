@@ -116,7 +116,7 @@ class Testbase(AsyncHTTPTestCase):
         '''Signs the user in and returns a show id.
         :returns: int (show_id)
         '''
-        self.login(constants.LEVEL_EDIT_SHOW)
+        self.login(constants.LEVEL_GOD)
         response = self.post('/1/shows', {
             'status': 1,
         })

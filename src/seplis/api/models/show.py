@@ -83,8 +83,7 @@ class Show(Base):
         """
         if not self.id:
             raise Exception('can\'t add the show to ES without an ID.')        
-        session = orm.Session.object_session(self)
-        session.es_bulk.append({
+        self.session.es_bulk.append({
             '_index': 'shows',
             '_type': 'show',
             '_id': self.id,
@@ -99,6 +98,20 @@ class Show(Base):
 
     def after_upsert(self):            
         self.to_elasticsearch()
+
+    def before_delete(self):
+        self.session.es_bulk.append({
+            '_op_type': 'delete',
+            '_index': 'shows',
+            '_type': 'show',
+            '_id': self.id,
+        })
+        from . import Episode
+        episodes = self.session.query(Episode).filter(
+            Episode.show_id == self.id,
+        ).all()
+        for e in episodes:
+            self.session.delete(e)
 
     def update_externals(self):
         """Saves the shows externals to the database and the cache.

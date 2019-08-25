@@ -76,6 +76,11 @@ class Handler(base.Handler):
         show = await self.update(show_id=show_id, overwrite=False)
         self.write_object(show)
 
+    @authenticated(constants.LEVEL_GOD)
+    async def delete(self, show_id):
+        await self._delete(show_id)
+        self.set_status(204)
+
     @run_on_executor
     def update(self, show_id=None, overwrite=False):
         self.request.body = self.validate(schemas.Show_schema)
@@ -112,6 +117,13 @@ class Handler(base.Handler):
             new_data=self.request.body,
             overwrite=overwrite,
         )
+
+    @run_on_executor
+    def _delete(self, show_id):
+        with new_session() as session:
+            show = session.query(models.Show).get(show_id)
+            session.delete(show)
+            session.commit()
 
     def _add_poster_image(self, show, session):
         poster_image_id = self.request.body.get('poster_image_id')
