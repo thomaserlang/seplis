@@ -116,7 +116,6 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
         {'-hls_playlist_type': 'event'},
         {'-hls_segment_type': config['play']['ffmpeg_hls_segment_type']},
         {'-hls_time': str(config['play']['segment_time'])},
-        {'-noaccurate_seek': None},
         {os.path.join(temp_folder, 'media.m3u8'): None},
     ])
     r = base.to_subprocess_arguments(args)
