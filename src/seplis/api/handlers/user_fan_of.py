@@ -10,7 +10,7 @@ class Handler(base.Pagination_handler):
 
     __arguments_schema__ = good.Schema({
         'genre': [str],
-    }, default_keys=good.Optional,)
+    }, default_keys=good.Optional, extra_keys=good.Allow)
 
     async def get(self, user_id, show_id=None):
         super().get()
