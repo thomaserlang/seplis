@@ -294,7 +294,6 @@ class Player extends React.Component {
                 time: time,
                 playing: true,
             }, () => {
-                console.log(this.state.time)
                 if (this.props.onTimeUpdate)
                     this.props.onTimeUpdate(this.state.time)
             })
