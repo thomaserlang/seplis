@@ -65,8 +65,6 @@ class Player extends React.Component {
             subtitle: this.props.subtitle_lang,
             loading: false,
         }
-        
-        this.isChrome = !!window.chrome && !!window.chrome.webstore
     }
 
     componentDidMount() {      
@@ -90,7 +88,9 @@ class Player extends React.Component {
         this.video.addEventListener('loadeddata', this.loadedEvent.bind(this))
         this.setPingTimer()
         this.video.volume = this.volume
+        
         this.loadStream(this.getPlayUrl())
+
         document.onmousemove = this.mouseMove.bind(this)
         document.ontouchmove = this.mouseMove.bind(this)
         document.onkeypress = this.keypress.bind(this)
@@ -204,14 +204,43 @@ class Player extends React.Component {
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
-            `&audio_lang=${this.state.audio || ''}`+
-            `&device=hls`
+            `&audio_lang=${this.state.audio || ''}`
+
+        if(this.isChrome()) {
+           s = s + `&device=chrome`
+        } else { 
+           s = s + `&device=hls`
+        }
         return s
+    }
+
+    isChrome() {
+        // From: https://stackoverflow.com/questions/4565112/javascript-how-to-find-out-if-the-user-browser-is-chrome/13348618#13348618
+        let isChromium = window.chrome;
+        let winNav = window.navigator;
+        let vendorName = winNav.vendor;
+        let isOpera = typeof window.opr !== "undefined";
+        let isIEedge = winNav.userAgent.indexOf("Edge") > -1;
+        let isIOSChrome = winNav.userAgent.match("CriOS");
+
+        return (isChromium !== null &&
+          typeof isChromium !== "undefined" &&
+          vendorName === "Google Inc." &&
+          isOpera === false &&
+          isIEedge === false &&
+          isIOSChrome === null)
     }
 
     playPauseClick() {
         if (this.video.paused) {
-            this.video.play()
+            if (this.isChrome) {
+                this.state.starTime = this.state.time
+                this.setState({startTime: this.state.time}, () => {
+                    this.loadStream(this.getPlayUrl())                    
+                })
+            } else {
+                this.video.play()
+            }
             this.setHideControlsTimer(2000)
         }
         else {
@@ -265,6 +294,7 @@ class Player extends React.Component {
                 time: time,
                 playing: true,
             }, () => {
+                console.log(this.state.time)
                 if (this.props.onTimeUpdate)
                     this.props.onTimeUpdate(this.state.time)
             })
