@@ -19,7 +19,7 @@ def create_indices():
                 'autocomplete_ngram': { 
                     'type': 'ngram',
                     'min_gram': 1,
-                    'max_gram': 10,
+                    'max_gram': 40,
                 },
             },
             'analyzer': {
