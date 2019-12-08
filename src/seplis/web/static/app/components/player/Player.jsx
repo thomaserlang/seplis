@@ -103,7 +103,7 @@ class Player extends React.Component {
 
     loadStream(url) {
         this.setState({loading: true})
-        if (!Hls.isSupported() || this.isChrome) {
+        if (!Hls.isSupported() || this.isChrome()) {
             this.video.src = url
             this.video.load()
             this.video.play()
