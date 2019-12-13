@@ -59,8 +59,12 @@ class AudioSubBar extends React.Component {
                 title: stream.tags.title || lang,
                 index: stream.index,
             }
-
-            if (stream.codec_type == 'subtitle') {
+            if (stream.codec_type == 'subtitle') { 
+                let notSupported = [
+                    'dvd_subtitle',
+                ]
+                if (notSupported.includes(stream.codec_name))
+                    continue
                 this.subtitles.push(s)
             } else if (stream.codec_type == 'audio') {
                 this.audio.push(s)
