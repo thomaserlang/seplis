@@ -88,7 +88,9 @@
   padding: 10px;
   padding-top: 0px;
   overflow: visible;
-  text-align: left; }
+  text-align: left;
+  max-height: 400px;
+  overflow: auto; }
   .audio-subtitles .title {
     font-weight: bolder;
     margin-top: 10px;
@@ -7354,5 +7356,3 @@ div {
   background-color: transparent;
   color: #959595; }
 
-
-/*# sourceMappingURL=app.css.map*/

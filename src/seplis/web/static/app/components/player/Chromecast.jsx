@@ -126,13 +126,27 @@ class Chromecast {
                     else
                         startTime = 0
                 }
+                let streams = []
+                for (let v of result[0]['metadata']['streams']) {
+                    let d = {
+                        index: v.index,
+                        codec_name: v.codec_name,
+                        codec_type: v.codec_type,
+                        tags: {},                   
+                    }
+                    if (v.tags) {
+                        d.tags.language = v.tags.language
+                        d.tags.title = v.tags.title
+                    }
+                    streams.push(d)
+                }
                 let customData = {
                     play: result[0]['playServer'],
                     metadata: {
                         format: {
                             duration: result[0]['metadata']['format']['duration'],
                         },
-                        streams: result[0]['metadata']['streams'],
+                        streams: streams,
                     },
                     token: result[1]['token'],
                     type: 'episode',
