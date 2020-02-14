@@ -66,9 +66,7 @@ def update_shows_incremental():
 
 def _importer_incremental(importer):
     timestamp = time.time()    
-    show_ids = _importer_incremental_updates_with_retry(importer)
-    if not show_ids:
-        return
+    show_ids = _importer_incremental_updates_with_retry(importer) or []
     for show_id in show_ids:
         show = client.get('/shows/externals/{}/{}'.format(
             importer.external_name,
@@ -76,11 +74,6 @@ def _importer_incremental(importer):
         ))
         if not show:
             continue
-        logger.info('Found show "{}" by external {} {}'.format(
-            show['id'],
-            importer.external_name,
-            show_id,
-        ))
         try:
             if importer.external_name in show['importers'].values():
                 update_show_with_retry(show)

@@ -107,7 +107,7 @@ class Tvmaze(Show_importer_base):
         last_timestamp = self.last_update_timestamp()
         r = requests.get(self._url_update)
         if r.status_code != 200:
-            return
+            return []
         current_timestamp = time.time()
         shows = r.json()
         ids = []

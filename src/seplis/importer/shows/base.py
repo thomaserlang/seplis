@@ -61,7 +61,7 @@ class Show_importer_base(object):
 
         If there is no saved info it defaults to 24 hours ago.
 
-        :returns: float
+        :returns: int
         """
         path = os.path.expanduser(os.path.join(
             config['data_dir'],
@@ -69,9 +69,9 @@ class Show_importer_base(object):
             self.external_name+'.timestamp',
         ))
         if not os.path.isfile(path):
-            return time.time() - 86400
+            return int(time.time()) - 86400
         with open(path, 'r') as f:
-            return float(f.readline())
+            return int(f.readline())
 
     def save_timestamp(self, timestamp):
         """Saves a timestamp in a file.
@@ -97,7 +97,7 @@ class Show_importer_base(object):
             self.external_name+'.timestamp',
         )
         if not timestamp:
-            timestamp = time.time()
+            timestamp = int(time.time())
         with open(path, 'w') as f:
-            f.write(str(timestamp))
+            f.write(str(int(timestamp)))
         return timestamp
