@@ -219,6 +219,13 @@ def update_show_images(show):
     ``show`` must be a show dict.
 
     """
+    if (('poster_image' in show) and show['poster_image']):
+        # Need a better way to only download images in the 
+        # correct size from THETVDB.
+        # Right now a lot of time and bandwidth is spent redownloading
+        # the same images just to find out that they are not 680x1000...
+        # So for now only get the images if there is no poster set for the show.
+        return
     imp_names = _importers_with_support(show['externals'], 'images')
     images = client.get(
         '/shows/{}/images?per_page=500'.format(show['id'])
