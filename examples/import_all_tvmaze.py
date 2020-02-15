@@ -1,5 +1,5 @@
-import requests
-import logging
+import requests, logging, aniso8601
+from datetime import date
 from seplis import Client, config, config_load, logger
 config_load()
 
@@ -28,9 +28,13 @@ while (len(data) != 0):
         if not show['externals']['imdb']:
             continue
         if str(show['externals']['imdb']) in imdbids:
-            logging.info('found imdb: {}'.format(show['externals']['imdb']))
             continue
         if show['language'] != 'English':
+            continue
+        if show['premiered']:
+            if aniso8601.parse_date(show['premiered']) < date(2018, 1, 1):
+                continue
+        else:
             continue
         try:
             client.post('/shows', {
