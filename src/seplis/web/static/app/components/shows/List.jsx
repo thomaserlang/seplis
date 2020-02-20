@@ -71,7 +71,7 @@ class List extends React.Component {
             return null
         if ('user_watching' in this.props.shows[0]) {
             return <>
-                <th width="115px" title="Latest watched episode">Episode</th>
+                <th width="150px" title="Latest watched episode">Episode</th>
                 <th width="115px">Watched at</th>
             </>
         }
