@@ -58,7 +58,7 @@ class Handler(base.Pagination_handler):
                     sa.desc(elw.show_id)
                 )
 
-            genres = args.get('genre')
+            genres = list(filter(None, args.get('genre', [])))
             if genres:
                 query = query.filter(
                     models.Show_genre.show_id == models.Show.id,
