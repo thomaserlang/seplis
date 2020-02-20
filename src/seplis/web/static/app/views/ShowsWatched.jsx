@@ -12,7 +12,6 @@ class ShowsWatched extends React.Component {
     constructor(props) {
         super(props)
         requireAuthed()
-        this.onPageChange = this.pageChange.bind(this)
         this.state = {
             loading: true,
             shows: [],
@@ -42,7 +41,7 @@ class ShowsWatched extends React.Component {
         )
     }
 
-    pageChange(e) {
+    pageChange = (e) => {
         this.setState({
             page: e.target.value,
             loading: true,
@@ -65,7 +64,7 @@ class ShowsWatched extends React.Component {
             this.getShows()
         })
     }
-    
+
     genreChange = (genre) => {
         this.setState({
             genre: genre,
