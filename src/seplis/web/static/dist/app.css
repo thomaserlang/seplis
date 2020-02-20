@@ -273,7 +273,7 @@ body {
 
 .navbar-seplis {
   background-color: #428bca;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   padding: 0.3rem 0; }
   .navbar-seplis .link {
     color: #FFFFFF;
@@ -285,7 +285,7 @@ body {
 
 .btn-fan,
 .btn-fan:focus {
-  background-color: #414141 !important;
+  background-color: #428bca !important;
   color: #E2E2E2;
   border: 1px solid #6C6C6C;
   outline: 0;
@@ -309,11 +309,6 @@ body {
     background-color: #008F21;
     color: #E2E2E2;
     outline: 0; }
-
-.btn-fan__pull-left {
-  float: left;
-  margin-top: 5px;
-  margin-right: 10px; }
 
 .btn-episode-watched-group .btn {
   background-color: #414141;
@@ -410,9 +405,8 @@ body {
   margin: 10px; }
 
 .show-header {
-  margin-bottom: 0.5rem; }
+  display: flex; }
   .show-header .title {
-    line-height: 45px;
     font-size: 24px; }
     @media (min-width: 730px) {
       .show-header .title {
@@ -7336,6 +7330,15 @@ div {
   text-overflow: ellipsis;
   text-align: center; }
 
+.dark-input, .dark-input:focus {
+  background-color: #26282E;
+  border-color: #26282E !important;
+  color: #fff;
+  outline: none !important; }
+
+.pointer {
+  cursor: pointer; }
+
 .dark-form-control {
   background-color: #414141;
   border: 1px solid #6C6C6C;
@@ -7356,3 +7359,5 @@ div {
   background-color: transparent;
   color: #959595; }
 
+
+/*# sourceMappingURL=app.css.map*/
