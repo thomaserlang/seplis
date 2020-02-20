@@ -4,6 +4,8 @@ import {getUserId} from 'utils'
 import Loader from 'components/Loader'
 import Pagination from 'components/Pagination'
 import ShowList from 'components/shows/List.jsx'
+import ListMode from 'components/ListMode.jsx'
+import SelectGenres from 'components/SelectGenres.jsx'
 import {requireAuthed, locationQuery} from 'utils'
 
 class FanOf extends React.Component {
@@ -11,29 +13,34 @@ class FanOf extends React.Component {
     constructor(props) {
         super(props)
         requireAuthed()
-        this.onPageChange = this.pageChange.bind(this)
         this.state = {
             loading: true,
             items: [],
             jqXHR: null,
             page: locationQuery().page || 1,
+            sort: locationQuery().sort || 'followed_at',
+            genre: locationQuery().genre || '',
         }
     }    
 
     componentDidUpdate(prevProps) {
         if (this.props.location !== prevProps.location) {
-            this.setState(
-                {page: locationQuery().page || 1},
+            this.setState({
+                page: locationQuery().page || 1,
+                sort: locationQuery().sort || 'followed_at',
+            },
                 () => {this.getShows()}
             )
         }
     }
 
     setBrowserPath() {
-        this.props.history.push(`${this.props.location.pathname}?page=${this.state.page}`)
+        this.props.history.push(
+            `${this.props.location.pathname}?page=${this.state.page}&sort=${this.state.sort}&genre=${this.state.genre}`
+        )
     }
 
-    pageChange(e) {
+    pageChange = (e) => {
         this.setState({
             page: e.target.value,
             loading: true,
@@ -43,8 +50,32 @@ class FanOf extends React.Component {
         })
     }
 
+    listModeChange = () => {
+        this.forceUpdate()
+    }
+
+    sortChange = (e) => {
+        this.setState({
+            sort: e.target.value,
+            loading: true,
+        }, () => {
+            this.setBrowserPath()
+            this.getShows()
+        })
+    }
+
+    genreChange = (genre) => {
+        this.setState({
+            genre: genre,
+            loading: true,
+        }, () => {
+            this.setBrowserPath()
+            this.getShows()
+        })
+    }
+
     componentDidMount() {
-        document.title = `Fan of | SEPLIS`
+        document.title = `Following | SEPLIS`
         this.getShows()
     }
 
@@ -55,6 +86,9 @@ class FanOf extends React.Component {
             query: {
                 page: this.state.page,
                 per_page: 60,
+                expand: 'user_rating',
+                sort: this.state.sort,
+                genre: this.state.genre,
             }
         }).done((shows, textStatus, jqXHR) => {
             this.setState({
@@ -68,39 +102,52 @@ class FanOf extends React.Component {
 
     render() {
         if (this.state.loading==true)
-            return (
-                <span>
-                    <h2>Fan of {this.state.totalCount} shows</h2>
-                    <Loader />
-                </span>
-            )
-        return (
-            <span>
-                <div className="row">
-                    <div className="col-12 col-sm-9 col-md-10">
-                        <h2>
-                            Fan of {this.state.totalCount} shows
-                        </h2>
+            return <>
+                <h2>Following {this.state.totalCount} shows</h2>
+                <Loader />
+            </>
+        return <>
+            <div className="d-flex">
+                <div>
+                    <h2>
+                        Following {this.state.totalCount} shows
+                    </h2>
+                </div>
+                <div className="ml-auto d-flex">
+                    <div className="mr-2">
+                        <ListMode onModeChange={this.listModeChange} />
                     </div>
-                    <div className="col-sm-3 col-md-2">
+                    <div className="mr-2">
+                        <SelectGenres onChange={this.genreChange} selected={this.state.genre} />
+                    </div>
+                    <div className="mr-2">
+                        <select 
+                            className="form-control" 
+                            onChange={this.sortChange} 
+                            value={this.state.sort}
+                        >
+                            <option value="followed_at">Sort: Followed at</option>
+                            <option value="user_rating">Sort: Rating</option>
+                        </select>
+                    </div>
+                    <div>
                         <Pagination 
                             jqXHR={this.state.jqXHR} 
-                            onPageChange={this.onPageChange}
+                            onPageChange={this.pageChange}
                         />
                     </div>
                 </div>
-                <ShowList shows={this.state.shows} />
-                <div className="row">
-                    <div className="col-sm-9 col-md-10" />
-                    <div className="col-sm-3 col-md-2">
-                        <Pagination 
-                            jqXHR={this.state.jqXHR} 
-                            onPageChange={this.onPageChange}
-                        />
-                    </div>
+            </div>
+            <ShowList listMode="" shows={this.state.shows} />
+            <div className="d-flex">
+                <div className="ml-auto">
+                    <Pagination 
+                        jqXHR={this.state.jqXHR} 
+                        onPageChange={this.pageChange}
+                    />
                 </div>
-            </span>
-        )
+            </div>
+        </>
     }
 }
 

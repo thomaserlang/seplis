@@ -30,17 +30,6 @@ class Show extends React.Component {
         return (
             <div>
                 <div className="row">
-                    <div className="col-12 show-header">
-                        <div className="btn-fan__pull-left">
-                            <FanButton showId={show.id} />
-                        </div>
-                        <div className="title">
-                            {show.title}
-                            &nbsp;
-                            <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>
-                        </div>
-                    </div> 
-
                     <div className="col-4 col-sm-4 col-md-4 col-margin d-none d-sm-block">
                         <img 
                             src={show.poster_image!=null?show.poster_image.url + '@SX360':''} 
@@ -50,6 +39,17 @@ class Show extends React.Component {
                     <div className="col-4 d-sm-none" />
 
                     <div className="col-12 col-sm-8">
+                        <div className="show-header mb-2">
+                            <div className="title">
+                                {show.title}
+                                &nbsp;
+                                <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>
+                            </div>
+                            <div className="ml-auto">
+                                <FanButton showId={show.id} />
+                            </div>
+                        </div>
+
                         <ShowNav showId={parseInt(this.state.show.id)} />
                         <Route exact path="/show/:showId" render={(props) => <ShowMain {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/main" render={(props) => <ShowMain {...props} show={this.state.show} />} />

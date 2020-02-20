@@ -42,7 +42,7 @@ class UserShowsStats extends React.Component {
             <h2>Your TV show stats</h2>
             <table className="table table-striped">
                 <tbody>
-                <tr><th width="220px">Fan of</th>
+                <tr><th width="220px">Following</th>
                     <td>{this.state.stats.fan_of} shows</td></tr>
                 <tr><th>Time spent watching</th>
                     <td>{secondsToPretty(this.state.stats.episodes_watched_minutes*60, true)}</td></tr>

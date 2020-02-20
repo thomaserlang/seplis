@@ -20,4 +20,5 @@ from . import (
     image,
     reset_password,
     genres,
+    user_show_rating,
 )

@@ -32,6 +32,7 @@ urls = [
     U(r'/1/shows/([0-9]+)/episodes/([0-9]+)/watched', h.episode_watched.Handler),
     U(r'/1/shows/([0-9]+)/episodes/([0-9]+)-([0-9]+)/watched', h.episode_watched.Range_handler),
     U(r'/1/shows/([0-9]+)/episodes/([0-9]+)/position', h.episode_position.Handler),
+    U(r'/1/shows/([0-9]+)/user-rating', h.user_show_rating.Handler),
     
     U(r'/1/users', h.user.Collection_handler),
     U(r'/1/users/current', h.user.Current_handler),            
@@ -57,7 +58,7 @@ urls = [
     U(r'/1/token', h.user.Token_handler),
     U(r'/1/progress-token', h.user.Progress_token_handler),
 
-    U(r'/1/genres', h.genres.Handler),
+    U(r'/1/show-genres', h.genres.Handler),
 ]
 
 class Application(web.Application):

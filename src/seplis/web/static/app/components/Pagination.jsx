@@ -50,17 +50,13 @@ class Pagination extends React.Component {
     }
 
     render() {
-        if (this.state.pages <= 1)
-            return null;
-        return (
-            <select
-                className="form-control col-margin"
-                onChange={this.onPageChange}
-                value={this.state.page}
-            >
-                {this.renderOptions()}
-            </select>
-        )
+        return <select
+            className="form-control col-margin"
+            onChange={this.onPageChange}
+            value={this.state.page}
+        >
+            {this.renderOptions()}
+        </select>
     }
 }
 Pagination.propTypes = propTypes;

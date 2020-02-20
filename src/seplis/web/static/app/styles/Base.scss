@@ -118,3 +118,14 @@ div {
     text-overflow: ellipsis;
     text-align: center;
 }
+
+.dark-input, .dark-input:focus {
+    background-color: $body-bg;
+    border-color: $body-bg !important;
+    color: #fff;
+    outline: none !important;
+}
+
+.pointer {
+    cursor: pointer;
+}

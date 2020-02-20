@@ -335,6 +335,27 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         })
         return [d.get('_source') for d in result['docs']]
 
+    def expand_user_rating(self, shows, user_id):
+        if not user_id:
+            self.is_logged_in()
+            user_id = self.current_user.id
+        with new_session() as session:
+            show_ids = {}
+            for s in shows:
+                s['user_rating'] = None
+                show_ids[s['id']] = s
+            q = session.query(
+                models.User_show_rating.rating, 
+                models.User_show_rating.show_id,
+            ).filter(
+                models.User_show_rating.user_id == user_id,
+                models.User_show_rating.show_id.in_(show_ids.keys()),
+            ).all()
+            if not q:
+                return
+            for s in q:
+                show_ids[s.show_id]['user_rating'] = s.rating
+
 class Pagination_handler(Handler):
 
     __arguments_schema__ = good.Schema({

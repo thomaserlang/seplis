@@ -1,10 +1,10 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import ClassNames from 'classnames';
-import {isAuthed,getUserId} from 'utils';
-import {request} from 'api';
+import React from 'react'
+import PropTypes from 'prop-types'
+import ClassNames from 'classnames'
+import {isAuthed,getUserId} from 'utils'
+import {request} from 'api'
 
-import './FanButton.scss';
+import './FanButton.scss'
 
 const propTypes = {
     showId: PropTypes.number.isRequired,
@@ -14,36 +14,37 @@ const propTypes = {
 class FanButton extends React.Component {
 
     constructor(props) {
-        super(props);
+        super(props)
         this.state = {
             isFan: props.isFan,
         }
-        this.onClick = this.onClick.bind(this);
+        this.onClick = this.onClick.bind(this)
     }
 
     componentDidMount() {
         if (this.props.isFan == undefined)
-            this.getIsFan();
+            this.getIsFan()
     }
 
     onClick(e) {
-        e.preventDefault();
-        this.setState({isFan: !this.state.isFan});
+        e.target.blur()
+        e.preventDefault()
+        this.setState({isFan: !this.state.isFan})
         request(`/1/users/${getUserId()}/fan-of/${this.props.showId}`, {
             method: this.state.isFan?'DELETE':'PUT',
         }).fail(() => {            
-            this.setState({isFan: !this.state.isFan});
+            this.setState({isFan: !this.state.isFan})
         })
     }
 
     getIsFan() {
         if (!isAuthed()) 
-            return;
+            return
         request(
             `/1/users/${getUserId()}/fan-of/${parseInt(this.props.showId)}`
-        ).done(is_fan => {
-            this.setState({isFan: is_fan.is_fan});
-        });
+        ).done(d => {
+            this.setState({isFan: d.is_fan})
+        })
     }
 
     render() {
@@ -51,23 +52,23 @@ class FanButton extends React.Component {
             btn: true,
             'btn-fan': true,
             'btn-fan__is-fan': this.state.isFan, 
-        });
+        })
         return (
             <button 
                 className={btnClass}
                 onClick={this.onClick}
-                title={this.state.isFan?'Unfan':'Become a Fan'}
-                aria-label={this.state.isFan?'Unfan':'Become a Fan'}                
+                title={this.state.isFan?'Unfollow':'Follow'}
+                aria-label={this.state.isFan?'Unfollow':'Follow'}                
             >
                 {this.state.isFan?
-                    <span className="fas fa-star"></span>
+                    'Following'
                     :
-                    <span className="far fa-star"></span>
+                    'Follow'
                 }
             </button>
-        );
+        )
     }
 }
-FanButton.propTypes = propTypes;
+FanButton.propTypes = propTypes
 
-export default FanButton;
+export default FanButton

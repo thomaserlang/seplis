@@ -12,6 +12,7 @@ class Handler(base.Handler):
     allowed_append_fields = (
         'is_fan',
         'user_watching',
+        'user_rating',
     )
     async def get(self, show_id=None):
         if show_id:
@@ -178,6 +179,8 @@ class Handler(base.Handler):
             await self.append_is_fan([show])
         if 'user_watching' in append_fields:
             await self.append_user_watching([show])
+        if 'user_rating' in append_fields:
+            await self.append_user_ratings([show])
         return show
 
     @run_on_executor
@@ -227,6 +230,8 @@ class Handler(base.Handler):
             await self.append_is_fan(shows)
         if 'user_watching' in append_fields:
             await self.append_user_watching(shows)
+        if 'user_rating' in append_fields:
+            await self.append_user_ratings(shows)
         return shows
 
     def build_query(self):
@@ -309,6 +314,27 @@ class Handler(base.Handler):
             self.is_logged_in()
             user_id = self.current_user.id
         await handler_utils.show.append_user_watching(user_id, shows)
+
+    @run_on_executor
+    def append_user_ratings(self, shows):
+        self.is_logged_in()
+        user_id = self.current_user.id
+        with new_session() as session:
+            show_ids = {}
+            for s in shows:
+                s['user_rating'] = None
+                show_ids[s['id']] = s
+            q = session.query(
+                models.User_show_rating.rating, 
+                models.User_show_rating.show_id,
+            ).filter(
+                models.User_show_rating.user_id == self.current_user.id,
+                models.User_show_rating.show_id.in_(show_ids.keys()),
+            ).all()
+            if not q:
+                return
+            for s in q:
+                show_ids[s.show_id]['user_rating'] = s.rating
 
 class Multi_handler(base.Handler):
 

@@ -1,4 +1,4 @@
-import good
+import good, logging
 import sqlalchemy as sa
 from seplis.api.handlers import base
 from seplis.api.base.pagination import Pagination
@@ -10,6 +10,8 @@ class Handler(base.Pagination_handler):
 
     __arguments_schema__ = good.Schema({
         'genre': [str],
+        'expand': [str],
+        'sort': [str],
     }, default_keys=good.Optional, extra_keys=good.Allow)
 
     async def get(self, user_id, show_id=None):
@@ -38,17 +40,42 @@ class Handler(base.Pagination_handler):
             query = session.query(models.Show).filter(
                 models.Show_fan.user_id == user_id,
                 models.Show_fan.show_id == models.Show.id,
-            ).order_by(
-                sa.desc(models.Show_fan.created_at), 
-                sa.desc(models.Show_fan.show_id),
             )
-            genres = args.get('genre')
+
+            sort = args.get('sort', ['followed_at'])[0]            
+            if sort == 'user_rating':
+                query = query.outerjoin(
+                    (models.User_show_rating, sa.and_(
+                        models.User_show_rating.show_id == models.Show.id,
+                        models.User_show_rating.user_id == user_id,
+                    ))
+                ).order_by(
+                    sa.desc(models.User_show_rating.rating),
+                    sa.desc(models.Show_fan.created_at),
+                    sa.desc(models.Show_fan.show_id),
+                )
+            else:
+                query = query.order_by(
+                    sa.desc(models.Show_fan.created_at), 
+                    sa.desc(models.Show_fan.show_id),
+                )
+
+            genres = list(filter(None, args.get('genre', [])))
+            logging.info(genres)
             if genres:
                 query = query.filter(
                     models.Show_genre.show_id == models.Show_fan.show_id,
                     models.Show_genre.genre.in_(genres),
                 )
-            return query.paginate(page=self.page, per_page=self.per_page)
+
+            p = query.paginate(page=self.page, per_page=self.per_page)
+            p.records = [s.serialize() for s in p.records]
+
+            expand = args.get('expand', [])
+            if 'user_rating' in expand:
+                self.expand_user_rating(p.records, user_id)
+
+            return p
 
     @run_on_executor
     def fan(self, user_id, show_id):

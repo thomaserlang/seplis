@@ -1,23 +1,27 @@
-import React from 'react';
-import {request} from 'api';
-import Loader from 'components/Loader';
-import Pagination from 'components/Pagination';
-import Watched from 'components/shows/Watched.jsx';
-import {getWatched} from 'components/shows/Watched.jsx';
-import {requireAuthed, locationQuery} from 'utils';
+import React from 'react'
+import Loader from 'components/Loader'
+import Pagination from 'components/Pagination'
+import ShowList from 'components/shows/List.jsx'
+import ListMode from 'components/ListMode.jsx'
+import SelectGenres from 'components/SelectGenres.jsx'
+import {request} from 'api'
+import {requireAuthed, locationQuery, getUserId} from 'utils'
 
 class ShowsWatched extends React.Component {
 
     constructor(props) {
-        super(props);
-        requireAuthed();
-        this.onPageChange = this.pageChange.bind(this);
+        super(props)
+        requireAuthed()
+        this.onPageChange = this.pageChange.bind(this)
         this.state = {
             loading: true,
-            items: [],
+            shows: [],
             jqXHR: null,
             page: locationQuery().page || 1,
             totalCount: '...',
+            page: locationQuery().page || 1,
+            sort: locationQuery().sort || 'watched_at',
+            genre: locationQuery().genre || '',
         }
     }    
 
@@ -27,13 +31,15 @@ class ShowsWatched extends React.Component {
                 page: locationQuery().page || 1,
                 loading: true,
             },() => {
-                this.getItems()
+                this.getShows()
             })
         }
     }
 
     setBrowserPath() {
-        this.props.history.push(`${this.props.location.pathname}?page=${this.state.page}`)
+        this.props.history.push(
+            `${this.props.location.pathname}?page=${this.state.page}&sort=${this.state.sort}&genre=${this.state.genre}`
+        )
     }
 
     pageChange(e) {
@@ -41,25 +47,59 @@ class ShowsWatched extends React.Component {
             page: e.target.value,
             loading: true,
         }, () => {
-            this.setBrowserPath();
-            this.getItems();
-        });
+            this.setBrowserPath()
+            this.getShows()
+        })
+    }
+
+    listModeChange = () => {
+        this.forceUpdate()
+    }
+
+    sortChange = (e) => {
+        this.setState({
+            sort: e.target.value,
+            loading: true,
+        }, () => {
+            this.setBrowserPath()
+            this.getShows()
+        })
+    }
+    
+    genreChange = (genre) => {
+        this.setState({
+            genre: genre,
+            loading: true,
+        }, () => {
+            this.setBrowserPath()
+            this.getShows()
+        })
     }
 
     componentDidMount() {
         document.title = `Shows Watched | SEPLIS`
-        this.getItems();
+        this.getShows()
     }
 
-    getItems() {
-        getWatched(60, this.state.page).then((data) => {
+    getShows() {
+        let userId = getUserId()
+        this.setState({loading: true})
+        request(`/1/users/${userId}/shows-watched`, {
+            query: {
+                page: this.state.page,
+                per_page: 60,
+                expand: 'user_rating',
+                sort: this.state.sort,
+                genre: this.state.genre,
+            }
+        }).done((shows, textStatus, jqXHR) => {
             this.setState({
-                items: data.items,
-                jqXHR: data.jqXHR,
+                shows: shows,
                 loading: false,
-                totalCount: data.jqXHR.getResponseHeader('X-Total-Count'),
+                jqXHR: jqXHR,
+                totalCount: jqXHR.getResponseHeader('X-Total-Count'),
             })
-        });
+        })
     }
 
     render() {
@@ -69,33 +109,48 @@ class ShowsWatched extends React.Component {
                     <h2>Watched {this.state.totalCount} shows</h2>
                     <Loader />
                 </span>
-            );
-        return (
-            <span>
-                <div className="row">
-                    <div className="col-12 col-sm-9 col-md-10">                        
-                        <h2>Watched {this.state.totalCount} shows</h2>
-                    </div>
-                    <div className="col-sm-3 col-md-2">
-                        <Pagination 
-                            jqXHR={this.state.jqXHR} 
-                            onPageChange={this.onPageChange}
-                        />
-                    </div>
+            )
+        return <>
+            <div className="d-flex">
+                <div>                        
+                    <h2>Watched {this.state.totalCount} shows</h2>
                 </div>
-                <Watched items={this.state.items} />
-                <div className="row">
-                    <div className="col-sm-9 col-md-10" />
-                    <div className="col-sm-3 col-md-2">
-                        <Pagination 
-                            jqXHR={this.state.jqXHR} 
-                            onPageChange={this.onPageChange}
-                        />
-                    </div>
+                <div className="ml-auto d-flex">
+                <div className="mr-2">
+                    <ListMode onModeChange={this.listModeChange} />
                 </div>
-            </span>
-        )
+                <div className="mr-2">
+                    <SelectGenres onChange={this.genreChange} selected={this.state.genre} />
+                </div>
+                <div className="mr-2">
+                    <select 
+                        className="form-control" 
+                        onChange={this.sortChange} 
+                        value={this.state.sort}
+                    >
+                        <option value="watched_at">Sort: Watched at</option>
+                        <option value="user_rating">Sort: Rating</option>
+                    </select>
+                </div>
+                <div>
+                    <Pagination 
+                        jqXHR={this.state.jqXHR} 
+                        onPageChange={this.pageChange}
+                    />
+                </div>
+            </div>
+            </div>
+            <ShowList listMode="" shows={this.state.shows} />
+            <div className="d-flex">
+                <div className="ml-auto">
+                    <Pagination 
+                        jqXHR={this.state.jqXHR} 
+                        onPageChange={this.pageChange}
+                    />
+                </div>
+            </div>
+        </>
     }
 }
 
-export default ShowsWatched;
+export default ShowsWatched

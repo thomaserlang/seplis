@@ -26,7 +26,7 @@ class Index extends React.Component {
             <div className="container">
                 <Route path="/show/:showId" component={Show} />
                 <Route path="/show-new" component={ShowNew} />
-                <Route path="/fan-of" component={FanOf} />
+                <Route path="/following" component={FanOf} />
                 <Route path="/recently-aired" component={RecentlyAired} />
                 <Route path="/shows-watched" component={ShowsWatched} />
                 <Route path="/countdown" component={Countdown} />
@@ -40,7 +40,6 @@ class Index extends React.Component {
                 <Route path="/new-play-server" component={PlayServer} />
                 <Route path="/play-server/:serverId" component={PlayServer} />
                 <Route path="/user-shows-stats" component={UserShowsStats} />
-
             </div>
         </>
     }

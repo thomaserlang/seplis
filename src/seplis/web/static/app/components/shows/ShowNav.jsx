@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import {NavLink} from 'react-router-dom'
-import {getUserLevel} from 'seplis/utils'
+import UserRating from 'seplis/components/shows/UserRating'
+import {getUserLevel, isAuthed} from 'seplis/utils'
 
 let propTypes = {
     showId: PropTypes.number.isRequired,
@@ -14,13 +15,20 @@ class ShowNav extends React.Component {
             return
         return (
             <NavLink 
-                className="nav-link ml-auto" 
+                className="nav-link" 
                 to={`/show/${this.props.showId}/edit`}
                 activeClassName="active"
             >
                 <i className="fas fa-cog"></i>
             </NavLink>
         )
+    }
+
+    renderRating(showId) {
+        if (isAuthed()) 
+            return <div className="ml-auto">
+                <UserRating showId={this.props.showId} />
+            </div>
     }
 
     render() {
@@ -62,6 +70,7 @@ class ShowNav extends React.Component {
                 >
                     Stats
                 </NavLink>
+                {this.renderRating()}
                 {this.renderSettings()}
             </nav>
         )

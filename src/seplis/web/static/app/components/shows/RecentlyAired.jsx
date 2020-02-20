@@ -62,7 +62,7 @@ class RecentlyAired extends React.Component {
         if (this.state.items.length == 0)
             return (
                 <div className="alert alert-info">
-                    No recently aired episodes from shows you are a fan of.
+                    No recently aired episodes from shows you're following.
                 </div>
             )
         return (

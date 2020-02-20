@@ -1,12 +1,12 @@
-import React from 'react';
+import React from 'react'
 import {Link} from 'react-router-dom'
-import {request} from 'api';
-import {isAuthed, getUserLevel} from 'utils';
-import Search from './Search';
-import ChromecastIcon from './player/ChromecastIcon';
-import ChromecastBar from './player/ChromecastBar';
+import {request} from 'api'
+import {isAuthed, getUserLevel} from 'utils'
+import Search from './Search'
+import ChromecastIcon from './player/ChromecastIcon'
+import ChromecastBar from './player/ChromecastBar'
 
-import './Navbar.scss';
+import './Navbar.scss'
 
 class Navbar extends React.Component {
 
@@ -21,7 +21,7 @@ class Navbar extends React.Component {
                 </a>
                 <div className="dropdown-menu">
                     <Link className="dropdown-item" to="/countdown">Countdown</Link>
-                    <Link className="dropdown-item" to="/fan-of">Fan of</Link>
+                    <Link className="dropdown-item" to="/following">Following</Link>
                     <Link className="dropdown-item" to="/episodes-to-watch">Episodes to Watch</Link>
                     <Link className="dropdown-item" to="/recently-aired">Recently Aired</Link>
                     <Link className="dropdown-item" to="/shows-watched">Watched</Link>
@@ -57,7 +57,7 @@ class Navbar extends React.Component {
 
     renderUserMenu() {
         if (!isAuthed())
-            return;
+            return
         return (
             <span className="dropdown">
                 <a 
@@ -78,7 +78,7 @@ class Navbar extends React.Component {
 
     renderChromecast() {
         if (!isAuthed())
-            return;
+            return
         return (               
             <span className="link">
                 <ChromecastBar />
@@ -89,7 +89,7 @@ class Navbar extends React.Component {
 
     renderSignIn() {
         if (isAuthed()) 
-            return;
+            return
         return (
             <Link 
                 className="link" 
@@ -102,7 +102,7 @@ class Navbar extends React.Component {
 
     renderCreateUser() {
         if (isAuthed()) 
-            return;
+            return
         return (
             <Link 
                 className="link" 
@@ -142,4 +142,4 @@ class Navbar extends React.Component {
 
 }
 
-export default Navbar;
+export default Navbar

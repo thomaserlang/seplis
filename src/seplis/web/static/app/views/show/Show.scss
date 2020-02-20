@@ -1,8 +1,7 @@
 .show-header {
-    margin-bottom: 0.5rem;
+    display: flex;
 
     .title {
-        line-height: 45px;
         font-size: 24px;
 
         @media (min-width: 730px) {

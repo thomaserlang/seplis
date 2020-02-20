@@ -74,7 +74,7 @@ class Main extends React.Component {
                 <div className="alert alert-info">
                     <h1>There's nothing to watch this week!</h1>
                     But, how can this be?<br />
-                    Well, you're properly not a fan of any shows that has 
+                    Well, you're properly not following of any shows that has 
                     episodes airing this week.
                 </div>
             );
