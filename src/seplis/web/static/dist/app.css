@@ -407,10 +407,11 @@ body {
 .show-header {
   display: flex; }
   .show-header .title {
-    font-size: 24px; }
+    font-size: 28px;
+    line-height: 1; }
     @media (min-width: 730px) {
       .show-header .title {
-        font-size: 26px; } }
+        font-size: 30px; } }
     @media (min-width: 992px) {
       .show-header .title {
         font-size: 36px; } }
