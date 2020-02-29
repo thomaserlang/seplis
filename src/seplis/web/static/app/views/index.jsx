@@ -4,7 +4,7 @@ import {Route} from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Show from './show/Show'
 import ShowNew from './show/New'
-import FanOf from './FanOf'
+import Following from './Following'
 import RecentlyAired from './RecentlyAired'
 import ShowsWatched from './ShowsWatched'
 import Countdown from './Countdown'
@@ -26,7 +26,7 @@ class Index extends React.Component {
             <div className="container">
                 <Route path="/show/:showId" component={Show} />
                 <Route path="/show-new" component={ShowNew} />
-                <Route path="/following" component={FanOf} />
+                <Route path="/following" component={Following} />
                 <Route path="/recently-aired" component={RecentlyAired} />
                 <Route path="/shows-watched" component={ShowsWatched} />
                 <Route path="/countdown" component={Countdown} />

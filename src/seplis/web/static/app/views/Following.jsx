@@ -8,7 +8,7 @@ import ListMode from 'components/ListMode.jsx'
 import SelectGenres from 'components/SelectGenres.jsx'
 import {requireAuthed, locationQuery} from 'utils'
 
-class FanOf extends React.Component {
+class Following extends React.Component {
 
     constructor(props) {
         super(props)
@@ -153,4 +153,4 @@ class FanOf extends React.Component {
     }
 }
 
-export default FanOf
+export default Following
