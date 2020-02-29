@@ -50,8 +50,8 @@ class Test(Testbase):
         self.assertEqual(data['episodes_watched_minutes'], 0)
         self.assertEqual(data['shows_finished'], 0)
 
-        # become a fan
-        self.put('/1/users/{}/fan-of/{}'.format(
+        # Follow
+        self.put('/1/users/{}/shows-following/{}'.format(
             self.current_user.id, show['id'],
         ))
 

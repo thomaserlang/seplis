@@ -9,7 +9,7 @@ client = seplis.Client(
     url=seplis.config['client']['api_url'], 
     access_token=seplis.config['client']['access_token']
 )
-for show in requests.get('https://api.seplis.net/1/users/2/fan-of?per_page=500').json():
+for show in requests.get('https://api.seplis.net/1/users/2/shows-following?per_page=500').json():
     logging.info('seplis.net id: {}'.format(show['id']))
     try:    
         if 'tvmaze' not in show['externals'] or 'imdb' not in show['externals']:
@@ -27,6 +27,6 @@ for show in requests.get('https://api.seplis.net/1/users/2/fan-of?per_page=500')
                 'episodes': 'tvmaze',
             },
         })
-        client.put('/users/1/fan-of/{}'.format(show['id']))
+        client.put('/users/1/shows-following/{}'.format(show['id']))
     except Exception:
         pass

@@ -10,7 +10,7 @@ from urllib.parse import urljoin
 class Handler(base.Handler):
 
     allowed_append_fields = (
-        'is_fan',
+        'following',
         'user_watching',
         'user_rating',
     )
@@ -175,8 +175,8 @@ class Handler(base.Handler):
     async def get_show(self, show_id):
         append_fields = self.get_append_fields(self.allowed_append_fields)
         show = await self._get_show(show_id)
-        if 'is_fan' in append_fields:
-            await self.append_is_fan([show])
+        if 'following' in append_fields:
+            await self.append_following([show])
         if 'user_watching' in append_fields:
             await self.append_user_watching([show])
         if 'user_rating' in append_fields:
@@ -226,8 +226,8 @@ class Handler(base.Handler):
             query=req,
         )
         shows = [r['_source'] for r in result['hits']['hits']]
-        if 'is_fan' in append_fields:
-            await self.append_is_fan(shows)
+        if 'following' in append_fields:
+            await self.append_following(shows)
         if 'user_watching' in append_fields:
             await self.append_user_watching(shows)
         if 'user_rating' in append_fields:
@@ -295,7 +295,7 @@ class Handler(base.Handler):
         }
 
     @run_on_executor
-    def append_is_fan(self, shows, user_id=None):
+    def append_following(self, shows, user_id=None):
         if not user_id:
             self.is_logged_in()
             user_id = self.current_user.id
@@ -307,7 +307,7 @@ class Handler(base.Handler):
                 return
             show_ids = set([r.show_id for r in rows])
         for show in shows:
-            show['is_fan'] = show['id'] in show_ids
+            show['following'] = show['id'] in show_ids
 
     async def append_user_watching(self, shows, user_id=None):
         if not user_id:

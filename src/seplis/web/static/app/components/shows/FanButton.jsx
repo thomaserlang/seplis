@@ -8,7 +8,7 @@ import './FanButton.scss'
 
 const propTypes = {
     showId: PropTypes.number.isRequired,
-    isFan: PropTypes.bool,
+    following: PropTypes.bool,
 }
 
 class FanButton extends React.Component {
@@ -16,34 +16,34 @@ class FanButton extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            isFan: props.isFan,
+            following: props.following,
         }
         this.onClick = this.onClick.bind(this)
     }
 
     componentDidMount() {
-        if (this.props.isFan == undefined)
-            this.getIsFan()
+        if (this.props.following == undefined)
+            this.get()
     }
 
     onClick(e) {
         e.target.blur()
         e.preventDefault()
-        this.setState({isFan: !this.state.isFan})
-        request(`/1/users/${getUserId()}/fan-of/${this.props.showId}`, {
-            method: this.state.isFan?'DELETE':'PUT',
+        this.setState({following: !this.state.following})
+        request(`/1/users/${getUserId()}/shows-following/${this.props.showId}`, {
+            method: this.state.following?'DELETE':'PUT',
         }).fail(() => {            
-            this.setState({isFan: !this.state.isFan})
+            this.setState({following: !this.state.following})
         })
     }
 
-    getIsFan() {
+    get() {
         if (!isAuthed()) 
             return
         request(
-            `/1/users/${getUserId()}/fan-of/${parseInt(this.props.showId)}`
+            `/1/users/${getUserId()}/shows-following/${parseInt(this.props.showId)}`
         ).done(d => {
-            this.setState({isFan: d.is_fan})
+            this.setState({following: d.following})
         })
     }
 
@@ -51,16 +51,16 @@ class FanButton extends React.Component {
         let btnClass = ClassNames({
             btn: true,
             'btn-fan': true,
-            'btn-fan__is-fan': this.state.isFan, 
+            'btn-fan__is-fan': this.state.following, 
         })
         return (
             <button 
                 className={btnClass}
                 onClick={this.onClick}
-                title={this.state.isFan?'Unfollow':'Follow'}
-                aria-label={this.state.isFan?'Unfollow':'Follow'}                
+                title={this.state.following?'Unfollow':'Follow'}
+                aria-label={this.state.following?'Unfollow':'Follow'}                
             >
-                {this.state.isFan?
+                {this.state.following?
                     'Following'
                     :
                     'Follow'

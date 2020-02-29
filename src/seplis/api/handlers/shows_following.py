@@ -20,7 +20,7 @@ class Handler(base.Pagination_handler):
         if not show_id:
             d = await self.fan_of(user_id)
         else:
-            d = {'is_fan': self.is_fan(user_id, show_id)}
+            d = {'following': self.following(user_id, show_id)}
         self.write_object(d)
 
     @authenticated(constants.LEVEL_USER)
@@ -99,7 +99,7 @@ class Handler(base.Pagination_handler):
                 session.delete(fan)
                 session.commit()
 
-    def is_fan(self, user_id, show_id):
+    def following(self, user_id, show_id):
         with new_session() as session:
             q = session.query(models.Show_fan.show_id).filter(
                 models.Show_fan.user_id == user_id,

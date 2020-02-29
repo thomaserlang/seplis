@@ -81,8 +81,8 @@ class Test_air_dates(Testbase):
         airdates = utils.json_loads(response.body)
         self.assertEqual(len(airdates), 0)
 
-        # Become fan of the first show
-        response = self.put('/1/users/{}/fan-of/{}'.format(self.current_user.id, show_1['id'])) 
+        # Follow of the first show
+        response = self.put('/1/users/{}/shows-following/{}'.format(self.current_user.id, show_1['id'])) 
         self.assertEqual(response.code, 204, response.body)
 
         # Check air dates only from the show the user is a fan of
@@ -96,8 +96,8 @@ class Test_air_dates(Testbase):
         self.assertEqual(airdates[0]['shows'][0]['id'], show_1['id'])
         self.assertEqual(airdates[0]['shows'][0]['episodes'][0]['number'], 1)
 
-        # Become fan of the second show
-        response = self.put('/1/users/{}/fan-of/{}'.format(self.current_user.id, show_2['id'])) 
+        # Follow of the second show
+        response = self.put('/1/users/{}/shows-following/{}'.format(self.current_user.id, show_2['id'])) 
         self.assertEqual(response.code, 204, response.body)
 
         # Let's get our air dates calendar.        

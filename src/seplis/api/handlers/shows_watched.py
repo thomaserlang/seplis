@@ -1,6 +1,6 @@
 import good, logging
 import sqlalchemy as sa
-from . import base, user_fan_of
+from . import base
 from seplis import schemas, utils
 from seplis.api import constants, exceptions, models
 from seplis.api.decorators import authenticated, new_session, run_on_executor

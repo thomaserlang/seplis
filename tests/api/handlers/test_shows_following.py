@@ -4,7 +4,7 @@ from seplis.api.testbase import Testbase
 from seplis.api import constants
 from seplis import utils
 
-class Test_user_fan_of(Testbase):
+class Test_shows_shows_following(Testbase):
 
     def test(self):
         self.login(constants.LEVEL_EDIT_SHOW)
@@ -13,7 +13,7 @@ class Test_user_fan_of(Testbase):
         show2 = utils.json_loads(self.post('/1/shows').body)
 
         # Check a user that is not a fan of any shows
-        response = self.get('/1/users/{}/fan-of'.format(self.current_user.id))
+        response = self.get('/1/users/{}/shows-following'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         shows = utils.json_loads(response.body)
         self.assertEqual(shows, [])
@@ -21,14 +21,14 @@ class Test_user_fan_of(Testbase):
         # Become a fan of a show, do it twice 
         # to check for duplication bug.
         for i in [1,2]:
-            response = self.put('/1/users/{}/fan-of/{}'.format(
+            response = self.put('/1/users/{}/shows-following/{}'.format(
                 self.current_user.id, 
                 show1['id']
             ))
             self.assertEqual(response.code, 204)
 
         # Check that the user has become a fan of the show
-        response = self.get('/1/users/{}/fan-of'.format(self.current_user.id))
+        response = self.get('/1/users/{}/shows-following'.format(self.current_user.id))
         self.assertEqual(response.code, 200)
         shows = utils.json_loads(response.body)
         self.assertEqual(shows[0]['id'], show1['id'])
@@ -38,10 +38,10 @@ class Test_user_fan_of(Testbase):
         self.assertEqual(show1['fans'], 1)
 
         # Become a fan of show 2 to test pagination
-        self.put('/1/users/{}/fan-of/{}'.format(self.current_user.id, show2['id']))
+        self.put('/1/users/{}/shows-following/{}'.format(self.current_user.id, show2['id']))
 
         # Test pagination
-        response = self.get('/1/users/{}/fan-of?per_page=1'.format(
+        response = self.get('/1/users/{}/shows-following?per_page=1'.format(
             self.current_user.id
         ))
         self.assertEqual(response.code, 200)
@@ -51,7 +51,7 @@ class Test_user_fan_of(Testbase):
         self.assertEqual(len(shows), 1)
         self.assertEqual(shows[0]['id'], show2['id'])
 
-        response = self.get('/1/users/{}/fan-of?per_page=1&page=2'.format(
+        response = self.get('/1/users/{}/shows-following?per_page=1&page=2'.format(
             self.current_user.id
         ))
         shows = utils.json_loads(response.body)
@@ -60,13 +60,13 @@ class Test_user_fan_of(Testbase):
         self.assertEqual(shows[0]['id'], show1['id'])
 
         # Test unfan
-        response = self.delete('/1/users/{}/fan-of/{}'.format(
+        response = self.delete('/1/users/{}/shows-following/{}'.format(
             self.current_user.id,
             show1['id'],
         ))
         self.assertEqual(response.code, 204)
 
-        response = self.get('/1/users/{}/fan-of'.format(
+        response = self.get('/1/users/{}/shows-following'.format(
             self.current_user.id
         ))
         self.assertEqual(response.code, 200)

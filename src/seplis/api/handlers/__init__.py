@@ -11,7 +11,7 @@ from . import (
     episode_to_watch,
     episode_last_watched,
     user_show_subtitle_lang,
-    user_fan_of,
+    shows_following,
     shows_countdown,
     shows_recently_aired,
     shows_etw,

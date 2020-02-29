@@ -54,10 +54,10 @@ class Test_shows_recently_aired(Testbase):
         self.assertEqual(shows, [])
 
         # Become a fan
-        response = self.put('/1/users/{}/fan-of/{}'.format(
+        response = self.put('/1/users/{}/shows-following/{}'.format(
             self.current_user.id, show1['id'],
         ))
-        response = self.put('/1/users/{}/fan-of/{}'.format(
+        response = self.put('/1/users/{}/shows-following/{}'.format(
             self.current_user.id, show2['id'],
         ))
         # Watch some episodes
