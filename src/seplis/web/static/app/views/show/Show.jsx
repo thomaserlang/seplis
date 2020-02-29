@@ -40,11 +40,11 @@ class Show extends React.Component {
 
                     <div className="col-12 col-sm-8">
                         <div className="show-header mb-2">
-                            <div className="title">
+                            <h1 className="title">
                                 {show.title}
                                 &nbsp;
                                 <small className="text-muted">{show.premiered!=null?show.premiered.substring(0,4):''}</small>
-                            </div>
+                            </h1>
                             <div className="ml-auto">
                                 <FanButton showId={show.id} />
                             </div>

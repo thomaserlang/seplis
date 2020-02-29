@@ -74,7 +74,7 @@ class Countdown extends React.Component {
                     <div className="col-12 col-sm-9 col-md-10">
                         <h2>Countdown</h2>
                     </div>
-                    <div className="col-sm-3 col-md-2">
+                    <div className="col-sm-3 col-md-2 col-margin">
                         <Pagination 
                             jqXHR={this.state.jqXHR} 
                             onPageChange={this.onPageChange}

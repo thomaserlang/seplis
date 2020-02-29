@@ -107,34 +107,36 @@ class FanOf extends React.Component {
                 <Loader />
             </>
         return <>
-            <div className="d-flex">
+            <div className="d-md-flex mb-2">
                 <div>
-                    <h2>
+                    <h2 className="mb-2">
                         Following {this.state.totalCount} shows
                     </h2>
                 </div>
-                <div className="ml-auto d-flex">
-                    <div className="mr-2">
+                <div className="ml-auto d-md-flex">
+                    <div className="mr-2 mb-2">
                         <ListMode onModeChange={this.listModeChange} />
                     </div>
-                    <div className="mr-2">
-                        <SelectGenres onChange={this.genreChange} selected={this.state.genre} />
-                    </div>
-                    <div className="mr-2">
-                        <select 
-                            className="form-control" 
-                            onChange={this.sortChange} 
-                            value={this.state.sort}
-                        >
-                            <option value="followed_at">Sort: Followed at</option>
-                            <option value="user_rating">Sort: Rating</option>
-                        </select>
-                    </div>
-                    <div>
-                        <Pagination 
-                            jqXHR={this.state.jqXHR} 
-                            onPageChange={this.pageChange}
-                        />
+                    <div className="d-flex">
+                        <div className="mr-2 mb-2">
+                            <SelectGenres onChange={this.genreChange} selected={this.state.genre} />
+                        </div>
+                        <div className="mr-2 mb-2">
+                            <select 
+                                className="form-control" 
+                                onChange={this.sortChange} 
+                                value={this.state.sort}
+                            >
+                                <option value="followed_at">Sort: Followed at</option>
+                                <option value="user_rating">Sort: Rating</option>
+                            </select>
+                        </div>
+                        <div className="d-sm-block d-none">
+                            <Pagination 
+                                jqXHR={this.state.jqXHR} 
+                                onPageChange={this.pageChange}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

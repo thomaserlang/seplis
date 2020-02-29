@@ -51,7 +51,7 @@ class Pagination extends React.Component {
 
     render() {
         return <select
-            className="form-control col-margin"
+            className="form-control"
             onChange={this.onPageChange}
             value={this.state.page}
         >

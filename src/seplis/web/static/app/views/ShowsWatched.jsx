@@ -110,34 +110,36 @@ class ShowsWatched extends React.Component {
                 </span>
             )
         return <>
-            <div className="d-flex">
+            <div className="d-md-flex mb-2">
                 <div>                        
-                    <h2>Watched {this.state.totalCount} shows</h2>
+                    <h2 className="mb-2">Watched {this.state.totalCount} shows</h2>
                 </div>
-                <div className="ml-auto d-flex">
-                <div className="mr-2">
-                    <ListMode onModeChange={this.listModeChange} />
+                <div className="ml-auto d-md-flex">
+                    <div className="mr-2 mb-2">
+                        <ListMode onModeChange={this.listModeChange} />
+                    </div>
+                    <div className="d-flex">
+                        <div className="mr-2 mb-2">
+                            <SelectGenres onChange={this.genreChange} selected={this.state.genre} />
+                        </div>
+                        <div className="mr-2 mb-2">
+                            <select 
+                                className="form-control" 
+                                onChange={this.sortChange} 
+                                value={this.state.sort}
+                            >
+                                <option value="watched_at">Sort: Watched at</option>
+                                <option value="user_rating">Sort: Rating</option>
+                            </select>
+                        </div>
+                        <div className="d-sm-block d-none">
+                            <Pagination 
+                                jqXHR={this.state.jqXHR} 
+                                onPageChange={this.pageChange}
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div className="mr-2">
-                    <SelectGenres onChange={this.genreChange} selected={this.state.genre} />
-                </div>
-                <div className="mr-2">
-                    <select 
-                        className="form-control" 
-                        onChange={this.sortChange} 
-                        value={this.state.sort}
-                    >
-                        <option value="watched_at">Sort: Watched at</option>
-                        <option value="user_rating">Sort: Rating</option>
-                    </select>
-                </div>
-                <div>
-                    <Pagination 
-                        jqXHR={this.state.jqXHR} 
-                        onPageChange={this.pageChange}
-                    />
-                </div>
-            </div>
             </div>
             <ShowList listMode="" shows={this.state.shows} />
             <div className="d-flex">
