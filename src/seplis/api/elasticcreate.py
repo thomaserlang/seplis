@@ -10,9 +10,14 @@ def create_indices():
     settings = {
         'analysis': {
             'char_filter': {
-                'strip_apostrophe': {
+                'strip_stuff': {
                     'type': 'mapping',
-                    'mappings': ['`=>', '’=>', '\'=>']
+                    'mappings': [
+                        '`=>', 
+                        '’=>', 
+                        '\'=>',
+                        '&=>and',
+                    ]
                 }
             },
             'tokenizer': {
@@ -26,7 +31,7 @@ def create_indices():
                 'autocomplete_index': {
                     'type' : 'custom',
                     'tokenizer': 'autocomplete_ngram',
-                    'char_filter': ['strip_apostrophe'],
+                    'char_filter': ['strip_stuff'],
                     'filter': [
                         'lowercase',
                         'asciifolding',
@@ -35,7 +40,7 @@ def create_indices():
                 'autocomplete_search': {
                     'type' : 'standard',
                     'tokenizer': 'standard',
-                    'char_filter': ['strip_apostrophe'],
+                    'char_filter': ['strip_stuff'],
                     'filter': [
                         'lowercase',
                         'asciifolding',
@@ -44,7 +49,7 @@ def create_indices():
                 'title_search': {
                     'type' : 'custom',
                     'tokenizer': 'standard',
-                    'char_filter': ['strip_apostrophe'],
+                    'char_filter': ['strip_stuff'],
                     'filter': [
                         'lowercase',
                         'asciifolding',

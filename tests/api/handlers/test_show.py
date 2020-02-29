@@ -747,5 +747,19 @@ class test_show(Testbase):
         self.assertEqual(len(data), 2, data)
         self.assertEqual(data[0]['title'], 'The Walking Dead')
 
+
+        # Test `&` and `and`
+        response = self.post('/1/shows', {
+            'title': 'Test & Test',
+            'premiered': '2010-10-31',
+        })
+        self.assertEqual(response.code, 201, response.body)
+        self.refresh_es()
+        response = self.get('/1/shows', {'title': 'Test and Test'})
+        self.assertEqual(response.code, 200, response.body)
+        data = utils.json_loads(response.body)
+        self.assertEqual(len(data), 1, data)
+
+
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
