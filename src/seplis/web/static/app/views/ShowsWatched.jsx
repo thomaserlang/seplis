@@ -68,6 +68,7 @@ class ShowsWatched extends React.Component {
     genreChange = (genre) => {
         this.setState({
             genre: genre,
+            page: 1,
             loading: true,
         }, () => {
             this.setBrowserPath()
