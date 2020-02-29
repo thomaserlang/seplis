@@ -1,5 +1,5 @@
-import copy
-import good
+import copy, good
+import sqlalchemy as sa
 from . import base
 from seplis import schemas, utils
 from seplis.api import constants, exceptions, models
@@ -33,10 +33,10 @@ class Handler(base.Handler):
         prev = None
         for se in shows_episodes:
             if prev == None:
-                prev = se[1]['air_date']
-            if prev != se[1]['air_date']:
+                prev = se[1]['air_datetime'].date()
+            if prev != se[1]['air_datetime'].date():
                 airdates[prev] = list(airdate_shows.values())
-                prev = se[1]['air_date']
+                prev = se[1]['air_datetime'].date()
                 airdate_shows = {}
             if se[1]['show_id'] not in airdate_shows:
                 airdate_shows[se[1]['show_id']] = copy.copy(
@@ -56,18 +56,17 @@ class Handler(base.Handler):
     def get_shows_episodes(self, user_id):
         args = self.validate_arguments()
         now = datetime.utcnow()
-        from_ = (now - timedelta(days=args['days_back'])).isoformat()
-        to_ = (now + timedelta(days=args['days_ahead'])).isoformat()
+        from_ = (now - timedelta(days=args['days_back'])).date()
+        to_ = (now + timedelta(days=args['days_ahead'])).date()
         with new_session() as session:
             rows = session.query(models.Episode, models.Show).filter(
                 models.Show_fan.user_id == user_id,
                 models.Show_fan.show_id == models.Show.id,
                 models.Episode.show_id == models.Show.id,
-                models.Episode.air_date >= from_,
-                models.Episode.air_date <= to_,
+                sa.func.date(models.Episode.air_datetime) >= from_,
+                sa.func.date(models.Episode.air_datetime) <= to_,
             ).order_by(
-                models.Episode.air_date, 
-                models.Episode.air_time, 
+                models.Episode.air_datetime, 
                 models.Show.id,
             ).all()
             return [(r.Show.serialize(), r.Episode.serialize()) for r in rows]

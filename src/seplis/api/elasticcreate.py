@@ -159,7 +159,8 @@ def create_indices():
                         'type': 'text',
                     },
                     'number': { 'type': 'integer' },
-                    'air_date': { 'type': 'date' },
+                    'air_date': { 'type': 'date', },
+                    'air_datetime': { 'type': 'date', 'format': 'date_time_no_millis', },
                     'description': {
                         'dynamic' : False,
                         'properties' : {

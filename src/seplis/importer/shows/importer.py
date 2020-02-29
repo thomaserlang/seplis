@@ -40,12 +40,10 @@ def update_shows_all(from_show_id=0, do_async=False):
                 update_show(show)
         except (
             KeyboardInterrupt, 
-            SystemExit, 
-            API_error, 
-            Importer_upload_image_exception):
+            SystemExit):
             raise
         except Exception as e:
-            logger.exception('update_shows_all: {}'.format(str(e)))
+            logger.exception('update_shows_all')
 
 def update_shows_incremental():
     logger.info('Incremental show update started')
@@ -57,12 +55,10 @@ def update_shows_incremental():
             _importer_incremental(importers[key])
         except (
             KeyboardInterrupt, 
-            SystemExit, 
-            API_error, 
-            Importer_upload_image_exception):
+            SystemExit):
             raise
         except Exception as e:
-            logger.exception('_importer_incremental: {}'.format(str(e)))
+            logger.exception('update_shows_incremental')
 
 def _importer_incremental(importer):
     timestamp = time.time()    

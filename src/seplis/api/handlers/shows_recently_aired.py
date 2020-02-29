@@ -23,18 +23,15 @@ class Handler(base.Pagination_handler):
             ).filter(
                 models.Show_fan.user_id == user_id,
                 models.Episode.show_id == models.Show_fan.show_id,
-                models.Episode.air_date > (now_-timedelta(days=7)).date(),
-                func.addtime(
-                    models.Episode.air_date,
-                    func.ifnull(models.Episode.air_time, '00:00:00'),
-                ) < datetime.utcnow(),
+                func.date(models.Episode.air_datetime) > (now_-timedelta(days=7)),
+                func.date(models.Episode.air_datetime) < datetime.utcnow(),
             ).group_by(models.Episode.show_id).subquery()
             p = session.query(models.Show, models.Episode).filter(
                 models.Show.id == episodes.c.show_id,
                 models.Episode.show_id == models.Show.id,
                 models.Episode.number == episodes.c.episode_number,
             ).order_by(
-                desc(models.Episode.air_date),
+                desc(models.Episode.air_datetime),
                 models.Episode.show_id,
             ).paginate(page=self.page, per_page=self.per_page)
             p.records = [{

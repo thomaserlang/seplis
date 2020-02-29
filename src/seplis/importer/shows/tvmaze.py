@@ -84,17 +84,14 @@ class Tvmaze(Show_importer_base):
             if episode['number'] == 0:
                 continue
             i += 1
-            if episode['airstamp']:
-                episode['airstamp'] = aniso8601.parse_datetime(episode['airstamp'])
-                if episode['airstamp'].tzinfo:
-                    episode['airstamp'] = episode['airstamp'].astimezone(tz.tzutc())
             episodes.append({
                 'number': i,
                 'title': episode['name'],
                 'season': episode['season'],
                 'episode': episode['number'],
-                'air_date': episode['airstamp'].date().isoformat() if episode['airstamp'] else None,
-                'air_time': episode['airstamp'].time().isoformat() if episode['airstamp'] else None,
+                'air_date': episode['airdate'] if episode['airdate'] else None,
+                'air_time': episode['airtime'] if episode['airtime'] else None,
+                'air_datetime': episode['airstamp'] if episode['airstamp'] else None,
                 'description': None if not episode['summary'] else {
                     'text': re.sub('<[^>]*>', '', episode['summary']),
                     'title': 'TVmaze',

@@ -1,8 +1,5 @@
-import re
-import aniso8601
-import good
-from datetime import datetime, timedelta
-from dateutil import parser
+import re, good, aniso8601, logging
+from dateutil import parser, tz
 from seplis.api import constants
 
 def validate(schema, d, *arg, **args):
@@ -14,6 +11,18 @@ def iso8601():
     def f(v):    
         try:
             return aniso8601.parse_datetime(v)
+        except:
+            raise good.Invalid('invalid iso 8601 datetime {}'.format(v))
+    return f
+
+def iso8601_to_utc():
+    def f(v):
+        try:
+            d = aniso8601.parse_datetime(v)
+            d = d.replace(microsecond=0)
+            if d.tzinfo:
+                d = d.astimezone(tz.tzutc())
+            return d
         except:
             raise good.Invalid('invalid iso 8601 datetime {}'.format(v))
     return f
@@ -66,6 +75,7 @@ _Episode_schema = {
     good.Optional('episode'): good.Maybe(good.All(good.Coerce(int), good.Range(min=1))),
     'air_date': good.Maybe(date_()),
     'air_time': good.Maybe(time_()),
+    'air_datetime': good.Maybe(iso8601_to_utc()),
     'description': good.Any(None, Description_schema),
     'runtime': good.Maybe(good.Coerce(int)),
 }

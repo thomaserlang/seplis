@@ -45,7 +45,7 @@ class LatestEpisodesSideBar extends React.Component {
         let dateUTC = Fecha.format(new Date().getTime(), 'YYYY-MM-DD');
         request(`/1/shows/${this.props.showId}/episodes`, {
             query: {
-                q: `air_date:[${dateUTC} TO *]`,
+                q: `air_datetime:[${dateUTC}T00:00:00z TO *]`,
                 per_page: this.props.numberOfEpisodes,
                 sort: 'number:asc',
             }

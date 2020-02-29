@@ -25,9 +25,9 @@ class Test_air_dates(Testbase):
         # Therefore the end result should be 3 episodes in the result.
         # Since we only ask for episodes that airs in the next 7 days.
         episode_airdates = [
-            datetime.utcnow().date().isoformat(),
-            (datetime.utcnow() + timedelta(days=8)).date().isoformat(),
-            (datetime.utcnow() + timedelta(days=1)).date().isoformat(),
+            datetime.utcnow().isoformat(),
+            (datetime.utcnow() + timedelta(days=8)).isoformat(),
+            (datetime.utcnow() + timedelta(days=1)).isoformat(),
         ]
         response = self.post('/1/shows', {
             'title': 'Test show 1',
@@ -37,14 +37,14 @@ class Test_air_dates(Testbase):
                     'number': 1,
                     'season': 1,
                     'episode': 1,
-                    'air_date': episode_airdates[0],
+                    'air_datetime': episode_airdates[0],
                 },                
                 {
                     'title': 'Episode 2',
                     'number': 2,
                     'season': 1,
                     'episode': 2,
-                    'air_date': episode_airdates[1],
+                    'air_datetime': episode_airdates[1],
                 },
             ],
         })
@@ -59,14 +59,14 @@ class Test_air_dates(Testbase):
                     'number': 3,
                     'season': 3,
                     'episode': 3,
-                    'air_date': episode_airdates[0],
+                    'air_datetime': episode_airdates[0],
                 },
                 {
                     'title': 'Episode 2',
                     'number': 4,
                     'season': 3,
                     'episode': 4,
-                    'air_date': episode_airdates[2],
+                    'air_datetime': episode_airdates[2],
                 },
             ],
         })
@@ -92,7 +92,7 @@ class Test_air_dates(Testbase):
         airdates = utils.json_loads(response.body)
         self.assertEqual(len(airdates), 1, airdates)
 
-        self.assertEqual(airdates[0]['air_date'], episode_airdates[0])
+        self.assertEqual(airdates[0]['air_date'], episode_airdates[0][:10])
         self.assertEqual(airdates[0]['shows'][0]['id'], show_1['id'])
         self.assertEqual(airdates[0]['shows'][0]['episodes'][0]['number'], 1)
 
@@ -107,12 +107,12 @@ class Test_air_dates(Testbase):
         airdates = utils.json_loads(response.body)
         self.assertEqual(len(airdates), 2, airdates)
 
-        self.assertEqual(airdates[0]['air_date'], episode_airdates[0])
+        self.assertEqual(airdates[0]['air_date'], episode_airdates[0][:10])
         self.assertEqual(airdates[0]['shows'][0]['id'], show_1['id'])
         self.assertEqual(airdates[0]['shows'][0]['episodes'][0]['number'], 1)
         self.assertEqual(airdates[0]['shows'][1]['id'], show_2['id'])
         self.assertEqual(airdates[0]['shows'][1]['episodes'][0]['number'], 3)
-        self.assertEqual(airdates[1]['air_date'], episode_airdates[2])
+        self.assertEqual(airdates[1]['air_date'], episode_airdates[2][:10])
         self.assertEqual(airdates[1]['shows'][0]['id'], show_2['id'])
         self.assertEqual(airdates[1]['shows'][0]['episodes'][0]['number'], 4)
 

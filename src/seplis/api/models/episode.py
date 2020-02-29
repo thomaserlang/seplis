@@ -18,6 +18,7 @@ class Episode(Base):
     title = sa.Column(sa.String(200), unique=True)
     air_date = sa.Column(sa.Date)
     air_time = sa.Column(sa.Time)
+    air_datetime = sa.Column(sa.DateTime)
     description_text = sa.Column(sa.Text)
     description_title = sa.Column(sa.String(45))
     description_url = sa.Column(sa.String(200))
@@ -26,7 +27,7 @@ class Episode(Base):
     runtime = sa.Column(sa.Integer)
 
     def serialize(self):
-        r = {
+        return  {
             'show_id': self.show_id,
             'number': self.number,
             'title': self.title,
@@ -40,14 +41,8 @@ class Episode(Base):
             'runtime': self.runtime,
             'air_date': self.air_date,
             'air_time': self.air_time,
-            'air_datetime': None,
+            'air_datetime': self.air_datetime,
         }
-        if self.air_date:
-            r['air_datetime'] = datetime.combine(
-                self.air_date, 
-                self.air_time if self.air_time else time(0, 0, 0),
-            )
-        return r
 
     def to_elasticsearch(self):
         '''Sends the episodes's info to ES.

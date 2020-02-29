@@ -13,15 +13,15 @@ class Test_shows_countdown(Testbase):
             'episodes': [
                 {
                     'number': 1,
-                    'air_date': (datetime.utcnow()-timedelta(days=1)).date().isoformat(),
+                    'air_datetime': (datetime.utcnow()-timedelta(days=1)).isoformat(),
                 },
                 {
                     'number': 2,
-                    'air_date': datetime.utcnow().date().isoformat(),
+                    'air_datetime': datetime.utcnow().isoformat(),
                 },
                 {
                     'number': 3,
-                    'air_date': (datetime.utcnow()+timedelta(days=1)).date().isoformat(),
+                    'air_datetime': (datetime.utcnow()+timedelta(days=1)).isoformat(),
                 },
             ],
         })
@@ -32,15 +32,15 @@ class Test_shows_countdown(Testbase):
             'episodes': [
                 {
                     'number': 1,
-                    'air_date': (datetime.utcnow()-timedelta(days=1)).date().isoformat(),
+                    'air_datetime': (datetime.utcnow()-timedelta(days=1)).isoformat(),
                 },
                 {
                     'number': 2,
-                    'air_date': datetime.utcnow().date().isoformat(),
+                    'air_datetime': datetime.utcnow().isoformat(),
                 },
                 {
                     'number': 3,
-                    'air_date': (datetime.utcnow()+timedelta(days=1)).date().isoformat(),
+                    'air_datetime': (datetime.utcnow()+timedelta(days=1)).isoformat(),
                 },
             ],
         })

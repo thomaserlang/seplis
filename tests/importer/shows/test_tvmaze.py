@@ -85,7 +85,7 @@ class test_tvmaze(TestCase):
         "season": 1,
         "number": 2,
         "airdate": "2014-04-22",
-        "airtime": "22:00",
+        "airtime": "",
         "airstamp": "2014-04-22T22:00:00-04:00",
         "runtime": 60,
         "image": {
@@ -118,8 +118,8 @@ class test_tvmaze(TestCase):
         tvmaze = Tvmaze()
         episodes = tvmaze.episodes(show_id)
         schemas.validate([schemas.Episode_schema], episodes)
-        self.assertEqual(episodes[0]['air_date'], datetime(2014, 4, 16).date())
-        self.assertEqual(episodes[0]['air_time'], datetime(2014, 4, 16, 2).time())
+        self.assertEqual(episodes[0]['air_date'], datetime(2014, 4, 15).date())
+        self.assertEqual(episodes[0]['air_time'], datetime(2014, 4, 15, 22).time())
 
     @responses.activate
     def test_incremental_updates(self):

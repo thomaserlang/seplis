@@ -154,13 +154,15 @@ class Thetvdb(Show_importer_base):
                 'title': 'TheTVDB',
                 'url': 'http://thetvdb.com',
             }
+        d = self.parse_date(episode['firstAired']) if episode['firstAired'] else None
         return {
             'title': episode['episodeName'],
             'description': description,
             'number': episode['absoluteNumber'],
             'season': episode['airedSeason'],
             'episode': episode['airedEpisodeNumber'],
-            'air_date': self.parse_date(episode['firstAired']) if episode['firstAired'] else None,
+            'air_date': d,
+            'air_datetime': f'{d}T00:00:00Z' if d else None,
         }
 
     def parse_date(self, date):
