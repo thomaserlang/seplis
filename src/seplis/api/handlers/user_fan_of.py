@@ -61,7 +61,6 @@ class Handler(base.Pagination_handler):
                 )
 
             genres = list(filter(None, args.get('genre', [])))
-            logging.info(genres)
             if genres:
                 query = query.filter(
                     models.Show_genre.show_id == models.Show_fan.show_id,
