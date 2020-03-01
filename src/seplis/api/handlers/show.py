@@ -374,7 +374,6 @@ class Update_handler(base.Handler):
         job = database.queue.enqueue(
             tasks.update_show,
             int(show_id),
-            timeout=600,
             result_ttl=0,
         )
         self.write_object({
