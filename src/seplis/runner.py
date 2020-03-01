@@ -1,6 +1,4 @@
 import logging, sys, click
-import sentry_sdk
-from sentry_sdk.integrations.tornado import TornadoIntegration
 from seplis.logger import logger
 from seplis import config
 
@@ -22,11 +20,6 @@ def web(port):
     if port:
         config['web']['port'] = port            
     import seplis.web.app
-    if config['sentry_dsn']:
-        sentry_sdk.init(
-            dsn=config['sentry_dsn'],
-            integrations=[TornadoIntegration()],
-        )
     seplis.web.app.main()
 
 @cli.command()
@@ -35,11 +28,6 @@ def api(port):
     if port:
         config['api']['port'] = port
     import seplis.api.app
-    if config['sentry_dsn']:
-        sentry_sdk.init(
-            dsn=config['sentry_dsn'],
-            integrations=[TornadoIntegration()],
-        )
     seplis.api.app.main()
 
 @cli.command()

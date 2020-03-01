@@ -1,7 +1,9 @@
-import os.path, asyncio
+import os.path, asyncio, logging
 from tornado import web, httpserver
 from tornado.web import URLSpec as U
 from concurrent.futures import ThreadPoolExecutor
+import sentry_sdk
+from sentry_sdk.integrations.tornado import TornadoIntegration
 
 import seplis
 from seplis.api import constants
@@ -78,7 +80,11 @@ class Application(web.Application):
 
 def main():
     logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
-
+    if seplis.config['sentry_dsn']:
+        sentry_sdk.init(
+            dsn=seplis.config['sentry_dsn'],
+            integrations=[TornadoIntegration()],
+        )
     ioloop = asyncio.get_event_loop()
     http_server = httpserver.HTTPServer(Application(ioloop))
     http_server.listen(seplis.config['api']['port'])

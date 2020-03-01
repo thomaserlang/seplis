@@ -4,6 +4,8 @@ import tornado.web
 import tornado.httpserver
 import tornado.ioloop
 import seplis.web.handlers.react
+import sentry_sdk
+from sentry_sdk.integrations.tornado import TornadoIntegration
 from .handlers import react, tvmaze_lookup, base
 from seplis.logger import logger
 from tornado.web import URLSpec
@@ -36,6 +38,11 @@ class Application(tornado.web.Application):
 
 def main():
     logger.set_logger('web-{}.log'.format(config['web']['port']))
+    if config['sentry_dsn']:
+        sentry_sdk.init(
+            dsn=config['sentry_dsn'],
+            integrations=[TornadoIntegration()],
+        )
     http_server = tornado.httpserver.HTTPServer(Application())
     http_server.listen(config['web']['port'])
     tornado.ioloop.IOLoop.instance().start()

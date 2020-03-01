@@ -10,8 +10,14 @@ from seplis.config import config
 from seplis.api import models, exceptions, constants
 from seplis.api.base.pagination import Pagination
 from seplis.api.decorators import authenticated
+from sentry_sdk import configure_scope
 
 class Handler(web.RequestHandler):
+
+    def prepare(self):
+        if self.current_user:
+            with configure_scope() as scope:
+                scope.user = self.current_user
 
     def options(self, *args, **kwargs):
         self.set_status(204)
