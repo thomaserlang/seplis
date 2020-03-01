@@ -7,7 +7,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='seplis',
-    version='0.2.0',
+    version='0.2.1',
     author='Thomas Erlang',
     author_email='thomas@erlang.dk',
     url='https://github.com/thomaserlang/seplis',
