@@ -23,8 +23,8 @@ class Handler(base.Pagination_handler):
             ).filter(
                 models.Show_fan.user_id == user_id,
                 models.Episode.show_id == models.Show_fan.show_id,
-                func.date(models.Episode.air_datetime) > (now_-timedelta(days=7)),
-                func.date(models.Episode.air_datetime) < datetime.utcnow(),
+                models.Episode.air_datetime > (now_-timedelta(days=7)),
+                models.Episode.air_datetime < now_,
             ).group_by(models.Episode.show_id).subquery()
             p = session.query(models.Show, models.Episode).filter(
                 models.Show.id == episodes.c.show_id,

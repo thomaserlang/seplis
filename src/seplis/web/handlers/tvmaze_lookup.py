@@ -9,13 +9,13 @@ class Handler(base.API_handler):
         httpclient = AsyncHTTPClient()
         tvmaze = self.get_argument('tvmaze', None)
         if tvmaze:
-            url = 'http://api.tvmaze.com/shows/{}'.format(tvmaze)
+            url = 'https://api.tvmaze.com/shows/{}'.format(tvmaze)
         else:
-            url = 'http://api.tvmaze.com/lookup/shows?{}'.format(
+            url = 'https://api.tvmaze.com/lookup/shows?{}'.format(
                 utils.url_encode_tornado_arguments(self.request.arguments)
             )
-        response = await httpclient.fetch(url)
+        response = await httpclient.fetch(url, raise_error=False)
         if 200 <= response.code <= 399: 
             self.write(response.body)
         else:
-            raise HTTPError(code, response.body)
+            raise HTTPError(response.code, response.body)

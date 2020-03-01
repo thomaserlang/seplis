@@ -1,7 +1,6 @@
 import http
-import logging
 from tornado import web
-from seplis import utils, config
+from seplis import utils, config, API_error
 from seplis.api import constants
 
 class Handler_unauthenticated(web.RequestHandler):
