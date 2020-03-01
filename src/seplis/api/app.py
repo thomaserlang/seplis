@@ -2,7 +2,6 @@ import os.path, asyncio
 from tornado import web, httpserver
 from tornado.web import URLSpec as U
 from concurrent.futures import ThreadPoolExecutor
-from raven.contrib.tornado import AsyncSentryClient
 
 import seplis
 from seplis.api import constants
@@ -74,10 +73,6 @@ class Application(web.Application):
         self.ioloop = ioloop or asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor(
             max_workers=seplis.config['api']['max_workers']
-        )
-        self.sentry_client = AsyncSentryClient(
-            seplis.config['sentry_dsn'],
-            raise_send_errors=True
         )
         super().__init__(urls, **settings)
 

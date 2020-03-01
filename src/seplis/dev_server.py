@@ -19,13 +19,13 @@ def main():
     start = [
         ('api', ['python', 'runner.py', 'api'], src_path),
         ('web', ['python', 'runner.py', 'web'], src_path),
-        ('play_server', ['python', 'runner.py', 'play_server'], src_path),
+        ('play-server', ['python', 'runner.py', 'play-server'], src_path),
         ('worker', ['python', 'runner.py', 'worker'], src_path),
         ('npm', ['npm', 'run', 'start'], base_path),
     ]
     if watchdog_installed:
         start.append(
-            ('play_scan_watch', ['python', 'runner.py', 'play_scan_watch'], src_path),
+            ('play-scan-watch', ['python', 'runner.py', 'play-scan-watch'], src_path),
         )
 
     manager = Manager()

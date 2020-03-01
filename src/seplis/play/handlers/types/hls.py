@@ -52,7 +52,6 @@ def start(handler, settings, metadata):
     wait_for_media(handler, metadata, path, media_file, session)
 
 def wait_for_media(handler, metadata, path, media_file, session, times=0):
-    times = 0
     ts_files = 0
     if os.path.exists(path):
         with open(path, 'r') as f:

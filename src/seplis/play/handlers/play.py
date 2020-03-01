@@ -1,7 +1,7 @@
-import logging
-import tornado.web
-import tornado.gen
-import os
+import logging, os
+import asyncio
+from tornado import web, ioloop
+
 from .types import pipe, hls
 from ua_parser import user_agent_parser
 
@@ -9,11 +9,11 @@ from seplis import config, utils
 from seplis.play.decorators import new_session
 from seplis.play import models
 
-class Play_handler(tornado.web.RequestHandler):
+class Play_handler(web.RequestHandler):
 
-    @tornado.web.asynchronous
     def get(self):
-        self.ioloop = tornado.ioloop.IOLoop.current()
+        self._auto_finish = False
+        self.ioloop = ioloop.IOLoop.current()
         self.agent = user_agent_parser.Parse(self.request.headers['User-Agent'])
         metadata = get_metadata(self.get_argument('play_id'))
         if not metadata:
@@ -34,10 +34,10 @@ class Play_handler(tornado.web.RequestHandler):
         if hasattr(self, 'event_connection_close'):
             self.event_connection_close()
 
-    def options(self):
-        pass
+    def options(self, *args, **kwargs):
+        self.set_status(204)
 
-class File_handler(tornado.web.StaticFileHandler):
+class File_handler(web.StaticFileHandler):
 
     def set_default_headers(self):
         set_header(self)
@@ -45,7 +45,7 @@ class File_handler(tornado.web.StaticFileHandler):
     def should_return_304(self):
         return False
 
-class Metadata_handler(tornado.web.RequestHandler):
+class Metadata_handler(web.RequestHandler):
 
     def get(self):
         metadata = get_metadata(self.get_argument('play_id'))
@@ -55,8 +55,8 @@ class Metadata_handler(tornado.web.RequestHandler):
             return
         self.write(metadata)
 
-    def options(self):
-        pass
+    def options(self, *args, **kwargs):
+        self.set_status(204)
 
     def set_default_headers(self):
         set_header(self)
@@ -76,7 +76,7 @@ def get_device_settings(handler):
     logging.debug('Device: {}'.format(device))
     settings = device_settings.get(device)
     if not settings:
-        raise tornado.web.HTTPError(400, 'Device: {} not supported'.format(
+        raise web.HTTPError(400, 'Device: {} not supported'.format(
             device
         ))
     return settings
@@ -93,14 +93,14 @@ def get_metadata(play_id):
         return episode.meta_data if episode else None
 
 def decode_play_id(play_id):
-    data = tornado.web.decode_signed_value(
+    data = web.decode_signed_value(
         secret=config['play']['secret'],
         name='play_id',
         value=play_id,
         max_age_days=0.3,
     )
     if not data:
-        raise tornado.web.HTTPError(400, 'Play id invalid')
+        raise web.HTTPError(400, 'Play id invalid')
     return utils.json_loads(data)
 
 device_settings = {

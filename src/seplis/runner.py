@@ -1,6 +1,6 @@
-import logging
-import sys
-import click
+import logging, sys, click
+import sentry_sdk
+from sentry_sdk.integrations.tornado import TornadoIntegration
 from seplis.logger import logger
 from seplis import config
 
@@ -22,6 +22,11 @@ def web(port):
     if port:
         config['web']['port'] = port            
     import seplis.web.app
+    if config['sentry_dsn']:
+        sentry_sdk.init(
+            dsn=config['sentry_dsn'],
+            integrations=[TornadoIntegration()],
+        )
     seplis.web.app.main()
 
 @cli.command()
@@ -30,6 +35,11 @@ def api(port):
     if port:
         config['api']['port'] = port
     import seplis.api.app
+    if config['sentry_dsn']:
+        sentry_sdk.init(
+            dsn=config['sentry_dsn'],
+            integrations=[TornadoIntegration()],
+        )
     seplis.api.app.main()
 
 @cli.command()
@@ -80,11 +90,11 @@ def update_show(show_id):
 @cli.command()
 @click.option('--from_id', default=1, help='which show to start from')
 @click.option('--async', is_flag=True, help='send the update task to the workers')
-def update_shows_all(from_id, async):
+def update_shows_all(from_id, async_):
     import seplis.importer
     logger.set_logger('importer_update_shows_all.log', to_sentry=True)
     try:
-        seplis.importer.shows.update_shows_all(from_id, do_async=async)
+        seplis.importer.shows.update_shows_all(from_id, do_async=async_)
     except (KeyboardInterrupt, SystemExit):
         raise 
     except:

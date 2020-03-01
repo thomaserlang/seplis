@@ -1,27 +1,20 @@
-import tornado.web
-import tornado.escape
-import json
-import http.client
-import sys
-import logging
-import redis
-import good
+from tornado import web, escape
+import http.client, good, logging
 from sqlalchemy.exc import OperationalError
-from sqlalchemy import or_
-from tornado import gen
+from sqlalchemy.orm.attributes import flag_modified
 from urllib.parse import urljoin
-from datetime import datetime
-from raven.contrib.tornado import SentryMixin
-from seplis import utils, schemas
+from seplis import utils
 from seplis.api.decorators import new_session
 from seplis.api.connections import database
 from seplis.config import config
 from seplis.api import models, exceptions, constants
 from seplis.api.base.pagination import Pagination
 from seplis.api.decorators import authenticated
-from sqlalchemy.orm.attributes import flag_modified
 
-class Handler(tornado.web.RequestHandler, SentryMixin):
+class Handler(web.RequestHandler):
+
+    def options(self, *args, **kwargs):
+        self.set_status(204)
 
     def initialize(self):
         self.access_token = None
@@ -42,7 +35,6 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         self.set_header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE')
         self.set_header('Access-Control-Expose-Headers', 'ETag, Link, X-Total-Count, X-Total-Pages, X-Page')
         self.set_header('Access-Control-Max-Age', '86400')
-        self.set_header('Access-Control-Allow-Credentials', 'true')
 
     def update_model(self, model_ins, new_data, overwrite=False):
         '''Updates a SQLAlchemy model instance with a dict object.
@@ -96,7 +88,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
                     'extra': None
                 })
                 return
-        if 'exc_info' in kwargs and isinstance(kwargs['exc_info'][1], tornado.web.HTTPError) and kwargs['exc_info'][1].log_message:
+        if 'exc_info' in kwargs and isinstance(kwargs['exc_info'][1], web.HTTPError) and kwargs['exc_info'][1].log_message:
             msg = kwargs['exc_info'][1].log_message
         else:
             msg = http.client.responses[status_code]
@@ -149,7 +141,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         if len(bearer) != 2:
             return None
         if bearer[0] != 'Bearer':
-            raise tornado.web.HTTPError(400, 'Unrecognized token type')
+            raise web.HTTPError(400, 'Unrecognized token type')
         self.access_token = bearer[1]
         user = models.User.by_token(self.access_token)
         if not user:
@@ -179,47 +171,10 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             if schema == None:
                 raise Exception('missing validation schema')
         return self._validate(
-            tornado.escape.recursive_unicode(self.request.arguments),
+            escape.recursive_unicode(self.request.arguments),
             schema,
             **kwargs
         )
-
-    @gen.coroutine
-    def log_exception(self, typ, value, tb):        
-        tornado.web.RequestHandler.log_exception(self, typ, value, tb)
-        if isinstance(value, exceptions.Elasticsearch_exception) and \
-            value.status_code != 404:
-            pass
-        elif isinstance(value, tornado.web.HTTPError) and value.status_code < 500:
-            return
-        yield gen.Task(
-            self.captureException,
-            exc_info=(typ, value, tb),
-            data=[value.extra] if isinstance(value, exceptions.API_exception) and \
-                value.extra else None,
-        )
-
-    def get_sentry_user_info(self):
-        return {
-            'user': {
-                'is_authenticated': True if self.current_user else False,
-                'info': self.current_user if self.current_user else None,
-            }
-        }
-
-    def get_sentry_data_from_request(self):
-        return {
-            'request': {
-                'url': self.request.full_url(),
-                'method': self.request.method,
-                'query_string': self.request.query,
-                'cookies': self.request.headers.get('Cookie', None),
-                'headers': dict(self.request.headers),
-            }
-        }
-
-    def options(self, *args, **kwargs):
-        pass
 
     @authenticated(constants.LEVEL_EDIT_USER)
     def check_edit_another_user_right(self):
@@ -306,8 +261,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
                 data.update(d)
             data.pop(key)
 
-    @gen.coroutine
-    def get_shows(self, show_ids):
+    async def get_shows(self, show_ids):
         '''Returns a list of shows. Id's that was not found
         will be appended as `None`.
 
@@ -316,13 +270,12 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
         '''
         if not show_ids:
             return []
-        result = yield self.es('/shows/show/_mget', body={
+        result = await self.es('/shows/show/_mget', body={
             'ids': show_ids
         })
         return [d.get('_source') for d in result['docs']]
 
-    @gen.coroutine
-    def get_episodes(self, episode_ids):
+    async def get_episodes(self, episode_ids):
         '''Returns a list of episodes. Id's that was not found
         will be appended as `None`.
 
@@ -330,7 +283,7 @@ class Handler(tornado.web.RequestHandler, SentryMixin):
             {show_id}-{episode_number}
         :returns: list of dict
         '''
-        result = yield self.es('/episodes/episode/_mget', body={
+        result = await self.es('/episodes/episode/_mget', body={
             'ids': episode_ids
         })
         return [d.get('_source') for d in result['docs']]

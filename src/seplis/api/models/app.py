@@ -104,7 +104,7 @@ class App(Base):
         app = self.serialize()
         name = self.cache_name_id
         for key in app:
-            session.pipe.hset(name, key, app[key])     
+            session.pipe.hset(name, key, app[key] if app[key] != None else 'None')
         session.pipe.set(self.cache_name_client_id, self.id)
 
     @property

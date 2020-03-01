@@ -25,7 +25,7 @@ class test_user(Testbase):
             elif error['field'] == 'email':
                 self.assertEqual(error['message'], 'this is an invalid email address')
             elif error['field'] == 'password':
-                self.assertEqual(error['message'], 'Too few values (6 is the least)')
+                self.assertEqual(error['message'], 'Too short (6 is the least)')
 
         response = self.post('/1/users', {
             'name': 'test___',

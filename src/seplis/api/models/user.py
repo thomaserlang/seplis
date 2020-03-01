@@ -169,10 +169,10 @@ class User(Base):
         name_user = self.cache_name_id
         user = self.serialize()
         for key in user:
-            self.session.pipe.hset(name_user, key, user[key])        
+            self.session.pipe.hset(name_user, key, user[key] if user[key] != None else 'None')
         self.session.pipe.set(self.cache_name_email, self.id)
         self.session.pipe.set(self.cache_name_name, self.id)
-        self.session.pipe.set(self.cache_name_id_password, self.password)  
+        self.session.pipe.set(self.cache_name_id_password, self.password or '')  
 
     def cache_user_default_stats(self):
         '''Defaults the user's stats field to 0.
@@ -314,8 +314,8 @@ class User_show_subtitle_lang(Base):
 
     def cache(self):
         name = self.cache_name
-        self.session.pipe.hset(name, 'subtitle_lang', self.subtitle_lang)
-        self.session.pipe.hset(name, 'audio_lang', self.audio_lang)
+        self.session.pipe.hset(name, 'subtitle_lang', self.subtitle_lang if self.subtitle_lang != None else 'None' )
+        self.session.pipe.hset(name, 'audio_lang', self.audio_lang if self.audio_lang != None else 'None')
 
 @rebuild_cache.register('users')
 def rebuild_users():

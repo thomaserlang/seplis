@@ -1,9 +1,5 @@
-import logging
-import logging.handlers
-import os
+import logging, logging.handlers, os, sentry_sdk
 from seplis.config import config
-from raven.handlers.logging import SentryHandler
-from raven.conf import setup_logging
 
 class logger(object):
 
@@ -29,8 +25,6 @@ class logger(object):
             channel.setFormatter(format_)
             logger.addHandler(channel)
         if to_sentry and config['sentry_dsn']:
-            handler = SentryHandler(
-                config['sentry_dsn']
+            sentry_sdk.init(
+                dsn=config['sentry_dsn'],
             )
-            handler.setLevel('ERROR')
-            logger.addHandler(handler)

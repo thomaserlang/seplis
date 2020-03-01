@@ -1,5 +1,5 @@
 from urllib.parse import urljoin
-from tornado import gen, httpclient
+from tornado import httpclient
 from seplis.api.handlers import base
 from seplis import config, utils
 from io import BytesIO
@@ -9,8 +9,7 @@ class Handler(base.Handler):
     def get_httpclient(self):
         return httpclient.AsyncHTTPClient()
 
-    @gen.coroutine
-    def save_files(self):
+    async def save_files(self):
         files = []
         if not self.request.files:
             return
@@ -21,12 +20,11 @@ class Handler(base.Handler):
                 )
         content_type, body = utils.MultipartFormdataEncoder().encode([], files)
         client = self.get_httpclient()
-        response = yield gen.Task(
-            client.fetch,
+        response = await client.fetch(
             urljoin(config['api']['storitch'], 'store'),
             method='POST',
             headers={'Content-Type': content_type},
             body=body,
-        )        
+        )  
         return utils.json_loads(response.body)
 

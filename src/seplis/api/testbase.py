@@ -23,7 +23,7 @@ class Testbase(AsyncHTTPTestCase):
         return Application()
 
     def setUp(self):
-        super(Testbase, self).setUp()
+        super().setUp()
         config_load()
         config['logging']['path'] = None
         logger = logging.getLogger('raven')
@@ -43,23 +43,23 @@ class Testbase(AsyncHTTPTestCase):
 
     def tearDown(self):
         self.trans.rollback()
-        super(Testbase, self).tearDown()
+        super().tearDown()
+
+    def get_url(self, path):
+        """Returns an absolute url for the given path on the test server."""
+        return '%s://127.0.0.1:%s%s' % (self.get_protocol(),
+                                        self.get_http_port(), path)
 
     def _fetch(self, url, method, data=None, headers=None):
-        full_url = url
-        if 'http://' not in url:
-            full_url = self.get_url(url)
         if data is not None:
-            if isinstance(data, dict):
-                data = json_dumps(data)
+            if isinstance(data, dict) or isinstance(data, list):
+                data = utils.json_dumps(data)
         if self.access_token:
             if headers == None:
                 headers = {}
             if 'Authorization' not in headers:
                 headers['Authorization'] = 'Bearer {}'.format(self.access_token)
-        request = HTTPRequest(full_url, headers=headers, method=method, body=data)
-        self.http_client.fetch(request, self.stop)
-        return self.wait()
+        return self.fetch(url, headers=headers, method=method, body=data)
 
     def get(self, url, data={}, headers=None):
         if data != None:

@@ -99,7 +99,7 @@ def load(path=None):
     if not os.path.isfile(path):
         raise Exception('Config: "{}" could not be found.'.format(path))
     with open(path) as f:
-        data = yaml.load(f)
+        data = yaml.load(f, Loader=yaml.BaseLoader)
     for key in data:
         if key in config:
             if isinstance(config[key], dict):

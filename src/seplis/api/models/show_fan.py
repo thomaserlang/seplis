@@ -33,7 +33,6 @@ class Show_fan(Base):
             '_op_type': 'update',
             '_index': 'shows',
             '_type': 'show',
-            '_retry_on_conflict': 3,
             '_id': self.show_id,
             'script': 'ctx._source.fans += {}'.format(amount),
         })

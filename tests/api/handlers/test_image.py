@@ -12,21 +12,19 @@ import time
 
 class asyncclient_class(MagicMock):
 
-    def fetch(self, request, callback=None, **kwargs):
-        callback(
-            Mock(
-                headers={},
-                code=200,
-                body=json.dumps([
-                    {
-                        "stored": True, 
-                        "hash": "17fb3ee9dac3969819af794c1fd11fbd0e02ca3d0e86b9f0c0365f13fa27d225",
-                        "type": "image",
-                        "width": 680,
-                        "height": 1000,
-                    }               
-                ])
-            )
+    async def fetch(self, request, **kwargs):
+        return Mock(
+            headers={},
+            code=200,
+            body=json.dumps([
+                {
+                    "stored": True, 
+                    "hash": "17fb3ee9dac3969819af794c1fd11fbd0e02ca3d0e86b9f0c0365f13fa27d225",
+                    "type": "image",
+                    "width": 680,
+                    "height": 1000,
+                }               
+            ])
         )
 
 def httpclient_sim(self):
