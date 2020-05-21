@@ -92,7 +92,7 @@ class Thetvdb(Show_importer_base):
         r = requests.get(
             self._url+'/series/{}/images/query'.format(show_id),
             params={
-                'keytype': 'poster',
+                'keyType': 'poster',
                 'resolution': '680x1000',
             },
             headers=self.login_headers(),
