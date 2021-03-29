@@ -36,5 +36,5 @@ class Handler(base.Handler):
             if not r:
                 return d
             d['episodes_watched'] = int(r.episodes_watched) if r.episodes_watched else 0
-            d['episodes_watched_minutes'] = int(r.episodes_watched_minutes) if r.episodes_watched else 0
+            d['episodes_watched_minutes'] = int(r.episodes_watched_minutes) if r.episodes_watched_minutes else 0
             return d
