@@ -77,12 +77,12 @@ def update_show(show_id):
 
 @cli.command()
 @click.option('--from_id', default=1, help='which show to start from')
-@click.option('--async', is_flag=True, help='send the update task to the workers')
-def update_shows_all(from_id, async_):
+@click.option('--do_async', is_flag=True, help='send the update task to the workers')
+def update_shows_all(from_id, do_async):
     import seplis.importer
     logger.set_logger('importer_update_shows_all.log', to_sentry=True)
     try:
-        seplis.importer.shows.update_shows_all(from_id, do_async=async_)
+        seplis.importer.shows.update_shows_all(from_id, do_async=do_async)
     except (KeyboardInterrupt, SystemExit):
         raise 
     except:
