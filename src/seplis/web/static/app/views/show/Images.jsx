@@ -1,4 +1,5 @@
 import React from 'react'
+import {Link} from 'react-router-dom'
 import {request} from 'api'
 import Loader from 'components/Loader'
 import Pagination from 'components/Pagination'
@@ -94,12 +95,28 @@ class Images extends React.Component {
         </div>
     }
 
+    renderNewImageButton() {        
+        if (getUserLevel() < 2)
+            return
+        return <div className="d-flex">
+            <div className="ml-auto">
+                <Link 
+                    className="btn btn-secondary" 
+                    to={`/show/${this.props.show.id}/new-image`}
+                >New image</Link>               
+            </div>
+        </div>
+    }
+
     render() {
         if (this.state.loading)
             return <Loader />
 
         return <> 
+            {this.renderNewImageButton()}
+
             <div className="d-flex flex-wrap">
+                {this.state.images.length==0?<div className="text-center w-100">No images</div>:''}
                 {this.state.images.map(i => (
                     <div 
                         key={i.hash} 

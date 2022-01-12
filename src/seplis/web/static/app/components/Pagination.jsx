@@ -50,6 +50,8 @@ class Pagination extends React.Component {
     }
 
     render() {
+        if (this.props.jqXHR.getResponseHeader('X-Total-Pages') == 0) 
+            return null
         return <select
             className="form-control"
             onChange={this.onPageChange}

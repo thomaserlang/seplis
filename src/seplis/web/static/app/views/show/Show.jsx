@@ -13,6 +13,7 @@ import ShowStats from './Stats'
 import ShowInfo from './Info'
 import ShowEdit from './Edit'
 import Images from './Images'
+import NewImage from './NewImage'
 
 import './Show.scss'
 
@@ -56,6 +57,7 @@ class Show extends React.Component {
                         <Route path="/show/:showId/info" render={(props) => <ShowInfo {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/seasons" render={(props) => <ShowSeasons {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/images" render={(props) => <Images {...props} show={this.state.show} />} />
+                        <Route path="/show/:showId/new-image" render={(props) => <NewImage {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/stats" render={(props) => <ShowStats {...props} show={this.state.show} />} />
                         <Route path="/show/:showId/edit" render={(props) => <ShowEdit {...props} show={this.state.show} />} />
                     </div>

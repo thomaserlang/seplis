@@ -17,7 +17,7 @@ export function request(url, options = {}) {
     let data = options.data;
     let localRequest = options.localRequest || false;
 
-    if (typeof data !== 'undefined' && method !== 'GET') {
+    if ((typeof(data) !== 'undefined') && (method !== 'GET') && !(data instanceof FormData)) {
         data = JSON.stringify(data);
     }
     

@@ -124,10 +124,10 @@ Token_type_password = good.Schema({
 })
 
 _Image = {
-    'external_name': good.All(str, good.Length(min=1, max=45)),
-    'external_id': good.All(str, good.Length(min=1, max=45)),
-    'source_title': good.All(str, good.Length(min=1, max=200)),
-    'source_url': good.All(str, good.Length(min=1, max=200)),
+    good.Optional('external_name'): good.All(str, good.Length(min=1, max=45)),
+    good.Optional('external_id'): good.All(str, good.Length(min=1, max=45)),
+    good.Optional('source_title'): good.All(str, good.Length(min=1, max=200)),
+    good.Optional('source_url'): good.All(str, good.Length(min=1, max=200)),
     'type': good.All(int, image_type()),
 }
 Image_required = good.Schema(_Image, default_keys=good.Required)
