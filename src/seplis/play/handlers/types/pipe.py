@@ -63,6 +63,8 @@ def connection_close(self):
 
 def ffmpeg_start(handler, settings, metadata):
     args = base.ffmpeg_base_args(handler, settings, metadata)
+    if 'audio_channels' in settings:
+        args.extend([{'-ac': settings.get('audio_channels')}])
     args.extend([
         {'-f': 'matroska'},
         {'-': None},

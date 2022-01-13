@@ -124,6 +124,7 @@ device_settings = {
         ],
         'transcode_codec': 'libx264',
         'transcode_pixel_format': 'yuv420p',
+        'audio_channels': '2',
         'type': 'pipe',
     },
     'chrome': {
