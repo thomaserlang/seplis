@@ -21,7 +21,6 @@ def ffmpeg_base_args(handler, settings, metadata):
         {'-map': '0:v:0'},
         {'-preset': config['play']['ffmpeg_preset']},
         {'-c:a': 'aac'},
-        {'-b:a': '400k'},
         {'-pix_fmt': settings['transcode_pixel_format']},
     ]
     start_time = handler.get_argument('start_time', None)
