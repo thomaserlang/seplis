@@ -4,7 +4,7 @@ SQLAlchemy==1.3.13
 alembic==1.4.0
 aniso8601==8.0.0
 awesome-slugify==1.6.5
-elasticsearch==7.5.1
+elasticsearch==7.17
 mock==4.0.1
 nose==1.3.7
 passlib==1.7.2
