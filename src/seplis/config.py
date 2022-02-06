@@ -25,7 +25,7 @@ config = {
         'url': 'https://seplis.net',
         'cookie_secret': 'CHANGE_ME',
         'port': 8001,
-        'chromecast_appid': 'AA4C338C',
+        'chromecast_appid': 'EA4A67C4',
     },
     'logging': {
         'level': 'warning',
