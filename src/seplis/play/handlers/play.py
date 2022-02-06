@@ -72,7 +72,7 @@ def set_header(self):
 def get_device_settings(handler):
     device = handler.get_argument('device', None)
     if not device:
-        device = handler.agent['user_agent']['family']
+        device = 'default'
     logging.debug('Device: {}'.format(device))
     settings = device_settings.get(device)
     if not settings:
@@ -104,7 +104,7 @@ def decode_play_id(play_id):
     return utils.json_loads(data)
 
 device_settings = {
-    'hls': {
+    'default': {
         'codec_names': [
             'h264',
         ],
@@ -125,17 +125,6 @@ device_settings = {
         'transcode_codec': 'libx264',
         'transcode_pixel_format': 'yuv420p',
         'audio_channels': '2',
-        'type': 'pipe',
-    },
-    'chrome': {
-        'codec_names': [
-            'h264',
-        ],
-        'pixel_formats': [
-            'yuv420p',
-        ],
-        'transcode_codec': 'libx264',
-        'transcode_pixel_format': 'yuv420p',
         'type': 'pipe',
     },
 }

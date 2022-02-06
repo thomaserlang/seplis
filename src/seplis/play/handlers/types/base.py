@@ -17,7 +17,7 @@ def ffmpeg_base_args(handler, settings, metadata):
         {'-i': metadata['format']['filename']},
         {'-threads': str(config['play']['ffmpeg_threads'])},
         {'-y': None},
-        {'-loglevel': 'quiet'},        
+        {'-loglevel': 'quiet'},
         {'-map': '0:v:0'},
         {'-preset': config['play']['ffmpeg_preset']},
         {'-c:a': 'aac'},
@@ -125,7 +125,12 @@ def get_subtitle_args(handler, metadata):
     logging.debug('Subtitle args: {}'.format(' '.join(args)))
     return args
 
-def stream_index_by_lang(metadata, codec_type, lang):
+from typing import TypedDict
+class Stream_index(TypedDict):
+    index: int
+    group_index: int
+
+def stream_index_by_lang(metadata, codec_type, lang) -> Stream_index:
     logging.info('Looking for {} with language {}'.format(codec_type, lang))
     group_index = -1
     langs = []
@@ -146,6 +151,11 @@ def stream_index_by_lang(metadata, codec_type, lang):
     for i, stream in enumerate(metadata['streams']):
         if stream['codec_type'] == codec_type:
             group_index += 1
+            if lang == '':
+                return {
+                    'index': i,
+                    'group_index': group_index,
+                }
             if 'tags' in stream:
                 l = stream['tags'].get('language') or stream['tags'].get('title')
                 if not l:

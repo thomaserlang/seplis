@@ -1,3 +1,4 @@
+from curses import meta
 import subprocess
 import logging
 import os, shutil
@@ -58,7 +59,7 @@ def wait_for_media(handler, metadata, path, media_file, session, times=0):
             for line in f:
                 if not '#' in line:
                     ts_files += 1    
-    if not os.path.exists(path) or (ts_files < 2):
+    if not os.path.exists(path) or (ts_files < 1):
         times += 1
         handler.ioloop.call_later(
             0.05,
@@ -71,14 +72,7 @@ def wait_for_media(handler, metadata, path, media_file, session, times=0):
             times,
         )
         return
-    media = [
-        '#EXTM3U',
-        '#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=1',
-        '/hls/{}/{}'.format(session, media_file),
-    ]
-    for s in media:
-        handler.write(s+'\n')
-    handler.finish()
+    handler.redirect(f'/hls/{session}/{media_file}')
 
 def ping(handler, session):
     if session not in sessions:
@@ -110,6 +104,13 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     args = base.ffmpeg_base_args(handler, settings, metadata)
     if handler.agent['os']['family'] == 'iOS':
         base.change_ffmpeg_arg('-c:v', args, settings['transcode_codec'])
+
+    # Fix for hls.js eac3 not playing
+    if handler.agent['user_agent']['family'] == 'Chrome':
+        a = base.stream_index_by_lang(metadata, 'audio', handler.get_argument('audio_lang', None))
+        if a and metadata['streams'][a['index']]['codec_name'] == 'eac3':
+            args.append({'-ac': str(metadata['streams'][a['index']]['channels'])})            
+            
     args.extend([
         {'-f': 'hls'},
         {'-hls_playlist_type': 'event'},

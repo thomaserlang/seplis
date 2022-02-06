@@ -103,7 +103,7 @@ class Player extends React.Component {
 
     loadStream(url) {
         this.setState({loading: true})
-        if (!Hls.isSupported() || this.isChrome()) {
+        if (!Hls.isSupported()) {
             this.video.src = url
             this.video.load()
             this.video.play()
@@ -137,10 +137,11 @@ class Player extends React.Component {
             switch(data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:
                     console.log('hls.js fatal network error encountered, try to recover')
-                    this.hls.loadSource(this.getPlayUrl())
+                    this.hls.startLoad()
                     break
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     console.log('hls.js fatal media error encountered, try to recover')
+                    this.hls.swapAudioCodec()
                     this.handleMediaError()
                     break
                 default:
@@ -180,7 +181,7 @@ class Player extends React.Component {
 
     setHideControlsTimer(timeout) {
         if (timeout == undefined)
-            timeout = 6000
+            timeout = 3000
         clearTimeout(this.hideControlsTimer)
         this.hideControlsTimer = setTimeout(() => {
             if (this.video.paused || this.state.loading)
@@ -205,42 +206,12 @@ class Player extends React.Component {
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
             `&audio_lang=${this.state.audio || ''}`
-
-        if(this.isChrome()) {
-           s = s + `&device=chrome`
-        } else { 
-           s = s + `&device=hls`
-        }
         return s
-    }
-
-    isChrome() {
-        // From: https://stackoverflow.com/questions/4565112/javascript-how-to-find-out-if-the-user-browser-is-chrome/13348618#13348618
-        let isChromium = window.chrome;
-        let winNav = window.navigator;
-        let vendorName = winNav.vendor;
-        let isOpera = typeof window.opr !== "undefined";
-        let isIEedge = winNav.userAgent.indexOf("Edge") > -1;
-        let isIOSChrome = winNav.userAgent.match("CriOS");
-
-        return (isChromium !== null &&
-          typeof isChromium !== "undefined" &&
-          vendorName === "Google Inc." &&
-          isOpera === false &&
-          isIEedge === false &&
-          isIOSChrome === null)
     }
 
     playPauseClick() {
         if (this.video.paused) {
-            if (this.isChrome) {
-                this.state.starTime = this.state.time
-                this.setState({startTime: this.state.time}, () => {
-                    this.loadStream(this.getPlayUrl())                    
-                })
-            } else {
-                this.video.play()
-            }
+            this.video.play()
             this.setHideControlsTimer(2000)
         }
         else {
@@ -270,6 +241,7 @@ class Player extends React.Component {
             playing: true,
             loading: true,
         })
+        this.setHideControlsTimer()
     }
 
     playError(e) {

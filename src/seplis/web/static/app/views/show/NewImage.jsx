@@ -24,8 +24,6 @@ class NewImage extends React.Component {
                 'type': 1,
             },
         }).done((image) => {
-            console.log(image)
-
             let fd = new FormData()
             fd.append(
                 'file', 
