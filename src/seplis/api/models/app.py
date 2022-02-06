@@ -114,8 +114,8 @@ class App(Base):
     def cache_name_client_id(self):
         return self._cache_name_client_id.format(self.client_id)
 
-@rebuild_cache.register('users')
-def rebuild_users():
+@rebuild_cache.register('apps')
+def rebuild_apps():
     with new_session() as session:
         for item in session.query(App).yield_per(10000):
             item.cache()

@@ -276,7 +276,7 @@ class Handler(web.RequestHandler):
         '''
         if not show_ids:
             return []
-        result = await self.es('/shows/show/_mget', body={
+        result = await self.es('/shows/_doc/_mget', body={
             'ids': show_ids
         })
         return [d.get('_source') for d in result['docs']]
@@ -289,7 +289,7 @@ class Handler(web.RequestHandler):
             {show_id}-{episode_number}
         :returns: list of dict
         '''
-        result = await self.es('/episodes/episode/_mget', body={
+        result = await self.es('/episodes/_doc/_mget', body={
             'ids': episode_ids
         })
         return [d.get('_source') for d in result['docs']]

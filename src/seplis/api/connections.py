@@ -62,6 +62,9 @@ class Database:
                         if query else '',
                 ),
                 method='POST' if body else 'GET',
+                headers={
+                    'Content-Type': 'application/json',
+                },
                 body=utils.json_dumps(body) if body else None,
             )
             return utils.json_loads(response.body)

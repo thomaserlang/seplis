@@ -51,7 +51,6 @@ class Episode(Base):
         ''' 
         self.session.es_bulk.append({
             '_index': 'episodes',
-            '_type': 'episode',
             '_id': '{}-{}'.format(self.show_id, self.number),
             '_source': utils.json_dumps(self.serialize()),
         })
@@ -63,7 +62,6 @@ class Episode(Base):
         self.session.es_bulk.append({
             '_op_type': 'delete',
             '_index': 'episodes',
-            '_type': 'episode',
             '_id': '{}-{}'.format(self.show_id, self.number),
         })
 
@@ -73,7 +71,7 @@ class Episode(Base):
         See `Episode.serialize()` for the return format.
         """
         response = await database.es_get(
-            '/episodes/episode/{}-{}'.format(
+            '/episodes/_doc/{}-{}'.format(
                 show_id,
                 number,
             )
@@ -90,7 +88,7 @@ class Episode(Base):
         See `Episode.serialize()` for the return format.
         """
         ids = ['{}-{}'.format(show_id, number) for number in numbers]
-        result = await database.es_get('/episodes/episode/_mget', body={
+        result = await database.es_get('/episodes/_mget', body={
             'ids': ids
         })
         episodes = []

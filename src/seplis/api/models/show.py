@@ -87,7 +87,6 @@ class Show(Base):
             raise Exception('can\'t add the show to ES without an ID.')        
         self.session.es_bulk.append({
             '_index': 'shows',
-            '_type': 'show',
             '_id': self.id,
             '_source': utils.json_dumps(self.serialize()),
         })
@@ -107,7 +106,6 @@ class Show(Base):
         self.session.es_bulk.append({
             '_op_type': 'delete',
             '_index': 'shows',
-            '_type': 'show',
             '_id': self.id,
         })
 

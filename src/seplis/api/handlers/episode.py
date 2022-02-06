@@ -25,7 +25,7 @@ class Handler(base.Handler):
 
     @gen.coroutine
     def get_episode(self, show_id, number):
-        result = yield self.es('/episodes/episode/{}-{}'.format(
+        result = yield self.es('/episodes/_doc/{}-{}'.format(
             show_id,
             number,
         ))
@@ -67,7 +67,7 @@ class Handler(base.Handler):
                 }
             })
         result = yield self.es(
-            '/episodes/episode/_search',
+            '/episodes/_search',
             query={
                 'from': ((page - 1) * per_page),
                 'size': per_page,
@@ -86,7 +86,7 @@ class Handler(base.Handler):
         p = Pagination(
             page=page,
             per_page=per_page,
-            total=result['hits']['total'],
+            total=result['hits']['total']['value'],
             records=self.episode_wrapper(
                 list(episodes.values())
             ),

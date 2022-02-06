@@ -54,7 +54,6 @@ class Image(Base):
         session = orm.Session.object_session(self)
         session.es_bulk.append({
             '_index': 'images',
-            '_type': 'image',
             '_id': self.id,
             '_source': utils.json_dumps(self.serialize()),
         })
@@ -71,7 +70,6 @@ class Image(Base):
         session.es_bulk.append({
             '_op_type': 'delete',
             '_index': 'images',
-            '_type': 'image',
             '_id': self.id,
         })
 

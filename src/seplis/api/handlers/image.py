@@ -73,7 +73,7 @@ class Handler(base.Handler):
 
     @gen.coroutine
     def get_image(self, image_id):
-        result = yield self.es('/images/image/{}'.format(
+        result = yield self.es('/images/_doc/{}'.format(
             image_id,
         ))
         if not result['found']:
@@ -108,7 +108,7 @@ class Handler(base.Handler):
                 }
             })
         result = yield self.es(
-            '/images/image/_search',
+            '/images/_search',
             query={
                 'from': ((page - 1) * per_page),
                 'size': per_page,
@@ -119,7 +119,7 @@ class Handler(base.Handler):
         p = Pagination(
             page=page,
             per_page=per_page,
-            total=result['hits']['total'],
+            total=result['hits']['total']['value'],
             records=[d['_source'] for d in result['hits']['hits']],
         )
         self.write_object(p)

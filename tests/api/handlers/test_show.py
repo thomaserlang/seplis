@@ -405,7 +405,7 @@ class test_show(Testbase):
         self.refresh_es()
 
         response = self.get(
-            f'http://{config["api"]["elasticsearch"]}/episodes/episode/{show_id}-1'
+            f'http://{config["api"]["elasticsearch"]}/episodes/_doc/{show_id}-1'
         )
         self.assertEqual(response.code, 404)
 

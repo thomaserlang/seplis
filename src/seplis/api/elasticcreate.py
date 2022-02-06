@@ -22,9 +22,13 @@ def create_indices():
             },
             'tokenizer': {
                 'autocomplete_ngram': { 
-                    'type': 'ngram',
+                    'type': 'edge_ngram',
                     'min_gram': 1,
-                    'max_gram': 40,
+                    'max_gram': 10,
+                    "token_chars": [
+                        "letter",
+                        "digit"
+                    ]
                 },
             },
             'analyzer': {
@@ -63,142 +67,136 @@ def create_indices():
     database.es.indices.create('shows', body={
         'settings': settings,
         'mappings': {
-            'show': {
-                'properties': {
-                    'title': {
-                        'type': 'text',
-                        'analyzer': 'title_search',
-                        'fields': {
-                            'raw' : {
-                                'type': 'keyword', 
-                                'index': True,
-                            },
-                            'suggest': {
-                                'type': 'text', 
-                                'analyzer': 'autocomplete_index',
-                                'search_analyzer': 'autocomplete_search',
-                            },
-                            'length': { 
-                                'type': 'token_count',
-                                'analyzer': 'standard'
-                            },
-                        }
+            'properties': {
+                'title': {
+                    'type': 'text',
+                    'analyzer': 'title_search',
+                    'fields': {
+                        'raw' : {
+                            'type': 'keyword', 
+                            'index': True,
+                        },
+                        'suggest': {
+                            'type': 'text', 
+                            'analyzer': 'autocomplete_index',
+                            'search_analyzer': 'autocomplete_search',
+                        },
+                        'length': { 
+                            'type': 'token_count',
+                            'analyzer': 'standard'
+                        },
+                    }
+                },
+                'id': { 'type': 'integer' },
+                'description': {
+                    'dynamic' : False,
+                    'properties' : {
+                        'text': { 
+                            'type': 'keyword',
+                            'index': True,
+                        },
+                        'url': { 
+                            'type': 'text',
+                        },
+                        'title': { 
+                            'type': 'text',
+                        },
+                    }
+                },
+                'premiered': { 'type': 'date' },
+                'ended': { 'type': 'date' },
+                'externals': {
+                    'dynamic' : True,
+                    'type': 'object',
+                },
+                'import_from': {
+                    'dynamic': False,
+                    'properties': {
+                        'info': { 'type': 'text' },
+                        'episodes': { 'type': 'text' },
+                        'images': { 'type': 'text' },
                     },
-                    'id': { 'type': 'integer' },
-                    'description': {
-                        'dynamic' : False,
-                        'properties' : {
-                            'text': { 
-                                'type': 'keyword',
-                                'index': True,
-                            },
-                            'url': { 
-                                'type': 'text',
-                            },
-                            'title': { 
-                                'type': 'text',
-                            },
-                        }
+                },
+                'status': { 'type': 'integer' },
+                'runtime': { 'type': 'integer' },
+                'seasons': {
+                    'properties': {
+                        'season': { 'type': 'integer' },
+                        'from': { 'type': 'integer' },
+                        'to': { 'type': 'integer' },
+                        'total': { 'type': 'integer' },
                     },
-                    'premiered': { 'type': 'date' },
-                    'ended': { 'type': 'date' },
-                    'externals': {
-                        'dynamic' : True,
-                        'type': 'object',
-                    },
-                    'import_from': {
-                        'dynamic': False,
-                        'properties': {
-                            'info': { 'type': 'text' },
-                            'episodes': { 'type': 'text' },
-                            'images': { 'type': 'text' },
+                },
+                'alternative_titles': {
+                    'type': 'text',
+                    'analyzer': 'title_search',
+                    'fields': {
+                        'suggest': {
+                            'type': 'text', 
+                            'analyzer': 'autocomplete_index',
+                            'search_analyzer': 'autocomplete_search',
+                        },
+                        'length': { 
+                            'type': 'token_count',
+                            'analyzer': 'standard',
                         },
                     },
-                    'status': { 'type': 'integer' },
-                    'runtime': { 'type': 'integer' },
-                    'seasons': {
-                        'properties': {
-                            'season': { 'type': 'integer' },
-                            'from': { 'type': 'integer' },
-                            'to': { 'type': 'integer' },
-                            'total': { 'type': 'integer' },
-                        },
-                    },
-                    'alternative_titles': {
-                        'type': 'text',
-                        'analyzer': 'title_search',
-                        'fields': {
-                            'suggest': {
-                                'type': 'text', 
-                                'analyzer': 'autocomplete_index',
-                                'search_analyzer': 'autocomplete_search',
-                            },
-                            'length': { 
-                              'type': 'token_count',
-                              'analyzer': 'standard',
-                            },
-                        },
-                    },
-                    'genres': {
-                        'type': 'text',
-                    },                    
-                    'episode_type': { 'type': 'integer' },
-                    'created_at': { 'type': 'date' },
-                    'updated_at': { 'type': 'date' },
-                    'fans': { 'type': 'integer' },
-                }
+                },
+                'genres': {
+                    'type': 'text',
+                },                    
+                'episode_type': { 'type': 'integer' },
+                'created_at': { 'type': 'date' },
+                'updated_at': { 'type': 'date' },
+                'fans': { 'type': 'integer' },
             }
         }
     })
 
     database.es.indices.create('episodes', body={
         'mappings': {
-            'episode': {
-                'properties' : {
-                    'title': {
-                        'type': 'text',
-                    },
-                    'number': { 'type': 'integer' },
-                    'air_date': { 'type': 'date', },
-                    'air_datetime': { 'type': 'date', 'format': 'date_time_no_millis', },
-                    'description': {
-                        'dynamic' : False,
-                        'properties' : {
-                            'text': { 
-                                'type': 'keyword',
-                                'index': True, 
-                            },
-                            'url': { 'type': 'text' },
-                            'title': { 'type': 'text' },
-                        },
-                    },
-                    'season': { 'type': 'integer' },
-                    'episode': { 'type': 'integer' },
-                    'show_id': { 'type': 'integer' },
-                    'runtime': { 'type': 'integer' },
+            'properties' : {
+                'title': {
+                    'type': 'text',
                 },
-            }
+                'number': { 'type': 'integer' },
+                'air_date': { 'type': 'date', },
+                'air_datetime': { 'type': 'date', 'format': 'date_time_no_millis', },
+                'description': {
+                    'dynamic' : False,
+                    'properties' : {
+                        'text': { 
+                            'type': 'keyword',
+                            'index': True, 
+                        },
+                        'url': { 'type': 'text' },
+                        'title': { 'type': 'text' },
+                    },
+                },
+                'season': { 'type': 'integer' },
+                'episode': { 'type': 'integer' },
+                'show_id': { 'type': 'integer' },
+                'runtime': { 'type': 'integer' },
+            },
         }
     })
 
     database.es.indices.create('images', body={
         'mappings': {
-            'image': {
-                'properties' : {
-                    'id': { 'type': 'integer' },
-                    'relation_type': { 'type': 'text' },
-                    'relation_id': { 'type': 'integer' },
-                    'external_name': { 'type': 'text' },
-                    'external_id': { 'type': 'text' },
-                    'height': { 'type': 'integer' },
-                    'width': { 'type': 'integer' },
-                    'hash': { 'type': 'text' },
-                    'source_title': { 'type': 'text' },
-                    'source_url': { 'type': 'text' },
-                    'type': { 'type': 'integer' },
-                    'created_at': { 'type': 'date' },
-                },
-            }
+            'properties' : {
+                'id': { 'type': 'integer' },
+                'relation_type': { 'type': 'text' },
+                'relation_id': { 'type': 'integer' },
+                'external_name': { 'type': 'text' },
+                'external_id': { 'type': 'text' },
+                'height': { 'type': 'integer' },
+                'width': { 'type': 'integer' },
+                'hash': { 'type': 'text' },
+                'source_title': { 'type': 'text' },
+                'source_url': { 'type': 'text' },
+                'type': { 'type': 'integer' },
+                'created_at': { 'type': 'date' },
+            },
         }
     })
 

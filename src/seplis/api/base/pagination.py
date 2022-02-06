@@ -1,4 +1,4 @@
-import math
+import math, logging
 from seplis import utils
 from sqlalchemy import func
 
@@ -20,6 +20,7 @@ class Pagination(object):
         self.pages = 0
         self.per_page = per_page
         if (per_page > 0) and total: 
+            logging.error(total)
             self.pages = int(math.ceil(float(total) / per_page))
 
     def links(self, uri, arguments):

@@ -32,7 +32,6 @@ class Show_fan(Base):
         self.session.es_bulk.append({
             '_op_type': 'update',
             '_index': 'shows',
-            '_type': 'show',
             '_id': self.show_id,
             'script': 'ctx._source.fans += {}'.format(amount),
         })
