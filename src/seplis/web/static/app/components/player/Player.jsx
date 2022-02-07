@@ -53,6 +53,7 @@ class Player extends React.Component {
 
         this.onSliderReturnCurrentTime = this.sliderReturnCurrentTime.bind(this)
         this.onSliderNewTime = this.sliderNewTime.bind(this)
+        this.setHideControlsTimer()
 
         this.state = {
             playing: false,
@@ -168,7 +169,6 @@ class Player extends React.Component {
         if (this.video.paused || this.state.loading)
             return
         this.setState({showControls: !this.state.showControls})
-        this.setHideControlsTimer()
     }
 
     setPingTimer() {
@@ -181,11 +181,9 @@ class Player extends React.Component {
 
     setHideControlsTimer(timeout) {
         if (timeout == undefined)
-            timeout = 3000
+            timeout = 4000
         clearTimeout(this.hideControlsTimer)
         this.hideControlsTimer = setTimeout(() => {
-            if (this.video.paused || this.state.loading)
-                return
             this.setState({
                 showControls: false,
             })
@@ -212,9 +210,7 @@ class Player extends React.Component {
     playPauseClick() {
         if (this.video.paused) {
             this.video.play()
-            this.setHideControlsTimer(2000)
-        }
-        else {
+        } else {
             this.video.pause()
         }
     }
@@ -241,7 +237,6 @@ class Player extends React.Component {
             playing: true,
             loading: true,
         })
-        this.setHideControlsTimer()
     }
 
     playError(e) {
@@ -269,9 +264,6 @@ class Player extends React.Component {
                 if (this.props.onTimeUpdate)
                     this.props.onTimeUpdate(this.state.time)
             })
-            if (!this.hideControlsTimer) {
-                this.setHideControlsTimer()
-            }
         }
     }
 
@@ -371,9 +363,8 @@ class Player extends React.Component {
     }
 
     sliderNewTime(newTime) {
-        this.video.pause()        
-        clearTimeout(this.hideControlsTimer)
-        this.hideControlsTimer = null
+        this.video.pause()
+        this.setHideControlsTimer()
         this.changeVideoState({
             time: newTime,
             startTime: newTime,
