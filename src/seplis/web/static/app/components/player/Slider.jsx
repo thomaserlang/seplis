@@ -91,7 +91,10 @@ class Slider extends React.Component {
         let t = this.state.currentTime
         if ((this.state.hoverTime !== null) && this.state.drag)
             t = this.state.hoverTime
-        return ((t / this.props.duration) * 100).toString() + '%'
+        const r = ((t / this.props.duration) * 100).toString()
+        if (r > 100)
+            return '100%'
+        return  r+'%'
     }
 
     getEventXOffset(event) {
