@@ -19,8 +19,7 @@ class Pagination(object):
         self.records = records
         self.pages = 0
         self.per_page = per_page
-        if (per_page > 0) and total: 
-            logging.error(total)
+        if (per_page > 0) and total:
             self.pages = int(math.ceil(float(total) / per_page))
 
     def links(self, uri, arguments):
