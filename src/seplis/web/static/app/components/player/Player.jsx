@@ -98,6 +98,11 @@ class Player extends React.Component {
         document.onbeforeunload = this.beforeUnload.bind(this)
     }
 
+    componentWillUnmount() {
+        clearTimeout(this.pingTimer)
+        clearTimeout(this.hideControlsTimer)
+    }
+
     loadedEvent(e) {
         this.setState({loading: false})
     }
