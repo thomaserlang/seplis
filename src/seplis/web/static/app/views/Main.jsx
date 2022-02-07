@@ -1,19 +1,17 @@
-import React from 'react';
+import React from 'react'
 import {Link} from 'react-router-dom'
-import Loader from 'seplis/components/Loader';
-import ShowsWatched, {getWatched} from 'components/shows/Watched';
-import ShowsCountdown, {getCountdown} from 'components/shows/Countdown';
-import ShowsRecentlyAired, {getRecentlyAired} from 'components/shows/RecentlyAired';
-import ShowsEpisodesToWatch, {getEpisodesToWatch} from 'components/shows/EpisodesToWatch';
-import {requireAuthed} from 'utils';
+import Loader from 'seplis/components/Loader'
+import ShowsWatched, {getWatched} from 'components/shows/Watched'
+import ShowsCountdown, {getCountdown} from 'components/shows/Countdown'
+import ShowsRecentlyAired, {getRecentlyAired} from 'components/shows/RecentlyAired'
+import ShowsEpisodesToWatch, {getEpisodesToWatch} from 'components/shows/EpisodesToWatch'
+import {requireAuthed} from 'utils'
 
 class Main extends React.Component {
     
     constructor(props) {
-        super(props);
-        requireAuthed();
-        this.visChange = this.visibilitychange.bind(this);
-        document.addEventListener('visibilitychange', this.visChange);
+        super(props)
+        requireAuthed()
         this.state = {
             key: 0,
             loading: true,
@@ -23,18 +21,15 @@ class Main extends React.Component {
     
     componentDidMount() {
         document.title = `SEPLIS`
-        this.getData();
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('visibilitychange', this.visChange);
+        this.getData()
     }
 
     getData() {
+        this.state.loading = true
         this.setState({
             loading: true,
             failed: false,
-        });
+        })
         Promise.all([
             getWatched(6, 1),
             getCountdown(6, 1),
@@ -42,25 +37,20 @@ class Main extends React.Component {
             getEpisodesToWatch(6, 1),
         ]).then((result) => {
             this.setState({
-                'loading': false,
-                'failed': false,
-                'watched': result[0].items,
-                'countdown': result[1].items,
-                'recentlyWatched': result[2].items,
-                'episodesToWatch': result[3].items,
+                loading: false,
+                failed: false,
+                watched: result[0].items,
+                countdown: result[1].items,
+                recentlyWatched: result[2].items,
+                episodesToWatch: result[3].items,
             })
-        }).catch(() => {
+        }).catch((e) => {
             this.setState({
                 loading: false,
                 failed: true,
                 key: this.state.key + 1,
             })
-        });
-    }
-
-    visibilitychange() {
-        if (document.hidden) return;
-        this.getData();
+        })
     }
 
     render() {
@@ -71,7 +61,7 @@ class Main extends React.Component {
                 </div>
             )
         if (this.state.loading)
-            return <Loader />;
+            return <Loader />
         return (
             <span>
             <h2 className="header header-border">
@@ -106,4 +96,4 @@ class Main extends React.Component {
     }
 }
 
-export default Main;
+export default Main
