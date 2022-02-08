@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import LinkParser from 'parse-link-header';
 
 const propTypes = {
     jqXHR: PropTypes.object.isRequired,
