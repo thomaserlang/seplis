@@ -48,6 +48,8 @@ class PlayEpisode extends React.Component {
  
     timeUpdate(time) {
         time = Math.floor(time)
+        if (this.state.startTime == time)
+            return
         if (time == this.lastPos) 
             return
         this.lastPos = time
