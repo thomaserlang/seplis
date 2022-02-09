@@ -209,6 +209,8 @@ class Player extends React.Component {
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
             `&audio_lang=${this.state.audio || ''}`
+        if (Hls.isSupported())
+            s += `&device=hls.js`
         return s
     }
 

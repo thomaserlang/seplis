@@ -106,7 +106,7 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
         base.change_ffmpeg_arg('-c:v', args, settings['transcode_codec'])
 
     # Fix for hls.js eac3 or ac3 not playing
-    if handler.agent['user_agent']['family'] == 'Chrome':
+    if settings.get('audio_channels_fix'):
         a = base.stream_index_by_lang(metadata, 'audio', handler.get_argument('audio_lang', None))
         if a and metadata['streams'][a['index']]['codec_name'] in ('eac3', 'ac3',):
             args.append({'-ac': str(metadata['streams'][a['index']]['channels'])})            

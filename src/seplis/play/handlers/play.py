@@ -115,6 +115,18 @@ device_settings = {
         'transcode_pixel_format': 'yuv420p',
         'type': 'hls',
     },
+    'hls.js': {
+        'codec_names': [
+            'h264',
+        ],
+        'pixel_formats': [
+            'yuv420p',
+        ],
+        'transcode_codec': 'libx264',
+        'transcode_pixel_format': 'yuv420p',
+        'audio_channels_fix': True,
+        'type': 'hls',
+    },
     'chromecast': {
         'codec_names': [
             'h264',
