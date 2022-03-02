@@ -21,7 +21,6 @@ def main():
         ('web', ['python', 'runner.py', 'web'], src_path),
         ('play-server', ['python', 'runner.py', 'play-server'], src_path),
         ('worker', ['python', 'runner.py', 'worker'], src_path),
-        ('npm', ['npm', 'run', 'start'], base_path),
     ]
     if watchdog_installed:
         start.append(

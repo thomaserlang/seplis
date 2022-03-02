@@ -1,0 +1,15 @@
+http://seplis.local, http://localhost {
+	reverse_proxy host.docker.internal:8001
+}
+
+http://api.seplis.local {
+	reverse_proxy host.docker.internal:8002
+}
+
+http://play.seplis.local {
+	reverse_proxy host.docker.internal:8003
+}
+
+http://images.seplis.local {
+	reverse_proxy host.docker.internal:3000
+}
