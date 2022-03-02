@@ -18,6 +18,8 @@ RUN pip install -r requirements.txt
 RUN pip install mysqlclient==2.1.0
 
 COPY --from=builder /src/seplis/web/static/dist /src/seplis/web/static/dist
+COPY --from=mwader/static-ffmpeg:5.0 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.0 /ffprobe /usr/local/bin/
 
 RUN addgroup --gid $GID --system seplis; adduser --uid $UID --system --gid $GID seplis
 USER $UID:$GID
