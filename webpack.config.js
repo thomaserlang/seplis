@@ -2,7 +2,6 @@ var webpack = require('webpack');
 var path = require('path');
 var MiniCssExtractPlugin = require("mini-css-extract-plugin");
 var staticPath = path.resolve(__dirname, 'src/seplis/web/static');
-var nodeModulesPath = path.resolve(__dirname, 'node_modules');
 
 module.exports = {
     devtool: "source-map",
