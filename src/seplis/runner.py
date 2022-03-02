@@ -15,7 +15,7 @@ def cli(config, log_path, log_level):
         seplis.config['logging']['level'] = log_level
 
 @cli.command()
-@click.option('--port', '-p', default=config['web']['port'], help='the port')
+@click.option('--port', '-p', help='the port')
 def web(port):
     if port:
         config['web']['port'] = port            
@@ -23,12 +23,20 @@ def web(port):
     seplis.web.app.main()
 
 @cli.command()
-@click.option('--port', '-p', default=config['api']['port'], help='the port')
+@click.option('--port', '-p', help='the port')
 def api(port):
     if port:
         config['api']['port'] = port
     import seplis.api.app
     seplis.api.app.main()
+
+@cli.command()
+@click.option('--port', '-p', help='the port')
+def play_server(port):    
+    if port:
+        config['play']['port'] = port
+    import seplis.play.app
+    seplis.play.app.main()
 
 @cli.command()
 def upgrade():
@@ -142,12 +150,6 @@ def play_scan_cleanup():
         seplis.play.scan.cleanup()
     except:
         logging.exception('play_scan_watch')
-
-@cli.command()
-def play_server():
-    logger.set_logger('play_server.log', to_sentry=True)
-    import seplis.play.app
-    seplis.play.app.main()
 
 @cli.command()
 def dev_server():
