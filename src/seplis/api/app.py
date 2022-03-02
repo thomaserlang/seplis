@@ -1,4 +1,6 @@
+from functools import partial
 import os.path, asyncio, logging
+import signal
 from tornado import web, httpserver
 from tornado.web import URLSpec as U
 from concurrent.futures import ThreadPoolExecutor
@@ -6,9 +8,10 @@ import sentry_sdk
 from sentry_sdk.integrations.tornado import TornadoIntegration
 
 import seplis
-from seplis.api import constants
 from seplis.logger import logger
+from seplis.io_sighandler import sig_handler
 from . import handlers as h
+from seplis import health
 
 static_path = os.path.join(os.path.dirname(__file__), 'static')
 urls = [
@@ -62,6 +65,7 @@ urls = [
     U(r'/1/progress-token', h.user.Progress_token_handler),
 
     U(r'/1/show-genres', h.genres.Handler),
+    U(r'/health', health.Handler),
 ]
 
 class Application(web.Application):
@@ -86,9 +90,12 @@ def main():
             integrations=[TornadoIntegration()],
         )
     ioloop = asyncio.get_event_loop()
-    http_server = httpserver.HTTPServer(Application(ioloop))
-    http_server.listen(seplis.config['api']['port'])
-
+    app = Application(ioloop)
+    server = httpserver.HTTPServer(app)
+    server.listen(seplis.config['api']['port'])
+    signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
+    signal.signal(signal.SIGINT, partial(sig_handler, server, app))    
+    logging.info(f'API server started on port: {seplis.config["api"]["port"]}')
     ioloop.run_forever()
 
 if __name__ == '__main__':

@@ -12,9 +12,6 @@ except:
 
 def main():
     src_path = os.path.dirname(os.path.realpath(__file__))
-    base_path = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
-    )
 
     start = [
         ('api', ['python', 'runner.py', 'api'], src_path),
