@@ -46,7 +46,6 @@ coverage.xml
 *.db
 node_modules/
 !src/seplis/web/static/dist/
-package-lock.json
 
 # Rope
 .ropeproject
