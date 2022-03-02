@@ -1,7 +1,6 @@
-import os, sys
+import os
 from subprocess import list2cmdline
 from honcho.manager import Manager
-from seplis.logger import logger
 
 watchdog_installed = False
 try:
@@ -34,7 +33,6 @@ def main():
         )
 
     manager.loop()
-    sys.exit(manager.returncode)
 
 if __name__ == '__main__':
     main()
