@@ -25,5 +25,5 @@ RUN addgroup --gid $GID --system seplis; adduser --uid $UID --system --gid $GID 
 USER $UID:$GID
 ENTRYPOINT ["python", "src/seplis/runner.py"]
 
-# sudo docker build -t seplis/seplis --rm . 
-# sudo docker push seplis/seplis:latest 
+# docker build -t seplis/seplis --rm . 
+# docker push seplis/seplis:latest 
