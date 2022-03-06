@@ -19,10 +19,15 @@ services:
       - MYSQL_DATABASE=seplis
     ports:
       - "3306:3306"
+    volumes:
+      - /var/seplis-db-test:/var/lib/mysql
   storitch:
     image: "thomaserlang/storitch:latest"
+    user: 1000:1000
     ports:
-      - "3000:80"
+      - "3000:3000"
+    volumes:
+      - /var/storitch:/var/storitch
   caddy:
     image: caddy:2
     restart: unless-stopped
