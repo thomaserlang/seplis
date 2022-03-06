@@ -4,7 +4,7 @@ RUN npm ci; npm run build
 
 
 FROM python:3.9-bullseye
-
+RUN apt-get update; apt-get upgrade -y; apt-get install curl -y
 ENV \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
