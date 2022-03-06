@@ -21,4 +21,5 @@ from . import (
     reset_password,
     genres,
     user_show_rating,
+    health,
 )

@@ -2,7 +2,6 @@ import asyncio
 from functools import partial
 import logging
 import signal
-from seplis import health
 from seplis.config import config
 import os
 import tornado.web
@@ -12,7 +11,7 @@ from seplis.io_sighandler import sig_handler
 import seplis.web.handlers.react
 import sentry_sdk
 from sentry_sdk.integrations.tornado import TornadoIntegration
-from .handlers import react, tvmaze_lookup, base
+from .handlers import react, tvmaze_lookup, base, health
 from seplis.logger import logger
 from tornado.web import URLSpec
 

@@ -11,7 +11,6 @@ import seplis
 from seplis.logger import logger
 from seplis.io_sighandler import sig_handler
 from . import handlers as h
-from seplis import health
 
 static_path = os.path.join(os.path.dirname(__file__), 'static')
 urls = [
@@ -65,7 +64,7 @@ urls = [
     U(r'/1/progress-token', h.user.Progress_token_handler),
 
     U(r'/1/show-genres', h.genres.Handler),
-    U(r'/health', health.Handler),
+    U(r'/health', h.health.Handler),
 ]
 
 class Application(web.Application):
