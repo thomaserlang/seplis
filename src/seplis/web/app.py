@@ -44,20 +44,25 @@ class Application(tornado.web.Application):
         super().__init__(urls, **settings)
 
 def main():
-    ioloop = asyncio.get_event_loop()
-    app = Application(ioloop)
     logger.set_logger('web-{}.log'.format(config['web']['port']))
     if config['sentry_dsn']:
         sentry_sdk.init(
             dsn=config['sentry_dsn'],
             integrations=[TornadoIntegration()],
         )
-    server = tornado.httpserver.HTTPServer(app)
-    server.listen(config['web']['port'])
+
+    loop = asyncio.get_event_loop()
+    app = Application(loop)
+    server = app.listen(config['web']['port'])
+    
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
     signal.signal(signal.SIGINT, partial(sig_handler, server, app))    
-    logging.info(f'Web server started on port: {config["web"]["port"]}')
-    ioloop.run_forever()
+
+    log = logging.getLogger('main')
+    log.setLevel('INFO')
+    log.info(f'Web server started on port: {config["web"]["port"]}')
+    loop.run_forever()
+    log.info('Web server stopped')
 
 if __name__ == '__main__':
     import seplis

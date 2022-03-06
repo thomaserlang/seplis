@@ -1,7 +1,7 @@
 from functools import partial
 import os.path, asyncio, logging
 import signal
-from tornado import web, httpserver
+from tornado import web
 from tornado.web import URLSpec as U
 from concurrent.futures import ThreadPoolExecutor
 import sentry_sdk
@@ -88,14 +88,18 @@ def main():
             dsn=seplis.config['sentry_dsn'],
             integrations=[TornadoIntegration()],
         )
-    ioloop = asyncio.get_event_loop()
-    app = Application(ioloop)
-    server = httpserver.HTTPServer(app)
-    server.listen(seplis.config['api']['port'])
+    loop = asyncio.get_event_loop()
+    app = Application(loop)
+    server = app.listen(seplis.config['api']['port'])
+
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
-    signal.signal(signal.SIGINT, partial(sig_handler, server, app))    
-    logging.info(f'API server started on port: {seplis.config["api"]["port"]}')
-    ioloop.run_forever()
+    signal.signal(signal.SIGINT, partial(sig_handler, server, app))
+
+    log = logging.getLogger('main')
+    log.setLevel('INFO')
+    log.info(f'API server started on port: {seplis.config["api"]["port"]}')
+    loop.run_forever()
+    log.info('API server stopped')
 
 if __name__ == '__main__':
     import seplis

@@ -89,8 +89,13 @@ def main():
                             type: shows
                             path: /a/path/to/the/shows
             ''')
+    
     obs = Observer()
-    for s in config['play']['scan']:
+    log = logging.getLogger('main')
+    log.setLevel('INFO')
+    log.info('Play scan watch started')
+    for s in config['play']['scan']:    
+        log.info(s)
         event_handler = Handler(
             scan_path=s['path'],
             type_=s['type'],
@@ -107,3 +112,4 @@ def main():
     except KeyboardInterrupt:
         obs.stop()
     obs.join()
+    log.info('Play scan watch stopped')

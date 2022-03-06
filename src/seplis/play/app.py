@@ -5,8 +5,6 @@ import signal
 from seplis.io_sighandler import sig_handler
 from seplis.play.handlers import play, shows, health
 import tornado.web
-import tornado.ioloop
-import tornado.httpserver
 import os, os.path
 from seplis import config
 from seplis.logger import logger
@@ -35,11 +33,15 @@ class Application(tornado.web.Application):
 
 def main():
     logger.set_logger('play_server-{}.log'.format(config['play']['port']))
-    ioloop = asyncio.get_event_loop()
-    app = Application(ioloop)
-    server = tornado.httpserver.HTTPServer(app)
-    server.listen(config['play']['port'])
+    loop = asyncio.get_event_loop()
+    app = Application(loop)
+    server = app.listen(config['play']['port'])
+
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
-    signal.signal(signal.SIGINT, partial(sig_handler, server, app))    
-    logging.info(f'Play server started on port: {config["play"]["port"]}')
-    ioloop.run_forever()
+    signal.signal(signal.SIGINT, partial(sig_handler, server, app))
+    
+    log = logging.getLogger('main')
+    log.setLevel('INFO')
+    log.info(f'Play server started on port: {config["play"]["port"]}')
+    loop.run_forever()
+    log.info('Play server stopped')
