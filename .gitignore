@@ -45,7 +45,7 @@ coverage.xml
 *.sublime-workspace
 *.db
 node_modules/
-!src/seplis/web/static/dist/
+src/seplis/web/static/dist/
 
 # Rope
 .ropeproject
