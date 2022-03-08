@@ -1,9 +1,15 @@
-FROM node:16-alpine as builder
+FROM node:16-alpine as jsbuilder
 COPY . .
 RUN npm ci; npm run build
 
 
-FROM python:3.9-bullseye
+FROM python:3.9-bullseye as pybuilder
+COPY . .
+RUN pip wheel -r requirements.txt --wheel-dir=/wheels
+RUN pip wheel mysqlclient==2.1.0 --wheel-dir=/wheels
+
+
+FROM python:3.9-slim-bullseye
 RUN apt-get update; apt-get upgrade -y; apt-get install curl -y
 ENV \
     PIP_NO_CACHE_DIR=1 \
@@ -14,10 +20,10 @@ ENV \
 
 COPY . .
 
-RUN pip install -r requirements.txt
-RUN pip install mysqlclient==2.1.0
+COPY --from=pybuilder /wheels /wheels
+RUN pip install --no-index --find-links=/wheels -r requirements.txt
 
-COPY --from=builder /src/seplis/web/static/dist /src/seplis/web/static/dist
+COPY --from=jsbuilder /src/seplis/web/static/dist /src/seplis/web/static/dist
 COPY --from=mwader/static-ffmpeg:5.0 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:5.0 /ffprobe /usr/local/bin/
 
