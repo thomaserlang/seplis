@@ -61,6 +61,5 @@ docs/_build/
 *.orig
 
 seplis.yaml
-.vscode/settings.json
-.vscode/launch.json
+.vscode
 workspace.code-workspace
