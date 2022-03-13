@@ -25,6 +25,7 @@ class Testbase(AsyncHTTPTestCase):
     def setUp(self):
         super().setUp()
         config_load()
+        config['debug'] = False
         config['logging']['path'] = None
         logger = logging.getLogger('raven')
         logger.setLevel(logging.ERROR)
