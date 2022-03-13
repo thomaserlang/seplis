@@ -7,10 +7,21 @@ services:
     ports:
       - "9200:9200"
   redis:
-    image: "redis:3-alpine"
+    image: "redis:6.2"
     command: redis-server --appendonly yes
     ports:
       - "6379:6379"
+  redis-sentinel:
+    image: bitnami/redis-sentinel:6.2    
+    environment:
+      - REDIS_MASTER_HOST=127.0.0.1
+      # I need it to return 127.0.0.1 for my dev enviroment 
+      # to be able to connect to redis. But sentinel can't reach 
+      # it on that address, therefore set the "down after" to long
+      # enough for me to test it.
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=3600000
+    ports:
+      - "26379:26379"
   mariadb:
     image: mariadb:10.7
     command: 

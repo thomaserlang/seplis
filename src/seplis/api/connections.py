@@ -22,17 +22,38 @@ class Database:
             connect_args={'charset': 'utf8mb4'},
         )
         self.setup_sqlalchemy_session(self.engine)
-        self.redis = redis.StrictRedis(
-            config['api']['redis']['ip'], 
-            port=config['api']['redis']['port'], 
-            db=0,
-            decode_responses=True,
-        )
-        self.queue_redis = redis.StrictRedis(
-            config['api']['redis']['ip'], 
-            port=config['api']['redis']['port'], 
-            db=1,
-        )
+        if config['api']['redis']['sentinel']:
+            sentinel = redis.Sentinel(
+                config['api']['redis']['sentinel'], 
+                socket_timeout=0.1, 
+                db=config['api']['redis']['db'], 
+                password=config['api']['redis']['password'],
+            )
+            self.redis = sentinel.master_for(
+                config['api']['redis']['master_name'],
+                decode_responses=True,
+            )
+            sentinel = redis.Sentinel(
+                config['api']['redis']['sentinel'], 
+                socket_timeout=0.1, 
+                db=config['api']['redis']['queue_db'], 
+                password=config['api']['redis']['password'],
+            )
+            self.queue_redis = sentinel.master_for(config['api']['redis']['master_name'])
+        else:
+            self.redis = redis.StrictRedis(
+                config['api']['redis']['ip'], 
+                port=config['api']['redis']['port'], 
+                db=config['api']['redis']['db'],
+                password=config['api']['redis']['password'],
+                decode_responses=True,
+            )
+            self.queue_redis = redis.StrictRedis(
+                config['api']['redis']['ip'], 
+                port=config['api']['redis']['port'], 
+                db=config['api']['redis']['queue_db'],
+                password=config['api']['redis']['password'],
+            )
         self.queue = Queue(connection=self.queue_redis)
         self.es = Elasticsearch(
             config['api']['elasticsearch'],

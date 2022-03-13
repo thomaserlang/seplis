@@ -13,6 +13,11 @@ config = {
         'redis': {
             'ip': '127.0.0.1',
             'port': 6379,
+            'sentinel': [],
+            'master_name': 'mymaster',
+            'db': 0,
+            'queue_db': 1,
+            'password': None,
         },
         'elasticsearch': 'localhost:9200',
         'storitch': None,
@@ -100,12 +105,16 @@ def load(path=None):
         raise Exception('Config: "{}" could not be found.'.format(path))
     with open(path) as f:
         data = yaml.load(f, Loader=yaml.SafeLoader)
-    for key in data:
-        if key in config:
-            if isinstance(config[key], dict):
-                config[key].update(data[key])
-            else:
-                config[key] = data[key]
+
+    def merge(d, c):
+        for key in d:
+            if key in c:
+                if isinstance(c[key], dict):
+                    merge(d[key], c[key])
+                else:
+                    c[key] = d[key]
+    merge(data, config)
+
     if config['play']['scan']:# validate the play scan items
         schemas.Config_play_scan(
             config['play']['scan']
