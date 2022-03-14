@@ -1,6 +1,6 @@
 FROM node:16-alpine as jsbuilder
 COPY . .
-RUN npm ci; npm run build
+RUN npm install -g npm; npm ci; npm run build
 
 
 FROM python:3.9-bullseye as pybuilder
