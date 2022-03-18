@@ -10,7 +10,7 @@ RUN pip wheel mysqlclient==2.1.0 --wheel-dir=/wheels
 
 
 FROM python:3.9-slim-bullseye
-RUN apt-get update; apt-get upgrade -y; apt-get install curl -y
+RUN apt-get update; apt-get upgrade -y; apt-get install curl fontconfig -y
 ENV \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
