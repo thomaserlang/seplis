@@ -34,8 +34,7 @@ class Database:
                 decode_responses=True,
             )
             sentinel = redis.Sentinel(
-                config['api']['redis']['sentinel'], 
-                socket_timeout=0.1, 
+                config['api']['redis']['sentinel'],
                 db=config['api']['redis']['queue_db'], 
                 password=config['api']['redis']['password'],
             )
@@ -81,6 +80,8 @@ class Database:
                     url,
                     utils.url_encode_tornado_arguments(query) \
                         if query else '',
+                    connect_timeout=2.0,
+                    request_timeout=2.0,
                 ),
                 method='POST' if body else 'GET',
                 headers={
