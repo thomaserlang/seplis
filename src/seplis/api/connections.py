@@ -19,9 +19,7 @@ class Database:
             echo=False,
             pool_recycle=3599,
             encoding='UTF-8',
-            connect_args={
-                'connect_timeout': 3
-            },
+            connect_args={'charset': 'utf8mb4'},
         )
         self.setup_sqlalchemy_session(self.engine)
         if config['api']['redis']['sentinel']:
@@ -36,7 +34,8 @@ class Database:
                 decode_responses=True,
             )
             sentinel = redis.Sentinel(
-                config['api']['redis']['sentinel'],
+                config['api']['redis']['sentinel'], 
+                socket_timeout=0.1, 
                 db=config['api']['redis']['queue_db'], 
                 password=config['api']['redis']['password'],
             )
@@ -47,8 +46,7 @@ class Database:
                 port=config['api']['redis']['port'], 
                 db=config['api']['redis']['db'],
                 password=config['api']['redis']['password'],
-                decode_responses=True, 
-                socket_timeout=0.1, 
+                decode_responses=True,
             )
             self.queue_redis = redis.StrictRedis(
                 config['api']['redis']['ip'], 
