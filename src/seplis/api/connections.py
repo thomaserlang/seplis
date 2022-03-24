@@ -19,7 +19,10 @@ class Database:
             echo=False,
             pool_recycle=3599,
             encoding='UTF-8',
-            connect_args={'charset': 'utf8mb4'},
+            connect_args={
+                'charset': 'utf8mb4',
+                'read_timeout': 5,    
+            },
         )
         self.setup_sqlalchemy_session(self.engine)
         if config['api']['redis']['sentinel']:
