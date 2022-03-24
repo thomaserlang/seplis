@@ -19,7 +19,7 @@ class Database:
             pool_recycle=3599,
             pool_pre_ping=True,
             connect_args={
-                'read_timeout': 5,    
+                'read_timeout': config['api']['database_read_timeout'],
             },
         )
         self.setup_sqlalchemy_session(self.engine)
