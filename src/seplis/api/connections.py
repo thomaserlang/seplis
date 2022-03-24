@@ -15,12 +15,10 @@ class Database:
     def __init__(self):
         self.engine = create_engine(
             config['api']['database'],
-            convert_unicode=True,
             echo=False,
             pool_recycle=3599,
-            encoding='UTF-8',
+            pool_pre_ping=True,
             connect_args={
-                'charset': 'utf8mb4',
                 'read_timeout': 5,    
             },
         )
