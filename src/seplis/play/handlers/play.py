@@ -114,6 +114,7 @@ device_settings = {
         'transcode_codec': 'libx264',
         'transcode_pixel_format': 'yuv420p',
         'type': 'hls',
+        'audio_channels_fix': True,
     },
     'hls.js': {
         'codec_names': [
