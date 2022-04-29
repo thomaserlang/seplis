@@ -19,5 +19,5 @@ click==7.0
 responses
 honcho==1.0.1
 ua-parser==0.10.0
-aiosmtplib==1.1.2
+aiosmtplib==1.1.6
 watchdog==0.10.2
