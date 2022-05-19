@@ -108,7 +108,7 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     # Fix for hls eac3 or ac3 not playing or just no audio
     if settings.get('audio_channels_fix'):
         a = base.stream_index_by_lang(metadata, 'audio', handler.get_argument('audio_lang', None))
-        if a and metadata['streams'][a['index']]['codec_name'] in ('eac3', 'ac3',):
+        if a and metadata['streams'][a['index']]['codec_name'] in ('eac3', 'ac3', 'dts'):
             args.append({'-ac': str(metadata['streams'][a['index']]['channels'])})            
             
     args.extend([
