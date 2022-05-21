@@ -49,7 +49,7 @@ urls = [
     U(r'/1/users/([a-z0-9]+)/show-stats', h.user_shows_stats.Handler),
     U(r'/1/users/([a-z0-9]+)/air-dates', h.air_dates.Handler),
     U(r'/1/users/([a-z0-9]+)/shows-watched', h.shows_watched.Handler,),
-    U(r'/1/users/([a-z0-9]+)/shows-recently-aired', h.shows_recently_aired.Handler,),           
+    U(r'/1/users/([a-z0-9]+)/shows-recently-aired', h.shows_recently_aired.Handler),
     U(r'/1/users/([a-z0-9]+)/shows-countdown', h.shows_countdown.Handler),
     U(r'/1/users/([a-z0-9]+)/shows-etw', h.shows_etw.Handler),        
 

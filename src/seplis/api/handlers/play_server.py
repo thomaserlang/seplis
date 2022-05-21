@@ -1,3 +1,4 @@
+import logging
 import good
 import sqlalchemy as sa
 from seplis.api.handlers import base
@@ -58,7 +59,9 @@ class Handler(base.Handler):
             session.commit()
             ps = session.query(models.Play_server).options(
                 sa.orm.undefer_group('secret')
-            ).get(ps.id)
+            ).filter(
+                models.Play_server.id == ps.id
+            ).first()
             return ps.serialize()
 
     @run_on_executor
@@ -115,7 +118,9 @@ class Collection_handler(base.Pagination_handler):
             session.commit()
             ps = session.query(models.Play_server).options(
                 sa.orm.undefer_group('secret')
-            ).get(ps.id)
+            ).filter(
+                models.Play_server.id == ps.id
+            ).first()
             return ps.serialize()
 
 class Access_handler(base.Pagination_handler):

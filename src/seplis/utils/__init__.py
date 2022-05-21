@@ -312,10 +312,15 @@ def row_to_dict(row):
         if session:
             session.refresh(row)
     unloaded = ir.unloaded
-    return {attr.key: attr.value 
-        for attr in ir.attrs 
-            if not attr.key.startswith('_') 
-                and attr.key not in unloaded}
+    d = {}
+    for attr in ir.attrs:
+        if attr.key.startswith('_') or attr.key in unloaded:
+            continue
+        if hasattr(attr.value, 'serialize'):
+            d[attr.key] = attr.value.serialize()
+        else:
+            d[attr.key] = attr.value
+    return d
 
 def _None_check_str(v):
     '''Converts 'None' to None.

@@ -1,5 +1,6 @@
 # coding=UTF-8
 import json
+import logging
 import nose
 from seplis.api.testbase import Testbase
 from seplis import utils
@@ -17,6 +18,7 @@ class test_play_handler(Testbase):
         })
         self.assertEqual(response.code, 201, response.body)
         server = utils.json_loads(response.body)
+        logging.info(server)
         self.assertEqual(server['name'], 'Thomas')
         self.assertEqual(server['url'], 'http://example.net')
         self.assertEqual(server['secret'], 'SOME SECRET')
