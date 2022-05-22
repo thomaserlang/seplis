@@ -1,6 +1,8 @@
-import logging, sys, click
+import asyncio
+import logging, click
 from seplis.logger import logger
 from seplis import config
+from seplis.api.connections import database
 
 @click.group()
 @click.option('--config', default=None, help='path to the config file')
@@ -28,7 +30,8 @@ def api(port):
     if port:
         config['api']['port'] = port
     import seplis.api.app
-    seplis.api.app.main()
+    database.connect()
+    asyncio.run(seplis.api.app.main())
 
 @cli.command()
 @click.option('--port', '-p', help='the port')
@@ -42,13 +45,8 @@ def play_server(port):
 def upgrade():
     logger.set_logger('upgrade.log', to_sentry=True)
     import seplis.api.migrate
-    try:
-        seplis.api.migrate.upgrade()
-    except (KeyboardInterrupt, SystemExit):
-        raise 
-    except:
-        logging.exception('upgrade')
-
+    seplis.api.migrate.upgrade()
+    
 @cli.command()
 def rebuild_cache():
     logger.set_logger('rebuild_cache.log', to_sentry=True)
@@ -102,6 +100,7 @@ def worker(n):
     logger.set_logger('worker-{}.log'.format(n))
     import seplis.tasks.worker
     try:
+        database.connect()
         seplis.tasks.worker.main()
     except (KeyboardInterrupt, SystemExit):
         raise 

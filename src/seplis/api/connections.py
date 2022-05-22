@@ -2,9 +2,9 @@ import redis
 import logging
 from tornado.httpclient import AsyncHTTPClient, HTTPError
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import orm, event
-from sqlalchemy.ext.declarative import declarative_base
 from seplis import config, utils
 from seplis.api import exceptions
 from elasticsearch import Elasticsearch, helpers
@@ -12,9 +12,11 @@ from rq import Queue
 
 class Database:
 
-    def __init__(self):
+    def connect(self, database_url=None, redis_db=None):
+        database_url = database_url or config['api']['database']
+        redis_db = redis_db or config['api']['redis']['db']
         self.engine = create_engine(
-            config['api']['database'],
+            database_url,
             echo=False,
             pool_recycle=3599,
             pool_pre_ping=True,
@@ -23,6 +25,15 @@ class Database:
             },
         )
         self.setup_sqlalchemy_session(self.engine)
+
+        self.async_engine = create_async_engine(
+            database_url.replace('mysqldb', 'aiomysql').replace('pymysql', 'aiomysql'),
+            echo=False,
+            pool_recycle=3599,
+            pool_pre_ping=True,
+        )
+        self.setup_sqlalchemy_async_session(self.async_engine)
+
         if config['api']['redis']['sentinel']:
             sentinel = redis.Sentinel(
                 config['api']['redis']['sentinel'], 
@@ -36,7 +47,7 @@ class Database:
             )
             sentinel = redis.Sentinel(
                 config['api']['redis']['sentinel'],
-                db=config['api']['redis']['queue_db'], 
+                db=redis_db, 
                 password=config['api']['redis']['password'],
             )
             self.queue_redis = sentinel.master_for(config['api']['redis']['master_name'])
@@ -51,7 +62,7 @@ class Database:
             self.queue_redis = redis.StrictRedis(
                 config['api']['redis']['ip'], 
                 port=config['api']['redis']['port'], 
-                db=config['api']['redis']['queue_db'],
+                db=redis_db,
                 password=config['api']['redis']['password'],
             )
         self.queue = Queue(connection=self.queue_redis)
@@ -66,6 +77,13 @@ class Database:
         )
         utils.sqlalchemy.setup_before_after_events(self.session)
         event.listen(self.session, 'after_commit', event_commit_es_bulk_and_pipe)
+
+    def setup_sqlalchemy_async_session(self, connection):
+        self.async_session = sessionmaker(
+            bind=connection,
+            expire_on_commit=False, 
+            class_=AsyncSession,
+        )
 
     async def es_get(self, url, query={}, body={}):
         http_client = AsyncHTTPClient()         

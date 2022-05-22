@@ -136,6 +136,10 @@ class Handler(web.RequestHandler):
     def redis(self):
         return database.redis
 
+    @property
+    def async_session(self):
+        return database.async_session
+
     async def es(self, url, query={}, body={}):
         return await database.es_get(url, query, body)
 
