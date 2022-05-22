@@ -37,6 +37,8 @@ urls = [
     U(r'/1/shows/([0-9]+)/episodes/([0-9]+)/position', h.episode_position.Handler),
     U(r'/1/shows/([0-9]+)/user-rating', h.user_show_rating.Handler),
     
+    U(r'/1/movies', h.movie.Handler),
+
     U(r'/1/users', h.user.Collection_handler),
     U(r'/1/users/current', h.user.Current_handler),            
     U(r'/1/users/current/change-password', h.user.Change_password_handler),
@@ -81,7 +83,7 @@ class Application(web.Application):
         )
         super().__init__(urls, **settings)
 
-def main():
+async def main():
     logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
     if seplis.config['sentry_dsn']:
         sentry_sdk.init(
@@ -98,10 +100,5 @@ def main():
     log = logging.getLogger('main')
     log.setLevel('INFO')
     log.info(f'API server started on port: {seplis.config["api"]["port"]}')
-    loop.run_forever()
+    await asyncio.Event().wait()
     log.info('API server stopped')
-
-if __name__ == '__main__':
-    import seplis
-    seplis.config_load()
-    main()

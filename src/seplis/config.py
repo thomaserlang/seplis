@@ -9,7 +9,8 @@ config = {
     'sentry_dsn': None,
     'data_dir': '~/.seplis',
     'api': {
-        'database': 'sqlite:///seplis.db',
+        'database': None,
+        'database_test': None,
         'database_read_timeout': 5,
         'redis': {
             'ip': '127.0.0.1',

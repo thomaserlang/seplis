@@ -1,4 +1,4 @@
-import nose
+import pytest
 
 if __name__ == '__main__':
-    nose.main(argv=['', '--exe',])
+    pytest.main(['-x', 'tests'])

@@ -1,18 +1,22 @@
-import os
-import redis
-import logging
+import asyncio, logging, os, pytest
+
+from sqlalchemy import create_engine
 from seplis import config, config_load, utils
-from seplis.utils import json_dumps, json_loads
+from seplis.utils import  json_loads
 from urllib.parse import urlencode
-from tornado.httpclient import HTTPRequest
 from tornado.testing import AsyncHTTPTestCase
 from seplis.api.connections import database
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from seplis.api.app import Application
 from seplis.api import elasticcreate, constants, models
 from seplis.api.decorators import new_session
-from elasticsearch import Elasticsearch
+
+def run_file(file_):
+    pytest.main([
+        '-o', 'log_cli=true', 
+        '-o', 'log_cli_level=debug',
+        '-o', 'log_cli_format=%(asctime)s.%(msecs)3d %(filename)-15s %(lineno)4d %(levelname)-8s %(message)s',
+        file_,
+    ])
 
 class Testbase(AsyncHTTPTestCase):
 
@@ -24,32 +28,61 @@ class Testbase(AsyncHTTPTestCase):
 
     def setUp(self):
         super().setUp()
-        config_load()
-        config['debug'] = False
-        config['logging']['path'] = None
-        logger = logging.getLogger('raven')
-        logger.setLevel(logging.ERROR)
         logger = logging.getLogger('elasticsearch')
         logger.setLevel(logging.ERROR)
         logger = logging.getLogger('urllib3')
         logger.setLevel(logging.ERROR)
         # recreate the database connection
         # with params from the loaded config.
-        database.__init__()
         connection = database.engine.connect()
         self.trans = connection.begin()
         database.setup_sqlalchemy_session(connection)
+        loop = asyncio.get_event_loop()
+        connection = loop.run_until_complete(database.async_engine.connect())
+        self.trans_async = loop.run_until_complete(connection.begin())
+        database.setup_sqlalchemy_async_session(connection)
+
         database.redis.flushdb()
         elasticcreate.create_indices()
 
     def tearDown(self):
         self.trans.rollback()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.trans_async.rollback())
         super().tearDown()
 
-    def get_url(self, path):
-        """Returns an absolute url for the given path on the test server."""
-        return '%s://127.0.0.1:%s%s' % (self.get_protocol(),
-                                        self.get_http_port(), path)
+    @classmethod
+    def setUpClass(cls):
+        config_load()
+        config['debug'] = False
+        config['logging']['path'] = None
+
+        if hasattr(database, 'async_engine'):
+            return
+        
+        from sqlalchemy.engine import url
+        u = url.make_url(config['api']['database_test'])
+        db = u.database
+        u = url.URL.create(
+            drivername='mysql+pymysql',
+            username=u.username,
+            password=u.password,
+            host=u.host,
+            port=u.port,
+        )
+        engine = create_engine(u)
+        engine.execute(f'CREATE SCHEMA IF NOT EXISTS {db} DEFAULT CHARACTER SET utf8mb4;')
+        engine.dispose()
+
+        from alembic.config import Config
+        from alembic import command
+        cfg = Config(os.path.dirname(os.path.abspath(__file__))+'/alembic.ini')
+        cfg.set_main_option('script_location', 'seplis.api:migration')
+        cfg.set_main_option('sqlalchemy.url', config['api']['database_test'])
+        command.upgrade(cfg, 'head')
+
+        database.connect(config['api']['database_test'], redis_db=15)
+
 
     def _fetch(self, url, method, data=None, headers=None):
         if data is not None:

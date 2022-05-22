@@ -22,4 +22,5 @@ from . import (
     genres,
     user_show_rating,
     health,
+    movie,
 )
