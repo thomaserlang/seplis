@@ -1,8 +1,6 @@
 import base64
-import time
 import os
 import datetime
-import re
 import tornado.escape
 import collections
 import json
@@ -13,8 +11,9 @@ import uuid
 import io
 import sqlalchemy as sa
 
-from . import sqlalchemy
 from .validate import *
+from .jsonutils import *
+from . import sqlalchemy
 
 def random_key():
     return base64.b64encode(
@@ -51,24 +50,6 @@ def isoformat(dt):
     if isinstance(dt, datetime.datetime) and not dt.tzinfo:
         r += 'Z'
     return r
-        
-def json_dumps(obj, **kwargs):
-    '''
-    Turns a object into a json string.
-
-    :param obj: object
-    :returns: str
-    '''
-    return json.dumps(
-        obj,
-        cls=JsonEncoder,
-        **kwargs
-    ).replace("</", "<\\/")
-
-def json_loads(s, charset='utf-8'):
-    if isinstance(s, bytes):
-        s = s.decode(charset)
-    return json.loads(s)
 
 def slugify(text, delim='-', max_length=45):
     from slugify import slugify

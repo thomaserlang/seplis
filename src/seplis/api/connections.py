@@ -11,6 +11,7 @@ from elasticsearch import Elasticsearch, helpers
 from rq import Queue
 
 class Database:
+    async_session: AsyncSession
 
     def connect(self, database_url=None, redis_db=None):
         database_url = database_url or config['api']['database']
@@ -31,6 +32,8 @@ class Database:
             echo=False,
             pool_recycle=3599,
             pool_pre_ping=True,
+            json_serializer=lambda obj: utils.json_dumps(obj),
+            json_deserializer=lambda s: utils.json_loads(s),
         )
         self.setup_sqlalchemy_async_session(self.async_engine)
 
