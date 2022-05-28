@@ -1,6 +1,7 @@
 import orjson, decimal
 from collections import OrderedDict
 from tornado import escape
+from datetime import datetime
 
 def default(obj):
     if isinstance(obj, set):
@@ -13,11 +14,15 @@ def default(obj):
         return str(obj)
     elif isinstance(obj, OrderedDict):
         return dict(obj)
+    elif isinstance(obj, datetime):
+        return datetime.isoformat()+'Z'
+    raise TypeError
 
 def json_dumps(obj):
     return orjson.dumps(
         obj,
         default=default,
+        option=orjson.OPT_UTC_Z | orjson.OPT_NAIVE_UTC,
     ).decode('utf-8')
 
 def json_loads(s):
