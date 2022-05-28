@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from seplis.config import config
 import os.path
 import alembic.config
-from alembic import command, context
+from alembic import command
 
 def get_config():
     cfg = alembic.config.Config(
@@ -23,11 +23,8 @@ class Database:
     def __init__(self):
         self.engine = create_engine(
             config['play']['database'],
-            convert_unicode=True,
             echo=False,
             pool_recycle=3600,
-            encoding='UTF-8',
-            connect_args={'charset': 'utf8mb4'},
         )
         self.session = sessionmaker(
             bind=self.engine,
