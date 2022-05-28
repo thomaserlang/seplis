@@ -462,7 +462,7 @@ def parse_episode(file_):
             match = re.match(
                 pattern, 
                 os.path.basename(file_), 
-                re.VERBOSE
+                re.VERBOSE | re.IGNORECASE
             )
             if not match:
                 continue

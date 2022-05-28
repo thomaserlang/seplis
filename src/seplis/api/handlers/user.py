@@ -79,7 +79,7 @@ class Collection_handler(base.Handler):
             user = models.User(
                 name=user['name'],
                 email=user['email'],
-                password=pbkdf2_sha256.encrypt(user['password']),
+                password=pbkdf2_sha256.hash(user['password']),
             )
             session.add(user)
             session.commit()

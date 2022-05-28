@@ -11,7 +11,6 @@ from elasticsearch import Elasticsearch, helpers
 from rq import Queue
 
 class Database:
-    async_session: AsyncSession
 
     def connect(self, database_url=None, redis_db=None):
         database_url = database_url or config['api']['database']

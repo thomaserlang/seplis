@@ -6,8 +6,8 @@ from datetime import datetime
 def default(obj):
     if isinstance(obj, set):
         return list(obj)
-    elif hasattr(obj, 'to_json'):
-        return obj.to_json()
+    elif hasattr(obj, 'to_dict'):
+        return obj.to_dict()
     elif hasattr(obj, 'serialize'):
         return obj.serialize()
     elif isinstance(obj, decimal.Decimal):

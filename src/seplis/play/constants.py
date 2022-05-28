@@ -195,7 +195,7 @@ FILENAME_PATTERNS = [
     ''',
 
     # Show.Name.Part.1.and.Part.2
-    '''^(?i)
+    '''(?i)^
     (?P<file_show_title>.+?)                        # Show name
     [ \._\-]                                   # Padding
     (?:part|pt)?[\._ -]

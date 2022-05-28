@@ -152,7 +152,7 @@ class Play_servers_handler(base.Handler):
                             'number': int(number),
                         }),
                         version=2,
-                    ),
+                    ).decode('utf-8'),
                     'play_url': s.url,
                 })
             return playids

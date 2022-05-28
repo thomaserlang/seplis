@@ -146,7 +146,7 @@ class User(Base):
         ).first()
         if not user:
             raise exceptions.User_unknown()
-        user.password = pbkdf2_sha256.encrypt(new_password)
+        user.password = pbkdf2_sha256.hash(new_password)
 
     def after_insert(self):
         self.cache_user_default_stats()

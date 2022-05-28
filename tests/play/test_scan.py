@@ -18,7 +18,6 @@ class Testbase(unittest.TestCase):
     def setUp(self):
         database.engine = create_engine(
             'sqlite://',# memory db
-            convert_unicode=True, 
             echo=False, 
         )
         connection = database.engine.connect()

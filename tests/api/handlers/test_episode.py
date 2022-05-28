@@ -47,7 +47,7 @@ class Test_episode(Testbase):
         self.assertEqual(episode['runtime'], 30)
         self.assertEqual(episode['air_date'], '2014-01-01')
         self.assertEqual(episode['air_time'], '22:00:00')
-        self.assertEqual(episode['air_datetime'], '2014-01-01T21:00:00+00:00')
+        self.assertEqual(episode['air_datetime'], '2014-01-01T21:00:00Z')
 
         # test that we can patch the description        
         response = self.patch('/1/shows/{}'.format(show_id), {
@@ -173,7 +173,7 @@ class Test_episode_append_fields(Testbase):
         self.assertTrue('user_watched' in episode)
         self.assertEqual(episode['user_watched'], None)
         self.assertEqual(episode['air_time'], None)
-        self.assertEqual(episode['air_datetime'], '2003-09-23T00:00:00+00:00')
+        self.assertEqual(episode['air_datetime'], '2003-09-23T00:00:00Z')
 
         # test multi episodes
         response = self.get('/1/shows/{}/episodes?append=user_watched'.format(show_id))
