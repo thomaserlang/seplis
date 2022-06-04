@@ -1,6 +1,7 @@
 import asyncio, logging, os, pytest
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event, insert, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from seplis import config, config_load, utils
 from seplis.utils import  json_loads
 from urllib.parse import urlencode
@@ -13,18 +14,23 @@ from seplis.api.decorators import new_session
 def run_file(file_):
     pytest.main([
         '-o', 'log_cli=true', 
-        '-o', 'log_cli_level=debug',
+        '-o', 'log_cli_level=info',
         '-o', 'log_cli_format=%(asctime)s.%(msecs)3d %(filename)-15s %(lineno)4d %(levelname)-8s %(message)s',
+        '--log-level=info',
         file_,
     ])
 
 class Testbase(AsyncHTTPTestCase):
-
+    async_conn = None
     access_token = None
     current_user = None
 
     def get_app(self):
         return Application()
+
+    def get_new_ioloop(self):
+        from tornado.ioloop import IOLoop
+        return IOLoop.current()
 
     def setUp(self):
         super().setUp()
@@ -37,18 +43,18 @@ class Testbase(AsyncHTTPTestCase):
         connection = database.engine.connect()
         self.trans = connection.begin()
         database.setup_sqlalchemy_session(connection)
-        loop = asyncio.get_event_loop()
-        connection = loop.run_until_complete(database.async_engine.connect())
-        self.trans_async = loop.run_until_complete(connection.begin())
-        database.setup_sqlalchemy_async_session(connection)
+        self.loop = asyncio.get_event_loop()
+        self.async_conn = self.loop.run_until_complete(database.async_engine.connect())
+        database.setup_sqlalchemy_async_session(self.async_conn)
+        self.trans_async = self.loop.run_until_complete(self.async_conn.begin())
 
         database.redis.flushdb()
         elasticcreate.create_indices()
 
     def tearDown(self):
         self.trans.rollback()
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.trans_async.rollback())
+        self.loop.run_until_complete(self.trans_async.rollback())
+        self.loop.run_until_complete(self.async_conn.close())
         super().tearDown()
 
     @classmethod
@@ -64,7 +70,7 @@ class Testbase(AsyncHTTPTestCase):
         u = url.make_url(config['api']['database_test'])
         db = u.database
         u = url.URL.create(
-            drivername='mysql+pymysql',
+            drivername='mariadb+pymysql',
             username=u.username,
             password=u.password,
             host=u.host,
@@ -121,7 +127,7 @@ class Testbase(AsyncHTTPTestCase):
         if self.current_user:
             return
         with new_session() as session:
-            user = models.User(                
+            user = models.User(
                 name='testuser',
                 email='test@example.com',
                 level=user_level,
@@ -145,6 +151,41 @@ class Testbase(AsyncHTTPTestCase):
             session.add(access_token)
             session.commit()
             self.access_token = access_token.token
+
+    def login_async(self, user_level=0, app_level=constants.LEVEL_GOD):
+        async def login():
+            async with database.async_session() as session:
+                async with session.begin():
+                    r = await session.execute(insert(models.User).values(
+                        name='testuser',
+                        email='test@example.com',
+                        level=user_level,
+                    ))
+                    user = await session.scalar(select(models.User).where(models.User.id == r.lastrowid))
+                    self.current_user = utils.dotdict(user.serialize())
+                    for key in self.current_user:
+                        database.redis.hset(f'users:{self.current_user.id}', key, self.current_user[key] if self.current_user[key] != None else 'None')
+
+                    r = await session.execute(insert(models.App).values(
+                        user_id=user.id,
+                        name='testbase app',
+                        redirect_uri='',
+                        level=app_level,
+                    ))
+                    app = await session.scalar(select(models.App).where(models.App.id == r.lastrowid))
+                    self.current_app = utils.dotdict(app.serialize())
+
+                    token = utils.random_key()
+                    r = await session.execute(insert(models.Token).values(
+                        user_id=user.id,
+                        user_level=user_level,
+                        app_id=app.id,
+                        token=token,
+                    ))
+                    self.access_token = token
+                    database.redis.hset(f'tokens:{token}', 'user_id', self.current_user.id)
+                    database.redis.hset(f'tokens:{token}', 'user_level', user_level)
+        asyncio.get_event_loop().run_until_complete(login())
 
     def new_show(self):
         '''Signs the user in and returns a show id.
