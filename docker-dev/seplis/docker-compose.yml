@@ -4,6 +4,7 @@ services:
     image: "elasticsearch:7.17.0"
     environment: 
       - discovery.type=single-node
+      - xpack.security.enabled=false
     ports:
       - "9200:9200"
   redis:
@@ -39,7 +40,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - dbdata:/var/lib/mysql
+      - /var/seplisdb:/var/lib/mysql
   storitch:
     image: "thomaserlang/storitch:latest"
     user: 1000:1000
@@ -55,6 +56,3 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
-
-volumes:
-  dbdata:
