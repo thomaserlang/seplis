@@ -1,5 +1,8 @@
+from typing import Dict, Union
+from pydantic import BaseModel
 from tornado import web, escape
-import http.client, good, logging
+import http.client, good
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm.attributes import flag_modified
 from urllib.parse import urljoin
@@ -110,7 +113,7 @@ class Handler(web.RequestHandler):
             self.write_pagination(obj)
             return
         self.write(
-            utils.json_dumps(obj, indent=4, sort_keys=True),
+            utils.json_dumps(obj),
         )
 
     def write_pagination(self, pagination):
@@ -137,7 +140,7 @@ class Handler(web.RequestHandler):
         return database.redis
 
     @property
-    def async_session(self):
+    def async_session(self) -> AsyncSession:
         return database.async_session
 
     async def es(self, url, query={}, body={}):

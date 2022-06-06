@@ -1,9 +1,9 @@
 import base64
+import logging
 import os
-import datetime
+from datetime import datetime
 import tornado.escape
 import collections
-import json
 import codecs
 import mimetypes
 import sys
@@ -15,77 +15,10 @@ from .validate import *
 from .jsonutils import *
 from . import sqlalchemy
 
-def random_key():
+def random_key(length=30):
     return base64.b64encode(
-        os.urandom(30)
+        os.urandom(length)
     ).decode('utf-8')
-
-class JsonEncoder(json.JSONEncoder):
-    def default(self, value):
-        """Convert more Python data types to ES-understandable JSON."""
-        iso = _iso_datetime(value)
-        if iso:
-            return iso
-        if isinstance(value, set):
-            return list(value)
-        if hasattr(value, 'serialize'):
-            return value.serialize()    
-        if isinstance(value, bytes):
-            return value.decode('utf-8')
-        return super(JsonEncoder, self).default(value)
-
-def _iso_datetime(value):
-    """
-    If value appears to be something datetime-like, return it in ISO 8601 format.
-
-    Otherwise, return None.
-    """
-    if isinstance(value, (datetime.datetime, datetime.time)):
-        return isoformat(value)
-    elif isinstance(value, datetime.date):
-        return value.isoformat()
-
-def isoformat(dt):
-    r = dt.isoformat()
-    if isinstance(dt, datetime.datetime) and not dt.tzinfo:
-        r += 'Z'
-    return r
-
-def slugify(text, delim='-', max_length=45):
-    from slugify import slugify
-    result = slugify(
-        text if text else '', 
-        to_lower=True, 
-        max_length=max_length,
-        separator=delim,
-    )
-    return result if result else 'no-title'
-
-def dict_update(d1, d2):
-    '''
-    Updates values in `d1` with `d2`. 
-    Sub dicts will not be overwritten, but updated instead.
-
-    :param d: dict
-    :param update: dict
-    '''
-    for key in d2:
-        if key in d1:
-            if isinstance(d1[key], dict):
-                d1[key].update(d2[key])
-            else:
-                d1[key] = d2[key]
-        else:
-            d1[key] = d2[key]
-    return d1
-
-def not_redis_none(v):
-    if v and (v != b'None'):
-        return True
-    return False
-
-def decode_dict(d, decoding='utf-8'):
-    return {k.decode(decoding): v.decode(decoding) for k, v in d.items()}
 
 def url_encode_tornado_arguments(arguments):
     '''
@@ -167,17 +100,6 @@ def keys_to_remove(keys, d):
     '''
     for key in keys:
         if key in d:
-            del d[key]
-
-def keys_to_keep(keys, d):
-    '''
-    Removes keys from d that are not in `keys`.
-
-    :param keys: list of str
-    :param d: dict
-    '''
-    for key in d:
-        if key not in keys:
             del d[key]
 
 # From http://stackoverflow.com/a/18888633
@@ -286,19 +208,33 @@ class dotdict(dict):
     
     __delattr__= dict.__delitem__
 
+def isoformat(dt):
+    r = dt.isoformat()
+    if isinstance(dt, datetime) and not dt.tzinfo:
+        r += 'Z'
+    return r
+
 def row_to_dict(row):
+    if not row:
+        return
+    if isinstance(row, sa.engine.Row):
+        return dict(row._mapping)
+
     ir = sa.inspect(row)
     if ir.expired:
         session = getattr(row, 'session')
         if session:
             session.refresh(row)
     unloaded = ir.unloaded
+    ignore = getattr(row, '__serialize_ignore__', None) or ()
     d = {}
     for attr in ir.attrs:
-        if attr.key.startswith('_') or attr.key in unloaded:
+        if attr.key.startswith('_') or attr.key in unloaded or attr.key in ignore:
             continue
         if hasattr(attr.value, 'serialize'):
             d[attr.key] = attr.value.serialize()
+        elif hasattr(attr.value, 'to_dict'):
+            d[attr.key] = attr.value.to_dict()
         else:
             d[attr.key] = attr.value
     return d

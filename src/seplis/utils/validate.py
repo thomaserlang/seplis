@@ -1,4 +1,7 @@
+import inspect
+from typing import Optional
 import good
+import pydantic
 
 class Validation_exception(Exception):
 
@@ -16,7 +19,9 @@ def validate_schema(schema, data, **kwargs):
     Raises `Validation_exception`
 
     """
-    try:
+    try:            
+        if inspect.isclass(schema) and issubclass(schema, pydantic.BaseModel):
+            return schema.parse_obj(data)
         if not isinstance(schema, good.Schema):        
             schema = good.Schema(schema, **kwargs)
         return schema(data)    
@@ -34,3 +39,23 @@ def validate_schema(schema, data, **kwargs):
             'message': e.message,
         }]            
         raise Validation_exception(errors=data)
+    except pydantic.ValidationError as e:
+        data = []
+        for e in e.errors():
+            data.append({
+                'field': '.'.join(str(x) for x in e['loc']),
+                'message': e['msg'],
+            })            
+        raise Validation_exception(errors=data)
+
+
+class AllOptional(pydantic.main.ModelMetaclass):
+    def __new__(self, name, bases, namespaces, **kwargs):
+        annotations = namespaces.get('__annotations__', {})
+        for base in bases:
+            annotations.update(base.__annotations__)
+        for field in annotations:
+            if not field.startswith('__'):
+                annotations[field] = Optional[annotations[field]]
+        namespaces['__annotations__'] = annotations
+        return super().__new__(self, name, bases, namespaces, **kwargs)

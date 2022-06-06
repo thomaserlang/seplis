@@ -38,6 +38,10 @@ urls = [
     U(r'/1/shows/([0-9]+)/user-rating', h.user_show_rating.Handler),
     
     U(r'/1/movies', h.movie.Handler),
+    U(r'/1/movies/([0-9]+)', h.movie.Handler),
+    U(r'/1/movies/([0-9]+)/watched', h.movie_watched.Handler),
+    U(r'/1/movies/([0-9]+)/position', h.movie_position.Handler),
+    U(r'/1/movies/([0-9]+)/stared', h.movie_stared.Handler),
 
     U(r'/1/users', h.user.Collection_handler),
     U(r'/1/users/current', h.user.Current_handler),            
@@ -53,7 +57,10 @@ urls = [
     U(r'/1/users/([a-z0-9]+)/shows-watched', h.shows_watched.Handler,),
     U(r'/1/users/([a-z0-9]+)/shows-recently-aired', h.shows_recently_aired.Handler),
     U(r'/1/users/([a-z0-9]+)/shows-countdown', h.shows_countdown.Handler),
-    U(r'/1/users/([a-z0-9]+)/shows-etw', h.shows_etw.Handler),        
+    U(r'/1/users/([a-z0-9]+)/shows-etw', h.shows_etw.Handler),
+    U(r'/1/users/me/movies-stared', h.movies_stared.Handler),
+    U(r'/1/users/me/movies-watched', h.movies_watched.Handler),
+        
 
     U(r'/1/play-servers', h.play_server.Collection_handler),
     U(r'/1/play-servers/([0-9]+)', h.play_server.Handler),

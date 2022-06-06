@@ -8,3 +8,4 @@ from .app import *
 from .play_server import *
 from .reset_password import *
 from .user_show_rating import *
+from .movie import *

@@ -1,13 +1,16 @@
+import logging
+from typing import Any, List
 from seplis.utils import *
 from seplis.api import exceptions
 from seplis.api.base.pagination import Pagination
 
 import sqlalchemy as sa
-from sqlalchemy import orm
+from sqlalchemy import func, orm, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 class Base_query(orm.Query):
  
-    def paginate(self, page=1, per_page=25):
+    def paginate(self, page=1, per_page=25) -> Pagination:
         records = self.limit(per_page).offset((page-1)*per_page).all()
         if page == 1 and len(records) < per_page:
             total = len(records)
@@ -21,6 +24,24 @@ class Base_query(orm.Query):
             records=records,
         )
         return pagination
+
+async def paginate(session: AsyncSession, query: Any, page=1, per_page=25, scalars: bool = True) -> Pagination:
+    if scalars:
+        records = await session.scalars(query.limit(per_page).offset((page-1)*per_page))
+    else:
+        records = await session.execute(query.limit(per_page).offset((page-1)*per_page))
+    records = records.all()
+    if page == 1 and len(records) < per_page:
+        total = len(records)
+    else:
+        total = await session.scalar(select(func.count()).select_from(query.order_by(None).subquery()))
+    pagination = Pagination(
+        page=page,
+        per_page=per_page,
+        total=total,
+        records=records,
+    )
+    return pagination
 
 def sort_parser(sort, sort_lookup, sort_list=None):
     """

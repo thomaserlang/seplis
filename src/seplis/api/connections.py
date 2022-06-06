@@ -1,3 +1,4 @@
+import asyncio
 import redis
 import logging
 from tornado.httpclient import AsyncHTTPClient, HTTPError

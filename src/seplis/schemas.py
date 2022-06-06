@@ -1,5 +1,5 @@
-import re, good, aniso8601, logging
-from dateutil import parser, tz
+import good, aniso8601
+from dateutil import tz
 from seplis.api import constants
 
 def validate(schema, d, *arg, **args):

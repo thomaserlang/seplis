@@ -2,6 +2,7 @@ import orjson, decimal
 from collections import OrderedDict
 from tornado import escape
 from datetime import datetime
+from sqlalchemy.engine import Row
 
 def default(obj):
     if isinstance(obj, set):
@@ -10,12 +11,12 @@ def default(obj):
         return obj.to_dict()
     elif hasattr(obj, 'serialize'):
         return obj.serialize()
+    elif isinstance(obj, Row):
+        return dict(obj._mapping)
     elif isinstance(obj, decimal.Decimal):
         return str(obj)
     elif isinstance(obj, OrderedDict):
         return dict(obj)
-    elif isinstance(obj, datetime):
-        return datetime.isoformat()+'Z'
     raise TypeError
 
 def json_dumps(obj):

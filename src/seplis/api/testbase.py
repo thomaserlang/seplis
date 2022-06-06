@@ -229,3 +229,19 @@ class Testbase(AsyncHTTPTestCase):
             session.add(user)
             session.commit()
             return utils.dotdict(user.serialize())
+
+    def execute_query(self, query):
+        async def run():
+            with database.async_engine() as session:
+                r = await session.execute(query)
+                await session.commit()
+                return r
+        return self.loop.run_until_complete(run())
+
+    def with_session(self, f, **kwargs):
+        async def run():
+            async with database.async_session() as session:
+                r = await f(session=session, **kwargs)
+                await session.commit()
+                return r
+        return self.loop.run_until_complete(run())

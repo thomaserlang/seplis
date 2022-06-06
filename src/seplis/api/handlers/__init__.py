@@ -23,4 +23,9 @@ from . import (
     user_show_rating,
     health,
     movie,
+    movie_watched,
+    movie_position,
+    movie_stared,
+    movies_stared,
+    movies_watched,
 )
