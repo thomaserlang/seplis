@@ -50,6 +50,7 @@ def upgrade():
 @cli.command()
 def rebuild_cache():
     logger.set_logger('rebuild_cache.log', to_sentry=True)
+    database.connect()
     import seplis.api.rebuild_cache
     try:
         seplis.api.rebuild_cache.main()
