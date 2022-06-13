@@ -258,7 +258,6 @@ class Test__upload_image(TestCase):
         responses.add(responses.GET, 'http://example.net/test.jpg',
             body='AN IMAGE',
             status=404,
-            stream=True,
         )
         with mock.patch('seplis.importer.shows.importer.client') as c:
             with self.assertRaises(Importer_exception):
@@ -270,7 +269,6 @@ class Test__upload_image(TestCase):
         responses.add(responses.GET, 'http://example.net/test.jpg',
             body='AN IMAGE',
             status=200,
-            stream=True,
         )
         upload_url = client.url+'/shows/1/images/1/data'
         delete_url = client.url + '/shows/1/images/1'

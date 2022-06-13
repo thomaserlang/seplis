@@ -221,7 +221,7 @@ class Handler(base.Handler):
             body['_source'] = fields
 
         result = await self.es(
-            '/shows/_doc/_search',
+            '/shows/_search',
             body=body,
             query=req,
         )

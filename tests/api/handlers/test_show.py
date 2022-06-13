@@ -1,7 +1,7 @@
 # coding=UTF-8
 import json
 import nose
-from seplis.api.testbase import Testbase
+from seplis.api.testbase import Testbase, run_file
 from seplis import utils, config
 from seplis.api import constants, models
 from seplis.api.decorators import new_session
@@ -434,7 +434,7 @@ class test_show(Testbase):
         response = self.get('/1/shows', {
             'q': 'this is a',
         })
-        self.assertEqual(response.code, 200)
+        self.assertEqual(response.code, 200, response.body)
         shows = utils.json_loads(response.body)
         self.assertEqual(len(shows), 1)
         self.assertEqual(shows[0]['title'], 'This is a test show')
@@ -762,4 +762,4 @@ class test_show(Testbase):
 
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    run_file(__file__)
