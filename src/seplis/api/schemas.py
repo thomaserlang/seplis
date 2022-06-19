@@ -1,4 +1,5 @@
 
+from operator import gt
 from pydantic import BaseModel, conint, constr, Field
 from typing import List, Optional
 from datetime import date
@@ -24,11 +25,11 @@ class Movie_schema(BaseModel):
     status: Optional[conint(gt=-1, lt=5)]
     description: Optional[constr(min_length=1, max_length=2000, strip_whitespace=True)]
     externals: Optional[Movie_externals_schema]
-    status: Optional[conint(ge=0, le=5)] # Status: 0: Canceled, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production
+    status: Optional[conint(ge=0, le=5)] # Status: 0: Unknown, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production, 6: Canceled,
     language: Optional[constr(min_length=1, max_length=20)]
     poster_image_id: Optional[conint(gt=1)]
     runtime: Optional[conint(gt=1)]
-    release_date: Optional[date]
+    premiered: Optional[date]
 
     class Config:
         extra = 'forbid'
@@ -37,3 +38,9 @@ class Pagination_schema(BaseModel):
 
     page: Optional[List[conint(gt=0)]] = [1]
     per_page: Optional[List[conint(gt=0, le=500)]] = [25]
+
+
+class Search_schema(BaseModel):
+
+    query: Optional[List[constr(min_length=1, max_length=200)]]
+    title: Optional[List[constr(min_length=1, max_length=200)]]

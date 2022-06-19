@@ -90,6 +90,26 @@ class Show(Base):
             '_id': self.id,
             '_source': utils.json_dumps(self.serialize()),
         })
+        at = [self.title, *self.alternative_titles]
+        year = str(self.premiered.year) if self.premiered else ''
+        for title in at[:]:
+            if title and year not in title:
+                t = f'{title} {year}'
+                if t not in at:
+                    at.append(t)
+        self.session.es_bulk.append({
+            '_index': 'titles',
+            '_id': f'serie-{self.id}',
+            '_source': utils.json_dumps({ 
+                'type': 'serie',
+                'id': self.id,
+                'title': self.title,
+                'titles': at,
+                'premiered': self.premiered,
+                'imdb': self.externals.get('imdb'),
+                'poster_image': self.poster_image,
+            }),
+        })
 
     def before_upsert(self):
         self.check_importers()
@@ -107,6 +127,11 @@ class Show(Base):
             '_op_type': 'delete',
             '_index': 'shows',
             '_id': self.id,
+        })
+        self.session.es_bulk.append({
+            '_op_type': 'delete',
+            '_index': 'titles',
+            '_id': f'serie-{self.id}',
         })
 
         from . import Episode

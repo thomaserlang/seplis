@@ -202,9 +202,7 @@ class Testbase(AsyncHTTPTestCase):
         return show['id']
 
     def refresh_es(self):
-        self.get('http://{}/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
+        database.es.indices.refresh()
 
     def new_app(self, name, user_id, level, redirect_uri=''):
         with new_session() as session:

@@ -18,7 +18,7 @@ urls = [
     U(r'/static/(.*)', web.StaticFileHandler, {'path': static_path}),
 
     U(r'/1/shows', h.show.Handler),
-    U(r'/1/shows/externals/([a-z_-]+)/([a-z0-9]+)', h.show.External_handler),            
+    U(r'/1/shows/externals/([a-z_-]+)/([a-z0-9]+)', h.show.External_handler),
     U(r'/1/shows/([0-9]+)', h.show.Handler),
     U(r'/1/shows/([0-9,]+)', h.show.Multi_handler),
     U(r'/1/shows/([0-9]+)/user-stats', h.user_show_stats.Handler),
@@ -42,6 +42,12 @@ urls = [
     U(r'/1/movies/([0-9]+)/watched', h.movie_watched.Handler),
     U(r'/1/movies/([0-9]+)/position', h.movie_position.Handler),
     U(r'/1/movies/([0-9]+)/stared', h.movie_stared.Handler),
+    U(r'/1/movies/([0-9]+)/images', h.image.Handler, {'relation_type': 'movie'}),
+    U(r'/1/movies/([0-9]+)/images/([0-9]+)', h.image.Handler),
+    U(r'/1/movies/([0-9]+)/images/([0-9]+)/data', h.image.Data_handler),
+    U(r'/1/movies/externals/([a-z_-]+)/([a-z0-9]+)', h.movie_external.Handler),
+
+    U(r'/1/search', h.search.Handler),
 
     U(r'/1/users', h.user.Collection_handler),
     U(r'/1/users/current', h.user.Current_handler),            

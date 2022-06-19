@@ -2,10 +2,11 @@ from seplis.config import config
 from seplis.api.connections import database
 
 def create_indices():
-    database.es.indices.delete(index='shows', ignore=404)
-    database.es.indices.delete(index='episodes', ignore=404)
-    database.es.indices.delete(index='images', ignore=404)
-    database.es.indices.delete(index='users', ignore=404)
+    database.es.options(ignore_status=[400,404]).indices.delete(index='shows')
+    database.es.options(ignore_status=[400,404]).indices.delete(index='episodes')
+    database.es.options(ignore_status=[400,404]).indices.delete(index='images')
+    database.es.options(ignore_status=[400,404]).indices.delete(index='users')
+    database.es.options(ignore_status=[400,404]).indices.delete(index='titles')
 
     settings = {
         'analysis': {
@@ -25,9 +26,9 @@ def create_indices():
                     'type': 'edge_ngram',
                     'min_gram': 1,
                     'max_gram': 10,
-                    "token_chars": [
-                        "letter",
-                        "digit"
+                    'token_chars': [
+                        'letter',
+                        'digit'
                     ]
                 },
             },
@@ -190,8 +191,26 @@ def create_indices():
             'source_url': { 'type': 'text' },
             'type': { 'type': 'integer' },
             'created_at': { 'type': 'date' },
-        },
+        }
     })
+
+    database.es.indices.create(index='titles', settings=settings, mappings={
+        'properties': {
+            'id': { 'type': 'integer' },
+            'type': { 'type': 'text' },
+            'title': { 'type': 'text' },
+            'titles': {
+                'type': 'search_as_you_type',
+                'analyzer': 'title_search',
+            },
+            'imdb': { 'type': 'text' },
+            'premiered': { 'type': 'date' },
+            'poster_image': {
+                'type': 'object',
+                'enabled': False,
+            }
+        }
+     })
 
 if __name__ == '__main__':
     create_indices()

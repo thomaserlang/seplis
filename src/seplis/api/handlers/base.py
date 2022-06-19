@@ -1,4 +1,5 @@
 from typing import Dict, Union
+from elasticsearch import AsyncElasticsearch
 from pydantic import BaseModel
 from tornado import web, escape
 import http.client, good
@@ -145,6 +146,10 @@ class Handler(web.RequestHandler):
 
     async def es(self, url, query={}, body={}):
         return await database.es_get(url, query, body)
+
+    @property
+    def es_async(self) -> "AsyncElasticsearch":
+        return database.es_async
 
     def get_current_user(self):
         auth = self.request.headers.get('Authorization', None)

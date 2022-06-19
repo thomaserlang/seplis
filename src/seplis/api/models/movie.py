@@ -6,6 +6,7 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from seplis.api.schemas import Movie_schema
 from .base import Base
+from seplis.api.connections import database
 
 
 class Movie(Base):
@@ -24,7 +25,7 @@ class Movie(Base):
     poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
     poster_image = sa.orm.relationship('Image', lazy=False)
     runtime = sa.Column(sa.Integer)
-    release_date = sa.Column(sa.Date)
+    premiered = sa.Column(sa.Date)
 
     @classmethod
     async def save(cls, session: AsyncSession, movie: Movie_schema, movie_id: Union[int, str, None] = None, patch: bool = False) -> Movie:
@@ -38,7 +39,9 @@ class Movie(Base):
             data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, data['alternative_titles'], patch)
         await session.execute(sa.update(cls).where(cls.id == movie_id).values(**data))
         r = await session.scalars(sa.select(cls).where(cls.id == movie_id))
-        return r.one()
+        movie = r.one()
+        await cls._save_for_search(movie)
+        return movie
 
     @staticmethod
     async def _save_externals(session, movie_id: str, externals: Dict[str, str], patch: bool) -> Dict[str, str]:
@@ -65,6 +68,29 @@ class Movie(Base):
             return set(alternative_titles)
         current_alternative_titles = await session.scalar(sa.select(Movie.alternative_titles).where(Movie.id == movie_id))
         return set(current_alternative_titles + alternative_titles)
+    
+    @staticmethod
+    async def _save_for_search(movie: Movie):
+        at = [movie.title, *movie.alternative_titles]
+        year = str(movie.premiered.year) if movie.premiered else ''
+        for title in at[:]:
+            if year not in title:
+                t = f'{title} {year}'
+                if t not in at:
+                    at.append(t)
+        await database.es_async.index(
+            index='titles',
+            id=f'movie-{movie.id}',
+            document={
+                'type': 'movie',
+                'id': movie.id,
+                'title': movie.title,
+                'titles': at,
+                'premiered': movie.premiered,
+                'imdb': movie.externals.get('imdb'),
+                'poster_image': movie.poster_image,
+            }
+        )
 
 
 class Movie_external(Base):
@@ -85,6 +111,7 @@ class Movie_watched(Base):
     position = sa.Column(sa.SmallInteger)
     watched_at = sa.Column(sa.DateTime)
 
+
 class Movie_watched_history(Base):
     __tablename__ = 'movies_watched_history'
     
@@ -92,6 +119,7 @@ class Movie_watched_history(Base):
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'))
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     watched_at = sa.Column(sa.DateTime)
+
 
 class Movie_stared(Base):
     __tablename__ = 'movies_stared'

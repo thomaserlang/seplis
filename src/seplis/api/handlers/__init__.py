@@ -26,6 +26,8 @@ from . import (
     movie_watched,
     movie_position,
     movie_stared,
+    movie_external,
     movies_stared,
     movies_watched,
+    search,
 )

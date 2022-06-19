@@ -405,7 +405,7 @@ class test_show(Testbase):
         self.refresh_es()
 
         response = self.get(
-            f'http://{config["api"]["elasticsearch"]}/episodes/_doc/{show_id}-1'
+            f'{config["api"]["elasticsearch"]}/episodes/_doc/{show_id}-1'
         )
         self.assertEqual(response.code, 404)
 
@@ -427,9 +427,7 @@ class test_show(Testbase):
         })
         self.assertEqual(response.code, 200)
 
-        self.get('http://{}/shows/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
+        self.refresh_es()
  
         response = self.get('/1/shows', {
             'q': 'this is a',

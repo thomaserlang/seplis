@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import orm, event
 from seplis import config, utils
 from seplis.api import exceptions
-from elasticsearch import Elasticsearch, helpers
+from elasticsearch import AsyncElasticsearch, Elasticsearch, helpers
 from rq import Queue
 
 class Database:
@@ -72,7 +72,7 @@ class Database:
         self.es = Elasticsearch(
             config['api']['elasticsearch'],
         )
-
+        self.es_async = AsyncElasticsearch(config['api']['elasticsearch'])
     def setup_sqlalchemy_session(self, connection):
         self.session = sessionmaker(
             bind=connection,
@@ -97,7 +97,7 @@ class Database:
                 query[arg] = [query[arg]]
         try:
             response = await http_client.fetch(
-                'http://{}{}?{}'.format(
+                '{}{}?{}'.format(
                     config['api']['elasticsearch'],
                     url,
                     utils.url_encode_tornado_arguments(query) \

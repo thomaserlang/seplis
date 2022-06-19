@@ -35,7 +35,7 @@ def upgrade():
             )
         ),
         sa.Column('runtime', sa.SmallInteger),
-        sa.Column('release_date', sa.Date),
+        sa.Column('premiered', sa.Date),
     )
 
     op.create_table('movie_externals', 

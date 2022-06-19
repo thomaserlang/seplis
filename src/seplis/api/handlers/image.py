@@ -23,6 +23,7 @@ class Handler(base.Handler):
 
     @concurrent.run_on_executor
     def _post(self, relation_id):
+        logging.info(self.request.body)
         data = self.validate(schemas.Image_required)  
         with new_session() as session:
             image = Image()
@@ -125,6 +126,7 @@ class Handler(base.Handler):
         self.write_object(p)
 
 class Data_handler(file_upload.Handler):
+    ASPECT_RATIO = (0.67, 0.68)
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     @gen.coroutine
@@ -146,6 +148,6 @@ class Data_handler(file_upload.Handler):
             image.width = files[0]['width']
             image.height = files[0]['height']
             if image.type == constants.IMAGE_TYPE_POSTER:
-                if (image.width != 680) or (image.height != 1000):
-                    raise exceptions.Image_wrong_size(680, 1000)
+                if round(image.width/image.height, 2) not in self.ASPECT_RATIO:
+                    raise exceptions.Image_wrong_size(self.ASPECT_RATIO)
             session.commit()

@@ -1,5 +1,7 @@
 import asyncio
 import logging, click
+import signal
+import sys
 from seplis.logger import logger
 from seplis import config
 from seplis.api.connections import database
@@ -96,6 +98,19 @@ def update_shows_all(from_id, do_async):
         logging.exception('update_shows_all')
 
 @cli.command()
+@click.argument('movie_id')
+def update_movie(movie_id):
+    import seplis.importer
+    logger.set_logger('importer_update_movie.log', to_sentry=True)
+    seplis.importer.movies.update_movie(movie_id)
+
+@cli.command()
+def update_movies():
+    import seplis.importer
+    logger.set_logger('importer_update_movies.log', to_sentry=True)
+    seplis.importer.movies.update_incremental()
+
+@cli.command()
 @click.option('-n', default=1, help='worker number')
 def worker(n):
     logger.set_logger('worker-{}.log'.format(n))
@@ -158,7 +173,11 @@ def dev_server():
     seplis.dev_server.main()
 
 def main():
+    signal.signal(signal.SIGINT, sigint_handler)
     cli()
+
+def sigint_handler(signal, frame):
+    sys.exit()
 
 if __name__ == "__main__":
     main()

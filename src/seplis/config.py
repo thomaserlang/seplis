@@ -43,6 +43,7 @@ config = {
     'client': {
         'access_token': None,
         'thetvdb': None,
+        'themoviedb': None,
         'id': 'CHANGE_ME',
         'validate_cert': True,
         'api_url': 'https://api.seplis.net',

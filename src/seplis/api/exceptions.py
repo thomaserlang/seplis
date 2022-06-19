@@ -255,12 +255,12 @@ class Episode_unknown(API_exception):
 
 class Elasticsearch_exception(API_exception):
 
-    def __init__(self, status_code, extra):
+    def __init__(self, status_code=400, extra=None, message=None):
         API_exception.__init__(
             self,
             status_code=status_code,
             code=1700,
-            message='Search error',
+            message=message or 'Search error',
             extra=extra
         ) 
 
@@ -308,11 +308,11 @@ class Image_no_data(API_exception):
         )
 
 class Image_wrong_size(API_exception):
-    def __init__(self, width, height):
+    def __init__(self, aspect_ratio):
         API_exception.__init__(self,
             status_code=400,
             code=2004,
-            message='The image width and height must be: {}X{}'.format(width, height),
+            message=f'The image aspect ratio must be: {aspect_ratio}',
         )    
         
 class File_upload_no_files(API_exception):

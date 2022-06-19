@@ -1,9 +1,8 @@
-from typing import Dict, List
-from sqlalchemy import delete, insert, select, update
+from sqlalchemy import select, update
 from seplis.api.decorators import authenticated
 from seplis.api.handlers import base
 from seplis.api import constants, exceptions, models, schemas
-
+from seplis.api.connections import database
 
 class Handler(base.Handler):
 

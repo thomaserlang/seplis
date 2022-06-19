@@ -77,9 +77,7 @@ class Test_episode(Testbase):
 
 
         # test search
-        self.get('http://{}/episodes/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
+        self.refresh_es()
         response = self.get('/1/shows/{}/episodes'.format(show_id), {
             'q': 'air_date:2014-01-01',
         })
@@ -160,9 +158,7 @@ class Test_episode_append_fields(Testbase):
             }
         )
         self.assertEqual(response.code, 200)
-        self.get('http://{}/episodes/_refresh'.format(
-            config['api']['elasticsearch']
-        ))
+        self.refresh_es()
 
         # we haven't watched any episodes so user_watched should be None
 

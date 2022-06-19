@@ -221,12 +221,12 @@ class Client():
         self.client_secret = client_secret
         self.access_token = access_token
 
-    def _fetch(self, uri, method, timeout=TIMEOUT, params=None, headers=None, **kwargs):        
+    def _fetch(self, uri, method, timeout=TIMEOUT, params=None, headers=None, json=None, **kwargs):        
         if not headers:
             headers = {}
-        if 'Content-Type' not in headers:
+        if 'Content-Type' not in headers and json:
             headers['Content-Type'] = 'application/json'
-        if 'Accept' not in headers:
+        if 'Accept' not in headers and json:
             headers['Accept'] = 'application/json'
         if ('Authorization' not in headers) and self.access_token:
             headers['Authorization'] = 'Bearer {}'.format(self.access_token)
@@ -236,11 +236,11 @@ class Client():
             if not uri.startswith('/'):
                 uri = '/'+uri
             url = self.url+uri
-        response = requests.request(method, url, params=params, headers=headers, **kwargs)
+        response = requests.request(method, url, params=params, headers=headers, json=json, **kwargs)
         if (400 <= response.status_code <= 600) and (response.status_code != 404):
             if response.headers.get('Content-Type') == 'application/json':
                 raise API_error(status_code=response.status_code, **response.json())
-            raise Exception(response.text)
+            raise Exception(f'{response.status_code}: {response.text}')
         return HTTPData(self, response, timeout)
 
     def get(self, uri, params=None, timeout=TIMEOUT, **kwargs):
