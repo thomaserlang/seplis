@@ -89,18 +89,20 @@ def update_movie_metadata(movie):
     if movie['runtime'] != r['runtime']:
         data['runtime'] = r['runtime']
 
-    if movie['premiered'] != r['premiered']:
-        data['premiered'] = r['premiered']
+    if movie['premiered'] != r['release_date']:
+        data['premiered'] = r['release_date']
 
     if movie['description'] != r['overview']:
-        data['description'] = r['overview']
+        data['description'] = r['overview']    
+    
+    if movie['language'] != r['original_language']:
+        data['language'] = r['original_language']
 
     alternative_titles = []
     if r['alternative_titles']:
         for a in r['alternative_titles']['titles']:
             if a['title'] not in movie['alternative_titles']:
                 alternative_titles.append(a['title'])
-
 
     if alternative_titles:
         data['alternative_titles'] = alternative_titles
