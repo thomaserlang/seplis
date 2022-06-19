@@ -78,7 +78,6 @@ def update_movie_metadata(movie):
         logging.error(f'[Movie: {movie["id"]}] Failed to get movie from themoviedb: {r.content}')
         return
     r = r.json()
-    logging.error(r)
     
     if movie['title'] != r['title']:
         data['title'] = r['title']
