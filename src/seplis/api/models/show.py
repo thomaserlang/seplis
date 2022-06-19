@@ -99,9 +99,9 @@ class Show(Base):
                     at.append(t)
         self.session.es_bulk.append({
             '_index': 'titles',
-            '_id': f'serie-{self.id}',
+            '_id': f'series-{self.id}',
             '_source': utils.json_dumps({ 
-                'type': 'serie',
+                'type': 'series',
                 'id': self.id,
                 'title': self.title,
                 'titles': at,
@@ -131,7 +131,7 @@ class Show(Base):
         self.session.es_bulk.append({
             '_op_type': 'delete',
             '_index': 'titles',
-            '_id': f'serie-{self.id}',
+            '_id': f'series-{self.id}',
         })
 
         from . import Episode
