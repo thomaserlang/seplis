@@ -1,4 +1,5 @@
 from sqlalchemy import select, update
+from seplis import tasks
 from seplis.api.decorators import authenticated
 from seplis.api.handlers import base
 from seplis.api import constants, exceptions, models, schemas
@@ -50,3 +51,16 @@ class Handler(base.Handler):
             ))
             await session.commit()
             self.set_status(204)
+
+class Update_handler(base.Handler):
+
+    @authenticated(constants.LEVEL_EDIT_SHOW)
+    def post(self, movie):
+        job = database.queue.enqueue(
+            tasks.update_movie,
+            int(movie),
+            result_ttl=0,
+        )
+        self.write_object({
+            'job_id': job.id,
+        })

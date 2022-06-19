@@ -84,7 +84,7 @@ class Movie(Base):
         at = [self.title, *self.alternative_titles]
         year = str(self.premiered.year) if self.premiered else ''
         for title in at[:]:
-            if year not in title:
+            if title and year not in title:
                 t = f'{title} {year}'
                 if t not in at:
                     at.append(t)
