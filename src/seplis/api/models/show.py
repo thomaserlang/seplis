@@ -107,7 +107,7 @@ class Show(Base):
                 'titles': at,
                 'premiered': self.premiered,
                 'imdb': self.externals.get('imdb'),
-                'poster_image': self.poster_image,
+                'poster_image': self.poster_image.serialize() if self.poster_image else None,
             }),
         })
 

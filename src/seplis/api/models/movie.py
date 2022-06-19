@@ -4,9 +4,12 @@ from typing import List, Union
 import sqlalchemy as sa
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
+from seplis.api import rebuild_cache
+from seplis.api.decorators import new_session
 from seplis.api.schemas import Movie_schema
 from .base import Base
 from seplis.api.connections import database
+from elasticsearch import helpers
 
 
 class Movie(Base):
@@ -71,27 +74,29 @@ class Movie(Base):
     
     @staticmethod
     async def _save_for_search(movie: Movie):
-        at = [movie.title, *movie.alternative_titles]
-        year = str(movie.premiered.year) if movie.premiered else ''
+        await database.es_async.index(
+            index='titles',
+            id=f'movie-{movie.id}',
+            document=movie.title_document(),
+        )
+
+    def title_document(self):
+        at = [self.title, *self.alternative_titles]
+        year = str(self.premiered.year) if self.premiered else ''
         for title in at[:]:
             if year not in title:
                 t = f'{title} {year}'
                 if t not in at:
                     at.append(t)
-        await database.es_async.index(
-            index='titles',
-            id=f'movie-{movie.id}',
-            document={
-                'type': 'movie',
-                'id': movie.id,
-                'title': movie.title,
-                'titles': at,
-                'premiered': movie.premiered,
-                'imdb': movie.externals.get('imdb'),
-                'poster_image': movie.poster_image,
-            }
-        )
-
+        return {
+            'type': 'movie',
+            'id': self.id,
+            'title': self.title,
+            'titles': at,
+            'premiered': self.premiered,
+            'imdb': self.externals.get('imdb'),
+            'poster_image': self.poster_image.serialize() if self.poster_image else None,
+        }
 
 class Movie_external(Base):
     __tablename__ = 'movie_externals'
@@ -127,3 +132,15 @@ class Movie_stared(Base):
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
     created_at = sa.Column(sa.DateTime)
+
+@rebuild_cache.register('movies')
+def rebuild_shows():
+    def c():
+        with new_session() as session:
+            for item in session.query(Movie).yield_per(10000):
+                yield {
+                    '_index': 'titles',
+                    '_id': f'movie-{item.id}',
+                    **item.title_document()
+                }
+    helpers.bulk(database.es, c())
