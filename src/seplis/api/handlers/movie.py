@@ -48,4 +48,5 @@ class Handler(base.Handler):
             await session.execute(update(models.Movie).values(status=-1).where(
                 models.Movie.id == movie_id,
             ))
+            await session.commit()
             self.set_status(204)

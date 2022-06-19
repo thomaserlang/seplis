@@ -16,9 +16,13 @@ class Handler(base.Handler):
             if r:
                 self.write_object({
                     'created_at': r,
+                    'stared': True,
                 })
-            else:
-                raise exceptions.Not_found('User hasn\'t stared this show')
+            else:                
+                self.write_object({
+                    'created_at': None,
+                    'stared': False,
+                })
     
     @authenticated(constants.LEVEL_USER)
     async def put(self, movie_id: str):
@@ -28,6 +32,7 @@ class Handler(base.Handler):
                 user_id=self.current_user.id,
                 created_at=datetime.utcnow(),
             ).prefix_with('IGNORE'))
+            await session.commit()
             self.set_status(204)
 
     @authenticated(constants.LEVEL_USER)
@@ -37,4 +42,5 @@ class Handler(base.Handler):
                 models.Movie_stared.movie_id == movie_id,
                 models.Movie_stared.user_id == self.current_user.id,
             ))
+            await session.commit()
             self.set_status(204)
