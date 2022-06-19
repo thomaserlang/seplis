@@ -1,10 +1,6 @@
-import asyncio
-import logging
-from sqlalchemy import select
-from seplis.api import exceptions, models
+from seplis.api import exceptions
 from seplis.api.handlers import base
 from seplis.api.schemas import Search_schema
-
 
 class Handler(base.Handler):
     __arguments_schema__ = Search_schema
@@ -14,7 +10,6 @@ class Handler(base.Handler):
         if not query:
             raise exceptions.Elasticsearch_exception(message='No query')
         r = await self.es_async.search(index='titles', query=query)
-        logging.info(r)
         results = []
         for a in r['hits']['hits']:
             a['_source'].pop('titles')
