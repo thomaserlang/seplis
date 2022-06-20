@@ -88,8 +88,8 @@ def update_movie_metadata(movie):
     if movie['runtime'] != r['runtime']:
         data['runtime'] = r['runtime']
 
-    if movie['premiered'] != r['release_date']:
-        data['premiered'] = r['release_date']
+    if movie['release_date'] != r['release_date']:
+        data['release_date'] = r['release_date']
 
     if movie['description'] != r['overview']:
         data['description'] = r['overview']    

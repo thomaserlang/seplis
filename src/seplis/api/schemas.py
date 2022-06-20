@@ -29,7 +29,7 @@ class Movie_schema(BaseModel):
     language: Optional[constr(min_length=1, max_length=20)]
     poster_image_id: Optional[conint(gt=1)]
     runtime: Optional[conint(gt=1)]
-    premiered: Optional[date]
+    release_date: Optional[date]
 
     class Config:
         extra = 'forbid'

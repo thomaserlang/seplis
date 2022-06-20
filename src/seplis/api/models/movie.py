@@ -28,7 +28,7 @@ class Movie(Base):
     poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
     poster_image = sa.orm.relationship('Image', lazy=False)
     runtime = sa.Column(sa.Integer)
-    premiered = sa.Column(sa.Date)
+    release_date = sa.Column(sa.Date)
 
     @classmethod
     async def save(cls, session: AsyncSession, movie: Movie_schema, movie_id: Union[int, str, None] = None, patch: bool = False) -> Movie:
@@ -82,7 +82,7 @@ class Movie(Base):
 
     def title_document(self):
         at = [self.title, *self.alternative_titles]
-        year = str(self.premiered.year) if self.premiered else ''
+        year = str(self.release_date.year) if self.release_date else ''
         for title in at[:]:
             if title and year not in title:
                 t = f'{title} {year}'
@@ -93,7 +93,7 @@ class Movie(Base):
             'id': self.id,
             'title': self.title,
             'titles': at,
-            'premiered': self.premiered,
+            'release_date': self.release_date,
             'imdb': self.externals.get('imdb'),
             'poster_image': self.poster_image.serialize() if self.poster_image else None,
         }
