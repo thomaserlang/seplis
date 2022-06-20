@@ -13,7 +13,7 @@ class test_movie(Testbase):
             'externals': {
                 'imdb': 'tt0368891',
             },
-            'premiered': '2004-11-19',
+            'release_date': '2004-11-19',
             'alternative_titles': [
                 'Nacionalno blago',
                 'Büyük hazine',
@@ -156,12 +156,12 @@ class test_movie(Testbase):
         # Test the walking dead
         response = self.post('/1/movies', {
             'title': 'The Walking Dead',
-            'premiered': '2010-10-31',
+            'release_date': '2010-10-31',
         })
         self.assertEqual(response.code, 201, response.body)
         response = self.post('/1/movies', {
             'title': 'Fear the Walking Dead',
-            'premiered': '2015-08-23',
+            'release_date': '2015-08-23',
         })
         self.assertEqual(response.code, 201, response.body)
         self.refresh_es()
@@ -175,7 +175,7 @@ class test_movie(Testbase):
         # Test `&` and `and`
         response = self.post('/1/movies', {
             'title': 'Test & Test',
-            'premiered': '2010-10-31',
+            'release_date': '2010-10-31',
         })
         self.assertEqual(response.code, 201, response.body)
         self.refresh_es()
