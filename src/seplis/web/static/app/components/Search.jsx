@@ -21,6 +21,7 @@ class Search extends React.Component {
             results: [],
             show: false,
             selectedResultId: null,
+            selectedResultType: null,
         }
         this.requesting = null;
         this.selectedResultId = null;
@@ -53,11 +54,9 @@ class Search extends React.Component {
             });
             return;
         }
-        this.requesting = request('/1/shows', {
+        this.requesting = request('/1/search', {
             query: {
-                title_suggest: e.target.value.trim(),
-                per_page: 10,
-                fields: 'title,premiered,poster_image',
+                query: e.target.value.trim(),
             }
         }).done(data => {
             this.suggestNode.scrollTop = 0;
@@ -79,8 +78,7 @@ class Search extends React.Component {
                 this.setNextSelectedId(1);
                 break;
             case KEY_ENTER:
-                if (this.state.selectedResultId)
-                    location.href = `/show/${this.state.selectedResultId}`;
+                this.click()
                 break;
         }
     }
@@ -101,7 +99,7 @@ class Search extends React.Component {
         if (this.state.selectedResultId) {
             i = 0;
             for (let result of this.state.results) {
-                if (result.id == this.state.selectedResultId) {
+                if ((result.id == this.state.selectedResultId) && (result.type == this.state.selectedResultType)) {
                     break;
                 }
                 i++;
@@ -113,12 +111,14 @@ class Search extends React.Component {
         if (i > (this.state.results.length - 1))
             i = this.state.results.length - 1;
         let id = this.state.results[i].id;
+        let type = this.state.results[i].type;
         this.setState({
             selectedResultId: id,
+            selectedResultType: type,
         });
         if (disableScroll) 
             return;
-        let height = document.getElementById('sresult-'+id).offsetHeight;
+        let height = document.getElementById(`sresult-${type}-${id}`).offsetHeight;
         if (((i+1) * height) > this.suggestNode.offsetHeight) {
             let p = Math.floor(this.suggestNode.offsetHeight / height);
             let g = (i-p+1);
@@ -133,9 +133,13 @@ class Search extends React.Component {
         e.preventDefault();
     }
 
-    click(e) {
-        if (this.state.selectedResultId)
-            location.href = `/show/${this.state.selectedResultId}`;
+    click() {
+        if (this.state.selectedResultId) {
+            if (this.state.selectedResultType == 'series')
+                location.href = `/show/${this.state.selectedResultId}`
+            else if (this.state.selectedResultType == 'movie')
+                location.href = `/movie/${this.state.selectedResultId}`;
+        }
     }
 
     resultClassName(result) {
@@ -167,10 +171,9 @@ class Search extends React.Component {
                 >
                     {this.state.results.map(r => (
                         <div 
-                            key={r.id}
-                            id={`sresult-${r.id}`}
+                            key={`${r.type}-${r.id}`}
+                            id={`sresult-${r.type}-${r.id}`}
                             data-id={r.id}
-                            href={`/show/${r.id}`} 
                             className={this.resultClassName(r)}
                             onMouseOver={this.onMouseOver}
                             onMouseOut={this.onMouseOut}
@@ -182,7 +185,7 @@ class Search extends React.Component {
                                 />
                             </div>
                             <div className="title">
-                                {r.title} ({r.premiered?r.premiered.substring(0, 4):''})
+                                {r.title} ({r.release_date?r.release_date.substring(0, 4):''})
                             </div>
                         </div>
                     ))}

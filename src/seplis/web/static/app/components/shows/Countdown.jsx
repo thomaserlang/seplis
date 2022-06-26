@@ -59,7 +59,7 @@ class Countdown extends React.Component {
         if (this.state.items.length == 0)
             return (
                 <div className="alert alert-info">
-                    None of the shows you follow have episodes airing! :(
+                    None of the shows you follow have episodes airing.
                 </div>
             )
         return (

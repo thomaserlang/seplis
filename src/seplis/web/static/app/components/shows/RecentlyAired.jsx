@@ -3,8 +3,6 @@ import PropTypes from 'prop-types'
 import {getUserId, episodeNumber} from 'utils'
 import {request} from 'api'
 
-import './List.scss'
-
 const propTypes = {
     perPage: PropTypes.number,
     page: PropTypes.number,

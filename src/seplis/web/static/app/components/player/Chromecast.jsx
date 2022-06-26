@@ -194,6 +194,90 @@ class Chromecast {
         })
     }
 
+
+    playMovie(movieId, startTime) {
+        return new Promise((resolve, reject) => {
+            if (!this.isConnected()) {
+                alert('Not connected to a cast device.')
+                reject()
+                return
+            }
+            let url =`/1/movies/${movieId}/play-servers`
+            Promise.all([
+                getPlayServer(url),
+                request('/1/progress-token'),
+                request(`/1/movies/${movieId}`),
+                request(`/1/movies/${movieId}/watched`),
+                request(`/1/movies/${movieId}/user-subtitle-lang`),
+            ]).then(result => {
+                if (!startTime) {
+                    if (result[3])
+                        startTime = result[3].position
+                    else
+                        startTime = 0
+                }
+                let streams = []
+                for (let v of result[0]['metadata']['streams']) {
+                    let d = {
+                        index: v.index,
+                        codec_name: v.codec_name,
+                        codec_type: v.codec_type,
+                        tags: {},                   
+                    }
+                    if (v.tags) {
+                        d.tags.language = v.tags.language
+                        d.tags.title = v.tags.title
+                    }
+                    streams.push(d)
+                }
+                let customData = {
+                    play: result[0]['playServer'],
+                    metadata: {
+                        format: {
+                            duration: result[0]['metadata']['format']['duration'],
+                        },
+                        streams: streams,
+                    },
+                    token: result[1]['token'],
+                    type: 'movie',
+                    movie: {
+                        id: result[2]['id'],
+                        title: result[2]['title'],
+                    },
+                    startTime: startTime,
+                    apiUrl: seplisBaseUrl,
+                }
+                let playUrl = result[0].playServer.play_url+'/play'+
+                    '?play_id='+result[0].playServer.play_id
+                playUrl += `&session=${guid()}`
+                playUrl += `&device=chromecast`
+                if (startTime)
+                    playUrl += `&start_time=${startTime}`
+                if (result[4]) {
+                    playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
+                    playUrl += `&audio_lang=${result[5].audio_lang || ''}`
+                }
+                let request = new chrome.cast.media.LoadRequest(
+                    this._playMovieMediaInfo(playUrl, result[2], result[3]),
+                )
+                request.customData = customData
+                this.getSession().loadMedia(
+                    request,
+                    mediaSession => { 
+                        mediaListener(mediaSession)
+                        resolve(mediaSession) 
+                    },
+                    e => { 
+                        reject(e) 
+                    }, Chromecast
+                )
+            }).catch(e => {
+                reject(e)
+            })
+        })
+    }
+
+
     _playEpisodeMediaInfo(url, show, episode) {
         var mediaInfo = new chrome.cast.media.MediaInfo(url)
         mediaInfo.metadata = new chrome.cast.media.TvShowMediaMetadata()
@@ -203,6 +287,17 @@ class Chromecast {
         mediaInfo.metadata.season = episode.season
         mediaInfo.metadata.originalAirdate = episode.air_date
         mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.TV_SHOW
+        mediaInfo.metadata.images = [
+            {url:show.poster_image!=null?show.poster_image.url + '@SX180.jpg':''},
+        ]
+        return mediaInfo
+    }
+
+    _playMovieMediaInfo(url, movie) {
+        var mediaInfo = new chrome.cast.media.MediaInfo(url)
+        mediaInfo.metadata = new chrome.cast.media.MovieMediaMetadata ()
+        mediaInfo.metadata.title = show.title
+        mediaInfo.metadata.releaseDate = episode.premiered
         mediaInfo.metadata.images = [
             {url:show.poster_image!=null?show.poster_image.url + '@SX180.jpg':''},
         ]

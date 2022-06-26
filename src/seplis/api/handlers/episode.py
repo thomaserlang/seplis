@@ -148,6 +148,7 @@ class Play_servers_handler(base.Handler):
                         secret=s.secret,
                         name='play_id',
                         value=utils.json_dumps({
+                            'type': 'series',
                             'show_id': int(show_id),
                             'number': int(number),
                         }),

@@ -46,6 +46,7 @@ urls = [
     U(r'/1/movies/([0-9]+)/images', h.image.Handler, {'relation_type': 'movie'}),
     U(r'/1/movies/([0-9]+)/images/([0-9]+)', h.image.Handler),
     U(r'/1/movies/([0-9]+)/images/([0-9]+)/data', h.image.Data_handler),
+    U(r'/1/movies/([0-9]+)/play-servers', h.movie.Play_servers_handler),
     U(r'/1/movies/externals/([a-z_-]+)/([a-z0-9]+)', h.movie_external.Handler),
 
     U(r'/1/search', h.search.Handler),

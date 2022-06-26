@@ -1,13 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import EditFields from 'components/shows/EditFields'
+import EditFields from 'components/movies/EditFields'
 import Serialize from 'form-serialize'
 import {unflatten} from 'flat'
 import {request} from 'api'
 import {getUserLevel} from 'utils';
 
 const propTypes = {
-    show: PropTypes.object,
+    movie: PropTypes.object,
 }
 
 class Edit extends React.Component {
@@ -25,7 +25,7 @@ class Edit extends React.Component {
     }
 
     componentDidMount() {
-        document.title = `${this.props.show.title} - Edit TV Show | SEPLIS`
+        document.title = `${this.props.movie.title} - Edit Movie | SEPLIS`
     }
 
     submit(e) {
@@ -38,12 +38,12 @@ class Edit extends React.Component {
         let data = unflatten(
             Serialize(e.target, {hash: true})
         )
-        request(`/1/shows/${this.props.show.id}`, {
+        request(`/1/movies/${this.props.movie.id}`, {
             data: data,
             method: 'PUT',
-        }).done(show => {
-            this.setState({success: show})
-            request(`/1/shows/${this.props.show.id}/update`, {
+        }).done(movie => {
+            this.setState({success: movie})
+            request(`/1/movies/${this.props.movie.id}/update`, {
                 method: 'POST',
             })
         }).fail(e => {
@@ -68,17 +68,17 @@ class Edit extends React.Component {
             return
         return (
             <div className="alert alert-success">
-                The show was successfully updated.
+                The movie was successfully updated.
             </div>
         )
     }
 
     deleteClick = (e) => {
         e.preventDefault()
-        if (!confirm('Sure you want to delete this show?'))
+        if (!confirm('Sure you want to delete this movie?'))
             return
         this.setState({deleting: true})
-        request(`/1/shows/${this.props.show.id}`, {
+        request(`/1/movies/${this.props.movie.id}`, {
             method: 'DELETE',
         }).done(() => {
             location.href = '/'
@@ -104,7 +104,7 @@ class Edit extends React.Component {
     render() {
         return (
             <form method="post" onSubmit={this.onSubmit}>
-                <EditFields show={this.props.show} />
+                <EditFields movie={this.props.movie} />
                 {this.renderError()}
                 {this.renderSuccess()}
                 {this.renderDelete()}

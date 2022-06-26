@@ -8,6 +8,7 @@ import SignIn from './views/SignIn'
 import SignOut from './views/SignOut'
 import CreateUser from './views/CreateUser'
 import PlayEpisode from './views/show/PlayEpisode'
+import PlayMovie from './views/movie/Play'
 import ResetPassword from './views/ResetPassword'
 
 import './styles/Base.scss'
@@ -25,6 +26,7 @@ ReactDOM.render((
             <Route exact path="/reset-password" component={ResetPassword} />
             <Route path="/reset-password/:key" component={ResetPassword} />
             <Route exact path="/show/:showId/episode/:number/play" component={PlayEpisode} />
+            <Route exact path="/movie/:movieId/play" component={PlayMovie} />
             <Route path="/" component={Index} />            
         </Switch>
     </BrowserRouter>

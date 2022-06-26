@@ -60,7 +60,7 @@ class EpisodesToWatch extends React.Component {
         if (this.state.items.length == 0)
             return (
                 <div className="alert alert-info">
-                    You have zero episodes to watch! :(
+                    You have zero episodes to watch.
                 </div>
             )
         return (

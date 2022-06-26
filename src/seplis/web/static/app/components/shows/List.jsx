@@ -4,8 +4,6 @@ import ClassNames from 'classnames'
 import {Link} from 'react-router-dom'
 import {episodeNumber} from 'utils'
 
-import './List.scss'
-
 const propTypes = {
     shows: PropTypes.array.isRequired,
     mobile_xscroll: PropTypes.bool,

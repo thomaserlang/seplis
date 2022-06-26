@@ -16,6 +16,10 @@ import Password from './Password'
 import PlayServers from './PlayServers'
 import PlayServer from './PlayServer'
 import UserShowsStats from './UserShowsStats'
+import MovieNew from './movie/New'
+import Movie from './movie'
+import MoviesWatched from './movie/Watched'
+import MoviesStared from './movie/Stared'
 
 
 class Index extends React.Component {
@@ -32,7 +36,7 @@ class Index extends React.Component {
                 <Route path="/countdown" component={Countdown} />
                 <Route path="/episodes-to-watch" component={EpisodesToWatch} />
                 <Route path="/" exact component={Main} />
-                <Route path="/main" component={Main} />
+                <Route path="/shows-main" component={Main} />
                 <Route path="/air-dates" component={AirDates} />
                 <Route path="/account" component={Account} />
                 <Route path="/password" component={Password} />
@@ -40,6 +44,10 @@ class Index extends React.Component {
                 <Route path="/new-play-server" component={PlayServer} />
                 <Route path="/play-server/:serverId" component={PlayServer} />
                 <Route path="/user-shows-stats" component={UserShowsStats} />
+                <Route path="/movie-new" component={MovieNew} />
+                <Route path="/movie/:movieId" component={Movie} />
+                <Route path="/movies-watched" component={MoviesWatched} />
+                <Route path="/movies-stared" component={MoviesStared} />
             </div>
         </>
     }

@@ -1,6 +1,6 @@
 import React from 'react'
 import {Link} from 'react-router-dom'
-import EditFields from 'components/shows/EditFields'
+import EditFields from 'components/movies/EditFields'
 import Serialize from 'form-serialize'
 import {unflatten} from 'flat'
 import {request} from 'api'
@@ -18,7 +18,7 @@ class New extends React.Component {
     }
     
     componentDidMount() {
-        document.title = `New Series | SEPLIS`
+        document.title = `New Movie | SEPLIS`
     }
 
     submit(e) {
@@ -31,11 +31,12 @@ class New extends React.Component {
         let data = unflatten(
             Serialize(e.target, {hash: true})
         )
-        request('/1/shows', {
+        request('/1/movies', {
             data: data,
             method: 'POST',
         }).done(show => {
             this.setState({success: show})
+            
         }).fail(e => {
             this.setState({error: e.responseJSON})
         }).always(() => {
@@ -47,11 +48,11 @@ class New extends React.Component {
         if (!this.state.error) return ''
         switch (this.state.error.code) {
             case 1403:
-                let title = this.state.error.extra.show.title || 'the series'
+                let title = this.state.error.extra.movie.title || 'the movie'
                 return (
                     <div className="alert alert-danger">
                         {this.state.error.message}.<br />
-                        <a href={`/show/${this.state.error.extra.show.id}`}>
+                        <a href={`/movies/${this.state.error.extra.movie.id}`}>
                             Go to {title}
                         </a>.
                     </div>
@@ -70,12 +71,12 @@ class New extends React.Component {
     renderSuccess() {
         return (
             <span>
-            <h1>Show successfully created</h1>
+            <h1>Movie successfully created</h1>
             <div className="alert alert-success">
-                The series has been created. It will be imported shortly.
+                The movie has been created. It will be imported shortly.
                 <ul>
-                    <li><a href={`/show/${this.state.success.id}`}>Go to the series</a></li>
-                    <li><Link to="/show-new">Create another series</Link></li>
+                    <li><a href={`/movie/${this.state.success.id}`}>Go to the the movie</a></li>
+                    <li><Link to="/movie-new">Create another movie</Link></li>
                 </ul>
             </div>
             </span>
@@ -88,7 +89,7 @@ class New extends React.Component {
 
         return (
             <form method="post" onSubmit={this.onSubmit}>
-                <h1>New Series</h1>
+                <h1>New Movie</h1>
                 <EditFields />
                 {this.renderError()}
                 <button 

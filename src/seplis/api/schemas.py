@@ -44,3 +44,9 @@ class Search_schema(BaseModel):
 
     query: Optional[List[constr(min_length=1, max_length=200)]]
     title: Optional[List[constr(min_length=1, max_length=200)]]
+
+
+class Subtitle_language(BaseModel):
+
+    subtitle_lang: Optional[constr(min_length=1, max_length=20)]
+    audio_lang: Optional[constr(min_length=1, max_length=20)]

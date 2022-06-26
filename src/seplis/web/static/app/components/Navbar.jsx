@@ -17,9 +17,11 @@ class Navbar extends React.Component {
                     className="link dropdown-toggle" 
                     data-toggle="dropdown"
                 >
-                    Shows                      
+                    Series
                 </a>
                 <div className="dropdown-menu">
+                    <Link className="dropdown-item" to="/shows-main">Main</Link>
+                    <Link className="dropdown-item" to="/air-dates">Air dates</Link>
                     <Link className="dropdown-item" to="/countdown">Countdown</Link>
                     <Link className="dropdown-item" to="/following">Following</Link>
                     <Link className="dropdown-item" to="/episodes-to-watch">Episodes to Watch</Link>
@@ -27,31 +29,29 @@ class Navbar extends React.Component {
                     <Link className="dropdown-item" to="/shows-watched">Watched</Link>
                     <Link className="dropdown-item" to="/user-shows-stats">Stats</Link>
                     <div className="dropdown-divider"></div>
-                    <Link className="dropdown-item" to="/show-new">New show</Link>
+                    <Link className="dropdown-item" to="/show-new">New series</Link>
                 </div>
             </span>
         )
     }
 
-    renderMain() {
+    renderMoviesDropdown() {
         return (
-            <Link 
-                className="link" 
-                to="/"
-            >
-                Main
-            </Link>
-        )
-    }
-
-    renderAirDates() {
-        return (
-            <Link 
-                className="link" 
-                to="/air-dates"
-            >
-                Air dates
-            </Link>
+            <span className="dropdown">
+                <a 
+                    className="link dropdown-toggle" 
+                    data-toggle="dropdown"
+                >
+                    Movies                   
+                </a>
+                <div className="dropdown-menu">
+                    <Link className="dropdown-item" to="/movies-main">Main</Link>
+                    <Link className="dropdown-item" to="/movies-stared">Stared</Link>
+                    <Link className="dropdown-item" to="/movies-watched">Watched movies</Link>
+                    <div className="dropdown-divider"></div>
+                    <Link className="dropdown-item" to="/movie-new">New movie</Link>
+                </div>
+            </span>
         )
     }
 
@@ -119,9 +119,8 @@ class Navbar extends React.Component {
                 <div className="container">
                     <div className="row">
                         <div className="col-auto">
-                            {this.renderMain()}
-                            {this.renderAirDates()}
                             {this.renderShowDropdown()}
+                            {this.renderMoviesDropdown()}
                         </div>                        
 
                         <div className="col-auto ml-auto order-sm-2 order-md-12">

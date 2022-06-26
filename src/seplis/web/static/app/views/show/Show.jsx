@@ -72,13 +72,13 @@ class Show extends React.Component {
         }, 5000);
         return (
             <center>
-                <h1>The show is currently in the import queue</h1>
+                <h1>The series is currently in the import queue</h1>
                 <h2>Check back later!</h2>
                 <Link 
                     className="btn btn-warning" 
                     to={`/show/${this.state.show.id}/edit`}
                 >
-                    Edit show
+                    Edit series
                 </Link>
                 <Loader />
             </center>
