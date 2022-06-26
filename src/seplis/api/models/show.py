@@ -105,7 +105,7 @@ class Show(Base):
                 'id': self.id,
                 'title': self.title,
                 'titles': at,
-                'premiered': self.premiered,
+                'release_date': self.premiered,
                 'imdb': self.externals.get('imdb'),
                 'poster_image': self.poster_image.serialize() if self.poster_image else None,
             }),
