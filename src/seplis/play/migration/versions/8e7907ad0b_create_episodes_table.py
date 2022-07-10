@@ -18,8 +18,8 @@ def upgrade():
     op.create_table('episodes', 
         sa.Column('show_id', sa.Integer, primary_key=True),
         sa.Column('number', sa.Integer, primary_key=True),
-        sa.Column('path', sa.Text),
-        sa.Column('meta_data', sa.Text),
+        sa.Column('path', sa.String(400)),
+        sa.Column('meta_data', sa.JSON),
         sa.Column('modified_time', sa.DateTime),
     )
 
@@ -38,4 +38,4 @@ def upgrade():
     )
 
 def downgrade():
-    raise NotImplemented()
+    raise NotImplemented

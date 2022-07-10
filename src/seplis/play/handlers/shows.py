@@ -1,20 +1,19 @@
+import logging
 import tornado.web
 import tornado.gen
 import tornado.escape
 from seplis import config, utils, Async_client
 from seplis.play import models
-from seplis.play.decorators import new_session
-from sqlalchemy import desc
+from seplis.play.connections import database
+from sqlalchemy import desc, func, select, update
 
 class Handler(tornado.web.RequestHandler):
 
-    def get(self):
-        with new_session() as session:
-            shows = session.query(
-                models.Show_id_lookup
-            ).order_by(
-                desc(models.Show_id_lookup.updated),
-            ).all()
+    async def get(self):
+        async with database.session_async() as session:
+            query = select(models.Show_id_lookup).order_by(desc(models.Show_id_lookup.updated))
+            shows = await session.scalars(query)
+            shows = shows.all()
             self.render(
                 'play_shows.html',
                 shows=shows,
@@ -22,43 +21,41 @@ class Handler(tornado.web.RequestHandler):
                 url_escape=tornado.escape.url_escape
             )
 
-    def post(self):
+    async def post(self):
         set_default_headers(self)
-        with new_session() as session:
+        async with database.session_async() as session:
             with session.no_autoflush:
-                show = session.query(
-                    models.Show_id_lookup,
-                ).filter(
+                show = await session.scalar(select(models.Show_id_lookup).where(
                     models.Show_id_lookup.file_show_title == \
                         self.get_argument('file_show_title')
-                ).first()
+                ))
                 if not show:
                     raise tornado.web.HTTPError(404, 'show not found')
                 old_show_id = show.show_id
                 show.show_id = self.get_argument('show_id')            
                 show.show_title = self.get_argument('show_title')
                 if old_show_id:
-                    count = session.query(
-                        models.Show_id_lookup,
-                    ).filter(
+                    count = await session.scalar(select(
+                        func.count(models.Show_id_lookup.show_id)
+                    ).where(
                         models.Show_id_lookup.show_id == old_show_id
-                    ).count()
+                    ))
                     if count < 2:
-                        session.query(
-                            models.Episode_number_lookup,
-                        ).filter(
+                        await session.execute(update(
+                            models.Episode_number_lookup
+                        ).values({
+                            'show_id': show.show_id,
+                        }).where(                            
                             models.Episode_number_lookup.show_id == old_show_id,
-                        ).update({
+                        ))
+                        await session.execute(update(
+                            models.Episode
+                        ).values({
                             'show_id': show.show_id,
-                        })
-                        session.query(
-                            models.Episode,
-                        ).filter(
+                        }).where(                            
                             models.Episode.show_id == old_show_id,
-                        ).update({
-                            'show_id': show.show_id,
-                        })
-                session.commit()
+                        ))
+                await session.commit()
                 self.write('{}')
 
 class API_show_suggest_handler(tornado.web.RequestHandler):

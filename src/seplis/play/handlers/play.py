@@ -1,31 +1,34 @@
 import logging, os
 import asyncio
+from sqlalchemy import select
 from tornado import web, ioloop
+
+from seplis.play.connections import database
 
 from .types import pipe, hls
 from ua_parser import user_agent_parser
 
 from seplis import config, utils
-from seplis.play.decorators import new_session
 from seplis.play import models
 
 class Play_handler(web.RequestHandler):
 
-    def get(self):
+    async def get(self):
         self._auto_finish = False
         self.ioloop = ioloop.IOLoop.current()
         self.agent = user_agent_parser.Parse(self.request.headers['User-Agent'])
-        metadata = get_metadata(self.get_argument('play_id'))
+        metadata = await get_metadata(self.get_argument('play_id'))
         if not metadata:
             self.set_status(404)
+            self.set_header('Content-Type', 'application/json')
             self.write('{"error": "No episode found"}')
             self.finish()
             return
         settings = get_device_settings(self)
         if settings['type'] == 'pipe':
-            pipe.start(self, settings, metadata)
+            pipe.start(self, settings, metadata[0])
         if settings['type'] == 'hls':
-            hls.start(self, settings, metadata)
+            hls.start(self, settings, metadata[0])
 
     def set_default_headers(self):
         set_header(self)
@@ -47,19 +50,20 @@ class File_handler(web.StaticFileHandler):
 
 class Metadata_handler(web.RequestHandler):
 
-    def get(self):
-        metadata = get_metadata(self.get_argument('play_id'))
+    async def get(self):
+        metadata = await get_metadata(self.get_argument('play_id'))
         if not metadata:
             self.set_status(404)
-            self.write('{"error": "No episode found"}')
+            self.write('{"error": "No movie/episode found"}')
             return
-        self.write(metadata)
+        self.write(utils.json_dumps(metadata))
 
     def options(self, *args, **kwargs):
         self.set_status(204)
 
     def set_default_headers(self):
         set_header(self)
+        self.set_header('Content-Type', 'application/json')
 
 def set_header(self):
     self.set_header('Cache-Control', 'no-cache, must-revalidate')
@@ -81,16 +85,24 @@ def get_device_settings(handler):
         ))
     return settings
 
-def get_metadata(play_id):
+async def get_metadata(play_id):
     data = decode_play_id(play_id)
-    with new_session() as session:
-        episode = session.query(
-            models.Episode.meta_data,
-        ).filter(
-            models.Episode.show_id == data['show_id'],
-            models.Episode.number == data['number'],
-        ).first()
-        return episode.meta_data if episode else None
+    async with database.session_async() as session:
+        if data['type'] == 'series':
+            query = select(models.Episode.meta_data).where(
+                models.Episode.show_id == data['show_id'],
+                models.Episode.number == data['number'],
+            )
+            files = await session.scalars(query)
+            files = files.all()
+            return files if files else None
+        elif data['type'] == 'movie':
+            query = select(models.Movie.meta_data).where(
+                models.Movie.movie_id == data['movie_id'],
+            )
+            files = await session.scalars(query)
+            files = files.all()
+            return files if files else None
 
 def decode_play_id(play_id):
     data = web.decode_signed_value(

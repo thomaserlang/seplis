@@ -81,7 +81,7 @@ class PlayEpisode extends React.Component {
             this.setState({
                 loadingPlayServers: false,
                 playServer: obj.playServer,
-                metadata: obj.metadata,
+                metadata: obj.metadata[0],
             })
         }).catch((error) => {
             this.setState({

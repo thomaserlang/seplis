@@ -4,7 +4,6 @@ import signal
 import sys
 from seplis.logger import logger
 from seplis import config
-from seplis.api.connections import database
 
 @click.group()
 @click.option('--config', default=None, help='path to the config file')
@@ -32,14 +31,17 @@ def api(port):
     if port:
         config['api']['port'] = port
     import seplis.api.app
+    from seplis.api.connections import database
     database.connect()
     asyncio.run(seplis.api.app.main())
 
 @cli.command()
 @click.option('--port', '-p', help='the port')
-def play_server(port):    
+def play_server(port):
     if port:
         config['play']['port'] = port
+    from seplis.play.connections import database
+    database.connect()
     import seplis.play.app
     seplis.play.app.main()
 
@@ -52,6 +54,7 @@ def upgrade():
 @cli.command()
 def rebuild_cache():
     logger.set_logger('rebuild_cache.log', to_sentry=True)
+    from seplis.api.connections import database
     database.connect()
     import seplis.api.rebuild_cache
     try:
@@ -115,8 +118,9 @@ def update_movies():
 def worker(n):
     logger.set_logger('worker-{}.log'.format(n))
     import seplis.tasks.worker
+    from seplis.api.connections import database
+    database.connect()
     try:
-        database.connect()
         seplis.tasks.worker.main()
     except (KeyboardInterrupt, SystemExit):
         raise 
@@ -127,6 +131,8 @@ def worker(n):
 @click.option('--disable_cleanup', is_flag=True, help='Disable cleanup after scan')
 def play_scan(disable_cleanup):
     import seplis.play.scan
+    from seplis.play.connections import database
+    database.connect()
     try:
         seplis.play.scan.upgrade_scan_db()
     except:        
@@ -141,6 +147,8 @@ def play_scan(disable_cleanup):
 def play_scan_watch():
     import seplis.play.scan_watch
     import seplis.play.scan
+    from seplis.play.connections import database
+    database.connect()
     try:
         seplis.play.scan.upgrade_scan_db()
     except:        
@@ -155,6 +163,8 @@ def play_scan_watch():
 @cli.command()
 def play_scan_cleanup():
     import seplis.play.scan
+    from seplis.play.connections import database
+    database.connect()
     try:
         seplis.play.scan.upgrade_scan_db()
     except:        

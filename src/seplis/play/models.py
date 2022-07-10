@@ -4,28 +4,13 @@ from seplis import utils
 
 base = declarative_base()
 
-class JSONEncodedDict(sa.TypeDecorator):  
-    impl = sa.Text  
-  
-    def process_bind_param(self, value, dialect):
-        if value is None:  
-            return None
-        if isinstance(value, str):
-            return value
-        return utils.json_dumps(value)
-  
-    def process_result_value(self, value, dialect):  
-        if not value:  
-            return None
-        return utils.json_loads(value)  
-
 class Episode(base):
     __tablename__ = 'episodes'
 
     show_id = sa.Column(sa.Integer, primary_key=True)
     number = sa.Column(sa.Integer, primary_key=True)
     path = sa.Column(sa.Text)
-    meta_data = sa.Column(JSONEncodedDict())
+    meta_data = sa.Column(sa.JSON)
     modified_time = sa.Column(sa.DateTime)
 
 class Episode_number_lookup(base):
@@ -43,3 +28,19 @@ class Show_id_lookup(base):
     show_title = sa.Column(sa.String(200))
     show_id = sa.Column(sa.Integer)
     updated = sa.Column(sa.DateTime)
+
+class Movie_id_lookup(base):
+    __tablename__ = 'movie_id_lookup'
+
+    file_movie_title = sa.Column(sa.String(200), primary_key=True)
+    movie_title = sa.Column(sa.String(200))
+    movie_id = sa.Column(sa.Integer)
+    updated_at = sa.Column(sa.DateTime)
+
+class Movie(base):
+    __tablename__ = 'movies'
+
+    movie_id = sa.Column(sa.Integer, primary_key=True)
+    path = sa.Column(sa.String(400), primary_key=True)
+    meta_data = sa.Column(sa.JSON)
+    modified_time = sa.Column(sa.DateTime)

@@ -127,7 +127,7 @@ class Chromecast {
                         startTime = 0
                 }
                 let streams = []
-                for (let v of result[0]['metadata']['streams']) {
+                for (let v of result[0]['metadata'][0]['streams']) {
                     let d = {
                         index: v.index,
                         codec_name: v.codec_name,
@@ -144,7 +144,7 @@ class Chromecast {
                     play: result[0]['playServer'],
                     metadata: {
                         format: {
-                            duration: result[0]['metadata']['format']['duration'],
+                            duration: result['metadata'][0]['format']['duration'],
                         },
                         streams: streams,
                     },
