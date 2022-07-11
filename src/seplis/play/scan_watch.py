@@ -17,7 +17,7 @@ class Handler(PatternMatchingEventHandler):
 
     def __init__(self, scan_path, type_='shows'):
         logging.debug('initiated')
-        patterns = ['*.'+t for t in config['play']['media_types']]
+        patterns = ['*.'+t for t in config.data.play.media_types]
         super().__init__(
             patterns=patterns,
         )
@@ -26,13 +26,11 @@ class Handler(PatternMatchingEventHandler):
         if type_ == 'shows':
             self.scanner = scan.Shows_scan(scan_path=scan_path)
         else:
-            raise NotImplemented('Type: {} is not supported for watching'.format(
-                type_
-            ))
+            raise NotImplemented(f'Type: {type_} is not supported for watching')
 
     def parse(self, event):
         if event.is_directory:
-            logging.info('{} is a directory, skipping'.format(event.src_path))
+            logging.info(f'{event.src_path} is a directory, skipping')
             return
         path = event.src_path
         if event.event_type == 'moved':
@@ -40,7 +38,7 @@ class Handler(PatternMatchingEventHandler):
         if self.type == 'shows':
             episode = scan.parse_episode(path)
             if not episode:
-                logging.info('{} could not be parsed'.format(event.src_path))
+                logging.info(f'{event.src_path} could not be parsed')
                 return
             return episode
             
@@ -77,7 +75,7 @@ class Handler(PatternMatchingEventHandler):
             logging.exception('on_moved')
 
 def main():
-    if not config['play']['scan']:
+    if not config.data.play.scan:
         raise Exception('''
             Nothing to scan. Add a path in the config file.
 
@@ -86,7 +84,7 @@ def main():
                 play:
                     scan:
                         -
-                            type: shows
+                            type: series | movies
                             path: /a/path/to/the/shows
             ''')
     
@@ -94,7 +92,7 @@ def main():
     log = logging.getLogger('main')
     log.setLevel('INFO')
     log.info('Play scan watch started')
-    for s in config['play']['scan']:    
+    for s in config.data.play.scan:    
         log.info(s)
         event_handler = Handler(
             scan_path=s['path'],

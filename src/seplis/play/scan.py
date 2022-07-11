@@ -9,7 +9,8 @@ from seplis.play import constants, models
 from seplis.play.decorators import new_session
 
 SCAN_TYPES = (
-    'shows',
+    'series',
+    'movies',
 )
 
 class Parsed_episode(object):
@@ -57,12 +58,12 @@ class Play_scan(object):
         if not scan_path:
             raise Exception('scan_path is missing')
         if not os.path.exists(scan_path):
-            raise Exception('scan_path "{}" does not exist'.format(scan_path))
+            raise Exception(f'scan_path "{scan_path}" does not exist')
         if type_ not in SCAN_TYPES:
-            raise Exception('scan type: "{}" is not supported'.format(type_))
+            raise Exception(f'scan type: "{type_}" is not supported')
         self.scan_path = scan_path
         self.type = type_
-        self.client = Client(url=config['client']['api_url'])
+        self.client = Client(url=config.data.client.api_url)
 
     def save_item(self, item):
         raise NotImplemented()
@@ -82,7 +83,7 @@ class Play_scan(object):
                     continue
                 if len(info) != 2:
                     continue
-                if info[1][1:] not in config['play']['media_types']:
+                if info[1][1:].lower() not in config.data.play.media_types:
                     continue
                 files.append(
                     os.path.join(dirname, file_)
@@ -99,10 +100,10 @@ class Play_scan(object):
         ))
         if not os.path.exists(path):
             raise Exception('Path "{}" does not exist'.format(path))
-        ffprobe = os.path.join(config['play']['ffmpeg_folder'], 'ffprobe')
+        ffprobe = os.path.join(config.data.play.ffmpeg_folder, 'ffprobe')
         if not os.path.exists(ffprobe):
             raise Exception('ffprobe not found in "{}"'.format(
-                config['play']['ffmpeg_folder'],
+                config.data.play.ffmpeg_folder,
             ))
         cmd = [
             ffprobe,
@@ -142,7 +143,7 @@ class Shows_scan(Play_scan):
     def __init__(self, scan_path):
         super().__init__(
             scan_path=scan_path,
-            type_='shows',
+            type_='series',
         )
         self.show_id = Show_id(
             scanner=self,
@@ -527,17 +528,17 @@ def _parse_episode_info_from_file(file_, match):
 def upgrade_scan_db():
     import alembic.config
     from alembic import command
-    cfg = alembic.config.Config(
+    cfg = alembic.config.data.Config(
         os.path.dirname(
             os.path.abspath(__file__)
         )+'/alembic.ini'
     )
     cfg.set_main_option('script_location', 'seplis.play:migration')
-    cfg.set_main_option('url', config['play']['database'])
+    cfg.set_main_option('url', config.data.play.database)
     command.upgrade(cfg, 'head')
 
 def scan():
-    if not config['play']['scan']:
+    if not config.data.play.scan:
         raise Exception('''
             Nothing to scan. Add a path in the config file.
 
@@ -549,7 +550,7 @@ def scan():
                             type: shows
                             path: /a/path/to/the/shows
             ''')
-    for s in config['play']['scan']:    
+    for s in config.data.play.scan:    
         try:
             scanner = None
             if s['type'] == 'shows':

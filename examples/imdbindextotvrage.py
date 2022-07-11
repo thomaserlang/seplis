@@ -2,8 +2,8 @@ from seplis import Client, config, config_load
 config_load()
 
 client = Client(
-    url=config['client']['api_url'], 
-    access_token=config['client']['access_token']
+    url=config.data.client.api_url, 
+    access_token=config.data.client.access_token,
 )
 
 shows = client.get('/shows?q=info:thetvdb&per_page=500&sort=id')

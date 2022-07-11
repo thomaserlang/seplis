@@ -21,7 +21,7 @@ class Handler_without_menu_no_container(base.Handler_unauthenticated):
 class Handler_tv_show(base.Handler_unauthenticated):
 
     async def get(self, show_id):        
-        c = client.Async_client(config['client']['api_url'], version='1')
+        c = client.Async_client(config.data.client.api_url, version='1')
         show = await c.get('/shows/{}'.format(show_id))
         if not show:
             raise web.HTTPError(404, 'Unknown show')

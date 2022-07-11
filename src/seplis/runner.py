@@ -13,15 +13,15 @@ def cli(config, log_path, log_level):
     import seplis
     seplis.config_load(config)
     if log_path != None:
-        seplis.config['logging']['path'] = log_path
+        seplis.config.data.logging.path = log_path
     if log_level:
-        seplis.config['logging']['level'] = log_level
+        seplis.config.data.logging.level = log_level
 
 @cli.command()
 @click.option('--port', '-p', help='the port')
 def web(port):
     if port:
-        config['web']['port'] = port            
+        config.data.web.port = port            
     import seplis.web.app
     seplis.web.app.main()
 
@@ -29,7 +29,7 @@ def web(port):
 @click.option('--port', '-p', help='the port')
 def api(port):
     if port:
-        config['api']['port'] = port
+        config.data.api.port = port
     import seplis.api.app
     from seplis.api.connections import database
     database.connect()
@@ -39,7 +39,7 @@ def api(port):
 @click.option('--port', '-p', help='the port')
 def play_server(port):
     if port:
-        config['play']['port'] = port
+        config.data.play.port = port
     from seplis.play.connections import database
     database.connect()
     import seplis.play.app

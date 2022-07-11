@@ -76,7 +76,7 @@ def new_session():
         yield s
     except:
         # breaks the unittest
-        #if not config['debug']:
+        #if not config.data.debug:
         #    s.rollback()
         raise
     finally:

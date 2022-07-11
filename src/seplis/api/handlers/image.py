@@ -1,6 +1,8 @@
 import logging
+import elasticsearch
 from tornado import gen, concurrent
 from seplis import schemas, utils
+from seplis.api.connections import database
 from seplis.api.handlers import base, file_upload
 from seplis.api import constants, models, exceptions
 from seplis.api.decorators import authenticated, new_session
@@ -14,11 +16,10 @@ class Handler(base.Handler):
         self.relation_type = relation_type
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def post(self, relation_id):
+    async def post(self, relation_id):
         if not self.relation_type:
             raise Exception('relation_type missing')
-        image = yield self._post(relation_id)
+        image = await self._post(relation_id)
         self.write_object(image)
 
     @concurrent.run_on_executor
@@ -35,9 +36,8 @@ class Handler(base.Handler):
             return image.serialize()
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def put(self, relation_id, image_id):
-        image = yield self._put(image_id)
+    async def put(self, relation_id, image_id):
+        image = await self._put(image_id)
         self.write_object(image)
 
     @concurrent.run_on_executor
@@ -52,9 +52,8 @@ class Handler(base.Handler):
             return image.serialize()
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def delete(self, relation_id, image_id):
-        yield self._delete(image_id)
+    async def delete(self, relation_id, image_id):
+        await self._delete(image_id)
 
     @concurrent.run_on_executor
     def _delete(self, image_id):
@@ -65,19 +64,19 @@ class Handler(base.Handler):
             session.delete(image)
             session.commit()
 
-    @gen.coroutine
-    def get(self, relation_id, image_id=None):
+    async def get(self, relation_id, image_id=None):
         if image_id:
-            yield self.get_image(image_id)
+            await self.get_image(image_id)
         else:
-            yield self.get_images(relation_id)
+            await self.get_images(relation_id)
 
-    @gen.coroutine
-    def get_image(self, image_id):
-        result = yield self.es('/images/_doc/{}'.format(
-            image_id,
-        ))
-        if not result['found']:
+    async def get_image(self, image_id):
+        try:
+            result = await database.es_async.get(
+                index='images',
+                id=image_id,
+            )
+        except elasticsearch.NotFoundError:
             raise exceptions.Not_found('the image was not found')
         self.write_object(
             self.image_wrapper(
@@ -85,37 +84,32 @@ class Handler(base.Handler):
             )
         )
 
-    @gen.coroutine
-    def get_images(self, relation_id):
+    async def get_images(self, relation_id):
         q = self.get_argument('q', None)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', 'id:asc')
-        body = {
-            'query': {
-                'bool': {
-                    'must': [
-                        {'term': {'_relation_type': self.relation_type}},
-                        {'term': {'_relation_id': int(relation_id)}},
-                    ]
-                }                                
-            }
+        query = {
+            'bool': {
+                'must': [
+                    {'term': {'_relation_type': self.relation_type}},
+                    {'term': {'_relation_id': int(relation_id)}},
+                ]
+            }     
         }
         if q:
-            body['query']['bool']['must'].append({
+            query['bool']['must'].append({
                 'query_string': {
                     'default_field': 'title',
                     'query': q,
                 }
             })
-        result = yield self.es(
-            '/images/_search',
-            query={
-                'from': ((page - 1) * per_page),
-                'size': per_page,
-                'sort': sort,
-            },           
-            body=body,
+        result = await database.es_async.search(
+            index='images',
+            query=query,
+            from_=((page - 1) * per_page),
+            size=per_page,
+            sort=sort,
         )
         p = Pagination(
             page=page,
@@ -129,12 +123,11 @@ class Data_handler(file_upload.Handler):
     ASPECT_RATIO = (0.67, 0.68)
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def put(self, relation_id, image_id):
-        files = yield self.save_files()
+    async def put(self, relation_id, image_id):
+        files = await self.save_files()
         if not files:
             raise exceptions.File_upload_no_files()
-        yield self._put(image_id, files)
+        await self._put(image_id, files)
 
     @concurrent.run_on_executor
     def _put(self, image_id, files):

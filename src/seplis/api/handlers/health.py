@@ -61,9 +61,8 @@ class Handler(RequestHandler):
             'message': 'OK', 
             'service': 'Elasticsearch',
         }
-        try:
-            await database.es_get('/')
-        except Exception as e:
+        p = await database.es_async.ping()
+        if not p:
             r['error'] = True 
-            r['message'] = f'Error: {str(e)}'
+            r['message'] = 'Unable to connect to Elasticsearch'
         return r

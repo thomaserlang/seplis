@@ -32,7 +32,7 @@ class Handler(base.Handler):
                     self.request.query_arguments['from_id'] = [str(shows[-1]['id'])]
                     logging.info(self.request.query_arguments)
                     n = urljoin(
-                        config['api']['base_url'],
+                        config.data.api.base_url,
                         self.request.path
                     ) + '?' + utils.url_encode_tornado_arguments(self.request.query_arguments)
                     self.set_header('Link', f'<{n}>; rel="next"')
@@ -208,22 +208,18 @@ class Handler(base.Handler):
         sort = self.get_argument('sort', '_score:desc,title.length:asc,premiered:desc')
         fields = self.get_argument('fields', None)
         fields = list(filter(None, fields.split(','))) if fields else None
-        req = {
-            'size': per_page,
-            'search_type': 'dfs_query_then_fetch',
-        }
-        body = self.build_query()
-        if body:
-            req['sort'] = sort
         if fields:
             if 'id' not in fields:
                 fields.append('id')
-            body['_source'] = fields
-
-        result = await self.es(
-            '/shows/_search',
-            body=body,
-            query=req,
+        query = self.build_query()
+        result = await database.es_async.search(
+            index='shows',
+            query=query,
+            sort=sort,
+            size=per_page,
+            search_type='dfs_query_then_fetch',
+            fields=fields,
+            track_scores=True,
         )
         shows = [r['_source'] for r in result['hits']['hits']]
         if 'following' in append_fields:
@@ -239,16 +235,13 @@ class Handler(base.Handler):
         q = self.get_argument('q', None)
         title = self.get_argument('title', None)
         title_suggest = self.get_argument('title_suggest', None)
-        query = {}
         if q:
-            query['query'] = self.build_query_query_string(q)
+            return self.build_query_query_string(q)
         elif title:
-            query['query'] = self.build_query_title(title)
-            query['track_scores'] = True
+            return self.build_query_title(title)
         elif title_suggest:
-            query['query'] = self.build_query_title_suggest(title_suggest)
-            query['track_scores'] = True
-        return query
+            return self.build_query_title_suggest(title_suggest)
+
 
     def build_query_query_string(self, q):
         """Uses query string for a dynamic way of searching something specific 

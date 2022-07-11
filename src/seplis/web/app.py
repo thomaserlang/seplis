@@ -21,10 +21,10 @@ class Application(tornado.web.Application):
         static_path = os.path.join(os.path.dirname(__file__), 'static')
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),
-            debug=config['debug'],
+            debug=config.data.debug,
             autoescape=None,
             xsrf_cookies=True,
-            cookie_secret=config['web']['cookie_secret'],
+            cookie_secret=config.data.web.cookie_secret,
             login_url='/sign-in',
         )
         self.ioloop = ioloop or asyncio.get_event_loop()
@@ -44,23 +44,23 @@ class Application(tornado.web.Application):
         super().__init__(urls, **settings)
 
 def main():
-    logger.set_logger('web-{}.log'.format(config['web']['port']))
-    if config['sentry_dsn']:
+    logger.set_logger(f'web-{config.data.web.port}.log')
+    if config.data.sentry_dsn:
         sentry_sdk.init(
-            dsn=config['sentry_dsn'],
+            dsn=config.data.sentry_dsn,
             integrations=[TornadoIntegration()],
         )
 
     loop = asyncio.get_event_loop()
     app = Application(loop)
-    server = app.listen(config['web']['port'])
+    server = app.listen(config.data.web.port)
     
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
     signal.signal(signal.SIGINT, partial(sig_handler, server, app))    
 
     log = logging.getLogger('main')
     log.setLevel('INFO')
-    log.info(f'Web server started on port: {config["web"]["port"]}')
+    log.info(f'Web server started on port: {config.data.web.port}')
     loop.run_forever()
     log.info('Web server stopped')
 

@@ -41,7 +41,7 @@ def start(handler, settings, metadata):
         cwd=temp_folder,
     )
     call_later = handler.ioloop.call_later(
-        config['play']['session_timeout'],
+        config.data.play.session_timeout,
         cancel,
         session,
     )
@@ -79,13 +79,13 @@ def ping(handler, session):
         return
     handler.ioloop.remove_timeout(sessions[session]['call_later'])
     sessions[session]['call_later'] = handler.ioloop.call_later(
-        config['play']['session_timeout'],
+        config.data.play.session_timeout,
         cancel,
         session,
     )
 
 def cancel(session):
-    logging.info('Closing session: {}'.format(session))
+    logging.info(f'Closing session: {session}')
     if session not in sessions:
         return
     s = sessions[session]
@@ -96,7 +96,7 @@ def cancel(session):
     if os.path.exists(path):
         shutil.rmtree(path)
     else:
-        logging.warning('Path: {} not found, can\'t delete it'.format(path))            
+        logging.warning(f'Path: {path} not found, can\'t delete it')            
     tornado.ioloop.IOLoop.current().remove_timeout(s['call_later'])
     del sessions[session]
 
@@ -114,8 +114,8 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     args.extend([
         {'-f': 'hls'},
         {'-hls_playlist_type': 'event'},
-        {'-hls_segment_type': config['play']['ffmpeg_hls_segment_type']},
-        {'-hls_time': str(config['play']['segment_time'])},
+        {'-hls_segment_type': config.data.play.ffmpeg_hls_segment_type},
+        {'-hls_time': str(config.data.play.segment_time)},
         {os.path.join(temp_folder, 'media.m3u8'): None},
     ])
     r = base.to_subprocess_arguments(args)
@@ -123,7 +123,7 @@ def ffmpeg_start(temp_folder, handler, settings, metadata):
     return r
 
 def setup_temp_folder(session):
-    temp_folder = os.path.join(config['play']['temp_folder'], session)
+    temp_folder = os.path.join(config.data.play.temp_folder, session)
     if not os.path.exists(temp_folder):
         os.makedirs(temp_folder)
     return temp_folder

@@ -1,3 +1,4 @@
+import elasticsearch
 import sqlalchemy as sa
 from seplis.api.handlers import base
 from seplis.api import constants, exceptions, models
@@ -7,30 +8,31 @@ from seplis.api.base.pagination import Pagination
 from datetime import datetime, timedelta
 from tornado import gen, web, concurrent
 from collections import OrderedDict
+from seplis.api.connections import database
 
 class Handler(base.Handler):
 
     allowed_append_fields = (
         'user_watched'
     )
-    @gen.coroutine
-    def get(self, show_id, number=None):
+    async def get(self, show_id, number=None):
         self.append_fields = self.get_append_fields(
             self.allowed_append_fields
         )
         if number:
-            yield self.get_episode(show_id, number)
+            await self.get_episode(show_id, number)
         else:
-            yield self.get_episodes(show_id)
+            await self.get_episodes(show_id)
 
-    @gen.coroutine
-    def get_episode(self, show_id, number):
-        result = yield self.es('/episodes/_doc/{}-{}'.format(
-            show_id,
-            number,
-        ))
-        if not result['found']:
+    async def get_episode(self, show_id, number):
+        try:
+            result = await database.es_async.get(
+                index='episodes',
+                id=f'{show_id}-{number}',            
+            )
+        except elasticsearch.NotFoundError:
             raise exceptions.Not_found('the episode was not found')
+
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
             with new_session() as session:
@@ -44,45 +46,39 @@ class Handler(base.Handler):
             self.episode_wrapper(result['_source'])
         )
 
-    @gen.coroutine
-    def get_episodes(self, show_id):
+    async def get_episodes(self, show_id):
         q = self.get_argument('q', None)
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', 'number:asc')
-        body = {
-            'query': {
-                'bool': {
-                    'must': [
-                        {'term': {'show_id': show_id}}
-                    ]
-                }
+        query = {
+            'bool': {
+                'must': [
+                    {'term': {'show_id': show_id}}
+                ]
             }
         }
         if q:
-            body['query']['bool']['must'].append({
+            query['bool']['must'].append({
                 'query_string': {
                     'default_field': 'title',
                     'query': q,
                 }
             })
-        result = yield self.es(
-            '/episodes/_search',
-            query={
-                'from': ((page - 1) * per_page),
-                'size': per_page,
-                'sort': sort,
-            },           
-            body=body,
+        result = await database.es_async.search(
+            index='episodes',
+            query=query,
+            from_=((page - 1) * per_page),
+            size=per_page,
+            sort=sort,
         )
-
         episodes = OrderedDict()
         for episode in result['hits']['hits']:
             episodes[episode['_source']['number']] = episode['_source']
 
         if 'user_watched' in self.append_fields:
             self.is_logged_in()
-            yield self.get_episode_watched(show_id, episodes)
+            await self.get_episode_watched(show_id, episodes)
         p = Pagination(
             page=page,
             per_page=per_page,
@@ -108,9 +104,8 @@ class Handler(base.Handler):
                 episodes[e.episode_number]['user_watched'] = e.serialize()
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
-    @gen.coroutine
-    def delete(self, show_id, number):
-        yield self._delete(show_id, number)
+    async def delete(self, show_id, number):
+        await self._delete(show_id, number)
         self.set_status(201)
 
     @concurrent.run_on_executor

@@ -1,10 +1,10 @@
 import logging
 import requests
-from seplis import schemas, Client, config, constants, API_error
+from seplis import Client, config, constants
 
 client = Client(
-    url=config['client']['api_url'],
-    access_token=config['client']['access_token'],
+    url=config.data.client.api_url,
+    access_token=config.data.client.access_token,
 )
     
 # Status: 0: Canceled, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production
@@ -32,7 +32,7 @@ def update_incremental():
     logging.info('Incremental update running')
     while True:
         r = requests.get('https://api.themoviedb.org/3/movie/changes', params={
-            'api_key': config["client"]["themoviedb"],
+            'api_key': config.data.client.themoviedb,
             'page': page,
         })
         r.raise_for_status()
@@ -56,7 +56,7 @@ def update_movie_metadata(movie):
         r = requests.get(
             f'https://api.themoviedb.org/3/find/{movie["externals"]["imdb"]}',
             params={
-                'api_key': config["client"]["themoviedb"],
+                'api_key': config.data.client.themoviedb,
                 'external_source': 'imdb_id',
             }
         )
@@ -71,7 +71,7 @@ def update_movie_metadata(movie):
         movie['externals']['themoviedb'] = r['movie_results'][0]['id']
 
     r = requests.get(f'https://api.themoviedb.org/3/movie/{movie["externals"]["themoviedb"]}', params={
-        'api_key': config['client']['themoviedb'],
+        'api_key': config.data.client.themoviedb,
         'append_to_response': 'alternative_titles',
     })
     if r.status_code >= 400:
@@ -126,7 +126,7 @@ def update_images(movie):
     }
 
     r = requests.get(f'https://api.themoviedb.org/3/movie/{movie["externals"]["themoviedb"]}/images', params={
-        'api_key': config['client']['themoviedb'],
+        'api_key': config.data.client.themoviedb,
         'language': 'en',
     })
     if r.status_code >= 400:

@@ -19,7 +19,7 @@ class Thetvdb(Show_importer_base):
         super().__init__()
         self.apikey = apikey
         if not apikey:
-            self.apikey = config['client']['thetvdb']
+            self.apikey = config.data.client.thetvdb
 
     def login_headers(self):
         headers = {

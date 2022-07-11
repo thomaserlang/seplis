@@ -19,9 +19,9 @@
         <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
         <script type="text/javascript" src="/static/dist/vendor.js?v=0.2.8"></script>
         <script type="text/javascript">
-            seplisBaseUrl = "{{config['client']['public_api_url']}}";
-            seplisClientId = "{{config['client']['id']}}";
-            seplisChromecastAppId = "{{config['web']['chromecast_appid']}}";
+            seplisBaseUrl = "{{config.data.client.public_api_url}}";
+            seplisClientId = "{{config.data.client.id}}";
+            seplisChromecastAppId = "{{config.data.web.chromecast_appid}}";
         </script>
         {% block head %}{% end %}
     </head>

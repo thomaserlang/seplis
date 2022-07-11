@@ -1,4 +1,5 @@
 import logging
+from urllib.parse import urljoin
 import good, aiosmtplib
 import sqlalchemy as sa
 from email.mime.text import MIMEText
@@ -27,14 +28,14 @@ class Handler(base.Handler):
             return
 
         smtp = aiosmtplib.SMTP(
-            hostname=config['smtp']['server'], 
-            port=int(config['smtp']['port']),
-            use_tls=config['smtp']['use_tls'], 
+            hostname=config.data.smtp.server, 
+            port=int(config.data.smtp.port),
+            use_tls=config.data.smtp.use_tls, 
             loop=self.application.ioloop,
         )
         await smtp.connect()
-        if config['smtp']['user']:
-            await smtp.login(config['smtp']['user'], config['smtp']['password'])
+        if config.data.smtp.user:
+            await smtp.login(config.data.smtp.user, config.data.smtp.password)
 
         url = await self.create_reset_url(user_id)
         message = MIMEText('''
@@ -44,7 +45,7 @@ class Handler(base.Handler):
         </body>
         </html>
         '''.format(url), 'html')
-        message["From"] = config['smtp']['from']
+        message["From"] = config.data.smtp.from_email
         message["To"] = args['email'][0]
         message["Subject"] = "Reset password"
         await smtp.send_message(message)
@@ -72,7 +73,7 @@ class Handler(base.Handler):
             )
             session.add(r)
             session.commit()
-            return config['web']['url'] + '/reset-password/{}'.format(r.key)
+            return urljoin(config.data.web.url, f'/reset-password/{r.key}')
 
     @run_on_executor
     def reset(self):

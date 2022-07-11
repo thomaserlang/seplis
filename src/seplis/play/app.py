@@ -15,7 +15,7 @@ class Application(tornado.web.Application):
         settings = dict(
             template_path=os.path.join(os.path.dirname(__file__), 'templates'),
             static_path=os.path.join(os.path.dirname(__file__), 'static'),
-            debug=config['debug'],
+            debug=config.data.debug,
             autoescape=None,
             xsrf_cookies=False,
         )
@@ -23,7 +23,7 @@ class Application(tornado.web.Application):
         urls = [
             (r'/play', play.Play_handler),            
             (r'/metadata', play.Metadata_handler),
-            (r'/hls/(.*)', play.File_handler, {'path': config['play']['temp_folder']}),
+            (r'/hls/(.*)', play.File_handler, {'path': config.data.play.temp_folder}),
 
             (r'/', shows.Handler),
             (r'/api/show-suggest', shows.API_show_suggest_handler),
@@ -32,16 +32,16 @@ class Application(tornado.web.Application):
         super().__init__(urls, **settings)
 
 def main():
-    logger.set_logger('play_server-{}.log'.format(config['play']['port']))
+    logger.set_logger(f'play_server_{config.data.play.port}.log')
     loop = asyncio.get_event_loop()
     app = Application(loop)
-    server = app.listen(config['play']['port'])
+    server = app.listen(config.data.play.port)
 
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
     signal.signal(signal.SIGINT, partial(sig_handler, server, app))
     
     log = logging.getLogger('main')
     log.setLevel('INFO')
-    log.info(f'Play server started on port: {config["play"]["port"]}')
+    log.info(f'Play server started on port: {config.data.play.port}')
     loop.run_forever()
     log.info('Play server stopped')

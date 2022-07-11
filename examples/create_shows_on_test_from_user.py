@@ -6,8 +6,8 @@ seplis.config_load()
 logging.basicConfig(level=logging.DEBUG)
 
 client = seplis.Client(
-    url=seplis.config['client']['api_url'], 
-    access_token=seplis.config['client']['access_token']
+    url=seplis.config.data.client.api_url, 
+    access_token=seplis.config.data.client.access_token
 )
 for show in requests.get('https://api.seplis.net/1/users/2/shows-following?per_page=500').json():
     logging.info('seplis.net id: {}'.format(show['id']))

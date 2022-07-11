@@ -21,7 +21,7 @@ class Handler(base.Handler):
         content_type, body = utils.MultipartFormdataEncoder().encode([], files)
         client = self.get_httpclient()
         response = await client.fetch(
-            urljoin(config['api']['storitch'], 'store'),
+            urljoin(config.data.api.storitch, 'store'),
             method='POST',
             headers={'Content-Type': content_type},
             body=body,

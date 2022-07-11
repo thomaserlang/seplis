@@ -14,15 +14,15 @@ from rq import Queue
 class Database:
 
     def connect(self, database_url=None, redis_db=None):
-        database_url = database_url or config['api']['database']
-        redis_db = redis_db or config['api']['redis']['db']
+        database_url = database_url or config.data.api.database
+        redis_db = redis_db or config.data.api.redis.db
         self.engine = create_engine(
             database_url,
             echo=False,
             pool_recycle=3599,
             pool_pre_ping=True,
             connect_args={
-                'read_timeout': config['api']['database_read_timeout'],
+                'read_timeout': config.data.api.database_read_timeout            
             },
         )
         self.setup_sqlalchemy_session(self.engine)
@@ -36,43 +36,42 @@ class Database:
             json_deserializer=lambda s: utils.json_loads(s),
         )
         self.setup_sqlalchemy_async_session(self.async_engine)
-
-        if config['api']['redis']['sentinel']:
+        
+        if config.data.api.redis.sentinel:
             sentinel = redis.Sentinel(
-                config['api']['redis']['sentinel'], 
+                config.data.api.redis.sentinel, 
                 socket_timeout=0.1, 
-                db=config['api']['redis']['db'], 
-                password=config['api']['redis']['password'],
+                db=redis_db,
+                password=config.data.api.redis.password,
             )
             self.redis = sentinel.master_for(
-                config['api']['redis']['master_name'],
+                config.data.api.redis.master_name,
                 decode_responses=True,
             )
             sentinel = redis.Sentinel(
-                config['api']['redis']['sentinel'],
+                config.data.api.redis.sentinel,
                 db=redis_db, 
-                password=config['api']['redis']['password'],
+                password=config.data.api.redis.password,
             )
-            self.queue_redis = sentinel.master_for(config['api']['redis']['master_name'])
+            self.queue_redis = sentinel.master_for(config.data.api.redis.master_name)
         else:
-            self.redis = redis.StrictRedis(
-                config['api']['redis']['ip'], 
-                port=config['api']['redis']['port'], 
-                db=config['api']['redis']['db'],
-                password=config['api']['redis']['password'],
+            self.redis = redis.Redis(
+                config.data.api.redis.ip, 
+                port=config.data.api.redis.port, 
+                db=redis_db,
+                password=config.data.api.redis.password,
                 decode_responses=True,
             )
-            self.queue_redis = redis.StrictRedis(
-                config['api']['redis']['ip'], 
-                port=config['api']['redis']['port'], 
+            self.queue_redis = redis.Redis(
+                config.data.api.redis.ip, 
+                port=config.data.api.redis.port, 
                 db=redis_db,
-                password=config['api']['redis']['password'],
+                password=config.data.api.redis.password,
             )
         self.queue = Queue(connection=self.queue_redis)
-        self.es = Elasticsearch(
-            config['api']['elasticsearch'],
-        )
-        self.es_async = AsyncElasticsearch(config['api']['elasticsearch'])
+        self.es = Elasticsearch(config.data.api.elasticsearch)       
+        self.es_async = AsyncElasticsearch(config.data.api.elasticsearch)    
+        
     def setup_sqlalchemy_session(self, connection):
         self.session = sessionmaker(
             bind=connection,
@@ -87,42 +86,6 @@ class Database:
             expire_on_commit=False, 
             class_=AsyncSession,
         )
-
-    async def es_get(self, url, query={}, body={}):
-        http_client = AsyncHTTPClient()         
-        if not url.startswith('/'):
-            url = '/'+url
-        for arg in query:
-            if not isinstance(query[arg], list):
-                query[arg] = [query[arg]]
-        try:
-            response = await http_client.fetch(
-                '{}{}?{}'.format(
-                    config['api']['elasticsearch'],
-                    url,
-                    utils.url_encode_tornado_arguments(query) \
-                        if query else '',
-                    connect_timeout=2.0,
-                    request_timeout=2.0,
-                ),
-                method='POST' if body else 'GET',
-                headers={
-                    'Content-Type': 'application/json',
-                },
-                body=utils.json_dumps(body) if body else None,
-            )
-            return utils.json_loads(response.body)
-        except HTTPError as e:
-            try:
-                extra = utils.json_loads(e.response.body)
-                if e.code == 404:
-                    return extra
-            except:
-                extra = {'error': e.response.body.decode('utf-8')}
-            raise exceptions.Elasticsearch_exception(
-                e.code,
-                extra,
-            )
 
 @property
 def pipe(self):

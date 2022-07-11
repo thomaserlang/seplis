@@ -39,7 +39,7 @@ class Testbase(AsyncHTTPTestCase):
         logger = logging.getLogger('urllib3')
         logger.setLevel(logging.ERROR)
         # recreate the database connection
-        # with params from the loaded config.
+        # with params from the loaded config.data.
         connection = database.engine.connect()
         self.trans = connection.begin()
         database.setup_sqlalchemy_session(connection)
@@ -60,14 +60,14 @@ class Testbase(AsyncHTTPTestCase):
     @classmethod
     def setUpClass(cls):
         config_load()
-        config['debug'] = False
-        config['logging']['path'] = None
+        config.data.debug = False
+        config.data.logging.path = None
 
         if hasattr(database, 'async_engine'):
             return
         
         from sqlalchemy.engine import url
-        u = url.make_url(config['api']['database_test'])
+        u = url.make_url(config.data.api.database_test)
         db = u.database
         u = url.URL.create(
             drivername='mariadb+pymysql',
@@ -84,10 +84,10 @@ class Testbase(AsyncHTTPTestCase):
         from alembic import command
         cfg = Config(os.path.dirname(os.path.abspath(__file__))+'/alembic.ini')
         cfg.set_main_option('script_location', 'seplis.api:migration')
-        cfg.set_main_option('sqlalchemy.url', config['api']['database_test'])
+        cfg.set_main_option('sqlalchemy.url', config.data.api.database_test)
         command.upgrade(cfg, 'head')
 
-        database.connect(config['api']['database_test'], redis_db=15)
+        database.connect(config.data.api.database_test, redis_db=15)
 
 
     def _fetch(self, url, method, data=None, headers=None):

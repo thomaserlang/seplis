@@ -1,12 +1,7 @@
-# coding=UTF-8
-import json
-import nose
 from seplis.api.testbase import Testbase, run_file
 from seplis import utils, config
 from seplis.api import constants, models
 from seplis.api.decorators import new_session
-from datetime import datetime, date
-import time
 
 class test_show(Testbase):
 
@@ -405,7 +400,7 @@ class test_show(Testbase):
         self.refresh_es()
 
         response = self.get(
-            f'{config["api"]["elasticsearch"]}/episodes/_doc/{show_id}-1'
+            f'{config.data.api.elasticsearch}/episodes/_doc/{show_id}-1'
         )
         self.assertEqual(response.code, 404)
 

@@ -1,4 +1,5 @@
 import logging
+import elasticsearch
 import sqlalchemy as sa
 from .base import Base
 from sqlalchemy import event, orm
@@ -70,13 +71,13 @@ class Episode(Base):
         """Retrives an episode from ES.
         See `Episode.serialize()` for the return format.
         """
-        response = await database.es_get(
-            '/episodes/_doc/{}-{}'.format(
-                show_id,
-                number,
+        try:
+            response = await database.es_async.get(
+                index='episodes',
+                id=f'{show_id}-{number}',
             )
-        )
-        if not response['found']:
+        
+        except elasticsearch.NotFoundError:
             return
         response['_source'].pop('show_id')
         return response['_source']
@@ -87,10 +88,11 @@ class Episode(Base):
         Returns a list of a serialized episode.
         See `Episode.serialize()` for the return format.
         """
-        ids = ['{}-{}'.format(show_id, number) for number in numbers]
-        result = await database.es_get('/episodes/_mget', body={
-            'ids': ids
-        })
+        ids = [f'{show_id}-{number}' for number in numbers]
+        result = await database.es_async.mget(
+            index='episodes',
+            ids=ids,
+        )
         episodes = []
         for episode in result['docs']:
             if '_source'in episode:

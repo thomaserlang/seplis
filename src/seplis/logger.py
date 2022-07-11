@@ -7,17 +7,17 @@ class logger(object):
     @classmethod
     def set_logger(cls, filename, to_sentry=False):
         logger = logging.getLogger()
-        logger.setLevel(config['logging']['level'].upper())
+        logger.setLevel(config.data.logging.level.upper())
         logger.handlers = []
         format_ = log.LogFormatter(
             '[%(color)s%(levelname)s%(end_color)s %(asctime)s %(module)s:%(lineno)d]: %(message)s', 
             datefmt='%Y-%m-%d %H:%M:%S'
         )
-        if config['logging']['path']:
+        if config.data.logging.path:
             channel = logging.handlers.RotatingFileHandler(
-                filename=os.path.join(config['logging']['path'], filename),
-                maxBytes=config['logging']['max_size'],
-                backupCount=config['logging']['num_backups']
+                filename=os.path.join(config.data.logging.path, filename),
+                maxBytes=config.data.logging.max_size,
+                backupCount=config.data.logging.num_backups,
             )
             channel.setFormatter(format_)
             logger.addHandler(channel)
@@ -25,7 +25,7 @@ class logger(object):
             channel = logging.StreamHandler()
             channel.setFormatter(format_)
             logger.addHandler(channel)
-        if to_sentry and config['sentry_dsn']:
+        if to_sentry and config.data.sentry_dsn:
             sentry_sdk.init(
-                dsn=config['sentry_dsn'],
+                dsn=config.data.sentry_dsn,
             )

@@ -64,7 +64,7 @@ class Show_importer_base(object):
         :returns: int
         """
         path = os.path.expanduser(os.path.join(
-            config['data_dir'],
+            config.data.data_dir,
             'importer',
             self.external_name+'.timestamp',
         ))
@@ -87,7 +87,7 @@ class Show_importer_base(object):
         ```
         """
         path = os.path.expanduser(os.path.join(
-            config['data_dir'],
+            config.data.data_dir,
             'importer',
         ))
         if not os.path.exists(path):

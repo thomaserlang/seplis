@@ -106,7 +106,7 @@ async def get_metadata(play_id):
 
 def decode_play_id(play_id):
     data = web.decode_signed_value(
-        secret=config['play']['secret'],
+        secret=config.data.play.secret,
         name='play_id',
         value=play_id,
         max_age_days=0.3,

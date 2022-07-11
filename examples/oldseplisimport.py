@@ -7,12 +7,12 @@ with open('/home/te/oldseplis.json', 'r') as f:
     oldids = json.loads(f.read())
 
 client = Client(
-    url=config['client']['api_url'], 
-    access_token=config['client']['access_token'],
+    url=config.data.client.api_url, 
+    access_token=config.data.client.access_token
 )
 i = 0
 shows = client.get('/shows?per_page=1000').all()
-lookup = {show['externals']['imdb']: show['externals'].get('seplis-v2') for show in shows if 'imdb' in show['externals']}
+lookup = {show['externals']['imdb']: show['externals'].get('v2') for show in shows if 'imdb' in show['externals']}
 for old in oldids:
     try:
         if not old['imdb']:

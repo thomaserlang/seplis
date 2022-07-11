@@ -6,8 +6,8 @@ config_load()
 logger.logger.set_logger('test.log')
     
 client = Client(
-    url=config['client']['api_url'], 
-    access_token=config['client']['access_token']
+    url=config.data.client.api_url, 
+    access_token=config.data.client.access_token,
 )
 
 imdbids = []

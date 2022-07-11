@@ -62,7 +62,7 @@ class API_show_suggest_handler(tornado.web.RequestHandler):
 
     @tornado.gen.coroutine
     def get(self):
-        client = Async_client(config['client']['api_url'], version='1')
+        client = Async_client(config.data.client.api_url, version='1')
         set_default_headers(self)
         q = self.get_argument('q')
         shows = yield client.get('/shows', {

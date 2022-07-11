@@ -14,13 +14,13 @@ def sig_handler(server, application, sig, frame):
     def stop_loop(server, deadline: float):
         now = time.time()
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task() and not t.done()]
-        if (now < deadline and len(tasks) > 0) and not config['debug']:
+        if (now < deadline and len(tasks) > 0) and not config.data.debug:
             logging.debug(f'Awaiting {len(tasks)} pending tasks {tasks}')
             io_loop.add_timeout(now + 1, stop_loop, server, deadline)
             return
 
         pending_connection = len(server._connections)
-        if (now < deadline and pending_connection > 0) and not config['debug']:
+        if (now < deadline and pending_connection > 0) and not config.data.debug:
             logging.debug(f'Waiting on {pending_connection} connections to finish {server._connections}')
             io_loop.add_timeout(now + 1, stop_loop, server, deadline)
         else:

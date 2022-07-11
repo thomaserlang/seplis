@@ -1,88 +1,99 @@
-import os
-import os.path
-import yaml
-import tempfile
-from seplis import schemas
+import os, pathlib
+from typing import List, Literal, Optional, Tuple
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings, DirectoryPath, EmailStr, conint, validator
+import yaml, tempfile
 
-config = {
-    'debug': False,
-    'sentry_dsn': None,
-    'data_dir': '~/.seplis',
-    'api': {
-        'database': None,
-        'database_test': None,
-        'database_read_timeout': 5,
-        'redis': {
-            'ip': '127.0.0.1',
-            'port': 6379,
-            'sentinel': [],
-            'master_name': 'mymaster',
-            'db': 0,
-            'queue_db': 1,
-            'password': None,
-        },
-        'elasticsearch': 'localhost:9200',
-        'storitch': None,
-        'port': 8002,
-        'max_workers': 5,
-        'image_url': 'https://images.seplis.net',
-        'base_url': 'https://api.seplis.net',
-    },
-    'web': {
-        'url': 'https://seplis.net',
-        'cookie_secret': 'CHANGE_ME',
-        'port': 8001,
-        'chromecast_appid': 'EA4A67C4',
-    },
-    'logging': {
-        'level': 'warning',
-        'path': None,
-        'max_size': 100 * 1000 * 1000,# ~ 95 mb
-        'num_backups': 10,
-    },
-    'client': {
-        'access_token': None,
-        'thetvdb': None,
-        'themoviedb': None,
-        'id': 'CHANGE_ME',
-        'validate_cert': True,
-        'api_url': 'https://api.seplis.net',
-        'public_api_url': None,
-    },
-    'play': {
-        'database': 'sqlite:///seplis-play.db',
-        'secret': None,
-        'scan': None,
-        'media_types': [
-            'mp4',
-            'mkv',
-            'avi',
-            'mpg',
-        ],
+class ConfigRedisModel(BaseModel):
+    ip: str = None
+    port: int = 6379
+    db: conint(ge=0, le=15) = 0
+    sentinel: List[Tuple[str, int]] = None
+    password: str = None
 
-        'ffmpeg_folder': '/usr/src/ffmpeg/',
-        'ffmpeg_threads': 1,
-        'ffmpeg_loglevel': '8',
-        'ffmpeg_logfile': None,
-        'ffmpeg_preset': 'veryfast',
-        'ffmpeg_enable_codec_copy': False,
-        'ffmpeg_hls_segment_type': 'fmp4',
+class ConfigAPIModel(BaseModel):
+    database: Optional[str]
+    database_test = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
+    database_read_timeout = 5
+    redis = ConfigRedisModel()
+    elasticsearch: AnyHttpUrl = None
+    port = 8002
+    max_workers = 5
+    image_url: AnyHttpUrl = None
+    base_url: AnyHttpUrl = None
+    storitch: AnyHttpUrl = None
 
-        'port': 8003,
-        'temp_folder': os.path.join(tempfile.gettempdir(), 'seplis-play'),
-        'segment_time': 5,
-        'session_timeout': 5, # Timeout for HLS sessions
-        'x-accel': False,
-    },
-    'smtp': {
-        'server': '127.0.0.1',
-        'port': 25,
-        'user': None,
-        'password': None,
-        'use_tls': False,
-        'from': 'support@seplis.net',
-    }
-}
+class ConfigWebModel(BaseModel):
+    url: Optional[AnyHttpUrl]
+    cookie_secret: Optional[str]
+    port = 8001
+    chromecast_appid = 'EA4A67C4'
+
+class ConfigLoggingModel(BaseModel):
+    level = 'warning'
+    path: Optional[DirectoryPath]
+    max_size: int = 100 * 1000 * 1000 # ~ 95 mb
+    num_backups = 10
+
+class ConfigClientModel(BaseModel):
+    access_token: Optional[str]
+    thetvdb: Optional[str]
+    id: Optional[str]
+    validate_cert = True
+    api_url: AnyHttpUrl = 'https://seplis.net'
+    public_api_url: Optional[AnyHttpUrl]
+
+    @validator('public_api_url', pre=True, always=True)
+    def default_ts_modified(cls, v, *, values, **kwargs):
+        return v or values['api_url']
+
+class ConfigPlayScanModel(BaseModel):
+    type: Literal['series', 'movies']
+    path: DirectoryPath
+
+class ConfigPlayModel(BaseModel):
+    database: Optional[str]
+    secret: Optional[str]
+    scan: Optional[List[ConfigPlayScanModel]]
+    media_types: List[str] = ['mp4', 'mkv', 'avi', 'mpg']
+    ffmpeg_folder: pathlib.Path = '/usr/src/ffmpeg'
+    ffmpeg_threads = 4
+    ffmpeg_loglevel = '8'
+    ffmpeg_logfile: Optional[str]
+    ffmpeg_preset: Literal['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'] = 'veryfast' 
+    ffmpeg_enable_codec_copy = False
+    ffmpeg_hls_segment_type: Literal['mpegts', 'fmp4'] = 'fmp4'
+    port = 8003
+    temp_folder: str = os.path.join(tempfile.gettempdir(), 'seplis_play')
+    segment_time = 5
+    session_timeout = 5 # Timeout for HLS sessions
+
+class ConfigSMTPModel(BaseModel):
+    server = '127.0.0.1'
+    port = 25
+    user: Optional[str]
+    password: Optional[str]
+    use_tls: Optional[bool]
+    from_email: Optional[str]
+
+class ConfigModel(BaseSettings):
+    debug = False
+    sentry_dsn: Optional[str]
+    data_dir = '~/.seplis'
+    api = ConfigAPIModel()
+    web = ConfigWebModel()
+    logging = ConfigLoggingModel()
+    client = ConfigClientModel()
+    play = ConfigPlayModel()
+    smtp = ConfigSMTPModel()
+
+    class Config:
+        env_prefix = 'seplis'
+        validate_assignment = True
+
+class Config:
+    def __init__(self):
+        self.data = ConfigModel()
+config = Config()
 
 def load(path=None):
     default_paths = [
@@ -105,46 +116,10 @@ def load(path=None):
     if not path:
         raise Exception('No config file specified.')
     if not os.path.isfile(path):
-        raise Exception('Config: "{}" could not be found.'.format(path))
+        raise Exception(f'Config: "{path}" could not be found.')
     with open(path) as f:
         data = yaml.load(f, Loader=yaml.SafeLoader)
+        config.data = ConfigModel(**data)
 
-    def merge(d, c):
-        for key in d:
-            if key in c:
-                if isinstance(c[key], dict):
-                    merge(d[key], c[key])
-                else:
-                    c[key] = d[key]
-    merge(data, config)
-
-    if config['play']['scan']:# validate the play scan items
-        schemas.Config_play_scan(
-            config['play']['scan']
-        )
-    if config['web']['url']:
-        config['web']['url'] = config['web']['url'].rstrip('/')
-    if config['api']['image_url']:
-        config['api']['image_url'] = config['api']['image_url'].rstrip('/')
-    if config['client']['api_url']:
-        config['client']['api_url'] = config['client']['api_url'].rstrip('/')
-    if not config['client']['public_api_url']:
-        config['client']['public_api_url'] = config['client']['api_url']
-    else:
-        if config['client']['public_api_url']:
-            config['client']['public_api_url'] = \
-                config['client']['public_api_url'].rstrip('/')
-
-    if config['play']['ffmpeg_logfile']:
-        ps = os.path.split(config['play']['ffmpeg_logfile'])
-        if not ps[0]:
-            if config['logging']['path']:
-                config['play']['ffmpeg_logfile'] = os.path.join(
-                    config['logging']['path'],
-                    config['play']['ffmpeg_logfile'],
-                )
-            else:
-                config['play']['ffmpeg_logfile'] = None
-    if config['play']['temp_folder']:
-        if not os.path.exists(config['play']['temp_folder']):
-            os.makedirs(config['play']['temp_folder'])
+    if config.data.play.temp_folder:
+        os.makedirs(config.data.play.temp_folder, exist_ok=True)

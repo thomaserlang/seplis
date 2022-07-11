@@ -131,7 +131,7 @@ class Async_client(object):
                 headers=headers,
                 connect_timeout=timeout,
                 request_timeout=timeout,
-                validate_cert=config['client']['validate_cert'],
+                validate_cert=config.data.client.validate_cert,
             ))
         except httpclient.HTTPError as e:
             response = e.response

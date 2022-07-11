@@ -88,32 +88,32 @@ class Application(web.Application):
 
     def __init__(self, ioloop=None, **args):
         settings = dict(
-            debug=seplis.config['debug'],
+            debug=seplis.config.data.debug,
             autoescape=None,
             xsrf_cookies=False,
         )
         self.ioloop = ioloop or asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor(
-            max_workers=seplis.config['api']['max_workers']
+            max_workers=seplis.config.data.api.max_workers
         )
         super().__init__(urls, **settings)
 
 async def main():
-    logger.set_logger('api-{}.log'.format(seplis.config['api']['port']))
-    if seplis.config['sentry_dsn']:
+    logger.set_logger(f'api-{seplis.config.data.api.port}.log')
+    if seplis.config.data.sentry_dsn:
         sentry_sdk.init(
-            dsn=seplis.config['sentry_dsn'],
+            dsn=seplis.config.data.sentry_dsn,
             integrations=[TornadoIntegration()],
         )
     loop = asyncio.get_event_loop()
     app = Application(loop)
-    server = app.listen(seplis.config['api']['port'])
+    server = app.listen(seplis.config.data.api.port)
 
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
     signal.signal(signal.SIGINT, partial(sig_handler, server, app))
 
     log = logging.getLogger('main')
     log.setLevel('INFO')
-    log.info(f'API server started on port: {seplis.config["api"]["port"]}')
+    log.info(f'API server started on port: {seplis.config.data.api.port}')
     await asyncio.Event().wait()
     log.info('API server stopped')

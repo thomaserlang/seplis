@@ -4,22 +4,19 @@ from seplis import config
 
 def subprocess_env():
     env = {}
-    if config['play']['ffmpeg_logfile']:
-        env['FFREPORT'] = 'file=\'{}\':level={}'.format(
-            config['play']['ffmpeg_logfile'],
-            config['play']['ffmpeg_loglevel'],
-        )
+    if config.data.play.ffmpeg_logfile:
+        env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
     return env
 
 def ffmpeg_base_args(handler, settings, metadata):
     args = [
-        {os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'): None},
+        {os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'): None},
         {'-i': metadata['format']['filename']},
-        {'-threads': str(config['play']['ffmpeg_threads'])},
+        {'-threads': str(config.data.play.ffmpeg_threads)},
         {'-y': None},
         {'-loglevel': 'quiet'},
         {'-map': '0:v:0'},
-        {'-preset': config['play']['ffmpeg_preset']},
+        {'-preset': config.data.play.ffmpeg_preset},
         {'-c:a': 'aac'},
         {'-pix_fmt': settings['transcode_pixel_format']},
     ]
@@ -59,7 +56,7 @@ def set_video_codec(settings, metadata, has_subtitle, ffmpeg_args):
     if not stream:
         raise Exception('No video stream')
     codec = settings['transcode_codec']
-    if (config['play']['ffmpeg_enable_codec_copy'] or (settings['type'] == 'pipe')) and \
+    if (config.data.play.ffmpeg_enable_codec_copy or (settings['type'] == 'pipe')) and \
         not has_subtitle and \
         stream['codec_name'] in settings['codec_names'] and \
         stream['pix_fmt'] in settings['pixel_formats']:
@@ -82,7 +79,7 @@ def set_subtitle(handler, metadata, ffmpeg_args):
         return False
     session = handler.get_argument('session')
     subtitle_file = os.path.join(
-        config['play']['temp_folder'],
+        config.data.play.temp_folder,
         '{}.ass'.format(session)
     )
     args.append(subtitle_file)
@@ -110,7 +107,7 @@ def get_subtitle_args(handler, metadata):
     if not sub_index:
         return
     args = [
-        os.path.join(config['play']['ffmpeg_folder'], 'ffmpeg'),
+        os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
         '-i', metadata['format']['filename'],
         '-y',
         '-vn',

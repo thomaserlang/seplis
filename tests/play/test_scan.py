@@ -30,7 +30,7 @@ class test_scan(Testbase):
         super().setUp()
         self.scanner = Play_scan(
             '/', 
-            type_='shows',
+            type_='series',
         )
     
     def test_get_files(self):

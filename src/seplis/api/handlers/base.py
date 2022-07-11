@@ -120,7 +120,7 @@ class Handler(web.RequestHandler):
     def write_pagination(self, pagination):
         links = pagination.links_header_format(
             urljoin(
-                config['api']['base_url'],
+                config.data.api.base_url,
                 self.request.path
             ), 
             self.request.query_arguments,
@@ -143,9 +143,6 @@ class Handler(web.RequestHandler):
     @property
     def async_session(self) -> AsyncSession:
         return database.async_session
-
-    async def es(self, url, query={}, body={}):
-        return await database.es_get(url, query, body)
 
     @property
     def es_async(self) -> "AsyncElasticsearch":
@@ -236,8 +233,8 @@ class Handler(web.RequestHandler):
                 self.image_remove_keys,
                 img,
             )
-            img['url'] = config['api']['image_url'] + '/' + img['hash'] \
-                if config['api']['image_url'] and img['hash'] else None
+            img['url'] = config.data.api.image_url + '/' + img['hash'] \
+                if config.data.api.image_url and img['hash'] else None
         return images
 
     episode_remove_keys = (
@@ -288,9 +285,10 @@ class Handler(web.RequestHandler):
         '''
         if not show_ids:
             return []
-        result = await self.es('/shows/_doc/_mget', body={
-            'ids': show_ids
-        })
+        result = await database.es_async.mget(
+            index='shows',
+            ids=show_ids,
+        )
         return [d.get('_source') for d in result['docs']]
 
     async def get_episodes(self, episode_ids):
@@ -301,9 +299,10 @@ class Handler(web.RequestHandler):
             {show_id}-{episode_number}
         :returns: list of dict
         '''
-        result = await self.es('/episodes/_doc/_mget', body={
-            'ids': episode_ids
-        })
+        result = await database.es_async.get(
+            index='episodes',
+            ids=episode_ids,
+        )
         return [d.get('_source') for d in result['docs']]
 
     def expand_user_rating(self, shows, user_id):

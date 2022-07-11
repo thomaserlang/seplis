@@ -20,7 +20,7 @@ target_metadata = None
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
+# my_important_option = config.data.get_main_option("my_important_option")
 # ... etc.
 
 def run_migrations_offline():
@@ -35,7 +35,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = config.data.get_main_option("sqlalchemy.url")
     context.configure(url=url, target_metadata=target_metadata)
 
     with context.begin_transaction():
@@ -48,8 +48,8 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    alembic_config = config.get_section(config.config_ini_section)
-    alembic_config['sqlalchemy.url'] = seplis_config['play']['database']
+    alembic_config = config.data.get_section(config.data.config_ini_section)
+    alembic_config['sqlalchemy.url'] = seplis_config.data.play.database
     engine = engine_from_config(
         alembic_config,
         prefix='sqlalchemy.',

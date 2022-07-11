@@ -9,8 +9,8 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 client = Client(
-    url=config['client']['api_url'],
-    access_token=config['client']['access_token'],
+    url=config.data.client.api_url,
+    access_token=config.data.client.access_token,
 )
 
 class Importer_exception(Exception):

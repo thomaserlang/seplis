@@ -8,13 +8,13 @@ import alembic.config
 from alembic import command
 
 def get_config():
-    cfg = alembic.config.Config(
+    cfg = alembic.config.data.Config(
         os.path.dirname(
             os.path.abspath(__file__)
         )+'/alembic.ini'
     )
     cfg.set_main_option('script_location', 'seplis.play:migration')
-    cfg.set_main_option('url', config['play']['database'])
+    cfg.set_main_option('url', config.data.play.database)
     return cfg
 
 def upgrade():
@@ -24,7 +24,7 @@ def upgrade():
 class Database:
     def connect(self):
         self.engine = create_engine(
-            config['play']['database'],
+            config.data.play.database,
             echo=False,
             pool_recycle=3599,
             pool_pre_ping=True,
@@ -34,7 +34,7 @@ class Database:
         )
 
         self.engine_async = create_async_engine(
-            config['play']['database'].replace('mysqldb', 'aiomysql').replace('pymysql', 'aiomysql'),
+            config.data.play.database.replace('mysqldb', 'aiomysql').replace('pymysql', 'aiomysql'),
             echo=False,
             pool_recycle=3599,
             pool_pre_ping=True,

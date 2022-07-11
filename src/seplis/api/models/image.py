@@ -1,3 +1,4 @@
+from urllib.parse import urljoin
 import sqlalchemy as sa
 from sqlalchemy.sql import func
 from sqlalchemy import event, orm
@@ -37,8 +38,8 @@ class Image(Base):
             'created_at': self.created_at,
             '_relation_type': self.relation_type,
             '_relation_id': self.relation_id,
-            'url': config['api']['image_url'] + '/' + self.hash \
-                if config['api']['image_url'] and self.hash else self.hash
+            'url': urljoin(config.data.api.image_url, self.hash) \
+                if config.data.api.image_url and self.hash else self.hash
         }
 
     def after_upsert(self):
