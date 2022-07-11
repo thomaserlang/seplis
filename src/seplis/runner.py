@@ -1,5 +1,6 @@
 import asyncio
 import logging, click
+import os
 import signal
 import sys
 from seplis.logger import logger

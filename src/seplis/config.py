@@ -3,54 +3,73 @@ from typing import List, Literal, Optional, Tuple
 from pydantic import AnyHttpUrl, BaseModel, BaseSettings, DirectoryPath, EmailStr, conint, validator
 import yaml, tempfile
 
-class ConfigRedisModel(BaseModel):
-    ip: str = None
+class ConfigRedisModel(BaseSettings):
+    ip: str = '127.0.0.1'
     port: int = 6379
     db: conint(ge=0, le=15) = 0
-    sentinel: List[Tuple[str, int]] = None
-    password: str = None
+    sentinel: Optional[List[Tuple[str, int]]]
+    password: Optional[str]
 
-class ConfigAPIModel(BaseModel):
-    database: Optional[str]
+    class Config:
+        env_prefix = 'seplis_redis_'
+
+class ConfigAPIModel(BaseSettings):
+    database = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
     database_test = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
     database_read_timeout = 5
     redis = ConfigRedisModel()
-    elasticsearch: AnyHttpUrl = None
+    elasticsearch: Optional[AnyHttpUrl]
     port = 8002
     max_workers = 5
-    image_url: AnyHttpUrl = None
-    base_url: AnyHttpUrl = None
-    storitch: AnyHttpUrl = None
+    image_url: Optional[AnyHttpUrl] = 'https://images.seplis.net'
+    base_url: Optional[AnyHttpUrl] = 'https://seplis.net'
+    storitch: Optional[AnyHttpUrl]
 
-class ConfigWebModel(BaseModel):
+    class Config:
+        env_prefix = 'seplis_api_'
+        env_nested_delimiter = '_'
+        validate_assignment = True
+        case_sensitive = False
+
+class ConfigWebModel(BaseSettings):
     url: Optional[AnyHttpUrl]
     cookie_secret: Optional[str]
     port = 8001
     chromecast_appid = 'EA4A67C4'
 
-class ConfigLoggingModel(BaseModel):
-    level = 'warning'
+    class Config:
+        env_prefix = 'seplis_web_'
+
+class ConfigLoggingModel(BaseSettings):
+    level: Literal['notset', 'debug', 'info', 'warn', 'error', 'critical'] = 'warn'
     path: Optional[DirectoryPath]
     max_size: int = 100 * 1000 * 1000 # ~ 95 mb
     num_backups = 10
+    
+    class Config:
+        env_prefix = 'seplis_logging_'
 
-class ConfigClientModel(BaseModel):
+class ConfigClientModel(BaseSettings):
     access_token: Optional[str]
     thetvdb: Optional[str]
+    themoviedb: Optional[str]
     id: Optional[str]
     validate_cert = True
-    api_url: AnyHttpUrl = 'https://seplis.net'
+    api_url: AnyHttpUrl = 'https://api.seplis.net'
     public_api_url: Optional[AnyHttpUrl]
 
     @validator('public_api_url', pre=True, always=True)
     def default_ts_modified(cls, v, *, values, **kwargs):
         return v or values['api_url']
 
+    class Config:
+        env_prefix = 'seplis_client_'
+
 class ConfigPlayScanModel(BaseModel):
     type: Literal['series', 'movies']
     path: DirectoryPath
 
-class ConfigPlayModel(BaseModel):
+class ConfigPlayModel(BaseSettings):
     database: Optional[str]
     secret: Optional[str]
     scan: Optional[List[ConfigPlayScanModel]]
@@ -63,11 +82,14 @@ class ConfigPlayModel(BaseModel):
     ffmpeg_enable_codec_copy = False
     ffmpeg_hls_segment_type: Literal['mpegts', 'fmp4'] = 'fmp4'
     port = 8003
-    temp_folder: str = os.path.join(tempfile.gettempdir(), 'seplis_play')
+    temp_folder: DirectoryPath = os.path.join(tempfile.gettempdir(), 'seplis_play')
     segment_time = 5
     session_timeout = 5 # Timeout for HLS sessions
 
-class ConfigSMTPModel(BaseModel):
+    class Config:
+        env_prefix = 'seplis_play_'
+
+class ConfigSMTPModel(BaseSettings):
     server = '127.0.0.1'
     port = 25
     user: Optional[str]
@@ -75,6 +97,9 @@ class ConfigSMTPModel(BaseModel):
     use_tls: Optional[bool]
     from_email: Optional[str]
 
+    class Config:
+        env_prefix = 'seplis_smtp_'
+    
 class ConfigModel(BaseSettings):
     debug = False
     sentry_dsn: Optional[str]
@@ -87,8 +112,10 @@ class ConfigModel(BaseSettings):
     smtp = ConfigSMTPModel()
 
     class Config:
-        env_prefix = 'seplis'
+        env_prefix = 'seplis_'
+        env_nested_delimiter = '_'
         validate_assignment = True
+        case_sensitive = False
 
 class Config:
     def __init__(self):
