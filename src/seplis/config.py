@@ -77,7 +77,7 @@ class ConfigPlayModel(BaseSettings):
     ffmpeg_folder: pathlib.Path = '/usr/src/ffmpeg'
     ffmpeg_threads = 4
     ffmpeg_loglevel = '8'
-    ffmpeg_logfile: Optional[str]
+    ffmpeg_logfile: Optional[pathlib.Path]
     ffmpeg_preset: Literal['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'] = 'veryfast' 
     ffmpeg_enable_codec_copy = False
     ffmpeg_hls_segment_type: Literal['mpegts', 'fmp4'] = 'fmp4'
