@@ -117,7 +117,7 @@ def update_movies():
 @cli.command()
 @click.option('-n', default=1, help='worker number')
 def worker(n):
-    logger.set_logger('worker-{}.log'.format(n))
+    logger.set_logger(f'worker-{n}.log')
     import seplis.tasks.worker
     from seplis.api.connections import database
     database.connect()
@@ -131,51 +131,39 @@ def worker(n):
 @cli.command()
 @click.option('--disable_cleanup', is_flag=True, help='Disable cleanup after scan')
 def play_scan(disable_cleanup):
+    logger.set_logger('play_scan.log', to_sentry=True)
     import seplis.play.scan
     from seplis.play.connections import database
     database.connect()
-    try:
-        seplis.play.scan.upgrade_scan_db()
-    except:        
-        logging.exception('play scan db upgrade')
-        raise
-    logger.set_logger('play_scan.log', to_sentry=True)
+    seplis.play.scan.upgrade_scan_db()
     seplis.play.scan.scan()
     if not disable_cleanup:
         seplis.play.scan.cleanup()
 
 @cli.command()
 def play_scan_watch():
+    logger.set_logger('play_scan_watch.log', to_sentry=True)
     import seplis.play.scan_watch
     import seplis.play.scan
     from seplis.play.connections import database
     database.connect()
     try:
         seplis.play.scan.upgrade_scan_db()
-    except:        
-        logging.exception('play scan db upgrade')
-        raise    
-    logger.set_logger('play_scan_watch.log', to_sentry=True)
-    try:
         seplis.play.scan_watch.main()
     except:
         logging.exception('play_scan_watch')
 
 @cli.command()
 def play_scan_cleanup():
+    logger.set_logger('play_scan_cleanup.log', to_sentry=True)
     import seplis.play.scan
     from seplis.play.connections import database
     database.connect()
     try:
         seplis.play.scan.upgrade_scan_db()
-    except:        
-        logging.exception('play scan db upgrade')
-        raise
-    logger.set_logger('play_scan.log', to_sentry=True)
-    try:
         seplis.play.scan.cleanup()
     except:
-        logging.exception('play_scan_watch')
+        logging.exception('play_scan_cleanup')
 
 @cli.command()
 def dev_server():
