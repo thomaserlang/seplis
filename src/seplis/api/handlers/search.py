@@ -18,8 +18,9 @@ class Handler(base.Handler):
 
     def build_query(self):
         args: Search_schema = self.validate_arguments()
+
         if args.query:
-            return {
+            q = {
                 'dis_max': {
                     'queries': [
                         {'multi_match': {
@@ -36,7 +37,7 @@ class Handler(base.Handler):
                 }
             }
         elif args.title:
-            return {
+            q = {
                 'multi_match': {
                     'query': args.title[0],
                     'operator': 'and',
@@ -47,3 +48,17 @@ class Handler(base.Handler):
                     ]
                 }
             }
+
+        if q and args.type:
+            q = {
+                'bool': {
+                    'must': q,
+                    'filter': {
+                        'term': {
+                            'type': args.type[0],
+                        }
+                    }
+                }
+            }
+        
+        return q

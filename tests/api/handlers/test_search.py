@@ -32,6 +32,20 @@ class test_movie(Testbase):
         data = utils.json_loads(r.body)
         self.assertEqual(data[0]['id'], movie1['id'])
 
+        r = self.get('/1/search', { 'title': 'National Treasure'})
+        self.assertEqual(r.code, 200, r.body)
+        data = utils.json_loads(r.body)
+        self.assertEqual(data[0]['id'], movie1['id'])
+
+        r = self.get('/1/search', { 'title': 'National Treasure', 'type': 'movie'})
+        self.assertEqual(r.code, 200, r.body)
+        data = utils.json_loads(r.body)
+        self.assertEqual(data[0]['id'], movie1['id'])
+
+        r = self.get('/1/search', { 'title': 'National Treasure', 'type': 'series'})
+        self.assertEqual(r.code, 200, r.body)
+        data = utils.json_loads(r.body)
+        self.assertEqual(len(data), 0)
 
         r = self.get('/1/search', { 'query': 'Natioal Treasure'})
         self.assertEqual(r.code, 200)
@@ -91,7 +105,7 @@ class test_movie(Testbase):
             'title': 'DC\'s legend of something',
             'alternative_titles': [
                 'DC’s kurt',
-            ]
+            ],
         })
         self.assertEqual(response.code, 201, response.body)
         show2 = utils.json_loads(response.body)
