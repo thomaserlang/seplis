@@ -1,3 +1,4 @@
+import logging, json
 from seplis.api import exceptions
 from seplis.api.handlers import base
 from seplis.api.schemas import Search_schema
@@ -23,27 +24,54 @@ class Handler(base.Handler):
             q = {
                 'dis_max': {
                     'queries': [
-                        {'multi_match': {
-                            'query': args.query[0],
-                            'type': 'bool_prefix',
-                            'fields': [
-                                'titles^3',
-                                'titles._2gram',
-                            ]
-                        }},
+                        {                             
+                            'bool': {
+                                'should': [
+                                    {
+                                        'nested': {
+                                            'path': 'titles',
+                                            "score_mode": "max",
+                                            'query': {
+                                                'multi_match': {
+                                                    'query': args.query[0],
+                                                    'type': 'bool_prefix',
+                                                    'fields': [
+                                                        'titles.title',
+                                                        'titles.title._2gram',
+                                                        'titles.title._3gram',
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    },
+                                    {
+                                        'multi_match': {
+                                            'query': args.query[0],
+                                            'type': 'bool_prefix',
+                                            'fields': [
+                                                'title',
+                                                'title._2gram',
+                                                'title._3gram',
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        },
                         { 'term': { 'imdb': args.query[0]} },
                     ]
                 }
             }
         elif args.title:
             q = {
-                'multi_match': {
-                    'query': args.title[0],
-                    'operator': 'and',
-                    'type': 'best_fields',
-                    'fields': [
-                        'titles',
-                        'imdb',
+                'dis_max': {
+                    'queries': [                        
+                        {'nested': {
+                            'path': 'titles',
+                            'query': 
+                                { 'match_phrase': { 'titles.title': args.title[0] }},
+                        }},
+                        { 'term': { 'imdb': args.title[0]} },
                     ]
                 }
             }

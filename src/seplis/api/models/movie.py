@@ -81,18 +81,18 @@ class Movie(Base):
         )
 
     def title_document(self):
-        at = [self.title, *self.alternative_titles]
+        titles = [self.title, *self.alternative_titles]
         year = str(self.release_date.year) if self.release_date else ''
-        for title in at[:]:
+        for title in titles[:]:
             if title and year not in title:
                 t = f'{title} {year}'
-                if t not in at:
-                    at.append(t)
+                if t not in titles:
+                    titles.append(t)
         return {
             'type': 'movie',
             'id': self.id,
             'title': self.title,
-            'titles': at,
+            'titles': [{'title': title} for title in titles],
             'release_date': self.release_date,
             'imdb': self.externals.get('imdb'),
             'poster_image': self.poster_image.serialize() if self.poster_image else None,

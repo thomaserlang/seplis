@@ -90,13 +90,13 @@ class Show(Base):
             '_id': self.id,
             '_source': utils.json_dumps(self.serialize()),
         })
-        at = [self.title, *self.alternative_titles]
+        titles = [self.title, *self.alternative_titles]
         year = str(self.premiered.year) if self.premiered else ''
-        for title in at[:]:
+        for title in titles[:]:
             if title and year not in title:
                 t = f'{title} {year}'
-                if t not in at:
-                    at.append(t)
+                if t not in titles:
+                    titles.append(t)
         self.session.es_bulk.append({
             '_index': 'titles',
             '_id': f'series-{self.id}',
@@ -104,7 +104,7 @@ class Show(Base):
                 'type': 'series',
                 'id': self.id,
                 'title': self.title,
-                'titles': at,
+                'titles': [{'title': title} for title in titles],
                 'release_date': self.premiered,
                 'imdb': self.externals.get('imdb'),
                 'poster_image': self.poster_image.serialize() if self.poster_image else None,

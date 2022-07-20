@@ -58,7 +58,7 @@ def create_indices():
                     'filter': [
                         'lowercase',
                         'asciifolding',
-                        'word_delimiter',
+                        'word_delimiter_graph',
                     ],
                 },
             },
@@ -198,10 +198,18 @@ def create_indices():
         'properties': {
             'id': { 'type': 'integer' },
             'type': { 'type': 'text' },
-            'title': { 'type': 'text' },
-            'titles': {
+            'title': { 
                 'type': 'search_as_you_type',
                 'analyzer': 'title_search',
+            },
+            'titles': {
+                'type': 'nested',
+                'properties': {
+                    'title': {
+                        'type': 'search_as_you_type',
+                        'analyzer': 'title_search',
+                    }
+                }
             },
             'imdb': { 'type': 'text' },
             'premiered': { 'type': 'date' },
