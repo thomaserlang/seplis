@@ -44,7 +44,7 @@ def update_incremental():
             else:
                 logging.debug(f'Didn\'t find TheMovieDB: {r["id"]}')
         if data['page'] == data['total_pages']:
-            break            
+            break
 
 def update_movie_metadata(movie):
     logging.info(f'[Movie: {movie["id"]}] Updating metadata')
@@ -79,6 +79,9 @@ def update_movie_metadata(movie):
         return
     r = r.json()
     
+    if r['imdb_id'] and movie['externals'].get('imdb') != r['imdb_id']:
+        data.setdefault('externals', {})['imdb'] = r['imdb_id']
+
     if movie['title'] != r['title']:
         data['title'] = r['title']
     
