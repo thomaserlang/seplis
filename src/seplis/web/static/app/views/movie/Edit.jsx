@@ -39,12 +39,21 @@ class Edit extends React.Component {
             Serialize(e.target, {hash: true})
         )
         request(`/1/movies/${this.props.movie.id}`, {
-            data: data,
-            method: 'PATCH',
-        }).done(movie => {
-            this.setState({success: movie})
-            request(`/1/movies/${this.props.movie.id}/update`, {
-                method: 'POST',
+            data: {'alternative_titles': data['alternative_titles']},
+            method: 'PUT',
+        }).done(movie => {            
+            request(`/1/movies/${this.props.movie.id}`, {
+                data: {'externals': data['externals']},
+                method: 'PATCH',
+            }).done(movie => {
+                this.setState({success: movie})
+                request(`/1/movies/${this.props.movie.id}/update`, {
+                    method: 'POST',
+                })
+            }).fail(e => {
+                this.setState({error: e.responseJSON})
+            }).always(() => {
+                this.setState({loading: false})
             })
         }).fail(e => {
             this.setState({error: e.responseJSON})
@@ -93,7 +102,7 @@ class Edit extends React.Component {
         if (getUserLevel() < 3)
             return
         return <button 
-            className="btn btn-warning mr-2"
+            className="btn btn-warning ml-2"
             disabled={this.state.deleting}
             onClick={this.deleteClick}
         >
@@ -107,7 +116,6 @@ class Edit extends React.Component {
                 <EditFields movie={this.props.movie} />
                 {this.renderError()}
                 {this.renderSuccess()}
-                {this.renderDelete()}
                 <button 
                     type="submit" 
                     className="btn btn-primary"
@@ -115,6 +123,7 @@ class Edit extends React.Component {
                 >
                     {this.state.loading?'Saving...':'Save'}
                 </button>
+                {this.renderDelete()}
             </form>
         )
     }
