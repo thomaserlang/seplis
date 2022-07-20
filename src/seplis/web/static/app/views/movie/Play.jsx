@@ -3,25 +3,19 @@ import Player, {getPlayServer} from 'seplis/components/player/Player'
 import Loader from 'seplis/components/Loader'
 import Chromecast from 'seplis/components/player/Chromecast'
 import {request} from 'seplis/api'
-import {pad, episodeTitle, guid, dateInDays} from 'seplis/utils'
+import { guid } from 'seplis/utils'
  
-class PlayEpisode extends React.Component {
+class Play extends React.Component {
  
     constructor(props) {
         super(props)
         this.state = {
             loadingPlayServers: true,
             loadingMovie: true,
-            loadingNextEpisode: true,
-            loadingLang: true,
             loadingStartTime: true,
             playServer: null,
             playServerError: null,
             movie: null,
-            episode: null,
-            nextEpisode: null,
-            audio_lang: null,
-            subtitle_lang: null,
             metadata: null,
             startTime: 0,
         }        
@@ -77,7 +71,9 @@ class PlayEpisode extends React.Component {
  
     getPlayServers() {
         let url = `/1/movies/${this.movieId}/play-servers`
+        console.log(url)
         getPlayServer(url).then((obj) => {
+            console.log(obj)
             this.setState({
                 loadingPlayServers: false,
                 playServer: obj.playServer,
@@ -102,7 +98,6 @@ class PlayEpisode extends React.Component {
     }
  
     getLanguage() {
-
     }
  
     getStartTime() {
@@ -152,7 +147,7 @@ class PlayEpisode extends React.Component {
     }
  
     getCurrentInfo() {
-        if (!this.state.movie || !this.state.episode) return null
+        if (!this.state.movie) return null
         return {
             title: this.state.movie.title,
         }
@@ -216,7 +211,7 @@ class PlayEpisode extends React.Component {
 
     render() {
         if (this.state.loadingPlayServers || this.state.loadingMovie ||
-            this.state.loadingLang || this.state.loadingStartTime)
+            this.state.loadingStartTime)
             return <Loader />
         if (this.state.playServerError) {
             return this.renderPlayServerError()
@@ -227,12 +222,12 @@ class PlayEpisode extends React.Component {
             playId={this.state.playServer.play_id}
             metadata={this.state.metadata}
             info={this.getInfo()}
-            nextInfo={this.getPlayNextInfo()}
+            //nextInfo={this.getPlayNextInfo()}
             backToInfo={this.getBackToInfo()}
             currentInfo={this.getCurrentInfo()}
             onAudioChange={this.onAudioChange}
             onSubtitleChange={this.onSubtitleChange}
-            audio_lang={this.state.audio_lang}
+            //audio_lang={this.state.audio_lang}
             subtitle_lang={this.state.subtitle_lang}
             onTimeUpdate={this.onTimeUpdate}
             startTime={this.state.startTime}
@@ -240,4 +235,4 @@ class PlayEpisode extends React.Component {
         />
     }
 }
-export default PlayEpisode
+export default Play

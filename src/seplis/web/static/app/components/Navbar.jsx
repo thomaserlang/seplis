@@ -45,7 +45,6 @@ class Navbar extends React.Component {
                     Movies                   
                 </a>
                 <div className="dropdown-menu">
-                    <Link className="dropdown-item" to="/movies-main">Main</Link>
                     <Link className="dropdown-item" to="/movies-stared">Stared</Link>
                     <Link className="dropdown-item" to="/movies-watched">Watched movies</Link>
                     <div className="dropdown-divider"></div>

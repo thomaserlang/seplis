@@ -503,6 +503,7 @@ export function getPlayServer(url) {
         Returns a promise.
     */
     return new Promise((resolve, reject) => {
+        console.log(url)
         request(
             url
         ).done(playServers => {
@@ -513,6 +514,7 @@ export function getPlayServer(url) {
                 return
             }
             for (var s of playServers) {
+                console.log(s)
                 i += 1
                 request(s.play_url+'/metadata', {
                     query: {
