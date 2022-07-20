@@ -40,7 +40,7 @@ class Edit extends React.Component {
         )
         request(`/1/movies/${this.props.movie.id}`, {
             data: data,
-            method: 'PUT',
+            method: 'PATCH',
         }).done(movie => {
             this.setState({success: movie})
             request(`/1/movies/${this.props.movie.id}/update`, {
