@@ -1,14 +1,11 @@
 import unittest
 import nose
 import mock
-import logging
 from datetime import datetime
 from seplis.play.connections import database
 from seplis.play.decorators import new_session
-from seplis.logger import logger
-from seplis import config_load, config
-from seplis.play.scan import Play_scan, Shows_scan, parse_episode, \
-    Parsed_episode_season, Parsed_episode_air_date, Parsed_episode_number
+from seplis.play.scan import Movie_scan, Play_scan, Series_scan, Parsed_episode_season, \
+    Parsed_episode_air_date, Parsed_episode_number
 from seplis.play import models
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -28,26 +25,23 @@ class test_scan(Testbase):
 
     def setUp(self):
         super().setUp()
-        self.scanner = Play_scan(
-            '/', 
-            type_='series',
-        )
+        self.scanner = Play_scan('/', type_='series')
     
     def test_get_files(self):
         with mock.patch('os.walk') as mockwalk:
             mockwalk.return_value = [                
-                ('/shows', ('NCIS', 'Person of Interest'), ()),
-                ('/shows/NCIS', ('Season 01', 'Season 02'), ()),
-                ('/shows/NCIS/Season 01', (), (
+                ('/series', ('NCIS', 'Person of Interest'), ()),
+                ('/series/NCIS', ('Season 01', 'Season 02'), ()),
+                ('/series/NCIS/Season 01', (), (
                     'NCIS.S01E01.Yankee White.avi',
                     'NCIS.S01E02.Hung Out to Dry.avi',
                 )),
-                ('/shows/NCIS/Season 02', (), (
+                ('/series/NCIS/Season 02', (), (
                     'NCIS.S02E01.See No Evil.avi',
                     'NCIS.S02E02.The Good Wives Club.avi',  
                 )),
-                ('/shows/Person of Interest', ('Season 01'), ()),
-                ('/shows/Person of Interest/Season 01', (), (
+                ('/series/Person of Interest', ('Season 01'), ()),
+                ('/series/Person of Interest/Season 01', (), (
                     'Person of Interest.S01E01.Pilot.mp4',
                     '._Person of Interest.S01E01.Pilot.mp4',
                 )),
@@ -55,11 +49,11 @@ class test_scan(Testbase):
 
             files = self.scanner.get_files()
             self.assertEqual(files, [
-                '/shows/NCIS/Season 01/NCIS.S01E01.Yankee White.avi',
-                '/shows/NCIS/Season 01/NCIS.S01E02.Hung Out to Dry.avi',
-                '/shows/NCIS/Season 02/NCIS.S02E01.See No Evil.avi',
-                '/shows/NCIS/Season 02/NCIS.S02E02.The Good Wives Club.avi',
-                '/shows/Person of Interest/Season 01/Person of Interest.S01E01.Pilot.mp4',
+                '/series/NCIS/Season 01/NCIS.S01E01.Yankee White.avi',
+                '/series/NCIS/Season 01/NCIS.S01E02.Hung Out to Dry.avi',
+                '/series/NCIS/Season 02/NCIS.S02E01.See No Evil.avi',
+                '/series/NCIS/Season 02/NCIS.S02E02.The Good Wives Club.avi',
+                '/series/Person of Interest/Season 01/Person of Interest.S01E01.Pilot.mp4',
             ])
 
     @mock.patch('subprocess.Popen')
@@ -81,13 +75,64 @@ class test_scan(Testbase):
             self.scanner.get_file_modified_time('somefile.mp4'),
         )
 
-class test_shows_scan(Testbase):
+class Test_movie_scan(Testbase):
+
+    def test(self):
+        scanner = Movie_scan('/')
+
+        scanner.get_files = mock.MagicMock(return_value=[
+            'Uncharted.mkv',
+        ])
+        scanner.client.get = mock.MagicMock(return_value=[
+            {
+                'title': 'Uncharted',
+                'id': 1,
+            }
+        ])
+        scanner.get_metadata = mock.MagicMock(return_value={
+            'some': 'data',
+        })
+        scanner.get_file_modified_time = mock.MagicMock(return_value=datetime(2014, 11, 14, 21, 25, 58))
+
+        scanner.scan()
+        scanner.client.get.assert_called_with('/search', {
+            'title': 'Uncharted',
+            'type': 'movie',
+        })
+
+        # Scan again to make sure cached items doesn't fail
+        scanner.scan()
+        scanner.client.get.assert_called_once()
+
+        with new_session() as session:
+            r = session.query(models.Movie_id_lookup).first()
+            self.assertEqual(r.file_movie_title, 'Uncharted')
+            
+            r = session.query(models.Movie).first()
+            self.assertEqual(r.path, 'Uncharted.mkv')
+            self.assertEqual(r.meta_data, { 'some': 'data' })
+
+        scanner.delete_item('Uncharted', 'Uncharted.mkv')
+        with new_session() as session:
+            r = session.query(models.Movie).first()
+            self.assertEqual(r, None)
+
+    def test_parse(self):
+        scanner = Movie_scan('/')
+        self.assertEqual(
+            scanner.parse('Uncharted (2160p BluRay x265 10bit HDR Tigole).mkv'),
+            'Uncharted',
+        )
+        self.assertEqual(
+            scanner.parse('Parasite.2019.REPACK.2160p.4K.BluRay.x265.10bit.AAC7.1-[YTS.MX].mkv'),
+            'Parasite 2019',
+        )
+
+class Test_series_scan(Testbase):
 
     def setUp(self):
         super().setUp()
-        self.scanner = Shows_scan(
-            '/',
-        )
+        self.scanner = Series_scan('/')
 
     def test_show_id_lookup(self):
         self.scanner.client.get = mock.MagicMock(return_value=[
@@ -125,7 +170,6 @@ class test_shows_scan(Testbase):
             file_show_title='NCIS',
             season=1,
             episode=2,
-            path='/',
         )
         self.assertEqual(
             None,
@@ -154,7 +198,6 @@ class test_shows_scan(Testbase):
             show_id=1,
             file_show_title='NCIS',
             air_date='2014-11-14',
-            path='/',
         )
         self.assertEqual(
             None,
@@ -183,7 +226,6 @@ class test_shows_scan(Testbase):
             show_id=1,
             file_show_title='NCIS',
             number=4,
-            path='/',
         )
         self.assertTrue(self.scanner.episode_number_lookup(episode))
         # there is no reason to have a lookup record for an
@@ -206,30 +248,27 @@ class test_shows_scan(Testbase):
             'data': 'test',
         }
         episodes = []
-        episodes.append(Parsed_episode_season(
+        episodes.append((Parsed_episode_season(
             show_id=1,
             file_show_title='ncis',
             season=1,
             episode=2,
-            path='/ncis/ncis.s01e02.mp4',
             number=2,
-        ))
-        episodes.append(Parsed_episode_air_date(
+        ), '/ncis/ncis.s01e02.mp4'))
+        episodes.append((Parsed_episode_air_date(
             show_id=1,
             file_show_title='ncis',
             air_date='2014-11-14',
-            path='/ncis/ncis.2014-11-14.mp4',
             number=3,
-        ))
-        episodes.append(Parsed_episode_number(
+        ), '/ncis/ncis.2014-11-14.mp4'))
+        episodes.append((Parsed_episode_number(
             show_id=1,
             file_show_title='ncis',
             number=4,
-            path='/ncis/ncis.4.mp4',
-        ))
+        ), '/ncis/ncis.4.mp4'))
         # episodes saved
         for episode in episodes:
-            self.scanner.save_item(episode)
+            self.scanner.save_item(episode[0], episode[1])
 
         # check that metadata was called for all the episodes.
         # if metadata i getting called the episode will be 
@@ -245,93 +284,81 @@ class test_shows_scan(Testbase):
         # any of them.      
         self.scanner.get_metadata.reset_mock()
         for episode in episodes:
-            self.scanner.save_item(episode)
+            self.scanner.save_item(episode[0], episode[1])
         self.scanner.get_metadata.assert_has_calls([])
 
         # check that changing the `modified_time` will result in the
         # episode getting updated in the db.        
         self.scanner.get_metadata.reset_mock()
         self.scanner.get_file_modified_time.return_value = datetime(2014, 11, 15, 21, 25, 58)
-        self.scanner.save_item(episodes[1])
+        self.scanner.save_item(episodes[1][0], episodes[1][1])
         self.scanner.get_metadata.assert_has_calls(
             [mock.call('/ncis/ncis.2014-11-14.mp4')],
         )
+
+        with new_session() as session:
+            r = session.query(models.Episode).all()
+            self.assertEqual(len(r), 3)
+
+        self.scanner.delete_item(episodes[0][0], episodes[0][1])
+
+        with new_session() as session:
+            r = session.query(models.Episode).all()
+            self.assertEqual(len(r), 2)
         
     def test_scan(self):
         episodes = [Parsed_episode_number(
             show_id=1,
             file_show_title='ncis',
             number=4,
-            path='/ncis/ncis.4.mp4',
         )]
-        self.scanner.get_episodes = mock.MagicMock()
-        self.scanner.get_episodes.return_value = episodes
+        self.scanner.get_files = mock.MagicMock(return_value=[
+            '/ncis/ncis.s01e02.mp4'
+        ])
         self.scanner.save_item = mock.MagicMock()
         self.scanner.episode_show_id_lookup = mock.MagicMock()
         self.scanner.episode_number_lookup = mock.MagicMock()
 
         self.scanner.scan()
-        self.scanner.save_item.assert_called_with(episodes[0])
+        self.scanner.save_item.assert_called()
 
-    def test_get_episodes(self):
-        self.scanner.get_files = mock.MagicMock()
-        self.scanner.get_files.return_value = [
-            '/Naruto/[HorribleSubs] Naruto Shippuuden - 379 [1080p].mkv'
-        ]
-        episodes = self.scanner.get_episodes()
-        self.assertEqual(len(episodes), 1)
-        self.assertTrue(isinstance(episodes[0], Parsed_episode_number))
-
-class test_parse_episode(unittest.TestCase):
-
-    def test(self):
+    def test_parse_episode(self):
         # Normal
         path = '/Alpha House/Alpha.House.S02E01.The.Love.Doctor.720p.AI.WEBRip.DD5.1.x264-NTb.mkv'
-        info = parse_episode(
-            path
-        )
+        info = self.scanner.parse(path)
         self.assertTrue(
             isinstance(info, Parsed_episode_season),
         )
         self.assertEqual(info.file_show_title, 'alpha.house')
         self.assertEqual(info.season, 2)
         self.assertEqual(info.episode, 1)
-        self.assertEqual(info.path, path)
 
         # Anime
         path = '/Naruto/[HorribleSubs] Naruto Shippuuden - 379 [1080p].mkv'
-        info = parse_episode(
-            path
-        )
+        info = self.scanner.parse(path)
         self.assertTrue(
             isinstance(info, Parsed_episode_number),
         )
         self.assertEqual(info.file_show_title, 'naruto shippuuden')
         self.assertEqual(info.number, 379)
-        self.assertEqual(info.path, path)
 
         path = '/Naruto Shippuuden/Naruto Shippuuden.426.720p.mkv'
-        info = parse_episode(
-            path
-        )
+        info = self.scanner.parse(path)
         self.assertTrue(
             isinstance(info, Parsed_episode_number),
         )
         self.assertEqual(info.file_show_title, 'naruto shippuuden')
         self.assertEqual(info.number, 426)
-        self.assertEqual(info.path, path)
 
         # Air date
         path = '/The Daily Show/The.Daily.Show.2014.06.03.Ricky.Gervais.HDTV.x264-D0NK.mp4'
-        info = parse_episode(
-            path
-        )
+        info = self.scanner.parse(path)
         self.assertTrue(
             isinstance(info, Parsed_episode_air_date),
         )
         self.assertEqual(info.file_show_title, 'the.daily.show')
         self.assertEqual(info.air_date, '2014-06-03')
-        self.assertEqual(info.path, path)
 
+    
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)

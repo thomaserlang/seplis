@@ -24,3 +24,4 @@ pydantic==1.9.1
 aiomysql==0.1.1
 pytest==7.1.2
 orjson==3.6.8
+parse-torrent-name==1.1.1

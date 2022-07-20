@@ -1,21 +1,12 @@
 import logging, time
-import asyncio, functools
-try:
-    from watchdog.observers import Observer  
-    from watchdog.events import PatternMatchingEventHandler  
-except ImportError:
-    raise ImportError(
-'''Install the watchdog package.
-
-    pip install watchdog
-'''
-)
+from watchdog.observers import Observer  
+from watchdog.events import PatternMatchingEventHandler
 from seplis.play import scan
 from seplis import config
 
 class Handler(PatternMatchingEventHandler):
 
-    def __init__(self, scan_path, type_='shows'):
+    def __init__(self, scan_path, type_='series'):
         logging.debug('initiated')
         patterns = ['*.'+t for t in config.data.play.media_types]
         super().__init__(
@@ -23,8 +14,10 @@ class Handler(PatternMatchingEventHandler):
         )
         self.type = type_
         self.wait_list = {}
-        if type_ == 'shows':
-            self.scanner = scan.Shows_scan(scan_path=scan_path)
+        if type_ == 'series':
+            self.scanner = scan.Series_scan(scan_path=scan_path)
+        elif type_ == 'movies':
+            self.scanner = scan.Movie_scan(scan_path=scan_path)
         else:
             raise NotImplemented(f'Type: {type_} is not supported for watching')
 
@@ -35,19 +28,13 @@ class Handler(PatternMatchingEventHandler):
         path = event.src_path
         if event.event_type == 'moved':
             path = event.dest_path
-        if self.type == 'shows':
-            episode = scan.parse_episode(path)
-            if not episode:
-                logging.info(f'{event.src_path} could not be parsed')
-                return
-            return episode
+        return (scan.parse(path), path)
             
     def update(self, event):
         try:
             item = self.parse(event)
-            if not item:
-                return
-            self.scanner.save_item(item)
+            if item:
+                self.scanner.save_item(item[0], item[1])
         except:
             logging.exception('update') 
 
@@ -57,9 +44,8 @@ class Handler(PatternMatchingEventHandler):
     def on_deleted(self, event):
         try:
             item = self.parse(event)
-            if not item:
-                return
-            self.scanner.delete_item(item)
+            if item:
+                self.scanner.delete_item(item[0], item[1])
         except:
             logging.exception('on_deleted')
 
@@ -68,7 +54,7 @@ class Handler(PatternMatchingEventHandler):
         try:
             item = self.parse(event)
             if item:
-                self.scanner.delete_item(item)
+                self.scanner.delete_item(item[0], item[1])
             event.event_type = 'moved'
             self.update(event)
         except:
@@ -85,22 +71,20 @@ def main():
                     scan:
                         -
                             type: series | movies
-                            path: /a/path/to/the/shows
+                            path: /a/path/to/the/series
             ''')
     
     obs = Observer()
-    log = logging.getLogger('main')
-    log.setLevel('INFO')
-    log.info('Play scan watch started')
-    for s in config.data.play.scan:    
-        log.info(s)
+    logging.info('Play scan watch started')
+    for s in config.data.play.scan:
+        logging.info(f'Watching: {s.path}')
         event_handler = Handler(
-            scan_path=s['path'],
-            type_=s['type'],
+            scan_path=str(s.path),
+            type_=s.type,
         )
         obs.schedule(
             event_handler,
-            s['path'],
+            str(s.path),
             recursive=True,
         )
     obs.start()
@@ -110,4 +94,4 @@ def main():
     except KeyboardInterrupt:
         obs.stop()
     obs.join()
-    log.info('Play scan watch stopped')
+    logging.info('Play scan watch stopped')

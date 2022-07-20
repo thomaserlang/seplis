@@ -208,7 +208,6 @@ class Chromecast {
                 request('/1/progress-token'),
                 request(`/1/movies/${movieId}`),
                 request(`/1/movies/${movieId}/watched`),
-                request(`/1/movies/${movieId}/user-subtitle-lang`),
             ]).then(result => {
                 if (!startTime) {
                     if (result[3])
@@ -253,10 +252,12 @@ class Chromecast {
                 playUrl += `&device=chromecast`
                 if (startTime)
                     playUrl += `&start_time=${startTime}`
+                /*
                 if (result[4]) {
                     playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
                     playUrl += `&audio_lang=${result[5].audio_lang || ''}`
                 }
+                */
                 let request = new chrome.cast.media.LoadRequest(
                     this._playMovieMediaInfo(playUrl, result[2], result[3]),
                 )

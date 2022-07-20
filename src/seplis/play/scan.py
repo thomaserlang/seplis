@@ -1,56 +1,64 @@
-import os, os.path
-import re
-import logging
-import time
-import subprocess
+import os, os.path, re, logging, subprocess, PTN
 from datetime import datetime
 from seplis import config, Client, utils
 from seplis.play import constants, models
 from seplis.play.decorators import new_session
 
-SCAN_TYPES = (
-    'series',
-    'movies',
-)
 
-class Parsed_episode(object):
+def scan():
+    if not config.data.play.scan:
+        raise Exception('''
+            Nothing to scan. Add a path in the config file.
 
-    def __init__(self):
-        self.lookup_type = 0
-        self.show_id = None
-        self.number = None
+            Example:
 
-class Parsed_episode_season(Parsed_episode):
+                play:
+                    scan:
+                        -
+                            type: series
+                            path: /a/path/to/the/series
+            ''')
+    for s in config.data.play.scan:    
+        try:
+            scanner = None
+            if s.type == 'series':
+                scanner = Series_scan(s.path)
+            elif s.type == 'movies':
+                scanner = Movie_scan(s.path)
+            if not scanner:
+                raise Exception(f'Scan type: "{s.type}" is not supported')
+            scanner.scan()
+        except:        
+            logging.exception('play scan')
 
-    def __init__(self, file_show_title, season, episode, path, show_id=None, number=None):
-        super().__init__()
-        self.lookup_type = 1
-        self.file_show_title = file_show_title
-        self.season = season
-        self.episode = episode
-        self.path = path
-        self.show_id = show_id
-        self.number = number
+def cleanup():
+    logging.info('Cleanup started')
+    cleanup_episodes()
+    cleanup_movies()
 
-class Parsed_episode_air_date(Parsed_episode):
+def cleanup_episodes():
+    with new_session() as session:
+        episodes = session.query(models.Episode).all()
+        deleted_count = 0
+        for e in episodes:
+            if os.path.exists(e.path):
+                continue
+            deleted_count += 1
+            session.delete(e)
+        session.commit()
+        logging.info(f'{deleted_count} episodes was deleted from the database')
 
-    def __init__(self, file_show_title, air_date, path, show_id=None, number=None):
-        super().__init__()
-        self.lookup_type = 2
-        self.file_show_title = file_show_title
-        self.air_date = air_date
-        self.path = path
-        self.show_id = show_id
-        self.number = number
-
-class Parsed_episode_number(Parsed_episode):
-
-    def __init__(self, file_show_title, number, path, show_id=None):
-        super().__init__()
-        self.file_show_title = file_show_title
-        self.number = number
-        self.path = path
-        self.show_id = show_id
+def cleanup_movies():
+    with new_session() as session:
+        movies = session.query(models.Movie).all()
+        deleted_count = 0
+        for m in movies:
+            if os.path.exists(m.path):
+                continue
+            deleted_count += 1
+            session.delete(m)
+        session.commit()
+        logging.info(f'{deleted_count} movies was deleted from the database')
 
 class Play_scan(object):
 
@@ -59,17 +67,20 @@ class Play_scan(object):
             raise Exception('scan_path is missing')
         if not os.path.exists(scan_path):
             raise Exception(f'scan_path "{scan_path}" does not exist')
-        if type_ not in SCAN_TYPES:
+        if type_ not in constants.SCAN_TYPES:
             raise Exception(f'scan type: "{type_}" is not supported')
         self.scan_path = scan_path
         self.type = type_
         self.client = Client(url=config.data.client.api_url)
 
-    def save_item(self, item):
-        raise NotImplemented()
+    def save_item(self, item, path):
+        raise NotImplementedError()
 
-    def delete_item(self, item):
-        raise NotImplemented()
+    def parse(self, filename):
+        raise NotImplementedError()
+
+    def delete_item(self, item, path):
+        raise NotImplementedError()
 
     def get_files(self):
         '''
@@ -138,36 +149,136 @@ class Play_scan(object):
             os.path.getmtime(path)
         )
 
-class Shows_scan(Play_scan):
+class Movie_scan(Play_scan):
+
+    def __init__(self, scan_path):
+        super().__init__(
+            scan_path=scan_path,
+            type_='movies',
+        )
+
+    def scan(self):
+        logging.info(f'Scanning: {self.scan_path}')
+        files = self.get_files()
+        for f in files:
+            title = self.parse(f)
+            if title:
+                self.save_item(title, f)
+            else:
+                logging.debug(f'"{f}" didn\'t match any pattern')
+
+    def parse(self, filename):
+        info = PTN.parse(os.path.basename(filename))
+        if info:
+            t = info['title']
+            if info.get('year'):
+                t += f" {info['year']}"
+            return t
+
+    def save_item(self, title: str, path: str):
+        movie_id = self.lookup(title)
+        if not movie_id:
+            return
+
+        with new_session() as session:
+            movie = session.query(models.Movie).filter(
+                models.Movie.movie_id == movie_id,
+                models.Movie.path == path,
+            ).first()
+            modified_time = self.get_file_modified_time(path)
+            if movie and (movie.modified_time == modified_time) and movie.meta_data:
+                return
+            metadata = self.get_metadata(path)
+            if not metadata:
+                return
+            e = models.Movie(
+                movie_id=movie_id,
+                path=path,
+                meta_data=metadata,
+                modified_time=modified_time,
+            )
+            session.merge(e)
+            session.commit()
+            logging.info(f'Saved movie: {title} (Id: {movie_id}) - Path: {path}')
+            return True
+
+    def lookup(self, title: str):
+        logging.info(f'Looking for a movie with title: "{title}"')
+        with new_session() as session:
+            movie = session.query(models.Movie_id_lookup).filter(
+                models.Movie_id_lookup.file_movie_title == title,
+            ).first()
+            if not movie:
+                movies = self.client.get('/search', {
+                    'title': title,
+                    'type': 'movie',
+                })
+                if not movies:
+                    logging.info(f'Didn\'t find a match for movie "{title}"')
+                    return
+                logging.info(f'Found movie: {movies[0]["title"]} (Id: {movies[0]["id"]})')
+                movie = models.Movie_id_lookup(
+                    file_movie_title=title,
+                    movie_title=movies[0]["title"],
+                    movie_id=movies[0]["id"],
+                    updated_at=datetime.utcnow(),
+                )
+                session.merge(movie)
+                session.commit()
+                return movie.movie_id
+            else:                
+                logging.info(f'Found movie from cache: {movie.movie_title} (Id: {movie.movie_id})')
+                return movie.movie_id
+
+    def delete_item(self, title, path):        
+        movie_id = self.lookup(title)
+        with new_session() as session:
+            m = session.query(
+                models.Movie,
+            ).filter(
+                models.Movie.movie_id == movie_id,
+                models.Movie.path == path,
+            ).first()
+            if m:
+                session.delete(m)
+                session.commit()
+                logging.info(f'Deleted movie: {title} (Id: {movie_id}) - Path: {path}')
+                return True
+        return False
+
+class Series_scan(Play_scan):
 
     def __init__(self, scan_path):
         super().__init__(
             scan_path=scan_path,
             type_='series',
         )
-        self.show_id = Show_id(
-            scanner=self,
-        )
-        self.episode_number = Episode_number(
-            scanner=self
-        )
+        self.show_id = Show_id(scanner=self)
+        self.episode_number = Episode_number(scanner=self)
         self.not_found_shows = []
 
     def scan(self):
-        episodes = self.get_episodes()
-        if not episodes:
-            return
-        for episode in episodes:
-            self.save_item(episode)
-
-    def get_episodes(self):
+        logging.info(f'Scanning: {self.scan_path}')
         files = self.get_files()
-        episodes = parse_episodes(files)
-        logging.info('Found {} episodes in path "{}"'.format(
-            len(episodes),
-            self.scan_path,
-        ))
-        return episodes
+        for f in files:
+            episode = self.parse(f)
+            self.save_item(episode, f)
+
+    def parse(self, filename):
+        for pattern in constants.SERIES_FILENAME_PATTERNS:
+            try:
+                match = re.match(
+                    pattern, 
+                    os.path.basename(filename), 
+                    re.VERBOSE | re.IGNORECASE
+                )
+                if not match:
+                    continue
+                return self._parse_episode_info_from_file(match=match)
+            except re.error as error:
+                logging.exception('episode parse re error: {}'.format(error))
+            except:
+                logging.exception('episode parse pattern: {}'.format(pattern))
 
     def episode_show_id_lookup(self, episode):
         '''
@@ -228,7 +339,7 @@ class Shows_scan(Play_scan):
             ))
         return False
 
-    def save_item(self, episode):
+    def save_item(self, episode, path):
         '''
         :param episode: `Parsed_episode()`
         :returns: bool
@@ -246,15 +357,15 @@ class Shows_scan(Play_scan):
                 models.Episode.show_id == episode.show_id,
                 models.Episode.number == episode.number,
             ).first()
-            modified_time = self.get_file_modified_time(episode.path)
+            modified_time = self.get_file_modified_time(path)
             if ep and (ep.modified_time == modified_time) and \
-                (ep.path == episode.path) and ep.meta_data:
+                (ep.path == path) and ep.meta_data:
                 return
-            metadata = self.get_metadata(episode.path)
+            metadata = self.get_metadata(path)
             e = models.Episode(
                 show_id=episode.show_id,
                 number=episode.number,
-                path=episode.path,
+                path=path,
                 meta_data=metadata,
                 modified_time=modified_time,
             )
@@ -266,7 +377,7 @@ class Shows_scan(Play_scan):
             ))
             return True
 
-    def delete_item(self, episode):        
+    def delete_item(self, episode, path):        
         '''
         :param episode: `Parsed_episode()`
         :returns: bool
@@ -293,6 +404,88 @@ class Shows_scan(Play_scan):
                 ))
                 return True
         return False
+
+    def _parse_episode_info_from_file(self, match):
+        fields = match.groupdict().keys()
+        season = None
+        if 'file_show_title' not in fields:
+            return None
+        file_show_title = match.group('file_show_title').strip().lower()
+
+        season = None
+        if 'season' in fields:
+            season = int(match.group('season'))
+
+        number = None
+        if 'number' in fields:
+            number = match.group('number')
+        elif 'number1' in fields:
+            number = match.group('number1')
+        elif 'numberstart' in fields:
+            number = match.group('numberstart')
+        if number:
+            number = int(number)
+
+        air_date = None
+        if 'year' in fields and 'month' in fields and 'day' in fields:
+            air_date = '{}-{}-{}'.format(
+                match.group('year'),
+                match.group('month'),
+                match.group('day'),
+            )
+
+        if season and number:
+            return Parsed_episode_season(
+                file_show_title=file_show_title,
+                season=season,
+                episode=number,
+            )
+        elif not season and number:
+            return Parsed_episode_number(
+                file_show_title=file_show_title,
+                number=number,
+            )
+        elif air_date:
+            return Parsed_episode_air_date(
+                file_show_title=file_show_title,
+                air_date=air_date,
+            )
+
+class Parsed_episode(object):
+
+    def __init__(self):
+        self.lookup_type = 0
+        self.show_id = None
+        self.number = None
+
+class Parsed_episode_season(Parsed_episode):
+
+    def __init__(self, file_show_title, season, episode, show_id=None, number=None):
+        super().__init__()
+        self.lookup_type = 1
+        self.file_show_title = file_show_title
+        self.season = season
+        self.episode = episode
+        self.show_id = show_id
+        self.number = number
+
+class Parsed_episode_air_date(Parsed_episode):
+
+    def __init__(self, file_show_title, air_date, show_id=None, number=None):
+        super().__init__()
+        self.lookup_type = 2
+        self.file_show_title = file_show_title
+        self.air_date = air_date
+        self.show_id = show_id
+        self.number = number
+
+class Parsed_episode_number(Parsed_episode):
+
+    def __init__(self, file_show_title, number, show_id=None):
+        super().__init__()
+        self.file_show_title = file_show_title
+        self.number = number
+        self.show_id = show_id
 
 class Show_id(object):
     '''Used to lookup a show id by it's title.
@@ -449,86 +642,11 @@ class Episode_number(object):
             return
         return episodes[0]['number']
 
-def parse_episodes(files):
-    episodes = []
-    for file_ in files:
-        e = parse_episode(file_)
-        if e:
-            episodes.append(e)
-    return episodes
-
-def parse_episode(file_):
-    for pattern in constants.FILENAME_PATTERNS:
-        try:
-            match = re.match(
-                pattern, 
-                os.path.basename(file_), 
-                re.VERBOSE | re.IGNORECASE
-            )
-            if not match:
-                continue
-            return _parse_episode_info_from_file(
-                file_=file_, 
-                match=match,
-            )
-        except re.error as error:
-            logging.exception('episode parse re error: {}'.format(error))
-        except:
-            logging.exception('episode parse pattern: {}'.format(pattern))
-
-def _parse_episode_info_from_file(file_, match):
-    fields = match.groupdict().keys()
-    season = None
-    if 'file_show_title' not in fields:
-        return None
-    file_show_title = match.group('file_show_title').strip().lower()
-
-    season = None
-    if 'season' in fields:
-        season = int(match.group('season'))
-
-    number = None
-    if 'number' in fields:
-        number = match.group('number')
-    elif 'number1' in fields:
-        number = match.group('number1')
-    elif 'numberstart' in fields:
-        number = match.group('numberstart')
-    if number:
-        number = int(number)
-
-    air_date = None
-    if 'year' in fields and 'month' in fields and 'day' in fields:
-        air_date = '{}-{}-{}'.format(
-            match.group('year'),
-            match.group('month'),
-            match.group('day'),
-        )
-
-    if season and number:
-        return Parsed_episode_season(
-            file_show_title=file_show_title,
-            season=season,
-            episode=number,
-            path=file_,
-        )
-    elif not season and number:
-        return Parsed_episode_number(
-            file_show_title=file_show_title,
-            number=number,
-            path=file_,
-        )
-    elif air_date:
-        return Parsed_episode_air_date(
-            file_show_title=file_show_title,
-            air_date=air_date,
-            path=file_,
-        )
 
 def upgrade_scan_db():
     import alembic.config
     from alembic import command
-    cfg = alembic.config.data.Config(
+    cfg = alembic.config.Config(
         os.path.dirname(
             os.path.abspath(__file__)
         )+'/alembic.ini'
@@ -536,49 +654,3 @@ def upgrade_scan_db():
     cfg.set_main_option('script_location', 'seplis.play:migration')
     cfg.set_main_option('url', config.data.play.database)
     command.upgrade(cfg, 'head')
-
-def scan():
-    if not config.data.play.scan:
-        raise Exception('''
-            Nothing to scan. Add a path in the config file.
-
-            Example:
-
-                play:
-                    scan:
-                        -
-                            type: shows
-                            path: /a/path/to/the/shows
-            ''')
-    for s in config.data.play.scan:    
-        try:
-            scanner = None
-            if s['type'] == 'shows':
-                scanner = Shows_scan(
-                    s['path'],
-                )
-            if not scanner:
-                raise Exception('Scan type: "{}" is not supported'.format(
-                    s['type']
-                ))
-            scanner.scan()
-        except:        
-            logging.exception('play scan')
-
-def cleanup():
-    cleanup_episodes()
-
-def cleanup_episodes():
-    with new_session() as session:
-        logging.info('Episode cleanup started')
-        episodes = session.query(models.Episode).all()
-        deleted_count = 0
-        for e in episodes:
-            if os.path.exists(e.path):
-                continue
-            deleted_count += 1
-            session.delete(e)
-        session.commit()
-        logging.info('{} episodes was deleted from the database'.format(
-            deleted_count
-        ))

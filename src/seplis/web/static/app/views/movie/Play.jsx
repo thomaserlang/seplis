@@ -102,18 +102,7 @@ class PlayEpisode extends React.Component {
     }
  
     getLanguage() {
-        request(
-            `/1/movies/${this.movieId}/user-subtitle-lang`
-        ).done(data => {
-            if (!data)
-                data = {}
-            this.setState({
-                audio_lang: data.audio_lang || null,
-                subtitle_lang: data.subtitle_lang || null,
-            })
-        }).always(() => {
-            this.setState({loadingLang: false})
-        })
+
     }
  
     getStartTime() {
@@ -145,10 +134,6 @@ class PlayEpisode extends React.Component {
     }
  
     saveSub(data) {
-        request(`/1/movies/${this.movieId}/user-subtitle-lang`, {
-            method: 'PATCH',
-            data: data,
-        })
     }
  
     getInfo() {

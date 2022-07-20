@@ -1,5 +1,5 @@
 # from https://github.com/dbr/tvnamer/blob/master/tvnamer/config_defaults.py
-FILENAME_PATTERNS = [
+SERIES_FILENAME_PATTERNS = [
     # [group] Show - 01-02 [crc]
     '''^\[(?P<group>.+?)\][ ]?               # group name, captured for [#100]
     (?P<file_show_title>.*?)[ ]?[-_][ ]?          # show name, padding, spaces?
@@ -241,3 +241,8 @@ FILENAME_PATTERNS = [
     [\._ -][^\\/]*$                          # More padding, then anything
     ''',
 ]
+
+SCAN_TYPES = (
+    'series',
+    'movies',
+)

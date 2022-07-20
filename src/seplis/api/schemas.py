@@ -1,7 +1,7 @@
 
 from operator import gt
 from pydantic import BaseModel, conint, constr, Field
-from typing import List, Optional
+from typing import List, Literal, Optional
 from datetime import date
 from datetime import datetime, timezone
 
@@ -44,6 +44,7 @@ class Search_schema(BaseModel):
 
     query: Optional[List[constr(min_length=1, max_length=200)]]
     title: Optional[List[constr(min_length=1, max_length=200)]]
+    type: Optional[List[Literal['series', 'movie']]]
 
 
 class Subtitle_language(BaseModel):
