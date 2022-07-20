@@ -82,7 +82,7 @@ class ConfigPlayModel(BaseSettings):
     ffmpeg_enable_codec_copy = False
     ffmpeg_hls_segment_type: Literal['mpegts', 'fmp4'] = 'fmp4'
     port = 8003
-    temp_folder: DirectoryPath = os.path.join(tempfile.gettempdir(), 'seplis_play')
+    temp_folder: pathlib.Path = os.path.join(tempfile.gettempdir(), 'seplis_play')
     segment_time = 2
     session_timeout = 5 # Timeout for HLS sessions
 
