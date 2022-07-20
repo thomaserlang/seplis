@@ -8,7 +8,7 @@ import alembic.config
 from alembic import command
 
 def get_config():
-    cfg = alembic.config.data.Config(
+    cfg = alembic.config.Config(
         os.path.dirname(
             os.path.abspath(__file__)
         )+'/alembic.ini'
