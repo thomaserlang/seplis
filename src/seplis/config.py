@@ -1,6 +1,6 @@
 import os, pathlib
 from typing import List, Literal, Optional, Tuple
-from pydantic import AnyHttpUrl, BaseModel, BaseSettings, DirectoryPath, EmailStr, conint, validator
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings, conint, validator
 import yaml, tempfile
 
 class ConfigRedisModel(BaseSettings):
@@ -42,7 +42,7 @@ class ConfigWebModel(BaseSettings):
 
 class ConfigLoggingModel(BaseSettings):
     level: Literal['notset', 'debug', 'info', 'warn', 'error', 'critical'] = 'warn'
-    path: Optional[DirectoryPath]
+    path: Optional[pathlib.Path]
     max_size: int = 100 * 1000 * 1000 # ~ 95 mb
     num_backups = 10
     
@@ -67,7 +67,7 @@ class ConfigClientModel(BaseSettings):
 
 class ConfigPlayScanModel(BaseModel):
     type: Literal['series', 'movies']
-    path: DirectoryPath
+    path: pathlib.Path
 
 class ConfigPlayModel(BaseSettings):
     database: Optional[str]
