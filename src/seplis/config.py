@@ -22,7 +22,7 @@ class ConfigAPIModel(BaseSettings):
     port = 8002
     max_workers = 5
     image_url: Optional[AnyHttpUrl] = 'https://images.seplis.net'
-    base_url: Optional[AnyHttpUrl] = 'https://seplis.net'
+    base_url: Optional[AnyHttpUrl] = 'https://api.seplis.net'
     storitch: Optional[AnyHttpUrl]
 
     class Config:
