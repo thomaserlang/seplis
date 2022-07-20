@@ -116,7 +116,7 @@ def update_movie_metadata(movie):
 def update_images(movie):
     logging.info(f'[Movie: {movie["id"]}] Updating images')
     if not movie['externals'].get('themoviedb'):
-        logging.error(f'Missing externsl.themoviedb for movie: "{movie["id"]}"')
+        logging.error(f'Missing externals.themoviedb for movie: "{movie["id"]}"')
         return
 
     images = client.get(f'/movies/{movie["id"]}/images?per_page=500').all()
