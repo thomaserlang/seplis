@@ -28,8 +28,6 @@ class Handler(base.Handler):
                             'type': 'bool_prefix',
                             'fields': [
                                 'titles',
-                                'titles._2gram',
-                                'titles._3gram',
                             ]
                         }},
                         { 'term': { 'imdb': args.query[0]} },
