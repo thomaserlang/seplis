@@ -134,7 +134,7 @@ class Movie_stared(Base):
     created_at = sa.Column(sa.DateTime)
 
 @rebuild_cache.register('movies')
-def rebuild_shows():
+def rebuild_movies():
     def c():
         with new_session() as session:
             for item in session.query(Movie).yield_per(10000):
