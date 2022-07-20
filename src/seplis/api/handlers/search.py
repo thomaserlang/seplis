@@ -27,7 +27,8 @@ class Handler(base.Handler):
                             'query': args.query[0],
                             'type': 'bool_prefix',
                             'fields': [
-                                'titles',
+                                'titles^3',
+                                'titles._2gram',
                             ]
                         }},
                         { 'term': { 'imdb': args.query[0]} },
@@ -39,7 +40,7 @@ class Handler(base.Handler):
                 'multi_match': {
                     'query': args.title[0],
                     'operator': 'and',
-                    'type': 'phrase',
+                    'type': 'best_fields',
                     'fields': [
                         'titles',
                         'imdb',
