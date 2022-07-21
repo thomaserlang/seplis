@@ -11,7 +11,7 @@ client = Client(
 )
 
 imdbids = []
-shows = client.get('shows?sort=id&per_page=500')
+shows = client.get('/shows?sort=id&per_page=500')
 for show in shows.all():
     imdbids.append(show['externals'].get('imdb'))
 
@@ -32,7 +32,7 @@ while (len(data) != 0):
         if show['language'] != 'English':
             continue
         if show['premiered']:
-            if aniso8601.parse_date(show['premiered']) < date(2020, 1, 1):
+            if aniso8601.parse_date(show['premiered']) < date(2021, 1, 1):
                 continue
         else:
             continue
