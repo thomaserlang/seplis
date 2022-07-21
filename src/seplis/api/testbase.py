@@ -155,36 +155,36 @@ class Testbase(AsyncHTTPTestCase):
     def login_async(self, user_level=0, app_level=constants.LEVEL_GOD):
         async def login():
             async with database.async_session() as session:
-                async with session.begin():
-                    r = await session.execute(insert(models.User).values(
-                        name='testuser',
-                        email='test@example.com',
-                        level=user_level,
-                    ))
-                    user = await session.scalar(select(models.User).where(models.User.id == r.lastrowid))
-                    self.current_user = utils.dotdict(user.serialize())
-                    for key in self.current_user:
-                        database.redis.hset(f'users:{self.current_user.id}', key, self.current_user[key] if self.current_user[key] != None else 'None')
+                r = await session.execute(insert(models.User).values(
+                    name='testuser',
+                    email='test@example.com',
+                    level=user_level,
+                ))
+                user = await session.scalar(select(models.User).where(models.User.id == r.lastrowid))
+                self.current_user = utils.dotdict(user.serialize())
+                for key in self.current_user:
+                    database.redis.hset(f'users:{self.current_user.id}', key, self.current_user[key] if self.current_user[key] != None else 'None')
 
-                    r = await session.execute(insert(models.App).values(
-                        user_id=user.id,
-                        name='testbase app',
-                        redirect_uri='',
-                        level=app_level,
-                    ))
-                    app = await session.scalar(select(models.App).where(models.App.id == r.lastrowid))
-                    self.current_app = utils.dotdict(app.serialize())
+                r = await session.execute(insert(models.App).values(
+                    user_id=user.id,
+                    name='testbase app',
+                    redirect_uri='',
+                    level=app_level,
+                ))
+                app = await session.scalar(select(models.App).where(models.App.id == r.lastrowid))
+                self.current_app = utils.dotdict(app.serialize())
 
-                    token = utils.random_key()
-                    r = await session.execute(insert(models.Token).values(
-                        user_id=user.id,
-                        user_level=user_level,
-                        app_id=app.id,
-                        token=token,
-                    ))
-                    self.access_token = token
-                    database.redis.hset(f'tokens:{token}', 'user_id', self.current_user.id)
-                    database.redis.hset(f'tokens:{token}', 'user_level', user_level)
+                token = utils.random_key()
+                r = await session.execute(insert(models.Token).values(
+                    user_id=user.id,
+                    user_level=user_level,
+                    app_id=app.id,
+                    token=token,
+                ))
+                self.access_token = token
+                database.redis.hset(f'tokens:{token}', 'user_id', self.current_user.id)
+                database.redis.hset(f'tokens:{token}', 'user_level', user_level)
+                await session.commit()
         asyncio.get_event_loop().run_until_complete(login())
 
     def new_show(self):

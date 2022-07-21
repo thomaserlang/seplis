@@ -29,21 +29,20 @@ class Handler(base.Handler):
     async def put(self, movie_id: str):
         data: Position_schema = self.validate()
         async with self.async_session() as session:
-            async with session.begin():
-                sql = insert(models.Movie_watched).values(
-                    movie_id=movie_id,
-                    user_id=self.current_user.id,
-                    watched_at=datetime.utcnow(),
-                    position=data.position,
-                )
-                sql = sql.on_duplicate_key_update(
-                    watched_at=sql.inserted.watched_at,
-                    position=sql.inserted.position,
-                )
-                await session.execute(sql)
-                r = await self.get_position(session, movie_id)
-                await session.commit()                
-                self.write_object(r)
+            sql = insert(models.Movie_watched).values(
+                movie_id=movie_id,
+                user_id=self.current_user.id,
+                watched_at=datetime.utcnow(),
+                position=data.position,
+            )
+            sql = sql.on_duplicate_key_update(
+                watched_at=sql.inserted.watched_at,
+                position=sql.inserted.position,
+            )
+            await session.execute(sql)
+            await session.commit()           
+            r = await self.get_position(session, movie_id)     
+            self.write_object(r)
 
     async def get_position(self, session, movie_id: str):
         r = await session.execute(select(
