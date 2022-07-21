@@ -23,7 +23,7 @@ class Application(tornado.web.Application):
         urls = [
             (r'/play', play.Play_handler),            
             (r'/metadata', play.Metadata_handler),
-            (r'/hls/(.*)', play.File_handler, {'path': config.data.play.temp_folder}),
+            (r'/hls/(.*)', play.File_handler),
 
             (r'/', shows.Handler),
             (r'/api/show-suggest', shows.API_show_suggest_handler),

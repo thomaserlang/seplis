@@ -1,13 +1,10 @@
+from aiofile import async_open
 import logging, os
-import asyncio
 from sqlalchemy import select
 from tornado import web, ioloop
-
 from seplis.play.connections import database
-
 from .types import pipe, hls
 from ua_parser import user_agent_parser
-
 from seplis import config, utils
 from seplis.play import models
 
@@ -40,7 +37,15 @@ class Play_handler(web.RequestHandler):
     def options(self, *args, **kwargs):
         self.set_status(204)
 
-class File_handler(web.StaticFileHandler):
+class File_handler(web.RequestHandler):
+    
+    async def get(self, path):
+        path = os.path.join(config.data.play.temp_folder, path)
+        async with async_open(path, 'rb') as f:
+            self.set_header('Content-Length', os.fstat(f.file.fileno()).st_size)
+            async for chunk in f.iter_chunked(128*1024):
+                self.write(chunk)
+                await self.flush()
 
     def set_default_headers(self):
         set_header(self)
