@@ -24,7 +24,6 @@ class Handler(base.Handler):
 
     @concurrent.run_on_executor
     def _post(self, relation_id):
-        logging.info(self.request.body)
         data = self.validate(schemas.Image_required)  
         with new_session() as session:
             image = Image()
@@ -89,6 +88,8 @@ class Handler(base.Handler):
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         page = int(self.get_argument('page', 1))
         sort = self.get_argument('sort', 'id:asc')
+        external_name = self.get_argument('external_name', None)
+        external_id = self.get_argument('external_id', None)
         query = {
             'bool': {
                 'must': [
@@ -104,6 +105,16 @@ class Handler(base.Handler):
                     'query': q,
                 }
             })
+        if external_name:
+            query['bool']['must'].append({
+                'term': { 'external_name': external_name }
+            })
+        if external_id:
+            query['bool']['must'].append({
+                'term': { 'external_id': external_id }
+            })
+
+
         result = await database.es_async.search(
             index='images',
             query=query,

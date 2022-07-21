@@ -90,15 +90,12 @@ def create_indices():
             'description': {
                 'dynamic' : False,
                 'properties' : {
-                    'text': { 
-                        'type': 'keyword',
-                        'index': True,
-                    },
+                    'text': { 'type': 'text' },
                     'url': { 
-                        'type': 'text',
+                        'type': 'keyword',
                     },
                     'title': { 
-                        'type': 'text',
+                        'type': 'keyword',
                     },
                 }
             },
@@ -142,7 +139,7 @@ def create_indices():
                 },
             },
             'genres': {
-                'type': 'text',
+                'type': 'keyword',
             },                    
             'episode_type': { 'type': 'integer' },
             'created_at': { 'type': 'date' },
@@ -162,12 +159,9 @@ def create_indices():
             'description': {
                 'dynamic' : False,
                 'properties' : {
-                    'text': { 
-                        'type': 'keyword',
-                        'index': True, 
-                    },
-                    'url': { 'type': 'text' },
-                    'title': { 'type': 'text' },
+                    'text': { 'type': 'text' },
+                    'url': { 'type': 'keyword' },
+                    'title': { 'type': 'keyword' },
                 },
             },
             'season': { 'type': 'integer' },
@@ -180,15 +174,15 @@ def create_indices():
     database.es.indices.create(index='images', mappings={
         'properties' : {
             'id': { 'type': 'integer' },
-            'relation_type': { 'type': 'text' },
+            'relation_type': { 'type': 'keyword' },
             'relation_id': { 'type': 'integer' },
-            'external_name': { 'type': 'text' },
-            'external_id': { 'type': 'text' },
+            'external_name': { 'type': 'keyword' },
+            'external_id': { 'type': 'keyword' },
             'height': { 'type': 'integer' },
             'width': { 'type': 'integer' },
-            'hash': { 'type': 'text' },
-            'source_title': { 'type': 'text' },
-            'source_url': { 'type': 'text' },
+            'hash': { 'type': 'keyword' },
+            'source_title': { 'type': 'keyword' },
+            'source_url': { 'type': 'keyword' },
             'type': { 'type': 'integer' },
             'created_at': { 'type': 'date' },
         }
@@ -197,7 +191,7 @@ def create_indices():
     database.es.indices.create(index='titles', settings=settings, mappings={
         'properties': {
             'id': { 'type': 'integer' },
-            'type': { 'type': 'text' },
+            'type': { 'type': 'keyword' },
             'title': { 
                 'type': 'search_as_you_type',
                 'analyzer': 'title_search',
@@ -211,7 +205,7 @@ def create_indices():
                     }
                 }
             },
-            'imdb': { 'type': 'text' },
+            'imdb': { 'type': 'keyword' },
             'premiered': { 'type': 'date' },
             'poster_image': {
                 'type': 'object',
