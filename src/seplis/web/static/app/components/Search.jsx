@@ -24,7 +24,6 @@ class Search extends React.Component {
             selectedResultType: null,
         }
         this.requesting = null;
-        this.selectedResultId = null;
         this.onDocumentClick = this.documentClick.bind(this);
     }
 
@@ -51,6 +50,7 @@ class Search extends React.Component {
                 results: [],
                 show: false,
                 selectedResultId: null,
+                selectedResultType: null,
             });
             return;
         }
@@ -64,6 +64,7 @@ class Search extends React.Component {
                 results: data,
                 show: true,
                 selectedResultId: null,
+                selectedResultType: null,
             });
             this.setNextSelectedId(0);
         });
@@ -84,21 +85,28 @@ class Search extends React.Component {
     }
 
     mouseOver(e) {
-        this.state.selectedResultId = parseInt(e.target.getAttribute('data-id'));
-        this.setNextSelectedId(0, true);
+        this.setState({
+            selectedResultId: e.target.getAttribute('data-id'),
+            selectedResultType: e.target.getAttribute('data-type'),
+        }, () => {
+            this.setNextSelectedId(0, true)
+        });
     }
 
     mouseOut(e) {
-        this.setState({selectedResultId: null});
+        this.setState({
+            selectedResultId: null,
+            selectedResultType: null,
+        });
     }
 
     setNextSelectedId(val, disableScroll) {
         if (this.state.results.length == 0)
             return;
         let i = -1;
-        if (this.state.selectedResultId) {
+        if (this.state.selectedResultId && this.state.selectedResultType) {
             i = 0;
-            for (let result of this.state.results) {
+            for (const result of this.state.results) {
                 if ((result.id == this.state.selectedResultId) && (result.type == this.state.selectedResultType)) {
                     break;
                 }
@@ -110,8 +118,8 @@ class Search extends React.Component {
             i = 0;
         if (i > (this.state.results.length - 1))
             i = this.state.results.length - 1;
-        let id = this.state.results[i].id;
-        let type = this.state.results[i].type;
+        const id = this.state.results[i].id;
+        const type = this.state.results[i].type;
         this.setState({
             selectedResultId: id,
             selectedResultType: type,
@@ -120,9 +128,9 @@ class Search extends React.Component {
             return;
         let height = document.getElementById(`sresult-${type}-${id}`).offsetHeight;
         if (((i+1) * height) > this.suggestNode.offsetHeight) {
-            let p = Math.floor(this.suggestNode.offsetHeight / height);
-            let g = (i-p+1);
-            let l = this.suggestNode.offsetHeight % height;
+            const p = Math.floor(this.suggestNode.offsetHeight / height);
+            const g = (i-p+1);
+            const l = this.suggestNode.offsetHeight % height;
             this.suggestNode.scrollTop = (g*height)+l;
         } else {
             this.suggestNode.scrollTop = 0;
@@ -174,6 +182,7 @@ class Search extends React.Component {
                             key={`${r.type}-${r.id}`}
                             id={`sresult-${r.type}-${r.id}`}
                             data-id={r.id}
+                            data-type={r.type}
                             className={this.resultClassName(r)}
                             onMouseOver={this.onMouseOver}
                             onMouseOut={this.onMouseOut}
@@ -181,11 +190,11 @@ class Search extends React.Component {
                         >
                             <div className="img">
                                 <img 
-                                    src={r.poster_image!=null?r.poster_image.url + '@SY100':''} 
+                                    src={r.poster_image!=null?r.poster_image.url + '@SY75':''} 
                                 />
                             </div>
                             <div className="title">
-                                {r.title} ({r.release_date?r.release_date.substring(0, 4):''})
+                                {r.title} {r.release_date?`(${r.release_date.substring(0, 4)})`:''}
                             </div>
                         </div>
                     ))}

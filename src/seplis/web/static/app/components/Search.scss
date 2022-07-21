@@ -40,6 +40,7 @@
             padding: 0.2rem;
             width: 100%;
             overflow: hidden;
+            height: 75px;
 
             &:last-child {
                 border: none;
@@ -49,7 +50,6 @@
                 float: left;
             }
             .img {
-                width: 68px; 
                 overflow: hidden;
             }
             .title {
