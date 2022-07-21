@@ -106,16 +106,12 @@ class Play_scan(object):
         :returns: dict
             metadata is a `dict` taken from the result of ffprobe.
         '''
-        logging.info('Retrieving metadata from "{}"'.format(
-            path,
-        ))
+        logging.info(f'Retrieving metadata from "{path}"')
         if not os.path.exists(path):
-            raise Exception('Path "{}" does not exist'.format(path))
+            raise Exception(f'Path "{path}" does not exist')
         ffprobe = os.path.join(config.data.play.ffmpeg_folder, 'ffprobe')
         if not os.path.exists(ffprobe):
-            raise Exception('ffprobe not found in "{}"'.format(
-                config.data.play.ffmpeg_folder,
-            ))
+            raise Exception(f'ffprobe not found in "{config.data.play.ffmpeg_folder}"')
         cmd = [
             ffprobe,
             '-show_streams',
@@ -139,10 +135,10 @@ class Play_scan(object):
             return
         if isinstance(data, bytes):
             data = data.decode('utf-8')        
-        logging.info('Metadata retrieved from "{}"'.format(
-            path,
-        ))
-        return utils.json_loads(data)
+        logging.info(f'Metadata retrieved from "{path}"')
+        data = utils.json_loads(data)
+        data['format'].pop('filename')
+        return data
 
     def get_file_modified_time(self, path):
         return datetime.utcfromtimestamp(
