@@ -128,15 +128,15 @@ def update_images(movie):
             for i in images
     }
 
-    r = requests.get(f'https://api.themoviedb.org/3/movie/{movie["externals"]["themoviedb"]}/images', params={
+    r = requests.get(f'https://api.themoviedb.org/3/movie/{movie["externals"]["themoviedb"]}?append_to_response=images', params={
         'api_key': config.data.client.themoviedb,
-        'language': 'en',
     })
     if r.status_code >= 400:
         logging.error(f'[Movie: {movie["id"]}] Failed to get movie images for "{movie["externals"]["themoviedb"]}" from themoviedb: {r.content}')
         return
-    imp_images = r.json()['posters']
-    for image in sorted(imp_images, reverse=True, key=lambda img: float(img['vote_average'])):
+    m = r.json()
+    logging.debug(f'[Movie: {movie["id"]}] Found {len(m["images"]["posters"])} posters')
+    for image in m['images']['posters']:
         si = None
         try:   
             key = f'themoviedb-{image["file_path"]}'
@@ -161,12 +161,13 @@ def update_images(movie):
                     client.put(f'/movies/{movie["id"]}/images/{si["id"]}/data', files={
                         si['source_url'][si['source_url'].rfind("/")+1:]: r.raw,
                     })
-                if not movie.get('poster_image'):
-                    logging.info(f'[Movie: {movie["id"]}] Setting new primary image: "{image_external_ids[key]["id"]}"')
-                    movie = client.patch(f'/movies/{movie["id"]}', {
-                        'poster_image_id': image_external_ids[key]["id"],
-                    })
         except:
             logging.exception(f'[Movie: {movie["id"]}] Failed saving image')
             if si:
                 client.delete(f'/movies/{movie["id"]}/images/{si["id"]}')
+    if not movie['poster_image'] and m['poster_path']:
+        key = f'themoviedb-{m["poster_path"]}'
+        logging.info(f'[Movie: {movie["id"]}] Setting new primary image: "{image_external_ids[key]["id"]}"')
+        client.patch(f'/movies/{movie["id"]}', {
+            'poster_image_id': image_external_ids[key]["id"],
+        })
