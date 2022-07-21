@@ -168,7 +168,7 @@ class Movie_scan(Play_scan):
                 logging.debug(f'"{f}" didn\'t match any pattern')
 
     def parse(self, filename):
-        info = PTN.parse(os.path.basename(filename))
+        info = PTN.parse(os.path.splitext(os.path.basename(filename))[0])
         if info:
             t = info['title']
             if info.get('year'):
