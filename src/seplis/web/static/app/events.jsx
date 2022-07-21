@@ -13,7 +13,7 @@ export function trigger_episode_watched_status(method, show_id, episode_number) 
     document.dispatchEvent(event);
 }
 
-export const EVENT_MOVIE_WATCHED_STATUS = 'episode_watched_status';
+export const EVENT_MOVIE_WATCHED_STATUS = 'movie_watched_status';
 /**
  * @param {string} method - incr or decr
  * @param {int} movieId
