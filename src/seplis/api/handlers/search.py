@@ -45,15 +45,12 @@ class Handler(base.Handler):
                                         }
                                     },
                                     {
-                                        'multi_match': {
-                                            'query': args.query[0],
-                                            'type': 'bool_prefix',
-                                            'fields': [
-                                                'title',
-                                                'title._2gram',
-                                                'title._3gram',
-                                            ]
-                                        }
+                                        'match_phrase': {
+                                            'title': {
+                                                'query': args.query[0],
+                                                'boost': 2,
+                                            }
+                                        },
                                     }
                                 ]
                             }
