@@ -11,6 +11,8 @@ def subprocess_env():
 def ffmpeg_base_args(handler, settings, metadata):
     args = [
         {os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'): None},
+        {'-analyzeduration': '20000000'},
+        {'-probesize': '20000000'},
         {'-i': metadata['format']['filename']},
         {'-y': None},
         {'-loglevel': 'quiet'},
