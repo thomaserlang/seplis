@@ -71,9 +71,7 @@ class Play extends React.Component {
  
     getPlayServers() {
         let url = `/1/movies/${this.movieId}/play-servers`
-        console.log(url)
         getPlayServer(url).then((obj) => {
-            console.log(obj)
             this.setState({
                 loadingPlayServers: false,
                 playServer: obj.playServer,
