@@ -1,4 +1,3 @@
-from curses import meta
 import subprocess
 import logging
 import os, shutil
@@ -103,12 +102,6 @@ def cancel(session):
 def ffmpeg_start(temp_folder, handler, settings, metadata):
     args = base.ffmpeg_base_args(handler, settings, metadata)
 
-    # Fix for hls eac3 or ac3 not playing or just no audio
-    if settings.get('audio_channels_fix'):
-        a = base.stream_index_by_lang(metadata, 'audio', handler.get_argument('audio_lang', None))
-        if a:
-            args.append({'-ac': str(metadata['streams'][a['index']]['channels'])})
-            
     args.extend([
         {'-f': 'hls'},
         {'-hls_playlist_type': 'event'},

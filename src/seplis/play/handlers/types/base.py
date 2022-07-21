@@ -19,7 +19,6 @@ def ffmpeg_base_args(handler, settings, metadata):
         {'-crf:0': '16'},
         {'-map': '0:v:0'},
         {'-preset:0': config.data.play.ffmpeg_preset},
-        {'-x264opts:0': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'},
         {'-force_key_frames:0': 'expr:gte(t,n_forced*1)'},
         {'-c:a': 'aac'},
         {'-pix_fmt': settings['transcode_pixel_format']},
@@ -27,6 +26,15 @@ def ffmpeg_base_args(handler, settings, metadata):
     start_time = handler.get_argument('start_time', None)
     if start_time:
         args.insert(1, {'-ss': start_time})
+        
+    if 'audio_channels' in settings:
+        args.extend([{'-ac': settings.get('audio_channels')}])    
+    elif settings.get('audio_channels_fix'): 
+        # Fix for hls eac3 or ac3 not playing or just no audio
+        a = stream_index_by_lang(metadata, 'audio', handler.get_argument('audio_lang', None))
+        if a:
+            args.append({'-ac': str(metadata['streams'][a['index']]['channels'])})
+
     has_subtitle = set_subtitle(handler, metadata, args)
     set_video_codec(settings, metadata, has_subtitle, args)
     set_audio(handler, metadata, args)
@@ -65,6 +73,8 @@ def set_video_codec(settings, metadata, has_subtitle, ffmpeg_args):
         stream['codec_name'] in settings['codec_names'] and \
         stream['pix_fmt'] in settings['pixel_formats']:
         codec = 'copy'
+    if codec == 'libx264':        
+        ffmpeg_args.append({'-x264opts:0': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'})
     ffmpeg_args.append({'-c:v': codec})
 
 def set_audio(handler, metadata, ffmpeg_args):

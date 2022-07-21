@@ -24,7 +24,7 @@ class Play_handler(web.RequestHandler):
         settings = get_device_settings(self)
         if settings['type'] == 'pipe':
             pipe.start(self, settings, metadata[0])
-        if settings['type'] == 'hls':
+        elif settings['type'] == 'hls':
             hls.start(self, settings, metadata[0])
 
     def set_default_headers(self):
