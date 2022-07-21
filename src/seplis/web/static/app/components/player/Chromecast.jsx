@@ -50,6 +50,9 @@ class Chromecast {
                 })
             }, 500)
         }
+        let script = document.createElement('script')
+        script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js'
+        document.head.appendChild(script)
     }
  
     initCast(isAvailable) {
@@ -213,7 +216,7 @@ class Chromecast {
                         startTime = 0
                 }
                 let streams = []
-                for (let v of result[0]['metadata']['streams']) {
+                for (let v of result[0]['metadata'][0]['streams']) {
                     let d = {
                         index: v.index,
                         codec_name: v.codec_name,
@@ -230,7 +233,7 @@ class Chromecast {
                     play: result[0]['playServer'],
                     metadata: {
                         format: {
-                            duration: result[0]['metadata']['format']['duration'],
+                            duration: result[0]['metadata'][0]['format']['duration'],
                         },
                         streams: streams,
                     },
