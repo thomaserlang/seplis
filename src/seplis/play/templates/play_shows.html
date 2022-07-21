@@ -58,7 +58,6 @@
         });
 
         $('.show-lookup').on("select2-selecting", function(e) { 
-            console.log(e.target.title);
             $.post('/', { 
                 'show_id': e.val,
                 'file_show_title': e.target.name,
