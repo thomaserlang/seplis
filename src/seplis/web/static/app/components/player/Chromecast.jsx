@@ -297,10 +297,10 @@ class Chromecast {
     _playMovieMediaInfo(url, movie) {
         var mediaInfo = new chrome.cast.media.MediaInfo(url)
         mediaInfo.metadata = new chrome.cast.media.MovieMediaMetadata ()
-        mediaInfo.metadata.title = show.title
+        mediaInfo.metadata.title = movie.title
         mediaInfo.metadata.releaseDate = episode.premiered
         mediaInfo.metadata.images = [
-            {url:show.poster_image!=null?show.poster_image.url + '@SX180.jpg':''},
+            {url:movie.poster_image!=null?movie.poster_image.url + '@SX180.jpg':''},
         ]
         return mediaInfo
     }
