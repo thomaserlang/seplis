@@ -12,11 +12,13 @@ def ffmpeg_base_args(handler, settings, metadata):
     args = [
         {os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'): None},
         {'-i': metadata['format']['filename']},
-        {'-threads': str(config.data.play.ffmpeg_threads)},
         {'-y': None},
         {'-loglevel': 'quiet'},
+        {'-crf:0': '16'},
         {'-map': '0:v:0'},
-        {'-preset': config.data.play.ffmpeg_preset},
+        {'-preset:0': config.data.play.ffmpeg_preset},
+        {'-x264opts:0': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'},
+        {'-force_key_frames:0': 'expr:gte(t,n_forced*1)'},
         {'-c:a': 'aac'},
         {'-pix_fmt': settings['transcode_pixel_format']},
     ]
@@ -56,7 +58,7 @@ def set_video_codec(settings, metadata, has_subtitle, ffmpeg_args):
     if not stream:
         raise Exception('No video stream')
     codec = settings['transcode_codec']
-    if (config.data.play.ffmpeg_enable_codec_copy or (settings['type'] == 'pipe')) and \
+    if (settings['type'] == 'pipe') and \
         not has_subtitle and \
         stream['codec_name'] in settings['codec_names'] and \
         stream['pix_fmt'] in settings['pixel_formats']:

@@ -75,7 +75,6 @@ class ConfigPlayModel(BaseSettings):
     scan: Optional[List[ConfigPlayScanModel]]
     media_types: List[str] = ['mp4', 'mkv', 'avi', 'mpg']
     ffmpeg_folder: pathlib.Path = '/usr/src/ffmpeg'
-    ffmpeg_threads = 4
     ffmpeg_loglevel = '8'
     ffmpeg_logfile: Optional[pathlib.Path]
     ffmpeg_preset: Literal['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'] = 'veryfast' 
@@ -84,7 +83,7 @@ class ConfigPlayModel(BaseSettings):
     port = 8003
     temp_folder: pathlib.Path = os.path.join(tempfile.gettempdir(), 'seplis_play')
     segment_time = 2
-    session_timeout = 5 # Timeout for HLS sessions
+    session_timeout = 10 # Timeout for HLS sessions
 
     class Config:
         env_prefix = 'seplis_play_'
