@@ -1,8 +1,9 @@
-import os, os.path, re, logging, subprocess, PTN
+import os, os.path, re, logging, subprocess
 from datetime import datetime
 from seplis import config, Client, utils
 from seplis.play import constants, models
 from seplis.play.decorators import new_session
+from guessit import guessit
 
 
 def scan():
@@ -163,7 +164,7 @@ class Movie_scan(Play_scan):
                 logging.debug(f'"{f}" didn\'t match any pattern')
 
     def parse(self, filename):
-        info = PTN.parse(os.path.splitext(os.path.basename(filename))[0])
+        info = guessit(os.path.splitext(os.path.basename(filename))[0])
         if info:
             t = info['title']
             if info.get('year'):
