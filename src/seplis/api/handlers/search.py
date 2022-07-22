@@ -34,7 +34,6 @@ class Handler(base.Handler):
                                                 'multi_match': {
                                                     'query': args.query[0],
                                                     'type': 'bool_prefix',
-                                                    'minimum_should_match': '100%',
                                                     'fields': [
                                                         'titles.title',
                                                         'titles.title._2gram',
