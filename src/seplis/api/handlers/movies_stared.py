@@ -1,17 +1,14 @@
 from sqlalchemy import select
-from seplis.api import constants, schemas
-from seplis.api.decorators import authenticated
+from seplis.api import schemas, models
 from seplis.api.handlers import base
-from seplis.api import constants, models
 from seplis.utils.sqlalchemy import paginate
 
 class Handler(base.Handler):
 
     __arguments_schema__ = schemas.Pagination_schema
 
-    @authenticated(constants.LEVEL_USER)
     async def get(self, user_id=None):
-        user_id = user_id or self.current_user.id
+        user_id = self.user_id_or_current(user_id)
         args: schemas.Pagination_schema = self.validate_arguments()
         async with self.async_session() as session:
             query = select(models.Movie, models.Movie_stared.created_at).where(
