@@ -37,7 +37,7 @@ class Movie_schema(BaseModel):
 class Pagination_schema(BaseModel):
 
     page: Optional[List[conint(gt=0)]] = [1]
-    per_page: Optional[List[conint(gt=0, le=500)]] = [25]
+    per_page: Optional[List[conint(gt=0, le=1000)]] = [25]
 
 
 class Search_schema(BaseModel):
