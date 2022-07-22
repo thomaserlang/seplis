@@ -65,11 +65,16 @@
             height: 45px;
             line-height: 45px;
             margin-right: 10px;
+            margin-left: 10px;
             overflow: hidden;
         }
 
         .control-text-title {
             font-size: 18px;
+        }
+
+        .control-text-pointer {            
+            cursor: pointer;
         }
     }
 

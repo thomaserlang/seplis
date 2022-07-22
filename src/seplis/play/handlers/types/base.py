@@ -38,6 +38,7 @@ def ffmpeg_base_args(handler, settings, metadata):
     has_subtitle = set_subtitle(handler, metadata, args)
     set_video_codec(settings, metadata, has_subtitle, args)
     set_audio(handler, metadata, args)
+    set_scale(handler, metadata, args)
     return args
 
 def to_subprocess_arguments(args):
@@ -59,12 +60,13 @@ def change_ffmpeg_arg(key, ffmpeg_args, new_value):
         if key in a:
             a[key] = new_value
 
+def video_stream(metadata):
+    for stream in metadata['streams']:
+        if stream['codec_type'] == 'video':
+            return stream
+
 def set_video_codec(settings, metadata, has_subtitle, ffmpeg_args):
-    def video_stream():
-        for stream in metadata['streams']:
-            if stream['codec_type'] == 'video':
-                return stream
-    stream = video_stream()
+    stream = video_stream(metadata)
     if not stream:
         raise Exception('No video stream')
     codec = settings['transcode_codec']
@@ -76,6 +78,14 @@ def set_video_codec(settings, metadata, has_subtitle, ffmpeg_args):
     if codec == 'libx264':        
         ffmpeg_args.append({'-x264opts:0': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'})
     ffmpeg_args.append({'-c:v': codec})
+
+def set_scale(handler, metadata, ffmpeg_args):    
+    stream = video_stream(metadata)
+    if not stream:
+        raise Exception('No video stream')
+    width = handler.get_argument('width', None)
+    if width and int(width) < stream['width']:
+        ffmpeg_args.append({'-filter:v': f'scale=width={width}:height=-2'})
 
 def set_audio(handler, metadata, ffmpeg_args):
     audio_lang = handler.get_argument('audio_lang', None)

@@ -5,6 +5,7 @@ import {request} from 'api'
 import PlayNext from './PlayNext'
 import VolumeBar from './VolumeBar'
 import AudioSubBar from './AudioSubBar.jsx'
+import Resolution from './Resolution.jsx'
 import Slider from './Slider.jsx'
 import ChromecastIcon from './ChromecastIcon'
 import Loader from 'seplis/components/Loader'
@@ -23,6 +24,7 @@ const propTypes = {
     currentInfo: PropTypes.object,
     onAudioChange: PropTypes.func,
     onSubtitleChange: PropTypes.func,
+    onResolutionChange: PropTypes.func,
     audio_lang: PropTypes.string,
     subtitle_lang: PropTypes.string,
     onTimeUpdate: PropTypes.func,
@@ -47,6 +49,7 @@ class Player extends React.Component {
 
         this.onAudioChange = this.audioChange.bind(this)
         this.onSubtitleChange = this.subtitleChange.bind(this)
+        this.onResolutionChange = this.resolutionChange.bind(this)
 
         this.volume = 1
         this.hideControlsTimer = null
@@ -64,6 +67,7 @@ class Player extends React.Component {
             showControls: true,
             audio: this.props.audio_lang,
             subtitle: this.props.subtitle_lang,
+            resolutionWidth: null,
             loading: false,
         }
     }
@@ -208,7 +212,8 @@ class Player extends React.Component {
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
-            `&audio_lang=${this.state.audio || ''}`
+            `&audio_lang=${this.state.audio || ''}`+
+            `&width=${this.state.resolutionWidth || ''}`
         if (Hls.isSupported())
             s += `&device=hls.js`
         return s
@@ -369,6 +374,15 @@ class Player extends React.Component {
         })
     }
 
+    resolutionChange(width) {
+        if (this.props.onResolutionChange)
+            this.props.onResolutionChange(width)
+        this.changeVideoState({
+            resolutionWidth: width,
+            startTime: this.state.time,
+        })
+    }
+
     sliderNewTime(newTime) {
         this.video.pause()
         this.setHideControlsTimer()
@@ -403,6 +417,12 @@ class Player extends React.Component {
                     {this.props.currentInfo.title}
                 </div>
                 <div className="control-spacer" />
+                <div className="control-text control-text-title control-text-pointer">
+                    <Resolution 
+                        metadata={this.props.metadata} 
+                        onResolutionChange={this.onResolutionChange}
+                    />
+                </div>
                 <div className="control">
                     <ChromecastIcon />
                 </div>
