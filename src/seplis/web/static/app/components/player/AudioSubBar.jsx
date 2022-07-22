@@ -1,7 +1,6 @@
 import React from 'react'
 import ClassNames from 'classnames'
 import PropTypes from 'prop-types'
-import './AudioSubBar.scss'
 
 const propTypes = {
     metadata: PropTypes.object,
@@ -142,8 +141,8 @@ class AudioSubBar extends React.Component {
         if (!this.state.show)
             return null
         let cls = ClassNames({
-            'audio-subtitles': true,
-            'audio-subtitles-bottom': this.props.bottom,
+            'text-box': true,
+            'text-box-bottom': this.props.bottom,
         })
         return (
             <div 

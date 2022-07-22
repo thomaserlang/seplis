@@ -1,7 +1,6 @@
 import React from 'react'
 import ClassNames from 'classnames'
 import PropTypes from 'prop-types'
-import './Resolutions.scss'
 
 const propTypes = {
     metadata: PropTypes.object,
@@ -79,8 +78,8 @@ class Resolution extends React.Component {
         if (!this.state.show)
             return null
         let cls = ClassNames({
-            'resolutions': true,
-            'resolutions-bottom': this.props.bottom,
+            'text-box': true,
+            'text-box-bottom': this.props.bottom,
         })
         return (
             <div 

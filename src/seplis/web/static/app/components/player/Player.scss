@@ -76,10 +76,41 @@
         .control-text-pointer {            
             cursor: pointer;
         }
+
+        .text-box {
+            position: absolute;
+            width: 250px;
+            background-color: #2E2E2E;
+            right: 25px;
+            top: 45px;
+            font-size: 20px;
+            padding: 10px;
+            padding-top: 0px;
+            overflow: visible;
+            text-align: left;
+            max-height: 400px;
+            overflow: auto;
+        
+            .title {
+                font-weight: bolder;
+                margin-top: 10px;
+                color: #428bca;
+            }
+        
+            p {
+                margin: 0;
+            }
+        }
+        
+        .text-box-bottom {
+            bottom: 56px;
+            top: auto;
+        }
     }
 
     .controls-top {        
         bottom: auto;
         top: 0;
     }
+
 }
