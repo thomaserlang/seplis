@@ -193,7 +193,7 @@ def create_indices():
             'id': { 'type': 'integer' },
             'type': { 'type': 'keyword' },
             'title': { 
-                'type': 'search_as_you_type',
+                'type': 'text',
                 'analyzer': 'title_search',
             },
             'titles': {

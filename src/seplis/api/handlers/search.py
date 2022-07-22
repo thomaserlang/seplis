@@ -25,38 +25,34 @@ class Handler(base.Handler):
                 'dis_max': {
                     'queries': [
                         {                             
-                            'bool': {                                
-                                'should': [
-                                    {
-                                        'nested': {
-                                            'path': 'titles',
-                                            'query': {
-                                                'multi_match': {
-                                                    'query': args.query[0],
-                                                    'type': 'bool_prefix',
-                                                    'fields': [
-                                                        'titles.title',
-                                                        'titles.title._2gram',
-                                                        'titles.title._3gram',
-                                                    ]
-                                                }
-                                            }
-                                        }
-                                    },
-                                    {
-                                        'nested': {
-                                            'path': 'titles',
-                                            'query': {                                                
-                                                'match_phrase': {
-                                                    'titles.title': {
-                                                        'query': args.query[0],
-                                                        'boost': 2,
-                                                    }
-                                                }
-                                            }
-                                        }
+                            'nested': { 
+                                'path': 'titles',   
+                                'query': {
+                                    'bool': {
+                                        'should': [
+                                            {'multi_match': {
+                                                'boost': 4,
+                                                'query': args.query[0],
+                                                'operator': 'and',
+                                                'fields': [
+                                                    'titles.title',
+                                                    'titles.title._2gram',
+                                                    'titles.title._3gram',
+                                                ]
+                                            }},
+                                            {'multi_match': {
+                                                'query': args.query[0],
+                                                'type': 'bool_prefix',
+                                                'minimum_should_match': '75%',
+                                                'fields': [
+                                                    'titles.title',
+                                                    'titles.title._2gram',
+                                                    'titles.title._3gram',
+                                                ]
+                                            }},
+                                        ]
                                     }
-                                ]
+                                }
                             }
                         },
                         { 'term': { 'imdb': args.query[0]} },
