@@ -167,6 +167,8 @@ def update_images(movie):
                 client.delete(f'/movies/{movie["id"]}/images/{si["id"]}')
     if not movie['poster_image'] and m['poster_path']:
         key = f'themoviedb-{m["poster_path"]}'
+        if key not in image_external_ids:
+            key =  f'themoviedb-{m["images"]["posters"][0]["file_path"]}'
         logging.info(f'[Movie: {movie["id"]}] Setting new primary image: "{image_external_ids[key]["id"]}"')
         client.patch(f'/movies/{movie["id"]}', {
             'poster_image_id': image_external_ids[key]["id"],
