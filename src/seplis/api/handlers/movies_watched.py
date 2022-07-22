@@ -10,11 +10,12 @@ class Handler(base.Handler):
     __arguments_schema__ = schemas.Pagination_schema
 
     @authenticated(constants.LEVEL_USER)
-    async def get(self):
+    async def get(self, user_id=None):
+        user_id = user_id or self.current_user.id
         args: schemas.Pagination_schema = self.validate_arguments()
         async with self.async_session() as session:
             query = select(models.Movie, models.Movie_watched).where(
-                models.Movie_watched.user_id == self.current_user.id,
+                models.Movie_watched.user_id == user_id,
                 models.Movie.id == models.Movie_watched.movie_id,
             ).order_by(
                 models.Movie_watched.watched_at.desc()
