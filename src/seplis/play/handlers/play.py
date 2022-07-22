@@ -61,6 +61,8 @@ class Metadata_handler(web.RequestHandler):
             self.set_status(404)
             self.write('{"error": "No movie/episode found"}')
             return
+        for m in metadata:
+            m.pop('filename')
         self.write(utils.json_dumps(metadata))
 
     def options(self, *args, **kwargs):

@@ -137,7 +137,6 @@ class Play_scan(object):
             data = data.decode('utf-8')        
         logging.info(f'Metadata retrieved from "{path}"')
         data = utils.json_loads(data)
-        data['format'].pop('filename')
         return data
 
     def get_file_modified_time(self, path):
