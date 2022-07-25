@@ -1,7 +1,7 @@
-import os, os.path, re, logging, subprocess
+import os, os.path, logging, subprocess
 from datetime import datetime
 from seplis import config, Client, utils
-from seplis.play import constants, models
+from seplis.play import models
 from seplis.play.decorators import new_session
 from guessit import guessit
 
@@ -63,13 +63,9 @@ def cleanup_movies():
 
 class Play_scan(object):
 
-    def __init__(self, scan_path, type_='shows'):
-        if not scan_path:
-            raise Exception('scan_path is missing')
+    def __init__(self, scan_path, type_):
         if not os.path.exists(scan_path):
             raise Exception(f'scan_path "{scan_path}" does not exist')
-        if type_ not in constants.SCAN_TYPES:
-            raise Exception(f'scan type: "{type_}" is not supported')
         self.scan_path = scan_path
         self.type = type_
         self.client = Client(url=config.data.client.api_url)
@@ -164,12 +160,15 @@ class Movie_scan(Play_scan):
                 logging.debug(f'"{f}" didn\'t match any pattern')
 
     def parse(self, filename):
-        info = guessit(os.path.splitext(os.path.basename(filename))[0])
-        if info:
-            t = info['title']
-            if info.get('year'):
-                t += f" {info['year']}"
-            return t
+        d = guessit(filename, '-t movie')
+        if d and d.get('title'):
+            t = d['title']
+            if d.get('part'):
+                t += f' Part {d["part"]}'
+            if d.get('year'):
+                t += f" {d['year']}"
+            return t        
+        logging.info(f'{filename} doesn\'t look like a movie')
 
     def save_item(self, title: str, path: str):
         movie_id = self.lookup(title)
@@ -261,20 +260,25 @@ class Series_scan(Play_scan):
             self.save_item(episode, f)
 
     def parse(self, filename):
-        for pattern in constants.SERIES_FILENAME_PATTERNS:
-            try:
-                match = re.match(
-                    pattern, 
-                    os.path.basename(filename), 
-                    re.VERBOSE | re.IGNORECASE
+        d = guessit(filename, '-t series --episode')
+        if d and d.get('title'):
+            if d.get('season') and d.get('episode'):            
+                return Parsed_episode_season(
+                    file_show_title=d['title'],
+                    season=d['season'],
+                    episode=d['episode'],
                 )
-                if not match:
-                    continue
-                return self._parse_episode_info_from_file(match=match)
-            except re.error as error:
-                logging.exception('episode parse re error: {}'.format(error))
-            except:
-                logging.exception('episode parse pattern: {}'.format(pattern))
+            elif d.get('date'):
+                return Parsed_episode_air_date(
+                    file_show_title=d['title'],
+                    air_date=d['date'].isoformat(),
+                )
+            elif d.get('episode'):
+                return Parsed_episode_number(
+                    file_show_title=d['title'],
+                    number=d['episode'],
+                )
+        logging.info(f'{filename} doesn\'t look like an episode')
 
     def episode_show_id_lookup(self, episode):
         '''
@@ -401,51 +405,6 @@ class Series_scan(Play_scan):
                 return True
         return False
 
-    def _parse_episode_info_from_file(self, match):
-        fields = match.groupdict().keys()
-        season = None
-        if 'file_show_title' not in fields:
-            return None
-        file_show_title = match.group('file_show_title').strip().lower()
-
-        season = None
-        if 'season' in fields:
-            season = int(match.group('season'))
-
-        number = None
-        if 'number' in fields:
-            number = match.group('number')
-        elif 'number1' in fields:
-            number = match.group('number1')
-        elif 'numberstart' in fields:
-            number = match.group('numberstart')
-        if number:
-            number = int(number)
-
-        air_date = None
-        if 'year' in fields and 'month' in fields and 'day' in fields:
-            air_date = '{}-{}-{}'.format(
-                match.group('year'),
-                match.group('month'),
-                match.group('day'),
-            )
-
-        if season and number:
-            return Parsed_episode_season(
-                file_show_title=file_show_title,
-                season=season,
-                episode=number,
-            )
-        elif not season and number:
-            return Parsed_episode_number(
-                file_show_title=file_show_title,
-                number=number,
-            )
-        elif air_date:
-            return Parsed_episode_air_date(
-                file_show_title=file_show_title,
-                air_date=air_date,
-            )
 
 class Parsed_episode(object):
 
@@ -501,9 +460,9 @@ class Show_id(object):
         show_id = self.db_lookup(file_show_title)
         if show_id:
             return show_id
-        shows = self.web_lookup(file_show_title)
-        show_id = shows[0]['id'] if shows else None
-        show_title = shows[0]['title'] if shows else None
+        show = self.web_lookup(file_show_title)
+        show_id = show['id'] if show else None
+        show_title = show['title'] if show else None
         with new_session() as session:
             show = models.Show_id_lookup(
                 file_show_title=file_show_title,
@@ -531,27 +490,16 @@ class Show_id(object):
                 return
             return show.show_id
 
-    def web_lookup(self, file_show_title):
-        '''
-
-        :param file_show_title: str
-        :returns: list of dict
-            [
-                {
-                    'id': 1,
-                    'title': 'Show...'
-                }
-            ]
-        '''
-        file_show_title = file_show_title \
-            .replace('.', ' ') \
-            .replace('-', ' ') \
-            .replace('_', ' ')
-        shows = self.scanner.client.get('/shows', {
-            'title': file_show_title,
-            'fields': 'id,title',
+    def web_lookup(self, title):
+        series = self.scanner.client.get('/search', {
+            'title': title,
+            'type': 'movie',
         })
-        return shows
+        if not series:
+            logging.info(f'Didn\'t find a match for series "{title}"')
+            return
+        logging.info(f'Found series: {series[0]["title"]} (Id: {series[0]["id"]})')
+        return series[0]
 
 class Episode_number(object):
     '''Used to lookup an episode's number from the season and episode or
@@ -620,17 +568,12 @@ class Episode_number(object):
 
     def web_lookup(self, episode):
         if isinstance(episode, Parsed_episode_season):
-            query = 'season:{} AND episode:{}'.format(
-                episode.season,
-                episode.episode,
-            )
+            query = f'season:{episode.season} AND episode:{episode.episode}'
         elif isinstance(episode, Parsed_episode_air_date):
-            query = 'air_date:{}'.format(
-                episode.air_date,
-            )
+            query = f'air_date:{episode.air_date}'
         else:
             raise Exception('Unknown parsed episode object')
-        episodes = self.scanner.client.get('/shows/{}/episodes'.format(episode.show_id), {
+        episodes = self.scanner.client.get(f'/shows/{episode.show_id}/episodes', {
             'q': query,
             'fields': 'number',
         })
