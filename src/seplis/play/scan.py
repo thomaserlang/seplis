@@ -318,6 +318,8 @@ class Series_scan(Play_scan):
             return
         if isinstance(episode, Parsed_episode_number):
             return True
+        if isinstance(episode, list):
+            episode = episode[0]
         value = self.episode_number.get_lookup_value(episode)
         logging.info('Looking for episode {} with show_id {}'.format(
             value,
