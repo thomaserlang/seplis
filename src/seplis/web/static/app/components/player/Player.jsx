@@ -91,7 +91,6 @@ class Player extends React.Component {
         this.video.addEventListener('click', this.playClick.bind(this))
         this.video.addEventListener('touchstart', this.playClick.bind(this))
         this.video.addEventListener('loadeddata', this.loadedEvent.bind(this))
-        this.setPingTimer()
         this.video.volume = this.volume
         
         this.loadStream(this.getPlayUrl())
@@ -117,6 +116,7 @@ class Player extends React.Component {
             this.video.src = url
             this.video.load()
             this.video.play()
+            this.setPingTimer()
             return
         }
 
@@ -136,8 +136,9 @@ class Player extends React.Component {
         })
         this.hls.loadSource(url)
         this.hls.attachMedia(this.video)
-        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {            
             this.video.play()
+            this.setPingTimer()
         })
         this.hls.on(Hls.Events.ERROR, this.hlsError.bind(this))
     }
@@ -184,9 +185,12 @@ class Player extends React.Component {
     setPingTimer() {
         clearTimeout(this.pingTimer)
         this.pingTimer = setTimeout(() => {
-            request(`${this.props.playServerUrl}/keep-alive/${this.props.session}`),
+            request(`${this.props.playServerUrl}/keep-alive/${this.props.session}`).catch(e => {
+                if (e.status == 404)
+                    clearTimeout(this.pingTimer)
+            })
             this.setPingTimer()
-        }, 2000)
+        }, 4000)
     }
 
     setHideControlsTimer(timeout) {
@@ -305,7 +309,6 @@ class Player extends React.Component {
         this.setState(state)
         this.cancelPlayUrl().then(() => {
             this.loadStream(this.getPlayUrl())
-            this.setPingTimer()
         })
     }
 
