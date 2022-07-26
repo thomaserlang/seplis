@@ -53,7 +53,7 @@ class Play extends React.Component {
         if (watched) {
             if (!this.markedAsWatched) {
                 request(`/1/movies/${this.movieId}/watched`, {
-                    method: 'PUT',
+                    method: 'POST',
                 }).done(() => {
                     this.markedAsWatched = true
                 })
