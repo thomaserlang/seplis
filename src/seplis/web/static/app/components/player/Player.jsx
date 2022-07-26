@@ -131,6 +131,7 @@ class Player extends React.Component {
         this.hls = new Hls({
             startLevel: 0,            
             manifestLoadingTimeOut: 30000,
+            maxMaxBufferLength: 3,
             debug: false,
         })
         this.hls.loadSource(url)
@@ -183,7 +184,7 @@ class Player extends React.Component {
     setPingTimer() {
         clearTimeout(this.pingTimer)
         this.pingTimer = setTimeout(() => {
-            request(this.getPlayUrl()+'&action=ping')
+            request(`${this.props.playServerUrl}/keep-alive/${this.props.session}`),
             this.setPingTimer()
         }, 2000)
     }
@@ -213,9 +214,12 @@ class Player extends React.Component {
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
             `&audio_lang=${this.state.audio || ''}`+
-            `&width=${this.state.resolutionWidth || ''}`
-        if (Hls.isSupported())
-            s += `&device=hls.js`
+            `&width=${this.state.resolutionWidth || ''}`+
+            `&supported_codecs=h264`+
+            `&supported_pixel_formats=yuv420p`+
+            `&transcode_codec=libx264`+
+            `&transcode_pixel_format=yuv420p`+
+            `&format=hls`
         return s
     }
 
