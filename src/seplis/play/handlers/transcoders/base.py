@@ -70,7 +70,7 @@ class Transcoder:
         
         logging.debug('Waiting for media')
         try:
-            ready = await asyncio.wait_for(self.wait_for_media(), timeout=10)
+            ready = await asyncio.wait_for(self.wait_for_media(), timeout=60)
         except asyncio.TimeoutError:
             logging.error('Failed to create media, gave up waiting')
             self.process.terminate()
