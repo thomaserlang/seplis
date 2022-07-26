@@ -21,7 +21,7 @@
     var customData = null
     var lastSavedTime = 0
     var watchedIncremented = false
-    var prevShowIdEpisode = null
+    var prevViewedId = null
 
     const context = cast.framework.CastReceiverContext.getInstance()
     const playerManager = context.getPlayerManager()
@@ -55,11 +55,15 @@
         event => {
             customData = event.requestData.customData
             lastSavedTime = customData.startTime
-            let id = customData['show']['id'].toString() +
-                     customData['episode']['number'].toString()
-            if (prevShowIdEpisode != id)
+            if (customData['type'] == 'episode') {
+                let id = 'episode' + customData['show']['id'].toString() +
+                    customData['episode']['number'].toString()
+            } else if (customData['type'] == 'movie') {
+                let id = 'movie'+customData['movie']['id'].toString()
+            }
+            if (prevViewedId != id)
                 watchedIncremented = false
-            prevShowIdEpisode = id
+            prevViewedId = id
             var senders = context.getSenders()
             for (var i in senders) {
                 context.sendCustomMessage(
@@ -99,10 +103,15 @@
 
             let duration = parseInt(customData['metadata']['format']['duration'])
             let watched = (((time / 100) * 10) > (duration-time))
-
-            let url = customData['apiUrl'] +
-                '/1/shows/'+customData['show']['id'].toString()+
-                '/episodes/'+customData['episode']['number'].toString()
+            
+            
+            if (customData['type'] == 'episode') {
+                let url = customData['apiUrl'] +
+                    '/1/shows/'+customData['show']['id'].toString()+
+                    '/episodes/'+customData['episode']['number'].toString()
+            } else if (customData['type'] == 'movie') {
+                let url = customData['apiUrl'] + '/1/movies/'+customData['movie']['id'].toString()
+            }
             let putData = {}
             if (watched) {
                 if (!watchedIncremented) {
@@ -118,7 +127,7 @@
             }
             $.ajax({
                 url: url,
-                type: 'PUT',
+                type: (watchedIncremented && customData['type'] == 'movie')?'POST':'PUT',
                 data: JSON.stringify(putData),
                 dataType: 'json',
                 headers: {

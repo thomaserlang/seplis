@@ -21,9 +21,12 @@ class Application(tornado.web.Application):
         )
         self.ioloop = ioloop or asyncio.get_event_loop()
         urls = [
-            (r'/play', play.Play_handler),            
+            (r'/transcode', play.Transcode_handler),
+            (r'/source', play.Source_handler),
             (r'/metadata', play.Metadata_handler),
-            (r'/hls/(.*)', play.File_handler),
+            (r'/files/(.*)', play.File_handler),
+            (r'/close-session/(.*)', play.Close_session_handler),
+            (r'/keep-alive/(.*)', play.Keep_alive_handler),
 
             (r'/', shows.Handler),
             (r'/api/show-suggest', shows.API_show_suggest_handler),

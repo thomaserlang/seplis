@@ -150,7 +150,7 @@ class Chromecast {
                     },
                     token: result[1]['token'],
                     type: 'episode',
-                    show: {
+                    series: {
                         id: result[2]['id'],
                         title: result[2]['title'],
                         episode_type: result[2]['episode_type'],
@@ -165,11 +165,14 @@ class Chromecast {
                     apiUrl: seplisBaseUrl,
                 }
                 let playUrl = result[0].playServer.play_url+'/play'+
-                    '?play_id='+result[0].playServer.play_id
-                playUrl += `&session=${guid()}`
-                playUrl += `&device=chromecast`
-                if (startTime)
-                    playUrl += `&start_time=${startTime}`
+                    `?play_id=${result[0].playServer.play_id}`+
+                    `&session=${guid()}}`+
+                    `&start_time=${startTimee}`+
+                    `&supported_pixel_formats=yuv420p`+
+                    `&transcode_codec=h264`+
+                    `&transcode_pixel_format=yuv420p`+
+                    `&audio_channels=2`+
+                    `&format=pipe`
                 if (result[5]) {
                     playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
                     playUrl += `&audio_lang=${result[5].audio_lang || ''}`
@@ -247,11 +250,15 @@ class Chromecast {
                     apiUrl: seplisBaseUrl,
                 }
                 let playUrl = result[0].playServer.play_url+'/play'+
-                    '?play_id='+result[0].playServer.play_id
-                playUrl += `&session=${guid()}`
-                playUrl += `&device=chromecast`
-                if (startTime)
-                    playUrl += `&start_time=${startTime}`
+                    `?play_id=${result[0].playServer.play_id}`+
+                    `&session=${guid()}}`+
+                    `&start_time=${startTimee}`+
+                    `&supported_pixel_formats=yuv420p`+
+                    `&transcode_codec=h264`+
+                    `&transcode_pixel_format=yuv420p`+
+                    `&audio_channels=2`+
+                    `&format=pipe`
+
                 /*
                 if (result[4]) {
                     playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`

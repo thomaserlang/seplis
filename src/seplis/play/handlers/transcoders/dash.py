@@ -1,0 +1,27 @@
+import asyncio, os
+from seplis import config
+from . import base
+
+class Dash_transcoder(base.Transcoder):
+    
+    def ffmpeg_extend_args(self) -> None:
+        self.ffmpeg_args.extend([
+            {'-f': 'dash'},
+            {'-seg_duration': str(config.data.play.segment_time)},
+            {self.media_path: None},
+        ])
+
+    @property
+    def media_path(self) -> str:
+        return os.path.join(self.temp_folder, self.media_name)
+
+    @property
+    def media_name(self) -> str:
+        return 'media.mpd'
+
+    async def wait_for_media(self) -> bool:
+        while True:
+            await asyncio.sleep(0.5)
+            if os.path.exists(self.media_path):
+                return True
+            

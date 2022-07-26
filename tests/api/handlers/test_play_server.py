@@ -95,7 +95,6 @@ class test_play_handler(Testbase):
         self.assertEqual(response.headers['X-Total-Count'], '2')
         self.assertEqual(servers[0]['external_id'], server1['external_id'])
         self.assertEqual(servers[1]['external_id'], server2['external_id'])
-        print(servers[0])
         self.assertTrue('secret' not in servers[0])
         self.assertTrue('secret' not in servers[1])
 

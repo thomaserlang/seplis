@@ -84,7 +84,6 @@ class test_user(Testbase):
         # should be visible.
         response = self.get('/1/users/current')
         self.assertEqual(response.code, 200)
-        print(response.body)
         user3 = utils.json_loads(response.body)
         self.assertEqual(user3['email'], self.current_user.email)
 

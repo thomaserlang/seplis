@@ -208,19 +208,36 @@ class Player extends React.Component {
     }
 
     getPlayUrl() {
-        let s = `${this.props.playServerUrl}/play`+
+        const codecs = this.getSupportedCodecs()
+        if (codecs.length == 0) {
+            alert('No supported codecs')
+            return
+        }
+        let s = `${this.props.playServerUrl}/transcode`+
             `?play_id=${this.props.playId}`+
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&subtitle_lang=${this.state.subtitle || ''}`+
             `&audio_lang=${this.state.audio || ''}`+
             `&width=${this.state.resolutionWidth || ''}`+
-            `&supported_codecs=h264`+
-            `&supported_pixel_formats=yuv420p`+
-            `&transcode_codec=libx264`+
+            `&supported_pixel_formats=yuv420p,yuv420p10le`+
+            `&transcode_codec=${codecs[0]}`+
             `&transcode_pixel_format=yuv420p`+
             `&format=hls`
         return s
+    }
+
+    getSupportedCodecs() {
+        const types = {
+            //'video/mp4; codecs="hvc1"': 'hevc',
+            'video/mp4; codecs="avc1.42E01E"': 'h264',
+        }
+        const codecs = []
+        for (const key in types) {
+            if (this.video.canPlayType(key))
+                codecs.push(types[key])
+        }
+        return codecs
     }
 
     playPauseClick() {
@@ -299,7 +316,7 @@ class Player extends React.Component {
     cancelPlayUrl() {
         return new Promise((resolve, reject) => {
             request(
-                this.getPlayUrl()+'&action=cancel'
+                `${this.props.playServerUrl}/close-session/${this.props.session}`
             ).done(() => {
                 resolve()
             }).fail(e => {
@@ -401,7 +418,7 @@ class Player extends React.Component {
     }
 
     showControlsVisibility() {
-        return this.state.showControls?'visible':'hidden'
+        return this.state.showControls?'visible':'visible'
     }
 
     renderControlsTop() {

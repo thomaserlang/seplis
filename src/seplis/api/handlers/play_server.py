@@ -155,7 +155,6 @@ class Access_handler(base.Pagination_handler):
             ).order_by(models.User.name).paginate(
                 page=self.page, per_page=self.per_page,
             )
-            print(users.records)
             a = []
             for u in users.records:
                 a.append({
