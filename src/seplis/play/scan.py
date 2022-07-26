@@ -262,7 +262,9 @@ class Series_scan(Play_scan):
     def parse(self, filename):
         d = guessit(filename, '-t series --episode')
         if d and d.get('title'):
-            if d.get('season') and d.get('episode'):            
+            if d.get('season') and d.get('episode'):
+                if isinstance(d['episode'], list):
+                    d['episode'] = d['episode'][0]        
                 return Parsed_episode_season(
                     file_show_title=d['title'],
                     season=d['season'],
@@ -318,8 +320,6 @@ class Series_scan(Play_scan):
             return
         if isinstance(episode, Parsed_episode_number):
             return True
-        if isinstance(episode, list):
-            episode = episode[0]
         value = self.episode_number.get_lookup_value(episode)
         logging.info('Looking for episode {} with show_id {}'.format(
             value,

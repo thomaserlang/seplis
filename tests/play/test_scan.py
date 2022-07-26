@@ -359,6 +359,16 @@ class Test_series_scan(Testbase):
         self.assertEqual(info.file_show_title, 'The Daily Show')
         self.assertEqual(info.air_date, '2014-06-03')
 
+        # Double episode
+        path = 'Star Wars Resistance.S01E01-E02.720p webdl h264 aac.mkv'
+        info = self.scanner.parse(path)
+        self.assertTrue(
+            isinstance(info, Parsed_episode_season),
+        )
+        self.assertEqual(info.file_show_title, 'Star Wars Resistance')
+        self.assertEqual(info.season, 1)
+        self.assertEqual(info.episode, 1)
+
     
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
