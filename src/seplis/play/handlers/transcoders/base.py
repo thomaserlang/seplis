@@ -179,7 +179,6 @@ class Transcoder:
             self.ffmpeg_args.append({'-x264opts:0': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'})
         elif (codec == 'libx265'):
             self.ffmpeg_args.append({'-tag:v': 'hvc1'})
-            #self.ffmpeg_args.append({'-x265-params': 'colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc:bitrate=4000:keyint=120:strict-cbr'})
 
     def set_pix_format(self):
         if self.video_stream['pix_fmt'] in self.settings.supported_pixel_formats:
