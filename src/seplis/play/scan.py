@@ -64,12 +64,8 @@ def cleanup_movies():
 class Play_scan(object):
 
     def __init__(self, scan_path, type_='shows'):
-        if not scan_path:
-            raise Exception('scan_path is missing')
         if not os.path.exists(scan_path):
             raise Exception(f'scan_path "{scan_path}" does not exist')
-        if type_ not in constants.SCAN_TYPES:
-            raise Exception(f'scan type: "{type_}" is not supported')
         self.scan_path = scan_path
         self.type = type_
         self.client = Client(url=config.data.client.api_url)
@@ -164,12 +160,15 @@ class Movie_scan(Play_scan):
                 logging.debug(f'"{f}" didn\'t match any pattern')
 
     def parse(self, filename):
-        info = guessit(os.path.splitext(os.path.basename(filename))[0])
-        if info:
-            t = info['title']
-            if info.get('year'):
-                t += f" {info['year']}"
-            return t
+        d = guessit(filename, '-t movie')
+        if d and d.get('title'):
+            t = d['title']
+            if d.get('part'):
+                t += f' Part {d["part"]}'
+            if d.get('year'):
+                t += f" {d['year']}"
+            return t        
+        logging.info(f'{filename} doesn\'t look like a movie')
 
     def save_item(self, title: str, path: str):
         movie_id = self.lookup(title)
@@ -258,7 +257,10 @@ class Series_scan(Play_scan):
         files = self.get_files()
         for f in files:
             episode = self.parse(f)
-            self.save_item(episode, f)
+            if episode:
+                self.save_item(episode, f)
+            else:
+                logging.debug(f'"{f}" didn\'t match any pattern')
 
     def parse(self, filename):
 

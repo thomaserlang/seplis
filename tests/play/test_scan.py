@@ -365,10 +365,18 @@ class Test_series_scan(Testbase):
         self.assertTrue(
             isinstance(info, Parsed_episode_season),
         )
-        self.assertEqual(info.file_show_title, 'Star Wars Resistance')
+        self.assertEqual(info.file_show_title, 'star wars resistance')
         self.assertEqual(info.season, 1)
         self.assertEqual(info.episode, 1)
-
+        
+        path = 'Boruto Naruto Next Generations (2017).6.1080p h265.mkv'
+        info = self.scanner.parse(path)
+        self.assertTrue(
+            isinstance(info, Parsed_episode_number),
+            type(info)
+        )
+        self.assertEqual(info.file_show_title, 'boruto naruto next generations (2017)')
+        self.assertEqual(info.number, 6)
     
 if __name__ == '__main__':
     nose.run(defaultTest=__name__)
