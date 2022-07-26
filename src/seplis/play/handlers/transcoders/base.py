@@ -150,27 +150,27 @@ class Transcoder:
         width = self.settings.width or self.video_stream['width']
 
         crf = '23'
-        if codec == 'libx264' or (codec == 'copy' and self.video_stream['codec_name'] == 'h264'):
+        if codec == 'libx264':
             crf = '26'
-            if width >= 2560:
-                crf = '16'
-            elif width >= 1280:
+            if width >= 3840:
                 crf = '18'
+            elif width >= 1920:
+                crf = '19'
         elif codec == 'libx265':
             crf = '31'
             if width >= 3840:
                 crf = '18'
-            elif width >= 2560:
+            elif width >= 3840:
                 crf = '20'
-            elif width >= 1280:
+            elif width >= 1920:
                 crf = '22'
         elif codec == 'libvpx-vp9':
             crf = '34'
             if width >= 3840:
                 crf = '15'
-            elif width >= 1440:
+            elif width >= 2560:
                 crf = '24'
-            elif width >= 1280:
+            elif width >= 1920:
                 crf = '31'
 
         self.ffmpeg_args.append({'-crf': crf})

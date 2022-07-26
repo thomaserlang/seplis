@@ -2,7 +2,7 @@ import asyncio
 import http
 import logging
 import mimetypes
-from typing import List, Literal, Optional, Union
+from typing import List, Optional, Union
 from aiofile import async_open
 import os
 from pydantic import BaseModel, conlist, constr
