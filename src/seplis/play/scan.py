@@ -535,26 +535,11 @@ class Show_id(object):
             return show.show_id
 
     def web_lookup(self, file_show_title):
-        '''
-
-        :param file_show_title: str
-        :returns: list of dict
-            [
-                {
-                    'id': 1,
-                    'title': 'Show...'
-                }
-            ]
-        '''
-        file_show_title = file_show_title \
-            .replace('.', ' ') \
-            .replace('-', ' ') \
-            .replace('_', ' ')
-        shows = self.scanner.client.get('/shows', {
+        series = self.scanner.client.get('/search', {
             'title': file_show_title,
-            'fields': 'id,title',
+            'type': 'series',
         })
-        return shows
+        return series
 
 class Episode_number(object):
     '''Used to lookup an episode's number from the season and episode or
