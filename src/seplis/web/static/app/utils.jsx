@@ -118,3 +118,11 @@ export function divmod(a, b) {
 export function locationQuery() {
     return querystring.parse(location.search)
 }
+
+export function getVideoStream(streams) {
+    for (const s of streams) {
+        if (s['codec_type'] == 'video')
+            return s
+    }
+    return null
+}

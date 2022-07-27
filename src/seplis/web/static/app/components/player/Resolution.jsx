@@ -1,6 +1,7 @@
 import React from 'react'
 import ClassNames from 'classnames'
 import PropTypes from 'prop-types'
+import {getVideoStream} from 'seplis/utils'
 
 const propTypes = {
     metadata: PropTypes.object,
@@ -13,7 +14,7 @@ class Resolution extends React.Component {
     constructor(props) {
         super(props)
 
-        this.originalWidth = this.props.metadata.streams[0].width
+        this.originalWidth = getVideoStream(this.props.metadata.streams).width
         this.state = {
             show: false,
             width: this.originalWidth,
@@ -71,7 +72,7 @@ class Resolution extends React.Component {
     widthToText(width) {
         if (width in this.resolutions)
             return this.resolutions[width]
-        return width
+        return `W: ${width}`
     }
 
     renderResolutions() {
@@ -86,13 +87,18 @@ class Resolution extends React.Component {
                 className={cls} 
             >
                 {Object.entries(this.resolutions).map(([key, value]) => {
-                    if (key <= this.originalWidth)
+                    if (key < this.originalWidth)
                         return <p
                             key={key}
                             data-width={key}
                             onClick={this.onResolutionClick}
                         >{key==this.state.width?<b>{value}</b>:value}</p>
                 })}
+                <p
+                    data-width={this.originalWidth}
+                    onClick={this.onResolutionClick}
+                >{this.originalWidth==this.state.width?<b>{this.widthToText(this.originalWidth)}</b>:this.widthToText(this.originalWidth)}</p>
+
             </div>
         )
     }
