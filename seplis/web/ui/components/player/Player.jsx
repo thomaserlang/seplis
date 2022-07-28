@@ -425,7 +425,7 @@ class Player extends React.Component {
     }
 
     showControlsVisibility() {
-        return this.state.showControls?'visible':'visible'
+        return ((!this.state.showControls) && (this.state.playing))?'hidden':'visible'
     }
 
     renderControlsTop() {
