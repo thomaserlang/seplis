@@ -13,10 +13,7 @@
         {% end %}
         <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <link rel="stylesheet" href="/static/dist/vendor.css?v=0.2.19">
-        <link rel="stylesheet" href="/static/dist/app.css?v=0.2.19">
         <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-        <script type="text/javascript" src="/static/dist/vendor.js?v=0.2.19"></script>     
         <script type="text/javascript">
             seplisBaseUrl = "{{config.data.client.public_api_url}}";
             seplisClientId = "{{config.data.client.id}}";
@@ -26,7 +23,6 @@
     </head>
     <body>
         <div id="root"></div>
-        <script type="text/javascript" src="/static/dist/app.js?v=0.2.19"></script>
         {% block body_outside %}{% end %}
     </body>
 </html>

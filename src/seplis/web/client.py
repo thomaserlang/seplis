@@ -66,17 +66,14 @@ class HTTPData(object):
                 break
             s = s.client.get(s.next, timeout=self.timeout)
         
-    @gen.coroutine
-    def all_async(self):
+    async def all_async(self):
         s = self
-        data = []
         while True:
             for d in s.data:
-                data.append(d)
+                yield d
             if not s.next:
                 break
-            s = yield s.client.get(s.next, timeout=self.timeout)
-        return data
+            s = await s.client.get(s.next, timeout=self.timeout)
 
     def __iter__(self):
         for d in self.data:
@@ -107,8 +104,7 @@ class Async_client(object):
         self._client = httpclient.AsyncHTTPClient(self.io_loop)
         self.access_token = access_token
 
-    @gen.coroutine
-    def _fetch(self, method, uri, body=None, headers=None, timeout=TIMEOUT):
+    async def _fetch(self, method, uri, body=None, headers=None, timeout=TIMEOUT):
         if not headers:
             headers = {}
         if 'Content-Type' not in headers:
@@ -124,7 +120,7 @@ class Async_client(object):
                 if not uri.startswith('/'):
                     uri = '/'+uri
                 url = self.url+uri
-            response = yield self._client.fetch(httpclient.HTTPRequest(
+            response = await self._client.fetch(httpclient.HTTPRequest(
                 url, 
                 method=method,
                 body=utils.json_dumps(body) if body or {} == body else None, 
@@ -153,35 +149,32 @@ class Async_client(object):
             data = HTTPData(self, None, timeout=timeout)
         return data
 
-    @gen.coroutine
-    def get(self, uri, data=None, headers=None, timeout=TIMEOUT, all_=False):     
+    async def get(self, uri, data=None, headers=None, timeout=TIMEOUT, all_=False):     
         if data != None:
             if isinstance(data, dict):
                 data = urlencode(data, True)
             uri += '{}{}'.format('&' if '?' in uri else '?', data)
-        r = yield self._fetch(
+        r = await self._fetch(
             'GET', 
             uri, 
             headers=headers,
             timeout=timeout,
         )
         if isinstance(r, HTTPData) and all_:
-            r = yield r.all_async()
+            r = await r.all_async()
         return r
-
-    @gen.coroutine
-    def delete(self, uri, headers=None, timeout=TIMEOUT):
-        r = yield self._fetch(
+ 
+    async def delete(self, uri, headers=None, timeout=TIMEOUT):
+        r = await self._fetch(
             'DELETE', 
             uri, 
             headers=headers,
             timeout=timeout,
         )
         return r
-
-    @gen.coroutine
-    def post(self, uri, body={}, headers=None, timeout=TIMEOUT):
-        r = yield self._fetch(
+ 
+    async def post(self, uri, body={}, headers=None, timeout=TIMEOUT):
+        r = await self._fetch(
             'POST', 
             uri, 
             body, 
@@ -189,10 +182,9 @@ class Async_client(object):
             timeout=timeout,
         )
         return r
-
-    @gen.coroutine
-    def put(self, uri, body={}, headers=None, timeout=TIMEOUT):
-        r = yield self._fetch(
+ 
+    async def put(self, uri, body={}, headers=None, timeout=TIMEOUT):
+        r = await self._fetch(
             'PUT', 
             uri, 
             body, 
@@ -200,10 +192,9 @@ class Async_client(object):
             timeout=timeout,
         )
         return r
-
-    @gen.coroutine
-    def patch(self, uri, body={}, headers=None, timeout=TIMEOUT):
-        r = yield self._fetch(
+ 
+    async def patch(self, uri, body={}, headers=None, timeout=TIMEOUT):
+        r = await self._fetch(
             'PATCH', 
             uri, 
             body, 

@@ -1,34 +1,47 @@
-var webpack = require('webpack');
-var path = require('path');
-var MiniCssExtractPlugin = require("mini-css-extract-plugin");
-var staticPath = path.resolve(__dirname, 'src/seplis/web/static');
+const webpack = require('webpack');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require("path");
 
 module.exports = {
-    devtool: "source-map",
+    
     entry: {
-        app: path.resolve(staticPath, 'app'),
+        main: {
+            import: './src/seplis/web/ui/index.jsx',
+        },
     },
+    devtool: "source-map",
     resolve: {
-        extensions: ['.js', '.jsx', '.scss', '.css'],        
+        extensions: ['.js', '.jsx', '.scss', '.css'],
         modules: [
-            path.resolve(staticPath, 'app'),
+            './src/seplis/web/ui',
             'node_modules'
         ],
         alias: {
-            seplis: path.resolve(staticPath, 'app'),
+            seplis: path.resolve(__dirname, '/src/seplis/web/ui/'),
         }
+    },    
+    module: {
+        rules: [
+            {
+                test: /\.(jsx|js)?$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: "babel-loader"
+                },
+            },
+            {
+                test: /\.(css|scss)$/,
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    { loader: 'css-loader', options: { url: false, sourceMap: true } },
+                    { loader: 'sass-loader', options: { sourceMap: true } }
+                ],
+            }
+        ]
     },
-    output: {
-        path: path.resolve(staticPath, 'dist'),
-        filename: '[name].js',
-        sourceMapFilename: '[file].map',
-        libraryTarget: 'var',
-        library: 'exports',
-    },
+
     plugins: [
-        new MiniCssExtractPlugin({
-            filename: "[name].css",
-        }),
         new webpack.ProvidePlugin({
             $: "jquery",
             jQuery: "jquery",
@@ -36,34 +49,20 @@ module.exports = {
             Util: "exports-loader?Util!bootstrap/js/src/util",
             Dropdown: "exports-loader?Dropdown!bootstrap/js/src/dropdown",
         }),
+        new MiniCssExtractPlugin({
+          filename: "[name].[contenthash].css",
+          chunkFilename: "[id].[contenthash].css",
+        }),
+        new HtmlWebpackPlugin({
+          'filename': path.resolve(__dirname, 'src/seplis/web/templates/ui/react.html'),
+          'template': './src/seplis/web/ui/index.html',
+          'chunks': ['main'],
+          'publicPath': '/static/ui',
+        }),
     ],
-    module: {
-        rules: [
-            {
-                test: /\.(jsx|js)?$/,
-                exclude: /node_modules/,
-                loader: 'babel-loader',
-            },
-            {
-                test: /\.(scss|css)/,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    { loader: 'css-loader', options: { url: false, sourceMap: true } },
-                    { loader: 'sass-loader', options: { sourceMap: true } }
-                ]
-            }
-        ]
+    output: {
+        filename: '[name].[contenthash].js',
+        path: path.resolve(__dirname, 'src/seplis/web/static/ui'),
+        clean: true,
     },
-    optimization: {
-        splitChunks: {
-            cacheGroups: {
-                vendor: {
-                    test: /node_modules/, 
-                    name: 'vendor',
-                    chunks: 'all',
-                    enforce: true
-                }
-            }
-        }
-    }
 }

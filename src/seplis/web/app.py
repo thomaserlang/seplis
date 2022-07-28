@@ -32,9 +32,13 @@ class Application(tornado.web.Application):
             URLSpec(r'/static/(.*)', base.File_handler, {'path': static_path}),
             URLSpec(r'/api/tvmaze-show-lookup', tvmaze_lookup.Handler),
 
-            URLSpec(r'/show.*/([0-9]+)', react.Handler_tv_show),
-            URLSpec(r'/show/([0-9]+)/[^/]+', react.Handler_tv_show),
-            URLSpec(r'/show-edit/([0-9]+)', react.Handler_tv_show),
+            URLSpec(r'/show.*/([0-9]+)', react.Handler_series),
+            URLSpec(r'/show/([0-9]+)/[^/]+', react.Handler_series),
+            URLSpec(r'/show-edit/([0-9]+)', react.Handler_series),
+
+            URLSpec(r'/movie.*/([0-9]+)', react.Handler_movie),
+            URLSpec(r'/movie/([0-9]+)/[^/]+', react.Handler_movie),
+            URLSpec(r'/movie-edit/([0-9]+)', react.Handler_movie),
 
             URLSpec(r'/health', health.Handler),
             URLSpec(r'/', react.Handler),
