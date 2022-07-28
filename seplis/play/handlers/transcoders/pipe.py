@@ -16,9 +16,6 @@ class Pipe_transcoder(base.Transcoder):
             {'-': None},
         ])
 
-        if self.find_ffmpeg_arg('-c:v') == 'copy':
-            self.ffmpeg_args.insert(1, {'-noaccurate_seek': None})
-
     @property
     def media_path(self) -> str:
         return None

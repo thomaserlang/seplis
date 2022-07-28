@@ -112,6 +112,7 @@ class Player extends React.Component {
 
     loadStream(url) {
         this.setState({loading: true})
+        
         if (!Hls.isSupported()) {
             this.video.src = url
             this.video.load()
@@ -212,8 +213,8 @@ class Player extends React.Component {
     }
 
     getPlayUrl() {
-        const codecs = this.getSupportedCodecs()
-        if (codecs.length == 0) {
+        const videoCodecs = this.getSupportedVideoCodecs()
+        if (videoCodecs.length == 0) {
             alert('No supported codecs')
             return
         }
@@ -224,14 +225,17 @@ class Player extends React.Component {
             `&subtitle_lang=${this.state.subtitle || ''}`+
             `&audio_lang=${this.state.audio || ''}`+
             `&width=${this.state.resolutionWidth || ''}`+
-            `&supported_pixel_formats=yuv420p,yuv420p10le`+
-            `&transcode_codec=${codecs[0]}`+
+            `&supported_video_codecs=${String(videoCodecs)}`+
+            `&transcode_video_codec=${videoCodecs[0]}`+
+            `&supported_transcode_codec=acc`+
+            `&transcode_codec=acc`+
+            `&supported_pixel_formats=yuv420p`+
             `&transcode_pixel_format=yuv420p`+
             `&format=hls`
         return s
     }
 
-    getSupportedCodecs() {
+    getSupportedVideoCodecs() {
         const types = {
             //'video/mp4; codecs="hvc1"': 'hevc',
             'video/mp4; codecs="avc1.42E01E"': 'h264',

@@ -9,9 +9,10 @@ class Hls_transcoder(base.Transcoder):
         self.ffmpeg_args.extend([
             {'-f': 'hls'},
             {'-hls_playlist_type': 'event'},
-            {'-hls_segment_type': config.data.play.ffmpeg_hls_segment_type},
-            {'-hls_time': str(config.data.play.segment_time)},
+            {'-hls_segment_type': 'fmp4'},
+            {'-hls_time': self.segment_time()},
             {'-hls_list_size': '0'},
+            {'-prefer_x_start': '1'},
             {self.media_path: None},
         ])
 
@@ -30,7 +31,7 @@ class Hls_transcoder(base.Transcoder):
             await asyncio.sleep(0.5)
             if os.path.exists(self.media_path):
                 async with async_open(self.media_path, "r") as afp:
-                    async for line in afp:                        
+                    async for line in afp:
                         if not '#' in line:
                             files += 1   
             if files >= 1:

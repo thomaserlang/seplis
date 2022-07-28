@@ -10,9 +10,12 @@ class Transcode_settings(BaseModel):
 
     play_id: str
     session: str
+    supported_video_codecs: List[str]
+    supported_audio_codecs: List[str]
     supported_pixel_formats: List[str]
     format: Literal['pipe', 'hls', 'dash']
-    transcode_codec: Literal['h264', 'hevc', 'vp9']
+    transcode_video_codec: Literal['h264', 'hevc', 'vp9']
+    transcode_audio_codec: str
     transcode_pixel_format: Literal['yuv420p', 'yuv420p10le']
 
     start_time: Optional[int]
@@ -51,6 +54,7 @@ class Transcoder:
         self.has_subtitle = False
         self.ffmpeg_args = None
         self.temp_folder = None
+        self.codec = None
 
     async def start(self, send_data_callback=None) -> Union[bool, bytes]:
         if self.settings.session in sessions:
@@ -118,24 +122,16 @@ class Transcoder:
         args = [
             {'-analyzeduration': '20000000'},
             {'-probesize': '20000000'},
+            {'-ss': str(self.settings.start_time or 0)},
             {'-i': self.metadata['format']['filename']},
             {'-y': None},
             {'-loglevel': 'quiet'},
-            {'-map': '0:v:0'},
             {'-preset:0': config.data.play.ffmpeg_preset},
-            {'-force_key_frames:0': 'expr:gte(t,n_forced*1)'},
-            {'-c:a': 'aac'},
+            {'-copyts': None},
+            {'-start_at_zero': None},
+            {'-avoid_negative_ts': 'disabled'},
         ]
-        if self.settings.start_time:
-            args.insert(0, {'-ss': str(self.settings.start_time)})
-            
-        if self.settings.audio_channels:
-            args.extend([{'-ac': str(self.settings.audio_channels)}])
-        elif self.settings.audio_channels_fix: 
-            # Fix for hls eac3 or ac3 not playing or just no audio
-            a = self.stream_index_by_lang('audio', self.settings.audio_lang)
-            if a:
-                args.append({'-ac': str(self.metadata['streams'][a.index]['channels'])})
+
         self.ffmpeg_args = args
         self.set_subtitle()
         self.set_video_codec()
@@ -145,10 +141,38 @@ class Transcoder:
         self.ffmpeg_extend_args()
 
     def set_video_codec(self):
-        codec = codecs_to_libary[self.settings.transcode_codec]
-        
+        codec = codecs_to_libary[self.settings.transcode_video_codec]        
+        self.codec = codec
+
+        if not self.has_subtitle and \
+            self.video_stream['codec_name'] in self.settings.supported_video_codecs and \
+            self.video_stream['pix_fmt'] in self.settings.supported_pixel_formats and \
+            not self.settings.width:
+            codec = 'copy'
+
         width = self.settings.width or self.video_stream['width']
 
+        self.ffmpeg_args.append({'-c:v': codec})
+        if (codec == 'lib264'):
+            self.ffmpeg_args.append({'-x264opts': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'})
+        elif (codec == 'libx265'):
+            self.ffmpeg_args.append({'-tag:v': 'hvc1'})
+
+        self.ffmpeg_args.append({'-map': '0:v:0'})
+        
+        if codec == 'copy':
+            self.ffmpeg_args.insert(1, {'-noaccurate_seek': None})
+            self.ffmpeg_args.extend([
+                {'-fps_mode': 'cfr'},
+            ])
+        else:
+            self.ffmpeg_args.extend([
+                {f'-r': '23.975999999999999'},
+                {'-force_key_frames': 'expr:gte(t,n_forced*1)'},
+                {'-crf': self._get_crf(width, codec)}
+            ])
+
+    def _get_crf(self, width, codec):
         crf = '23'
         if codec == 'libx264':
             crf = '26'
@@ -172,13 +196,7 @@ class Transcoder:
                 crf = '24'
             elif width >= 1920:
                 crf = '31'
-
-        self.ffmpeg_args.append({'-crf': crf})
-        self.ffmpeg_args.append({'-c:v': codec})
-        if (codec == 'lib264'):
-            self.ffmpeg_args.append({'-x264opts:0': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'})
-        elif (codec == 'libx265'):
-            self.ffmpeg_args.append({'-tag:v': 'hvc1'})
+        return crf
 
     def set_pix_format(self):
         if self.video_stream['pix_fmt'] in self.settings.supported_pixel_formats:
@@ -192,12 +210,17 @@ class Transcoder:
             self.ffmpeg_args.append({'-filter:v': f'scale=width={self.settings.width}:height=-2'})
 
     def set_audio(self):
-        arg = {'-map': '0:a:0'}
-        if self.settings.audio_lang:
-            sub_index = self.stream_index_by_lang('audio', self.settings.audio_lang)
-            if sub_index:
-                arg = {'-map': f'0:a:{sub_index.group_index}'}
-        self.ffmpeg_args.append(arg)
+        index = self.stream_index_by_lang('audio', self.settings.audio_lang)
+
+        if self.settings.audio_channels:
+            self.ffmpeg_args.append({'-ac': str(self.settings.audio_channels)})
+        elif self.settings.audio_channels_fix: 
+            # Fix for hls eac3 or ac3 not playing or just no audio
+            self.ffmpeg_args.append({'-ac': str(self.metadata['streams'][index.index]['channels'])})
+    
+        self.ffmpeg_args.append({'-filter_complex': f'[0:{index.index}] aresample=async=1:ochl=\'stereo\':rematrix_maxval=0.000000dB:osr=48000[2]'})
+        self.ffmpeg_args.append({'-map': '[2]'})
+        self.ffmpeg_args.append({'-c:a': 'aac'})
 
     def stream_index_by_lang(self, codec_type: str, lang: str) -> Stream_index:
         logging.info(f'Looking for {codec_type} with language {lang}')
@@ -319,6 +342,9 @@ class Transcoder:
         if config.data.play.ffmpeg_logfile:
             env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
         return env
+
+    def segment_time(self):
+        return '5' if self.codec == 'copy' else '1'
 
 def close_session_callback(session):
     close_session(session)

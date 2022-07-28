@@ -22,10 +22,13 @@ class Transcode_setting_arguments(BaseModel):
 
     play_id: conlist(str, max_items=1)
     session: conlist(str, max_items=1)
-    supported_pixel_formats: List[str]
-    format: conlist(str, max_items=1)
-    transcode_codec: conlist(str, max_items=1)
-    transcode_pixel_format: conlist(str, max_items=1)
+    supported_video_codecs: List[str] = ['h264']
+    supported_audio_codecs: List[str] = ['acc']
+    supported_pixel_formats: List[str] = ['yuv420p']
+    format: conlist(str, max_items=1) = ['hls']
+    transcode_video_codec: conlist(str, max_items=1) = ['h264']
+    transcode_audio_codec: conlist(str, max_items=1) = ['acc']
+    transcode_pixel_format: conlist(str, max_items=1) = ['yuv420p']
 
     start_time: Optional[conlist(Union[int, float, None], max_items=1)]
     audio_lang: Optional[conlist(Optional[str], max_items=1)]
@@ -127,16 +130,22 @@ class Transcode_handler(Base_handler):
             for a in list:
                 for b in a.split(','):
                     yield b
+                    
         def element(ele):
             return ele[0] if ele and ele[0] else None
+
         if args.start_time and args.start_time[0]:
             args.start_time[0] = int(args.start_time[0])
+
         return transcoders.base.Transcode_settings(
             play_id=args.play_id[0],
             session=args.session[0],
+            supported_video_codecs=comma_list(args.supported_video_codecs),
+            supported_audio_codecs=comma_list(args.supported_video_codecs),
             supported_pixel_formats=comma_list(args.supported_pixel_formats),
             format=args.format[0],
-            transcode_codec=args.transcode_codec[0],
+            transcode_video_codec=args.transcode_video_codec[0],
+            transcode_audio_codec=args.transcode_video_codec[0],
             transcode_pixel_format=args.transcode_pixel_format[0],
             start_time=element(args.start_time),
             audio_lang=element(args.audio_lang),
