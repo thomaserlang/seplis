@@ -167,7 +167,7 @@ class Chromecast {
                 let playUrl = result[0].playServer.play_url+'/play'+
                     `?play_id=${result[0].playServer.play_id}`+
                     `&session=${guid()}}`+
-                    `&start_time=${startTimee}`+
+                    `&start_time=${startTime}`+
                     `&supported_pixel_formats=yuv420p`+
                     `&transcode_codec=h264`+
                     `&transcode_pixel_format=yuv420p`+
@@ -252,7 +252,7 @@ class Chromecast {
                 let playUrl = result[0].playServer.play_url+'/play'+
                     `?play_id=${result[0].playServer.play_id}`+
                     `&session=${guid()}}`+
-                    `&start_time=${startTimee}`+
+                    `&start_time=${startTime}`+
                     `&supported_pixel_formats=yuv420p`+
                     `&transcode_codec=h264`+
                     `&transcode_pixel_format=yuv420p`+
