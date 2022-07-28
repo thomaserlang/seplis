@@ -1,7 +1,6 @@
 # coding=UTF-8
 import json
 import logging
-import nose
 from seplis.api.testbase import Testbase
 from seplis import utils
 
@@ -164,4 +163,5 @@ class test_user_access_handler(Testbase):
         self.assertEqual(users[0]['id'], self.current_user.id)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

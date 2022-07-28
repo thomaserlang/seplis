@@ -1,5 +1,4 @@
 # coding=UTF-8
-import nose
 from seplis.api.testbase import Testbase
 from seplis.utils import json_dumps, json_loads
 from seplis.api import constants
@@ -49,4 +48,5 @@ class Test_episode_position(Testbase):
         self.assertEqual(response.code, 204, response.body)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

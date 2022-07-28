@@ -1,4 +1,3 @@
-import nose
 from unittest import TestCase
 from seplis.api.base.pagination import Pagination
 
@@ -54,4 +53,5 @@ class test_pagination(TestCase):
         self.assertTrue('first' not in links)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

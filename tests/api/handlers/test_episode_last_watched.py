@@ -1,4 +1,3 @@
-import nose
 from seplis.api.testbase import Testbase
 from seplis import utils, constants
 from seplis.api.decorators import new_session
@@ -90,4 +89,5 @@ class Test_next_to_watch(Testbase):
         self.assertEqual(data['user_watched']['position'], 0)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

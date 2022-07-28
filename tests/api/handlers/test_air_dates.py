@@ -1,14 +1,7 @@
-# coding=UTF-8
-import json
-import nose
 from seplis.api.testbase import Testbase
-from datetime import datetime, date, timedelta
-from seplis.utils import json_dumps, json_loads
-from seplis import utils
-from seplis.api.decorators import new_session
-from seplis.api.connections import database
-from seplis.config import config
+from datetime import datetime, timedelta
 from seplis.api import constants
+from seplis import utils
 
 class Test_air_dates(Testbase):
 
@@ -117,4 +110,5 @@ class Test_air_dates(Testbase):
         self.assertEqual(airdates[1]['shows'][0]['episodes'][0]['number'], 4)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

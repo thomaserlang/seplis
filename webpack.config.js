@@ -7,18 +7,18 @@ module.exports = {
     
     entry: {
         main: {
-            import: './src/seplis/web/ui/index.jsx',
+            import: './seplis/web/ui/index.jsx',
         },
     },
     devtool: "source-map",
     resolve: {
         extensions: ['.js', '.jsx', '.scss', '.css'],
         modules: [
-            './src/seplis/web/ui',
+            './seplis/web/ui',
             'node_modules'
         ],
         alias: {
-            seplis: path.resolve(__dirname, '/src/seplis/web/ui/'),
+            seplis: path.resolve(__dirname, '/seplis/web/ui/'),
         }
     },    
     module: {
@@ -54,15 +54,15 @@ module.exports = {
           chunkFilename: "[id].[contenthash].css",
         }),
         new HtmlWebpackPlugin({
-          'filename': path.resolve(__dirname, 'src/seplis/web/templates/ui/react.html'),
-          'template': './src/seplis/web/ui/index.html',
+          'filename': path.resolve(__dirname, 'seplis/web/templates/ui/react.html'),
+          'template': './seplis/web/ui/index.html',
           'chunks': ['main'],
           'publicPath': '/static/ui',
         }),
     ],
     output: {
         filename: '[name].[contenthash].js',
-        path: path.resolve(__dirname, 'src/seplis/web/static/ui'),
+        path: path.resolve(__dirname, 'seplis/web/static/ui'),
         clean: true,
     },
 }

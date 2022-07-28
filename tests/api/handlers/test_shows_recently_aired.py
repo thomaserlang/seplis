@@ -1,4 +1,3 @@
-import nose
 from seplis.api.testbase import Testbase
 from seplis import utils
 from seplis.api import constants
@@ -70,4 +69,5 @@ class Test_shows_recently_aired(Testbase):
         self.assertEqual(len(shows), 2)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

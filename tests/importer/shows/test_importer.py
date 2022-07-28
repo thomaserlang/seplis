@@ -1,6 +1,5 @@
 # coding=UTF-8
 import responses
-import nose
 import mock
 import requests.exceptions
 from unittest import TestCase
@@ -478,4 +477,5 @@ class Test__show_episode_changes(TestCase):
         })
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

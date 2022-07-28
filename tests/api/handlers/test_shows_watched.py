@@ -1,6 +1,5 @@
 # coding=UTF-8
 import json
-import nose
 import logging
 from seplis.api.testbase import Testbase
 from seplis import utils, config
@@ -105,4 +104,5 @@ class Test_shows_watched(Testbase):
         self.assertEqual(shows[1]['id'], show_ids[1])
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

@@ -1,6 +1,5 @@
 # coding=UTF-8
 import json
-import nose
 from seplis.api.testbase import Testbase
 from datetime import datetime, date, timedelta
 from seplis.utils import json_dumps, json_loads
@@ -237,4 +236,5 @@ class Test_play_servers(Testbase):
         self.assertTrue(servers[0]['play_id'])
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

@@ -1,5 +1,4 @@
 # coding=UTF-8
-import nose
 import json
 from seplis.api.testbase import Testbase
 from seplis.api import constants, models
@@ -279,4 +278,5 @@ class Test_change_password(Testbase):
             self.assertEqual(len(tokens), 1)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

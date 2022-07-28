@@ -1,6 +1,5 @@
 # coding=UTF-8
 import json
-import nose
 from seplis.api.testbase import Testbase
 from seplis import utils
 from seplis.api.decorators import new_session
@@ -50,4 +49,5 @@ class Test_handler(Testbase):
         self.assertEqual(data['audio_lang'], 'jpn')
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

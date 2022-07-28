@@ -1,6 +1,5 @@
 # coding=UTF-8
 import json
-import nose
 from io import BytesIO
 from mock import Mock, patch, MagicMock
 from seplis.api.testbase import Testbase
@@ -114,4 +113,5 @@ class test_show_image(Testbase):
         self.assertEqual(response.code, 404)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

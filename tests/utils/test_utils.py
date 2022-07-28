@@ -1,4 +1,3 @@
-import nose
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from unittest import TestCase
@@ -40,4 +39,5 @@ class test_redis_sa_model_dict(TestCase):
         })
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

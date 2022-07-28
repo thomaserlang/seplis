@@ -1,5 +1,4 @@
 # coding=UTF-8
-import nose
 from seplis.api.testbase import Testbase
 from seplis.api import constants
 from seplis import utils
@@ -50,4 +49,5 @@ class Test_episode_watched(Testbase):
         self.assertEqual(episodes[2]['user_watched']['times'], 2)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

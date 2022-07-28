@@ -1,4 +1,3 @@
-import nose
 from seplis.api.testbase import Testbase
 from seplis import utils
 from seplis.api import constants
@@ -65,4 +64,5 @@ class Test_shows_countdown(Testbase):
         self.assertEqual(shows[0]['episode']['number'], 3)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

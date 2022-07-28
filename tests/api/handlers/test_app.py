@@ -1,6 +1,5 @@
 # coding=UTF-8
 import json
-import nose
 from seplis.api.testbase import Testbase
 from seplis.utils import json_dumps
 
@@ -34,4 +33,5 @@ class test_app(Testbase):
         self.assertEqual(app2['id'], app['id'])
         
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

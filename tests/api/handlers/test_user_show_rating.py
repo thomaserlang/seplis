@@ -1,4 +1,3 @@
-import nose
 from seplis.api.testbase import Testbase
 from seplis import utils, config
 from seplis.api import constants, models
@@ -41,4 +40,5 @@ class Test_user_show_rating(Testbase):
         self.assertEqual(d['user_rating'], None)
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

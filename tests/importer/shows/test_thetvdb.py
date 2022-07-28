@@ -1,5 +1,4 @@
 # coding=UTF-8
-import nose
 import mock
 import responses
 from unittest import TestCase
@@ -176,4 +175,5 @@ class Test_thetvdb(TestCase):
         self.assertEqual(constants.IMAGE_TYPE_POSTER, image['type'])
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)

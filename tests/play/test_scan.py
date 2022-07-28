@@ -1,5 +1,4 @@
 import unittest
-import nose
 import mock
 from datetime import datetime
 from seplis.play.connections import database
@@ -379,4 +378,5 @@ class Test_series_scan(Testbase):
         self.assertEqual(info.number, 6)
     
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+    from seplis.api.testbase import run_file
+    run_file(__file__)
