@@ -77,7 +77,7 @@ class VolumeBar extends React.Component {
         if (!this.state.show) return
         return (
             <div 
-                className="volume-slider"
+                className="text-box volume-slider"
                 onMouseMove={this.onSliderMouseMove}
                 onClick={this.onSliderClick}
             >
