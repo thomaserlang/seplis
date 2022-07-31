@@ -159,7 +159,7 @@ class Play extends React.Component {
                     return
                 if (!confirm(`Play ${this.getCurrentInfo().title} on ${this.cast.getFriendlyName()}?`))
                     return
-                request(this.getPlayUrl()+'&action=cancel')
+                request(`${this.state.playServer.play_url}/close-session/${this.session}`)
                 this.cast.playMovie(this.movieId).then(() => {
                     location.href = `/movie/${this.movieId}`
                 })
