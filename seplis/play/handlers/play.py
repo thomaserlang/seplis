@@ -11,7 +11,7 @@ from tornado import web, escape
 from seplis.api import exceptions
 from seplis.play.connections import database
 from seplis.play.handlers.transcoders import dash, pipe
-from seplis.play.handlers.transcoders.base import Transcoder
+from seplis.play.handlers.transcoders.video import Transcoder
 from .transcoders import hls
 from seplis import config, utils
 from seplis.play import models
@@ -117,7 +117,7 @@ class Transcode_handler(Base_handler):
         if hasattr(self, 'player') and isinstance(self.player, pipe.Pipe_transcoder):
             self.player.close()
 
-    def parse_settings(self) -> transcoders.base.Transcode_settings:
+    def parse_settings(self) -> transcoders.video.Transcode_settings:
         try:
             args: Transcode_setting_arguments = utils.validate_schema(
                 Transcode_setting_arguments, 
@@ -137,7 +137,7 @@ class Transcode_handler(Base_handler):
         if args.start_time and args.start_time[0]:
             args.start_time[0] = int(args.start_time[0])
 
-        return transcoders.base.Transcode_settings(
+        return transcoders.video.Transcode_settings(
             play_id=args.play_id[0],
             session=args.session[0],
             supported_video_codecs=comma_list(args.supported_video_codecs),
@@ -192,24 +192,24 @@ class Source_handler(Base_handler):
 class Close_session_handler(Base_handler):
 
     async def get(self, session: str):
-        if session not in transcoders.base.sessions:
+        if session not in transcoders.video.sessions:
             self.set_status(404)
             self.write_object({'error': 'Unknown session'})
             return
-        transcoders.base.close_session(session)
+        transcoders.video.close_session(session)
 
 class Keep_alive_handler(Base_handler):
 
     def get(self, session: str):
-        if session not in transcoders.base.sessions:
+        if session not in transcoders.video.sessions:
             self.set_status(404)
             self.write_object({'error': 'Unknown session'})
             return
         loop = asyncio.get_event_loop()
-        transcoders.base.sessions[session].call_later.cancel()
-        transcoders.base.sessions[session].call_later = loop.call_later(
+        transcoders.video.sessions[session].call_later.cancel()
+        transcoders.video.sessions[session].call_later = loop.call_later(
             config.data.play.session_timeout,
-            transcoders.base.close_session_callback,
+            transcoders.video.close_session_callback,
             session
         )
         self.set_status(204)
@@ -293,7 +293,7 @@ def decode_play_id(play_id):
 
 def tornado_auto_reload():
     logging.debug('Reloading and closing sessions')
-    for session in list(transcoders.base.sessions):
-        transcoders.base.close_session(session)
+    for session in list(transcoders.video.sessions):
+        transcoders.video.close_session(session)
 import tornado.autoreload
 tornado.autoreload.add_reload_hook(tornado_auto_reload)

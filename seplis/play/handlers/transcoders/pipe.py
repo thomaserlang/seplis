@@ -6,9 +6,9 @@ from typing import Union
 
 from seplis import config
 
-from . import base
+from . import video
 
-class Pipe_transcoder(base.Transcoder):
+class Pipe_transcoder(video.Transcoder):
     
     def ffmpeg_extend_args(self) -> None:
         self.ffmpeg_args.extend([

@@ -1,8 +1,8 @@
 import asyncio, os
 from seplis import config
-from . import base
+from . import video
 
-class Dash_transcoder(base.Transcoder):
+class Dash_transcoder(video.Transcoder):
     
     def ffmpeg_extend_args(self) -> None:
         self.ffmpeg_args.extend([

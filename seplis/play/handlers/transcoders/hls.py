@@ -1,9 +1,9 @@
 import asyncio, os
 from aiofile import async_open
 from seplis import config
-from . import base
+from . import video
 
-class Hls_transcoder(base.Transcoder):
+class Hls_transcoder(video.Transcoder):
     
     def ffmpeg_extend_args(self) -> None:
         self.ffmpeg_args.extend([
