@@ -51,7 +51,7 @@ class Transcoder:
         self.settings = settings
         self.metadata = metadata
         self.video_stream = self.get_video_stream()
-        self.has_subtitle = False
+        self.burn_in_subtitles = False
         self.ffmpeg_args = None
         self.temp_folder = None
         self.codec = None
@@ -60,9 +60,9 @@ class Transcoder:
         if self.settings.session in sessions:
             return True
         self.temp_folder = self.create_temp_folder()
-        self.set_ffmpeg_args()
+        await self.set_ffmpeg_args()
         
-        args = self.to_subprocess_arguments()
+        args = self.to_subprocess_arguments(self.ffmpeg_args)
         logging.debug(f'FFmpeg start args: {" ".join(args)}')
         self.process = await asyncio.create_subprocess_exec(
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
@@ -118,7 +118,7 @@ class Transcoder:
             ),
         )
 
-    def set_ffmpeg_args(self) -> None:
+    async def set_ffmpeg_args(self) -> None:
         args = [
             {'-analyzeduration': '20000000'},
             {'-probesize': '20000000'},
@@ -133,7 +133,7 @@ class Transcoder:
         ]
 
         self.ffmpeg_args = args
-        self.set_subtitle()
+        await self.set_subtitle()
         self.set_video_codec()
         self.set_pix_format()
         self.set_audio()
@@ -144,7 +144,7 @@ class Transcoder:
         codec = codecs_to_libary[self.settings.transcode_video_codec]        
         self.codec = codec
 
-        if not self.has_subtitle and \
+        if not self.burn_in_subtitles and \
             self.video_stream['codec_name'] in self.settings.supported_video_codecs and \
             self.video_stream['pix_fmt'] in self.settings.supported_pixel_formats and \
             not self.settings.width:
@@ -257,56 +257,45 @@ class Transcoder:
         logging.warning(f'Found no {codec_type} with language: {lang}')
         logging.warning(f'Available {codec_type}: {", ".join(langs)}')
 
-    def set_subtitle(self):
-        import subprocess
-        args = self.get_subtitle_args()
-        if not args:
-            return False
-        subtitle_file = os.path.join(
-            config.data.play.temp_folder,
-            f'{self.settings.session}.ass'
-        )
-        args.append(subtitle_file)
-        process = subprocess.Popen(
-            args,
+    async def set_subtitle(self):
+        if not self.settings.subtitle_lang:
+            return
+        sub_index = self.stream_index_by_lang('subtitle', self.settings.subtitle_lang)
+        if not sub_index:
+            return
+        subtitle_file = os.path.join(config.data.play.temp_folder, self.settings.session+'.ass')
+        args = [
+            {'-i': self.metadata['format']['filename']},
+            {'-y': None},
+            {'-vn': None},
+            {'-an': None},
+            {'-c:s': 'ass'},
+            {'-map': f'0:s:{sub_index.group_index}'},
+            {subtitle_file: None},
+        ]
+        args = self.to_subprocess_arguments(args)        
+        logging.debug(f'Subtitle args: {" ".join(args)}')
+        process = await asyncio.create_subprocess_exec(
+            os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
+            *args,
             env=self.subprocess_env(),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
         )
-        r = process.wait()
-        if r != 0:
-            logging.warning('Subtitle file could not be saved!')
+        stdout, stderr = await process.communicate()
+        if process.returncode != 0:
+            logging.warning(f'Subtitle file could not be saved!: {stderr}')
             return False
         logging.info(f'Subtitle file saved to: {subtitle_file}')
         self.ffmpeg_args.insert(
             self.ffmpeg_args.index({'-y': None})+1, 
             {'-vf': f'subtitles={subtitle_file}'}
         )
-        self.has_subtitle = True
+        self.burn_in_subtitles = True
 
-    def get_subtitle_args(self) -> Dict[str, str]:
-        if not self.settings.subtitle_lang:
-            return
-        logging.debug(f'Looking for subtitle language: {self.settings.subtitle_lang}')
-        sub_index = self.stream_index_by_lang('subtitle', self.settings.subtitle_lang)
-        if not sub_index:
-            return
-        args = [
-            os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
-            '-i', self.metadata['format']['filename'],
-            '-y',
-            '-vn',
-            '-an',
-            '-c:s', 'ass',
-            '-map', f'0:s:{sub_index.group_index}'
-        ]    
-        if self.settings.start_time:
-            args.insert(1, '-ss')
-            args.insert(2, str(self.settings.start_time))
-        logging.debug(f'Subtitle args: {" ".join(args)}')
-        return args
-
-    def to_subprocess_arguments(self) -> List[str]:
+    def to_subprocess_arguments(self, args) -> List[str]:
         l = []
-        for a in self.ffmpeg_args:
+        for a in args:
             for key, value in a.items():
                 l.append(key)
                 if value:
