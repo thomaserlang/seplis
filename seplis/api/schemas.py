@@ -13,7 +13,7 @@ default_datetime = Field(
 )
 
 class Movie_externals_schema(BaseModel):
-    imdb: Optional[constr(min_length=9, max_length=9, regex='^tt[0-9]{7}')]
+    imdb: Optional[constr(min_length=9, max_length=10, regex='^tt[0-9]+')]
     themoviedb: Optional[constr(min_length=1, max_length=10)]
 
     class Config:
