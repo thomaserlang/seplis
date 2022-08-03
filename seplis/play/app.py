@@ -22,6 +22,7 @@ class Application(tornado.web.Application):
         self.ioloop = ioloop or asyncio.get_event_loop()
         urls = [
             (r'/transcode', play.Transcode_handler),
+            (r'/subtitle-file', play.Subtitle_file_handler),
             (r'/source', play.Source_handler),
             (r'/metadata', play.Metadata_handler),
             (r'/files/(.*)', play.File_handler),

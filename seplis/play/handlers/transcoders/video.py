@@ -20,7 +20,6 @@ class Transcode_settings(BaseModel):
 
     start_time: Optional[int]
     audio_lang: Optional[str]
-    subtitle_lang: Optional[str]
     audio_channels: Optional[int]
     width: Optional[int]
     audio_channels_fix: bool = True
@@ -51,7 +50,6 @@ class Transcoder:
         self.settings = settings
         self.metadata = metadata
         self.video_stream = self.get_video_stream()
-        self.burn_in_subtitles = False
         self.ffmpeg_args = None
         self.temp_folder = None
         self.codec = None
@@ -62,7 +60,7 @@ class Transcoder:
         self.temp_folder = self.create_temp_folder()
         await self.set_ffmpeg_args()
         
-        args = self.to_subprocess_arguments(self.ffmpeg_args)
+        args = to_subprocess_arguments(self.ffmpeg_args)
         logging.debug(f'FFmpeg start args: {" ".join(args)}')
         self.process = await asyncio.create_subprocess_exec(
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
@@ -133,7 +131,6 @@ class Transcoder:
         ]
 
         self.ffmpeg_args = args
-        await self.set_subtitle()
         self.set_video_codec()
         self.set_pix_format()
         self.set_audio()
@@ -144,8 +141,7 @@ class Transcoder:
         codec = codecs_to_libary[self.settings.transcode_video_codec]        
         self.codec = codec
 
-        if not self.burn_in_subtitles and \
-            self.video_stream['codec_name'] in self.settings.supported_video_codecs and \
+        if self.video_stream['codec_name'] in self.settings.supported_video_codecs and \
             self.video_stream['pix_fmt'] in self.settings.supported_pixel_formats and \
             not self.settings.width:
             codec = 'copy'
@@ -153,12 +149,26 @@ class Transcoder:
         width = self.settings.width or self.video_stream['width']
 
         self.ffmpeg_args.append({'-c:v': codec})
-        if (codec == 'lib264'):
-            self.ffmpeg_args.append({'-x264opts': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'})
-        elif (codec == 'libx265'):
-            self.ffmpeg_args.append({'-tag:v': 'hvc1'})
+        if codec == 'lib264':
+            self.ffmpeg_args.extend([
+                {'-x264opts': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'},                
+                {'-force_key_frames': 'expr:gte(t,n_forced*1)'},
+                {'-g': '24'},
+                {'-keyint_min': '24'},
+            ])
+        elif codec == 'libx265':
+            self.ffmpeg_args.extend([
+                {'-tag:v': 'hvc1'},
+                {'-x265-params': 'keyint=24:min-keyint=24'},
+            ])
+        elif codec == 'libvpx-vp9':
+            self.ffmpeg_args.extend([
+                {'-g': '24'},
+            ])
 
-        self.ffmpeg_args.append({'-map': '0:v:0'})
+        self.ffmpeg_args.extend([
+            {'-map': '0:v:0'},
+        ])
         
         if codec == 'copy':
             self.ffmpeg_args.insert(1, {'-noaccurate_seek': None})
@@ -168,7 +178,6 @@ class Transcoder:
         else:
             self.ffmpeg_args.extend([
                 {f'-r': '23.975999999999999'},
-                {'-force_key_frames': 'expr:gte(t,n_forced*1)'},
                 {'-crf': self._get_crf(width, codec)}
             ])
 
@@ -220,87 +229,14 @@ class Transcoder:
     
         self.ffmpeg_args.append({'-filter_complex': f'[0:{index.index}] aresample=async=1:ochl=\'stereo\':rematrix_maxval=0.000000dB:osr=48000[2]'})
         self.ffmpeg_args.append({'-map': '[2]'})
-        self.ffmpeg_args.append({'-c:a': 'aac'})
+
+        if self.metadata['streams'][index.index]['codec_name'] in self.settings.supported_audio_codecs:
+            self.ffmpeg_args.append({'-c:a': 'copy'})
+        else:
+            self.ffmpeg_args.append({'-c:a': self.settings.transcode_audio_codec})
 
     def stream_index_by_lang(self, codec_type: str, lang: str) -> Stream_index:
-        logging.info(f'Looking for {codec_type} with language {lang}')
-        group_index = -1
-        langs = []
-        lang = '' if lang == None else lang
-        index = None
-        if ':' in lang:
-            lang, index = lang.split(':')
-            index = int(index)
-            if index <= (len(self.metadata['streams']) - 1):
-                stream = self.metadata['streams'][index]
-                if 'tags' not in stream:
-                    index = None
-                else:
-                    l = stream['tags'].get('language') or stream['tags'].get('title')
-                    if stream['codec_type'] != codec_type or l.lower() != lang.lower():
-                        index = None
-            else:
-                index = None
-        for i, stream in enumerate(self.metadata['streams']):
-            if stream['codec_type'] == codec_type:
-                group_index += 1
-                if lang == '':
-                    return Stream_index(index=i, group_index=group_index)
-                if 'tags' in stream:
-                    l = stream['tags'].get('language') or stream['tags'].get('title')
-                    if not l:
-                        continue
-                    langs.append(l)
-                    if not index or stream['index'] == index:
-                        if l.lower() == lang.lower():
-                            return Stream_index(index=i, group_index=group_index)
-        logging.warning(f'Found no {codec_type} with language: {lang}')
-        logging.warning(f'Available {codec_type}: {", ".join(langs)}')
-
-    async def set_subtitle(self):
-        if not self.settings.subtitle_lang:
-            return
-        sub_index = self.stream_index_by_lang('subtitle', self.settings.subtitle_lang)
-        if not sub_index:
-            return
-        subtitle_file = os.path.join(config.data.play.temp_folder, self.settings.session+'.ass')
-        args = [
-            {'-i': self.metadata['format']['filename']},
-            {'-y': None},
-            {'-vn': None},
-            {'-an': None},
-            {'-c:s': 'ass'},
-            {'-map': f'0:s:{sub_index.group_index}'},
-            {subtitle_file: None},
-        ]
-        args = self.to_subprocess_arguments(args)        
-        logging.debug(f'Subtitle args: {" ".join(args)}')
-        process = await asyncio.create_subprocess_exec(
-            os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
-            *args,
-            env=self.subprocess_env(),
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, stderr = await process.communicate()
-        if process.returncode != 0:
-            logging.warning(f'Subtitle file could not be saved!: {stderr}')
-            return False
-        logging.info(f'Subtitle file saved to: {subtitle_file}')
-        self.ffmpeg_args.insert(
-            self.ffmpeg_args.index({'-y': None})+1, 
-            {'-vf': f'subtitles={subtitle_file}'}
-        )
-        self.burn_in_subtitles = True
-
-    def to_subprocess_arguments(self, args) -> List[str]:
-        l = []
-        for a in args:
-            for key, value in a.items():
-                l.append(key)
-                if value:
-                    l.append(value)
-        return l
+        return stream_index_by_lang(self.metadata, codec_type, lang)
 
     def get_video_stream(self) -> Dict:
         for stream in self.metadata['streams']:
@@ -332,8 +268,52 @@ class Transcoder:
             env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
         return env
 
-    def segment_time(self):
-        return '5' if self.codec == 'copy' else '1'
+    def segment_time(self) -> int:
+        return 5 if self.find_ffmpeg_arg('-c:v') == 'copy' else 1
+
+def to_subprocess_arguments(args) -> List[str]:
+    l = []
+    for a in args:
+        for key, value in a.items():
+            l.append(key)
+            if value:
+                l.append(value)
+    return l
+
+def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
+    logging.info(f'Looking for {codec_type} with language {lang}')
+    group_index = -1
+    langs = []
+    lang = '' if lang == None else lang
+    index = None
+    if ':' in lang:
+        lang, index = lang.split(':')
+        index = int(index)
+        if index <= (len(metadata['streams']) - 1):
+            stream = metadata['streams'][index]
+            if 'tags' not in stream:
+                index = None
+            else:
+                l = stream['tags'].get('language') or stream['tags'].get('title')
+                if stream['codec_type'] != codec_type or l.lower() != lang.lower():
+                    index = None
+        else:
+            index = None
+    for i, stream in enumerate(metadata['streams']):
+        if stream['codec_type'] == codec_type:
+            group_index += 1
+            if lang == '':
+                return Stream_index(index=i, group_index=group_index)
+            if 'tags' in stream:
+                l = stream['tags'].get('language') or stream['tags'].get('title')
+                if not l:
+                    continue
+                langs.append(l)
+                if not index or stream['index'] == index:
+                    if l.lower() == lang.lower():
+                        return Stream_index(index=i, group_index=group_index)
+    logging.warning(f'Found no {codec_type} with language: {lang}')
+    logging.warning(f'Available {codec_type}: {", ".join(langs)}')
 
 def close_session_callback(session):
     close_session(session)

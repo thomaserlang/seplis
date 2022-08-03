@@ -218,21 +218,19 @@ class Player extends React.Component {
             alert('No supported codecs')
             return
         }
-        let s = `${this.props.playServerUrl}/transcode`+
+        return `${this.props.playServerUrl}/transcode`+
             `?play_id=${this.props.playId}`+
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
-            `&subtitle_lang=${this.state.subtitle || ''}`+
             `&audio_lang=${this.state.audio || ''}`+
             `&width=${this.state.resolutionWidth || ''}`+
             `&supported_video_codecs=${String(videoCodecs)}`+
             `&transcode_video_codec=${videoCodecs[0]}`+
-            `&supported_transcode_codec=acc`+
-            `&transcode_codec=acc`+
+            `&supported_audio_codecs=aac`+
+            `&transcode_audio_codec=aac`+
             `&supported_pixel_formats=yuv420p`+
             `&transcode_pixel_format=yuv420p`+
             `&format=hls`
-        return s
     }
 
     getSupportedVideoCodecs() {
@@ -396,10 +394,23 @@ class Player extends React.Component {
     subtitleChange(lang) {
         if (this.props.onSubtitleChange)
             this.props.onSubtitleChange(lang)
-        this.changeVideoState({
-            subtitle: lang,
-            startTime: this.state.time,
+        console.log('subtitleChange')
+
+        
+        const track = document.createElement('track')
+        track.kind = 'captions'
+        track.label = 'Dansk'
+        track.srclang = 'da'
+        track.src = `${this.props.playServerUrl}/subtitle-file`+
+            `?play_id=${this.props.playId}`+
+            `&start_time=${this.state.startTime}`+
+            `&lang=dan`
+        track.addEventListener('load', () => {
+            console.log('SUB LOADED')
+            this.mode = 'showing'
+
         })
+        this.video.appendChild(track)
     }
 
     resolutionChange(width) {

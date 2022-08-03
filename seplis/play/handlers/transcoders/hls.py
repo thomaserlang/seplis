@@ -10,7 +10,7 @@ class Hls_transcoder(video.Transcoder):
             {'-f': 'hls'},
             {'-hls_playlist_type': 'event'},
             {'-hls_segment_type': 'fmp4'},
-            {'-hls_time': self.segment_time()},
+            {'-hls_time': str(self.segment_time())},
             {'-hls_list_size': '0'},
             {'-prefer_x_start': '1'},
             {self.media_path: None},

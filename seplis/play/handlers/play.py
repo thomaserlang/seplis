@@ -5,12 +5,13 @@ import mimetypes
 from typing import List, Optional, Union
 from aiofile import async_open
 import os
-from pydantic import BaseModel, conlist, constr
+from pydantic import BaseModel, conint, conlist, constr
 from sqlalchemy import select
 from tornado import web, escape
 from seplis.api import exceptions
 from seplis.play.connections import database
 from seplis.play.handlers.transcoders import dash, pipe
+from seplis.play.handlers.transcoders.subtitle import get_subtitle_file
 from seplis.play.handlers.transcoders.video import Transcoder
 from .transcoders import hls
 from seplis import config, utils
@@ -20,22 +21,28 @@ from seplis.play.handlers import transcoders
 
 class Transcode_setting_arguments(BaseModel):
 
-    play_id: conlist(str, max_items=1)
-    session: conlist(str, max_items=1)
+    play_id: conlist(str, min_items=1, max_items=1)
+    session: conlist(str, min_items=1, max_items=1)
     supported_video_codecs: List[str] = ['h264']
     supported_audio_codecs: List[str] = ['acc']
     supported_pixel_formats: List[str] = ['yuv420p']
-    format: conlist(str, max_items=1) = ['hls']
+    format: conlist(str, min_items=1, max_items=1) = ['hls']
     transcode_video_codec: conlist(str, max_items=1) = ['h264']
-    transcode_audio_codec: conlist(str, max_items=1) = ['acc']
+    transcode_audio_codec: conlist(str, max_items=1) = ['aac']
     transcode_pixel_format: conlist(str, max_items=1) = ['yuv420p']
 
-    start_time: Optional[conlist(Union[int, float, None], max_items=1)]
+    start_time: conlist(Union[int, float], max_items=1) = [0]
     audio_lang: Optional[conlist(Optional[str], max_items=1)]
-    subtitle_lang: Optional[conlist(Optional[str], max_items=1)]
     audio_channels: Optional[conlist(Optional[int], max_items=1)]
     width: Optional[conlist(Optional[Union[int, constr(max_length=0)]], max_items=1)]
     audio_channels_fix: conlist(Optional[int], max_items=1) = [True]
+
+class Subtitle_arguments(BaseModel):
+
+    play_id: conlist(str, min_items=1, max_items=1)
+    #source_index: conlist(int, max_items=1)
+    lang: conlist(constr(min_length=1), min_items=1, max_items=1)
+    start_time: conlist(Union[int, float], max_items=1) = [0]
 
 class Base_handler(web.RequestHandler):
 
@@ -76,6 +83,15 @@ class Base_handler(web.RequestHandler):
 
     def options(self, *args, **kwargs):
         self.set_status(204)
+
+    def validate_arguments(self, schema):
+        try:
+            return utils.validate_schema(
+                schema, 
+                escape.recursive_unicode(self.request.arguments)
+            )
+        except utils.Validation_exception as e:
+            raise exceptions.Validation_exception(errors=e.errors)
 
 class Transcode_handler(Base_handler):
 
@@ -118,13 +134,7 @@ class Transcode_handler(Base_handler):
             self.player.close()
 
     def parse_settings(self) -> transcoders.video.Transcode_settings:
-        try:
-            args: Transcode_setting_arguments = utils.validate_schema(
-                Transcode_setting_arguments, 
-                escape.recursive_unicode(self.request.arguments)
-            )
-        except utils.Validation_exception as e:
-            raise exceptions.Validation_exception(errors=e.errors)
+        args: Transcode_setting_arguments = self.validate_arguments(Transcode_setting_arguments)
         
         def comma_list(list):
             for a in list:
@@ -141,15 +151,14 @@ class Transcode_handler(Base_handler):
             play_id=args.play_id[0],
             session=args.session[0],
             supported_video_codecs=comma_list(args.supported_video_codecs),
-            supported_audio_codecs=comma_list(args.supported_video_codecs),
+            supported_audio_codecs=comma_list(args.supported_audio_codecs),
             supported_pixel_formats=comma_list(args.supported_pixel_formats),
             format=args.format[0],
             transcode_video_codec=args.transcode_video_codec[0],
-            transcode_audio_codec=args.transcode_video_codec[0],
+            transcode_audio_codec=args.transcode_audio_codec[0],
             transcode_pixel_format=args.transcode_pixel_format[0],
             start_time=element(args.start_time),
             audio_lang=element(args.audio_lang),
-            subtitle_lang=element(args.subtitle_lang),
             audio_channels=element(args.audio_channels),
             width=element(args.width),
             audio_channels_fix=element(args.audio_channels_fix),
@@ -188,6 +197,23 @@ class Source_handler(Base_handler):
         else:
             t = "application/octet-stream"
         self.set_header('Content-Type', t)
+
+class Subtitle_file_handler(Base_handler):
+
+    async def get(self):
+        args: Subtitle_arguments = self.validate_arguments(Subtitle_arguments)
+        metadata = await get_metadata(args.play_id[0])
+        if not metadata:
+            self.set_status(404)
+            self.write('{"error": "No movie/episode found"}')
+            return
+        sub = await get_subtitle_file(metadata=metadata[0], lang=args.lang[0], start_time=int(args.start_time[0]))
+        if not sub:
+            self.set_status(500)
+            self.write_object({'error': 'Unable retrive subtitle file'})
+            return
+        self.set_header('Content-Type', 'text/vtt')
+        self.write(sub)
 
 class Close_session_handler(Base_handler):
 
