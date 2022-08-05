@@ -40,16 +40,9 @@ class Player extends React.Component {
 
     constructor(props) {
         super(props)
-        this.onPlayPauseClick = this.playPauseClick.bind(this)
-        this.duration = parseInt(props.sources[0].duration)
+        this.duration = props.sources[0].duration
         this.pingTimer = null
         this.hls = null
-        this.onFullscreenClick = this.fullscreenClick.bind(this)
-        this.onVolumeChange = this.volumeChange.bind(this)
-
-        this.onAudioChange = this.audioChange.bind(this)
-        this.onSubtitleChange = this.subtitleChange.bind(this)
-        this.onResolutionChange = this.resolutionChange.bind(this)
 
         this.volume = 1
         this.hideControlsTimer = null
@@ -57,8 +50,6 @@ class Player extends React.Component {
         this.tracks = []
         this.trackElems = []
 
-        this.onSliderReturnCurrentTime = this.sliderReturnCurrentTime.bind(this)
-        this.onSliderNewTime = this.sliderNewTime.bind(this)
         this.setHideControlsTimer()
 
         this.state = {
@@ -73,45 +64,54 @@ class Player extends React.Component {
             resolutionWidth: null,
             loading: false,
             source: props.sources[0],
+            showBigPlayButton: false,
         }
     }
 
     componentDidMount() {      
         document.title = `${this.props.currentInfo.title} | SEPLIS`
 
-        this.video.addEventListener('timeupdate', this.timeupdateEvent.bind(this))
-        this.video.addEventListener('pause', this.pauseEvent.bind(this))
-        this.video.addEventListener('play', this.playEvent.bind(this))
-        
-        this.video.addEventListener('webkitendfullscreen', this.fullscreenchangeEvent.bind(this))
-        this.video.addEventListener('webkitenterfullscreen', this.fullscreenchangeEvent.bind(this))
-        document.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this))
-        document.addEventListener('webkitfullscreenchange', this.fullscreenchangeEvent.bind(this))
-        document.addEventListener('mozfullscreenchange', this.fullscreenchangeEvent.bind(this))
-        document.addEventListener('msfullscreenchange', this.fullscreenchangeEvent.bind(this))
-        
-        this.video.addEventListener('error', this.playError.bind(this))
-        this.video.addEventListener('waiting', this.playWaiting.bind(this))
-        this.video.addEventListener('click', this.playClick.bind(this))
-        this.video.addEventListener('touchstart', this.playClick.bind(this))
-        this.video.addEventListener('loadeddata', this.loadedEvent.bind(this))
-        this.video.volume = this.volume
-        
-        this.loadStream(this.getPlayUrl())
+        this.video.addEventListener('timeupdate', this.onTimeUpdate)
+        this.video.addEventListener('pause', this.onPause)
+        this.video.addEventListener('play', this.onPlayEvent)  
+        this.video.addEventListener('error', this.onPlayError)
+        this.video.addEventListener('waiting', this.onPlayWaiting)
+        this.video.addEventListener('click', this.onClick)
+        this.video.addEventListener('touchstart', this.onClick)
+        this.video.addEventListener('loadeddata', this.onLoaded)
+        this.video.addEventListener('webkitendfullscreen', this.onFullScreenChange)
+        this.video.addEventListener('webkitenterfullscreen', this.onFullScreenChange)      
 
-        document.onmousemove = this.mouseMove.bind(this)
-        document.ontouchmove = this.mouseMove.bind(this)
-        document.ontouchstart = this.mouseMove.bind(this)
-        document.onkeydown = this.keydown.bind(this)
-        document.onbeforeunload = this.beforeUnload.bind(this)
+        document.addEventListener('mousemove', this.onMouseMove)
+        document.addEventListener('touchmove', this.onMouseMove)
+        document.addEventListener('touchstart', this.onMouseMove)
+        document.addEventListener('keydown', this.onKeydown)
+        document.addEventListener('beforeunload', this.onBeforeUnload)
+        document.addEventListener('fullscreenchange', this.onFullScreenChange)
+        document.addEventListener('webkitfullscreenchange', this.onFullScreenChange)
+        document.addEventListener('mozfullscreenchange', this.onFullScreenChange)
+        document.addEventListener('msfullscreenchange', this.onFullScreenChange)
+
+        this.video.volume = this.volume        
+        this.loadStream(this.getPlayUrl())
     }
 
     componentWillUnmount() {
         clearTimeout(this.pingTimer)
-        clearTimeout(this.hideControlsTimer)
+        clearTimeout(this.hideControlsTimer) 
+
+        document.removeEventListener('onmousemove', this.onMouseMove)
+        document.removeEventListener('ontouchmove', this.onMouseMove)
+        document.removeEventListener('ontouchstart', this.onMouseMove)
+        document.removeEventListener('onkeydown', this.onKeydown)
+        document.removeEventListener('onbeforeunload', this.onBeforeUnload)
+        document.removeEventListener('fullscreenchange', this.onFullScreenChange)
+        document.removeEventListener('webkitfullscreenchange', this.onFullScreenChange)
+        document.removeEventListener('mozfullscreenchange', this.onFullScreenChange)
+        document.removeEventListener('msfullscreenchange', this.onFullScreenChange)
     }
 
-    loadedEvent(e) {
+    onLoaded = (e) => {
         this.setState({loading: false})
     }
 
@@ -119,13 +119,16 @@ class Player extends React.Component {
         this.setState({loading: true})
         if (this.state.subtitle)
             // Hls.js stalles in the first few seconds if we do not add a timeout for adding the subtitles
-            setTimeout(() => { this.setSubtitle(this.state.subtitle) }, 500)
+            setTimeout(() => { this.setSubtitle(this.state.subtitle) }, 100)
+        
+        this.setPingTimer()
         
         if (!Hls.isSupported()) {
             this.video.src = url
             this.video.load()
-            this.video.play()
-            this.setPingTimer()
+            this.video.play().catch(() => {
+                this.setState({showBigPlayButton: true})
+            })
             return
         }
 
@@ -145,14 +148,15 @@ class Player extends React.Component {
         })
         this.hls.loadSource(url)
         this.hls.attachMedia(this.video)
-        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {            
-            this.video.play()
-            this.setPingTimer()
+        this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            this.video.play().catch(() => {
+                this.setState({showBigPlayButton: true})
+            })
         })
-        this.hls.on(Hls.Events.ERROR, this.hlsError.bind(this))
+        this.hls.on(Hls.Events.ERROR, this.onHlsError)
     }
 
-    hlsError(event, data) {
+    onHlsError = (event, data) => {
         console.warn(data)
         if (data.fatal) {
             switch(data.type) {
@@ -179,12 +183,12 @@ class Player extends React.Component {
         this.video.play()
     }
 
-    keydown(e) {
+    onKeydown = (e) => {
         if (e.code == 'Space')
-            this.playPauseClick()
+            this.onPlayPauseClick()
     }
 
-    playClick(e) {
+    onClick = (e) => {
         e.preventDefault()
         if (this.video.paused || this.state.loading)
             return
@@ -213,11 +217,12 @@ class Player extends React.Component {
         }, timeout)
     }
 
-    mouseMove(e) {
+    onMouseMove = (e) => {
         this.setState({
             showControls: true,
+        }, () => {            
+            this.setHideControlsTimer()
         })
-        this.setHideControlsTimer()
     }
 
     getPlayUrl() {
@@ -254,7 +259,7 @@ class Player extends React.Component {
         return codecs
     }
 
-    playPauseClick() {
+    onPlayPauseClick = () => {
         if (this.video.paused) {
             this.video.play()
         } else {
@@ -262,7 +267,7 @@ class Player extends React.Component {
         }
     }
 
-    fullscreenchangeEvent() {
+    onFullScreenChange = () => {
         this.setState({
             fullscreen: !!(document.fullScreen || 
                            document.webkitIsFullScreen || 
@@ -272,21 +277,22 @@ class Player extends React.Component {
         })
     }
 
-    pauseEvent() {
+    onPause = () => {
         this.setState({
             playing: false,
             showControls: true,
         })
     }
 
-    playEvent() {
+    onPlayEvent = () => {
         this.setState({
             playing: true,
             loading: true,
+            showBigPlayButton: false,
         })
     }
 
-    playError(e) {
+    onPlayError = (e) => {
         this.setState({loading: false})
         console.warn(e.currentTarget.error)
         if (e.currentTarget.error.code == e.currentTarget.error.MEDIA_ERR_DECODE) {
@@ -294,11 +300,11 @@ class Player extends React.Component {
         }
     }
 
-    playWaiting() {
+    onPlayWaiting = () => {
         this.setState({loading: true})
     }
 
-    timeupdateEvent(e) {
+    onTimeUpdate = (e) => {
         if (!this.video.paused) {
             this.setState({loading: false})
             let time = this.video.currentTime
@@ -322,7 +328,7 @@ class Player extends React.Component {
         })
     }
 
-    beforeUnload() {
+    onBeforeUnload = () => {
         this.cancelPlayUrl()
     }
 
@@ -338,7 +344,7 @@ class Player extends React.Component {
         })
     }
 
-    fullscreenClick(event) {
+    onFullscreenClick = (event) => {
         if (!this.state.fullscreen) {
             let elem = document.getElementById('player')
             if (elem.enterFullscreen) {
@@ -384,13 +390,13 @@ class Player extends React.Component {
         )
     }
 
-    volumeChange(volume) {
+    onVolumeChange = (volume) => {
         this.volume = volume
         if (this.video)
             this.video.volume = volume
     }
 
-    audioChange(lang) {
+    onAudioChange = (lang) => {
         if (this.props.onAudioChange)
             this.props.onAudioChange(lang)
         this.changeVideoState({
@@ -399,7 +405,7 @@ class Player extends React.Component {
         })
     }
 
-    subtitleChange(lang) {
+    onSubtitleChange = (lang) => {
         if (this.props.onSubtitleChange)
             this.props.onSubtitleChange(lang)
         this.setState({subtitle: lang}, () => {
@@ -408,7 +414,6 @@ class Player extends React.Component {
     }
 
     setSubtitle(lang) {
-        console.log(lang)
         for (let i = this.tracks.length - 1; i >= 0; i--) {
             this.tracks[i].mode = 'disabled'
             this.trackElems[i].remove()
@@ -439,7 +444,7 @@ class Player extends React.Component {
         }   
     }
 
-    resolutionChange(width) {
+    onResolutionChange = (width) => {
         if (this.props.onResolutionChange)
             this.props.onResolutionChange(width)
         this.changeVideoState({
@@ -448,7 +453,7 @@ class Player extends React.Component {
         })
     }
 
-    sliderNewTime(newTime) {
+    onSliderNewTime = (newTime) => {
         this.video.pause()
         this.setHideControlsTimer()
         this.changeVideoState({
@@ -457,7 +462,7 @@ class Player extends React.Component {
         })
     }
 
-    sliderReturnCurrentTime() {
+    onSliderReturnCurrentTime = () => {
         return this.state.time
     }
 
@@ -559,6 +564,13 @@ class Player extends React.Component {
         return <Loader hcenter={true} />
     }
 
+    renderBigPlayButton() {
+        if ((this.state.showBigPlayButton) && !this.state.loading)
+            return <big-play-button onClick={this.onPlayPauseClick}>
+                <i className="fa fa-play" />
+            </big-play-button>
+    }
+
     render() {
         return (
             <div id="player">  
@@ -574,6 +586,7 @@ class Player extends React.Component {
                     {this.renderControlsTop()}
                     {this.renderControlsBottom()}
                     {this.renderLoading()}
+                    {this.renderBigPlayButton()}
                 </div>
             </div>
         )
