@@ -1,10 +1,9 @@
 import React from 'react'
 import ClassNames from 'classnames'
 import PropTypes from 'prop-types'
-import {getVideoStream} from 'seplis/utils'
 
 const propTypes = {
-    metadata: PropTypes.object,
+    sources: PropTypes.array,
     onResolutionChange: PropTypes.func,
     bottom: PropTypes.bool,
 }
@@ -14,7 +13,7 @@ class Resolution extends React.Component {
     constructor(props) {
         super(props)
 
-        this.originalWidth = getVideoStream(this.props.metadata.streams).width
+        this.originalWidth = this.props.sources[0].width
         this.state = {
             show: false,
             width: this.originalWidth,

@@ -23,7 +23,7 @@ class PlayEpisode extends React.Component {
             nextEpisode: null,
             audio_lang: null,
             subtitle_lang: null,
-            metadata: null,
+            sources: null,
             startTime: 0,
         }        
         this.onAudioChange = this.audioChange.bind(this)
@@ -46,7 +46,7 @@ class PlayEpisode extends React.Component {
         this.getStartTime()
     }
  
-    timeUpdate(time) {
+    timeUpdate(time, duration) {
         time = Math.floor(time)
         if (this.state.startTime == time)
             return
@@ -57,7 +57,6 @@ class PlayEpisode extends React.Component {
             return
         if ((time % 10) != 0) 
             return
-        let duration = parseInt(this.state.metadata['format']['duration'])
         let watched = (((time / 100) * 10) > (duration-time))
         if (watched) {
             if (!this.markedAsWatched) {
@@ -84,7 +83,7 @@ class PlayEpisode extends React.Component {
             this.setState({
                 loadingPlayServers: false,
                 playServer: obj.playServer,
-                metadata: obj.metadata[0],
+                sources: obj.sources,
             })
         }).catch((error) => {
             this.setState({
@@ -308,7 +307,7 @@ class PlayEpisode extends React.Component {
         return <Player 
             playServerUrl={`${this.state.playServer.play_url}`}
             playId={this.state.playServer.play_id}
-            metadata={this.state.metadata}
+            sources={this.state.sources}
             info={this.getInfo()}
             nextInfo={this.getPlayNextInfo()}
             backToInfo={this.getBackToInfo()}

@@ -12,7 +12,7 @@ from seplis.api import exceptions
 from seplis.play.connections import database
 from seplis.play.handlers.transcoders import dash, pipe
 from seplis.play.handlers.transcoders.subtitle import get_subtitle_file
-from seplis.play.handlers.transcoders.video import Transcoder
+from seplis.play.handlers.transcoders.video import Transcoder, get_video_stream
 from .transcoders import hls
 from seplis import config, utils
 from seplis.play import models
@@ -197,6 +197,45 @@ class Source_handler(Base_handler):
         else:
             t = "application/octet-stream"
         self.set_header('Content-Type', t)
+
+class Sources_handler(Base_handler):
+
+    async def get(self):
+        sources = await get_metadata(self.get_argument('play_id'))
+        if not sources:
+            self.set_status(404)
+            self.write('{"error": "No movie/episode found"}')
+            return
+        data = []
+        for source in sources:
+            video = get_video_stream(source)
+            d = {
+                'width': video['width'],
+                'height': video['height'],
+                'codec': video['codec_name'],
+                'duration': float(source['format']['duration']),
+                'audio': [],
+                'subtitles': [],
+            }
+            data.append(d)
+            for stream in source['streams']:
+                if 'tags' not in stream:
+                    continue
+                title = stream['tags'].get('title')
+                lang = stream['tags'].get('language')
+                if not title and not lang:
+                    continue
+                s = {
+                    'title': title or lang,
+                    'language': lang or title,
+                    'index': stream['index']
+                }
+                if stream['codec_type'] == 'audio':
+                    d['audio'].append(s)
+                elif stream['codec_type'] == 'subtitle':
+                    if stream['codec_name'] not in ('dvd_subtitle', 'hdmv_pgs_subtitle'):
+                        d['subtitles'].append(s)
+        self.write_object(sorted(data, key=lambda x: x['width']))
 
 class Subtitle_file_handler(Base_handler):
 

@@ -3,7 +3,7 @@ import ClassNames from 'classnames'
 import PropTypes from 'prop-types'
 
 const propTypes = {
-    metadata: PropTypes.object,
+    source: PropTypes.object,
     onAudioChange: PropTypes.func,
     onSubtitleChange: PropTypes.func,
     bottom: PropTypes.bool,
@@ -16,10 +16,6 @@ class AudioSubBar extends React.Component {
         this.state = {
             show: false,
         }
-        this.audio = []
-        this.subtitles = []
-        this.parseMetadata()
-
         this.onClick = this.click.bind(this)
 
         this.onAudioClick = this.audioClick.bind(this)
@@ -40,36 +36,6 @@ class AudioSubBar extends React.Component {
             return
         if (!this.icon.contains(e.target))
             this.setState({show: false})
-    }
-
-    parseMetadata() {
-        for (let stream of this.props.metadata.streams) {
-            if (!('tags' in stream))
-                continue
-            let lang = null
-            if ('title' in stream.tags)
-                lang = stream.tags.title
-            if ('language' in stream.tags)
-                lang =  stream.tags.language
-            if (!lang)
-                continue
-            let s = {
-                language: lang,
-                title: stream.tags.title || lang,
-                index: stream.index,
-            }
-            if (stream.codec_type == 'subtitle') { 
-                let notSupported = [
-                    'dvd_subtitle',
-                    'hdmv_pgs_subtitle',
-                ]
-                if (notSupported.includes(stream.codec_name))
-                    continue
-                this.subtitles.push(s)
-            } else if (stream.codec_type == 'audio') {
-                this.audio.push(s)
-            }
-        }
     }
 
     click(event) {
@@ -95,13 +61,13 @@ class AudioSubBar extends React.Component {
     }
 
     renderSubtitles() {
-        if (this.subtitles.length == 0)
+        if (this.props.source.subtitles.length == 0)
             return
         return (
             <span>
                 <p className="title">Subtitles</p>
                 <p><a href="#" onClick={this.onSubtitleClick} data-data="">None</a></p>
-                {this.subtitles.map(l => (
+                {this.props.source.subtitles.map(l => (
                     <p key={l.index}>
                         <a 
                             href="#" 
@@ -117,12 +83,12 @@ class AudioSubBar extends React.Component {
     }
 
     renderAudio() {
-        if (this.audio.length <= 1)
+        if (this.props.source.audio.length <= 1)
             return
         return (
             <span>
                 <p className="title">Audio</p>
-                {this.audio.map(l => (
+                {this.props.source.audio.map(l => (
                     <p key={l.index}>                        
                         <a 
                             href="#" 
@@ -156,7 +122,7 @@ class AudioSubBar extends React.Component {
     }
 
     render() {
-        if ((this.audio.length <= 1) && (this.subtitles.length == 0))
+        if ((this.props.source.audio.length <= 1) && (this.props.source.subtitles.length == 0))
             return null
         return (
             <span

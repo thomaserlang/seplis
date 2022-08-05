@@ -230,20 +230,13 @@ class Transcoder:
         self.ffmpeg_args.append({'-filter_complex': f'[0:{index.index}] aresample=async=1:ochl=\'stereo\':rematrix_maxval=0.000000dB:osr=48000[2]'})
         self.ffmpeg_args.append({'-map': '[2]'})
 
-        if self.metadata['streams'][index.index]['codec_name'] in self.settings.supported_audio_codecs:
-            self.ffmpeg_args.append({'-c:a': 'copy'})
-        else:
-            self.ffmpeg_args.append({'-c:a': self.settings.transcode_audio_codec})
+        self.ffmpeg_args.append({'-c:a': self.settings.transcode_audio_codec})
 
     def stream_index_by_lang(self, codec_type: str, lang: str) -> Stream_index:
         return stream_index_by_lang(self.metadata, codec_type, lang)
 
     def get_video_stream(self) -> Dict:
-        for stream in self.metadata['streams']:
-            if stream['codec_type'] == 'video':
-                return stream        
-        if not stream:
-            raise Exception('No video stream')
+        return get_video_stream(self.metadata)
 
     def find_ffmpeg_arg(self, key):
         for a in self.ffmpeg_args:
@@ -279,6 +272,13 @@ def to_subprocess_arguments(args) -> List[str]:
             if value:
                 l.append(value)
     return l
+
+def get_video_stream(metadata: Dict) -> Dict:
+    for stream in metadata['streams']:
+        if stream['codec_type'] == 'video':
+            return stream
+    if not stream:
+        raise Exception('No video stream')
 
 def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
     logging.info(f'Looking for {codec_type} with language {lang}')

@@ -17,7 +17,7 @@ const propTypes = {
     playId: PropTypes.string,
     session: PropTypes.string,
     startTime: PropTypes.number,
-    metadata: PropTypes.object,
+    sources: PropTypes.array,
     info: PropTypes.object,
     nextInfo: PropTypes.object,
     backToInfo: PropTypes.object,
@@ -41,7 +41,7 @@ class Player extends React.Component {
     constructor(props) {
         super(props)
         this.onPlayPauseClick = this.playPauseClick.bind(this)
-        this.duration = parseInt(props.metadata.format.duration)
+        this.duration = parseInt(props.sources[0].duration)
         this.pingTimer = null
         this.hls = null
         this.onFullscreenClick = this.fullscreenClick.bind(this)
@@ -53,6 +53,9 @@ class Player extends React.Component {
 
         this.volume = 1
         this.hideControlsTimer = null
+
+        this.tracks = []
+        this.trackElems = []
 
         this.onSliderReturnCurrentTime = this.sliderReturnCurrentTime.bind(this)
         this.onSliderNewTime = this.sliderNewTime.bind(this)
@@ -69,6 +72,7 @@ class Player extends React.Component {
             subtitle: this.props.subtitle_lang,
             resolutionWidth: null,
             loading: false,
+            source: props.sources[0],
         }
     }
 
@@ -79,10 +83,10 @@ class Player extends React.Component {
         this.video.addEventListener('pause', this.pauseEvent.bind(this))
         this.video.addEventListener('play', this.playEvent.bind(this))
         
-        document.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this))
-        document.addEventListener('webkitfullscreenchange', this.fullscreenchangeEvent.bind(this))
         this.video.addEventListener('webkitendfullscreen', this.fullscreenchangeEvent.bind(this))
         this.video.addEventListener('webkitenterfullscreen', this.fullscreenchangeEvent.bind(this))
+        document.addEventListener('fullscreenchange', this.fullscreenchangeEvent.bind(this))
+        document.addEventListener('webkitfullscreenchange', this.fullscreenchangeEvent.bind(this))
         document.addEventListener('mozfullscreenchange', this.fullscreenchangeEvent.bind(this))
         document.addEventListener('msfullscreenchange', this.fullscreenchangeEvent.bind(this))
         
@@ -97,7 +101,8 @@ class Player extends React.Component {
 
         document.onmousemove = this.mouseMove.bind(this)
         document.ontouchmove = this.mouseMove.bind(this)
-        document.onkeypress = this.keypress.bind(this)
+        document.ontouchstart = this.mouseMove.bind(this)
+        document.onkeydown = this.keydown.bind(this)
         document.onbeforeunload = this.beforeUnload.bind(this)
     }
 
@@ -112,6 +117,9 @@ class Player extends React.Component {
 
     loadStream(url) {
         this.setState({loading: true})
+        if (this.state.subtitle)
+            // Hls.js stalles in the first few seconds if we do not add a timeout for adding the subtitles
+            setTimeout(() => { this.setSubtitle(this.state.subtitle) }, 500)
         
         if (!Hls.isSupported()) {
             this.video.src = url
@@ -171,7 +179,7 @@ class Player extends React.Component {
         this.video.play()
     }
 
-    keypress(e) {
+    keydown(e) {
         if (e.code == 'Space')
             this.playPauseClick()
     }
@@ -301,7 +309,7 @@ class Player extends React.Component {
                 playing: true,
             }, () => {
                 if (this.props.onTimeUpdate)
-                    this.props.onTimeUpdate(this.state.time)
+                    this.props.onTimeUpdate(this.state.time, this.state.source.duration)
             })
         }
     }
@@ -394,23 +402,41 @@ class Player extends React.Component {
     subtitleChange(lang) {
         if (this.props.onSubtitleChange)
             this.props.onSubtitleChange(lang)
-        console.log('subtitleChange')
+        this.setState({subtitle: lang}, () => {
+            this.setSubtitle(lang)
+        })
+    }
 
-        
+    setSubtitle(lang) {
+        console.log(lang)
+        for (let i = this.tracks.length - 1; i >= 0; i--) {
+            this.tracks[i].mode = 'disabled'
+            this.trackElems[i].remove()
+            this.trackElems.pop()
+            this.tracks.pop()
+        }
+
         const track = document.createElement('track')
-        track.kind = 'captions'
-        track.label = 'Dansk'
-        track.srclang = 'da'
+        track.kind = 'subtitles'
         track.src = `${this.props.playServerUrl}/subtitle-file`+
             `?play_id=${this.props.playId}`+
             `&start_time=${this.state.startTime}`+
-            `&lang=dan`
-        track.addEventListener('load', () => {
-            console.log('SUB LOADED')
-            this.mode = 'showing'
-
-        })
+            `&lang=${lang}`
+        track.track.mode = 'hidden'
+        track.track.addEventListener('cuechange', this.onCueChange)
+        track.addEventListener('load', (e) => {
+            e.target.track.mode = 'showing'
+        }, false)
+        this.tracks.push(track.track)
+        this.trackElems.push(track)
         this.video.appendChild(track)
+    }
+
+    onCueChange = (e) => {
+        const cues = e.currentTarget.cues;
+        for (let i = 0; i < cues.length; i++) {
+            cues[i].line = -3
+        }   
     }
 
     resolutionChange(width) {
@@ -458,7 +484,7 @@ class Player extends React.Component {
                 <div className="control-spacer" />
                 <div className="control-text control-text-title control-text-pointer">
                     <Resolution 
-                        metadata={this.props.metadata} 
+                        sources={this.props.sources} 
                         onResolutionChange={this.onResolutionChange}
                     />
                 </div>
@@ -467,7 +493,7 @@ class Player extends React.Component {
                 </div>
                 <div className="control">
                     <AudioSubBar 
-                        metadata={this.props.metadata} 
+                        source={this.state.source} 
                         onAudioChange={this.onAudioChange}
                         onSubtitleChange={this.onSubtitleChange}
                     />
@@ -542,6 +568,7 @@ class Player extends React.Component {
                         preload="none" 
                         autoPlay={false}
                         controls={false}
+                        crossOrigin="anonymous"
                         ref={(ref) => this.video = ref}
                     />
                     {this.renderControlsTop()}
@@ -573,17 +600,17 @@ export function getPlayServer(url) {
             }
             for (var s of playServers) {
                 i += 1
-                request(s.play_url+'/metadata', {
+                request(s.play_url+'/sources', {
                     query: {
                         play_id: s.play_id,
                     }
-                }).done(metadata => {
+                }).done(sources => {
                     if (selected) 
                         return
                     selected = true
                     resolve({
                         playServer: s, 
-                        metadata: metadata,
+                        sources: sources,
                     })
                 }).always(() => {
                     i -= 1
