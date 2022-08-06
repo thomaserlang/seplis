@@ -22,6 +22,7 @@ class Transcode_settings(BaseModel):
     audio_lang: Optional[str]
     audio_channels: Optional[int]
     width: Optional[int]
+    client_width: Optional[int]
     audio_channels_fix: bool = True
 
 class Session_model(BaseModel):
@@ -69,19 +70,20 @@ class Transcoder:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
+        self.register_session()
         
         logging.debug('Waiting for media')
         try:
             ready = await asyncio.wait_for(self.wait_for_media(), timeout=60)
         except asyncio.TimeoutError:
             logging.error('Failed to create media, gave up waiting')
-            self.process.terminate()
+            try:
+                self.process.terminate()
+            except:
+                pass
             return False
 
-        if ready:
-            self.register_session()
-            return True
-        return False
+        return ready
 
     def ffmpeg_extend_args(self) -> None:
         pass
@@ -131,13 +133,12 @@ class Transcoder:
         ]
 
         self.ffmpeg_args = args
-        self.set_video_codec()
+        self.set_video()
         self.set_pix_format()
         self.set_audio()
-        self.set_scale()
         self.ffmpeg_extend_args()
 
-    def set_video_codec(self):
+    def set_video(self):
         codec = codecs_to_libary[self.settings.transcode_video_codec]        
         self.codec = codec
 
@@ -145,8 +146,6 @@ class Transcoder:
             self.video_stream['pix_fmt'] in self.settings.supported_pixel_formats and \
             not self.settings.width:
             codec = 'copy'
-
-        width = self.settings.width or self.video_stream['width']
 
         self.ffmpeg_args.append({'-c:v': codec})
         if codec == 'lib264':
@@ -172,12 +171,17 @@ class Transcoder:
         
         if codec == 'copy':
             self.ffmpeg_args.insert(1, {'-noaccurate_seek': None})
-            self.ffmpeg_args.extend([
-                {'-fps_mode': 'cfr'},
-            ])
         else:
+            width = self.settings.width or self.settings.client_width
+            if not width or width > self.video_stream['width']:
+                width = self.video_stream['width']
+            if width < self.video_stream['width']:
+                # keeps the aspect ratio for the height
+                self.ffmpeg_args.append({'-filter:v': f'scale=width={width}:height=-2'})
+                
             self.ffmpeg_args.extend([
                 {f'-r': '23.975999999999999'},
+                {'-fps_mode': 'auto'},
                 {'-crf': self._get_crf(width, codec)}
             ])
 
@@ -212,11 +216,6 @@ class Transcoder:
             self.ffmpeg_args.append({'-pix_fmt': self.video_stream['pix_fmt']})
         else:
             self.ffmpeg_args.append({'-pix_fmt': self.settings.transcode_pixel_format})
-
-    def set_scale(self):    
-        if self.settings.width and int(self.settings.width) < self.video_stream['width']:
-            # keeps the aspect ratio for the height
-            self.ffmpeg_args.append({'-filter:v': f'scale=width={self.settings.width}:height=-2'})
 
     def set_audio(self):
         index = self.stream_index_by_lang('audio', self.settings.audio_lang)

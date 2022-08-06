@@ -9,13 +9,12 @@ import Resolution from './Resolution.jsx'
 import Slider from './Slider.jsx'
 import ChromecastIcon from './ChromecastIcon'
 import Loader from 'seplis/components/Loader'
-import {secondsToTime} from 'utils'
+import {secondsToTime, guid} from 'seplis/utils'
 import './Player.scss'
 
 const propTypes = {
     playServerUrl: PropTypes.string,
     playId: PropTypes.string,
-    session: PropTypes.string,
     startTime: PropTypes.number,
     sources: PropTypes.array,
     info: PropTypes.object,
@@ -56,7 +55,6 @@ class Player extends React.Component {
             playing: false,
             time: this.props.startTime,
             startTime: this.props.startTime,
-            session: props.session,
             fullscreen: false,
             showControls: true,
             audio: this.props.audio_lang,
@@ -65,6 +63,7 @@ class Player extends React.Component {
             loading: false,
             source: this.pickSource(),
             showBigPlayButton: false,
+            session: guid(),
         }
     }
 
@@ -207,7 +206,7 @@ class Player extends React.Component {
     setPingTimer() {
         clearTimeout(this.pingTimer)
         this.pingTimer = setTimeout(() => {
-            request(`${this.props.playServerUrl}/keep-alive/${this.props.session}`).catch(e => {
+            request(`${this.props.playServerUrl}/keep-alive/${this.state.session}`).catch(e => {
                 // if (e.status == 404)
                 //    clearTimeout(this.pingTimer)
             })
@@ -240,15 +239,17 @@ class Player extends React.Component {
             alert('No supported codecs')
             return
         }
+        console.log(this.state.source)
         return `${this.props.playServerUrl}/transcode`+
             `?play_id=${this.props.playId}`+
             `&source_index=${this.state.source.index}`+
-            `&session=${this.props.session}`+
+            `&session=${this.state.session}`+
             `&start_time=${this.state.startTime}`+
             `&audio_lang=${this.state.audio || ''}`+
             `&width=${this.state.resolutionWidth || ''}`+
             `&supported_video_codecs=${String(videoCodecs)}`+
             `&transcode_video_codec=${videoCodecs[0]}`+
+            `&client_width=${screen.width}`+
             `&supported_audio_codecs=aac`+
             `&transcode_audio_codec=aac`+
             `&supported_pixel_formats=yuv420p`+
@@ -333,7 +334,8 @@ class Player extends React.Component {
     changeVideoState(state) {
         state['loading'] = true
         this.setState(state)
-        this.cancelPlayUrl().then(() => {
+        this.cancelPlayUrl()
+        this.setState({session: guid()}, () => {
             this.loadStream(this.getPlayUrl())
         })
     }
@@ -345,7 +347,7 @@ class Player extends React.Component {
     cancelPlayUrl() {
         return new Promise((resolve, reject) => {
             request(
-                `${this.props.playServerUrl}/close-session/${this.props.session}`
+                `${this.props.playServerUrl}/close-session/${this.state.session}`
             ).done(() => {
                 resolve()
             }).fail(e => {

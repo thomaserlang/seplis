@@ -24,7 +24,6 @@ class Play extends React.Component {
         this.onTimeUpdate = this.timeUpdate.bind(this)
         this.movieId = this.props.match.params.movieId
         this.number = this.props.match.params.number
-        this.session = guid()
         this.lastPos = 0
         this.cast = null
         this.markedAsWatched = false
@@ -158,7 +157,6 @@ class Play extends React.Component {
                     return
                 if (!confirm(`Play ${this.getCurrentInfo().title} on ${this.cast.getFriendlyName()}?`))
                     return
-                request(`${this.state.playServer.play_url}/close-session/${this.session}`)
                 this.cast.playMovie(this.movieId).then(() => {
                     location.href = `/movie/${this.movieId}`
                 })
@@ -171,12 +169,6 @@ class Play extends React.Component {
             return    
         this.cast = new Chromecast()
         this.cast.load(this.initCast.bind(this))
-    }    
- 
-    getPlayUrl() {
-        return `${this.state.playServer.play_url}/play`+
-            `?play_id=${this.state.playServer.play_id}`+
-            `&session=${this.session}`
     }
 
     renderPlayServerErrorMessage() {
@@ -228,7 +220,6 @@ class Play extends React.Component {
             subtitle_lang={this.state.subtitle_lang}
             onTimeUpdate={this.onTimeUpdate}
             startTime={this.state.startTime}
-            session={this.session}
         />
     }
 }

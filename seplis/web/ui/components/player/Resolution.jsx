@@ -59,11 +59,11 @@ class Resolution extends React.Component {
 
     onResolutionClick = (event) => {
         event.preventDefault()
-        const source = this.findSource(parseInt(event.target.getAttribute('data-source-index')))
+        const source = this.findSource(parseInt(event.currentTarget.getAttribute('data-source-index')))
         this.setState(
             {
                 show: false, 
-                width: parseInt(event.target.getAttribute('data-width')),
+                width: parseInt(event.currentTarget.getAttribute('data-width')),
                 source: source,
             },
             () => {
@@ -114,7 +114,7 @@ class Resolution extends React.Component {
                     return <p 
                         key={`source-${source['index']}`}
                         data-source-index={source['index']}
-                        data-width={source['width']}
+                        data-width="0"
                         onClick={this.onResolutionClick}
                     >
                         {(this.state.source.index == source['index']) && (this.state.width == this.state.source.width)?<b>{text}</b>:text}
