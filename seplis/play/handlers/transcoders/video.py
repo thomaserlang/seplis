@@ -170,7 +170,7 @@ class Transcoder:
         ])
         
         if codec == 'copy':
-            self.ffmpeg_args.insert(1, {'-noaccurate_seek': None})
+            self.ffmpeg_args.insert(0, {'-noaccurate_seek': None})
         else:
             width = self.settings.width or self.settings.client_width
             if not width or width > self.video_stream['width']:

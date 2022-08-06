@@ -207,8 +207,10 @@ class Player extends React.Component {
         clearTimeout(this.pingTimer)
         this.pingTimer = setTimeout(() => {
             request(`${this.props.playServerUrl}/keep-alive/${this.state.session}`).catch(e => {
-                // if (e.status == 404)
-                //    clearTimeout(this.pingTimer)
+                if (e.status == 404) {
+                    clearTimeout(this.pingTimer)
+                    this.setState({session: null})
+                }
             })
             this.setPingTimer()
         }, 4000)
@@ -269,11 +271,15 @@ class Player extends React.Component {
         return codecs
     }
 
-    onPlayPauseClick = () => {
-        if (this.video.paused) {
-            this.video.play()
-        } else {
-            this.video.pause()
+    onPlayPauseClick = () => {        
+        if (!this.state.session)
+            this.changeVideoState({})
+        else {
+            if (this.video.paused) {
+                this.video.play()
+            } else {
+                this.video.pause()
+            }
         }
     }
 
@@ -344,6 +350,8 @@ class Player extends React.Component {
     }
 
     cancelPlayUrl() {
+        if (!this.state.session)
+            return
         return new Promise((resolve, reject) => {
             request(
                 `${this.props.playServerUrl}/close-session/${this.state.session}`
