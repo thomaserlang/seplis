@@ -16,12 +16,14 @@ from seplis.play.handlers.transcoders.video import Transcoder, get_video_stream
 from .transcoders import hls
 from seplis import config, utils
 from seplis.play import models
-
 from seplis.play.handlers import transcoders
 
-class Transcode_setting_arguments(BaseModel):
 
+class Source_arguments(BaseModel):
     play_id: conlist(str, min_items=1, max_items=1)
+    source_index: conlist(int, max_items=1) = [0]    
+
+class Transcode_setting_arguments(Source_arguments):
     session: conlist(str, min_items=1, max_items=1)
     supported_video_codecs: List[str] = ['h264']
     supported_audio_codecs: List[str] = ['acc']
@@ -37,10 +39,8 @@ class Transcode_setting_arguments(BaseModel):
     width: Optional[conlist(Optional[Union[int, constr(max_length=0)]], max_items=1)]
     audio_channels_fix: conlist(Optional[int], max_items=1) = [True]
 
-class Subtitle_arguments(BaseModel):
+class Subtitle_arguments(Source_arguments):
 
-    play_id: conlist(str, min_items=1, max_items=1)
-    #source_index: conlist(int, max_items=1)
     lang: conlist(constr(min_length=1), min_items=1, max_items=1)
     start_time: conlist(Union[int, float], max_items=1) = [0]
 
@@ -96,7 +96,8 @@ class Base_handler(web.RequestHandler):
 class Transcode_handler(Base_handler):
 
     async def get(self):
-        settings = self.parse_settings()
+        args: Transcode_setting_arguments = self.validate_arguments(Transcode_setting_arguments)
+        settings = self.parse_settings(args)
         metadata = await get_metadata(settings.play_id)
         if not metadata:
             self.set_status(404)
@@ -113,7 +114,7 @@ class Transcode_handler(Base_handler):
             cls = pipe.Pipe_transcoder
         else:
             raise Exception('Unknown player')
-        self.player: Transcoder = cls(settings=settings, metadata=metadata[0])
+        self.player: Transcoder = cls(settings=settings, metadata=metadata[args.source_index[0]])
             
         ready = await self.player.start(self.write_data)
         if ready == False:
@@ -133,9 +134,7 @@ class Transcode_handler(Base_handler):
         if hasattr(self, 'player') and isinstance(self.player, pipe.Pipe_transcoder):
             self.player.close()
 
-    def parse_settings(self) -> transcoders.video.Transcode_settings:
-        args: Transcode_setting_arguments = self.validate_arguments(Transcode_setting_arguments)
-        
+    def parse_settings(self, args: Transcode_setting_arguments) -> transcoders.video.Transcode_settings:        
         def comma_list(list):
             for a in list:
                 for b in a.split(','):
@@ -201,13 +200,14 @@ class Source_handler(Base_handler):
 class Sources_handler(Base_handler):
 
     async def get(self):
-        sources = await get_metadata(self.get_argument('play_id'))
+        args: Source_arguments = self.validate_arguments(Source_arguments)
+        sources = await get_metadata(args.play_id[0])
         if not sources:
             self.set_status(404)
             self.write('{"error": "No movie/episode found"}')
             return
         data = []
-        for source in sources:
+        for i, source in enumerate(sources):
             video = get_video_stream(source)
             d = {
                 'width': video['width'],
@@ -216,6 +216,7 @@ class Sources_handler(Base_handler):
                 'duration': float(source['format']['duration']),
                 'audio': [],
                 'subtitles': [],
+                'index': i
             }
             data.append(d)
             for stream in source['streams']:
@@ -228,7 +229,8 @@ class Sources_handler(Base_handler):
                 s = {
                     'title': title or lang,
                     'language': lang or title,
-                    'index': stream['index']
+                    'index': stream['index'],
+                    'codec': stream.get('codec_name'),
                 }
                 if stream['codec_type'] == 'audio':
                     d['audio'].append(s)
@@ -246,7 +248,7 @@ class Subtitle_file_handler(Base_handler):
             self.set_status(404)
             self.write('{"error": "No movie/episode found"}')
             return
-        sub = await get_subtitle_file(metadata=metadata[0], lang=args.lang[0], start_time=int(args.start_time[0]))
+        sub = await get_subtitle_file(metadata=metadata[args.source_index[0]], lang=args.lang[0], start_time=int(args.start_time[0]))
         if not sub:
             self.set_status(500)
             self.write_object({'error': 'Unable retrive subtitle file'})
@@ -298,25 +300,6 @@ class File_handler(Base_handler):
 
     def should_return_304(self):
         return False
-
-class Metadata_handler(web.RequestHandler):
-
-    async def get(self):
-        metadata = await get_metadata(self.get_argument('play_id'))
-        if not metadata:
-            self.set_status(404)
-            self.write('{"error": "No movie/episode found"}')
-            return
-        for m in metadata:
-            m['format'].pop('filename')
-        self.write(utils.json_dumps(metadata))
-
-    def options(self, *args, **kwargs):
-        self.set_status(204)
-
-    def set_default_headers(self):
-        set_header(self)
-        self.set_header('Content-Type', 'application/json')
 
 def set_header(self):
     self.set_header('Cache-Control', 'no-cache, must-revalidate')

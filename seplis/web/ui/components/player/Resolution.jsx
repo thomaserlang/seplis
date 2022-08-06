@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 
 const propTypes = {
     sources: PropTypes.array,
+    selectedSource: PropTypes.object,
     onResolutionChange: PropTypes.func,
     bottom: PropTypes.bool,
 }
@@ -13,26 +14,28 @@ class Resolution extends React.Component {
     constructor(props) {
         super(props)
 
-        this.originalWidth = this.props.sources[0].width
+        this.sourceWidths = []
+        this.topWidth = 0
+        for (const source of this.props.sources) {
+            this.sourceWidths.push(source.width)
+            this.topWidth = source.width
+        }
         this.state = {
             show: false,
-            width: this.originalWidth,
+            width: this.props.selectedSource.width,
+            source: this.props.selectedSource,
         }
         
         this.resolutions = {
             7680: '8K',
             3840: '4K',
+            2560: '1440p',
             1920: '1080p',
             1280: '720p',
             852: '480p',
             480: '360p',
             352: '144p',
         }
-
-        this.onClick = this.click.bind(this)
-
-        this.onResolutionClick = this.resolutionClick.bind(this)
-        this.onDocumentClick = this.documentClick.bind(this)
     }
 
     componentDidMount() {    
@@ -43,29 +46,38 @@ class Resolution extends React.Component {
         document.removeEventListener('click', this.onDocumentClick)
     }
     
-    documentClick(e) {
+    onDocumentClick = (e) => {
         if (this.icon == undefined) 
             return
         if (!this.icon.contains(e.target))
             this.setState({show: false})
     }
 
-    click(event) {
+    onClick = () => {
         this.setState({show: !this.state.show})
     }
 
-    resolutionClick(event) {
+    onResolutionClick = (event) => {
         event.preventDefault()
+        const source = this.findSource(parseInt(event.target.getAttribute('data-source-index')))
         this.setState(
             {
                 show: false, 
                 width: parseInt(event.target.getAttribute('data-width')),
+                source: source,
             },
             () => {
                 if (this.props.onResolutionChange)
-                    this.props.onResolutionChange(this.state.width)
+                    this.props.onResolutionChange(this.state.width, source)
             }
         )
+    }
+
+    findSource(index) {
+        for (const source of this.props.sources) {
+            if (source['index'] == index)
+                return source
+        }
     }
 
     widthToText(width) {
@@ -86,18 +98,28 @@ class Resolution extends React.Component {
                 className={cls} 
             >
                 {Object.entries(this.resolutions).map(([key, value]) => {
-                    if (key < this.originalWidth)
+                    key = parseInt(key)
+                    if (!this.sourceWidths.includes(key) && (key < this.topWidth))
                         return <p
-                            key={key}
+                            key={`res-${key}`}
                             data-width={key}
+                            data-source-index={this.props.sources[this.props.sources.length-1]['index']}
                             onClick={this.onResolutionClick}
                         >{key==this.state.width?<b>{value}</b>:value}</p>
                 })}
-                <p
-                    data-width={this.originalWidth}
-                    onClick={this.onResolutionClick}
-                >{this.originalWidth==this.state.width?<b>{this.widthToText(this.originalWidth)}</b>:this.widthToText(this.originalWidth)}</p>
 
+                <div className="title mt-2">Sources</div>
+                {this.props.sources.map(source => {
+                    const text = `${this.widthToText(source.width)} ${source.codec}`
+                    return <p 
+                        key={`source-${source['index']}`}
+                        data-source-index={source['index']}
+                        data-width={source['width']}
+                        onClick={this.onResolutionClick}
+                    >
+                        {(this.state.source.index == source['index']) && (this.state.width == this.state.source.width)?<b>{text}</b>:text}
+                    </p>
+                })}
             </div>
         )
     }
@@ -107,10 +129,10 @@ class Resolution extends React.Component {
             <span
                 ref={(ref) => this.icon = ref}
             >
-                <span 
-                    onClick={this.onClick}
-                    style={{'fontSize': '18px'}}
-                >{this.widthToText(this.state.width)}</span>
+                <i                     
+                    onClick={this.onClick} 
+                    className="fa-solid fa-clapperboard" 
+                />
                 {this.renderResolutions()}
             </span>
         )

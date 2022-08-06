@@ -63,7 +63,7 @@ class Player extends React.Component {
             subtitle: this.props.subtitle_lang,
             resolutionWidth: null,
             loading: false,
-            source: props.sources[0],
+            source: this.pickSource(),
             showBigPlayButton: false,
         }
     }
@@ -109,6 +109,15 @@ class Player extends React.Component {
         document.removeEventListener('webkitfullscreenchange', this.onFullScreenChange)
         document.removeEventListener('mozfullscreenchange', this.onFullScreenChange)
         document.removeEventListener('msfullscreenchange', this.onFullScreenChange)
+    }
+
+    pickSource() {
+        let s = this.props.sources[0]
+        for (const source of this.props.sources) {
+            if (source.width <= screen.width)
+                s = source
+        }
+        return s
     }
 
     onLoaded = (e) => {
@@ -199,8 +208,8 @@ class Player extends React.Component {
         clearTimeout(this.pingTimer)
         this.pingTimer = setTimeout(() => {
             request(`${this.props.playServerUrl}/keep-alive/${this.props.session}`).catch(e => {
-                if (e.status == 404)
-                    clearTimeout(this.pingTimer)
+                // if (e.status == 404)
+                //    clearTimeout(this.pingTimer)
             })
             this.setPingTimer()
         }, 4000)
@@ -233,6 +242,7 @@ class Player extends React.Component {
         }
         return `${this.props.playServerUrl}/transcode`+
             `?play_id=${this.props.playId}`+
+            `&source_index=${this.state.source.index}`+
             `&session=${this.props.session}`+
             `&start_time=${this.state.startTime}`+
             `&audio_lang=${this.state.audio || ''}`+
@@ -426,6 +436,7 @@ class Player extends React.Component {
         track.src = `${this.props.playServerUrl}/subtitle-file`+
             `?play_id=${this.props.playId}`+
             `&start_time=${this.state.startTime}`+
+            `&source_index=${this.state.source.index}`+
             `&lang=${lang}`
         track.track.mode = 'hidden'
         track.track.addEventListener('cuechange', this.onCueChange)
@@ -444,12 +455,12 @@ class Player extends React.Component {
         }   
     }
 
-    onResolutionChange = (width) => {
+    onResolutionChange = (width, source) => {
         if (this.props.onResolutionChange)
-            this.props.onResolutionChange(width)
+            this.props.onResolutionChange(width, source)
         this.changeVideoState({
             resolutionWidth: width,
-            startTime: this.state.time,
+            source: source,
         })
     }
 
@@ -487,9 +498,10 @@ class Player extends React.Component {
                     {this.props.currentInfo.title}
                 </div>
                 <div className="control-spacer" />
-                <div className="control-text control-text-title control-text-pointer">
+                <div className="control">
                     <Resolution 
                         sources={this.props.sources} 
+                        selectedSource={this.state.source}
                         onResolutionChange={this.onResolutionChange}
                     />
                 </div>
