@@ -239,7 +239,6 @@ class Player extends React.Component {
             alert('No supported codecs')
             return
         }
-        console.log(this.state.source)
         return `${this.props.playServerUrl}/transcode`+
             `?play_id=${this.props.playId}`+
             `&source_index=${this.state.source.index}`+
