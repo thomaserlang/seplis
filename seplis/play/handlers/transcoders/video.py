@@ -23,7 +23,6 @@ class Transcode_settings(BaseModel):
     audio_channels: Optional[int]
     width: Optional[int]
     client_width: Optional[int]
-    audio_channels_fix: bool = True
 
 class Session_model(BaseModel):
     process: asyncio.subprocess.Process
@@ -39,6 +38,7 @@ codecs_to_libary = {
     'h264': 'libx264',
     'hevc': 'libx265',
     'vp9': 'libvpx-vp9',
+    'opus': 'libopus',
 }
 
 class Stream_index(BaseModel):
@@ -66,7 +66,7 @@ class Transcoder:
         self.process = await asyncio.create_subprocess_exec(
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
             *args,
-            env=self.subprocess_env(),
+            env=subprocess_env(),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
@@ -139,7 +139,7 @@ class Transcoder:
         self.ffmpeg_extend_args()
 
     def set_video(self):
-        codec = codecs_to_libary[self.settings.transcode_video_codec]        
+        codec = codecs_to_libary.get(self.settings.transcode_video_codec, self.settings.transcode_video_codec)
         self.codec = codec
 
         if self.video_stream['codec_name'] in self.settings.supported_video_codecs and \
@@ -178,7 +178,7 @@ class Transcoder:
             if width < self.video_stream['width']:
                 # keeps the aspect ratio for the height
                 self.ffmpeg_args.append({'-filter:v': f'scale=width={width}:height=-2'})
-                
+
             self.ffmpeg_args.extend([
                 {f'-r': '23.975999999999999'},
                 {'-fps_mode': 'auto'},
@@ -222,14 +222,13 @@ class Transcoder:
 
         if self.settings.audio_channels:
             self.ffmpeg_args.append({'-ac': str(self.settings.audio_channels)})
-        elif self.settings.audio_channels_fix: 
-            # Fix for hls eac3 or ac3 not playing or just no audio
-            self.ffmpeg_args.append({'-ac': str(self.metadata['streams'][index.index]['channels'])})
-    
-        self.ffmpeg_args.append({'-filter_complex': f'[0:{index.index}] aresample=async=1:ochl=\'stereo\':rematrix_maxval=0.000000dB:osr=48000[2]'})
-        self.ffmpeg_args.append({'-map': '[2]'})
 
-        self.ffmpeg_args.append({'-c:a': self.settings.transcode_audio_codec})
+        codec = codecs_to_libary.get(self.settings.transcode_audio_codec, self.settings.transcode_audio_codec)    
+        self.ffmpeg_args.extend([
+            {'-filter_complex': f'[0:{index.index}] aresample=async=1:ochl=\'stereo\':rematrix_maxval=0.000000dB:osr=48000[2]'},
+            {'-map': '[2]'},
+            {'-c:a': codec},
+        ])
 
     def stream_index_by_lang(self, codec_type: str, lang: str) -> Stream_index:
         return stream_index_by_lang(self.metadata, codec_type, lang)
@@ -254,14 +253,14 @@ class Transcoder:
             os.makedirs(temp_folder)
         return temp_folder
 
-    def subprocess_env(self) -> Dict:
-        env = {}
-        if config.data.play.ffmpeg_logfile:
-            env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
-        return env
-
     def segment_time(self) -> int:
         return 5 if self.find_ffmpeg_arg('-c:v') == 'copy' else 1
+
+def subprocess_env() -> Dict:
+    env = {}
+    if config.data.play.ffmpeg_logfile:
+        env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
+    return env
 
 def to_subprocess_arguments(args) -> List[str]:
     l = []

@@ -117,7 +117,7 @@ class Resolution extends React.Component {
                         data-width="0"
                         onClick={this.onResolutionClick}
                     >
-                        {(this.state.source.index == source['index']) && (this.state.width == this.state.source.width)?<b>{text}</b>:text}
+                        {(this.state.source.index == source['index'])?<b>{text}</b>:text}
                     </p>
                 })}
             </div>

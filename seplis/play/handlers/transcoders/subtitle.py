@@ -2,7 +2,7 @@ import asyncio, os
 import logging
 from typing import Dict
 from seplis import config
-from .video import stream_index_by_lang, to_subprocess_arguments
+from .video import stream_index_by_lang, subprocess_env, to_subprocess_arguments
 
 async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
     if not lang:
@@ -11,6 +11,8 @@ async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
     if not sub_index:
         return
     args = [
+        {'-analyzeduration': '20000000'},
+        {'-probesize': '20000000'},
         {'-ss': str(start_time)},
         {'-i': metadata['format']['filename']},
         {'-y': None},
@@ -26,6 +28,7 @@ async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
     process = await asyncio.create_subprocess_exec(
         os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
         *args,
+        env=subprocess_env(),
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )

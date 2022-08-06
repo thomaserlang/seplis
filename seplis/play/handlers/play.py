@@ -38,7 +38,6 @@ class Transcode_setting_arguments(Source_arguments):
     audio_channels: Optional[conlist(Optional[int], max_items=1)]
     width: Optional[conlist(Union[int, constr(max_length=0), None], max_items=1)]
     client_width: Optional[conlist(Union[int, constr(max_length=0), None], max_items=1)]
-    audio_channels_fix: conlist(Optional[int], max_items=1) = [True]
 
 class Subtitle_arguments(Source_arguments):
 
@@ -162,7 +161,6 @@ class Transcode_handler(Base_handler):
             audio_channels=element(args.audio_channels),
             width=element(args.width),
             client_width=element(args.client_width),
-            audio_channels_fix=element(args.audio_channels_fix),
         )
 
 class Source_handler(Base_handler):
