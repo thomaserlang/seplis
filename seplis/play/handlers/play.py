@@ -253,6 +253,8 @@ class File_handler(web.StaticFileHandler):
         return super().initialize(config.data.play.temp_folder)
     
     def set_default_headers(self) -> None:
+        self.set_header('Cache-Control', 'no-cache, must-revalidate')
+        self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
         self.set_header('Access-Control-Allow-Origin', '*')
         self.set_header('Access-Control-Allow-Headers', 'User-Agent, Content-Type')
         self.set_header('Access-Control-Allow-Methods', 'GET')
