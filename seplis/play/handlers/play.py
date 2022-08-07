@@ -247,18 +247,30 @@ class Keep_alive_handler(Base_handler):
         )
         self.set_status(204)
 
-class File_handler(web.StaticFileHandler):
-
-    def initialize(self) -> None:
-        return super().initialize(config.data.play.temp_folder)
+class File_handler(Base_handler):
     
-    def set_default_headers(self) -> None:
-        self.set_header('Cache-Control', 'no-cache, must-revalidate')
-        self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
-        self.set_header('Access-Control-Allow-Origin', '*')
-        self.set_header('Access-Control-Allow-Headers', 'User-Agent, Content-Type')
-        self.set_header('Access-Control-Allow-Methods', 'GET')
-        self.set_header('Access-Control-Expose-Headers', 'Content-Type')
+    async def get(self, path):        
+        path = os.path.join(config.data.play.temp_folder, path)
+        if os.path.commonprefix((os.path.realpath(path), config.data.play.temp_folder)) != str(config.data.play.temp_folder):
+            self.set_status(404)
+            self.write_object({'error': 'File not found'})
+            return
+        try:
+            path = os.path.join(config.data.play.temp_folder, path)
+            async with async_open(path, 'rb') as f:
+                self.set_header('Content-Length', os.fstat(f.file.fileno()).st_size)
+                async for chunk in f.iter_chunked(128*1024):
+                    self.write(chunk)
+                    try:
+                        await self.flush()
+                    except:
+                        pass
+        except FileNotFoundError:
+            self.set_status(404)
+            self.write_object({'error': 'File not found'})
+
+    def should_return_304(self):
+        return False
 
 class Thumbnails_handler(web.StaticFileHandler):
 
