@@ -6,7 +6,7 @@ const propTypes = {
     sources: PropTypes.array,
     selectedSource: PropTypes.object,
     onResolutionChange: PropTypes.func,
-    bottom: PropTypes.bool,
+    onSelected: PropTypes.func,
 }
 
 class Resolution extends React.Component {
@@ -21,7 +21,6 @@ class Resolution extends React.Component {
             this.topWidth = source.width
         }
         this.state = {
-            show: false,
             width: this.props.selectedSource.width,
             source: this.props.selectedSource,
         }
@@ -37,22 +36,7 @@ class Resolution extends React.Component {
             352: '144p',
         }
     }
-
-    componentDidMount() {    
-        document.addEventListener('click', this.onDocumentClick)
-    }
-
-    componentWillUnmount() {
-        document.removeEventListener('click', this.onDocumentClick)
-    }
     
-    onDocumentClick = (e) => {
-        if (this.icon == undefined) 
-            return
-        if (!this.icon.contains(e.target))
-            this.setState({show: false})
-    }
-
     onClick = () => {
         this.setState({show: !this.state.show})
     }
@@ -67,6 +51,8 @@ class Resolution extends React.Component {
                 source: source,
             },
             () => {
+                if (this.props.onSelected)
+                    this.props.onSelected()
                 if (this.props.onResolutionChange)
                     this.props.onResolutionChange(this.state.width, source)
             }
@@ -86,57 +72,36 @@ class Resolution extends React.Component {
         return `W: ${width}`
     }
 
-    renderResolutions() {
-        if (!this.state.show)
-            return null
-        let cls = ClassNames({
-            'text-box': true,
-            'text-box-bottom': this.props.bottom,
-        })
-        return (
-            <div 
-                className={cls} 
-            >
-                {Object.entries(this.resolutions).map(([key, value]) => {
-                    key = parseInt(key)
-                    if (!this.sourceWidths.includes(key) && (key < this.topWidth))
-                        return <p
-                            key={`res-${key}`}
-                            data-width={key}
-                            data-source-index={this.props.sources[this.props.sources.length-1]['index']}
-                            onClick={this.onResolutionClick}
-                        >{key==this.state.width?<b>{value}</b>:value}</p>
-                })}
-
-                <div className="title mt-2">Sources</div>
-                {this.props.sources.map(source => {
-                    const text = `${this.widthToText(source.width)} ${source.codec}`
-                    return <p 
-                        key={`source-${source['index']}`}
-                        data-source-index={source['index']}
-                        data-width="0"
-                        onClick={this.onResolutionClick}
-                    >
-                        {(this.state.source.index == source['index'])?<b>{text}</b>:text}
-                    </p>
-                })}
-            </div>
-        )
-    }
-
     render() {
-        return (
-            <span
-                ref={(ref) => this.icon = ref}
-            >
-                <i                     
-                    onClick={this.onClick} 
-                    className="fa-solid fa-clapperboard" 
-                />
-                {this.renderResolutions()}
-            </span>
-        )
+        return <div className="items">
+            {Object.entries(this.resolutions).map(([key, value]) => {
+                key = parseInt(key)
+                if (!this.sourceWidths.includes(key) && (key < this.topWidth))
+                    return <div
+                        className="item"
+                        key={`res-${key}`}
+                        data-width={key}
+                        data-source-index={this.props.sources[this.props.sources.length-1]['index']}
+                        onClick={this.onResolutionClick}
+                    >{key==this.state.width?<b>{value}</b>:value}</div>
+            })}
+
+            <div className="title mt-2">Sources</div>
+            {this.props.sources.map(source => {
+                const text = `${this.widthToText(source.width)} ${source.codec}`
+                return <div 
+                    key={`source-${source['index']}`}
+                    data-source-index={source['index']}
+                    data-width="0"
+                    onClick={this.onResolutionClick}
+                    className="item"
+                >
+                    {(this.state.source.index == source['index'])?<b>{text}</b>:text}
+                </div>
+            })}
+        </div>
     }
+
 }
 Resolution.propTypes = propTypes
 
