@@ -490,6 +490,7 @@ class Player extends React.Component {
                     startTime: newTime,
                 })
             } else {
+                this.setState({time: newTime})
                 this.video.currentTime = newTime - this.state.startTime
             }
         } else {
