@@ -212,11 +212,9 @@ class PlayEpisode extends React.Component {
  
     getCurrentInfo() {
         if (!this.state.show || !this.state.episode) return null
-        let show = this.state.show
-        let title = `${show.title} - `
-        title += this.episodeTitle(show, this.state.episode)
         return {
-            title: title,
+            title: `${this.state.show.title} `+
+                this.episodeTitle(this.state.show, this.state.episode),
         }
     }
   

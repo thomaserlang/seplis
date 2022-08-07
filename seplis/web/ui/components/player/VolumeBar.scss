@@ -1,15 +1,16 @@
 .volume-slider {
-    width: 50px !important;
-    right: 50px !important;
-    height: 125px !important;
+    width: 60px !important;
+    left: 0 !important;
+    height: 130px !important;
     background-color: #2E2E2E;
+    padding: 0 !important;
 
     .scrubber {
         position: relative;
-        left: 50%;
         top: 15%;
+        left: 50%;
         width: 4px;
-        height: 80%;
+        height: 70%;
         margin-left: -2px;
         background-color: #565656;
         pointer-events: none; 

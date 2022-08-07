@@ -21,10 +21,11 @@ class PlayNext extends React.Component {
     render() {
         return (
             <a 
-                className="fas fa-step-forward"
                 title={this.props.title}
                 href={this.props.url}
-            />
+            >
+                <i className="fas fa-step-forward" />
+            </a>
         )
     }
 

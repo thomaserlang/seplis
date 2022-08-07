@@ -123,8 +123,7 @@ class Slider extends React.Component {
     renderHoverTime() {
         if (this.state.hoverTime === null)
             return null
-        return <div 
-            className="hover-time" 
+        return <div className="hover-time"
             style={{left: ((this.state.hoverTime / this.props.duration) * 100).toString() + '%'}}
         >
             <div className="hover-time-box">
@@ -135,8 +134,7 @@ class Slider extends React.Component {
 
     render() {
         return (
-            <div 
-                className="player-slider-wrapper" 
+            <div className="slider-wrapper"
                 onClick={this.sliderClick}
                 onMouseMove={this.mouseMove}
                 onMouseLeave={this.mouseLeave}
@@ -146,12 +144,10 @@ class Slider extends React.Component {
                 onTouchEnd={this.touchEnd}
             >
                 {this.renderHoverTime()}
-                <div 
-                    className="slider"
+                <div className="slider"
                     ref={(ref) => this.slider = ref}
                 >
-                    <div 
-                        className="progress" 
+                    <div className="progress-bar"
                         style={{width: this.progressPercent()}}
                     >
                     </div>

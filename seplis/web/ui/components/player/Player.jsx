@@ -11,6 +11,7 @@ import ChromecastIcon from './ChromecastIcon'
 import Loader from 'seplis/components/Loader'
 import {secondsToTime, guid} from 'seplis/utils'
 import './Player.scss'
+import Settings from './Settings'
 
 const propTypes = {
     playServerUrl: PropTypes.string,
@@ -79,7 +80,7 @@ class Player extends React.Component {
         this.video.addEventListener('touchstart', this.onClick)
         this.video.addEventListener('loadeddata', this.onLoaded)
         this.video.addEventListener('webkitendfullscreen', this.onFullScreenChange)
-        this.video.addEventListener('webkitenterfullscreen', this.onFullScreenChange)      
+        this.video.addEventListener('webkitenterfullscreen', this.onFullScreenChange)
 
         document.addEventListener('mousemove', this.onMouseMove)
         document.addEventListener('touchmove', this.onMouseMove)
@@ -121,6 +122,7 @@ class Player extends React.Component {
 
     onLoaded = (e) => {
         this.setState({loading: false})
+        this.video.currentTime = 0
     }
 
     loadStream(url) {
@@ -432,6 +434,15 @@ class Player extends React.Component {
         })
     }
 
+    onResolutionChange = (width, source) => {
+        if (this.props.onResolutionChange)
+            this.props.onResolutionChange(width, source)
+        this.changeVideoState({
+            resolutionWidth: width,
+            source: source,
+        })
+    }
+
     setSubtitle(lang) {
         for (let i = this.tracks.length - 1; i >= 0; i--) {
             this.tracks[i].mode = 'disabled'
@@ -464,15 +475,6 @@ class Player extends React.Component {
         }   
     }
 
-    onResolutionChange = (width, source) => {
-        if (this.props.onResolutionChange)
-            this.props.onResolutionChange(width, source)
-        this.changeVideoState({
-            resolutionWidth: width,
-            source: source,
-        })
-    }
-
     onSliderNewTime = (newTime) => {
         this.video.pause()
         this.setHideControlsTimer()
@@ -487,51 +489,25 @@ class Player extends React.Component {
     }
 
     showControlsVisibility() {
-        return ((!this.state.showControls) && (this.state.playing))?'hidden':'visible'
+        return ((!this.state.showControls) && (!this.video.paused))?'hidden':'visible'
     }
 
     renderControlsTop() {
-        return (
-            <div 
-                className="controls controls-top" 
+        return <div className="controls-top">
+            <div
+                className="controls" 
                 style={{visibility: this.showControlsVisibility()}}
             >
-                <div className="control">
+                <div className="control-icon">
                     <a 
-                        className="fas fa-times" 
                         href={this.props.backToInfo.url}
                         title={this.props.backToInfo.title}
-                    />
-                </div>
-                <div className="control-text control-text-title">
-                    {this.props.currentInfo.title}
-                </div>
-                <div className="control-spacer" />
-                <div className="control">
-                    <Resolution 
-                        sources={this.props.sources} 
-                        selectedSource={this.state.source}
-                        onResolutionChange={this.onResolutionChange}
-                    />
-                </div>
-                <div className="control">
-                    <ChromecastIcon />
-                </div>
-                <div className="control">
-                    <AudioSubBar 
-                        source={this.state.source} 
-                        onAudioChange={this.onAudioChange}
-                        onSubtitleChange={this.onSubtitleChange}
-                    />
-                </div>
-                <div className="control">
-                    <VolumeBar onChange={this.onVolumeChange} />
-                </div>
-                <div className="control">
-                    {this.renderPlayNext()}
+                    >
+                        <i className="fa-solid fa-arrow-left"></i>
+                    </a>
                 </div>
             </div>
-        )
+        </div>
     }
 
     renderControlsBottom() {
@@ -545,18 +521,17 @@ class Player extends React.Component {
             'fa-expand': this.state.fullscreen,
             'fa-arrows-alt': !this.state.fullscreen,
         })
-        return (
-            <div 
-                className="controls" 
-                style={{visibility: this.showControlsVisibility()}}
-            >
-                <div className="control">
-                    <span 
-                        className={playPause}
-                        onClick={this.onPlayPauseClick}
-                    >
-                    </span>
+        return <div
+            className="controls-bottom"
+            style={{visibility: this.showControlsVisibility()}}
+        >
+            <div className="controls">
+                <div className="control-text-title">
+                    {this.props.currentInfo.title}
                 </div>
+            </div>
+
+            <div className="controls">                
                 <div className="control-text">
                     {this.getCurrentTimeText()}
                 </div>
@@ -568,15 +543,47 @@ class Player extends React.Component {
                 <div className="control-text" title="Timeleft">
                     {this.getDurationText()}
                 </div>
-                <div className="control">
-                    <span 
+            </div>
+
+            <div className="controls">      
+                <div className="control-icon">
+                    <i 
+                        className={playPause}
+                        onClick={this.onPlayPauseClick}
+                    />
+                </div>
+                <div className="control-icon">
+                    <VolumeBar onChange={this.onVolumeChange} />
+                </div>
+
+                <div className="control-spacer" />
+                <div className="control-icon">
+                    {this.renderPlayNext()}
+                </div>
+                <div className="control-icon">
+                </div>
+                <div className="control-icon">
+                    <ChromecastIcon />
+                </div>
+
+                <div className="control-icon">
+                    <Settings 
+                        selectedSource={this.state.source}
+                        sources={this.props.sources}
+                        onAudioChange={this.onAudioChange}
+                        onSubtitleChange={this.onSubtitleChange}
+                        onResolutionChange={this.onResolutionChange}
+                    />
+                </div>
+
+                <div className="control-icon">
+                    <i
                         className={fullscreen}
                         onClick={this.onFullscreenClick}
-                    >
-                    </span>
+                    />
                 </div>
             </div>
-        )
+        </div>
     }
 
     renderLoading() {
@@ -587,28 +594,26 @@ class Player extends React.Component {
 
     renderBigPlayButton() {
         if ((this.state.showBigPlayButton) && !this.state.loading)
-            return <big-play-button onClick={this.onPlayPauseClick}>
+            return <div className="big-play-button" onClick={this.onPlayPauseClick}>
                 <i className="fa fa-play" />
-            </big-play-button>
+            </div>
     }
 
     render() {
         return (
             <div id="player">  
-                <div className="overlay">
-                    <video 
-                        className="video" 
-                        preload="none" 
-                        autoPlay={false}
-                        controls={false}
-                        crossOrigin="anonymous"
-                        ref={(ref) => this.video = ref}
-                    />
-                    {this.renderControlsTop()}
-                    {this.renderControlsBottom()}
-                    {this.renderLoading()}
-                    {this.renderBigPlayButton()}
-                </div>
+                <video 
+                    className="video" 
+                    preload="none" 
+                    autoPlay={false}
+                    controls={false}
+                    crossOrigin="anonymous"
+                    ref={(ref) => this.video = ref}
+                />
+                {this.renderControlsTop()}
+                {this.renderControlsBottom()}
+                {this.renderLoading()}
+                {this.renderBigPlayButton()}
             </div>
         )
     }

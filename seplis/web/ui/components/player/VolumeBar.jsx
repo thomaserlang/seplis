@@ -11,17 +11,13 @@ const propTypes = {
 class VolumeBar extends React.Component {
 
     constructor(props) {
-        super(props)        
-        this.onSliderMouseMove = this.sliderMouseMove.bind(this)
-        this.onSliderClick = this.sliderClick.bind(this)
-        this.onIconClick = this.iconClick.bind(this)
+        super(props)
 
         this.state = {
             percent: (localStorage.getItem('volume') || 1)*100,
             show: false,
             muted: false,
         }
-        this.onDocumentClick = this.documentClick.bind(this)
     }
 
     componentDidMount() {
@@ -37,28 +33,28 @@ class VolumeBar extends React.Component {
         document.removeEventListener('ontouchstart', this.onDocumentClick)
     }
     
-    documentClick(e) {
+    onDocumentClick = (e) => {
         if (!this.icon.contains(e.target)) {
             this.setState({show: false})
         }
     }
 
-    sliderMouseMove(event) {
+    onSliderMouseMove = (event) => {
         if (event.buttons != 1) return
         this.onSliderClick(event)
     }
 
-    sliderClick(event) {
+    onSliderClick = (event) => {
         event.preventDefault()
         event.stopPropagation()
-        let scrubber = event.target.querySelector('.scrubber')
-        let y = event.clientY
-        y -= event.target.offsetTop + scrubber.offsetTop
-        y = scrubber.offsetHeight - y
+        const scrubber = event.target.querySelector('.scrubber')
+        const rect = scrubber.getBoundingClientRect()
+        let y = event.clientY - rect.top;
         if (y > scrubber.offsetHeight)
             y = scrubber.offsetHeight
         if (y < 0)
             y = 0
+        y = scrubber.offsetHeight - y
         let norm = 1 / scrubber.offsetHeight
         let volume = norm*y
         if (volume < 0)
@@ -69,7 +65,7 @@ class VolumeBar extends React.Component {
         localStorage.setItem('volume', volume)
     }
 
-    iconClick(event) {
+    onIconClick = (event) => {
         this.setState({show: !this.state.show})
     }
 
@@ -103,17 +99,15 @@ class VolumeBar extends React.Component {
                 (this.state.percent >= 1) && !this.state.muted,
             'fa-volume-off': (this.state.percent < 1) || this.state.muted,
         })
-        return (
-            <span 
+        return <>
+            <i 
                 className={volume} 
                 onClick={this.onIconClick}
                 ref={(ref) => this.icon = ref}
-            >
-                {this.renderBar()}
-            </span>
-        )
+            />
+            {this.renderBar()}
+        </>
     }
-
 }
 VolumeBar.propTypes = propTypes
 

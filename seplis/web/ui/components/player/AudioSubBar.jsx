@@ -124,14 +124,7 @@ class AudioSubBar extends React.Component {
     render() {
         if ((this.props.source.audio.length <= 1) && (this.props.source.subtitles.length == 0))
             return null
-        return (
-            <span
-                ref={(ref) => this.icon = ref}
-            >
-                <span className="fas fa-closed-captioning" onClick={this.onClick} />
-                {this.renderAudioSubtitles()}
-            </span>
-        )
+        return this.renderAudioSubtitles()
     }
 }
 AudioSubBar.propTypes = propTypes
