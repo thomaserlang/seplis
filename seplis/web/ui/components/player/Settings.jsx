@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import AudioSubBar from './AudioSubBar.jsx'
 import Resolution from './Resolution.jsx'
 
 function Settings(props) {

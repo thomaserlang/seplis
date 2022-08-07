@@ -123,12 +123,12 @@ class Handler(base.Handler):
 class Play_servers_handler(base.Handler):
 
     @authenticated(constants.LEVEL_USER)
-    async def get(self, show_id, number):
-        d = await self._get(show_id, number)
+    async def get(self, series_id, number):
+        d = await self._get(series_id, number)
         self.write_object(d)
 
     @run_on_executor
-    def _get(self, show_id, number):
+    def _get(self, series_id, number):
         with new_session() as session:
             p = session.query(models.Play_server).filter(
                 models.Play_access.user_id == self.current_user.id,
@@ -144,7 +144,7 @@ class Play_servers_handler(base.Handler):
                         name='play_id',
                         value=utils.json_dumps({
                             'type': 'series',
-                            'show_id': int(show_id),
+                            'series_id': int(series_id),
                             'number': int(number),
                         }),
                         version=2,

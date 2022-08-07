@@ -129,14 +129,15 @@ def worker(n):
         logging.exception('worker')
 
 @cli.command()
-@click.option('--disable_cleanup', is_flag=True, help='Disable cleanup after scan')
-def play_scan(disable_cleanup):
+@click.option('--disable-cleanup', is_flag=True, help='Disable cleanup after scan')
+@click.option('--disable-thumbnails', is_flag=True, help='Disable making thumbnails')
+def play_scan(disable_cleanup, disable_thumbnails):
     logger.set_logger('play_scan.log', to_sentry=True)
     import seplis.play.scan
     from seplis.play.connections import database
     database.connect()
     seplis.play.scan.upgrade_scan_db()
-    seplis.play.scan.scan()
+    seplis.play.scan.scan(disable_thumbnails=disable_thumbnails)
     if not disable_cleanup:
         seplis.play.scan.cleanup()
 

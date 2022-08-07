@@ -3,7 +3,6 @@ import Player, {getPlayServer} from 'seplis/components/player/Player'
 import Loader from 'seplis/components/Loader'
 import Chromecast from 'seplis/components/player/Chromecast'
 import {request} from 'seplis/api'
-import { guid } from 'seplis/utils'
  
 class Play extends React.Component {
  
@@ -207,7 +206,7 @@ class Play extends React.Component {
         }
         this.loadCast()
         return <Player 
-            playServerUrl={`${this.state.playServer.play_url}`}
+            playServerUrl={this.state.playServer.play_url}
             playId={this.state.playServer.play_id}
             sources={this.state.sources}
             info={this.getInfo()}

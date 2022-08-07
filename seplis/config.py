@@ -1,6 +1,6 @@
 import os, pathlib
 from typing import List, Literal, Optional, Tuple
-from pydantic import AnyHttpUrl, BaseModel, BaseSettings, conint, validator
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings, DirectoryPath, conint, validator
 import yaml, tempfile
 
 class ConfigRedisModel(BaseSettings):
@@ -67,7 +67,8 @@ class ConfigClientModel(BaseSettings):
 
 class ConfigPlayScanModel(BaseModel):
     type: Literal['series', 'movies']
-    path: pathlib.Path
+    path: DirectoryPath
+    make_thumbnails: bool = False
 
 class ConfigPlayModel(BaseSettings):
     database: Optional[str]
@@ -78,11 +79,9 @@ class ConfigPlayModel(BaseSettings):
     ffmpeg_loglevel = '8'
     ffmpeg_logfile: Optional[pathlib.Path]
     ffmpeg_preset: Literal['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'] = 'veryfast' 
-    ffmpeg_enable_codec_copy = False
-    ffmpeg_hls_segment_type: Literal['mpegts', 'fmp4'] = 'fmp4'
     port = 8003
     temp_folder: pathlib.Path = os.path.join(tempfile.gettempdir(), 'seplis_play')
-    segment_time = 2
+    thumbnails_path: Optional[DirectoryPath]
     session_timeout = 10 # Timeout for HLS sessions
 
     class Config:

@@ -4,8 +4,6 @@ import ClassNames from 'classnames'
 import {request} from 'api'
 import PlayNext from './PlayNext'
 import VolumeBar from './VolumeBar'
-import AudioSubBar from './AudioSubBar.jsx'
-import Resolution from './Resolution.jsx'
 import Slider from './Slider.jsx'
 import ChromecastIcon from './ChromecastIcon'
 import Loader from 'seplis/components/Loader'
@@ -562,6 +560,8 @@ class Player extends React.Component {
                     duration={this.duration}
                     onReturnCurrentTime={this.onSliderReturnCurrentTime}
                     onNewTime={this.newTime}
+                    playId={this.props.playId}
+                    playServerUrl={this.props.playServerUrl}
                 />
                 <div className="control-text" title="Timeleft">
                     {this.getDurationText()}

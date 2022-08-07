@@ -6,7 +6,7 @@ from seplis import config
 
 class Handler(PatternMatchingEventHandler):
 
-    def __init__(self, scan_path, type_='series'):
+    def __init__(self, scan_path, type_='series', make_thumbnails=False):
         logging.info(f'Watching: {scan_path}')
         patterns = ['*.'+t for t in config.data.play.media_types]
         super().__init__(
@@ -15,9 +15,9 @@ class Handler(PatternMatchingEventHandler):
         self.type = type_
         self.wait_list = {}
         if type_ == 'series':
-            self.scanner = scan.Series_scan(scan_path=scan_path)
+            self.scanner = scan.Series_scan(scan_path=scan_path, make_thumbnails=make_thumbnails)
         elif type_ == 'movies':
-            self.scanner = scan.Movie_scan(scan_path=scan_path)
+            self.scanner = scan.Movie_scan(scan_path=scan_path, make_thumbnails=make_thumbnails)
         else:
             raise NotImplemented(f'Type: {type_} is not supported for watching')
 
@@ -81,6 +81,7 @@ def main():
         event_handler = Handler(
             scan_path=str(s.path),
             type_=s.type,
+            make_thumbnails=s.make_thumbnails,
         )
         obs.schedule(
             event_handler,

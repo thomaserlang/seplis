@@ -6,7 +6,7 @@ from seplis.play.decorators import new_session
 from guessit import guessit
 
 
-def scan():
+def scan(disable_thumbnails=False):
     if not config.data.play.scan:
         raise Exception('''
             Nothing to scan. Add a path in the config file.
@@ -23,9 +23,9 @@ def scan():
         try:
             scanner = None
             if s.type == 'series':
-                scanner = Series_scan(s.path)
+                scanner = Series_scan(s.path, s.make_thumbnails and not disable_thumbnails)
             elif s.type == 'movies':
-                scanner = Movie_scan(s.path)
+                scanner = Movie_scan(s.path, s.make_thumbnails and not disable_thumbnails)
             if not scanner:
                 raise Exception(f'Scan type: "{s.type}" is not supported')
             scanner.scan()
@@ -63,12 +63,13 @@ def cleanup_movies():
 
 class Play_scan(object):
 
-    def __init__(self, scan_path, type_='series'):
+    def __init__(self, scan_path: str, type_: str, make_thumbnails: bool = False):
         if not os.path.exists(scan_path):
             raise Exception(f'scan_path "{scan_path}" does not exist')
         self.scan_path = scan_path
         self.type = type_
         self.client = Client(url=config.data.client.api_url)
+        self.make_thumbnails = make_thumbnails
 
     def save_item(self, item, path):
         raise NotImplementedError()
@@ -141,12 +142,36 @@ class Play_scan(object):
             os.path.getmtime(path)
         )
 
+    def thumbnails(self, key, path):
+        thumb = os.path.join(config.data.play.thumbnails_path, key)
+        if os.path.exists(thumb):
+            logging.info(f'[{key}] Thumbnails already created: {thumb}')
+            return
+        os.mkdir(thumb)
+        logging.info(f'[{key}] Creating thumbnails')
+        cmd = [
+            os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
+            '-i', path,
+            '-vf', 'fps=1/10,scale=320:-2',
+            '-lossless', '0',
+            '-compression_level', '6',
+            '-vcodec', 'libwebp',
+            os.path.join(thumb, '%d.webp')
+        ]
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        process.communicate()
+
 class Movie_scan(Play_scan):
 
-    def __init__(self, scan_path):
+    def __init__(self, scan_path, make_thumbnails: bool = False):
         super().__init__(
             scan_path=scan_path,
             type_='movies',
+            make_thumbnails=make_thumbnails,
         )
 
     def scan(self):
@@ -181,20 +206,21 @@ class Movie_scan(Play_scan):
                 models.Movie.path == path,
             ).first()
             modified_time = self.get_file_modified_time(path)
-            if movie and (movie.modified_time == modified_time) and movie.meta_data:
-                return
-            metadata = self.get_metadata(path)
-            if not metadata:
-                return
-            e = models.Movie(
-                movie_id=movie_id,
-                path=path,
-                meta_data=metadata,
-                modified_time=modified_time,
-            )
-            session.merge(e)
-            session.commit()
-            logging.info(f'Saved movie: {title} (Id: {movie_id}) - Path: {path}')
+            if not movie or (movie.modified_time != modified_time) or not movie.meta_data:
+                metadata = self.get_metadata(path)
+                if not metadata:
+                    return
+                e = models.Movie(
+                    movie_id=movie_id,
+                    path=path,
+                    meta_data=metadata,
+                    modified_time=modified_time,
+                )
+                session.merge(e)
+                session.commit()
+                logging.info(f'Saved movie: {title} (Id: {movie_id}) - Path: {path}')
+            if self.make_thumbnails:
+                self.thumbnails(f'movie-{movie_id}', path)
             return True
 
     def lookup(self, title: str):
@@ -243,10 +269,11 @@ class Movie_scan(Play_scan):
 
 class Series_scan(Play_scan):
 
-    def __init__(self, scan_path):
+    def __init__(self, scan_path: str, make_thumbnails: bool = False):
         super().__init__(
             scan_path=scan_path,
             type_='series',
+            make_thumbnails=make_thumbnails,
         )
         self.series_id = Series_id(scanner=self)
         self.episode_number = Episode_number(scanner=self)
@@ -355,25 +382,26 @@ class Series_scan(Play_scan):
             ).filter(
                 models.Episode.series_id == episode.series_id,
                 models.Episode.number == episode.number,
+                models.Episode.path == path,
             ).first()
             modified_time = self.get_file_modified_time(path)
-            if ep and (ep.modified_time == modified_time) and \
-                (ep.path == path) and ep.meta_data:
-                return
-            metadata = self.get_metadata(path)
-            e = models.Episode(
-                series_id=episode.series_id,
-                number=episode.number,
-                path=path,
-                meta_data=metadata,
-                modified_time=modified_time,
-            )
-            session.merge(e)
-            session.commit()
-            logging.info('Saved episode: {} {}'.format(
-                episode.file_title,
-                episode.number
-            ))
+            if not ep or (ep.modified_time != modified_time) or not ep.meta_data:
+                metadata = self.get_metadata(path)
+                e = models.Episode(
+                    series_id=episode.series_id,
+                    number=episode.number,
+                    path=path,
+                    meta_data=metadata,
+                    modified_time=modified_time,
+                )
+                session.merge(e)
+                session.commit()
+                logging.info('Saved episode: {} {}'.format(
+                    episode.file_title,
+                    episode.number
+                ))            
+            if self.make_thumbnails:
+                self.thumbnails(f'episode-{episode.series_id}-{episode.number}', path)
             return True
 
     def delete_item(self, episode, path):        
@@ -393,14 +421,12 @@ class Series_scan(Play_scan):
             ).filter(
                 models.Episode.series_id == episode.series_id,
                 models.Episode.number == episode.number,
+                models.Episode.path == path,
             ).first()
             if ep:
                 session.delete(ep)
                 session.commit()
-                logging.info('Deleted episode: {} {}'.format(
-                    episode.file_title,
-                    episode.number
-                ))
+                logging.info(f'Deleted episode: {episode.series_id}-{episode.number} {path}')
                 return True
         return False
 

@@ -4,6 +4,7 @@
         cursor: pointer;
         height: 45px;
         position: relative;
+        user-select: none;
 
         .slider {
             display: block;
@@ -13,15 +14,17 @@
             height: 5px;
             background-color: #2E2E2E;
             pointer-events: none; 
+            user-select: none;    
             position: relative;
             z-index: 990;
 
-            .progress-bar {
+            .progress {
                 display: block;
                 z-index: 999;
                 position: absolute;
                 height: 5px;
                 background-color:#428bca;
+                user-select: none;        
                 width: 0;
             }
         }
@@ -29,13 +32,18 @@
         .hover-time {
             z-index: 1000;
             position: absolute;
-            bottom: 2rem;
+            user-select: none;
+            bottom: 2.5rem;
+            pointer-events: none;
+            text-align: center;
+            padding: 0.1rem;
+            pointer-events: none;
+            background-color: #000;
+            transform: translate(-50%, 0);
 
-            .hover-time-box {
-                margin-left: -1.7rem;
-                padding: 0.1rem 0.5rem;
-
-                background-color: rgba(0, 0, 0, 0.7);
+            img {
+                margin-bottom: 0.1rem;
+                user-select: none;
             }
         }
     }

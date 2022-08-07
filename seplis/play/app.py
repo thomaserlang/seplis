@@ -20,9 +20,9 @@ class Application(tornado.web.Application):
         urls = [
             (r'/transcode', play.Transcode_handler),
             (r'/subtitle-file', play.Subtitle_file_handler),
-            (r'/source', play.Source_handler),
             (r'/sources', play.Sources_handler),
             (r'/files/(.*)', play.File_handler),
+            (r'/thumbnails/(.*)', play.Thumbnails_handler),
             (r'/close-session/(.*)', play.Close_session_handler),
             (r'/keep-alive/(.*)', play.Keep_alive_handler),
             (r'/health', health.Handler),

@@ -163,40 +163,6 @@ class Transcode_handler(Base_handler):
             client_width=element(args.client_width),
         )
 
-class Source_handler(Base_handler):
-
-    async def get(self):
-        metadata = await get_metadata(self.get_argument('play_id'))
-        if not metadata:
-            self.set_status(404)
-            self.write('{"error": "No movie/episode found"}')
-            return
-        try:
-            self.set_content_type(metadata[0]['format']['filename'])
-            async with async_open(metadata[0]['format']['filename'], 'rb') as f:
-                self.set_header('Content-Length', os.fstat(f.file.fileno()).st_size)
-                async for chunk in f.iter_chunked(128*1024):
-                    self.write(chunk)
-                    try:
-                        await self.flush()
-                    except:
-                        pass
-        except FileNotFoundError:
-            self.set_status(404)
-            self.write_object({'error': 'Unknown segment'})
-
-    def set_content_type(self, path):
-        mime_type, encoding = mimetypes.guess_type(path)
-        if encoding == "gzip":
-            t = "application/gzip"
-        elif encoding is not None:
-            t = "application/octet-stream"
-        elif mime_type is not None:
-            t = mime_type
-        else:
-            t = "application/octet-stream"
-        self.set_header('Content-Type', t)
-
 class Sources_handler(Base_handler):
 
     async def get(self):
@@ -281,40 +247,47 @@ class Keep_alive_handler(Base_handler):
         )
         self.set_status(204)
 
-class File_handler(Base_handler):
+class File_handler(web.StaticFileHandler):
+
+    def initialize(self) -> None:
+        return super().initialize(config.data.play.temp_folder)
     
-    async def get(self, path):
-        try:
-            path = os.path.join(config.data.play.temp_folder, path)
-            async with async_open(path, 'rb') as f:
-                self.set_header('Content-Length', os.fstat(f.file.fileno()).st_size)
-                async for chunk in f.iter_chunked(128*1024):
-                    self.write(chunk)
-                    try:
-                        await self.flush()
-                    except:
-                        pass
-        except FileNotFoundError:
-            self.set_status(404)
-            self.write_object({'error': 'Unknown segment'})
+    def set_default_headers(self) -> None:
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Headers', 'User-Agent, Content-Type')
+        self.set_header('Access-Control-Allow-Methods', 'GET')
+        self.set_header('Access-Control-Expose-Headers', 'Content-Type')
 
-    def should_return_304(self):
-        return False
+class Thumbnails_handler(web.StaticFileHandler):
 
-def set_header(self):
-    self.set_header('Cache-Control', 'no-cache, must-revalidate')
-    self.set_header('Expires', 'Sat, 26 Jul 1997 05:00:00 GMT')
-    self.set_header('Access-Control-Allow-Origin', '*')
-    self.set_header('Access-Control-Allow-Headers', 'User-Agent, Content-Type')
-    self.set_header('Access-Control-Allow-Methods', 'GET')
-    self.set_header('Access-Control-Expose-Headers', 'Content-Type')
+    def initialize(self) -> None:
+        return super().initialize(config.data.play.thumbnails_path)
+    
+    async def get(self, path: str, include_body: bool = True) -> None:
+        data = decode_play_id(self.get_argument('play_id'))
+        if data['type'] == 'series':
+            path = f"episode-{data['series_id']}-{data['number']}/{path}"
+        elif data['type'] == 'movie':
+            path = f"movie-{data['movie_id']}/{path}"
+        return await super().get(path, include_body)
+
+    def options(self, *args, **kwargs):
+        self.set_status(204)
+
+    def set_default_headers(self) -> None:
+        self.set_header('Content-Type', 'image/webp')
+        self.set_header('Cache-Control', 'max-age=604800')
+        self.set_header('Access-Control-Allow-Origin', '*')
+        self.set_header('Access-Control-Allow-Headers', 'User-Agent, Content-Type')
+        self.set_header('Access-Control-Allow-Methods', 'GET')
+        self.set_header('Access-Control-Expose-Headers', 'Content-Type')
 
 async def get_metadata(play_id):
     data = decode_play_id(play_id)
     async with database.session_async() as session:
         if data['type'] == 'series':
             query = select(models.Episode.meta_data).where(
-                models.Episode.series_id == data['show_id'],
+                models.Episode.series_id == data['series_id'],
                 models.Episode.number == data['number'],
             )
             files = await session.scalars(query)

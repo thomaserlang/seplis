@@ -2,8 +2,6 @@ import React from 'react'
 import ClassNames from 'classnames'
 import Chromecast from './Chromecast'
 import Slider from './Slider'
-import AudioSubBar from './AudioSubBar.jsx'
-import PlayNext from './PlayNext'
 import {episodeTitle, secondsToTime} from 'utils'
 import {request} from 'api'
 import {trigger_episode_watched_status} from 'seplis/events'
@@ -321,14 +319,6 @@ class ChromecastBar extends React.Component {
                     />
                     <div className="control-text">
                         {secondsToTime(this.getDuration())}
-                    </div>
-                    <div className="control">
-                        <AudioSubBar 
-                            metadata={this.state.info.metadata}
-                            bottom={true}
-                            onAudioChange={this.onAudioChange}
-                            onSubtitleChange={this.onSubtitleChange}
-                        />
                     </div>
                     {this.renderPlayNext()}
                 </div>

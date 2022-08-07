@@ -295,7 +295,7 @@ class PlayEpisode extends React.Component {
         }
         this.loadCast()
         return <Player 
-            playServerUrl={`${this.state.playServer.play_url}`}
+            playServerUrl={this.state.playServer.play_url}
             playId={this.state.playServer.play_id}
             sources={this.state.sources}
             info={this.getInfo()}
