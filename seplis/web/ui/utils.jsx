@@ -29,7 +29,7 @@ export function pad(str, max) {
 export function episodeNumber(show, episode) {
     switch (show.episode_type) {
         case 1: return`Episode ${episode.number}`; break;
-        case 2: return`S${pad(episode.season,2)} · E${pad(episode.episode, 2)} (${episode.number})`; break;
+        case 2: return`S${pad(episode.season,2)} · E${pad(episode.episode, 2)}`; break;
         case 3: return`Airdate: ${episode.air_date}`; break;
     }
 }
