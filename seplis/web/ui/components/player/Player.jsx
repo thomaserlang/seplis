@@ -339,10 +339,10 @@ class Player extends React.Component {
     }
 
     changeVideoState(state) {
-        state['loading'] = true
-        this.setState(state)
         this.cancelPlayUrl()
-        this.setState({session: guid()}, () => {
+        state['loading'] = true
+        state['session'] = guid()
+        this.setState(state, () => {
             this.loadStream(this.getPlayUrl())
         })
     }
@@ -475,17 +475,39 @@ class Player extends React.Component {
         }   
     }
 
-    onSliderNewTime = (newTime) => {
-        this.video.pause()
-        this.setHideControlsTimer()
-        this.changeVideoState({
-            time: newTime,
-            startTime: newTime,
-        })
+    newTime = (newTime) => {
+        if (newTime < 0)
+            newTime = 0
+        if (newTime > this.state.source.duration)
+            newTime = this.state.source.duration
+        if (this.video.seekable.length <= 1 || this.video.seekable.end(0) <= 1) {            
+            let duration = this.state.startTime + this.video.duration 
+            if ((newTime < this.state.startTime) || (newTime > duration)) {
+                this.video.pause()
+                this.setHideControlsTimer()
+                this.changeVideoState({
+                    time: newTime,
+                    startTime: newTime,
+                })
+            } else {
+                this.video.currentTime = newTime - this.state.startTime
+            }
+        } else {
+            this.video.currentTime = newTime
+        }
     }
+    
 
     onSliderReturnCurrentTime = () => {
         return this.state.time
+    }
+
+    onBackwardsClick = () => {
+        this.newTime(this.state.time - 15)
+    }
+
+    onForwardClick = () => {
+        this.newTime(this.state.time + 15)
     }
 
     showControlsVisibility() {
@@ -538,7 +560,7 @@ class Player extends React.Component {
                 <Slider 
                     duration={this.duration}
                     onReturnCurrentTime={this.onSliderReturnCurrentTime}
-                    onNewTime={this.onSliderNewTime}
+                    onNewTime={this.newTime}
                 />
                 <div className="control-text" title="Timeleft">
                     {this.getDurationText()}
@@ -553,14 +575,18 @@ class Player extends React.Component {
                     />
                 </div>
                 <div className="control-icon">
+                    <i className="fa-solid fa-arrow-rotate-left" onClick={this.onBackwardsClick} />
+                </div>
+                <div className="control-icon">
+                    <i className="fa-solid fa-arrow-rotate-right" onClick={this.onForwardClick} />
+                </div>
+                <div className="control-icon">
                     <VolumeBar onChange={this.onVolumeChange} />
                 </div>
 
                 <div className="control-spacer" />
                 <div className="control-icon">
                     {this.renderPlayNext()}
-                </div>
-                <div className="control-icon">
                 </div>
                 <div className="control-icon">
                     <ChromecastIcon />
