@@ -115,10 +115,12 @@
         .overlay-box {
             height: 100%;
             width: 100%;
+            max-width: 1200px;
+            max-height: 600px;
             position: fixed;
             z-index: 1000;
-            top: 0;
-            left: 0;
+            bottom: 65px;
+            right: 0;
             background-color: rgba(0,0,0, 0.9);
             display: flex;
             flex-wrap: wrap;
@@ -126,9 +128,9 @@
             padding: 50px;
 
             .close-icon {
-                position: fixed;
+                position: absolute;
                 top: 0.1rem;
-                left: 0.7rem;
+                right: 0.7rem;
                 border: 0;
             }
 
@@ -147,7 +149,7 @@
 
                 .items {
                     overflow-y: auto;
-                    max-height: 50vh;
+                    max-height: 80vh;
                     
                     .item {
                         cursor: pointer;
@@ -157,8 +159,15 @@
                     }
                 }
             }
-
         }
+
+        @media screen and (max-height: 1000px) {
+            .overlay-box {
+                bottom: 0;
+                top: 0;
+            }
+        }
+
 
         .text-box-right {
             right: 0;
