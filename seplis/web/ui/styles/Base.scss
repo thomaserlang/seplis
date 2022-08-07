@@ -7,7 +7,6 @@ $headings-margin-bottom: 1rem;
 $grid-gutter-width: 1rem;
 
 $font-family-sans-serif:
-    "Open Sans",
     // Safari for OS X and iOS (San Francisco)
     -apple-system,
     // Chrome >= 56 for OS X (San Francisco), Windows, Linux and Android
@@ -34,7 +33,7 @@ h2,
 h3,
 h4 {
     margin-top: 0;
-    font-weight: 200;
+    font-weight: 400;
 }
 
 
