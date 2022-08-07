@@ -7,7 +7,7 @@ from seplis import config
 class Handler(PatternMatchingEventHandler):
 
     def __init__(self, scan_path, type_='series'):
-        logging.debug('initiated')
+        logging.info(f'Watching: {scan_path}')
         patterns = ['*.'+t for t in config.data.play.media_types]
         super().__init__(
             patterns=patterns,
@@ -27,7 +27,8 @@ class Handler(PatternMatchingEventHandler):
             return
         path = event.src_path
         if event.event_type == 'moved':
-            path = event.dest_path
+            path = event.dest_path        
+        logging.info(event)
         return (self.scanner.parse(path), path)
             
     def update(self, event):
@@ -77,7 +78,6 @@ def main():
     obs = Observer()
     logging.info('Play scan watch started')
     for s in config.data.play.scan:
-        logging.info(f'Watching: {s.path}')
         event_handler = Handler(
             scan_path=str(s.path),
             type_=s.type,

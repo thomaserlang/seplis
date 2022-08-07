@@ -70,7 +70,7 @@ class test_show(Testbase):
 
     def test_patch(self):
         show_id = self.new_show()
-        response = self.patch('/1/shows/{}'.format(show_id), {
+        response = self.patch('/1/series/{}'.format(show_id), {
             'title': 'QWERTY',
             'description': {
                 'text': 'The cases of the Naval Criminal Investigative Service.',

@@ -63,7 +63,7 @@ def cleanup_movies():
 
 class Play_scan(object):
 
-    def __init__(self, scan_path, type_='shows'):
+    def __init__(self, scan_path, type_='series'):
         if not os.path.exists(scan_path):
             raise Exception(f'scan_path "{scan_path}" does not exist')
         self.scan_path = scan_path
@@ -201,7 +201,7 @@ class Movie_scan(Play_scan):
         logging.info(f'Looking for a movie with title: "{title}"')
         with new_session() as session:
             movie = session.query(models.Movie_id_lookup).filter(
-                models.Movie_id_lookup.file_movie_title == title,
+                models.Movie_id_lookup.file_title == title,
             ).first()
             if not movie:
                 movies = self.client.get('/search', {
@@ -213,7 +213,7 @@ class Movie_scan(Play_scan):
                     return
                 logging.info(f'Found movie: {movies[0]["title"]} (Id: {movies[0]["id"]})')
                 movie = models.Movie_id_lookup(
-                    file_movie_title=title,
+                    file_title=title,
                     movie_title=movies[0]["title"],
                     movie_id=movies[0]["id"],
                     updated_at=datetime.utcnow(),
@@ -248,9 +248,9 @@ class Series_scan(Play_scan):
             scan_path=scan_path,
             type_='series',
         )
-        self.show_id = Show_id(scanner=self)
+        self.series_id = Series_id(scanner=self)
         self.episode_number = Episode_number(scanner=self)
-        self.not_found_shows = []
+        self.not_found_series = []
 
     def scan(self):
         logging.info(f'Scanning: {self.scan_path}')
@@ -279,29 +279,29 @@ class Series_scan(Play_scan):
             except:
                 logging.exception('episode parse pattern: {}'.format(pattern))
 
-    def episode_show_id_lookup(self, episode):
+    def episode_series_id_lookup(self, episode):
         '''
 
         :param episode: `Parsed_episode()`
         :returns: bool
         '''
-        if episode.file_show_title in self.not_found_shows:
+        if episode.file_title in self.not_found_series:
             return False
-        logging.info('Looking for a show with title: "{}"'.format(
-            episode.file_show_title
+        logging.info('Looking for a series with title: "{}"'.format(
+            episode.file_title
         ))
-        show_id = self.show_id.lookup(episode.file_show_title)
-        if show_id:
-            logging.info('Found show: "{}" with show id: {}'.format(
-                episode.file_show_title,
-                show_id,
+        series_id = self.series_id.lookup(episode.file_title)
+        if series_id:
+            logging.info('Found series: "{}" with series id: {}'.format(
+                episode.file_title,
+                series_id,
             ))
-            episode.show_id = show_id
+            episode.series_id = series_id
             return True
         else:
-            self.not_found_shows.append(episode.file_show_title)
-            logging.info('No show found for title: "{}"'.format(
-                episode.file_show_title,
+            self.not_found_series.append(episode.file_title)
+            logging.info('No series found for title: "{}"'.format(
+                episode.file_title,
             ))
         return False
 
@@ -313,28 +313,28 @@ class Series_scan(Play_scan):
         :param episode: `Parsed_episode()`
         :returns: bool
         '''
-        if not episode.show_id:
+        if not episode.series_id:
             return
         if isinstance(episode, Parsed_episode_number):
             return True
         value = self.episode_number.get_lookup_value(episode)
-        logging.info('Looking for episode {} with show_id {}'.format(
+        logging.info('Looking for episode {} with series_id {}'.format(
             value,
-            episode.show_id,
+            episode.series_id,
         ))
         number = self.episode_number.lookup(episode)
         if number:                
-            logging.info('Found episode {} from {} with show_id {}'.format(
+            logging.info('Found episode {} from {} with series_id {}'.format(
                 number,
                 value,
-                episode.show_id,
+                episode.series_id,
             ))
             episode.number = number
             return True
         else:
-            logging.info('No episode was found for {} with show_id {}'.format(
+            logging.info('No episode was found for {} with series_id {}'.format(
                 value,
-                episode.show_id,
+                episode.series_id,
             ))
         return False
 
@@ -343,8 +343,8 @@ class Series_scan(Play_scan):
         :param episode: `Parsed_episode()`
         :returns: bool
         '''
-        if not episode.show_id:
-            if not self.episode_show_id_lookup(episode):
+        if not episode.series_id:
+            if not self.episode_series_id_lookup(episode):
                 return False
         if not episode.number:
             if not self.episode_number_lookup(episode):
@@ -353,7 +353,7 @@ class Series_scan(Play_scan):
             ep = session.query(
                 models.Episode,
             ).filter(
-                models.Episode.show_id == episode.show_id,
+                models.Episode.series_id == episode.series_id,
                 models.Episode.number == episode.number,
             ).first()
             modified_time = self.get_file_modified_time(path)
@@ -362,7 +362,7 @@ class Series_scan(Play_scan):
                 return
             metadata = self.get_metadata(path)
             e = models.Episode(
-                show_id=episode.show_id,
+                series_id=episode.series_id,
                 number=episode.number,
                 path=path,
                 meta_data=metadata,
@@ -371,7 +371,7 @@ class Series_scan(Play_scan):
             session.merge(e)
             session.commit()
             logging.info('Saved episode: {} {}'.format(
-                episode.file_show_title,
+                episode.file_title,
                 episode.number
             ))
             return True
@@ -381,8 +381,8 @@ class Series_scan(Play_scan):
         :param episode: `Parsed_episode()`
         :returns: bool
         '''
-        if not episode.show_id:
-            if not self.episode_show_id_lookup(episode):
+        if not episode.series_id:
+            if not self.episode_series_id_lookup(episode):
                 return False
         if not episode.number:
             if not self.episode_number_lookup(episode):
@@ -391,14 +391,14 @@ class Series_scan(Play_scan):
             ep = session.query(
                 models.Episode,
             ).filter(
-                models.Episode.show_id == episode.show_id,
+                models.Episode.series_id == episode.series_id,
                 models.Episode.number == episode.number,
             ).first()
             if ep:
                 session.delete(ep)
                 session.commit()
                 logging.info('Deleted episode: {} {}'.format(
-                    episode.file_show_title,
+                    episode.file_title,
                     episode.number
                 ))
                 return True
@@ -407,9 +407,9 @@ class Series_scan(Play_scan):
     def _parse_episode_info_from_file(self, match):
         fields = match.groupdict().keys()
         season = None
-        if 'file_show_title' not in fields:
+        if 'file_title' not in fields:
             return None
-        file_show_title = match.group('file_show_title').strip().lower()
+        file_title = match.group('file_title').strip().lower()
 
         season = None
         if 'season' in fields:
@@ -435,18 +435,18 @@ class Series_scan(Play_scan):
 
         if season and number:
             return Parsed_episode_season(
-                file_show_title=file_show_title,
+                file_title=file_title,
                 season=season,
                 episode=number,
             )
         elif not season and number:
             return Parsed_episode_number(
-                file_show_title=file_show_title,
+                file_title=file_title,
                 number=number,
             )
         elif air_date:
             return Parsed_episode_air_date(
-                file_show_title=file_show_title,
+                file_title=file_title,
                 air_date=air_date,
             )
 
@@ -454,89 +454,89 @@ class Parsed_episode(object):
 
     def __init__(self):
         self.lookup_type = 0
-        self.show_id = None
+        self.series_id = None
         self.number = None
 
 class Parsed_episode_season(Parsed_episode):
 
-    def __init__(self, file_show_title, season, episode, show_id=None, number=None):
+    def __init__(self, file_title, season, episode, series_id=None, number=None):
         super().__init__()
         self.lookup_type = 1
-        self.file_show_title = file_show_title
+        self.file_title = file_title
         self.season = season
         self.episode = episode
-        self.show_id = show_id
+        self.series_id = series_id
         self.number = number
 
 class Parsed_episode_air_date(Parsed_episode):
 
-    def __init__(self, file_show_title, air_date, show_id=None, number=None):
+    def __init__(self, file_title, air_date, series_id=None, number=None):
         super().__init__()
         self.lookup_type = 2
-        self.file_show_title = file_show_title
+        self.file_title = file_title
         self.air_date = air_date
-        self.show_id = show_id
+        self.series_id = series_id
         self.number = number
 
 class Parsed_episode_number(Parsed_episode):
 
-    def __init__(self, file_show_title, number, show_id=None):
+    def __init__(self, file_title, number, series_id=None):
         super().__init__()
-        self.file_show_title = file_show_title
+        self.file_title = file_title
         self.number = number
-        self.show_id = show_id
+        self.series_id = series_id
 
-class Show_id(object):
-    '''Used to lookup a show id by it's title.
+class Series_id(object):
+    '''Used to lookup a series id by it's title.
     The result will be cached in the local db.
     '''
 
     def __init__(self, scanner):
         self.scanner = scanner
 
-    def lookup(self, file_show_title):
+    def lookup(self, file_title):
         '''
-        Tries to find the show on SEPLIS by it's title.
+        Tries to find the series on SEPLIS by it's title.
 
-        :param file_show_title: str
+        :param file_title: str
         :returns: int
         '''
-        show_id = self.db_lookup(file_show_title)
-        if show_id:
-            return show_id
-        shows = self.web_lookup(file_show_title)
-        show_id = shows[0]['id'] if shows else None
-        show_title = shows[0]['title'] if shows else None
+        series_id = self.db_lookup(file_title)
+        if series_id:
+            return series_id
+        series = self.web_lookup(file_title)
+        series_id = series[0]['id'] if series else None
+        series_title = series[0]['title'] if series else None
         with new_session() as session:
-            show = models.Show_id_lookup(
-                file_show_title=file_show_title,
-                show_title=show_title,
-                show_id=show_id,
-                updated=datetime.utcnow(),
+            series = models.Series_id_lookup(
+                file_title=file_title,
+                series_title=series_title,
+                series_id=series_id,
+                updated_at=datetime.utcnow(),
             )
-            session.merge(show)
+            session.merge(series)
             session.commit()
-        return show_id
+        return series_id
 
-    def db_lookup(self, file_show_title):        
+    def db_lookup(self, file_title):        
         '''
 
-        :param file_show_title: str
+        :param file_title: str
         :returns: int
         '''
         with new_session() as session:
-            show = session.query(
-                models.Show_id_lookup
+            series = session.query(
+                models.Series_id_lookup
             ).filter(
-                models.Show_id_lookup.file_show_title == file_show_title,
+                models.Series_id_lookup.file_title == file_title,
             ).first()
-            if not show or not show.show_id:
+            if not series or not series.series_id:
                 return
-            return show.show_id
+            return series.series_id
 
-    def web_lookup(self, file_show_title):
+    def web_lookup(self, file_title):
         series = self.scanner.client.get('/search', {
-            'title': file_show_title,
+            'title': file_title,
             'type': 'series',
         })
         return series
@@ -551,8 +551,8 @@ class Episode_number(object):
         self.scanner = scanner
 
     def lookup(self, episode):
-        if not episode.show_id:
-            raise Exception('show_id must be defined in the episode object')
+        if not episode.series_id:
+            raise Exception('series_id must be defined in the episode object')
         if isinstance(episode, Parsed_episode_number):
             return episode.number
         number = self.db_lookup(episode)
@@ -563,7 +563,7 @@ class Episode_number(object):
             return
         with new_session() as session:
             e = models.Episode_number_lookup(
-                show_id=episode.show_id,
+                series_id=episode.series_id,
                 lookup_type=episode.lookup_type,
                 lookup_value=self.get_lookup_value(episode),
                 number=number,
@@ -578,7 +578,7 @@ class Episode_number(object):
             e = session.query(
                 models.Episode_number_lookup.number
             ).filter(
-                models.Episode_number_lookup.show_id == episode.show_id,
+                models.Episode_number_lookup.series_id == episode.series_id,
                 models.Episode_number_lookup.lookup_type == episode.lookup_type,
                 models.Episode_number_lookup.lookup_value == value,
             ).first()
@@ -618,7 +618,7 @@ class Episode_number(object):
             )
         else:
             raise Exception('Unknown parsed episode object')
-        episodes = self.scanner.client.get('/shows/{}/episodes'.format(episode.show_id), {
+        episodes = self.scanner.client.get('/series/{}/episodes'.format(episode.series_id), {
             'q': query,
             'fields': 'number',
         })

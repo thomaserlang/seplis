@@ -3,9 +3,8 @@ from functools import partial
 import logging
 import signal
 from seplis.io_sighandler import sig_handler
-from seplis.play.handlers import play, shows, health
+from seplis.play.handlers import play, health
 import tornado.web
-import os, os.path
 from seplis import config
 from seplis.logger import logger
 
@@ -13,8 +12,6 @@ class Application(tornado.web.Application):
 
     def __init__(self, ioloop=None, **args):
         settings = dict(
-            template_path=os.path.join(os.path.dirname(__file__), 'templates'),
-            static_path=os.path.join(os.path.dirname(__file__), 'static'),
             debug=config.data.debug,
             autoescape=None,
             xsrf_cookies=False,
@@ -28,9 +25,6 @@ class Application(tornado.web.Application):
             (r'/files/(.*)', play.File_handler),
             (r'/close-session/(.*)', play.Close_session_handler),
             (r'/keep-alive/(.*)', play.Keep_alive_handler),
-
-            (r'/', shows.Handler),
-            (r'/api/show-suggest', shows.API_show_suggest_handler),
             (r'/health', health.Handler),
         ]
         super().__init__(urls, **settings)

@@ -3,9 +3,9 @@ import logging
 from dateutil import parser
 from seplis.api import constants
 from seplis import config
-from .base import Show_importer_base, register_importer
+from .base import Series_importer_base, register_importer
 
-class Thetvdb(Show_importer_base):
+class Thetvdb(Series_importer_base):
     display_name = 'TheTVDB'
     external_name = 'thetvdb'
     supported = (
@@ -35,9 +35,9 @@ class Thetvdb(Show_importer_base):
             return headers
         raise Exception('Unknown status code from thetvdb: {} {}'.format(r.status_code, r.content))
 
-    def info(self, show_id):
+    def info(self, series_id):
         r = requests.get(
-            self._url+'/series/{}'.format(show_id),
+            self._url+'/series/{}'.format(series_id),
             headers=self.login_headers(),
         )
         if r.status_code == 200:
@@ -47,10 +47,10 @@ class Thetvdb(Show_importer_base):
                 description = {
                     'text': data['overview'],
                     'title': 'TheTVDB',
-                    'url': 'http://thetvdb.com/?tab=series&id={}'.format(show_id), 
+                    'url': 'http://thetvdb.com/?tab=series&id={}'.format(series_id), 
                 }
             externals = {
-                'thetvdb': str(show_id),
+                'thetvdb': str(series_id),
             }
             if data['imdbId']:
                 externals['imdb'] = data['imdbId']
@@ -66,13 +66,13 @@ class Thetvdb(Show_importer_base):
                 'genres': data['genre'],
             }
 
-    def episodes(self, show_id):
+    def episodes(self, series_id):
         headers = self.login_headers()
         episodes = []
         data = {'links': { 'next': 1 } }
         while data['links']['next']:
             r = requests.get(
-                self._url+'/series/{}/episodes?page={}'.format(show_id, data['links']['next']),
+                self._url+'/series/{}/episodes?page={}'.format(series_id, data['links']['next']),
                 headers=headers,
             )
             if r.status_code == 200:
@@ -88,9 +88,9 @@ class Thetvdb(Show_importer_base):
             e['number'] = i + 1
         return episodes if episodes else None
 
-    def images(self, show_id):        
+    def images(self, series_id):        
         r = requests.get(
-            self._url+'/series/{}/images/query'.format(show_id),
+            self._url+'/series/{}/images/query'.format(series_id),
             params={
                 'keyType': 'poster',
                 'resolution': '680x1000',

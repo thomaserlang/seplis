@@ -314,7 +314,7 @@ async def get_metadata(play_id):
     async with database.session_async() as session:
         if data['type'] == 'series':
             query = select(models.Episode.meta_data).where(
-                models.Episode.show_id == data['show_id'],
+                models.Episode.series_id == data['show_id'],
                 models.Episode.number == data['number'],
             )
             files = await session.scalars(query)

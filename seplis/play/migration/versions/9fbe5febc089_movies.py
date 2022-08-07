@@ -16,7 +16,7 @@ import sqlalchemy as sa
 
 def upgrade():
     op.create_table('movie_id_lookup', 
-        sa.Column('file_movie_title', sa.String(200), primary_key=True),
+        sa.Column('file_title', sa.String(200), primary_key=True),
         sa.Column('movie_title', sa.String(200)),
         sa.Column('movie_id', sa.Integer),
         sa.Column('updated_at', sa.DateTime),
@@ -25,7 +25,7 @@ def upgrade():
     op.create_table('movies', 
         sa.Column('movie_id', sa.Integer, primary_key=True),
         sa.Column('path', sa.String(400), primary_key=True),
-        sa.Column('meta_data', sa.JSON),
+        sa.Column('metadata', sa.JSON),
         sa.Column('modified_time', sa.DateTime),
     )
 
