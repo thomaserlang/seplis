@@ -1,12 +1,11 @@
-import logging
 import os, os.path
 import time
-from seplis import schemas, config
+from seplis import config
 
 importers = {}
 
 def register_importer(obj):
-    if not isinstance(obj, Show_importer_base):
+    if not isinstance(obj, Series_importer_base):
         raise Exception('The object must be an instance of `Show_importer_base()`')
     if not obj.external_name:
         raise Exception('The importer external_name can\'t be `None`')
@@ -16,7 +15,7 @@ def register_importer(obj):
         ))
     importers[obj.external_name] = obj
 
-class Show_importer_base(object):
+class Series_importer_base(object):
 
     display_name = None
     
@@ -29,17 +28,17 @@ class Show_importer_base(object):
         - images
     """
 
-    def info(self, show_id):
+    def info(self, series_id):
         """Override this function and return a show.
         The return result must match `schemas.Show`.
         """
 
-    def episodes(self, show_id):
+    def episodes(self, series_id):
         """Override this function and return a list of episodes.
         The return result must match [`schemas.Episode`]
         """
 
-    def images(self, show_id):
+    def images(self, series_id):
         """Override this function and return a list of images
         of the show.
         The return result must match [`schemas.Image_required`].

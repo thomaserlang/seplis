@@ -9,7 +9,7 @@ from seplis.importer.shows.importer import client, importers, update_show, \
     _save_image, _upload_image, _show_info_changes, _show_episode_changes, \
     _importers_with_support, _cleanup_episodes, _importer_incremental, \
     update_shows_incremental, Importer_exception, Importer_upload_image_exception
-from seplis.importer.shows.base import Show_importer_base
+from seplis.importer.shows.base import Series_importer_base
 
 class Test_update_shows_incremental(TestCase):
 
@@ -287,11 +287,11 @@ class Test__importers_with_support(TestCase):
 
     def test(self):
         imps = {}
-        i1 = Show_importer_base()
+        i1 = Series_importer_base()
         i1.external_name = 'test_importer_1'
         i1.supported = ('info', 'images')
         imps[i1.external_name] = i1
-        i2 = Show_importer_base()
+        i2 = Series_importer_base()
         i2.external_name = 'test_importer_2'
         i2.supported = ('info')
         imps[i2.external_name] = i2

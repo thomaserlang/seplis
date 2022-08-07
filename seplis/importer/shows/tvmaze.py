@@ -5,9 +5,9 @@ import time, aniso8601
 from dateutil import tz
 from seplis.api import constants
 from dateutil import parser
-from .base import Show_importer_base, register_importer
+from .base import Series_importer_base, register_importer
 
-class Tvmaze(Show_importer_base):
+class Tvmaze(Series_importer_base):
     display_name = 'TVmaze'
     external_name = 'tvmaze'
     supported = (
