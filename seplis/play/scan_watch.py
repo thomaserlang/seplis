@@ -28,7 +28,7 @@ class Handler(PatternMatchingEventHandler):
         path = event.src_path
         if event.event_type == 'moved':
             path = event.dest_path        
-        logging.info(event)
+        logging.info(event.key)
         return (self.scanner.parse(path), path)
             
     def update(self, event):
