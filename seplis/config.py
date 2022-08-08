@@ -14,6 +14,7 @@ class ConfigElasticsearch(BaseModel):
     host: Union[str, List[str]] = 'https://127.0.0.1:9200'
     user: Optional[str]
     password: Optional[str]
+    verify_certs = True
 
 class ConfigAPIModel(BaseModel):
     database = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'

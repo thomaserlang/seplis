@@ -71,8 +71,16 @@ class Database:
         self.queue = Queue(connection=self.queue_redis)
 
         auth = (config.data.api.elasticsearch.user, config.data.api.elasticsearch.password) if config.data.api.elasticsearch.user else None
-        self.es = Elasticsearch(config.data.api.elasticsearch.host, basic_auth=auth)
-        self.es_async = AsyncElasticsearch(config.data.api.elasticsearch.host, basic_auth=auth)    
+        self.es = Elasticsearch(
+            hosts=config.data.api.elasticsearch.host, 
+            basic_auth=auth, 
+            verify_certs=config.data.api.elasticsearch.verify_certs,
+        )
+        self.es_async = AsyncElasticsearch(
+            hosts=config.data.api.elasticsearch.host, 
+            basic_auth=auth, 
+            verify_certs=config.data.api.elasticsearch.verify_certs,
+        )    
         
     def setup_sqlalchemy_session(self, connection):
         self.session = sessionmaker(
