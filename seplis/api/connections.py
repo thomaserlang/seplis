@@ -70,7 +70,8 @@ class Database:
             )
         self.queue = Queue(connection=self.queue_redis)
 
-        auth = (config.data.api.elasticsearch.user, config.data.api.elasticsearch.password) if config.data.api.elasticsearch.user else None
+        auth = (config.data.api.elasticsearch.user, config.data.api.elasticsearch.password) \
+            if config.data.api.elasticsearch.user and config.data.api.elasticsearch.password else None
         self.es = Elasticsearch(
             hosts=config.data.api.elasticsearch.host, 
             basic_auth=auth, 
