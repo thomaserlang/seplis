@@ -11,7 +11,10 @@ class ConfigRedisModel(BaseSettings):
     password: Optional[str]
 
     class Config:
-        env_prefix = 'seplis_redis_'
+        env_prefix = 'env_seplis_redis_'
+        env_nested_delimiter = '_'
+        validate_assignment = True
+        case_sensitive = False
 
 class ConfigAPIModel(BaseSettings):
     database = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
@@ -26,7 +29,7 @@ class ConfigAPIModel(BaseSettings):
     storitch: Optional[AnyHttpUrl]
 
     class Config:
-        env_prefix = 'seplis_api_'
+        env_prefix = 'env_seplis_api_'
         env_nested_delimiter = '_'
         validate_assignment = True
         case_sensitive = False
@@ -38,7 +41,10 @@ class ConfigWebModel(BaseSettings):
     chromecast_appid = 'EA4A67C4'
 
     class Config:
-        env_prefix = 'seplis_web_'
+        env_prefix = 'env_seplis_web_'
+        env_nested_delimiter = '_'
+        validate_assignment = True
+        case_sensitive = False
 
 class ConfigLoggingModel(BaseSettings):
     level: Literal['notset', 'debug', 'info', 'warn', 'error', 'critical'] = 'warn'
@@ -47,7 +53,10 @@ class ConfigLoggingModel(BaseSettings):
     num_backups = 10
     
     class Config:
-        env_prefix = 'seplis_logging_'
+        env_prefix = 'env_seplis_logging_'
+        env_nested_delimiter = '_'
+        validate_assignment = True
+        case_sensitive = False
 
 class ConfigClientModel(BaseSettings):
     access_token: Optional[str]
@@ -63,7 +72,10 @@ class ConfigClientModel(BaseSettings):
         return v or values['api_url']
 
     class Config:
-        env_prefix = 'seplis_client_'
+        env_prefix = 'env_seplis_client_'
+        env_nested_delimiter = '_'
+        validate_assignment = True
+        case_sensitive = False
 
 class ConfigPlayScanModel(BaseModel):
     type: Literal['series', 'movies']
@@ -85,7 +97,10 @@ class ConfigPlayModel(BaseSettings):
     session_timeout = 10 # Timeout for HLS sessions
 
     class Config:
-        env_prefix = 'seplis_play_'
+        env_prefix = 'env_seplis_play_'
+        env_nested_delimiter = '_'
+        validate_assignment = True
+        case_sensitive = False
 
 class ConfigSMTPModel(BaseSettings):
     server = '127.0.0.1'
@@ -96,7 +111,10 @@ class ConfigSMTPModel(BaseSettings):
     from_email: Optional[str]
 
     class Config:
-        env_prefix = 'seplis_smtp_'
+        env_prefix = 'env_seplis_smtp_'
+        env_nested_delimiter = '_'
+        validate_assignment = True
+        case_sensitive = False
     
 class ConfigModel(BaseSettings):
     debug = False
@@ -110,7 +128,7 @@ class ConfigModel(BaseSettings):
     smtp = ConfigSMTPModel()
 
     class Config:
-        env_prefix = 'seplis_'
+        env_prefix = 'env_seplis_'
         env_nested_delimiter = '_'
         validate_assignment = True
         case_sensitive = False
