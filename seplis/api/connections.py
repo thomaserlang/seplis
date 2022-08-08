@@ -69,8 +69,10 @@ class Database:
                 password=config.data.api.redis.password,
             )
         self.queue = Queue(connection=self.queue_redis)
-        self.es = Elasticsearch(config.data.api.elasticsearch)       
-        self.es_async = AsyncElasticsearch(config.data.api.elasticsearch)    
+
+        auth = (config.data.api.elasticsearch.user, config.data.api.elasticsearch.password) if config.data.api.elasticsearch.user else None
+        self.es = Elasticsearch(config.data.api.elasticsearch.host, http_auth=auth)
+        self.es_async = AsyncElasticsearch(config.data.api.elasticsearch.host, http_auth=auth)    
         
     def setup_sqlalchemy_session(self, connection):
         self.session = sessionmaker(

@@ -1,5 +1,5 @@
 import os, pathlib
-from typing import List, Literal, Optional, Tuple
+from typing import List, Literal, Optional, Tuple, Union
 from pydantic import AnyHttpUrl, BaseModel, BaseSettings, conint, validator
 import yaml, tempfile
 
@@ -10,12 +10,17 @@ class ConfigRedisModel(BaseModel):
     sentinel: Optional[List[Tuple[str, int]]]
     password: Optional[str]
 
+class ConfigElasticsearch(BaseModel):
+    host: Union[str, List[str]] = 'https://127.0.0.1:9200'
+    user: Optional[str]
+    password: Optional[str]
+
 class ConfigAPIModel(BaseModel):
     database = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
     database_test = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
     database_read_timeout = 5
     redis = ConfigRedisModel()
-    elasticsearch: Optional[AnyHttpUrl]
+    elasticsearch = ConfigElasticsearch()
     port = 8002
     max_workers = 5
     image_url: Optional[AnyHttpUrl] = 'https://images.seplis.net'
