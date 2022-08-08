@@ -128,4 +128,7 @@ def load(path=None):
         config.data = ConfigModel(**data)
 
     if config.data.play.temp_folder:
-        os.makedirs(config.data.play.temp_folder, exist_ok=True)
+        try:
+            os.makedirs(config.data.play.temp_folder, exist_ok=True)
+        except:
+            pass
