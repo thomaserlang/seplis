@@ -3,20 +3,14 @@ from typing import List, Literal, Optional, Tuple
 from pydantic import AnyHttpUrl, BaseModel, BaseSettings, conint, validator
 import yaml, tempfile
 
-class ConfigRedisModel(BaseSettings):
+class ConfigRedisModel(BaseModel):
     ip: str = '127.0.0.1'
     port: int = 6379
     db: conint(ge=0, le=15) = 0
     sentinel: Optional[List[Tuple[str, int]]]
     password: Optional[str]
 
-    class Config:
-        env_prefix = 'env_seplis_redis_'
-        env_nested_delimiter = '_'
-        validate_assignment = True
-        case_sensitive = False
-
-class ConfigAPIModel(BaseSettings):
+class ConfigAPIModel(BaseModel):
     database = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
     database_test = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
     database_read_timeout = 5
@@ -28,37 +22,19 @@ class ConfigAPIModel(BaseSettings):
     base_url: Optional[AnyHttpUrl] = 'https://api.seplis.net'
     storitch: Optional[AnyHttpUrl]
 
-    class Config:
-        env_prefix = 'env_seplis_api_'
-        env_nested_delimiter = '_'
-        validate_assignment = True
-        case_sensitive = False
-
-class ConfigWebModel(BaseSettings):
+class ConfigWebModel(BaseModel):
     url: Optional[AnyHttpUrl]
     cookie_secret: Optional[str]
     port = 8001
     chromecast_appid = 'EA4A67C4'
 
-    class Config:
-        env_prefix = 'env_seplis_web_'
-        env_nested_delimiter = '_'
-        validate_assignment = True
-        case_sensitive = False
-
-class ConfigLoggingModel(BaseSettings):
+class ConfigLoggingModel(BaseModel):
     level: Literal['notset', 'debug', 'info', 'warn', 'error', 'critical'] = 'warn'
     path: Optional[pathlib.Path]
     max_size: int = 100 * 1000 * 1000 # ~ 95 mb
     num_backups = 10
-    
-    class Config:
-        env_prefix = 'env_seplis_logging_'
-        env_nested_delimiter = '_'
-        validate_assignment = True
-        case_sensitive = False
 
-class ConfigClientModel(BaseSettings):
+class ConfigClientModel(BaseModel):
     access_token: Optional[str]
     thetvdb: Optional[str]
     themoviedb: Optional[str]
@@ -71,18 +47,12 @@ class ConfigClientModel(BaseSettings):
     def default_ts_modified(cls, v, *, values, **kwargs):
         return v or values['api_url']
 
-    class Config:
-        env_prefix = 'env_seplis_client_'
-        env_nested_delimiter = '_'
-        validate_assignment = True
-        case_sensitive = False
-
 class ConfigPlayScanModel(BaseModel):
     type: Literal['series', 'movies']
     path: pathlib.Path
     make_thumbnails: bool = False
 
-class ConfigPlayModel(BaseSettings):
+class ConfigPlayModel(BaseModel):
     database: Optional[str]
     secret: Optional[str]
     scan: Optional[List[ConfigPlayScanModel]]
@@ -96,25 +66,13 @@ class ConfigPlayModel(BaseSettings):
     thumbnails_path: Optional[pathlib.Path]
     session_timeout = 10 # Timeout for HLS sessions
 
-    class Config:
-        env_prefix = 'env_seplis_play_'
-        env_nested_delimiter = '_'
-        validate_assignment = True
-        case_sensitive = False
-
-class ConfigSMTPModel(BaseSettings):
+class ConfigSMTPModel(BaseModel):
     server = '127.0.0.1'
     port = 25
     user: Optional[str]
     password: Optional[str]
     use_tls: Optional[bool]
     from_email: Optional[str]
-
-    class Config:
-        env_prefix = 'env_seplis_smtp_'
-        env_nested_delimiter = '_'
-        validate_assignment = True
-        case_sensitive = False
     
 class ConfigModel(BaseSettings):
     debug = False
@@ -128,8 +86,8 @@ class ConfigModel(BaseSettings):
     smtp = ConfigSMTPModel()
 
     class Config:
-        env_prefix = 'env_seplis_'
-        env_nested_delimiter = '_'
+        env_prefix = 'seplis_'
+        env_nested_delimiter = '.'
         validate_assignment = True
         case_sensitive = False
 
