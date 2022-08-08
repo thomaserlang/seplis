@@ -75,7 +75,7 @@ class Slider extends React.Component {
         if ((event.clientX - half) <= 0) {
             x = half-r.left
         } else if ((event.clientX + half) > window.innerWidth) {
-            x = window.innerWidth - (half+r.left)
+            x = window.innerWidth - (half+(window.innerWidth-r.right))
         }
         this.hoverTime.style.left = `${x}px`
         
@@ -130,7 +130,7 @@ class Slider extends React.Component {
     setThumbnail() {
         if (!this.hasThumbnails)
             return
-        let a = (Math.round(this.state.hoverTime / 10))
+        let a = (Math.round(this.state.hoverTime / 60))
         if (a < 1)
             a = 1
         this.setState({

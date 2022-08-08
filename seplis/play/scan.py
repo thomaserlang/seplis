@@ -152,7 +152,7 @@ class Play_scan(object):
         cmd = [
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
             '-i', path,
-            '-vf', 'fps=1/10,scale=320:-2',
+            '-vf', 'fps=1/60,scale=320:-2',
             '-lossless', '0',
             '-compression_level', '6',
             '-vcodec', 'libwebp',
