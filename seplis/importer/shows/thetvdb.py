@@ -143,7 +143,7 @@ class Thetvdb(Series_importer_base):
                     continue
                 _episodes.append(self.parse_episode(episode))
             except ValueError as e:
-                logging.exception('Parsing episode "{}" faild with error: {}'.format(date))
+                logging.exception('Parsing episode "{}" faild with error: {}'.format(e))
         return _episodes
 
     def parse_episode(self, episode):
