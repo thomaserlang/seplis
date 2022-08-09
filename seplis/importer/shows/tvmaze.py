@@ -16,12 +16,12 @@ class Tvmaze(Series_importer_base):
         'images',
     )
     
-    _url = 'http://api.tvmaze.com/shows/{show_id}'
-    _url_episodes = 'http://api.tvmaze.com/shows/{show_id}/episodes'
+    _url = 'http://api.tvmaze.com/shows/{series}'
+    _url_episodes = 'http://api.tvmaze.com/shows/{series}/episodes'
     _url_update = 'http://api.tvmaze.com/updates/shows'
 
-    def info(self, show_id):
-        r = requests.get(self._url.format(show_id=show_id))
+    def info(self, series):
+        r = requests.get(self._url.format(series=series))
         if r.status_code != 200:
             return
         show = r.json()
@@ -52,8 +52,8 @@ class Tvmaze(Series_importer_base):
             return 2
         return 1
 
-    def images(self, show_id):
-        r = requests.get(self._url.format(show_id=show_id))
+    def images(self, series):
+        r = requests.get(self._url.format(series=series))
         if r.status_code != 200:
             return
         data = r.json()
@@ -71,8 +71,8 @@ class Tvmaze(Series_importer_base):
             'type': constants.IMAGE_TYPE_POSTER,
         }]
 
-    def episodes(self, show_id):
-        r = requests.get(self._url_episodes.format(show_id=show_id))
+    def episodes(self, series):
+        r = requests.get(self._url_episodes.format(series=series))
         if r.status_code != 200:
             return
         data = r.json()
