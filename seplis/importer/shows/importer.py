@@ -19,17 +19,17 @@ class Importer_exception(Exception):
 class Importer_upload_image_exception(Importer_exception):
     pass
 
-def update_show_by_id(show_id):
-    show = client.get('/shows/{}'.format(show_id))
+def update_show_by_id(series_id):
+    show = client.get('/shows/{}'.format(series_id))
     if not show:
-        logger.error('Unknown show: {}'.format(show_id))
+        logger.error('Unknown show: {}'.format(series_id))
         return 
     update_show(show)
 
-def update_shows_all(from_show_id=0, do_async=False):
+def update_shows_all(from_series_id=0, do_async=False):
     shows = client.get('/shows', {
         'per_page': 500,
-        'from_id': from_show_id,
+        'from_id': from_series_id,
     })
     for show in shows.all():
         try:
@@ -62,11 +62,11 @@ def update_shows_incremental():
 
 def _importer_incremental(importer):
     timestamp = time.time()    
-    show_ids = _importer_incremental_updates_with_retry(importer) or []
-    for show_id in show_ids:
+    series_ids = _importer_incremental_updates_with_retry(importer) or []
+    for series_id in series_ids:
         show = client.get('/shows/externals/{}/{}'.format(
             importer.external_name,
-            show_id,
+            series_id,
         ))
         if not show:
             continue
@@ -138,7 +138,7 @@ def update_show_info(show):
     info = call_importer(
         external_name=show['importers']['info'],
         method='info',
-        show_id=show['externals'][show['importers']['info']],
+        series_id=show['externals'][show['importers']['info']],
     )
     if not info:
         return show
@@ -167,7 +167,7 @@ def update_show_episodes(show):
     imp_episodes = call_importer(
         external_name=show['importers']['episodes'],
         method='episodes',
-        show_id=show['externals'][show['importers']['episodes']],
+        series_id=show['externals'][show['importers']['episodes']],
     )
     if imp_episodes == None:
         return
@@ -183,7 +183,7 @@ def update_show_episodes(show):
             timeout=120,
         )
 
-def _cleanup_episodes(show_id, episodes, imported_episodes):
+def _cleanup_episodes(series_id, episodes, imported_episodes):
     """Sends an API request to delete episodes that 
     does not exist in `imported_episodes`
 
@@ -197,7 +197,7 @@ def _cleanup_episodes(show_id, episodes, imported_episodes):
     for e in episodes:
         if e['number'] not in imp_ep_numbers:
             client.delete('/shows/{}/episodes/{}'.format(
-                show_id, 
+                series_id, 
                 e['number'],
             ))
 
@@ -229,7 +229,7 @@ def update_show_images(show):
             imp_images = call_importer(
                 external_name=name, 
                 method='images',
-                show_id=show['externals'][name],
+                series_id=show['externals'][name],
             )
             if not imp_images:
                 continue
@@ -253,15 +253,15 @@ def update_show_images(show):
             image_id=images_added[0]['id'] if images_added else None,
         )
 
-def _save_image(show_id, image):
+def _save_image(series_id, image):
     saved_image = client.post(
-        '/shows/{}/images'.format(show_id), 
+        '/shows/{}/images'.format(series_id), 
         image
     )
-    if _upload_image(show_id, saved_image):
+    if _upload_image(series_id, saved_image):
         return saved_image
 
-def _upload_image(show_id, image):
+def _upload_image(series_id, image):
     """Uploads the image specified in `image['source_url']`
     to the API server as saves it for `image`.
 
@@ -275,7 +275,7 @@ def _upload_image(show_id, image):
     if r.status_code != 200:
         # Delete the image from the database if the image could not 
         # be downloaded
-        client.delete('/shows/{}/images/{}'.format(show_id, image['id']))
+        client.delete('/shows/{}/images/{}'.format(series_id, image['id']))
         raise Importer_exception(
             'Could not retrieve the source image from "{}". Status code: {}'.format(
                 image['source_url'],
@@ -283,7 +283,7 @@ def _upload_image(show_id, image):
             )
         )
     r = requests.put(
-        client.url+'/shows/{}/images/{}/data'.format(show_id, image['id']),
+        client.url+'/shows/{}/images/{}/data'.format(series_id, image['id']),
         files={
             image['source_url'][image['source_url'].rfind("/")+1:]: r.raw,
         },
@@ -294,7 +294,7 @@ def _upload_image(show_id, image):
     if r.status_code != 200:
         # Delete the image from the database if the image could not 
         # be uploaded        
-        client.delete('/shows/{}/images/{}'.format(show_id, image['id']))
+        client.delete('/shows/{}/images/{}'.format(series_id, image['id']))
         data = r.json()
         if data['code'] in (2004, 2101):
             logging.warning(
@@ -310,7 +310,7 @@ def _upload_image(show_id, image):
             )
         )
     logging.info('Show "{}" new image uploaded: {}'.format(
-        show_id,
+        series_id,
         image['id'],
     ))
     return True
@@ -327,13 +327,13 @@ def _importers_with_support(show_externals, support):
             imp_names.append(name)
     return imp_names
 
-def _set_latest_image_as_primary(show_id, image_id=None):
+def _set_latest_image_as_primary(series_id, image_id=None):
     """Set the shows latests added image as the primary.
     If `image_id` is not None it will use the image id as
     the primary.
     """
     if not image_id:
-        images = client.get('/shows/{}/images'.format(show_id), {
+        images = client.get('/shows/{}/images'.format(series_id), {
             'per_page': 1,
             'q': 'type:{} AND _exists_:hash'.format(
                 constants.IMAGE_TYPE_POSTER
@@ -342,12 +342,12 @@ def _set_latest_image_as_primary(show_id, image_id=None):
         })
         if images:
             logging.info('Show "{}" new primary image: {}'.format(
-                show_id,
+                series_id,
                 images[0]['id'],
             ))
             image_id = images[0]['id']
     if image_id:
-        client.patch('/shows/{}'.format(show_id), {
+        client.patch('/shows/{}'.format(series_id), {
             'poster_image_id': image_id,
         })
 
@@ -358,7 +358,7 @@ def call_importer(external_name, method, *args, **kwargs):
         logger.warn(
             'Show "{}" has an unknown importer at {} ' 
             'with external name "{}"'.format(
-                kwargs.get('show_id'),
+                kwargs.get('series_id'),
                 method,
                 external_name,
             )
