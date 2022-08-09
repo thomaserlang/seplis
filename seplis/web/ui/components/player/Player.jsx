@@ -514,11 +514,11 @@ class Player extends React.Component {
     }
 
     renderControlsTop() {
-        return <div className="controls-top">
-            <div
-                className="controls" 
-                style={{visibility: this.showControlsVisibility()}}
-            >
+        return <div 
+            className="controls-top"            
+            style={{visibility: this.showControlsVisibility()}}
+        >
+            <div className="controls">
                 <div className="control-icon">
                     <a 
                         href={this.props.backToInfo.url}
