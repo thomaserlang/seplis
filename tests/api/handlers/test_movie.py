@@ -9,7 +9,7 @@ class test_movie(Testbase):
     def test(self):
         self.login_async(constants.LEVEL_EDIT_SHOW)
         response = self.get(f'/1/movies/1')
-        self.assertEqual(response.code, 404)
+        self.assertEqual(response.code, 404, response.body)
 
         response = self.post('/1/movies', {
             'title': 'National Treasure',

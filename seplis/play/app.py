@@ -10,13 +10,12 @@ from seplis.logger import logger
 
 class Application(tornado.web.Application):
 
-    def __init__(self, ioloop=None, **args):
+    def __init__(self, **args):
         settings = dict(
             debug=config.data.debug,
             autoescape=None,
             xsrf_cookies=False,
         )
-        self.ioloop = ioloop or asyncio.get_event_loop()
         urls = [
             (r'/transcode', play.Transcode_handler),
             (r'/subtitle-file', play.Subtitle_file_handler),
@@ -29,10 +28,10 @@ class Application(tornado.web.Application):
         ]
         super().__init__(urls, **settings)
 
-def main():
+async def main():
     logger.set_logger(f'play_server_{config.data.play.port}.log')
-    loop = asyncio.get_event_loop()
-    app = Application(loop)
+
+    app = Application()
     server = app.listen(config.data.play.port)
 
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
@@ -41,5 +40,5 @@ def main():
     log = logging.getLogger('main')
     log.setLevel('INFO')
     log.info(f'Play server started on port: {config.data.play.port}')
-    loop.run_forever()
+    await asyncio.Event().wait()
     log.info('Play server stopped')

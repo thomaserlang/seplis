@@ -87,13 +87,12 @@ urls = [
 
 class Application(web.Application):
 
-    def __init__(self, ioloop=None, **args):
+    def __init__(self, **args):
         settings = dict(
             debug=seplis.config.data.debug,
             autoescape=None,
             xsrf_cookies=False,
         )
-        self.ioloop = ioloop or asyncio.get_event_loop()
         self.executor = ThreadPoolExecutor(
             max_workers=seplis.config.data.api.max_workers
         )
@@ -106,8 +105,7 @@ async def main():
             dsn=seplis.config.data.sentry_dsn,
             integrations=[TornadoIntegration()],
         )
-    loop = asyncio.get_event_loop()
-    app = Application(loop)
+    app = Application()
     server = app.listen(seplis.config.data.api.port)
 
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))

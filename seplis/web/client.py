@@ -1,11 +1,8 @@
-import logging
-import json
 import requests
-from tornado import httpclient, gen, ioloop, web
+from tornado import httpclient
 from urllib.parse import urljoin, urlencode
 from seplis import utils, config
 from .exceptions import API_error
-from functools import partial
 
 TIMEOUT = 60 # seconds
 LINK_TYPES = ('next', 'prev', 'first', 'last')
@@ -96,12 +93,11 @@ class HTTPData(object):
 class Async_client(object):
 
     def __init__(self, url, client_id=None, client_secret=None, 
-                 access_token=None, version='1', io_loop=None):
+                 access_token=None, version='1'):
         self.url = urljoin(url, str(version))
         self.client_id = client_id
         self.client_secret = client_secret
-        self.io_loop = io_loop or ioloop.IOLoop.instance()
-        self._client = httpclient.AsyncHTTPClient(self.io_loop)
+        self._client = httpclient.AsyncHTTPClient()
         self.access_token = access_token
 
     async def _fetch(self, method, uri, body=None, headers=None, timeout=TIMEOUT):

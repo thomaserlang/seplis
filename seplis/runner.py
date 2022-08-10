@@ -24,7 +24,7 @@ def web(port):
     if port:
         config.data.web.port = port            
     import seplis.web.app
-    seplis.web.app.main()
+    asyncio.run(seplis.web.app.main())
 
 @cli.command()
 @click.option('--port', '-p', help='the port')
@@ -44,7 +44,7 @@ def play_server(port):
     from seplis.play.connections import database
     database.connect()
     import seplis.play.app
-    seplis.play.app.main()
+    asyncio.run(seplis.play.app.main())
 
 @cli.command()
 def upgrade():
@@ -58,35 +58,20 @@ def rebuild_cache():
     from seplis.api.connections import database
     database.connect()
     import seplis.api.rebuild_cache
-    try:
-        seplis.api.rebuild_cache.main()
-    except (KeyboardInterrupt, SystemExit):
-        raise 
-    except:
-        logging.exception('rebuild_cache')
+    seplis.api.rebuild_cache.main()
 
 @cli.command()
 def update_shows():
     import seplis.importer
     logger.set_logger('importer_update_shows.log', to_sentry=True)
-    try:
-        seplis.importer.shows.update_shows_incremental()
-    except (KeyboardInterrupt, SystemExit):
-        raise 
-    except:
-        logging.exception('importer_update_shows')
+    seplis.importer.shows.update_shows_incremental()
 
 @cli.command()
 @click.argument('show_id')
 def update_show(show_id):
     import seplis.importer
     logger.set_logger('importer_update_show_by_id.log', to_sentry=True)
-    try:
-        seplis.importer.shows.update_show_by_id(show_id)
-    except (KeyboardInterrupt, SystemExit):
-        raise 
-    except:
-        logging.exception('update_show_by_id')
+    seplis.importer.shows.update_show_by_id(show_id)
 
 @cli.command()
 @click.option('--from_id', default=1, help='which show to start from')
@@ -94,12 +79,7 @@ def update_show(show_id):
 def update_shows_all(from_id, do_async):
     import seplis.importer
     logger.set_logger('importer_update_shows_all.log', to_sentry=True)
-    try:
-        seplis.importer.shows.update_shows_all(from_id, do_async=do_async)
-    except (KeyboardInterrupt, SystemExit):
-        raise 
-    except:
-        logging.exception('update_shows_all')
+    seplis.importer.shows.update_shows_all(from_id, do_async=do_async)
 
 @cli.command()
 @click.argument('movie_id')
@@ -121,12 +101,7 @@ def worker(n):
     import seplis.tasks.worker
     from seplis.api.connections import database
     database.connect()
-    try:
-        seplis.tasks.worker.main()
-    except (KeyboardInterrupt, SystemExit):
-        raise 
-    except:
-        logging.exception('worker')
+    seplis.tasks.worker.main()
 
 @cli.command()
 @click.option('--disable-cleanup', is_flag=True, help='Disable cleanup after scan')
@@ -148,11 +123,8 @@ def play_scan_watch():
     import seplis.play.scan
     from seplis.play.connections import database
     database.connect()
-    try:
-        seplis.play.scan.upgrade_scan_db()
-        seplis.play.scan_watch.main()
-    except:
-        logging.exception('play_scan_watch')
+    seplis.play.scan.upgrade_scan_db()
+    seplis.play.scan_watch.main()
 
 @cli.command()
 def play_scan_cleanup():
@@ -160,12 +132,9 @@ def play_scan_cleanup():
     import seplis.play.scan
     from seplis.play.connections import database
     database.connect()
-    try:
-        seplis.play.scan.upgrade_scan_db()
-        seplis.play.scan.cleanup()
-    except:
-        logging.exception('play_scan_cleanup')
-
+    seplis.play.scan.upgrade_scan_db()
+    seplis.play.scan.cleanup()
+    
 @cli.command()
 def dev_server():
     logger.set_logger('dev_server', to_sentry=False)

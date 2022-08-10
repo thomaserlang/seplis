@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import sqlalchemy.orm.session
 import tornado.platform.asyncio
@@ -101,7 +102,7 @@ def run_on_executor(method):
     """
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
-        return self.application.ioloop.run_in_executor(
+        return asyncio.get_running_loop().run_in_executor(
             self.application.executor,
             functools.partial(method, self, *args, **kwargs)
         )

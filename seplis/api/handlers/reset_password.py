@@ -30,8 +30,7 @@ class Handler(base.Handler):
         smtp = aiosmtplib.SMTP(
             hostname=config.data.smtp.server, 
             port=int(config.data.smtp.port),
-            use_tls=config.data.smtp.use_tls, 
-            loop=self.application.ioloop,
+            use_tls=config.data.smtp.use_tls,
         )
         await smtp.connect()
         if config.data.smtp.user:
