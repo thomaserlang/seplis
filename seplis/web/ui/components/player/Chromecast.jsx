@@ -127,13 +127,8 @@ class Chromecast {
                         startTime = 0
                 }
                 let customData = {
-                    play: result[0]['playServer'],
-                    metadata: {
-                        format: {
-                            duration: result[0]['sources'][0]['duration'],
-                        },
-                        sources: sources,
-                    },
+                    play: result[0]['playServer'],                    
+                    sources: result[0]['sources'],
                     token: result[1]['token'],
                     type: 'episode',
                     series: {
@@ -206,12 +201,7 @@ class Chromecast {
                 }
                 let customData = {
                     play: result[0]['playServer'],
-                    metadata: {
-                        format: {
-                            duration: result[0]['sources'][0]['duration'],
-                        },
-                        streams: streams,
-                    },
+                    sources: result[0]['sources'],
                     token: result[1]['token'],
                     type: 'movie',
                     movie: {

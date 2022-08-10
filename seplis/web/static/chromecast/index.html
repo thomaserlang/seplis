@@ -101,7 +101,7 @@
             if ((time % 10) != 0)
                 return
 
-            let duration = parseInt(customData['metadata']['format']['duration'])
+            let duration = parseInt(customData['sources'][0]['duration'])
             let watched = (((time / 100) * 10) > (duration-time))
             
             
