@@ -126,27 +126,13 @@ class Chromecast {
                     else
                         startTime = 0
                 }
-                let streams = []
-                for (let v of result[0]['metadata'][0]['streams']) {
-                    let d = {
-                        index: v.index,
-                        codec_name: v.codec_name,
-                        codec_type: v.codec_type,
-                        tags: {},                   
-                    }
-                    if (v.tags) {
-                        d.tags.language = v.tags.language
-                        d.tags.title = v.tags.title
-                    }
-                    streams.push(d)
-                }
                 let customData = {
                     play: result[0]['playServer'],
                     metadata: {
                         format: {
-                            duration: result[0]['metadata'][0]['format']['duration'],
+                            duration: result[0]['sources'][0]['duration'],
                         },
-                        streams: streams,
+                        sources: sources,
                     },
                     token: result[1]['token'],
                     type: 'episode',
@@ -174,7 +160,7 @@ class Chromecast {
                     `&audio_channels=2`+
                     `&format=pipe`
                 if (result[5]) {
-                    playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
+                    // playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
                     playUrl += `&audio_lang=${result[5].audio_lang || ''}`
                 }
                 let request = new chrome.cast.media.LoadRequest(
@@ -218,25 +204,11 @@ class Chromecast {
                     else
                         startTime = 0
                 }
-                let streams = []
-                for (let v of result[0]['metadata'][0]['streams']) {
-                    let d = {
-                        index: v.index,
-                        codec_name: v.codec_name,
-                        codec_type: v.codec_type,
-                        tags: {},                   
-                    }
-                    if (v.tags) {
-                        d.tags.language = v.tags.language
-                        d.tags.title = v.tags.title
-                    }
-                    streams.push(d)
-                }
                 let customData = {
                     play: result[0]['playServer'],
                     metadata: {
                         format: {
-                            duration: result[0]['metadata'][0]['format']['duration'],
+                            duration: result[0]['sources'][0]['duration'],
                         },
                         streams: streams,
                     },
