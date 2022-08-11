@@ -1,6 +1,5 @@
-import logging, logging.handlers, os, sentry_sdk
+import logging, os, sentry_sdk
 from seplis.config import config
-from tornado import log as tornadolog
 
 logger = logging.getLogger('seplis')
 
@@ -10,9 +9,9 @@ def set_logger(filename, to_sentry=True):
     logger.setLevel(config.data.logging.level.upper())
     glogger = logging.getLogger()
     glogger.handlers = []
-    format_ = tornadolog.LogFormatter(
-        '[%(color)s%(levelname)s%(end_color)s %(asctime)s %(module)s:%(lineno)d]: %(message)s', 
-        datefmt='%Y-%m-%d %H:%M:%S'
+    format_ = logging.Formatter(        
+        fmt='[%(asctime)s.%(msecs)-3d] %(levelname)-8s %(message)s (%(filename)s:%(lineno)d)',
+        datefmt='%Y-%m-%dT%H:%M:%S',
     )
     if config.data.logging.path:
         channel = logging.handlers.RotatingFileHandler(

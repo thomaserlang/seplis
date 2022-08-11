@@ -62,8 +62,3 @@ async def main():
     log.info(f'Web server started on port: {config.data.web.port}')
     await asyncio.Event().wait()
     log.info('Web server stopped')
-
-if __name__ == '__main__':
-    import seplis
-    seplis.config_load()
-    main()
