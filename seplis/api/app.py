@@ -7,8 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 import sentry_sdk
 from sentry_sdk.integrations.tornado import TornadoIntegration
 
-import seplis
-from seplis.logger import logger
+from seplis import config
 from seplis.io_sighandler import sig_handler
 from . import handlers as h
 
@@ -89,30 +88,30 @@ class Application(web.Application):
 
     def __init__(self, **args):
         settings = dict(
-            debug=seplis.config.data.debug,
+            debug=config.data.debug,
             autoescape=None,
             xsrf_cookies=False,
         )
         self.executor = ThreadPoolExecutor(
-            max_workers=seplis.config.data.api.max_workers
+            max_workers=config.data.api.max_workers
         )
         super().__init__(urls, **settings)
 
 async def main():
-    logger.set_logger(f'api-{seplis.config.data.api.port}.log')
-    if seplis.config.data.sentry_dsn:
+    if config.data.sentry_dsn:
         sentry_sdk.init(
-            dsn=seplis.config.data.sentry_dsn,
+            dsn=config.data.sentry_dsn,
             integrations=[TornadoIntegration()],
         )
     app = Application()
-    server = app.listen(seplis.config.data.api.port)
+    server = app.listen(config.data.api.port)
 
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
     signal.signal(signal.SIGINT, partial(sig_handler, server, app))
 
+    logging.getLogger('tornado.access').setLevel(config.data.logging.level.upper())
     log = logging.getLogger('main')
     log.setLevel('INFO')
-    log.info(f'API server started on port: {seplis.config.data.api.port}')
+    log.info(f'API server started on port: {config.data.api.port}')
     await asyncio.Event().wait()
     log.info('API server stopped')

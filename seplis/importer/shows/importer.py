@@ -1,13 +1,9 @@
-import logging
 import requests, requests.exceptions
 import time
 from retrying import retry
-from seplis import schemas, Client, config, constants, API_error
+from seplis import schemas, Client, config, constants, API_error, logger
 from .base import importers
 
-logging.getLogger("requests").setLevel(logging.WARNING)
-
-logger = logging.getLogger(__name__)
 client = Client(
     url=config.data.client.api_url,
     access_token=config.data.client.access_token,
@@ -33,7 +29,7 @@ def update_shows_all(from_series_id=0, do_async=False):
     })
     for show in shows.all():
         try:
-            logging.info('Show: {}'.format(show['id']))
+            logger.info('Show: {}'.format(show['id']))
             if do_async:
                 client.post('/shows/{}/update'.format(show['id']))
             else:
@@ -144,7 +140,7 @@ def update_show_info(show):
         return show
     info = _show_info_changes(show, info)
     if info:
-        logging.info('Updating show "{}" info'.format(show['id']))
+        logger.info('Updating show "{}" info'.format(show['id']))
         show = client.patch(
             '/shows/{}'.format(show['id']), 
             info,
@@ -176,7 +172,7 @@ def update_show_episodes(show):
     changes = _show_episode_changes(episodes, imp_episodes)
 
     if changes:
-        logging.info('Updating show "{}" episodes'.format(show['id']))
+        logger.info('Updating show "{}" episodes'.format(show['id']))
         client.patch(
             '/shows/{}'.format(show['id']),
             {'episodes': changes},
@@ -246,7 +242,7 @@ def update_show_images(show):
         except Importer_upload_image_exception:
             raise
         except:
-            logging.exception('update_show_images')
+            logger.exception('update_show_images')
     if (('poster_image' in show) and not show['poster_image']):
         _set_latest_image_as_primary(
             show['id'],
@@ -297,7 +293,7 @@ def _upload_image(series_id, image):
         client.delete('/shows/{}/images/{}'.format(series_id, image['id']))
         data = r.json()
         if data['code'] in (2004, 2101):
-            logging.warning(
+            logger.warning(
                 data['message']+'\n\n'+image['source_url']
             )
             return False
@@ -309,7 +305,7 @@ def _upload_image(series_id, image):
                 r.text,
             )
         )
-    logging.info('Show "{}" new image uploaded: {}'.format(
+    logger.info('Show "{}" new image uploaded: {}'.format(
         series_id,
         image['id'],
     ))
@@ -341,7 +337,7 @@ def _set_latest_image_as_primary(series_id, image_id=None):
             'sort': 'created_at:desc',
         })
         if images:
-            logging.info('Show "{}" new primary image: {}'.format(
+            logger.info('Show "{}" new primary image: {}'.format(
                 series_id,
                 images[0]['id'],
             ))

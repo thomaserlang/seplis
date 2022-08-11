@@ -1,8 +1,7 @@
 import requests, json
-import logging
 from dateutil import parser
 from seplis.api import constants
-from seplis import config
+from seplis import config, logger
 from .base import Series_importer_base, register_importer
 
 class Thetvdb(Series_importer_base):
@@ -143,7 +142,7 @@ class Thetvdb(Series_importer_base):
                     continue
                 _episodes.append(self.parse_episode(episode))
             except ValueError as e:
-                logging.exception('Parsing episode "{}" faild with error: {}'.format(e))
+                logger.exception('Parsing episode "{}" faild with error: {}'.format(e))
         return _episodes
 
     def parse_episode(self, episode):
@@ -173,7 +172,7 @@ class Thetvdb(Series_importer_base):
         try:
             return parser.parse(date).date().isoformat()
         except ValueError as e:
-            logging.exception('Parsing date "{}"'.format(date))
+            logger.exception('Parsing date "{}"'.format(date))
         return None
         
 register_importer(Thetvdb())

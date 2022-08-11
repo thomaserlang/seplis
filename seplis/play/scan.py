@@ -1,6 +1,6 @@
-import os, os.path, re, logging, subprocess
+import os, os.path, re, subprocess
 from datetime import datetime
-from seplis import config, Client, utils
+from seplis import config, Client, utils, logger
 from seplis.play import constants, models
 from seplis.play.decorators import new_session
 from guessit import guessit
@@ -19,21 +19,19 @@ def scan(disable_thumbnails=False):
                             type: series
                             path: /a/path/to/the/series
             ''')
-    for s in config.data.play.scan:    
-        try:
-            scanner = None
-            if s.type == 'series':
-                scanner = Series_scan(s.path, s.make_thumbnails and not disable_thumbnails)
-            elif s.type == 'movies':
-                scanner = Movie_scan(s.path, s.make_thumbnails and not disable_thumbnails)
-            if not scanner:
-                raise Exception(f'Scan type: "{s.type}" is not supported')
+    for s in config.data.play.scan:
+        scanner = None
+        if s.type == 'series':
+            scanner = Series_scan(s.path, s.make_thumbnails and not disable_thumbnails)
+        elif s.type == 'movies':
+            scanner = Movie_scan(s.path, s.make_thumbnails and not disable_thumbnails)
+        if scanner:
             scanner.scan()
-        except:        
-            logging.exception('play scan')
+        else:
+            logger.error(f'Scan type: "{s.type}" is not supported')
 
 def cleanup():
-    logging.info('Cleanup started')
+    logger.info('Cleanup started')
     cleanup_episodes()
     cleanup_movies()
 
@@ -47,7 +45,7 @@ def cleanup_episodes():
             deleted_count += 1
             session.delete(e)
         session.commit()
-        logging.info(f'{deleted_count} episodes was deleted from the database')
+        logger.info(f'{deleted_count} episodes was deleted from the database')
 
 def cleanup_movies():
     with new_session() as session:
@@ -59,7 +57,7 @@ def cleanup_movies():
             deleted_count += 1
             session.delete(m)
         session.commit()
-        logging.info(f'{deleted_count} movies was deleted from the database')
+        logger.info(f'{deleted_count} movies was deleted from the database')
 
 class Play_scan(object):
 
@@ -104,7 +102,6 @@ class Play_scan(object):
         :returns: dict
             metadata is a `dict` taken from the result of ffprobe.
         '''
-        logging.info(f'Retrieving metadata from "{path}"')
         if not os.path.exists(path):
             raise Exception(f'Path "{path}" does not exist')
         ffprobe = os.path.join(config.data.play.ffmpeg_folder, 'ffprobe')
@@ -128,12 +125,11 @@ class Play_scan(object):
         if error:        
             if isinstance(error, bytes):
                 error = error.decode('utf-8')   
-            raise Exception('FFprobe error: {}'.format(error))
+            raise Exception(f'FFprobe error: {error}')
         if not data:
             return
         if isinstance(data, bytes):
-            data = data.decode('utf-8')        
-        logging.info(f'Metadata retrieved from "{path}"')
+            data = data.decode('utf-8')
         data = utils.json_loads(data)
         return data
 
@@ -145,10 +141,10 @@ class Play_scan(object):
     def thumbnails(self, key, path):
         thumb = os.path.join(config.data.play.thumbnails_path, key)
         if os.path.exists(thumb):
-            logging.info(f'[{key}] Thumbnails already created: {thumb}')
+            logger.debug(f'[{key}] Thumbnails already created: {thumb}')
             return
         os.mkdir(thumb)
-        logging.info(f'[{key}] Creating thumbnails')
+        logger.info(f'[{key}] Creating thumbnails')
         cmd = [
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
             '-i', path,
@@ -175,14 +171,14 @@ class Movie_scan(Play_scan):
         )
 
     def scan(self):
-        logging.info(f'Scanning: {self.scan_path}')
+        logger.info(f'Scanning: {self.scan_path}')
         files = self.get_files()
         for f in files:
             title = self.parse(f)
             if title:
                 self.save_item(title, f)
             else:
-                logging.debug(f'"{f}" didn\'t match any pattern')
+                logger.debug(f'"{f}" didn\'t match any pattern')
 
     def parse(self, filename):
         d = guessit(filename, '-t movie')
@@ -193,7 +189,7 @@ class Movie_scan(Play_scan):
             if d.get('year'):
                 t += f" {d['year']}"
             return t        
-        logging.info(f'{filename} doesn\'t look like a movie')
+        logger.info(f'{filename} doesn\'t look like a movie')
 
     def save_item(self, title: str, path: str):
         movie_id = self.lookup(title)
@@ -218,13 +214,15 @@ class Movie_scan(Play_scan):
                 )
                 session.merge(e)
                 session.commit()
-                logging.info(f'Saved movie: {title} (Id: {movie_id}) - Path: {path}')
+                logger.info(f'[movie-{movie_id}] Saved {path}')
+            else:
+                logger.info(f'[movie-{movie_id}] Nothing changed for {path}')
             if self.make_thumbnails:
                 self.thumbnails(f'movie-{movie_id}', path)
             return True
 
     def lookup(self, title: str):
-        logging.info(f'Looking for a movie with title: "{title}"')
+        logger.debug(f'Looking for a movie with title: "{title}"')
         with new_session() as session:
             movie = session.query(models.Movie_id_lookup).filter(
                 models.Movie_id_lookup.file_title == title,
@@ -235,9 +233,9 @@ class Movie_scan(Play_scan):
                     'type': 'movie',
                 })
                 if not movies:
-                    logging.info(f'Didn\'t find a match for movie "{title}"')
+                    logger.info(f'Didn\'t find a match for movie "{title}"')
                     return
-                logging.info(f'Found movie: {movies[0]["title"]} (Id: {movies[0]["id"]})')
+                logger.debug(f'[movie-{movies[0]["id"]}] Found: {movies[0]["title"]}')
                 movie = models.Movie_id_lookup(
                     file_title=title,
                     movie_title=movies[0]["title"],
@@ -248,7 +246,7 @@ class Movie_scan(Play_scan):
                 session.commit()
                 return movie.movie_id
             else:                
-                logging.info(f'Found movie from cache: {movie.movie_title} (Id: {movie.movie_id})')
+                logger.debug(f'[movie-{movie.movie_id}] Found from cache: {movie.movie_title}')
                 return movie.movie_id
 
     def delete_item(self, title, path):        
@@ -263,7 +261,7 @@ class Movie_scan(Play_scan):
             if m:
                 session.delete(m)
                 session.commit()
-                logging.info(f'Deleted movie: {title} (Id: {movie_id}) - Path: {path}')
+                logger.info(f'[movie-{movie_id}] Deleted movie: {title}, path: {path}')
                 return True
         return False
 
@@ -280,14 +278,14 @@ class Series_scan(Play_scan):
         self.not_found_series = []
 
     def scan(self):
-        logging.info(f'Scanning: {self.scan_path}')
+        logger.info(f'Scanning: {self.scan_path}')
         files = self.get_files()
         for f in files:
             episode = self.parse(f)
             if episode:
                 self.save_item(episode, f)
             else:
-                logging.debug(f'"{f}" didn\'t match any pattern')
+                logger.debug(f'"{f}" didn\'t match any pattern')
 
     def parse(self, filename):
 
@@ -302,9 +300,9 @@ class Series_scan(Play_scan):
                     continue
                 return self._parse_episode_info_from_file(match=match)
             except re.error as error:
-                logging.exception('episode parse re error: {}'.format(error))
+                logger.exception(f'episode parse re error: {error}')
             except:
-                logging.exception('episode parse pattern: {}'.format(pattern))
+                logger.exception(f'episode parse pattern: {pattern}')
 
     def episode_series_id_lookup(self, episode):
         '''
@@ -314,22 +312,15 @@ class Series_scan(Play_scan):
         '''
         if episode.file_title in self.not_found_series:
             return False
-        logging.info('Looking for a series with title: "{}"'.format(
-            episode.file_title
-        ))
+        logger.debug(f'Looking for a series with title: "{episode.file_title}"')
         series_id = self.series_id.lookup(episode.file_title)
         if series_id:
-            logging.info('Found series: "{}" with series id: {}'.format(
-                episode.file_title,
-                series_id,
-            ))
+            logger.debug(f'[series-{series_id}] Found: "{episode.file_title}"')
             episode.series_id = series_id
             return True
         else:
             self.not_found_series.append(episode.file_title)
-            logging.info('No series found for title: "{}"'.format(
-                episode.file_title,
-            ))
+            logger.info(f'No series found for title: "{episode.file_title}"')
         return False
 
     def episode_number_lookup(self, episode):
@@ -345,24 +336,14 @@ class Series_scan(Play_scan):
         if isinstance(episode, Parsed_episode_number):
             return True
         value = self.episode_number.get_lookup_value(episode)
-        logging.info('Looking for episode {} with series_id {}'.format(
-            value,
-            episode.series_id,
-        ))
+        logger.debug(f'[series-{episode.series_id}] Looking for episode {value}')
         number = self.episode_number.lookup(episode)
         if number:                
-            logging.info('Found episode {} from {} with series_id {}'.format(
-                number,
-                value,
-                episode.series_id,
-            ))
+            logger.debug(f'[episodes-{episode.series_id}-{number}] Found episode')
             episode.number = number
             return True
         else:
-            logging.info('No episode was found for {} with series_id {}'.format(
-                value,
-                episode.series_id,
-            ))
+            logger.info(f'[series-{episode.series_id}] No episode found for {value}')
         return False
 
     def save_item(self, episode, path):
@@ -396,10 +377,9 @@ class Series_scan(Play_scan):
                 )
                 session.merge(e)
                 session.commit()
-                logging.info('Saved episode: {} {}'.format(
-                    episode.file_title,
-                    episode.number
-                ))            
+                logger.info(f'[episode-{episode.series_id}-{episode.number}] Saved {path}')
+            else:                
+                logger.info(f'[episode-{episode.series_id}-{episode.number}] Nothing changed for {path}')
             if self.make_thumbnails:
                 self.thumbnails(f'episode-{episode.series_id}-{episode.number}', path)
             return True
@@ -426,7 +406,7 @@ class Series_scan(Play_scan):
             if ep:
                 session.delete(ep)
                 session.commit()
-                logging.info(f'Deleted episode: {episode.series_id}-{episode.number} {path}')
+                logger.info(f'Deleted episode: {episode.series_id}-{episode.number} {path}')
                 return True
         return False
 

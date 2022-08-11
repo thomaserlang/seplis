@@ -34,10 +34,6 @@ class Testbase(AsyncHTTPTestCase):
 
     def setUp(self):
         super().setUp()
-        logger = logging.getLogger('elasticsearch')
-        logger.setLevel(logging.ERROR)
-        logger = logging.getLogger('urllib3')
-        logger.setLevel(logging.ERROR)
         # recreate the database connection
         # with params from the loaded config.data.
         connection = database.engine.connect()

@@ -1,9 +1,7 @@
 import requests, logging, aniso8601
 from datetime import date
-from seplis import Client, config, config_load, logger
+from seplis import Client, config, config_load
 config_load()
-
-logger.logger.set_logger('test.log')
     
 client = Client(
     url=config.data.client.api_url, 

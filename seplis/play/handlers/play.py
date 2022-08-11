@@ -1,11 +1,7 @@
-import asyncio
-import http
-import logging
-import mimetypes
+import asyncio, os, http
 from typing import List, Optional, Union
 from aiofile import async_open
-import os
-from pydantic import BaseModel, conint, conlist, constr
+from pydantic import BaseModel, conlist, constr
 from sqlalchemy import select
 from tornado import web, escape
 from seplis.api import exceptions
@@ -14,7 +10,7 @@ from seplis.play.handlers.transcoders import dash, pipe
 from seplis.play.handlers.transcoders.subtitle import get_subtitle_file
 from seplis.play.handlers.transcoders.video import Transcoder, get_video_stream
 from .transcoders import hls
-from seplis import config, utils
+from seplis import config, utils, logger
 from seplis.play import models
 from seplis.play.handlers import transcoders
 
@@ -327,7 +323,7 @@ def decode_play_id(play_id):
     return utils.json_loads(data)
 
 def tornado_auto_reload():
-    logging.debug('Reloading and closing sessions')
+    logger.debug('Reloading and closing sessions')
     for session in list(transcoders.video.sessions):
         transcoders.video.close_session(session)
 import tornado.autoreload

@@ -1,6 +1,5 @@
-import logging
 import requests
-from seplis import Client, config, constants
+from seplis import Client, config, constants, logger
 
 client = Client(
     url=config.data.client.api_url,
@@ -25,11 +24,11 @@ def update_movie(movie_id=None, movie=None):
         update_movie_metadata(movie)
         update_images(movie)
     except:
-        logging.exception(f'update movie {movie_id}')
+        logger.exception(f'update movie {movie_id}')
 
 def update_incremental():
     page = 1
-    logging.info('Incremental update running')
+    logger.info('Incremental update running')
     while True:
         r = requests.get('https://api.themoviedb.org/3/movie/changes', params={
             'api_key': config.data.client.themoviedb,
@@ -42,16 +41,16 @@ def update_incremental():
             if movie:
                 update_movie(movie=movie)
             else:
-                logging.debug(f'Didn\'t find TheMovieDB: {r["id"]}')
+                logger.debug(f'Didn\'t find TheMovieDB: {r["id"]}')
         if data['page'] == data['total_pages']:
             break
 
 def update_movie_metadata(movie):
-    logging.info(f'[Movie: {movie["id"]}] Updating metadata')
+    logger.info(f'[Movie: {movie["id"]}] Updating metadata')
     data = {}
     if not movie['externals'].get('themoviedb'):
         if not movie['externals'].get('imdb'):
-            logging.info(f'[Movie: {movie["id"]}] externals.imdb doesn\'t exist')
+            logger.info(f'[Movie: {movie["id"]}] externals.imdb doesn\'t exist')
             return
         r = requests.get(
             f'https://api.themoviedb.org/3/find/{movie["externals"]["imdb"]}',
@@ -61,11 +60,11 @@ def update_movie_metadata(movie):
             }
         )
         if r.status_code >= 400:
-            logging.error(f'[Movie: {movie["id"]}] Failed to get movie "{movie["externals"]["imdb"]}" by imdb: {r.content}')
+            logger.error(f'[Movie: {movie["id"]}] Failed to get movie "{movie["externals"]["imdb"]}" by imdb: {r.content}')
             return
         r = r.json()
         if not r['movie_results']:
-            logging.warning(f'[Movie: {movie["id"]}] No movie found with imdb: "{movie["externals"]["imdb"]}"')
+            logger.warning(f'[Movie: {movie["id"]}] No movie found with imdb: "{movie["externals"]["imdb"]}"')
             return
         data.setdefault('externals', {})['themoviedb'] = r['movie_results'][0]['id']
         movie['externals']['themoviedb'] = r['movie_results'][0]['id']
@@ -75,7 +74,7 @@ def update_movie_metadata(movie):
         'append_to_response': 'alternative_titles',
     })
     if r.status_code >= 400:
-        logging.error(f'[Movie: {movie["id"]}] Failed to get movie from themoviedb: {r.content}')
+        logger.error(f'[Movie: {movie["id"]}] Failed to get movie from themoviedb: {r.content}')
         return
     r = r.json()
     
@@ -110,16 +109,16 @@ def update_movie_metadata(movie):
         data['alternative_titles'] = alternative_titles
 
     if not data:
-        logging.info(f'[Movie: {movie["id"]}] Nothing new')
+        logger.info(f'[Movie: {movie["id"]}] Nothing new')
         return    
-    logging.info(f'[Movie: {movie["id"]}] Saving: {data}')
+    logger.info(f'[Movie: {movie["id"]}] Saving: {data}')
 
     movie = client.patch(f'/movies/{movie["id"]}', data)
 
 def update_images(movie):
-    logging.info(f'[Movie: {movie["id"]}] Updating images')
+    logger.info(f'[Movie: {movie["id"]}] Updating images')
     if not movie['externals'].get('themoviedb'):
-        logging.error(f'Missing externals.themoviedb for movie: "{movie["id"]}"')
+        logger.error(f'Missing externals.themoviedb for movie: "{movie["id"]}"')
         return
 
     images = client.get(f'/movies/{movie["id"]}/images?per_page=500').all()
@@ -132,20 +131,20 @@ def update_images(movie):
         'api_key': config.data.client.themoviedb,
     })
     if r.status_code >= 400:
-        logging.error(f'[Movie: {movie["id"]}] Failed to get movie images for "{movie["externals"]["themoviedb"]}" from themoviedb: {r.content}')
+        logger.error(f'[Movie: {movie["id"]}] Failed to get movie images for "{movie["externals"]["themoviedb"]}" from themoviedb: {r.content}')
         return
     m = r.json()
-    logging.debug(f'[Movie: {movie["id"]}] Found {len(m["images"]["posters"])} posters')
+    logger.debug(f'[Movie: {movie["id"]}] Found {len(m["images"]["posters"])} posters')
     for image in m['images']['posters']:
         si = None
         try:   
             key = f'themoviedb-{image["file_path"]}'
             if round(image['aspect_ratio'], 2) not in (0.67, 0.68):
-                logging.info(f'[Movie: {movie["id"]}] Skipping image: {image["file_path"]}, aspect ratio: {round(image["aspect_ratio"])}')
+                logger.info(f'[Movie: {movie["id"]}] Skipping image: {image["file_path"]}, aspect ratio: {round(image["aspect_ratio"])}')
                 continue
             if key not in image_external_ids:
                 source_url = f'https://image.tmdb.org/t/p/original{image["file_path"]}'
-                logging.info(f'[Movie: {movie["id"]}] Saving image: {source_url}')
+                logger.info(f'[Movie: {movie["id"]}] Saving image: {source_url}')
                 si = client.post(f'/movies/{movie["id"]}/images', json={
                     'external_name': 'themoviedb',
                     'external_id': image["file_path"],
@@ -162,14 +161,14 @@ def update_images(movie):
                         si['source_url'][si['source_url'].rfind("/")+1:]: r.raw,
                     })
         except:
-            logging.exception(f'[Movie: {movie["id"]}] Failed saving image')
+            logger.exception(f'[Movie: {movie["id"]}] Failed saving image')
             if si:
                 client.delete(f'/movies/{movie["id"]}/images/{si["id"]}')
     if not movie['poster_image'] and m['poster_path']:
         key = f'themoviedb-{m["poster_path"]}'
         if key not in image_external_ids:
             key =  f'themoviedb-{m["images"]["posters"][0]["file_path"]}'
-        logging.info(f'[Movie: {movie["id"]}] Setting new primary image: "{image_external_ids[key]["id"]}"')
+        logger.info(f'[Movie: {movie["id"]}] Setting new primary image: "{image_external_ids[key]["id"]}"')
         client.patch(f'/movies/{movie["id"]}', {
             'poster_image_id': image_external_ids[key]["id"],
         })

@@ -1,4 +1,3 @@
-import logging
 from seplis import schemas, tasks, utils, config
 from seplis.api import constants, exceptions, models
 from seplis.api.handlers import base
@@ -28,9 +27,7 @@ class Handler(base.Handler):
             else:
                 shows = await self.get_shows()
                 if shows:
-                    logging.info(self.request.query_arguments)
                     self.request.query_arguments['from_id'] = [str(shows[-1]['id'])]
-                    logging.info(self.request.query_arguments)
                     n = urljoin(
                         config.data.api.base_url,
                         self.request.path

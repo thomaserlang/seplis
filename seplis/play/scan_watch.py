@@ -1,17 +1,15 @@
-import logging, time
+import time
 from watchdog.observers import Observer  
 from watchdog.events import PatternMatchingEventHandler
 from seplis.play import scan
-from seplis import config
+from seplis import config, logger
 
 class Handler(PatternMatchingEventHandler):
 
-    def __init__(self, scan_path, type_='series', make_thumbnails=False):
-        logging.info(f'Watching: {scan_path}')
+    def __init__(self, scan_path, type_, make_thumbnails=False):
+        logger.info(f'Watching {type_}: {scan_path}')
         patterns = ['*.'+t for t in config.data.play.media_types]
-        super().__init__(
-            patterns=patterns,
-        )
+        super().__init__(patterns=patterns)
         self.type = type_
         self.wait_list = {}
         if type_ == 'series':
@@ -19,16 +17,16 @@ class Handler(PatternMatchingEventHandler):
         elif type_ == 'movies':
             self.scanner = scan.Movie_scan(scan_path=scan_path, make_thumbnails=make_thumbnails)
         else:
-            raise NotImplemented(f'Type: {type_} is not supported for watching')
+            raise Exception(f'Type: {type_} is not supported for watching')
 
     def parse(self, event):
         if event.is_directory:
-            logging.info(f'{event.src_path} is a directory, skipping')
+            logger.info(f'{event.src_path} is a directory, skipping')
             return
         path = event.src_path
         if event.event_type == 'moved':
             path = event.dest_path        
-        logging.info(event.key)
+        logger.info(event.key)
         return (self.scanner.parse(path), path)
             
     def update(self, event):
@@ -37,7 +35,7 @@ class Handler(PatternMatchingEventHandler):
             if item:
                 self.scanner.save_item(item[0], item[1])
         except:
-            logging.exception('update') 
+            logger.exception('update') 
 
     def on_created(self, event):
         self.update(event)
@@ -48,7 +46,7 @@ class Handler(PatternMatchingEventHandler):
             if item:
                 self.scanner.delete_item(item[0], item[1])
         except:
-            logging.exception('on_deleted')
+            logger.exception('on_deleted')
 
     def on_moved(self, event):
         event.event_type = 'deleted'
@@ -59,7 +57,7 @@ class Handler(PatternMatchingEventHandler):
             event.event_type = 'moved'
             self.update(event)
         except:
-            logging.exception('on_moved')
+            logger.exception('on_moved')
 
 def main():
     if not config.data.play.scan:
@@ -76,7 +74,7 @@ def main():
             ''')
     
     obs = Observer()
-    logging.info('Play scan watch started')
+    logger.info('Play scan watch started')
     for s in config.data.play.scan:
         event_handler = Handler(
             scan_path=str(s.path),
@@ -95,4 +93,4 @@ def main():
     except KeyboardInterrupt:
         obs.stop()
     obs.join()
-    logging.info('Play scan watch stopped')
+    logger.info('Play scan watch stopped')

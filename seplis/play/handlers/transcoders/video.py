@@ -1,10 +1,9 @@
 import os, asyncio
-import logging
 import shutil
 from typing import Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel
-from seplis import config
+from seplis import config, logger
 
 class Transcode_settings(BaseModel):
 
@@ -62,7 +61,7 @@ class Transcoder:
         await self.set_ffmpeg_args()
         
         args = to_subprocess_arguments(self.ffmpeg_args)
-        logging.debug(f'FFmpeg start args: {" ".join(args)}')
+        logger.debug(f'FFmpeg start args: {" ".join(args)}')
         self.process = await asyncio.create_subprocess_exec(
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
             *args,
@@ -72,11 +71,11 @@ class Transcoder:
         )
         self.register_session()
         
-        logging.debug('Waiting for media')
+        logger.debug(f'[{self.settings.session}] Waiting for media')
         try:
             ready = await asyncio.wait_for(self.wait_for_media(), timeout=60)
         except asyncio.TimeoutError:
-            logging.error('Failed to create media, gave up waiting')
+            logger.error(f'[{self.settings.session}] Failed to create media, gave up waiting')
             try:
                 self.process.terminate()
             except:
@@ -107,7 +106,7 @@ class Transcoder:
 
     def register_session(self):
         loop = asyncio.get_event_loop()
-        logging.info(f'Register session {self.settings.session}')
+        logger.info(f'[{self.settings.session}] Registered')
         sessions[self.settings.session] = Session_model(
             process=self.process,
             temp_folder=self.temp_folder,
@@ -279,7 +278,7 @@ def get_video_stream(metadata: Dict) -> Dict:
         raise Exception('No video stream')
 
 def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
-    logging.info(f'Looking for {codec_type} with language {lang}')
+    logger.debug(f'Looking for {codec_type} with language {lang}')
     group_index = -1
     langs = []
     lang = '' if lang == None else lang
@@ -310,14 +309,14 @@ def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
                 if not index or stream['index'] == index:
                     if l.lower() == lang.lower():
                         return Stream_index(index=i, group_index=group_index)
-    logging.warning(f'Found no {codec_type} with language: {lang}')
-    logging.warning(f'Available {codec_type}: {", ".join(langs)}')
+    logger.warning(f'Found no {codec_type} with language: {lang}')
+    logger.warning(f'Available {codec_type}: {", ".join(langs)}')
 
 def close_session_callback(session):
     close_session(session)
 
 def close_session(session):
-    logging.debug(f'Closing session: {session}')
+    logger.debug(f'[{session}] Closing')
     if session not in sessions:
         return
     s = sessions[session]
@@ -330,7 +329,7 @@ def close_session(session):
             if os.path.exists(s.temp_folder):
                 shutil.rmtree(s.temp_folder)
             else:
-                logging.warning(f'Path: {s.temp_folder} not found, can\'t delete it')  
+                logger.warning(f'[{session}] Path: {s.temp_folder} not found, can\'t delete it')  
     except:
         pass          
     s.call_later.cancel()

@@ -6,7 +6,6 @@ from seplis.io_sighandler import sig_handler
 from seplis.play.handlers import play, health
 import tornado.web
 from seplis import config
-from seplis.logger import logger
 
 class Application(tornado.web.Application):
 
@@ -29,14 +28,13 @@ class Application(tornado.web.Application):
         super().__init__(urls, **settings)
 
 async def main():
-    logger.set_logger(f'play_server_{config.data.play.port}.log')
-
     app = Application()
     server = app.listen(config.data.play.port)
 
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
     signal.signal(signal.SIGINT, partial(sig_handler, server, app))
     
+    logging.getLogger('tornado.access').setLevel(config.data.logging.level.upper())
     log = logging.getLogger('main')
     log.setLevel('INFO')
     log.info(f'Play server started on port: {config.data.play.port}')

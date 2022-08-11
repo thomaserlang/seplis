@@ -1,7 +1,6 @@
 import asyncio, os
-import logging
 from typing import Dict
-from seplis import config
+from seplis import config, logger
 from .video import stream_index_by_lang, subprocess_env, to_subprocess_arguments
 
 async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
@@ -24,7 +23,7 @@ async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
         {'-': None},
     ]
     args = to_subprocess_arguments(args)        
-    logging.debug(f'Subtitle args: {" ".join(args)}')
+    logger.debug(f'Subtitle args: {" ".join(args)}')
     process = await asyncio.create_subprocess_exec(
         os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
         *args,
@@ -34,6 +33,6 @@ async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
     )
     stdout, stderr = await process.communicate()
     if process.returncode != 0:
-        logging.warning(f'Subtitle file could not be exported!: {stderr}')
+        logger.warning(f'Subtitle file could not be exported!: {stderr}')
         return None
     return stdout

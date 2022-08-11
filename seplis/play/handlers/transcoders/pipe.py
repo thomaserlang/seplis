@@ -1,10 +1,9 @@
 import asyncio
 import os
 import subprocess
-import logging
 from typing import Union
 
-from seplis import config
+from seplis import config, logger
 
 from . import video
 
@@ -30,7 +29,7 @@ class Pipe_transcoder(video.Transcoder):
     async def start(self, send_data_callback) -> Union[bool, bytes]:     
         self.set_ffmpeg_args()        
         args = self.to_subprocess_arguments()   
-        logging.debug(f'FFmpeg start args: {" ".join(args)}')
+        logger.debug(f'FFmpeg start args: {" ".join(args)}')
         self.process = await asyncio.create_subprocess_exec(
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
             *args,

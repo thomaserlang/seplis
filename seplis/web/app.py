@@ -10,7 +10,6 @@ import seplis.web.handlers.react
 import sentry_sdk
 from sentry_sdk.integrations.tornado import TornadoIntegration
 from .handlers import react, tvmaze_lookup, base, health
-from seplis.logger import logger
 from tornado.web import URLSpec
 
 class Application(tornado.web.Application):
@@ -45,7 +44,6 @@ class Application(tornado.web.Application):
         super().__init__(urls, **settings)
 
 async def main():
-    logger.set_logger(f'web-{config.data.web.port}.log')
     if config.data.sentry_dsn:
         sentry_sdk.init(
             dsn=config.data.sentry_dsn,
@@ -58,6 +56,7 @@ async def main():
     signal.signal(signal.SIGTERM, partial(sig_handler, server, app))
     signal.signal(signal.SIGINT, partial(sig_handler, server, app))    
 
+    logging.getLogger('tornado.access').setLevel(config.data.logging.level.upper())
     log = logging.getLogger('main')
     log.setLevel('INFO')
     log.info(f'Web server started on port: {config.data.web.port}')

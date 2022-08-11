@@ -1,6 +1,6 @@
 import logging, time, asyncio
 from tornado import ioloop
-from seplis import config
+from seplis import config, logger
 
 SHUTDOWN_WAIT = 60 # seconds
 def sig_handler(server, application, sig, frame):
@@ -15,23 +15,23 @@ def sig_handler(server, application, sig, frame):
         now = time.time()
         tasks = [t for t in asyncio.all_tasks() if t is not asyncio.current_task() and not t.done()]
         if (now < deadline and len(tasks) > 0) and not config.data.debug:
-            logging.debug(f'Awaiting {len(tasks)} pending tasks {tasks}')
+            logger.debug(f'Awaiting {len(tasks)} pending tasks {tasks}')
             io_loop.add_timeout(now + 1, stop_loop, server, deadline)
             return
 
         pending_connection = len(server._connections)
         if (now < deadline and pending_connection > 0) and not config.data.debug:
-            logging.debug(f'Waiting on {pending_connection} connections to finish {server._connections}')
+            logger.debug(f'Waiting on {pending_connection} connections to finish {server._connections}')
             io_loop.add_timeout(now + 1, stop_loop, server, deadline)
         else:
-            logging.debug(f'Shutting down. {pending_connection} connections left')
+            logger.debug(f'Shutting down. {pending_connection} connections left')
             io_loop.stop()
 
     def shutdown():
-        logging.debug(f'Waiting for up to {SHUTDOWN_WAIT} seconds to shutdown ...')
+        logger.debug(f'Waiting for up to {SHUTDOWN_WAIT} seconds to shutdown ...')
         try:
             stop_loop(server, time.time() + SHUTDOWN_WAIT)
         except BaseException as e:
-            logging.error(f'Error trying to shutdown Tornado: {str(e)}')
+            logger.error(f'Error trying to shutdown Tornado: {str(e)}')
 
     io_loop.add_callback_from_signal(shutdown)
