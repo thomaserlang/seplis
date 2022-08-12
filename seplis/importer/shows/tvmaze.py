@@ -1,10 +1,7 @@
 import requests
-import logging
 import re
-import time, aniso8601
-from dateutil import tz
+import time
 from seplis.api import constants
-from dateutil import parser
 from .base import Series_importer_base, register_importer
 
 class Tvmaze(Series_importer_base):
@@ -16,12 +13,12 @@ class Tvmaze(Series_importer_base):
         'images',
     )
     
-    _url = 'http://api.tvmaze.com/shows/{series}'
-    _url_episodes = 'http://api.tvmaze.com/shows/{series}/episodes'
+    _url = 'http://api.tvmaze.com/shows/{series_id}'
+    _url_episodes = 'http://api.tvmaze.com/shows/{series_id}/episodes'
     _url_update = 'http://api.tvmaze.com/updates/shows'
 
-    def info(self, series):
-        r = requests.get(self._url.format(series=series))
+    def info(self, series_id):
+        r = requests.get(self._url.format(series_id=series_id))
         if r.status_code != 200:
             return
         show = r.json()
@@ -52,8 +49,8 @@ class Tvmaze(Series_importer_base):
             return 2
         return 1
 
-    def images(self, series):
-        r = requests.get(self._url.format(series=series))
+    def images(self, series_id):
+        r = requests.get(self._url.format(series_id=series_id))
         if r.status_code != 200:
             return
         data = r.json()
@@ -71,8 +68,8 @@ class Tvmaze(Series_importer_base):
             'type': constants.IMAGE_TYPE_POSTER,
         }]
 
-    def episodes(self, series):
-        r = requests.get(self._url_episodes.format(series=series))
+    def episodes(self, series_id):
+        r = requests.get(self._url_episodes.format(series_id=series_id))
         if r.status_code != 200:
             return
         data = r.json()
