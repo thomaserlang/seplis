@@ -43,7 +43,7 @@ class Pipe_transcoder(video.Transcoder):
             if not data:
                 return
             try:
-                await send_data_callback(data)
+                yield data
             except:
                 self.process.terminate()
                 return

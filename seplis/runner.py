@@ -34,15 +34,9 @@ def api(port):
     asyncio.run(seplis.api.app.main())
 
 @cli.command()
-@click.option('--port', '-p', help='the port')
-def play_server(port):
-    if port:
-        config.data.play.port = port
-    set_logger(f'play-server-{config.data.play.port}.log')
-    from seplis.play.connections import database
-    database.connect()
-    import seplis.play.app
-    asyncio.run(seplis.play.app.main())
+def play_server():
+    import uvicorn
+    uvicorn.run('seplis.play.main:app', host='0.0.0.0', port=config.data.play.port, reload=config.data.debug)
 
 @cli.command()
 def upgrade():
@@ -107,7 +101,7 @@ def worker(n):
 def play_scan(disable_cleanup, disable_thumbnails):
     set_logger('play_scan.log')
     import seplis.play.scan
-    from seplis.play.connections import database
+    from seplis.play.database import database
     database.connect()
     seplis.play.scan.upgrade_scan_db()
     r = seplis.play.scan.scan(disable_thumbnails=disable_thumbnails)
@@ -119,7 +113,7 @@ def play_scan_watch():
     set_logger('play_scan_watch.log')
     import seplis.play.scan_watch
     import seplis.play.scan
-    from seplis.play.connections import database
+    from seplis.play.database import database
     database.connect()
     seplis.play.scan.upgrade_scan_db()
     seplis.play.scan_watch.main()
@@ -128,7 +122,7 @@ def play_scan_watch():
 def play_scan_cleanup():
     set_logger('play_scan_cleanup.log')
     import seplis.play.scan
-    from seplis.play.connections import database
+    from seplis.play.database import database
     database.connect()
     seplis.play.scan.upgrade_scan_db()
     seplis.play.scan.cleanup()

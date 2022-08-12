@@ -1,27 +1,26 @@
 import os, asyncio
 import shutil
-from typing import Dict, List, Literal, Optional, Union
-
-from pydantic import BaseModel
+from typing import Dict, Literal, Optional
+from pydantic import BaseModel, constr
 from seplis import config, logger
 
 class Transcode_settings(BaseModel):
 
-    play_id: str
-    session: str
-    supported_video_codecs: List[str]
-    supported_audio_codecs: List[str]
-    supported_pixel_formats: List[str]
+    play_id: constr(min_length=1)
+    session: constr(min_length=1)
+    supported_video_codecs: constr(min_length=1)
+    supported_audio_codecs: constr(min_length=1)
+    supported_pixel_formats: constr(min_length=1)
     format: Literal['pipe', 'hls', 'dash']
     transcode_video_codec: Literal['h264', 'hevc', 'vp9']
-    transcode_audio_codec: str
+    transcode_audio_codec: constr(min_length=1)
     transcode_pixel_format: Literal['yuv420p', 'yuv420p10le']
 
-    start_time: Optional[int]
+    start_time: Optional[int] | constr(max_length=0)
     audio_lang: Optional[str]
-    audio_channels: Optional[int]
-    width: Optional[int]
-    client_width: Optional[int]
+    audio_channels: Optional[int] | constr(max_length=0)
+    width: Optional[int] | constr(max_length=0)
+    client_width: Optional[int] | constr(max_length=0)
 
 class Session_model(BaseModel):
     process: asyncio.subprocess.Process
@@ -54,7 +53,7 @@ class Transcoder:
         self.temp_folder = None
         self.codec = None
 
-    async def start(self, send_data_callback=None) -> Union[bool, bytes]:
+    async def start(self, send_data_callback=None) -> bool | bytes:
         if self.settings.session in sessions:
             return True
         self.temp_folder = self.create_temp_folder()
@@ -261,7 +260,7 @@ def subprocess_env() -> Dict:
         env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
     return env
 
-def to_subprocess_arguments(args) -> List[str]:
+def to_subprocess_arguments(args) -> list[str]:
     l = []
     for a in args:
         for key, value in a.items():
