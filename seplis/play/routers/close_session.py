@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from seplis.play.handlers import transcoders
+from . import transcoders
 
 router = APIRouter()
 

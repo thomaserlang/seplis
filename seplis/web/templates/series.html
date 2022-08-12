@@ -1,22 +1,22 @@
-{% extends ui/react.html %}
+{% extends "ui/react.html" %}
 {% block title %}    
-    <title>{{escape(series['title'])}} - SEPLIS</title>
-    <meta name="og:title" content="{{escape(series['title'])}}" />
+    <title>{{series['title']}} - SEPLIS</title>
+    <meta name="og:title" content="{{series['title']}}" />
     <meta property="og:type" content="video.series" />
     {% if series['description'] and series['description']['text'] %}
-    <meta name="og:description" content="{{escape(series['description']['text'])}}" />
-    {% end %}
+    <meta name="og:description" content="{{series['description']['text']}}" />
+    {% endif %}
     {% if series['poster_image'] %}
     <meta property="og:image" content="{{series['poster_image']['url']}}" />
     <meta property="og:image:width" content="{{series['poster_image']['width']}}" />
     <meta property="og:image:height" content="{{series['poster_image']['height']}}" />
-    {% end %}
-{% end %}
+    {% endif %}
+{% endblock %}
 {% block head %}
     <script>
-        document.seplis_tv_show = {{utils.json_dumps(series)}};
+        document.seplis_tv_show = {{series|tojson|safe}};
     </script>
-{% end %}
+{% endblock %}
 {% block body %}
     <div id="main"></div>
     <script>
@@ -25,4 +25,4 @@
           document.getElementById('main')
         );
     </script>
-{% end %}
+{% endblock %}

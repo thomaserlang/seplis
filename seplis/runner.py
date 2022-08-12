@@ -14,13 +14,9 @@ def cli(config, log_path, log_level):
         seplis.config.data.logging.level = log_level
 
 @cli.command()
-@click.option('--port', '-p', help='the port')
-def web(port):
-    if port:
-        config.data.web.port = port         
-    set_logger(f'web-{config.data.web.port}.log')   
-    import seplis.web.app
-    asyncio.run(seplis.web.app.main())
+def web():
+    import uvicorn
+    uvicorn.run('seplis.web.main:app', host='0.0.0.0', port=config.data.web.port, reload=config.data.debug)
 
 @cli.command()
 @click.option('--port', '-p', help='the port')

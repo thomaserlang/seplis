@@ -1,17 +1,17 @@
-{% extends ui/react.html %}
+{% extends "ui/react.html" %}
 {% block title %}    
-    <title>{{escape(movie['title'])}} - SEPLIS</title>
-    <meta name="og:title" content="{{escape(movie['title'])}}" />
+    <title>{{movie['title']}} - SEPLIS</title>
+    <meta name="og:title" content="{{movie['title']}}" />
     <meta property="og:type" content="video.movie" />
     {% if movie['description'] and movie['description'] %}
-    <meta name="og:description" content="{{escape(movie['description'])}}" />
-    {% end %}
+    <meta name="og:description" content="{{movie['description']}}" />
+    {% endif %}
     {% if movie['poster_image'] %}
     <meta property="og:image" content="{{movie['poster_image']['url']}}" />
     <meta property="og:image:width" content="{{movie['poster_image']['width']}}" />
     <meta property="og:image:height" content="{{movie['poster_image']['height']}}" />
-    {% end %}
-{% end %}
+    {% endif %}
+{% endblock %}
 {% block body %}
     <div id="main"></div>
     <script>
@@ -20,4 +20,4 @@
           document.getElementById('main')
         );
     </script>
-{% end %}
+{% endblock %}

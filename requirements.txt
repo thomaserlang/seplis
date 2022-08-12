@@ -28,5 +28,5 @@ guessit==3.4.3
 python-dateutil
 aiofile==3.7.4
 fastapi==0.79.0
-databases[aiomysql]==0.6.1
 uvicorn==0.18.2
+jinja2==3.1.2
