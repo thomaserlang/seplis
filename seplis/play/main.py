@@ -35,6 +35,6 @@ async def startup():
 async def shutdown():
     await database.engine.dispose()
 
-    from seplis.play.handlers.transcoders.video import sessions, close_session
+    from .transcoders.video import sessions, close_session
     for session in list(sessions):
         close_session(session)
