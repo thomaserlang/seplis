@@ -151,7 +151,7 @@ class Player extends React.Component {
         this.hls = new Hls({
             startLevel: 0,            
             manifestLoadingTimeOut: 30000,
-            maxMaxBufferLength: 3,
+            maxMaxBufferLength: 30,
             debug: false,
         })
         this.hls.loadSource(url)
