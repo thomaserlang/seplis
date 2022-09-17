@@ -721,7 +721,7 @@ class test_show(Testbase):
 
         # Test the walking dead
         with new_session() as session:
-            session.query(models.Show).delete()
+            session.query(models.Series).delete()
             session.commit()
         response = self.post('/1/shows', {
             'title': 'The Walking Dead',

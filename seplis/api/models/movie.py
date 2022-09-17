@@ -1,20 +1,16 @@
-from __future__ import annotations
-from ast import Dict
-from typing import List, Union
+import asyncio
 import sqlalchemy as sa
+from fastapi import HTTPException
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from seplis.api import rebuild_cache
-from seplis.api.decorators import new_session
-from seplis.api.schemas import Movie_schema
-from .base import Base
-from seplis.api.connections import database
-from elasticsearch import helpers
 
+from .base import Base
+from ..database import database
+from .. import schemas, rebuild_cache
+from ... import config, logger
 
 class Movie(Base):
     __tablename__ = 'movies'
-    __serialize_ignore__ = ('poster_image_id',)
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     title = sa.Column(sa.String(200))
@@ -31,56 +27,102 @@ class Movie(Base):
     release_date = sa.Column(sa.Date)
 
     @classmethod
-    async def save(cls, session: AsyncSession, movie: Movie_schema, movie_id: Union[int, str, None] = None, patch: bool = False) -> Movie:
-        data = movie.dict(exclude_unset=True)
-        if not movie_id:
-            r = await session.execute(sa.insert(cls))
-            movie_id = r.lastrowid
-        if 'externals' in data:
-            data['externals'] = await cls._save_externals(session, movie_id, data['externals'], patch)
-        if 'alternative_titles' in data:
-            data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, data['alternative_titles'], patch)
-        await session.execute(sa.update(cls).where(cls.id == movie_id).values(**data))
-        r = await session.scalars(sa.select(cls).where(cls.id == movie_id))
-        movie = r.one()
-        await cls._save_for_search(movie)
-        return movie
+    async def save(cls, movie_data: schemas.Movie_create | schemas.Movie_update, movie_id: int | str | None = None, patch: bool = False) -> schemas.Movie:
+        async with database.session() as session:
+            async with session.begin():
+                data = movie_data.dict(exclude_unset=True)
+                if not movie_id:
+                    r = await session.execute(sa.insert(Movie))
+                    movie_id = r.lastrowid
+                else:
+                    m = await session.scalar(sa.select(Movie.id).where(Movie.id == movie_id))
+                    if not m:
+                        raise HTTPException(404, f'Unknown movie id: {movie_id}')
+                if 'externals' in data:
+                    data['externals'] = await cls._save_externals(session, movie_id, data['externals'], patch)
+                if 'alternative_titles' in data:
+                    data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, data['alternative_titles'], patch)
+                await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**data))
+                movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
+                await session.commit()
+                await cls._save_for_search(movie)
+                return schemas.Movie.from_orm(movie)
+
+    @classmethod
+    async def delete(self, movie_id: int):    
+        from . import Image
+        async with database.session() as session:
+            async with session.begin():
+                await asyncio.gather(
+                    session.execute(sa.delete(Movie).where(Movie.id == movie_id)),
+                    session.execute(sa.delete(Image).where(
+                        Image.relation_type == 'movie',
+                        Image.relation_id == movie_id,
+                    )),
+                )
+                await session.commit()
+                await database.es.delete(
+                    index=config.data.api.elasticsearch.index_prefix+'titles',
+                    id=f'movie-{movie_id}',
+                )
 
     @staticmethod
-    async def _save_externals(session, movie_id: str, externals: Dict[str, str], patch: bool) -> Dict[str, str]:
+    async def _save_externals(session: AsyncSession, movie_id: str | int, externals: dict[str, str], patch: bool) -> dict[str, str]:
         current_externals = {}
         if not patch:
             await session.execute(sa.delete(Movie_external).where(Movie_external.movie_id == movie_id))
         else:
             current_externals = await session.scalar(sa.select(Movie.externals).where(Movie.id == movie_id))
+
         for key in externals:
+            if externals[key]:
+                r = await session.scalar(sa.select(Movie_external.movie_id).where(
+                    Movie_external.title == key,
+                    Movie_external.value == externals[key],
+                    Movie_external.movie_id != movie_id,
+                ))
+                if r:
+                    raise HTTPException(400, f'Movie with {key}={externals[key]} already exists (Movie id: {r}).')
             if (key not in current_externals):
                 await session.execute(sa.insert(Movie_external)\
                     .values(movie_id=movie_id, title=key, value=externals[key]))
+                current_externals[key] = externals[key]
             elif (current_externals[key] != externals[key]):
-                await session.execute(sa.update(Movie_external).where(
-                    Movie_external.movie_id == movie_id,
-                    Movie_external.title == key,
-                ).values(value=externals[key]))
-        current_externals.update(externals)
+                if (externals[key]):
+                    await session.execute(sa.update(Movie_external).where(
+                        Movie_external.movie_id == movie_id,
+                        Movie_external.title == key,
+                    ).values(value=externals[key]))
+                    current_externals[key] = externals[key]
+                else:
+                    await session.execute(sa.delete(Movie_external).where(
+                        Movie_external.movie_id == movie_id,
+                        Movie_external.title == key
+                    ))
+                    current_externals.pop(key)
         return current_externals
 
     @staticmethod
-    async def _save_alternative_titles(session, movie_id: str, alternative_titles: List[str], patch: bool):
+    async def _save_alternative_titles(session, movie_id: str | int, alternative_titles: list[str], patch: bool):
         if not patch:
             return set(alternative_titles)
         current_alternative_titles = await session.scalar(sa.select(Movie.alternative_titles).where(Movie.id == movie_id))
         return set(current_alternative_titles + alternative_titles)
     
     @staticmethod
-    async def _save_for_search(movie: Movie):
-        await database.es_async.index(
-            index='titles',
+    async def _save_for_search(movie: 'Movie'):
+        doc = movie.title_document()
+        if not doc:
+            return
+        await database.es.index(
+            index=config.data.api.elasticsearch.index_prefix+'titles',
             id=f'movie-{movie.id}',
-            document=movie.title_document(),
+            document=doc.dict(),
         )
 
-    def title_document(self):
+    def title_document(self) -> schemas.Search_title_document:        
+        if not self.title:
+            return
         titles = [self.title, *self.alternative_titles]
         year = str(self.release_date.year) if self.release_date else ''
         for title in titles[:]:
@@ -88,15 +130,16 @@ class Movie(Base):
                 t = f'{title} {year}'
                 if t not in titles:
                     titles.append(t)
-        return {
-            'type': 'movie',
-            'id': self.id,
-            'title': self.title,
-            'titles': [{'title': title} for title in titles],
-            'release_date': self.release_date,
-            'imdb': self.externals.get('imdb'),
-            'poster_image': self.poster_image.serialize() if self.poster_image else None,
-        }
+        return schemas.Search_title_document(
+            type = 'movie',
+            id = self.id,
+            title = self.title,
+            titles = [{'title': title} for title in titles],
+            release_date = self.release_date,
+            imdb = self.externals.get('imdb'),
+            poster_image = schemas.Image.from_orm(self.poster_image) if self.poster_image else None,
+        )
+
 
 class Movie_external(Base):
     __tablename__ = 'movie_externals'
@@ -133,6 +176,7 @@ class Movie_stared(Base):
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
     created_at = sa.Column(sa.DateTime)
 
+
 @rebuild_cache.register('movies')
 def rebuild_movies():
     def c():
@@ -143,4 +187,5 @@ def rebuild_movies():
                     '_id': f'movie-{item.id}',
                     **item.title_document()
                 }
-    helpers.bulk(database.es, c())
+    from elasticsearch import helpers
+    helpers.async_bulk(database.es, c())

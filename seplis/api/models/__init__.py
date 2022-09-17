@@ -1,5 +1,5 @@
 from .base import *
-from .show import *
+from .series import *
 from .show_fan import *
 from .image import *
 from .episode import *

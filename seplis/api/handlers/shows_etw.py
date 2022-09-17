@@ -27,9 +27,9 @@ class Handler(base.Pagination_handler):
                 models.Episode_watched.times > 0,
             ).group_by(models.Episode_watched.show_id).subquery()
 
-            p = session.query(models.Show, models.Episode).filter(
-                models.Show.id == episodes.c.show_id,
-                models.Episode.show_id == models.Show.id,
+            p = session.query(models.Series, models.Episode).filter(
+                models.Series.id == episodes.c.show_id,
+                models.Episode.show_id == models.Series.id,
                 models.Episode.number == episodes.c.episode_number+1,
                 models.Episode.air_datetime <= now_,
             ).order_by(

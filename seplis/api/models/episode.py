@@ -27,80 +27,14 @@ class Episode(Base):
     episode = sa.Column(sa.Integer)
     runtime = sa.Column(sa.Integer)
 
-    def serialize(self):
-        return  {
-            'show_id': self.show_id,
-            'number': self.number,
-            'title': self.title,
-            'description': {
-                'text': self.description_text,
-                'title': self.description_title,
-                'url': self.description_url,
-            },
-            'season': self.season,
-            'episode': self.episode,
-            'runtime': self.runtime,
-            'air_date': self.air_date,
-            'air_time': self.air_time,
-            'air_datetime': self.air_datetime,
+    @property
+    def description(self):
+        return {
+            'text': self.description_text,
+            'title': self.description_title,
+            'url': self.description_url,
         }
 
-    def to_elasticsearch(self):
-        '''Sends the episodes's info to ES.
-
-        This method is automatically called after update or insert.
-        ''' 
-        self.session.es_bulk.append({
-            '_index': 'episodes',
-            '_id': '{}-{}'.format(self.show_id, self.number),
-            '_source': utils.json_dumps(self.serialize()),
-        })
-
-    def after_upsert(self):
-        self.to_elasticsearch()
-
-    def after_delete(self):
-        self.session.es_bulk.append({
-            '_op_type': 'delete',
-            '_index': 'episodes',
-            '_id': '{}-{}'.format(self.show_id, self.number),
-        })
-
-    @staticmethod
-    async def es_get(show_id, number):
-        """Retrives an episode from ES.
-        See `Episode.serialize()` for the return format.
-        """
-        try:
-            response = await database.es_async.get(
-                index='episodes',
-                id=f'{show_id}-{number}',
-            )
-        
-        except elasticsearch.NotFoundError:
-            return
-        response['_source'].pop('show_id')
-        return response['_source']
-
-    @staticmethod
-    async def es_get_multi(show_id, numbers):
-        """Retrives episodes from ES.
-        Returns a list of a serialized episode.
-        See `Episode.serialize()` for the return format.
-        """
-        ids = [f'{show_id}-{number}' for number in numbers]
-        result = await database.es_async.mget(
-            index='episodes',
-            ids=ids,
-        )
-        episodes = []
-        for episode in result['docs']:
-            if '_source'in episode:
-                episode['_source'].pop('show_id')
-                episodes.append(episode['_source'])
-            else:
-                episodes.append(None)                
-        return episodes
 
 class Episode_watched(Base):
     """Episode watched by the user."""

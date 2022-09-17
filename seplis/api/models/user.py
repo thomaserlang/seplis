@@ -1,11 +1,15 @@
-import logging
 import sqlalchemy as sa
 import hashlib
+from starlette.concurrency import run_in_threadpool
+from redis.asyncio.client import Pipeline
+from ..dependencies import AsyncSession
+
+from .. import schemas, exceptions
+from ... import logger
+
 from .base import Base
-from sqlalchemy import event, orm
-from sqlalchemy.orm.attributes import get_history
 from seplis import utils
-from seplis.api.connections import database
+from seplis.api.database import database
 from seplis.api import constants, exceptions, rebuild_cache
 from seplis.api.decorators import new_session, auto_session
 from datetime import datetime, timedelta
@@ -15,35 +19,63 @@ class User(Base):
     __tablename__ = 'users'
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    name = sa.Column(sa.String(45), unique=True)
+    username = sa.Column(sa.String(45), unique=True)
     email = sa.Column(sa.String(100), unique=True)
-    password = sa.Column(sa.CHAR(87))
+    password = sa.Column(sa.String(200))
     created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     level = sa.Column(sa.Integer, default=constants.LEVEL_USER)
 
-    fan_of = sa.Column(sa.Integer, default=0)
-    watched = sa.Column(sa.Integer, default=0)
+    @classmethod
+    async def save(cls, user_data: schemas.User_create | schemas.User_update, user_id: int = None) -> schemas.User:
+        async with database.session() as session:
+            data = user_data.dict(exclude_unset=True)
+            if 'password' in data:
+                data['password'] = await run_in_threadpool(pbkdf2_sha256.hash, user_data.password)
 
-    _cache_name_id = 'users:{}'
-    _cache_name_id_password = 'users:{}:password'
-    _cache_name_email = 'users:email:{}'
-    _cache_name_name = 'users:name:{}'
-    _cache_name_stats = 'users:{}:stats'
+            if 'email' in data:
+                e = await session.scalar(sa.select(User).where(
+                    User.email == data['email'],
+                    User.id != user_id,
+                ))
+                if e:
+                    raise exceptions.User_email_duplicate()
+            if 'username' in data:
+                e = await session.scalar(sa.select(User).where(
+                    User.username == data['username'],
+                    User.id != user_id,
+                ))
+                if e:
+                    raise exceptions.User_username_duplicate()
+            if not user_id:
+                r = await session.execute(sa.insert(User).values(data))
+                user_id = r.lastrowid
+            else:
+                await session.execute(sa.update(User).where(User.id==user_id).values(data))
+            user = await session.scalar(sa.select(User).where(User.id == user_id))
+            await session.commit()
+            return schemas.User.from_orm(user)
 
-    _user_stat_fields = (
-        'fan_of',
-        'episodes_watched',
-    )
 
-    def serialize(self):
-        data = {
-            'id': self.id,
-            'name': self.name,
-            'email': self.email,
-            'level': self.level,
-            'created_at': utils.isoformat(self.created_at),
-        }
-        return data
+    @classmethod
+    async def change_password(cls, user_id: int, new_password: str, expire_tokens = True):
+        password = await run_in_threadpool(pbkdf2_sha256.hash, new_password)
+        async with database.session() as session:
+            await session.execute(sa.update(User).where(User.id == user_id).values(
+                password=password,
+            ))
+            if expire_tokens:
+                tokens = await session.scalars(sa.select(Token).where(
+                    Token.user_id == user_id,
+                    sa.or_(
+                        Token.expires >= datetime.utcnow(),
+                        Token.expires == None,
+                    ),
+                ))
+                for token in tokens:
+                    session.delete(token)
+
+            await session.commit()
+
 
     @classmethod
     def get(cls, id_):
@@ -223,40 +255,38 @@ class Token(Base):
 
     user_id = sa.Column(sa.Integer)
     app_id = sa.Column(sa.Integer)
-    token = sa.Column(sa.String(45), primary_key=True)
+    token = sa.Column(sa.String(255), primary_key=True)
     expires = sa.Column(sa.DateTime)
     user_level = sa.Column(sa.Integer)
 
-    _cache_name  = 'tokens:{}'
+    _cache_name  = 'seplis:tokens:{}:user'
 
-    def __init__(self, app_id, user_id, user_level, expires=None):
-        '''Auto genrates a token and sets expires to a year from now
-        if it's `None`.
-
-        :param app_id: int
-        :param user_id: int
-        :param user_level: int
-        :param expires: datetime
-        '''
+    def __init__(self, app_id: int, user_id: int, user_level: int, expires: datetime=None):
+        '''Auto genrates a token and sets expires to a year from now if `expires` is `None`.'''
         self.app_id = app_id
         self.user_id = user_id
         self.user_level = user_level
         self.expires = expires if expires else \
             datetime.utcnow() + timedelta(days=constants.USER_TOKEN_EXPIRE_DAYS)
-        self.token = utils.random_key()
+        self.token = utils.random_key(255)
 
-    def after_insert(self):
-        self.cache()
-
-    def after_delete(self):        
-        self.session.pipe.delete(self.cache_name)
-
-    def cache(self):
+    async def cache(self, pipe: Pipeline = None):
         name = self.cache_name
-        self.session.pipe.hset(name, 'user_id', self.user_id)
-        self.session.pipe.hset(name, 'user_level', self.user_level)
+        _pipe = pipe
+        if not pipe:
+            _pipe = database.redis.pipeline()     
+        _pipe.hset(name, 'id', self.user_id)
+        _pipe.hset(name, 'level', self.user_level)
         if self.expires:
-            self.session.pipe.expireat(name, self.expires)
+            _pipe.expireat(name, self.expires)
+        if not pipe:
+            await _pipe.execute()
+    
+    @classmethod
+    async def get(cls, token: str) -> schemas.User_authenticated:
+        r = await database.redis.hgetall(cls._cache_name.format(token))
+        if r:
+            return schemas.User_authenticated.parse_obj(r)
 
     @property
     def cache_name(self):

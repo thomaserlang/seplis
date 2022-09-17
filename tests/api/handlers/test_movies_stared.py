@@ -7,8 +7,8 @@ class test_movie(Testbase):
 
     def test(self):
         self.login_async()
-        movie1 = self.with_session(models.Movie.save, movie=schemas.Movie_schema(title='National Treasure'))
-        movie2 = self.with_session(models.Movie.save, movie=schemas.Movie_schema(title='Takedown'))
+        movie1 = self.with_session(models.Movie.save, movie=schemas.Movie_create(title='National Treasure'))
+        movie2 = self.with_session(models.Movie.save, movie=schemas.Movie_create(title='Takedown'))
 
         self.put(f'/1/movies/{movie1.id}/stared')
         self.put(f'/1/movies/{movie2.id}/stared')

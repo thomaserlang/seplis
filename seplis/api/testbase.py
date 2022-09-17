@@ -1,24 +1,59 @@
-import asyncio, logging, os, pytest
-
+import asyncio, logging, os, pytest, pytest_asyncio
+from httpx import AsyncClient
 from sqlalchemy import create_engine, event, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from seplis import config, config_load, utils
 from seplis.utils import  json_loads
 from urllib.parse import urlencode
 from tornado.testing import AsyncHTTPTestCase
-from seplis.api.connections import database
+#from seplis.api.connections import database
 from seplis.api.app import Application
 from seplis.api import elasticcreate, constants, models
 from seplis.api.decorators import new_session
 
+from fastapi.testclient import TestClient
+from seplis.api.main import app
+from seplis.api.database import database
+from seplis import logger
+
+@pytest_asyncio.fixture(scope='function')
+async def client():
+    config.data.test = True
+    await database.setup_test()
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        yield ac
+    await database.close_test()
+
+async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LEVEL_USER)], app_level=constants.LEVEL_GOD):
+    # Scopes will be turned in to actual scopes later
+    async with database.session() as session:
+        user = models.User(
+            username='testuser',
+            email='test@example.com',
+            level=int(scopes[0]),
+        )
+        session.add(user)
+        await session.flush()
+        app = models.App(
+            user_id=user.id,
+            name='testbase app',
+            redirect_uri='',
+            level=app_level,
+        )
+        await session.flush()
+        access_token = models.Token(
+            user_id=user.id,
+            user_level=int(scopes[0]),
+            app_id=app.id,
+        )
+        session.add(access_token)
+        await session.commit()
+        await access_token.cache()
+        client.headers['Authorization'] = f'Bearer {access_token.token}'
+
 def run_file(file_):
-    pytest.main([
-        '-o', 'log_cli=true', 
-        '-o', 'log_cli_level=info',
-        '-o', 'log_cli_format=%(asctime)s.%(msecs)3d %(filename)-15s %(lineno)4d %(levelname)-8s %(message)s',
-        '--log-level=info',
-        file_,
-    ])
+    import subprocess
+    subprocess.call(['pytest', '--tb=short', str(file_)])
 
 class Testbase(AsyncHTTPTestCase):
     async_conn = None

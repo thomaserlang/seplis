@@ -35,10 +35,10 @@ class Show_fan(Base):
             '_id': self.show_id,
             'script': 'ctx._source.fans += {}'.format(amount),
         })
-        from seplis.api.models import Show
-        self.session.execute(Show.__table__.update()\
-            .where(Show.__table__.c.id==self.show_id)\
-            .values(fans=Show.__table__.c.fans + amount)
+        from seplis.api.models import Series
+        self.session.execute(Series.__table__.update()\
+            .where(Series.__table__.c.id==self.show_id)\
+            .values(fans=Series.__table__.c.fans + amount)
         )
         from seplis.api.models import User
         self.session.execute(User.__table__.update()\

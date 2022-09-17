@@ -6,7 +6,7 @@ from . import config_load
 from seplis import config
 set_logger(f'play-server-{config.data.play.port}.log')
 
-from . import database
+from .database import database
 from .routers import health, sources, thumbnails, keep_alive, subtitle_file, transcode
 
 app = FastAPI(

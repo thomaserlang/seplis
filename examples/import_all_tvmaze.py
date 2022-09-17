@@ -30,7 +30,7 @@ while (len(data) != 0):
         if show['language'] != 'English':
             continue
         if show['premiered']:
-            if aniso8601.parse_date(show['premiered']) < date(2021, 1, 1):
+            if aniso8601.parse_date(show['premiered']) < date(2022, 1, 1):
                 continue
         else:
             continue

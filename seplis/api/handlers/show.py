@@ -53,7 +53,7 @@ class Handler(base.Handler):
     def _post(self):
         self.request.body = self.validate(schemas.Show_schema)
         with new_session() as session:
-            show = models.Show()
+            show = models.Series()
             session.add(show)
             session.flush()
             self._update(
@@ -83,7 +83,7 @@ class Handler(base.Handler):
     def update(self, show_id=None, overwrite=False):
         self.request.body = self.validate(schemas.Show_schema)
         with new_session() as session: 
-            show = session.query(models.Show).get(show_id)
+            show = session.query(models.Series).get(show_id)
             if not show:
                 raise exceptions.Not_found('unknown show')
             self._update(
@@ -119,7 +119,7 @@ class Handler(base.Handler):
     @run_on_executor
     def _delete(self, show_id):
         with new_session() as session:
-            show = session.query(models.Show).get(show_id)
+            show = session.query(models.Series).get(show_id)
             session.delete(show)
             session.commit()
 
@@ -183,7 +183,7 @@ class Handler(base.Handler):
     @run_on_executor
     def _get_show(self, show_id):
         with new_session() as session:
-            show = session.query(models.Show).get(show_id)
+            show = session.query(models.Series).get(show_id)
             if not show:
                 raise exceptions.Not_found('Unknown show')
             show = show.serialize()
@@ -194,8 +194,8 @@ class Handler(base.Handler):
         from_id = int(self.get_argument('from_id', 0))
         per_page = int(self.get_argument('per_page', constants.PER_PAGE))
         with new_session() as session:
-            shows = session.query(models.Show).filter(
-                models.Show.id > from_id,
+            shows = session.query(models.Series).filter(
+                models.Series.id > from_id,
             ).limit(per_page).all()
             return [show.serialize() for show in shows]
 
@@ -337,7 +337,7 @@ class Multi_handler(base.Handler):
 class External_handler(Handler):
 
     def _get(self, title, value):
-        show_id = models.Show.show_id_by_external(title, value)
+        show_id = models.Series.show_id_by_external(title, value)
         if not show_id:   
             raise exceptions.Not_found('show not found with external: {} with id: {}'.format(title, value))
         return show_id

@@ -27,7 +27,7 @@ class Handler(base.Pagination_handler):
             elw = models.Episode_watching
             ew = models.Episode_watched
             query = session.query(
-                models.Show,
+                models.Series,
                 models.Episode_watched,
                 models.Episode,
             ).filter(
@@ -35,7 +35,7 @@ class Handler(base.Pagination_handler):
                 ew.user_id == elw.user_id,
                 ew.show_id == elw.show_id,
                 ew.episode_number == elw.episode_number,            
-                models.Show.id == elw.show_id,
+                models.Series.id == elw.show_id,
                 models.Episode.show_id == elw.show_id,
                 models.Episode.number == elw.episode_number,
             )
@@ -44,7 +44,7 @@ class Handler(base.Pagination_handler):
             if sort == 'user_rating':
                 query = query.outerjoin(
                     (models.User_show_rating, sa.and_(
-                        models.User_show_rating.show_id == models.Show.id,
+                        models.User_show_rating.show_id == models.Series.id,
                         models.User_show_rating.user_id == user_id,
                     ))
                 ).order_by(
@@ -61,8 +61,8 @@ class Handler(base.Pagination_handler):
             genres = list(filter(None, args.get('genre', [])))
             if genres:
                 query = query.filter(
-                    models.Show_genre.show_id == models.Show.id,
-                    models.Show_genre.genre.in_(genres),
+                    models.Series_genre.show_id == models.Series.id,
+                    models.Series_genre.genre.in_(genres),
                 )
 
             p = query.paginate(self.page, self.per_page)

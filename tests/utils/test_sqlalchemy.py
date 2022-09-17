@@ -7,7 +7,7 @@ class Test_sort_parser(TestCase):
 
     def test(self):
         lookup = {
-            'show_id': models.Show.id,
+            'show_id': models.Series.id,
             'user': {
                 'name': models.User.name,
             },
@@ -48,7 +48,7 @@ class Test_sort_parser(TestCase):
         self.assertEqual(sort[0].modifier, sql.operators.asc_op)
         self.assertEqual(sort[0].element, models.User.name)
         self.assertEqual(sort[1].modifier, sql.operators.desc_op)
-        self.assertEqual(sort[1].element, models.Show.id)
+        self.assertEqual(sort[1].element, models.Series.id)
 
         sort = sort_parser('sub.subsub.name:asc', lookup)
         self.assertEqual(sort[0].modifier, sql.operators.asc_op)

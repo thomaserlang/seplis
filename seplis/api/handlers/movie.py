@@ -10,7 +10,7 @@ from seplis import utils
 
 class Handler(base.Handler):
 
-    __schema__ = schemas.Movie_schema
+    __schema__ = schemas.Movie_create
 
     async def get(self, movie_id: str):
         async with self.async_session() as session:
@@ -23,9 +23,9 @@ class Handler(base.Handler):
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     async def post(self):
-        m: schemas.Movie_schema = self.validate()
+        m: schemas.Movie_create = self.validate()
         async with self.async_session() as session:
-            movie = await models.Movie.save(session, movie_id=None, movie=m, patch=False)
+            movie = await models.Movie.save(session, movie_id=None, movie_data=m, patch=False)
             await session.commit()
             database.queue.enqueue(
                 tasks.update_movie,
@@ -37,17 +37,17 @@ class Handler(base.Handler):
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     async def put(self, movie_id: str):
-        m: schemas.Movie_schema = self.validate()
+        m: schemas.Movie_create = self.validate()
         async with self.async_session() as session:
-            movie = await models.Movie.save(session, movie_id=movie_id, movie=m, patch=False)
+            movie = await models.Movie.save(session, movie_id=movie_id, movie_data=m, patch=False)
             await session.commit()
             self.write_object(movie)
 
     @authenticated(constants.LEVEL_EDIT_SHOW)
     async def patch(self, movie_id: str):
-        m: schemas.Movie_schema = self.validate()
+        m: schemas.Movie_create = self.validate()
         async with self.async_session() as session:
-            movie = await models.Movie.save(session, movie_id=movie_id, movie=m, patch=True)
+            movie = await models.Movie.save(session, movie_id=movie_id, movie_data=m, patch=True)
             await session.commit()
             self.write_object(movie)
 

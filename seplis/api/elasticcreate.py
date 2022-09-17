@@ -1,12 +1,14 @@
-from seplis.config import config
-from seplis.api.connections import database
+import asyncio
+from seplis import config
 
-def create_indices():
-    database.es.options(ignore_status=[400,404]).indices.delete(index='shows')
-    database.es.options(ignore_status=[400,404]).indices.delete(index='episodes')
-    database.es.options(ignore_status=[400,404]).indices.delete(index='images')
-    database.es.options(ignore_status=[400,404]).indices.delete(index='users')
-    database.es.options(ignore_status=[400,404]).indices.delete(index='titles')
+async def create_indices(es):
+    await asyncio.gather(
+        es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'shows'),
+        es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'episodes'),
+        es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'images'),
+        es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'users'),
+        es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'titles'),
+    )
 
     settings = {
         'analysis': {
@@ -65,7 +67,7 @@ def create_indices():
         }
     }
 
-    database.es.indices.create(index='shows', settings=settings, mappings={
+    await es.indices.create(index=config.data.api.elasticsearch.index_prefix+'shows', settings=settings, mappings={
         'properties': {
             'title': {
                 'type': 'text',
@@ -148,7 +150,7 @@ def create_indices():
         }
     })
 
-    database.es.indices.create(index='episodes', mappings={
+    await es.indices.create(index=config.data.api.elasticsearch.index_prefix+'episodes', mappings={
         'properties' : {
             'title': {
                 'type': 'text',
@@ -171,7 +173,7 @@ def create_indices():
         },
     })
 
-    database.es.indices.create(index='images', mappings={
+    await es.indices.create(index=config.data.api.elasticsearch.index_prefix+'images', mappings={
         'properties' : {
             'id': { 'type': 'integer' },
             'relation_type': { 'type': 'keyword' },
@@ -188,7 +190,7 @@ def create_indices():
         }
     })
 
-    database.es.indices.create(index='titles', settings=settings, mappings={
+    await es.indices.create(index=config.data.api.elasticsearch.index_prefix+'titles', settings=settings, mappings={
         'properties': {
             'id': { 'type': 'integer' },
             'type': { 'type': 'keyword' },

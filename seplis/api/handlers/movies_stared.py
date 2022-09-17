@@ -17,7 +17,7 @@ class Handler(base.Handler):
             ).order_by(
                 models.Movie_stared.created_at.desc()
             )
-            p = await paginate(session, query, page=args.page[0], per_page=args.per_page[0], scalars=False)
+            p = await paginate(session, query, page_query=args.page[0], per_page=args.per_page[0], scalars=False)
             records = []
             for r in p.records:
                 d = r.Movie.to_dict()

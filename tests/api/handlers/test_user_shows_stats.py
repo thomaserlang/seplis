@@ -9,14 +9,14 @@ class Test(Testbase):
     def test(self):
         self.login()
         with new_session() as session:
-            show = models.Show(
+            show = models.Series(
                 title='Test show',
                 runtime=30,
                 total_episodes=3,
             )
             session.add(show)
             session.flush()
-            show2 = models.Show(
+            show2 = models.Series(
                 title='Test show 2',
                 runtime=30,
                 total_episodes=1,

@@ -1,5 +1,3 @@
-
-import logging
 from seplis import utils
 from seplis.api import constants
 from seplis.api.testbase import Testbase, run_file

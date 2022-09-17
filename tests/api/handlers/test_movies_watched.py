@@ -8,9 +8,9 @@ class test_movie_watched(Testbase):
     def test(self):
         self.login_async()
         movie1 = self.with_session(models.Movie.save, 
-            movie=schemas.Movie_schema(title='National Treasure'))     
+            movie=schemas.Movie_create(title='National Treasure'))     
         movie2 = self.with_session(models.Movie.save, 
-            movie=schemas.Movie_schema(title='Takedown'))   
+            movie=schemas.Movie_create(title='Takedown'))   
 
         r = self.post(f'/1/movies/{movie1.id}/watched', {
             'watched_at': '2022-06-06T01:00:00Z',

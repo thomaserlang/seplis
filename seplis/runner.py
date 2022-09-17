@@ -1,4 +1,5 @@
-import asyncio, click, signal, sys
+import click, signal, sys
+import uvicorn
 from seplis import config, logger, set_logger
 
 @click.group()
@@ -15,23 +16,14 @@ def cli(config, log_path, log_level):
 
 @cli.command()
 def web():
-    import uvicorn
     uvicorn.run('seplis.web.main:app', host='0.0.0.0', port=config.data.web.port, reload=config.data.debug)
 
 @cli.command()
-@click.option('--port', '-p', help='the port')
-def api(port):
-    if port:
-        config.data.api.port = port
-    set_logger(f'api-{config.data.api.port}.log')
-    import seplis.api.app
-    from seplis.api.connections import database
-    database.connect()
-    asyncio.run(seplis.api.app.main())
+def api():
+    uvicorn.run('seplis.api.main:app', host='0.0.0.0', port=config.data.api.port, reload=config.data.debug)
 
 @cli.command()
 def play_server():
-    import uvicorn
     uvicorn.run('seplis.play.main:app', host='0.0.0.0', port=config.data.play.port, reload=config.data.debug)
 
 @cli.command()

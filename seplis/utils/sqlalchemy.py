@@ -1,8 +1,11 @@
 import logging
-from typing import Any, List
+import math
+from fastapi import Request
+from typing import Any
 from seplis.utils import *
 from seplis.api import exceptions
 from seplis.api.base.pagination import Pagination
+from ..api import schemas 
 
 import sqlalchemy as sa
 from sqlalchemy import func, orm, select
@@ -25,23 +28,42 @@ class Base_query(orm.Query):
         )
         return pagination
 
-async def paginate(session: AsyncSession, query: Any, page=1, per_page=25, scalars: bool = True) -> Pagination:
+async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_query, request: Request, scalars: bool = True) -> schemas.Page_result:
+    query = query.limit(page_query.per_page).offset((page_query.page-1)*page_query.per_page)
     if scalars:
-        records = await session.scalars(query.limit(per_page).offset((page-1)*per_page))
+        items = await session.scalars(query)
     else:
-        records = await session.execute(query.limit(per_page).offset((page-1)*per_page))
-    records = records.all()
-    if page == 1 and len(records) < per_page:
-        total = len(records)
+        items = await session.execute(query)
+    items = items.all()
+    if page_query.page == 1 and len(items) < page_query.per_page:
+        total = len(items)
     else:
         total = await session.scalar(select(func.count()).select_from(query.order_by(None).subquery()))
-    pagination = Pagination(
-        page=page,
-        per_page=per_page,
+    page = schemas.Page_result(
+        page=page_query.page,
+        per_page=page_query.per_page,
         total=total,
-        records=records,
+        items=items,
+        pages=int(math.ceil(float(total) / page_query.per_page))
     )
-    return pagination
+    page.links = create_page_links(request=request, page=page)
+    return page
+
+def create_cursor_links(request: Request, after: str | None, before: str | None):
+    url = request.url.remove_query_params(['after', 'before'])
+    return schemas.Page_cursor_links(
+        next=str(url.include_query_params(after=after)),
+        prev=str(url.include_query_params(before=before)) if 'after=' in request.url.query else None,
+    )
+
+def create_page_links(request: Request, page: schemas.Page_result):
+    url = request.url
+    return schemas.Page_links(
+        first=str(url.include_query_params(page=1)),
+        next=str(url.include_query_params(page=page.page+1)) if page.page < page.pages else None,
+        prev=str(url.include_query_params(page=page.page-1)) if page.page > 1 else None,
+        last=str(url.include_query_params(page=page.pages)) if page.pages > 1 else None 
+    )
 
 def sort_parser(sort, sort_lookup, sort_list=None):
     """

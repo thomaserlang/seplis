@@ -8,7 +8,7 @@ class test_movie_watched(Testbase):
     def test(self):
         self.login_async()
         movie = self.with_session(models.Movie.save, 
-            movie=schemas.Movie_schema(title='National Treasure'))        
+            movie=schemas.Movie_create(title='National Treasure'))        
 
         response = self.get(f'/1/movies/{movie.id}/watched')
         self.assertEqual(response.code, 204)

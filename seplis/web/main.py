@@ -8,6 +8,7 @@ from . import client
 from seplis import config, set_logger, config_load
 
 config_load()
+set_logger(f'web-{config.data.web.port}.log')
 
 app = FastAPI()
 app.mount('/static', StaticFiles(directory=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')), name='static')
@@ -17,8 +18,6 @@ templates = Jinja2Templates(
 )
 templates.env.globals['config'] = config
 http_client = ClientSession()
-
-set_logger(f'web-{config.data.web.port}.log')
 
 @app.get('/health')
 async def health():

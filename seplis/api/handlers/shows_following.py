@@ -37,16 +37,16 @@ class Handler(base.Pagination_handler):
     def fan_of(self, user_id):
         args = self.validate_arguments()
         with new_session() as session:
-            query = session.query(models.Show).filter(
+            query = session.query(models.Series).filter(
                 models.Show_fan.user_id == user_id,
-                models.Show_fan.show_id == models.Show.id,
+                models.Show_fan.show_id == models.Series.id,
             )
 
             sort = args.get('sort', ['followed_at'])[0]            
             if sort == 'user_rating':
                 query = query.outerjoin(
                     (models.User_show_rating, sa.and_(
-                        models.User_show_rating.show_id == models.Show.id,
+                        models.User_show_rating.show_id == models.Series.id,
                         models.User_show_rating.user_id == user_id,
                     ))
                 ).order_by(
@@ -63,8 +63,8 @@ class Handler(base.Pagination_handler):
             genres = list(filter(None, args.get('genre', [])))
             if genres:
                 query = query.filter(
-                    models.Show_genre.show_id == models.Show_fan.show_id,
-                    models.Show_genre.genre.in_(genres),
+                    models.Series_genre.show_id == models.Show_fan.show_id,
+                    models.Series_genre.genre.in_(genres),
                 )
 
             p = query.paginate(page=self.page, per_page=self.per_page)

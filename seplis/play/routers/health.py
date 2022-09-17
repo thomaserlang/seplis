@@ -11,7 +11,7 @@ class Health_response(BaseModel):
     service: str
 
 @router.get('/health', response_model=list[Health_response])
-async def get_health(response: Response):
+async def check_health(response: Response):
     result = await asyncio.gather(
         db_check()
     )

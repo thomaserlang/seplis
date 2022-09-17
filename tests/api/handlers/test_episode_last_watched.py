@@ -9,7 +9,7 @@ class Test_next_to_watch(Testbase):
         self.login(constants.LEVEL_PROGRESS)
         # Create a show and 2 episodes
         with new_session() as session:
-            show = models.Show()
+            show = models.Series()
             session.add(show)
             session.flush()
             episode1 = models.Episode(show_id=show.id, number=1)

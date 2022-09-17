@@ -57,14 +57,14 @@ class Handler(base.Handler):
                     models.Episode_watched.times * \
                         sa.func.ifnull(
                             models.Episode.runtime,
-                            models.Show.runtime,
+                            models.Series.runtime,
                         )
                 ).label('episodes_watched_minutes'),
             ).filter(
                 models.Episode_watched.user_id == user_id,
                 models.Episode.show_id == models.Episode_watched.show_id,
                 models.Episode.number == models.Episode_watched.episode_number,
-                models.Show.id == models.Episode_watched.show_id,
+                models.Series.id == models.Episode_watched.show_id,
             ).first()
             d = {
                 'episodes_watched': 0,

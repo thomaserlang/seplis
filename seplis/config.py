@@ -5,16 +5,24 @@ import yaml, tempfile
 
 class ConfigRedisModel(BaseModel):
     ip: str = '127.0.0.1'
+    host: str = None
     port: int = 6379
     db: conint(ge=0, le=15) = 0
     sentinel: Optional[List[Tuple[str, int]]]
+    master_name = 'mymaster'
     password: Optional[str]
+    queue_name = 'seplis:queue'
+    
+    @validator('host', pre=True, always=True)
+    def default_host(cls, v, *, values, **kwargs):
+        return v or values['ip']
 
 class ConfigElasticsearch(BaseModel):
     host: Union[str, List[str]] = 'https://127.0.0.1:9200'
     user: Optional[str]
     password: Optional[str]
     verify_certs = True
+    index_prefix = 'seplis_'
 
 class ConfigAPIModel(BaseModel):
     database = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
@@ -50,7 +58,7 @@ class ConfigClientModel(BaseModel):
     public_api_url: Optional[AnyHttpUrl]
 
     @validator('public_api_url', pre=True, always=True)
-    def default_ts_modified(cls, v, *, values, **kwargs):
+    def default_public_api_url(cls, v, *, values, **kwargs):
         return v or values['api_url']
 
 class ConfigPlayScanModel(BaseModel):
@@ -82,6 +90,8 @@ class ConfigSMTPModel(BaseModel):
     
 class ConfigModel(BaseSettings):
     debug = False
+    test = False
+    ENVIRONMENT: Optional[str]
     sentry_dsn: Optional[str]
     data_dir = '~/.seplis'
     api = ConfigAPIModel()
