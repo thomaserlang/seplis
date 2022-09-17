@@ -2,11 +2,13 @@ import React from 'react'
 import ClassNames from 'classnames'
 import Chromecast from './Chromecast'
 import Slider from './Slider'
+import Settings from './Settings'
 import {episodeTitle, secondsToTime} from 'utils'
 import {request} from 'api'
 import {trigger_episode_watched_status} from 'seplis/events'
 
 import './ChromecastBar.scss'
+import './Player.scss'
 
 class ChromecastBar extends React.Component {
 
@@ -26,8 +28,6 @@ class ChromecastBar extends React.Component {
         this.onSliderReturnCurrentTime = this.sliderReturnCurrentTime.bind(this)
         this.onSliderNewTime = this.sliderNewTime.bind(this)
         this.onPlayPauseClick = this.playPauseClick.bind(this)
-        this.onAudioChange = this.audioChange.bind(this)
-        this.onSubtitleChange = this.subtitleChange.bind(this)
         this.clickPlayNextEpisode = this.playNextEpisode.bind(this)
     }
 
@@ -41,8 +41,7 @@ class ChromecastBar extends React.Component {
             'anyChanged',
             this.castStateChanged.bind(this)
         )
-
-        var session = this.cast.getSession()
+        const session = this.cast.getSession()
         if (session) {
             session.removeMessageListener(
                 'urn:x-cast:net.seplis.cast.get_custom_data',
@@ -51,29 +50,35 @@ class ChromecastBar extends React.Component {
         }
     }
 
-    audioChange(lang) {
+    onAudioChange = (lang) => {
         if (lang == '')
             lang = null
         this.subAudioSubSave({audio_lang: lang})
     }    
 
-    subtitleChange(lang) {
+    onSubtitleChange = (lang) => {
         if (lang == '')
             lang = null
         this.subAudioSubSave({subtitle_lang: lang})
     }
-
+    
     subAudioSubSave(data) {
-        var show = this.state.info.show
-        var episode = this.state.info.episode
-        request(`/1/shows/${show.id}/user-subtitle-lang`, {
-            method: 'PATCH',
-            data: data,
-        }).done(() => {
-            this.cast.playEpisode(show.id, episode.number, this.state.currentTime)
-        }).catch((e) => {
-            alert(e.message)
-        })
+        if (this.state.info.type == 'episode') {
+            const show = this.state.info.series
+            const episode = this.state.info.episode
+            request(`/1/shows/${show.id}/user-subtitle-lang`, {
+                method: 'PATCH',
+                data: data,
+            }).done(() => {
+                this.cast.playEpisode(show.id, episode.number, this.state.currentTime)
+            }).catch((e) => {
+                alert(e.message)
+            })
+        } else {
+            this.setState(data, () => {
+                this.cast.playMovie(this.state.info.movie.id, this.state.currentTime, this.state.audio_lang, this.state.subtitle_lang)
+            })
+        }
     }
 
     initCast() {
@@ -102,7 +107,7 @@ class ChromecastBar extends React.Component {
     }
 
     connectedChanged() {
-        let connected = this.cast.isConnected()
+        const connected = this.cast.isConnected()
         this.setState({
             connected: connected,
             deviceName: (connected)?this.cast.getFriendlyName():'',
@@ -122,6 +127,7 @@ class ChromecastBar extends React.Component {
         this.setState({
             info: JSON.parse(message),
             playNextEpisode: null,
+            playerState: (this.cast.getMediaSession())?this.cast.getMediaSession().playerState:null,
         }, () => {
             if (this.cast.getMediaSession()) {
                 this.currentTimeChanged({
@@ -150,8 +156,10 @@ class ChromecastBar extends React.Component {
     getPlayNextEpisode() {
         if (!this.state.info)
             return
-        let number = parseInt(this.state.info.episode.number) + 1
-        let showId = this.state.info.show.id
+        if (this.state.info.type != 'episode')
+            return
+        const number = parseInt(this.state.info.episode.number) + 1
+        const showId = this.state.info.series.id
         request(
             `/1/shows/${showId}/episodes/${number}`
         ).done(data => {
@@ -174,61 +182,61 @@ class ChromecastBar extends React.Component {
             currentTime: 0,
         })
         this.cast.playEpisode(
-            this.state.info.show.id,
+            this.state.info.series.id,
             this.state.nextEpisode.number,
             0,
         ).catch((e) => {
             alert(e.message)
             this.setState({changingTime: false})
         }).then(() => {
-            // iOS fix
-            this.cast.getSession().sendMessage(
-                'urn:x-cast:net.seplis.cast.get_custom_data', 
-                {}
-            )
             this.setState({changingTime: false})
         }) 
     }
 
     currentTimeChanged(event) {
         let time = event.value
-        if (!this.cast.getMediaSession())
-            return     
-        if (!this.cast.getMediaSession().items)
-            return
-        if (this.cast.getMediaSession().items.length != 1)
+        const mediaSession = this.cast.getMediaSession()
+        if (!mediaSession)
             return
         if (this.state.changingTime)
             return
-        let startTime = this.cast.getMediaSession().items[0].startTime
-        if (startTime == 0 && this.state.info)
+        if (mediaSession.liveSeekableRange && this.state.info)
             time += this.state.info.startTime
         this.setState({currentTime: time})
     }
 
-    sliderNewTime(newTime) {            
-        this.state.info['startTime'] = newTime
+    sliderNewTime(newTime) {
         this.setState({
             loading: true,
             currentTime: newTime,
             changingTime: true,
+            startTime: newTime,
         })
         this.cast.pause(() => {
-            this.cast.playEpisode(
-                this.state.info.show.id,
-                this.state.info.episode.number,
-                newTime,
-            ).catch((e) => {
-                this.setState({changingTime: false})
-                alert(e.message)
-            }).then(() => {
-                // iOS fix
-                this.cast.getSession().sendMessage(
-                    'urn:x-cast:net.seplis.cast.get_custom_data', 
-                    {}
-                )
-                this.setState({changingTime: false})
-            })
+            if (this.state.info.type == 'episode') {
+                this.cast.playEpisode(
+                    this.state.info.series.id,
+                    this.state.info.episode.number,
+                    newTime,
+                ).catch((e) => {
+                    this.setState({changingTime: false})
+                    alert(e.message)
+                }).then(() => {
+                    this.setState({changingTime: false})
+                })
+            } else {
+                this.cast.playMovie(
+                    this.state.info.movie.id,
+                    newTime,
+                    this.state.audio_lang,
+                    this.state.subtitle_lang,
+                ).catch((e) => {
+                    this.setState({changingTime: false})
+                    alert(e.message)
+                }).then(() => {
+                    this.setState({changingTime: false})
+                })
+            }
         }, () => {            
             this.setState({changingTime: false})
         })
@@ -241,7 +249,7 @@ class ChromecastBar extends React.Component {
     renderPlayControl() {
         if (this.state.loading) {
             return (
-                <div className="control">
+                <div className="control-icon">
                     <img src="/static/img/spinner.svg" />
                 </div>
             )
@@ -252,12 +260,12 @@ class ChromecastBar extends React.Component {
             'fa-play': this.state.playerState != 'PLAYING',
         })
         return (
-            <div className="control">
-                <span 
+            <div className="control-icon">
+                <i 
                     className={playPause}
                     onClick={this.onPlayPauseClick}
                 >
-                </span>
+                </i>
             </div>
         )
     }
@@ -266,16 +274,16 @@ class ChromecastBar extends React.Component {
         if (!this.state.info)
             return 0
         return parseInt(
-            this.state.info.metadata.format.duration
+            this.state.info.sources[0].duration
         )
     }
 
     getPlayNextInfo() {
-        if (!this.state.info || !this.state.info.show || !this.state.nextEpisode) 
+        if (!this.state.info || !this.state.info.series || !this.state.nextEpisode) 
             return null
-        let show = this.state.info.show
-        let episode = this.state.nextEpisode
-        let title = episodeTitle(show, episode)
+        const show = this.state.info.series
+        const episode = this.state.nextEpisode
+        const title = episodeTitle(show, episode)
         return {
             title: title,
             url: `/show/${show.id}/episode/${episode.number}/play`
@@ -283,26 +291,45 @@ class ChromecastBar extends React.Component {
     }
 
     renderPlayNext() {
-        let info = this.getPlayNextInfo()
-        if (!info) return
-        return <div className="control">
-            <span 
+        if (!this.getPlayNextInfo()) 
+            return
+        return <div className="control-icon">
+            <i 
                 className="fas fa-step-forward"
                 onClick={this.clickPlayNextEpisode}
             />
         </div>
     }
 
+    renderTitle() {        
+        if (this.state.info.type == 'movie') {
+            return this.state.info.movie.title
+        } else if (this.state.info.type == 'episode') {
+            const show = this.state.info.series
+            const episode = this.state.info.episode
+            return `${show.title} - ${episodeTitle(show, episode)}`
+        }
+    }
+
+    renderSettings() {
+        if (!this.state.info)
+            return
+        return <div className="control-icon">
+            <Settings 
+                selectedSource={this.state.info.selectedSource}
+                sources={this.state.info.sources}
+                onAudioChange={this.onAudioChange}
+                onSubtitleChange={this.onSubtitleChange}
+                onResolutionChange={this.onResolutionChange}
+            />
+        </div>
+    }
+
     renderPlaying() {
-        let show = this.state.info.show
-        let episode = this.state.info.episode
-        return (
-            <div id="castbar">
+        return <div id="castbar">
             <div className="container">
                 <div className="text">
-                    <b>
-                    {show.title} - {episodeTitle(show, episode)}
-                    </b>
+                    <b>{this.renderTitle()}</b>
                     &nbsp; on {this.state.deviceName}
                 </div>
                 <div className="controls">
@@ -321,14 +348,14 @@ class ChromecastBar extends React.Component {
                         {secondsToTime(this.getDuration())}
                     </div>
                     {this.renderPlayNext()}
+                    {this.renderSettings()}
                 </div>
             </div>
-            </div>
-        )
+        </div>
     }
 
     renderFinished() {
-        let show = this.state.info.show
+        let show = this.state.info.series
         let episode = this.state.info.episode
         let playNext = this.getPlayNextInfo()
         if (!playNext) return null

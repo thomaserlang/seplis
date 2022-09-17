@@ -20,7 +20,7 @@ class Source_arguments(BaseModel):
     source_index: conlist(int, max_items=1) = [0]    
 
 class Transcode_setting_arguments(Source_arguments):
-    session: conlist(str, min_items=1, max_items=1)
+    session: conlist(constr(regex='^[a-z0-9-]+$'), min_items=1, max_items=1)
     supported_video_codecs: List[str] = ['h264']
     supported_audio_codecs: List[str] = ['acc']
     supported_pixel_formats: List[str] = ['yuv420p']
@@ -78,6 +78,9 @@ class Base_handler(web.RequestHandler):
         )
 
     def options(self, *args, **kwargs):
+        self.set_status(204)    
+        
+    def head(self, *args, **kwargs):
         self.set_status(204)
 
     def validate_arguments(self, schema):
@@ -91,7 +94,7 @@ class Base_handler(web.RequestHandler):
 
 class Transcode_handler(Base_handler):
 
-    async def get(self):
+    async def get(self, *args):
         args: Transcode_setting_arguments = self.validate_arguments(Transcode_setting_arguments)
         settings = self.parse_settings(args)
         metadata = await get_metadata(settings.play_id)

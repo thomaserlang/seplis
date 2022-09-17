@@ -129,6 +129,7 @@ class Transcoder:
             {'-copyts': None},
             {'-start_at_zero': None},
             {'-avoid_negative_ts': 'disabled'},
+            {'-muxdelay': '0'},
         ]
 
         self.ffmpeg_args = args

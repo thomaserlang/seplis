@@ -7,7 +7,6 @@ class Dash_transcoder(video.Transcoder):
     def ffmpeg_extend_args(self) -> None:
         self.ffmpeg_args.extend([
             {'-f': 'dash'},
-            {'-seg_duration': str(config.data.play.segment_time)},
             {'-segment_time': str(self.segment_time())},
             {'-segment_start_number': '0'},
             {'-segment_format_options': 'ignore_readorder=1'},

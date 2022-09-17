@@ -552,7 +552,7 @@ class Player extends React.Component {
                 </div>
             </div>
 
-            <div className="controls">                
+            <div className="controls" style={{height: '42px'}}>                
                 <div className="control-text">
                     {this.getCurrentTimeText()}
                 </div>

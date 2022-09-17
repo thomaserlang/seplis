@@ -19,6 +19,7 @@ class Application(tornado.web.Application):
             (r'/transcode', play.Transcode_handler),
             (r'/subtitle-file', play.Subtitle_file_handler),
             (r'/sources', play.Sources_handler),
+            (r'/files/(.*)/transcode', play.Transcode_handler),
             (r'/files/(.*)', play.File_handler),
             (r'/thumbnails/(.*)', play.Thumbnails_handler),
             (r'/close-session/(.*)', play.Close_session_handler),

@@ -120,14 +120,17 @@ class Chromecast {
                 request(`/1/shows/${showId}/episodes/${episodeNumber}/watched`),
                 request(`/1/shows/${showId}/user-subtitle-lang`),
             ]).then(result => {
+                const session = guid()
                 if (!startTime) {
                     if (result[4])
                         startTime = result[4].position
                     else
-                        startTime = 0
+                        startTime = 1
                 }
                 let customData = {
-                    play: result[0]['playServer'],                    
+                    session: session,
+                    play: result[0]['playServer'],
+                    selectedSource: result[0]['sources'][0],
                     sources: result[0]['sources'],
                     token: result[1]['token'],
                     type: 'episode',
@@ -145,30 +148,44 @@ class Chromecast {
                     startTime: startTime,
                     apiUrl: seplisBaseUrl,
                 }
-                let playUrl = result[0].playServer.play_url+'/play'+
+                let playUrl = result[0].playServer.play_url+`/files/${session}/transcode`+
                     `?play_id=${result[0].playServer.play_id}`+
-                    `&session=${guid()}}`+
+                    `&session=${session}`+
                     `&start_time=${startTime}`+
+                    `&source_index=${customData.selectedSource.index}`+
+                    `&supported_video_codecs=h264`+
+                    `&transcode_video_codec=h264`+
+                    `&supported_audio_codecs=aac`+
+                    `&transcode_audio_codec=aac`+
                     `&supported_pixel_formats=yuv420p`+
-                    `&transcode_codec=h264`+
                     `&transcode_pixel_format=yuv420p`+
                     `&audio_channels=2`+
-                    `&format=pipe`
+                    `&format=hls`
                 if (result[5]) {
                     // playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
                     playUrl += `&audio_lang=${result[5].audio_lang || ''}`
                 }
-                let request = new chrome.cast.media.LoadRequest(
-                    this._playEpisodeMediaInfo(playUrl, result[2], result[3]),
-                )
+                const media = this._playEpisodeMediaInfo(playUrl, result[2], result[3])
+                if (result[5].subtitle_lang)
+                    media.tracks = [this.subtitleTrack(customData.selectedSource.index, result[0].playServer, result[5].subtitle_lang, startTime)]
+                const request = new chrome.cast.media.LoadRequest(media)
                 request.customData = customData
+                if (result[5].subtitle_lang)
+                    request.activeTrackIds = [1]
                 this.getSession().loadMedia(
                     request,
                     mediaSession => { 
                         mediaListener(mediaSession)
+                        const srequest = new chrome.cast.media.SeekRequest()
+                        srequest.currentTime = 1
+                        mediaSession.seek(srequest, (success) => {
+                        }, (error) => {
+                            console.log(error)
+                        })
                         resolve(mediaSession) 
                     },
                     e => { 
+                        console.log(e)
                         reject(e) 
                     }, Chromecast
                 )
@@ -178,8 +195,7 @@ class Chromecast {
         })
     }
 
-
-    playMovie(movieId, startTime) {
+    playMovie(movieId, startTime, audioLang, subtitleLang) {
         return new Promise((resolve, reject) => {
             if (!this.isConnected()) {
                 alert('Not connected to a cast device.')
@@ -197,10 +213,13 @@ class Chromecast {
                     if (result[3])
                         startTime = result[3].position
                     else
-                        startTime = 0
+                        startTime = 1 // for some reason some movies will not start playing if startTime is 0
                 }
-                let customData = {
+                const session = guid()
+                const customData = {
+                    session: session,
                     play: result[0]['playServer'],
+                    selectedSource: result[0]['sources'][0],
                     sources: result[0]['sources'],
                     token: result[1]['token'],
                     type: 'movie',
@@ -211,26 +230,28 @@ class Chromecast {
                     startTime: startTime,
                     apiUrl: seplisBaseUrl,
                 }
-                let playUrl = result[0].playServer.play_url+'/play'+
+                const playUrl = result[0].playServer.play_url+`/files/${session}/transcode`+
                     `?play_id=${result[0].playServer.play_id}`+
-                    `&session=${guid()}}`+
+                    `&session=${session}`+
                     `&start_time=${startTime}`+
+                    `&source_index=${customData.selectedSource.index}`+
+                    `&supported_video_codecs=h264`+
+                    `&transcode_video_codec=h264`+
+                    `&supported_audio_codecs=aac`+
+                    `&transcode_audio_codec=aac`+
                     `&supported_pixel_formats=yuv420p`+
-                    `&transcode_codec=h264`+
                     `&transcode_pixel_format=yuv420p`+
                     `&audio_channels=2`+
-                    `&format=pipe`
-
-                /*
-                if (result[4]) {
-                    playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
-                    playUrl += `&audio_lang=${result[5].audio_lang || ''}`
-                }
-                */
-                let request = new chrome.cast.media.LoadRequest(
-                    this._playMovieMediaInfo(playUrl, result[2], result[3]),
-                )
+                    `&format=hls`+
+                    `&audio_lang=${audioLang || ''}`
+                
+                const media = this._playMovieMediaInfo(playUrl, result[2], result[3])
+                if (subtitleLang)
+                    media.tracks = [this.subtitleTrack(customData.selectedSource.index, result[0].playServer, subtitleLang, startTime || 1)]
+                const request = new chrome.cast.media.LoadRequest(media)
                 request.customData = customData
+                if (subtitleLang)
+                    request.activeTrackIds = [1]
                 this.getSession().loadMedia(
                     request,
                     mediaSession => { 
@@ -247,9 +268,26 @@ class Chromecast {
         })
     }
 
+    subtitleTrack(source_index, playServer, subtitle_lang, startTime) {
+        const track = new chrome.cast.media.Track(1, chrome.cast.media.TrackType.TEXT)
+        track.language = subtitle_lang
+        track.name = subtitle_lang
+        track.subtype = chrome.cast.media.TextTrackType.CAPTIONS
+        track.trackContentType = 'text/vtt'
+        track.trackContentId = `${playServer.play_url}/subtitle-file`+
+            `?play_id=${playServer.play_id}`+
+            `&start_time=${startTime || 0}`+
+            `&source_index=${source_index}`+
+            `&lang=${subtitle_lang}`
+        return track
+    }
+
 
     _playEpisodeMediaInfo(url, show, episode) {
-        var mediaInfo = new chrome.cast.media.MediaInfo(url)
+        const mediaInfo = new chrome.cast.media.MediaInfo(url)
+        mediaInfo.contentType = 'application/x-mpegURL'
+        mediaInfo.hlsVideoSegmentFormat = chrome.cast.media.HlsSegmentFormat.FMP4
+        mediaInfo.streamType = chrome.cast.media.StreamType.OTHER
         mediaInfo.metadata = new chrome.cast.media.TvShowMediaMetadata()
         mediaInfo.metadata.seriesTitle = show.title
         mediaInfo.metadata.title = episode.title
@@ -260,17 +298,34 @@ class Chromecast {
         mediaInfo.metadata.images = [
             {url:show.poster_image!=null?show.poster_image.url + '@SX180.jpg':''},
         ]
+        mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+        mediaInfo.textTrackStyle.backgroundColor = '#00000000';
+        mediaInfo.textTrackStyle.edgeColor       = '#00000016';
+        mediaInfo.textTrackStyle.edgeType        = 'DROP_SHADOW';
+        mediaInfo.textTrackStyle.fontFamily      = 'CASUAL';
+        mediaInfo.textTrackStyle.fontScale       = 1.0;
+        mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
         return mediaInfo
     }
 
     _playMovieMediaInfo(url, movie) {
-        var mediaInfo = new chrome.cast.media.MediaInfo(url)
-        mediaInfo.metadata = new chrome.cast.media.MovieMediaMetadata ()
+        const mediaInfo = new chrome.cast.media.MediaInfo(url)
+        mediaInfo.contentType = 'application/x-mpegURL';
+        mediaInfo.hlsVideoSegmentFormat = chrome.cast.media.HlsSegmentFormat.FMP4;
+        mediaInfo.streamType = chrome.cast.media.StreamType.OTHER
+        mediaInfo.metadata = new chrome.cast.media.MovieMediaMetadata()
         mediaInfo.metadata.title = movie.title
-        mediaInfo.metadata.releaseDate = episode.premiered
+        mediaInfo.metadata.releaseDate = movie.released
         mediaInfo.metadata.images = [
             {url:movie.poster_image!=null?movie.poster_image.url + '@SX180.jpg':''},
         ]
+        mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
+        mediaInfo.textTrackStyle.backgroundColor = '#00000000';
+        mediaInfo.textTrackStyle.edgeColor       = '#00000016';
+        mediaInfo.textTrackStyle.edgeType        = 'DROP_SHADOW';
+        mediaInfo.textTrackStyle.fontFamily      = 'CASUAL';
+        mediaInfo.textTrackStyle.fontScale       = 1.0;
+        mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
         return mediaInfo
     }
 
@@ -326,8 +381,6 @@ function mediaListener(mediaSession) {
     Chromecast.mediaSession = mediaSession
     mediaSession.addUpdateListener(mediaSessionUpdateListener)        
     dispatchEvent(events.CURRENT_TIME, Chromecast.mediaSession.getEstimatedTime())            
-    // Chrome iOS fix
-    mediaSessionUpdateListener()
 }
 
 function mediaSessionUpdateListener() {

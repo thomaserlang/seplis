@@ -22,11 +22,24 @@
     var lastSavedTime = 0
     var watchedIncremented = false
     var prevViewedId = null
+    var keepAliveTimer = null
 
     const context = cast.framework.CastReceiverContext.getInstance()
     const playerManager = context.getPlayerManager()
 
     const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
+
+    function setPingTimer() {
+        clearTimeout(keepAliveTimer)
+        keepAliveTimer = setTimeout(() => {
+            $.get(`${customData['play']['play_url']}/keep-alive/${customData['session']}`).fail(e => {
+                if (e.status == 404) {
+                    clearTimeout(keepAliveTimer)
+                }
+            })
+            setPingTimer()
+        }, 4000)
+    }
 
     context.addCustomMessageListener(
         GET_CUSTOM_DATA, 
@@ -55,11 +68,12 @@
         event => {
             customData = event.requestData.customData
             lastSavedTime = customData.startTime
+            let id
             if (customData['type'] == 'episode') {
-                let id = 'episode' + customData['show']['id'].toString() +
+                id = 'episode' + customData['series']['id'].toString() +
                     customData['episode']['number'].toString()
             } else if (customData['type'] == 'movie') {
-                let id = 'movie'+customData['movie']['id'].toString()
+                id = 'movie'+customData['movie']['id'].toString()
             }
             if (prevViewedId != id)
                 watchedIncremented = false
@@ -72,6 +86,7 @@
                     customData
                 )
             }
+            setPingTimer()
         }
     )
 
@@ -104,13 +119,13 @@
             let duration = parseInt(customData['sources'][0]['duration'])
             let watched = (((time / 100) * 10) > (duration-time))
             
-            
+            let url
             if (customData['type'] == 'episode') {
-                let url = customData['apiUrl'] +
-                    '/1/shows/'+customData['show']['id'].toString()+
+                url = customData['apiUrl'] +
+                    '/1/shows/'+customData['series']['id'].toString()+
                     '/episodes/'+customData['episode']['number'].toString()
             } else if (customData['type'] == 'movie') {
-                let url = customData['apiUrl'] + '/1/movies/'+customData['movie']['id'].toString()
+                url = customData['apiUrl'] + '/1/movies/'+customData['movie']['id'].toString()
             }
             let putData = {}
             if (watched) {

@@ -18,162 +18,6 @@
         display:none !important;
     }
 
-    .controls-bottom, .controls-top {
-        position: fixed;
-        bottom: 0;
-        z-index: 2147483647;
-        width: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-    }
-    
-    .controls-bottom {
-        padding-bottom: 0.5rem;
-    }
-
-    .controls-top {        
-        bottom: auto;
-        top: 0;
-    }
-
-    .controls {
-        width: 100%;
-        user-select: none;
-        display: flex;
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-
-        .control-icon {
-            position: relative;
-            text-align: center;
-
-            i {                
-                padding: 0.5rem;
-                font-size: 42px;
-                min-width: 54px;
-                cursor: pointer;
-            }
-
-            &:empty{
-                display: none;
-            }
-
-            a {
-                color: #fff;
-            }
-
-            a:hover {
-                text-decoration: none;
-            }
-
-            .castbutton {
-                width: 42px;
-            }
-        }
-
-        .control-spacer {
-            flex: 1;
-        }
-
-        .control-text {
-            font-size: 14px;
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
-            line-height: 45px;
-            overflow: hidden;
-        }
-
-        .control-text-title {
-            font-size: 26px;
-            padding: 0.5rem;
-            padding-bottom: 0;
-            overflow: hidden;
-        }
-
-        .control-text-pointer {            
-            cursor: pointer;
-            overflow: visible;
-        }
-
-        .text-box {
-            z-index: 999;
-            bottom: 58px;
-            position: absolute;
-            width: 100px;
-            background-color: #2E2E2E;
-            font-size: 20px;
-            padding: 1rem;
-            text-align: left;
-            max-height: 400px;
-            display: flex;
-        
-            .title {
-                font-weight: bolder;
-                color: #428bca;
-            }
-        }
-
-        .overlay-box {
-            height: 100%;
-            width: 100%;
-            max-width: 1200px;
-            max-height: 600px;
-            position: fixed;
-            z-index: 1000;
-            bottom: 65px;
-            right: 0;
-            background-color: rgba(0,0,0, 0.9);
-            display: flex;
-            flex-wrap: wrap;
-            overflow-y: auto;
-            padding: 50px;
-
-            .close-icon {
-                position: absolute;
-                top: 0.1rem;
-                right: 0.7rem;
-                border: 0;
-            }
-
-            .box-group {
-                flex: 1;
-                text-align: left;
-                min-width: 250px;
-                max-width: 400px;
-                margin-bottom: 1rem;
-
-                .title {
-                    font-weight: bolder;
-                    color: #428bca;
-                    font-size: 26px;
-                }
-
-                .items {
-                    overflow-y: auto;
-                    max-height: 400px;
-                    
-                    .item {
-                        cursor: pointer;
-                        padding-top: 0.2rem;
-                        padding-bottom: 0.2rem;
-                        font-size: 1.2rem;
-                    }
-                }
-            }
-        }
-
-        @media screen and (max-height: 1000px) {
-            .overlay-box {
-                bottom: 0;
-                top: 0;
-            }
-        }
-
-
-        .text-box-right {
-            right: 0;
-        }
-    }
-
     .big-play-button {
         position: absolute;
         left: 50%;
@@ -183,4 +27,160 @@
         z-index: 999;
         padding: 1rem;
     }
+}
+
+.controls {
+    width: 100%;
+    user-select: none;
+    display: flex;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+
+    .control-icon {
+        position: relative;
+        text-align: center;
+
+        i {                
+            padding: 0.5rem;
+            font-size: 42px;
+            min-width: 54px;
+            cursor: pointer;
+        }
+
+        &:empty{
+            display: none;
+        }
+
+        a {
+            color: #fff;
+        }
+
+        a:hover {
+            text-decoration: none;
+        }
+
+        .castbutton {
+            width: 42px;
+        }
+    }
+
+    .control-spacer {
+        flex: 1;
+    }
+
+    .control-text {
+        font-size: 14px;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        overflow: hidden;
+        margin: auto;
+    }
+
+    .control-text-title {
+        font-size: 26px;
+        padding: 0.5rem;
+        padding-bottom: 0;
+        overflow: hidden;
+    }
+
+    .control-text-pointer {            
+        cursor: pointer;
+        overflow: visible;
+    }
+
+    .text-box {
+        z-index: 999;
+        bottom: 58px;
+        position: absolute;
+        width: 100px;
+        background-color: #2E2E2E;
+        font-size: 20px;
+        padding: 1rem;
+        text-align: left;
+        max-height: 400px;
+        display: flex;
+    
+        .title {
+            font-weight: bolder;
+            color: #428bca;
+        }
+    }
+
+    .overlay-box {
+        height: 100%;
+        width: 100%;
+        max-width: 1200px;
+        max-height: 600px;
+        position: fixed;
+        z-index: 1000;
+        bottom: 65px;
+        right: 0;
+        background-color: rgba(0,0,0, 0.9);
+        display: flex;
+        flex-wrap: wrap;
+        overflow-y: auto;
+        padding: 50px;
+
+        .close-icon {
+            position: absolute;
+            top: 0.1rem;
+            right: 0.7rem;
+            border: 0;
+        }
+
+        .box-group {
+            flex: 1;
+            text-align: left;
+            min-width: 250px;
+            max-width: 400px;
+            margin-bottom: 1rem;
+
+            .title {
+                font-weight: bolder;
+                color: #428bca;
+                font-size: 26px;
+            }
+
+            .items {
+                overflow-y: auto;
+                max-height: 400px;
+                
+                .item {
+                    cursor: pointer;
+                    padding-top: 0.2rem;
+                    padding-bottom: 0.2rem;
+                    font-size: 1.2rem;
+                }
+            }
+        }
+    }
+
+    @media screen and (max-height: 1000px) {
+        .overlay-box {
+            bottom: 0;
+            top: 0;
+        }
+    }
+
+
+    .text-box-right {
+        right: 0;
+    }
+}
+
+.controls-bottom, .controls-top {
+    position: fixed;
+    bottom: 0;
+    z-index: 2147483647;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.controls-bottom {
+    padding-bottom: 0.5rem;
+}
+
+.controls-top {        
+    bottom: auto;
+    top: 0;
 }

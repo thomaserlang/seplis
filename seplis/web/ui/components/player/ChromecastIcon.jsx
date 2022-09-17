@@ -49,12 +49,14 @@ class ChromecastIcon extends React.Component {
         if (this.state.connected)
             icon = '/static/img/chromecast_connected.svg';
         return (
-            <img 
-                onClick={this.iconClick}
-                title="Chromecast"
-                className="castbutton"
-                src={icon}
-            />
+            <i>
+                <img 
+                    onClick={this.iconClick}
+                    title="Chromecast"
+                    className="castbutton"
+                    src={icon}
+                />
+            </i>
         );
     }
 }
