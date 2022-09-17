@@ -255,12 +255,6 @@ class Transcoder:
     def segment_time(self) -> int:
         return 5 if self.find_ffmpeg_arg('-c:v') == 'copy' else 1
 
-def subprocess_env() -> Dict:
-    env = {}
-    if config.data.play.ffmpeg_logfile:
-        env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
-    return env
-
 def to_subprocess_arguments(args) -> List[str]:
     l = []
     for a in args:
@@ -269,6 +263,12 @@ def to_subprocess_arguments(args) -> List[str]:
             if value:
                 l.append(value)
     return l
+
+def subprocess_env() -> Dict:
+    env = {}
+    if config.data.play.ffmpeg_logfile:
+        env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
+    return env
 
 def get_video_stream(metadata: Dict) -> Dict:
     for stream in metadata['streams']:
@@ -296,11 +296,14 @@ def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
                     index = None
         else:
             index = None
+    first = None
     for i, stream in enumerate(metadata['streams']):
         if stream['codec_type'] == codec_type:
             group_index += 1
+            if not first:
+                first = Stream_index(index=i, group_index=group_index)
             if lang == '':
-                return Stream_index(index=i, group_index=group_index)
+                return first
             if 'tags' in stream:
                 l = stream['tags'].get('language') or stream['tags'].get('title')
                 if not l:
@@ -311,12 +314,13 @@ def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
                         return Stream_index(index=i, group_index=group_index)
     logger.warning(f'Found no {codec_type} with language: {lang}')
     logger.warning(f'Available {codec_type}: {", ".join(langs)}')
+    return first
 
 def close_session_callback(session):
     close_session(session)
 
 def close_session(session):
-    logger.debug(f'[{session}] Closing')
+    logger.info(f'[{session}] Closing')
     if session not in sessions:
         return
     s = sessions[session]
