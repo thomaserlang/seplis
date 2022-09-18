@@ -162,15 +162,14 @@ class Chromecast {
                     `&audio_channels=2`+
                     `&format=hls`
                 if (result[5]) {
-                    // playUrl += `&subtitle_lang=${result[5].subtitle_lang || ''}`
                     playUrl += `&audio_lang=${result[5].audio_lang || ''}`
                 }
                 const media = this._playEpisodeMediaInfo(playUrl, result[2], result[3])
-                if (result[5].subtitle_lang)
+                if (result[5] && result[5].subtitle_lang)
                     media.tracks = [this.subtitleTrack(customData.selectedSource.index, result[0].playServer, result[5].subtitle_lang, startTime)]
                 const request = new chrome.cast.media.LoadRequest(media)
                 request.customData = customData
-                if (result[5].subtitle_lang)
+                if (result[5] && result[5].subtitle_lang)
                     request.activeTrackIds = [1]
                 this.getSession().loadMedia(
                     request,
