@@ -36,10 +36,9 @@ class Transcode_setting_arguments(Source_arguments):
     client_width: Optional[conlist(Union[int, constr(max_length=0), None], max_items=1)]
 
 class Subtitle_arguments(Source_arguments):
-
     lang: conlist(constr(min_length=1), min_items=1, max_items=1)
     start_time: conlist(Union[int, float], max_items=1) = [0]
-    offset: conlist(int, max_items=1) = [0]
+    offset: conlist(Union[int, float], max_items=1) = [0]
 
 class Base_handler(web.RequestHandler):
 

@@ -112,12 +112,12 @@ function SelectSubtitle(props) {
 function SubtitleOffset(props) {    
     const onChange = (e) => {
         props.onSelected()
-        props.onSubtitleOffsetChange(parseInt(e.target.value))
+        props.onSubtitleOffsetChange(parseFloat(e.target.value))
     }
     return <div className="items">
         <select value={props.selectedSubtitleOffset} onChange={onChange}>
-            {[...Array(11)].map((v, i) => (
-                <option key={`subOffset${i}`}value={i-5}>{i-5} {(Math.abs(i-5) == 1)?'second':'seconds'}</option>
+            {[...Array(21)].map((v, i) => (
+                <option key={`subOffset${i}`} value={i/2-5}>{i/2-5} {(Math.abs(i/2-5) == 1)?'second':'seconds'}</option>
             ))}
         </select>
     </div>
