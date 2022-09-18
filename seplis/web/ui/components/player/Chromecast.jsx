@@ -104,7 +104,7 @@ class Chromecast {
         Chromecast.mediaSession.pause(null, success, error)
     }
 
-    playEpisode(showId, episodeNumber, startTime) {
+    playEpisode(showId, episodeNumber, startTime, sourceIndex) {
         return new Promise((resolve, reject) => {
             if (!this.isConnected()) {
                 alert('Not connected to a cast device.')
@@ -131,7 +131,7 @@ class Chromecast {
                 let customData = {
                     session: session,
                     play: result[0]['playServer'],
-                    selectedSource: result[0]['sources'][0],
+                    selectedSource: result[0]['sources'][sourceIndex || 0],
                     sources: result[0]['sources'],
                     token: result[1]['token'],
                     type: 'episode',
@@ -195,7 +195,7 @@ class Chromecast {
         })
     }
 
-    playMovie(movieId, startTime, audioLang, subtitleLang) {
+    playMovie(movieId, startTime, sourceIndex, audioLang, subtitleLang) {
         return new Promise((resolve, reject) => {
             if (!this.isConnected()) {
                 alert('Not connected to a cast device.')
@@ -220,7 +220,7 @@ class Chromecast {
                 const customData = {
                     session: session,
                     play: result[0]['playServer'],
-                    selectedSource: result[0]['sources'][0],
+                    selectedSource: result[0]['sources'][sourceIndex || 0],
                     sources: result[0]['sources'],
                     token: result[1]['token'],
                     type: 'movie',

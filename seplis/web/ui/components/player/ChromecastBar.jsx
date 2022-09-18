@@ -70,14 +70,22 @@ class ChromecastBar extends React.Component {
                 method: 'PATCH',
                 data: data,
             }).done(() => {
-                this.cast.playEpisode(show.id, episode.number, this.state.currentTime)
+                this.cast.playEpisode(show.id, episode.number, this.state.currentTime, this.state.info.selectedSource.index)
             }).catch((e) => {
                 alert(e.message)
             })
         } else {
             this.setState(data, () => {
-                this.cast.playMovie(this.state.info.movie.id, this.state.currentTime, this.state.audio_lang, this.state.subtitle_lang)
+                this.cast.playMovie(this.state.info.movie.id, this.state.currentTime, this.state.info.selectedSource.index, this.state.audio_lang, this.state.subtitle_lang)
             })
+        }
+    }
+
+    onResolutionChange = (width, source) => {
+        if (this.state.info.type == 'episode') {
+            this.cast.playEpisode(this.state.info.series.id, this.state.info.episode.number, this.state.currentTime, source.index)
+        } else {
+            this.cast.playMovie(this.state.info.movie.id, this.state.currentTime, source.index, this.state.audio_lang, this.state.subtitle_lang)
         }
     }
 
@@ -218,6 +226,7 @@ class ChromecastBar extends React.Component {
                     this.state.info.series.id,
                     this.state.info.episode.number,
                     newTime,
+                    this.state.info.selectedSource.index,
                 ).catch((e) => {
                     this.setState({changingTime: false})
                     alert(e.message)
@@ -228,6 +237,7 @@ class ChromecastBar extends React.Component {
                 this.cast.playMovie(
                     this.state.info.movie.id,
                     newTime,
+                    this.state.info.selectedSource.index,
                     this.state.audio_lang,
                     this.state.subtitle_lang,
                 ).catch((e) => {
