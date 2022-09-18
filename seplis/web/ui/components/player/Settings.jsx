@@ -31,6 +31,14 @@ function Settings(props) {
                 onSelected={props.closeClick}
             />
         </div>
+        <div className="box-group">
+            <div className="title">Subtitle offset</div>
+            <SubtitleOffset 
+                onSubtitleOffsetChange={props.onSubtitleOffsetChange}
+                onSelected={props.closeClick}
+                selectedSubtitleOffset={props.selectedSubtitleOffset || 0}
+            />
+        </div>
     </div>
 }
 
@@ -54,6 +62,8 @@ SettingsIcon.propTypes = {
     onResolutionChange: PropTypes.func,
     onAudioChange: PropTypes.func,
     onSubtitleChange: PropTypes.func,
+    onSubtitleOffsetChange: PropTypes.func,
+    selectedSubtitleOffset: PropTypes.number,
 }
 
 
@@ -80,9 +90,7 @@ function SelectAudio(props) {
 function SelectSubtitle(props) {
     const onClick = (e) => {
         props.onSelected()
-        props.onSubtitleChange(
-            e.target.getAttribute('data-data')
-        )
+        props.onSubtitleChange(e.target.getAttribute('data-data'))
     }
 
     return <div className="items">
@@ -97,5 +105,20 @@ function SelectSubtitle(props) {
                 {l.title}
             </div>
         ))}
+    </div>
+}
+
+
+function SubtitleOffset(props) {    
+    const onChange = (e) => {
+        props.onSelected()
+        props.onSubtitleOffsetChange(parseInt(e.target.value))
+    }
+    return <div className="items">
+        <select value={props.selectedSubtitleOffset} onChange={onChange}>
+            {[...Array(11)].map((v, i) => (
+                <option key={`subOffset${i}`}value={i-5}>{i-5} {(Math.abs(i-5) == 1)?'second':'seconds'}</option>
+            ))}
+        </select>
     </div>
 }

@@ -104,7 +104,7 @@ class Chromecast {
         Chromecast.mediaSession.pause(null, success, error)
     }
 
-    playEpisode(showId, episodeNumber, startTime, sourceIndex) {
+    playEpisode(showId, episodeNumber, startTime, sourceIndex, subtitleOffset) {
         return new Promise((resolve, reject) => {
             if (!this.isConnected()) {
                 alert('Not connected to a cast device.')
@@ -147,6 +147,7 @@ class Chromecast {
                         episode: result[3]['episode'],
                     },
                     startTime: startTime,
+                    subtitleOffset: subtitleOffset || 0,
                     apiUrl: seplisBaseUrl,
                 }
                 let playUrl = result[0].playServer.play_url+`/files/${session}/transcode`+
@@ -167,7 +168,13 @@ class Chromecast {
                 }
                 const media = this._playEpisodeMediaInfo(playUrl, result[2], result[3])
                 if (result[5] && result[5].subtitle_lang)
-                    media.tracks = [this.subtitleTrack(customData.selectedSource.index, result[0].playServer, result[5].subtitle_lang, startTime)]
+                    media.tracks = [this.subtitleTrack(
+                        customData.selectedSource.index, 
+                        result[0].playServer, 
+                        result[5].subtitle_lang, 
+                        startTime, 
+                        subtitleOffset
+                    )]
                 const request = new chrome.cast.media.LoadRequest(media)
                 request.customData = customData
                 if (result[5] && result[5].subtitle_lang)
@@ -195,7 +202,7 @@ class Chromecast {
         })
     }
 
-    playMovie(movieId, startTime, sourceIndex, audioLang, subtitleLang) {
+    playMovie(movieId, startTime, sourceIndex, audioLang, subtitleLang, subtitleOffset) {
         return new Promise((resolve, reject) => {
             if (!this.isConnected()) {
                 alert('Not connected to a cast device.')
@@ -229,6 +236,9 @@ class Chromecast {
                         title: result[2]['title'],
                     },
                     startTime: startTime,
+                    audioLang: audioLang || '',
+                    subtitleLang: subtitleLang || '',
+                    subtitleOffset: subtitleOffset || 0,
                     apiUrl: seplisBaseUrl,
                 }
                 const playUrl = result[0].playServer.play_url+`/files/${session}/transcode`+
@@ -248,7 +258,13 @@ class Chromecast {
                 
                 const media = this._playMovieMediaInfo(playUrl, result[2], result[3])
                 if (subtitleLang)
-                    media.tracks = [this.subtitleTrack(customData.selectedSource.index, result[0].playServer, subtitleLang, startTime || 1)]
+                    media.tracks = [this.subtitleTrack(
+                        customData.selectedSource.index, 
+                        result[0].playServer, 
+                        subtitleLang, 
+                        startTime,
+                        subtitleOffset,
+                    )]
                 const request = new chrome.cast.media.LoadRequest(media)
                 request.customData = customData
                 if (subtitleLang)
@@ -269,7 +285,7 @@ class Chromecast {
         })
     }
 
-    subtitleTrack(source_index, playServer, subtitle_lang, startTime) {
+    subtitleTrack(source_index, playServer, subtitle_lang, startTime, offset) {
         const track = new chrome.cast.media.Track(1, chrome.cast.media.TrackType.TEXT)
         track.language = subtitle_lang
         track.name = subtitle_lang
@@ -279,7 +295,8 @@ class Chromecast {
             `?play_id=${playServer.play_id}`+
             `&start_time=${startTime || 0}`+
             `&source_index=${source_index}`+
-            `&lang=${subtitle_lang}`
+            `&lang=${subtitle_lang}`+
+            `&offset=${offset || 0}`
         return track
     }
 

@@ -3,7 +3,7 @@ from typing import Dict
 from seplis import config, logger
 from .video import stream_index_by_lang, subprocess_env, to_subprocess_arguments
 
-async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
+async def get_subtitle_file(metadata: Dict, lang: str, start_time: int, offset: int = None):
     if not lang:
         return
     sub_index = stream_index_by_lang(metadata, 'subtitle', lang)
@@ -22,6 +22,8 @@ async def get_subtitle_file(metadata: Dict, lang: str, start_time: int):
         {'-f': 'webvtt'},
         {'-': None},
     ]
+    if offset:
+        args.insert(2, {'-itsoffset': str(offset)})
     args = to_subprocess_arguments(args)        
     logger.debug(f'Subtitle args: {" ".join(args)}')
     process = await asyncio.create_subprocess_exec(

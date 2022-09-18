@@ -22,6 +22,7 @@ const propTypes = {
     currentInfo: PropTypes.object,
     onAudioChange: PropTypes.func,
     onSubtitleChange: PropTypes.func,
+    onSubtitleOffsetChange: PropTypes.func,
     onResolutionChange: PropTypes.func,
     audio_lang: PropTypes.string,
     subtitle_lang: PropTypes.string,
@@ -63,6 +64,7 @@ class Player extends React.Component {
             source: this.pickSource(),
             showBigPlayButton: false,
             session: guid(),
+            subtitleOffset: 0,
         }
     }
 
@@ -127,7 +129,7 @@ class Player extends React.Component {
         this.setState({loading: true})
         if (this.state.subtitle)
             // Hls.js stalles in the first few seconds if we do not add a timeout for adding the subtitles
-            setTimeout(() => { this.setSubtitle(this.state.subtitle) }, 100)
+            setTimeout(() => { this.setSubtitle() }, 100)
         
         this.setPingTimer()
         
@@ -428,7 +430,7 @@ class Player extends React.Component {
         if (this.props.onSubtitleChange)
             this.props.onSubtitleChange(lang)
         this.setState({subtitle: lang}, () => {
-            this.setSubtitle(lang)
+            this.setSubtitle()
         })
     }
 
@@ -441,7 +443,15 @@ class Player extends React.Component {
         })
     }
 
-    setSubtitle(lang) {
+    onSubtitleOffsetChange = (seconds) => {
+        if (this.props.onSubtitleOffsetChange)
+            this.props.onSubtitleOffsetChange(seconds)
+        this.setState({subtitleOffset: seconds}, () => {
+            this.setSubtitle()
+        })
+    }
+
+    setSubtitle() {
         for (let i = this.tracks.length - 1; i >= 0; i--) {
             this.tracks[i].mode = 'disabled'
             this.trackElems[i].remove()
@@ -455,7 +465,8 @@ class Player extends React.Component {
             `?play_id=${this.props.playId}`+
             `&start_time=${this.state.startTime}`+
             `&source_index=${this.state.source.index}`+
-            `&lang=${lang}`
+            `&lang=${this.state.subtitle}`+
+            `&offset=${this.state.subtitleOffset}`
         track.track.mode = 'hidden'
         track.track.addEventListener('cuechange', this.onCueChange)
         track.addEventListener('load', (e) => {
@@ -600,6 +611,8 @@ class Player extends React.Component {
                         onAudioChange={this.onAudioChange}
                         onSubtitleChange={this.onSubtitleChange}
                         onResolutionChange={this.onResolutionChange}
+                        onSubtitleOffsetChange={this.onSubtitleOffsetChange}
+                        selectedSubtitleOffset={this.state.subtitleOffset}
                     />
                 </div>
 

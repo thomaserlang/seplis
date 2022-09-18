@@ -39,6 +39,7 @@ class Subtitle_arguments(Source_arguments):
 
     lang: conlist(constr(min_length=1), min_items=1, max_items=1)
     start_time: conlist(Union[int, float], max_items=1) = [0]
+    offset: conlist(int, max_items=1) = [0]
 
 class Base_handler(web.RequestHandler):
 
@@ -213,7 +214,12 @@ class Subtitle_file_handler(Base_handler):
             self.set_status(404)
             self.write('{"error": "No movie/episode found"}')
             return
-        sub = await get_subtitle_file(metadata=metadata[args.source_index[0]], lang=args.lang[0], start_time=int(args.start_time[0]))
+        sub = await get_subtitle_file(
+            metadata=metadata[args.source_index[0]], 
+            lang=args.lang[0], 
+            start_time=int(args.start_time[0]),
+            offset=args.offset[0],
+        )
         if not sub:
             self.set_status(500)
             self.write_object({'error': 'Unable retrive subtitle file'})
