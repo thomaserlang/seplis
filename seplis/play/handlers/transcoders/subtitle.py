@@ -9,6 +9,10 @@ async def get_subtitle_file(metadata: Dict, lang: str, start_time: int, offset: 
     sub_index = stream_index_by_lang(metadata, 'subtitle', lang)
     if not sub_index:
         return
+    if offset and start_time:
+        if start_time > offset:
+            start_time -= offset
+            offset = 0
     args = [
         {'-analyzeduration': '20000000'},
         {'-probesize': '20000000'},
