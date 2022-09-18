@@ -124,9 +124,10 @@ class Chromecast {
                 if (!startTime) {
                     if (result[4])
                         startTime = result[4].position
-                    else
-                        startTime = 1
                 }
+                // for some reason some episodes will not start playing if startTime is 0
+                if (!startTime || (startTime == 0))
+                    startTime = 1
                 let customData = {
                     session: session,
                     play: result[0]['playServer'],
@@ -211,9 +212,10 @@ class Chromecast {
                 if (!startTime) {
                     if (result[3])
                         startTime = result[3].position
-                    else
-                        startTime = 1 // for some reason some movies will not start playing if startTime is 0
                 }
+                // for some reason some movies will not start playing if startTime is 0
+                if (!startTime || (startTime == 0))
+                    startTime = 1
                 const session = guid()
                 const customData = {
                     session: session,
