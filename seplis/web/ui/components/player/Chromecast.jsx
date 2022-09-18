@@ -298,12 +298,8 @@ class Chromecast {
             {url:show.poster_image!=null?show.poster_image.url + '@SX180.jpg':''},
         ]
         mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
-        mediaInfo.textTrackStyle.backgroundColor = '#00000000';
-        mediaInfo.textTrackStyle.edgeColor       = '#00000016';
-        mediaInfo.textTrackStyle.edgeType        = 'DROP_SHADOW';
-        mediaInfo.textTrackStyle.fontFamily      = 'CASUAL';
-        mediaInfo.textTrackStyle.fontScale       = 1.0;
-        mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
+        mediaInfo.textTrackStyle.fontFamily = 'CASUAL';
+        mediaInfo.textTrackStyle.fontScale = 1.0;
         return mediaInfo
     }
 
@@ -319,12 +315,8 @@ class Chromecast {
             {url:movie.poster_image!=null?movie.poster_image.url + '@SX180.jpg':''},
         ]
         mediaInfo.textTrackStyle = new chrome.cast.media.TextTrackStyle();
-        mediaInfo.textTrackStyle.backgroundColor = '#00000000';
-        mediaInfo.textTrackStyle.edgeColor       = '#00000016';
-        mediaInfo.textTrackStyle.edgeType        = 'DROP_SHADOW';
-        mediaInfo.textTrackStyle.fontFamily      = 'CASUAL';
-        mediaInfo.textTrackStyle.fontScale       = 1.0;
-        mediaInfo.textTrackStyle.foregroundColor = '#FFFFFF';
+        mediaInfo.textTrackStyle.fontFamily = 'CASUAL';
+        mediaInfo.textTrackStyle.fontScale = 1.0;
         return mediaInfo
     }
 
