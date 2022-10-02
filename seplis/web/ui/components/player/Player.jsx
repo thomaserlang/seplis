@@ -113,8 +113,9 @@ class Player extends React.Component {
 
     pickSource() {
         let s = this.props.sources[0]
+        const width = this.getScreenWidth()
         for (const source of this.props.sources) {
-            if (source.width <= screen.width)
+            if (source.width <= width)
                 s = source
         }
         return s
@@ -255,12 +256,17 @@ class Player extends React.Component {
             `&width=${this.state.resolutionWidth || ''}`+
             `&supported_video_codecs=${String(videoCodecs)}`+
             `&transcode_video_codec=${videoCodecs[0]}`+
-            `&client_width=${screen.width}`+
+            `&client_width=${this.getScreenWidth()}`+
             `&supported_audio_codecs=aac`+
             `&transcode_audio_codec=aac`+
             `&supported_pixel_formats=yuv420p`+
             `&transcode_pixel_format=yuv420p`+
             `&format=hls`
+    }
+
+    getScreenWidth() {
+        const width = screen.width
+        return Math.round(window.devicePixelRatio * width)
     }
 
     getSupportedVideoCodecs() {
