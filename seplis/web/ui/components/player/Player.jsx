@@ -97,7 +97,7 @@ class Player extends React.Component {
     }
 
     componentWillUnmount() {
-        clearTimeout(this.pingTimer)
+        clearInterval(this.pingTimer)
         clearTimeout(this.hideControlsTimer) 
 
         document.removeEventListener('onmousemove', this.onMouseMove)
@@ -177,11 +177,13 @@ class Player extends React.Component {
                 case Hls.ErrorTypes.MEDIA_ERROR:
                     console.log('hls.js fatal media error encountered, try to recover')
                     this.hls.swapAudioCodec()
+                    this.setState({playing: false})
                     this.handleMediaError()
                     break
                 default:
                     console.log('hls.js could not recover')
                     this.hls.destroy()
+                    this.setState({playing: false})
                     break
             }
         }
@@ -189,7 +191,8 @@ class Player extends React.Component {
 
     handleMediaError() {
         this.setState({loading: true})
-        this.hls.recoverMediaError()
+        if (this.hls)
+            this.hls.recoverMediaError()
         this.video.play()
     }
 
@@ -206,11 +209,11 @@ class Player extends React.Component {
     }
 
     setPingTimer() {
-        clearTimeout(this.pingTimer)
-        this.pingTimer = setTimeout(() => {
+        clearInterval(this.pingTimer)
+        this.pingTimer = setInterval(() => {
             request(`${this.props.playServerUrl}/keep-alive/${this.state.session}`).catch(e => {
                 if (e.status == 404) {
-                    clearTimeout(this.pingTimer)
+                    clearInterval(this.pingTimer)
                     this.setState({session: null})
                 }
             })
@@ -275,7 +278,7 @@ class Player extends React.Component {
 
     onPlayPauseClick = () => {        
         if (!this.state.session)
-            this.changeVideoState({})
+            this.changeVideoState({startTime: this.state.time})
         else {
             if (this.video.paused) {
                 this.video.play()
@@ -311,7 +314,8 @@ class Player extends React.Component {
     }
 
     onPlayError = (e) => {
-        this.setState({loading: false})
+        console.log('PLAY ERROR')
+        this.setState({loading: false, playing: false})
         console.warn(e.currentTarget.error)
         if (e.currentTarget.error.code == e.currentTarget.error.MEDIA_ERR_DECODE) {
             this.handleMediaError()
