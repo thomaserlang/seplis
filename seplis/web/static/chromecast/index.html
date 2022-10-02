@@ -30,15 +30,10 @@
     const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
 
     function setPingTimer() {
-        clearTimeout(keepAliveTimer)
-        keepAliveTimer = setTimeout(() => {
-            $.get(`${customData['play']['play_url']}/keep-alive/${customData['session']}`).fail(e => {
-                if (e.status == 404) {
-                    clearTimeout(keepAliveTimer)
-                }
-            })
-            setPingTimer()
-        }, 2000)
+        if (!keepAliveTimer)
+            keepAliveTimer = setInterval(() => {
+                $.get(`${customData['play']['play_url']}/keep-alive/${customData['session']}`)
+            }, 4000)
     }
 
     context.addCustomMessageListener(
@@ -96,7 +91,7 @@
             if (!customData)
                 return
             let time = Math.floor(event.currentMediaTime)
-                        
+
             // TODO: Find a way to check if the media is being transcoded on the fly
             // since if true the `event.currentMediaTime` will only
             // hold the value since it started playing not the correct position
