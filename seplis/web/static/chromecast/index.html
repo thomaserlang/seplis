@@ -90,6 +90,7 @@
         event => {
             if (!customData)
                 return
+            setPingTimer()
             let time = Math.floor(event.currentMediaTime)
 
             // TODO: Find a way to check if the media is being transcoded on the fly
