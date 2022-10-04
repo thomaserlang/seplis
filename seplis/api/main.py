@@ -13,6 +13,7 @@ from .routes import (
     movie,
     series,
     user,
+    token,
 )
 
 app = FastAPI()
@@ -20,6 +21,7 @@ app.include_router(health.router)
 app.include_router(movie.router)
 app.include_router(series.router)
 app.include_router(user.router)
+app.include_router(token.router)
 
 @app.on_event('startup')
 async def startup():

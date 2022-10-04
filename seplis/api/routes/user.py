@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Security, Depends
 import sqlalchemy as sa
-
-from ..dependencies import authenticated, get_session, AsyncSession, httpx_client
-from ..database import database
+from starlette.concurrency import run_in_threadpool
+from passlib.hash import pbkdf2_sha256
+from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants, exceptions
-from ... import logger, utils, config
+from ... import logger
 
 router = APIRouter(prefix='/1/users')
 
@@ -32,5 +32,19 @@ async def update_user(
 
 
 @router.post('/me/change-password', status_code=204)
-async def change_password(data: schemas.User_change_password):
-    await models.User.change_password()
+async def change_password(
+    data: schemas.User_change_password,
+    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    session: AsyncSession = Depends(get_session),
+):
+    password = await session.scalar(sa.select(models.User.password).where(models.User.id == user.id))
+    if not password:
+        raise exceptions.User_unknown()
+    matches = await run_in_threadpool(pbkdf2_sha256.verify, data.current_password, password)
+    if not matches:
+        raise exceptions.Wrong_password()
+    await models.User.change_password(
+        user_id=user.id,
+        new_password=data.new_password,
+        current_token=user.token,
+    )

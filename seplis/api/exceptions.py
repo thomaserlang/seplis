@@ -40,6 +40,16 @@ class Forbidden(API_exception):
             errors=None,
         )
 
+class Wrong_password(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(self,
+            status_code=401,
+            code=999, 
+            message='Wrong password',
+            errors=None,
+        )
+
 class Wrong_email_or_password_exception(API_exception):
 
     def __init__(self):

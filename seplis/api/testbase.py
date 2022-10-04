@@ -31,6 +31,7 @@ async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LE
             username='testuser',
             email='test@example.com',
             level=int(scopes[0]),
+            password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',
         )
         session.add(user)
         await session.flush()
@@ -40,6 +41,7 @@ async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LE
             redirect_uri='',
             level=app_level,
         )
+        session.add(app)
         await session.flush()
         access_token = models.Token(
             user_id=user.id,

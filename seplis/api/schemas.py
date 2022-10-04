@@ -176,13 +176,6 @@ class Subtitle_language(BaseModel):
     audio_lang: Optional[constr(min_length=1, max_length=20)]
 
 
-class User_authenticated(BaseModel):
-    id: int
-    level: int
-
-    class Config:
-        orm_mode = True
-
 class Search_title_document(BaseModel):
     type: str
     id: int
@@ -191,6 +184,15 @@ class Search_title_document(BaseModel):
     release_date: date | None
     imdb: str | None
     poster_image: Image | None
+
+    class Config:
+        orm_mode = True
+
+
+class User_authenticated(BaseModel):
+    id: int
+    level: int
+    token: Optional[str]
 
     class Config:
         orm_mode = True
@@ -221,3 +223,13 @@ class User(User_basic):
 class User_change_password(BaseModel):
     current_password: constr(min_length=1)
     new_password: USER_PASSWORD_TYPE
+
+
+class Token_create(BaseModel):
+    grant_type: Literal['password']
+    email: str
+    password: str
+    client_id: str
+
+class Token(BaseModel):
+    access_token: str

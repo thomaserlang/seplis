@@ -52,5 +52,18 @@ async def test_user(client: AsyncClient):
     assert user['email'] == 'test2@example.net'
 
 
+    r = await client.post('/1/users/me/change-password', json={
+        'current_password': '12345',
+        'new_password': '1234567890',
+    })
+    assert r.status_code == 401, r.content
+
+    r = await client.post('/1/users/me/change-password', json={
+        'current_password': '123456',
+        'new_password': '1234567890',
+    })
+    assert r.status_code == 204, r.content    
+    
+
 if __name__ == '__main__':
     run_file(__file__)
