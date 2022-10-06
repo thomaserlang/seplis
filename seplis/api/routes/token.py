@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Security, Depends
+from fastapi import APIRouter, Depends
 from starlette.concurrency import run_in_threadpool
+from passlib.hash import pbkdf2_sha256
 import sqlalchemy as sa
 
-from ..dependencies import authenticated, get_session, AsyncSession
+from ..dependencies import get_session, AsyncSession
 from .. import models, schemas, constants, exceptions
-from passlib.hash import pbkdf2_sha256
 
 router = APIRouter(prefix='/1')
 
@@ -23,8 +23,8 @@ async def create_token(
         )
     
     user: models.User = await session.scalar(sa.select(models.User).where(sa.or_(
-        models.User.email == data.email, 
-        models.User.username == data.email,
+        models.User.email == data.username, 
+        models.User.username == data.username,
     )))
 
     if not user:

@@ -227,9 +227,10 @@ class User_change_password(BaseModel):
 
 class Token_create(BaseModel):
     grant_type: Literal['password']
-    email: str
+    username: str
     password: str
     client_id: str
 
 class Token(BaseModel):
     access_token: str
+    token_type: str = 'bearer'

@@ -2,6 +2,7 @@ import pytest
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 from seplis.api.database import database
 from seplis.api import models, constants
+from seplis import utils
 
 @pytest.mark.asyncio
 async def test_token(client: AsyncClient):
@@ -20,13 +21,60 @@ async def test_token(client: AsyncClient):
         session.add(app)
         await session.commit()
 
+
+    # wrong client id
+    r = await client.post('/1/token', json={
+        'client_id': 'WRONG',
+        'login': 'testuser1',
+        'password': '1234567890',
+        'grant_type': 'password',
+    })
+    assert r.status_code == 400, r.content
+    error = utils.json_loads(r.content)
+    assert error['code'] == 1007
+
+
+    # wrong password
     r = await client.post('/1/token', json={
         'client_id': app.client_id,
-        'email': 'testuser1',
+        'login': 'testuser1',
+        'password': 'WRONG',
+        'grant_type': 'password',
+    })
+    assert r.status_code == 401, r.content
+    error = utils.json_loads(r.content)
+    assert error['code'] == 1000
+
+
+    # wrong login
+    r = await client.post('/1/token', json={
+        'client_id': app.client_id,
+        'login': 'WRONG',
+        'password': '1234567890',
+        'grant_type': 'password',
+    })
+    assert r.status_code == 401, r.content
+    assert error['code'] == 1000
+
+
+    # correct password
+    r = await client.post('/1/token', json={
+        'client_id': app.client_id,
+        'login': 'testuser1',
         'password': '1234567890',
         'grant_type': 'password',
     })
     assert r.status_code == 201, r.content
+    
+
+    r = await client.post('/1/token', json={
+        'client_id': app.client_id,
+        'login': 'test1@example.net',
+        'password': '1234567890',
+        'grant_type': 'password',
+    })
+    assert r.status_code == 201, r.content
+    
 
 if __name__ == '__main__':
     run_file(__file__)
