@@ -25,7 +25,7 @@ async def test_token(client: AsyncClient):
     # wrong client id
     r = await client.post('/1/token', json={
         'client_id': 'WRONG',
-        'login': 'testuser1',
+        'username': 'testuser1',
         'password': '1234567890',
         'grant_type': 'password',
     })
@@ -37,7 +37,7 @@ async def test_token(client: AsyncClient):
     # wrong password
     r = await client.post('/1/token', json={
         'client_id': app.client_id,
-        'login': 'testuser1',
+        'username': 'testuser1',
         'password': 'WRONG',
         'grant_type': 'password',
     })
@@ -46,10 +46,10 @@ async def test_token(client: AsyncClient):
     assert error['code'] == 1000
 
 
-    # wrong login
+    # wrong username
     r = await client.post('/1/token', json={
         'client_id': app.client_id,
-        'login': 'WRONG',
+        'username': 'WRONG',
         'password': '1234567890',
         'grant_type': 'password',
     })
@@ -60,20 +60,24 @@ async def test_token(client: AsyncClient):
     # correct password
     r = await client.post('/1/token', json={
         'client_id': app.client_id,
-        'login': 'testuser1',
+        'username': 'testuser1',
         'password': '1234567890',
         'grant_type': 'password',
     })
     assert r.status_code == 201, r.content
+    data = utils.json_loads(r.content)
+    assert len(data['access_token']) > 1
     
 
     r = await client.post('/1/token', json={
         'client_id': app.client_id,
-        'login': 'test1@example.net',
+        'username': 'test1@example.net',
         'password': '1234567890',
         'grant_type': 'password',
     })
     assert r.status_code == 201, r.content
+    data = utils.json_loads(r.content)
+    assert len(data['access_token']) > 1
     
 
 if __name__ == '__main__':
