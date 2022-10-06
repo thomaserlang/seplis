@@ -50,9 +50,9 @@ urls = [
 
     U(r'/1/search', h.search.Handler),
 
-    U(r'/1/users', h.user.Collection_handler),
-    U(r'/1/users/current', h.user.Current_handler),            
-    U(r'/1/users/current/change-password', h.user.Change_password_handler),
+    #U(r'/1/users', h.user.Collection_handler),
+    #U(r'/1/users/current', h.user.Current_handler),            
+    #U(r'/1/users/current/change-password', h.user.Change_password_handler),
     U(r'/1/user-reset-password', h.reset_password.Handler),
     U(r'/1/users/([a-z0-9]+)', h.user.Handler),
     U(r'/1/users/([a-z0-9]+)/fan-of', h.shows_following.Handler),
@@ -77,8 +77,8 @@ urls = [
 
     U(r'/1/apps', h.app.Handler),
     U(r'/1/apps/([0-9]+)', h.app.Handler),
-    U(r'/1/token', h.user.Token_handler),
-    U(r'/1/progress-token', h.user.Progress_token_handler),
+    #U(r'/1/token', h.user.Token_handler),
+    #U(r'/1/progress-token', h.user.Progress_token_handler),
 
     U(r'/1/show-genres', h.genres.Handler),
     U(r'/health', h.health.Handler),
