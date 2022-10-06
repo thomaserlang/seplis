@@ -129,7 +129,7 @@ class Chromecast {
                 let customData = {
                     play: result[0]['playServer'],                    
                     sources: result[0]['sources'],
-                    token: result[1]['token'],
+                    token: result[1]['access_token'],
                     type: 'episode',
                     series: {
                         id: result[2]['id'],
@@ -202,7 +202,7 @@ class Chromecast {
                 let customData = {
                     play: result[0]['playServer'],
                     sources: result[0]['sources'],
-                    token: result[1]['token'],
+                    token: result[1]['access_token'],
                     type: 'movie',
                     movie: {
                         id: result[2]['id'],

@@ -64,6 +64,18 @@ async def test_user(client: AsyncClient):
     })
     assert r.status_code == 204, r.content    
     
+    # make sure our current token didn't expire
+    r = await client.get('/1/users/me')
+    assert r.status_code == 200, r.content
+    user = r.json()
+    assert user['username'] == 'testuser2'
+
+
+    r = await client.get('/1/users?username=testuser2')
+    assert r.status_code == 200, r.content
+    data = r.json()
+    assert data[0]['id'] == user['id']
+
 
 if __name__ == '__main__':
     run_file(__file__)

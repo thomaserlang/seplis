@@ -10,7 +10,7 @@ class SignIn extends React.Component {
         super(props)
         this.state = {
             error: '',
-            email: '',
+            username: '',
             password: '',
         }
         this.onSignIn = this.onSignIn.bind(this)
@@ -27,7 +27,7 @@ class SignIn extends React.Component {
             data: {
                 client_id: seplisClientId,
                 grant_type: 'password',
-                email: this.state.email,
+                username: this.state.username,
                 password: this.state.password,
             }
         }).fail(e => {
@@ -42,7 +42,7 @@ class SignIn extends React.Component {
     }
 
     saveUserIdAndRedirect() {
-        request('/1/users/current').done(user => {
+        request('/1/users/me').done(user => {
             localStorage.setItem('user_id', user.id)
             localStorage.setItem('user_level', user.level)
             location.href = '/'
@@ -59,12 +59,12 @@ class SignIn extends React.Component {
             <form onSubmit={this.onSignIn}>
                 <div className="form-group">
                     <input 
-                        name="email"
+                        name="username"
                         type="text"
                         className="form-control dark-form-control" 
-                        placeholder="Email or username"
+                        placeholder="username or username"
                         onChange={this.onDataChange}
-                        value={this.state.email}
+                        value={this.state.username}
                         autoFocus
                         required
                     />

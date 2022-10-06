@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Security
 from starlette.concurrency import run_in_threadpool
 from passlib.hash import pbkdf2_sha256
 import sqlalchemy as sa
+from datetime import datetime, timedelta
 
-from ..dependencies import get_session, AsyncSession
+from ..dependencies import get_session, AsyncSession, authenticated
 from .. import models, schemas, constants, exceptions
 
 router = APIRouter(prefix='/1')
+
 
 @router.post('/token', status_code=201, response_model=schemas.Token)
 async def create_token(
@@ -39,6 +41,23 @@ async def create_token(
         user_id=user.id,
         user_level=user.level,
     )
+    await session.commit()
+    await token.cache()
+    return schemas.Token(access_token=token.token)
+
+
+@router.post('/progress-token', status_code=201, response_model=schemas.Token)
+async def create_progress_token(
+    session: AsyncSession = Depends(get_session),
+    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+):
+    token = models.Token(
+        app_id=None,
+        user_id=user.id,
+        user_level=constants.LEVEL_PROGRESS,
+        expires=datetime.utcnow()+timedelta(days=1),
+    )
+    session.add(token)
     await session.commit()
     await token.cache()
     return schemas.Token(access_token=token.token)

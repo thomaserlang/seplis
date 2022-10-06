@@ -220,6 +220,13 @@ class User_basic(BaseModel):
 class User(User_basic):
     email: str
 
+class User_public(BaseModel):
+    id: int
+    username: str
+    
+    class Config:
+        orm_mode = True
+
 class User_change_password(BaseModel):
     current_password: constr(min_length=1)
     new_password: USER_PASSWORD_TYPE

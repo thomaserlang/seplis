@@ -70,7 +70,7 @@ class User(Base):
                         Token.expires >= datetime.utcnow(),
                         Token.expires == None,
                     ),
-                    Token != current_token,
+                    Token.token != current_token,
                 ))
                 for token in tokens:
                     await session.delete(token)
@@ -78,19 +78,6 @@ class User(Base):
 
             await session.commit()
 
-
-
-def seplis_v2_password_validate(password, password_hash):
-    import hashlib
-    s = password_hash.split(':')
-    if len(s) != 3:
-        raise Exception('invalid seplis v2 password')
-    if s[0] != 'seplis_old':
-        raise Exception('invalid seplis v2 password')
-    pw = password+s[1]
-    for i in range(1, 10790):
-        pw = hashlib.sha512(pw.encode('utf-8')).hexdigest()
-    return pw == s[2]
 
 class Token(Base):
     __tablename__ = 'tokens'

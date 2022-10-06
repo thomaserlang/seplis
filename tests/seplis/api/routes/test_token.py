@@ -80,5 +80,12 @@ async def test_token(client: AsyncClient):
     assert len(data['access_token']) > 1
     
 
+    client.headers['Authorization'] = f'Bearer {data["access_token"]}'
+    r = await client.post('/1/progress-token')
+    assert r.status_code == 201, r.content
+    data = utils.json_loads(r.content)
+    assert len(data['access_token']) > 1
+
+
 if __name__ == '__main__':
     run_file(__file__)

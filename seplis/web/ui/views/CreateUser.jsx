@@ -24,12 +24,12 @@ class CreateUser extends React.Component {
         this.setState({
             error: null,
         })
-        var email = e.target.email.value
+        var username = e.target.username.value
         var password = e.target.password.value
         request('/1/users', {
             data: {
                 name: e.target.name.value,
-                email: email,
+                username: username,
                 password: password,
             }
         }).fail(e => {
@@ -39,16 +39,16 @@ class CreateUser extends React.Component {
         }).done(data => {
             localStorage.setItem('user_id', data.id)
             localStorage.setItem('user_level', data.level)
-            this.signin(email, password)
+            this.signin(username, password)
         })
     }
 
-    signin(email, password) {
+    signin(username, password) {
         request('/1/token', {
             data: {
                 client_id: seplisClientId,
                 grant_type: 'password',
-                email: email,
+                username: username,
                 password: password,
             }
         }).fail(e => {
@@ -76,10 +76,10 @@ class CreateUser extends React.Component {
                     />
                 </div>
                 <div className="form-group">
-                    <label>Email</label>
-                    {this.renderFieldError('email')}
+                    <label>username</label>
+                    {this.renderFieldError('username')}
                     <input 
-                        name="email"
+                        name="username"
                         type="text"
                         className="form-control dark-form-control" 
                         placeholder=""

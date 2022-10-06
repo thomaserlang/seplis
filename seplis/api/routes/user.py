@@ -43,8 +43,19 @@ async def change_password(
     matches = await run_in_threadpool(pbkdf2_sha256.verify, data.current_password, password)
     if not matches:
         raise exceptions.Wrong_password()
+    logger.error(user.token)
     await models.User.change_password(
         user_id=user.id,
         new_password=data.new_password,
         current_token=user.token,
     )
+
+
+@router.get('', response_model=list[schemas.User_public])
+async def get_users(
+    username: str,
+    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    session: AsyncSession = Depends(get_session),
+):
+    users = await session.scalars(sa.select(models.User).where(models.User.username == username))
+    return [schemas.User_public.from_orm(u) for u in users]
