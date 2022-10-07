@@ -9,7 +9,7 @@ from seplis.api.decorators import authenticated
 from seplis.api.handlers import base
 
 class Watched_schema(BaseModel):
-    watched_at: Optional[datetime] = schemas.default_datetime
+    #watched_at: Optional[datetime] = schemas.default_datetime
 
     class Config:
         extra = 'forbid'

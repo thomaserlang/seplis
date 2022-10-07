@@ -5,7 +5,7 @@ from seplis.utils.sqlalchemy import paginate
 
 class Handler(base.Handler):
 
-    __arguments_schema__ = schemas.Pagination_schema
+    #__arguments_schema__ = schemas.Pagination_schema
 
     async def get(self, user_id=None):
         user_id = self.user_id_or_current(user_id)
