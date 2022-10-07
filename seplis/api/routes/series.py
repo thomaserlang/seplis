@@ -15,8 +15,7 @@ async def get_series(
     series_id: int, 
     session: AsyncSession=Depends(get_session),
 ):
-    r = await session.scalars(sa.select(models.Series).where(models.Series.id == series_id))
-    series = r.first()
+    series = await session.scalar(sa.select(models.Series).where(models.Series.id == series_id))
     if not series:
         raise HTTPException(404, 'Unknown series')
     return schemas.Series.from_orm(series)
@@ -29,12 +28,11 @@ async def get_series_by_external(
     external_id: str, 
     session: AsyncSession=Depends(get_session),
 ):
-    r = await session.scalars(sa.select(models.Series).where(
+    series = await session.scalar(sa.select(models.Series).where(
         models.Series_external.title == external_name,
         models.Series_external.value == external_id,
         models.Series.id == models.Series_external.show_id,
     ))
-    series = r.first()
     if not series:
         raise HTTPException(404, 'Unknown series')
     return schemas.Series.from_orm(series)

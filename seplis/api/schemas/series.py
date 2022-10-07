@@ -53,11 +53,11 @@ class Series_base(BaseModel):
 
 class Series_create(Series_base):
     poster_image_id: conint(gt=0) | None
-    episodes: list[Episode] | None
+    episodes: list[Episode_create] | None
 
 
 class Series_update(Series_create):
-    pass
+    episodes: list[Episode_update] | None
 
 
 class Series(Series_base):
