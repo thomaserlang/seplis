@@ -7,10 +7,9 @@ from ..database import database
 from .. import models, schemas, constants
 from ... import logger, utils, config
 
-router = APIRouter()
+router = APIRouter(prefix='/1/series')
 
-@router.get('/1/series/{series_id}', response_model=schemas.Series)
-@router.get('/1/shows/{series_id}', response_model=schemas.Series)
+@router.get('/{series_id}', response_model=schemas.Series)
 async def get_series(
     series_id: int, 
     session: AsyncSession=Depends(get_session),
@@ -21,8 +20,7 @@ async def get_series(
     return schemas.Series.from_orm(series)
 
 
-@router.get('/1/series/externals/{external_name}/{external_id}', response_model=schemas.Series)
-@router.get('/1/shows/externals/{external_name}/{external_id}', response_model=schemas.Series)
+@router.get('/externals/{external_name}/{external_id}', response_model=schemas.Series)
 async def get_series_by_external(
     external_name: str,
     external_id: str, 
@@ -38,8 +36,7 @@ async def get_series_by_external(
     return schemas.Series.from_orm(series)
 
 
-@router.post('/1/series', status_code=201, response_model=schemas.Series)
-@router.post('/1/shows', status_code=201, response_model=schemas.Series)
+@router.post('', status_code=201, response_model=schemas.Series)
 async def create_series(
     data: schemas.Series_create,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
@@ -49,8 +46,7 @@ async def create_series(
     return series
 
 
-@router.put('/1/series/{series_id}', response_model=schemas.Series)
-@router.put('/1/shows/{series_id}', response_model=schemas.Series)
+@router.put('/{series_id}', response_model=schemas.Series)
 async def update_series(
     series_id: int,
     data: schemas.Series_update,
@@ -59,8 +55,7 @@ async def update_series(
     return await models.Series.save(series_id=series_id, series=data, patch=False)
 
 
-@router.patch('/1/series/{series_id}', response_model=schemas.Series)
-@router.patch('/1/shows/{series_id}', response_model=schemas.Series)
+@router.patch('/{series_id}', response_model=schemas.Series)
 async def patch_series(
     series_id: int,
     data: schemas.Series_update,
@@ -69,8 +64,7 @@ async def patch_series(
     return await models.Series.save(series_id=series_id, series=data, patch=True)
 
 
-@router.delete('/1/series/{series_id}', status_code=204)
-@router.delete('/1/shows/{series_id}', status_code=204)
+@router.delete('/{series_id}', status_code=204)
 async def delete_series(
     series_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
@@ -78,13 +72,12 @@ async def delete_series(
     await models.Series.delete(series_id)
 
 
-@router.delete('/1/series/{series_id}/update', status_code=204)
-@router.delete('/1/shows/{series_id}/update', status_code=204)
+@router.delete('/{series_id}/update', status_code=204)
 async def request_update(series_id: int):
     await database.redis_queue.enqueue_job('update_series', series_id)
 
 
-@router.get('/1/series/{series_id}/episodes', response_model=schemas.Page_result[schemas.Episode])
+@router.get('/{series_id}/episodes', response_model=schemas.Page_result[schemas.Episode])
 async def get_episodes(
     series_id: int,
     request: Request,
@@ -102,7 +95,7 @@ async def get_episodes(
     return p
 
 
-@router.get('/1/series/{series_id}/episodes/{number}', response_model=schemas.Episode)
+@router.get('/{series_id}/episodes/{number}', response_model=schemas.Episode)
 async def get_episode(
     series_id: int,
     number: int,
@@ -117,7 +110,7 @@ async def get_episode(
     return schemas.Episode.from_orm(episode)
 
 
-@router.delete('/1/series/{series_id}/episodes/{number}', status_code=204)
+@router.delete('/{series_id}/episodes/{number}', status_code=204)
 async def delete_episode(
     series_id: int,
     number: int,
@@ -130,7 +123,7 @@ async def delete_episode(
     ))
 
 
-@router.post('/1/series/{series_id}/images', response_model=schemas.Image, status_code=201)
+@router.post('/{series_id}/images', response_model=schemas.Image, status_code=201)
 async def create_image(
     series_id: int,
     image: UploadFile,
@@ -193,7 +186,7 @@ async def create_image(
     return schemas.Image.from_orm(image)
 
 
-@router.delete('/1/series/{series_id}/images/{image_id}', status_code=204)
+@router.delete('/{series_id}/images/{image_id}', status_code=204)
 async def delete_image(
     series_id: int,
     image_id: int,
@@ -212,7 +205,7 @@ async def delete_image(
     await session.commit()
 
 
-@router.get('/1/series/{series_id}/images', response_model=schemas.Page_result[schemas.Image])
+@router.get('/{series_id}/images', response_model=schemas.Page_result[schemas.Image])
 async def get_images(
     series_id: int,
     request: Request,

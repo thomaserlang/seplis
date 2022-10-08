@@ -20,7 +20,7 @@ urls = [
     #U(r'/1/(?:series|shows)/externals/([a-z_-]+)/([a-z0-9]+)', h.show.External_handler),
     #U(r'/1/(?:series|shows)/([0-9]+)', h.show.Handler),
     #U(r'/1/(?:series|shows)/([0-9,]+)', h.show.Multi_handler),
-    U(r'/1/(?:series|shows)/([0-9]+)/user-stats', h.user_show_stats.Handler),
+    #U(r'/1/(?:series|shows)/([0-9]+)/user-stats', h.user_show_stats.Handler),
     #U(r'/1/(?:series|shows)/([0-9]+)/images', h.image.Handler, {'relation_type': 'show'}),
     #U(r'/1/(?:series|shows)/([0-9]+)/images/([0-9]+)', h.image.Handler),
     #U(r'/1/(?:series|shows)/([0-9]+)/images/([0-9]+)/data', h.image.Data_handler),
