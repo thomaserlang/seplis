@@ -6,7 +6,7 @@ from seplis import utils
 
 @pytest.mark.asyncio
 async def test_token(client: AsyncClient):
-    r = await client.post('/1/users', json={
+    r = await client.post('/2/users', json={
         'username': 'testuser1',
         'email': 'test1@example.net',
         'password': '1234567890',
@@ -23,7 +23,7 @@ async def test_token(client: AsyncClient):
 
 
     # wrong client id
-    r = await client.post('/1/token', json={
+    r = await client.post('/2/token', json={
         'client_id': 'WRONG',
         'username': 'testuser1',
         'password': '1234567890',
@@ -35,7 +35,7 @@ async def test_token(client: AsyncClient):
 
 
     # wrong password
-    r = await client.post('/1/token', json={
+    r = await client.post('/2/token', json={
         'client_id': app.client_id,
         'username': 'testuser1',
         'password': 'WRONG',
@@ -47,7 +47,7 @@ async def test_token(client: AsyncClient):
 
 
     # wrong username
-    r = await client.post('/1/token', json={
+    r = await client.post('/2/token', json={
         'client_id': app.client_id,
         'username': 'WRONG',
         'password': '1234567890',
@@ -58,7 +58,7 @@ async def test_token(client: AsyncClient):
 
 
     # correct password
-    r = await client.post('/1/token', json={
+    r = await client.post('/2/token', json={
         'client_id': app.client_id,
         'username': 'testuser1',
         'password': '1234567890',
@@ -69,7 +69,7 @@ async def test_token(client: AsyncClient):
     assert len(data['access_token']) > 1
     
 
-    r = await client.post('/1/token', json={
+    r = await client.post('/2/token', json={
         'client_id': app.client_id,
         'username': 'test1@example.net',
         'password': '1234567890',
@@ -81,7 +81,7 @@ async def test_token(client: AsyncClient):
     
 
     client.headers['Authorization'] = f'Bearer {data["access_token"]}'
-    r = await client.post('/1/progress-token')
+    r = await client.post('/2/progress-token')
     assert r.status_code == 201, r.content
     data = utils.json_loads(r.content)
     assert len(data['access_token']) > 1

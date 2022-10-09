@@ -8,10 +8,10 @@ from seplis import config
 @respx.mock
 async def test_movie(client: AsyncClient):
     await user_signin(client, scopes=[str(constants.LEVEL_DELETE_SHOW)])
-    r = await client.get('/1/movies/1')
+    r = await client.get('/2/movies/1')
     assert r.status_code == 404, r.content
 
-    r = await client.post('/1/movies', json={
+    r = await client.post('/2/movies', json={
         'title': 'National Treasure',
         'externals': {
             'imdb': 'tt0368891',
@@ -28,13 +28,13 @@ async def test_movie(client: AsyncClient):
     assert data['externals']['imdb'] == 'tt0368891'
     assert data['alternative_titles'] == ['National Treasure 2004']
 
-    r = await client.get(f'/1/movies/{movie_id}')
+    r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200
     data = r.json()
     assert data['title'] == 'National Treasure'
     assert data['externals']['imdb'] == 'tt0368891'
 
-    r = await client.patch(f'/1/movies/{movie_id}', json={
+    r = await client.patch(f'/2/movies/{movie_id}', json={
         'externals': {
             'themoviedb': '12345',
         },
@@ -50,7 +50,7 @@ async def test_movie(client: AsyncClient):
     assert sorted(data['alternative_titles']) == sorted(['National Treasure test', 'National Treasure 2004'])
 
 
-    r = await client.put(f'/1/movies/{movie_id}', json={
+    r = await client.put(f'/2/movies/{movie_id}', json={
         'externals': {
             'themoviedb': '12345',
         },
@@ -63,14 +63,14 @@ async def test_movie(client: AsyncClient):
     assert data['externals']['themoviedb'] == '12345'
     assert data['alternative_titles'] == []
 
-    r = await client.get(f'/1/movies/{movie_id}')
+    r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200
     data = r.json()
     assert data['alternative_titles'] == []
 
 
     config.data.api.storitch = 'http://storitch'
-    r = await client.post(f'/1/movies/{movie_id}/images', 
+    r = await client.post(f'/2/movies/{movie_id}/images', 
         files={
             'image': io.BytesIO(b"some initial text data"),
         },
@@ -88,7 +88,7 @@ async def test_movie(client: AsyncClient):
         'height': 680,
         'hash': '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492',
     }))
-    r = await client.post(f'/1/movies/{movie_id}/images', 
+    r = await client.post(f'/2/movies/{movie_id}/images', 
         files={
             'image': io.BytesIO(b"some initial text data"),
         },
@@ -107,7 +107,7 @@ async def test_movie(client: AsyncClient):
     assert data['type'] == 'poster'
 
     # Test duplicate
-    r = await client.post(f'/1/movies/{movie_id}/images', 
+    r = await client.post(f'/2/movies/{movie_id}/images', 
         files={
             'image': io.BytesIO(b"some initial text data"),
         },
@@ -119,36 +119,36 @@ async def test_movie(client: AsyncClient):
     )
     assert r.status_code == 400, r.content
 
-    r = await client.get(f'/1/movies/{movie_id}/images')
+    r = await client.get(f'/2/movies/{movie_id}/images')
     assert r.status_code == 200, r.content
     data = r.json()
     assert data['total'] == 1
     assert data['items'][0]['id'] > 0
 
     poster_image_id = data['items'][0]['id']
-    r = await client.put(f'/1/movies/{movie_id}', json={
+    r = await client.put(f'/2/movies/{movie_id}', json={
         'poster_image_id': poster_image_id,
     })
     assert r.status_code == 200
 
-    r = await client.get(f'/1/movies/{movie_id}')
+    r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200, r.content
     data = r.json()
     assert data['poster_image']['id'] == poster_image_id
     
-    r = await client.delete(f'/1/movies/{movie_id}/images/{poster_image_id}')
+    r = await client.delete(f'/2/movies/{movie_id}/images/{poster_image_id}')
     assert r.status_code == 204
 
-    r = await client.get(f'/1/movies/{movie_id}')
+    r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200, r.content
     data = r.json()
     assert data['poster_image'] == None
 
 
-    r = await client.delete(f'/1/movies/{movie_id}')
+    r = await client.delete(f'/2/movies/{movie_id}')
     assert r.status_code == 204
 
-    r = await client.get(f'/1/movies/{movie_id}')
+    r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 404, r.content
 
 

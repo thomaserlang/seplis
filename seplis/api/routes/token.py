@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from ..dependencies import get_session, AsyncSession, authenticated
 from .. import models, schemas, constants, exceptions
 
-router = APIRouter(prefix='/1')
+router = APIRouter(prefix='/2')
 
 
 @router.post('/token', status_code=201, response_model=schemas.Token)

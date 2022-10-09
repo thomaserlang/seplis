@@ -7,7 +7,7 @@ from ..database import database
 from .. import models, schemas, constants
 from ... import logger, utils, config
 
-router = APIRouter(prefix='/1/series')
+router = APIRouter(prefix='/2/series')
 
 @router.get('/{series_id}', response_model=schemas.Series)
 async def get_series(

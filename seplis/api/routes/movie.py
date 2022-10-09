@@ -8,7 +8,7 @@ from .. import models, schemas
 from ..database import database
 from ... import config, utils, logger
 
-router = APIRouter(prefix='/1/movies')
+router = APIRouter(prefix='/2/movies')
 
 @router.get('/{movie_id}', response_model=schemas.Movie)
 async def get_movie(
