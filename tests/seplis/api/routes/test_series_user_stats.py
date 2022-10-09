@@ -4,7 +4,7 @@ from seplis.api import constants, schemas, models
 
 
 @pytest.mark.asyncio
-async def test_series(client: AsyncClient):
+async def test_series_user_stats(client: AsyncClient):
     await user_signin(client, [str(constants.LEVEL_EDIT_USER)])
 
     series: schemas.Series = await models.Series.save(schemas.Series_create(
@@ -17,7 +17,7 @@ async def test_series(client: AsyncClient):
         ]
     ), series_id=None)
 
-    r = await client.get(f'/1/series/{series.id}')
+    r = await client.get(f'/2/series/{series.id}/user-stats')
     assert r.status_code == 200
     data = schemas.Series_user_stats.parse_obj(r.json())
     assert data.episodes_watched == 0

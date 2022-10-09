@@ -1,6 +1,9 @@
 from pydantic import BaseModel, AnyHttpUrl, constr, conint
 from datetime import datetime, date, time
 from .image import Image
+from .helper import default_datetime
+from datetime import datetime
+from typing import Optional
 
 class Description_schema(BaseModel):
     text: constr(min_length=1, max_length=2000, strip_whitespace=True) | None
@@ -26,6 +29,20 @@ class Episode_update(Episode_create):
 
 class Episode(Episode_create):
     pass
+
+    class Config:
+        orm_mode = True
+
+
+class Episode_watched_increment(BaseModel):
+    watched_at: datetime = default_datetime
+
+
+class Episode_watched(BaseModel):
+    episode_number: int
+    times: int
+    position: int
+    watched_at: datetime
 
     class Config:
         orm_mode = True

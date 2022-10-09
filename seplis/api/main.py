@@ -14,6 +14,8 @@ from .routes import (
     series,
     user,
     token,
+    episode_watched,
+    series_user_stats,
 )
 
 app = FastAPI()
@@ -22,6 +24,8 @@ app.include_router(movie.router)
 app.include_router(series.router)
 app.include_router(user.router)
 app.include_router(token.router)
+app.include_router(episode_watched.router)
+app.include_router(series_user_stats.router)
 
 @app.on_event('startup')
 async def startup():
