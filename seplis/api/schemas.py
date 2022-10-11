@@ -28,7 +28,7 @@ class Movie_schema(BaseModel):
     status: Optional[conint(ge=0, le=5)] # Status: 0: Unknown, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production, 6: Canceled,
     language: Optional[constr(min_length=1, max_length=20)]
     poster_image_id: Optional[conint(gt=1)]
-    runtime: Optional[conint(gt=1)]
+    runtime: Optional[conint(gt=0)]
     release_date: Optional[date]
 
     class Config:
