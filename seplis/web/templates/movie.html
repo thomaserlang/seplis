@@ -1,7 +1,7 @@
 {% extends ui/react.html %}
 {% block title %}    
-    <title>{{escape(movie['title'])}} - SEPLIS</title>
-    <meta name="og:title" content="{{escape(movie['title'])}}" />
+    <title>{{escape(movie['title'] or 'Title missing')}} - SEPLIS</title>
+    <meta name="og:title" content="{{escape(movie['title'] or 'Title missing')}}" />
     <meta property="og:type" content="video.movie" />
     {% if movie['description'] and movie['description'] %}
     <meta name="og:description" content="{{escape(movie['description'])}}" />
