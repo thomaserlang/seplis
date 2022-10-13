@@ -150,10 +150,7 @@ class Transcoder:
         self.ffmpeg_args.append({'-c:v': codec})
         if codec == 'lib264':
             self.ffmpeg_args.extend([
-                {'-x264opts': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'},                
-                {'-force_key_frames': 'expr:gte(t,n_forced*1)'},
-                {'-g': '24'},
-                {'-keyint_min': '24'},
+                {'-x264opts': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'},
             ])
         elif codec == 'libx265':
             self.ffmpeg_args.extend([
@@ -180,8 +177,6 @@ class Transcoder:
                 self.ffmpeg_args.append({'-filter:v': f'scale=width={width}:height=-2'})
 
             self.ffmpeg_args.extend([
-                {f'-r': '23.975999999999999'},
-                {'-fps_mode': 'auto'},
                 {'-crf': self._get_crf(width, codec)}
             ])
 
