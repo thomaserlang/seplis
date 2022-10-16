@@ -24,19 +24,19 @@ async def test_episode_watched(client: AsyncClient):
     assert r.status_code == 204, r.content
     r = await client.get(url)
     assert r.status_code == 200
-    w = r.json()  
-    assert w['times'] == 0
-    assert w['position'] == 200
-    assert w['watched_at'] != None
+    w = schemas.Episode_watched.parse_obj(r.json())  
+    assert w.times == 0
+    assert w.position == 200
+    assert w.watched_at != None
 
     r = await client.put(url, json={'position': 201})
     assert r.status_code == 204, r.content
     r = await client.get(url)
     assert r.status_code == 200
-    w = r.json()
-    assert w['times'] == 0
-    assert w['position'] == 201       
-    assert w['watched_at'] != None
+    w = schemas.Episode_watched.parse_obj(r.json())
+    assert w.times == 0
+    assert w.position == 201       
+    assert w.watched_at != None
 
     r = await client.delete(url)
     assert r.status_code == 204, r.content
@@ -48,8 +48,8 @@ async def test_episode_watched(client: AsyncClient):
     assert r.status_code == 204, r.content
     r = await client.get(url)
     assert r.status_code == 200
-    w = r.json()
-    assert w['position'] == 200
+    w = schemas.Episode_watched.parse_obj(r.json())
+    assert w.position == 200
 
     r = await client.put(url, json={'position': 0})
     assert r.status_code == 204, r.content
@@ -64,18 +64,18 @@ async def test_episode_watched(client: AsyncClient):
     r = await client.put(url, json={'position': 200})
     assert r.status_code == 204, r.content
     r = await client.get(url)
-    w = r.json()
-    assert w['times'] == 1
-    assert w['position'] == 200
+    w = schemas.Episode_watched.parse_obj(r.json())
+    assert w.times == 1
+    assert w.position == 200
 
     r = await client.delete(url)
     assert r.status_code == 204, r.content
     
     r = await client.get(url)
-    w = r.json()
-    assert w['times'] == 1
-    assert w['position'] == 0
-    
+    w = schemas.Episode_watched.parse_obj(r.json())
+    assert w.times == 1
+    assert w.position == 0
+
 
 if __name__ == '__main__':
     run_file(__file__)
