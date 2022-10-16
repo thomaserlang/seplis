@@ -3,7 +3,6 @@ from datetime import datetime, date, time
 from .image import Image
 from .helper import default_datetime
 from datetime import datetime
-from typing import Optional
 
 class Description_schema(BaseModel):
     text: constr(min_length=1, max_length=2000, strip_whitespace=True) | None

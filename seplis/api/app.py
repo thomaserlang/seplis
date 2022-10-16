@@ -32,8 +32,8 @@ urls = [
     U(r'/1/(?:series|shows)/([0-9]+)/episodes/([0-9]+)', h.episode.Handler),
     U(r'/1/(?:series|shows)/([0-9]+)/episodes/([0-9]+)/play-servers', h.episode.Play_servers_handler),
     U(r'/1/(?:series|shows)/([0-9]+)/episodes/([0-9]+)/watched', h.episode_watched.Handler),
-    U(r'/1/(?:series|shows)/([0-9]+)/episodes/([0-9]+)-([0-9]+)/watched', h.episode_watched.Range_handler),
-    U(r'/1/(?:series|shows)/([0-9]+)/episodes/([0-9]+)/position', h.episode_position.Handler),
+    #U(r'/1/(?:series|shows)/([0-9]+)/episodes/([0-9]+)-([0-9]+)/watched', h.episode_watched.Range_handler),
+    #U(r'/1/(?:series|shows)/([0-9]+)/episodes/([0-9]+)/position', h.episode_position.Handler),
     U(r'/1/(?:series|shows)/([0-9]+)/user-rating', h.user_show_rating.Handler),
     
     #U(r'/1/movies', h.movie.Handler),

@@ -15,6 +15,7 @@ from .routes import (
     user,
     token,
     episode_watched,
+    episode_position,
     series_user_stats,
 )
 
@@ -26,6 +27,8 @@ app.include_router(user.router)
 app.include_router(token.router)
 app.include_router(episode_watched.router)
 app.include_router(series_user_stats.router)
+app.include_router(episode_position.router)
+
 
 @app.on_event('startup')
 async def startup():
@@ -34,12 +37,14 @@ async def startup():
     else:
         await database.setup_test()
 
+
 @app.on_event('shutdown')
 async def shutdown():
     if not config.data.test:
         await database.close()
     else:
         await database.close_test()
+
 
 @app.exception_handler(exceptions.API_exception)
 async def unicorn_exception_handler(request: Request, exc: exceptions.API_exception):

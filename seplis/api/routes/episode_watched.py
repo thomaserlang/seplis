@@ -76,10 +76,7 @@ async def watched_decrement(
         response.status_code = 204
 
 
-@router.post(
-    '/{series_id}/episodes/watched-range',
-    status_code=204,
-)
+@router.post('/{series_id}/episodes/watched-range', status_code=204)
 async def watched_increment_range(
     series_id: int,
     from_episode_number: int = Body(..., embed=True),

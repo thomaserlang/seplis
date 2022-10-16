@@ -1,5 +1,6 @@
 import asyncio
 import sqlalchemy as sa
+from datetime import datetime, timezone
 from .base import Base
 from ..dependencies import AsyncSession
 from .. import schemas
@@ -85,6 +86,7 @@ class Episode_watched(Base):
             session.execute(sql_watching),
         )
 
+
     @staticmethod
     async def decrement(session: AsyncSession, user_id: int, series_id: int, episode_number: int):
         w = await session.scalar(sa.select(Episode_watched).where(
@@ -146,32 +148,109 @@ class Episode_watched(Base):
                         Episode_watched_history.id == id_,
                     ))
                 )
+        await Episode_watched.set_prev_watched(session=session, user_id=user_id, series_id=series_id, episode_number=episode_number)
 
-            lew = await session.scalar(sa.select(Episode_watching).where(
-                Episode_watching.show_id == series_id,
-                Episode_watching.user_id == user_id,
-            ))
-            if lew and lew.episode_number == episode_number:
-                ep = await session.scalar(sa.select(Episode_watched_history).where(
-                    Episode_watched_history.user_id == user_id,
+
+    @staticmethod
+    async def set_position(session: AsyncSession, user_id, series_id: int, episode_number: int, position: int):
+        if position == 0:
+            await Episode_watched.reset_position(session=session, user_id=user_id, series_id=series_id, episode_number=episode_number)
+            return
+        sql = sa.dialects.mysql.insert(Episode_watched).values(
+            show_id=series_id,
+            episode_number=episode_number,
+            user_id=user_id,
+            watched_at=datetime.now(tz=timezone.utc),
+            position=position,
+        )
+        sql = sql.on_duplicate_key_update(
+            watched_at=sql.inserted.watched_at,
+            position=sql.inserted.position,
+        )
+        sql_watching = sa.dialects.mysql.insert(Episode_watching).values(
+            show_id=series_id,
+            episode_number=episode_number,
+            user_id=user_id,
+        ).on_duplicate_key_update(
+            episode_number=episode_number,
+        )
+        await asyncio.gather(
+            session.execute(sql),
+            session.execute(sql_watching),
+        )
+
+
+    @staticmethod
+    async def reset_position(session: AsyncSession, user_id: int, series_id: int, episode_number: int):
+        w = await session.scalar(sa.select(Episode_watched).where(
+            Episode_watched.show_id == series_id,
+            Episode_watched.episode_number == episode_number,
+            Episode_watched.user_id == user_id,
+        ))
+        if not w:
+            return
+        if w.times < 1:
+            await asyncio.gather(
+                session.execute(sa.delete(Episode_watched).where(
+                    Episode_watched.show_id == series_id,
+                    Episode_watched.episode_number == episode_number,
+                    Episode_watched.user_id == user_id,
+                )),
+                session.execute(sa.delete(Episode_watched_history).where(
                     Episode_watched_history.series_id == series_id,
-                    Episode_watched_history.episode_number != episode_number
+                    Episode_watched_history.episode_number == episode_number,
+                    Episode_watched_history.user_id == user_id,
+                )),
+            )
+        else:
+            if w.position > 0:
+                watched_at = await session.scalar(sa.select(Episode_watched_history.watched_at).where(
+                    Episode_watched_history.series_id == series_id,
+                    Episode_watched_history.episode_number == episode_number,
+                    Episode_watched_history.user_id == user_id,
                 ).order_by(
-                    sa.desc(Episode_watched_history.watched_at),
-                    sa.desc(Episode_watched_history.episode_number),
+                    Episode_watched_history.watched_at.desc()
                 ).limit(1))
-                if not ep:
-                    await session.execute(sa.delete(Episode_watching).where(
-                        Episode_watching.user_id == user_id,
-                        Episode_watching.show_id == series_id,
-                    ))
-                else:
-                    await session.execute(sa.update(Episode_watching).values(
-                        episode_number=episode_number,
-                    ).where(
-                        show_id=series_id,
-                        user_id=user_id,
-                    ))
+                await session.execute(sa.update(Episode_watched).where(
+                    Episode_watched.show_id == series_id,
+                    Episode_watched.episode_number == episode_number,
+                    Episode_watched.user_id == user_id,
+                ).values(
+                    position=0,
+                    watched_at=watched_at,
+                ))
+            else:
+                return
+        await Episode_watched.set_prev_watched(session=session, user_id=user_id, series_id=series_id, episode_number=episode_number)
+
+
+    @staticmethod
+    async def set_prev_watched(session: AsyncSession, user_id: int, series_id:int, episode_number: int):
+        lew = await session.scalar(sa.select(Episode_watching).where(
+            Episode_watching.show_id == series_id,
+            Episode_watching.user_id == user_id,
+        ))
+        if lew and lew.episode_number == episode_number:
+            ep = await session.scalar(sa.select(Episode_watched_history).where(
+                Episode_watched_history.user_id == user_id,
+                Episode_watched_history.series_id == series_id,
+                Episode_watched_history.episode_number != episode_number
+            ).order_by(
+                sa.desc(Episode_watched_history.watched_at),
+                sa.desc(Episode_watched_history.episode_number),
+            ).limit(1))
+            if not ep:
+                await session.execute(sa.delete(Episode_watching).where(
+                    Episode_watching.user_id == user_id,
+                    Episode_watching.show_id == series_id,
+                ))
+            else:
+                await session.execute(sa.update(Episode_watching).values(
+                    episode_number=episode_number,
+                ).where(
+                    show_id=series_id,
+                    user_id=user_id,
+                ))
 
 
 class Episode_watching(Base):
