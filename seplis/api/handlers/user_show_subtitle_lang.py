@@ -17,7 +17,7 @@ class Handler(base.Handler):
 
     @authenticated(constants.LEVEL_USER)
     def get(self, show_id):
-        data = models.User_show_subtitle_lang.get(
+        data = models.User_series_settings.get(
             user_id=self.current_user.id,
             show_id=show_id,
         )
@@ -35,7 +35,7 @@ class Handler(base.Handler):
     def _put(self, show_id):
         data = self.validate()
         with new_session() as session:
-            d = models.User_show_subtitle_lang(
+            d = models.User_series_settings(
                 user_id=self.current_user.id,
                 show_id=show_id,
                 subtitle_lang=data.get('subtitle_lang', None),
@@ -53,7 +53,7 @@ class Handler(base.Handler):
     def _patch(self, show_id):
         data = self.validate()
         with new_session() as session:
-            d = models.User_show_subtitle_lang(
+            d = models.User_series_settings(
                 user_id=self.current_user.id,
                 show_id=show_id,
             )

@@ -66,3 +66,15 @@ class Token_create(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = 'bearer'
+
+
+class User_series_settings_update(BaseModel):
+    subtitle_lang: constr(min_length=1, max_length=20) | None
+    audio_lang: constr(min_length=1, max_length=20) | None
+
+class User_series_settings(BaseModel):
+    subtitle_lang: str | None
+    audio_lang: str | None
+
+    class Config:
+        orm_mode = True

@@ -1,17 +1,13 @@
 import sqlalchemy as sa
-import hashlib
 from starlette.concurrency import run_in_threadpool
 from redis.asyncio.client import Pipeline
-from ..dependencies import AsyncSession
 
 from .. import schemas, exceptions
-from ... import logger
-
 from .base import Base
 from seplis import utils
 from seplis.api.database import database
 from seplis.api import constants, exceptions, rebuild_cache
-from seplis.api.decorators import new_session, auto_session
+from seplis.api.decorators import new_session
 from datetime import datetime, timedelta
 from passlib.hash import pbkdf2_sha256
 
@@ -123,7 +119,8 @@ class Token(Base):
     def cache_name(self):
         return self._cache_name.format(self.token)
 
-class User_show_subtitle_lang(Base):
+
+class User_series_settings(Base):
     __tablename__ = 'user_show_subtitle_lang'
     
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
@@ -131,60 +128,6 @@ class User_show_subtitle_lang(Base):
     subtitle_lang = sa.Column(sa.String)
     audio_lang = sa.Column(sa.String)
 
-    _cache_name = 'users:{}:subtitle_lang:shows:{}'
-
-    def serialize(self):
-        return {
-            'subtitle_lag': self.subtitle_lang,
-            'audio_lang': self.audio_lang,
-        }
-
-    def after_upsert(self):
-        self.cache()
-
-    def after_delete(self):
-        self.session.pipe.delete(self.cache_name)
-
-    @classmethod
-    def get(cls, user_id, show_id):
-        '''Retrive a users's default subtitle settings for a show from the cache.
-        :param user_id: int
-        :param show_id: int
-        :return: dict
-            {
-                "subtitle_lang": "en",
-                "audio_lang": "jpn"
-            }
-        '''
-        data = database.redis.hgetall(cls.gen_cache_name(
-            user_id=user_id,
-            show_id=show_id,
-        ))
-        if data:
-            return utils.redis_sa_model_dict(data, cls)
-
-    @classmethod
-    def gen_cache_name(cls, user_id, show_id):
-        return cls._cache_name.format(user_id, show_id)
-    @property
-    def cache_name(self):
-        return self.gen_cache_name(
-            user_id=self.user_id, 
-            show_id=self.show_id
-        )
-
-    def cache(self):
-        name = self.cache_name
-        self.session.pipe.hset(name, 'subtitle_lang', self.subtitle_lang if self.subtitle_lang != None else 'None' )
-        self.session.pipe.hset(name, 'audio_lang', self.audio_lang if self.audio_lang != None else 'None')
-
-@rebuild_cache.register('users')
-def rebuild_users():
-    with new_session() as session:
-        for item in session.query(User).yield_per(10000):
-            item.cache()
-            item.cache_user_default_stats()
-        session.commit()
 
 @rebuild_cache.register('tokens')
 def rebuild_tokens():
@@ -195,12 +138,5 @@ def rebuild_tokens():
                     Token.expires == None,
                 )
             ).yield_per(10000):
-            item.cache()
-        session.commit()
-
-@rebuild_cache.register('user_show_subtitle_lang')
-def rebuild_user_show_subtitle_lang():
-    with new_session() as session:
-        for item in session.query(User_show_subtitle_lang).yield_per(10000):
             item.cache()
         session.commit()

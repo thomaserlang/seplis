@@ -5,10 +5,10 @@ from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants, exceptions
 
 
-router = APIRouter(prefix='/2/series')
+router = APIRouter(prefix='/2/series/{series_id}/episodes/{episode_number}/position')
 
 
-@router.get('/{series_id}/episodes/{episode_number}/position', response_model=schemas.Episode_watched)
+@router.get('', response_model=schemas.Episode_watched)
 async def get_position(
     series_id: int, 
     episode_number: int,
@@ -25,7 +25,7 @@ async def get_position(
     return schemas.Episode_watched.from_orm(ew)
     
 
-@router.put('/{series_id}/episodes/{episode_number}/position', status_code=204)
+@router.put('', status_code=204)
 async def set_position(
     series_id: int, 
     episode_number: int,
@@ -42,7 +42,7 @@ async def set_position(
     )
 
 
-@router.delete('/{series_id}/episodes/{episode_number}/position', status_code=204)
+@router.delete('', status_code=204)
 async def delete_position(
     series_id: int, 
     episode_number: int,

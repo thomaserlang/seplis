@@ -17,6 +17,7 @@ from .routes import (
     episode_watched,
     episode_position,
     series_user_stats,
+    user_series_settings,
 )
 
 app = FastAPI()
@@ -28,6 +29,7 @@ app.include_router(token.router)
 app.include_router(episode_watched.router)
 app.include_router(series_user_stats.router)
 app.include_router(episode_position.router)
+app.include_router(user_series_settings.router)
 
 
 @app.on_event('startup')
