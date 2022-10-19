@@ -27,7 +27,6 @@ class Episode_update(Episode_create):
 
 
 class Episode(Episode_create):
-    pass
 
     class Config:
         orm_mode = True
@@ -45,6 +44,10 @@ class Episode_watched(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Episode_with_user_watched(Episode):
+    user_watched: Episode_watched | None
 
 
 class Series_importers(BaseModel):

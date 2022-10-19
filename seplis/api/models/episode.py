@@ -246,10 +246,10 @@ class Episode_watched(Base):
                 ))
             else:
                 await session.execute(sa.update(Episode_watching).values(
-                    episode_number=episode_number,
+                    episode_number=ep.episode_number,
                 ).where(
-                    show_id=series_id,
-                    user_id=user_id,
+                    Episode_watching.show_id == series_id,
+                    Episode_watching.user_id == user_id,
                 ))
 
 
