@@ -24,7 +24,7 @@ async def client():
         yield ac
     await database.close_test()
 
-async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LEVEL_USER)], app_level=constants.LEVEL_GOD):
+async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LEVEL_USER)], app_level=constants.LEVEL_GOD) -> int:
     # Scopes will be turned in to actual scopes later
     async with database.session() as session:
         user = models.User(
@@ -52,6 +52,7 @@ async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LE
         await session.commit()
         await access_token.cache()
         client.headers['Authorization'] = f'Bearer {access_token.token}'
+        return user.id
 
 def run_file(file_):
     import subprocess

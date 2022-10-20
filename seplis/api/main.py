@@ -17,6 +17,7 @@ from .routes import (
     episode_watched,
     episode_position,
     episode_to_watch,
+    episode_play_servers,
     last_watched_episode,
     series_user_stats,
     user_series_settings,
@@ -33,6 +34,7 @@ app.include_router(user_series_settings.router)
 app.include_router(episode_watched.router)
 app.include_router(episode_position.router)
 app.include_router(episode_to_watch.router)
+app.include_router(episode_play_servers.router)
 app.include_router(last_watched_episode.router)
 
 @app.on_event('startup')

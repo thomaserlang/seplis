@@ -3,7 +3,6 @@ import sqlalchemy as sa
 from fastapi import HTTPException
 from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Generator
 from .episode import Episode
 from .base import Base
 
