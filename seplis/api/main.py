@@ -11,6 +11,7 @@ set_logger(f'api-{config.data.api.port}.log')
 from .routes import (
     health,
     movie,
+    movie_watched,
     series,
     series_user_settings,
     series_user_stats,
@@ -27,6 +28,7 @@ from .routes import (
 app = FastAPI()
 app.include_router(health.router)
 app.include_router(movie.router)
+app.include_router(movie_watched.router)
 app.include_router(series.router)
 app.include_router(user.router)
 app.include_router(token.router)

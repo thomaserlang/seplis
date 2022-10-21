@@ -1,7 +1,7 @@
 from pydantic import BaseModel, constr, conint
-from datetime import date
+from datetime import datetime, date
 from .image import Image
-
+from .helper import default_datetime
 
 class Movie_base(BaseModel):
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
@@ -14,18 +14,27 @@ class Movie_base(BaseModel):
     runtime: conint(gt=1) | None
     release_date: date | None
 
-
 class Movie_create(Movie_base):
     poster_image_id: conint(gt=1) | None
-
 
 class Movie_update(Movie_create):
     pass
 
-
 class Movie(Movie_create):
     id: int
     poster_image: Image | None
+
+    class Config:
+        orm_mode = True
+
+
+class Movie_watched_increment(BaseModel):
+    watched_at: datetime = default_datetime
+
+class Movie_watched(BaseModel):
+    times: int
+    position: int | None
+    watched_at: datetime
 
     class Config:
         orm_mode = True

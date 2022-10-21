@@ -35,3 +35,4 @@ pytest_asyncio==0.19.0
 httpx==0.23.0
 python-multipart==0.0.5
 email-validator==1.2.1
+freezegun==1.2.2

@@ -110,14 +110,14 @@ class Episode_watched(Base):
                 )),
             )
         else:
-            watched_at = await session.scalar(sa.select(Episode_watched_history.watched_at).where(
-                Episode_watched_history.series_id == series_id,
-                Episode_watched_history.episode_number == episode_number,
-                Episode_watched_history.user_id == user_id,
-            ).order_by(
-                Episode_watched_history.watched_at.desc()
-            ).limit(1))
             if w.position > 0:
+                watched_at = await session.scalar(sa.select(Episode_watched_history.watched_at).where(
+                    Episode_watched_history.series_id == series_id,
+                    Episode_watched_history.episode_number == episode_number,
+                    Episode_watched_history.user_id == user_id,
+                ).order_by(
+                    Episode_watched_history.watched_at.desc()
+                ).limit(1))
                 await session.execute(sa.update(Episode_watched).where(
                     Episode_watched.show_id == series_id,
                     Episode_watched.episode_number == episode_number,
@@ -134,20 +134,25 @@ class Episode_watched(Base):
                 ).order_by(
                     Episode_watched_history.watched_at.desc()
                 ).limit(1))
-                await asyncio.gather(
-                    session.execute(sa.update(Episode_watched).where(
-                        Episode_watched.show_id == series_id,
-                        Episode_watched.episode_number == episode_number,
-                        Episode_watched.user_id == user_id,
-                    ).values(
-                        times=Episode_watched.times - 1,
-                        position=0,
-                        watched_at=watched_at,
-                    )),
-                    session.execute(sa.delete(Episode_watched_history).where(
-                        Episode_watched_history.id == id_,
-                    ))
-                )
+                await session.execute(sa.delete(Episode_watched_history).where(
+                    Episode_watched_history.id == id_,
+                ))                
+                watched_at = await session.scalar(sa.select(Episode_watched_history.watched_at).where(
+                    Episode_watched_history.series_id == series_id,
+                    Episode_watched_history.episode_number == episode_number,
+                    Episode_watched_history.user_id == user_id,
+                ).order_by(
+                    Episode_watched_history.watched_at.desc()
+                ).limit(1))
+                await session.execute(sa.update(Episode_watched).where(
+                    Episode_watched.show_id == series_id,
+                    Episode_watched.episode_number == episode_number,
+                    Episode_watched.user_id == user_id,
+                ).values(
+                    times=Episode_watched.times - 1,
+                    position=0,
+                    watched_at=watched_at,
+                ))
         await Episode_watched.set_prev_watched(session=session, user_id=user_id, series_id=series_id, episode_number=episode_number)
 
 
