@@ -12,6 +12,9 @@ from .routes import (
     health,
     movie,
     series,
+    series_user_settings,
+    series_user_stats,
+    series_user_rating,
     user,
     token,
     episode_watched,
@@ -19,8 +22,6 @@ from .routes import (
     episode_to_watch,
     episode_play_servers,
     last_watched_episode,
-    series_user_stats,
-    user_series_settings,
 )
 
 app = FastAPI()
@@ -30,7 +31,8 @@ app.include_router(series.router)
 app.include_router(user.router)
 app.include_router(token.router)
 app.include_router(series_user_stats.router)
-app.include_router(user_series_settings.router)
+app.include_router(series_user_rating.router)
+app.include_router(series_user_settings.router)
 app.include_router(episode_watched.router)
 app.include_router(episode_position.router)
 app.include_router(episode_to_watch.router)

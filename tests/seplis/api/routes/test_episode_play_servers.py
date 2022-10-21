@@ -16,7 +16,6 @@ async def test_episode_play_servers(client: AsyncClient):
         ]
     ), series_id=None)
 
-    # TODO: Implement play servers endpoint and then tests
     play_server = await models.Play_server.save(schemas.Play_server_create(
         name='Test',
         url='http://example.net',

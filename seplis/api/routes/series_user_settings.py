@@ -8,7 +8,7 @@ router = APIRouter(prefix='/2/series/{series_id}/user-settings')
 
 
 @router.get('', response_model=schemas.User_series_settings)
-async def get_user_series_settings(
+async def get_series_user_settings(
     series_id: int,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
@@ -24,7 +24,7 @@ async def get_user_series_settings(
 
 
 @router.put('', response_model=schemas.User_series_settings)
-async def set_user_series_settings(
+async def set_series_user_settings(
     series_id: int,
     data: schemas.User_series_settings_update,
     session: AsyncSession = Depends(get_session),

@@ -99,3 +99,13 @@ class Series_user_stats(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Series_user_rating_update(BaseModel):
+    rating: conint(ge=1, le=10)
+
+class Series_user_rating(BaseModel):
+    rating: int | None
+
+    class Config:
+        orm_mode = True
