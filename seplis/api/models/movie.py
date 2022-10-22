@@ -5,8 +5,6 @@ from datetime import datetime
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import timezone
 
-from seplis.api.schemas import movie
-
 from .base import Base
 from ..database import database
 from .. import schemas, rebuild_cache

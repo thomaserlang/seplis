@@ -1,13 +1,6 @@
-from pydantic import BaseModel, constr
-from typing import Literal
+from pydantic import BaseModel
 from datetime import date
 from .image import Image
-
-
-class Search_schema(BaseModel):
-    query: list[constr(min_length=1, max_length=200)] | None
-    title: list[constr(min_length=1, max_length=200)] | None
-    type: list[Literal['series', 'movie']] | None
 
 
 class Search_title_document(BaseModel):

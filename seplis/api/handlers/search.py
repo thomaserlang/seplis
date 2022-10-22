@@ -1,10 +1,8 @@
 import logging, json
 from seplis.api import exceptions
 from seplis.api.handlers import base
-from seplis.api.schemas import Search_schema
 
 class Handler(base.Handler):
-    __arguments_schema__ = Search_schema
 
     async def get(self):
         query = self.build_query()

@@ -74,6 +74,7 @@ class Database:
     async def setup_test(self):
         config.data.api.database = config.data.api.database_test
         config.data.api.redis.db = 15
+        config.data.api.elasticsearch.index_prefix = 'seplis_test_'
         if not self._test_setup:
             from sqlalchemy.engine import url
             u = url.make_url(config.data.api.database_test)
@@ -104,7 +105,7 @@ class Database:
 
         await self.redis.flushdb()
         from seplis.api import elasticcreate
-        #await elasticcreate.create_indices(self.es, prefix='seplis_test_')
+        await elasticcreate.create_indices(self.es)
 
     async def close(self):
         await self.engine.dispose()
