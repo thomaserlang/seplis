@@ -10,16 +10,17 @@ set_logger(f'api-{config.data.api.port}.log')
 
 from .routes import (
     health,
+    user,
+    token,
     movie,
     movie_watched,
+    movie_watched_position,
     series,
     series_user_settings,
     series_user_stats,
     series_user_rating,
-    user,
-    token,
     episode_watched,
-    episode_position,
+    episode_watched_position,
     episode_to_watch,
     episode_play_servers,
     last_watched_episode,
@@ -29,6 +30,7 @@ app = FastAPI()
 app.include_router(health.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
+app.include_router(movie_watched_position.router)
 app.include_router(series.router)
 app.include_router(user.router)
 app.include_router(token.router)
@@ -36,7 +38,7 @@ app.include_router(series_user_stats.router)
 app.include_router(series_user_rating.router)
 app.include_router(series_user_settings.router)
 app.include_router(episode_watched.router)
-app.include_router(episode_position.router)
+app.include_router(episode_watched_position.router)
 app.include_router(episode_to_watch.router)
 app.include_router(episode_play_servers.router)
 app.include_router(last_watched_episode.router)

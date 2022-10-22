@@ -1,17 +1,18 @@
-from fastapi import Depends, Security, APIRouter, Body
+from fastapi import Depends, Security, APIRouter, Body, Response
 import sqlalchemy as sa
 
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants, exceptions
+from .. import models, schemas, constants
 
 
-router = APIRouter(prefix='/2/series/{series_id}/episodes/{episode_number}/position')
+router = APIRouter(prefix='/2/series/{series_id}/episodes/{episode_number}/watched-position')
 
 
 @router.get('', response_model=schemas.Episode_watched)
 async def get_position(
     series_id: int, 
     episode_number: int,
+    response: Response,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):
@@ -21,7 +22,8 @@ async def get_position(
         models.Episode_watched.user_id == user.id,
     ))
     if not ew:
-        raise exceptions.Not_found('Episode hasn\'t been watched')
+        response.status_code = 204
+        return
     return schemas.Episode_watched.from_orm(ew)
     
 
@@ -40,6 +42,7 @@ async def set_position(
         episode_number=episode_number,
         position=position,
     )
+    await session.commit()
 
 
 @router.delete('', status_code=204)
@@ -55,3 +58,4 @@ async def delete_position(
         series_id=series_id,
         episode_number=episode_number,
     )
+    await session.commit()

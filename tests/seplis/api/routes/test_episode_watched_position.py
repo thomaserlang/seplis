@@ -4,7 +4,7 @@ from seplis.api import constants, schemas, models
 
 
 @pytest.mark.asyncio
-async def test_episode_watched(client: AsyncClient):
+async def test_episode_watched_position(client: AsyncClient):
     await user_signin(client, [str(constants.LEVEL_EDIT_USER)])
 
     series: schemas.Series = await models.Series.save(schemas.Series_create(
@@ -15,10 +15,10 @@ async def test_episode_watched(client: AsyncClient):
         ]
     ), series_id=None)
 
-    url = f'/2/series/{series.id}/episodes/1/position'
-    # Return 404 if the episode has not been watched
+    url = f'/2/series/{series.id}/episodes/1/watched-position'
+    # Return 204 if the episode has not been watched
     r = await client.get(url)
-    assert r.status_code == 404, r.content
+    assert r.status_code == 204, r.content
 
     r = await client.put(url, json={'position': 200})
     assert r.status_code == 204, r.content
@@ -41,7 +41,7 @@ async def test_episode_watched(client: AsyncClient):
     r = await client.delete(url)
     assert r.status_code == 204, r.content
     r = await client.get(url)
-    assert r.status_code == 404, r.content
+    assert r.status_code == 204, r.content
 
 
     r = await client.put(url, json={'position': 200})
@@ -55,7 +55,7 @@ async def test_episode_watched(client: AsyncClient):
     assert r.status_code == 204, r.content
 
     r = await client.get(url)
-    assert r.status_code == 404, r.content
+    assert r.status_code == 204, r.content
 
 
     r = await client.post(f'/2/series/{series.id}/episodes/1/watched')
