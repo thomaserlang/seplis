@@ -48,7 +48,7 @@ urls = [
     #U(r'/1/movies/([0-9]+)/play-servers', h.movie.Play_servers_handler),
     #U(r'/1/movies/externals/([a-z_-]+)/([a-z0-9]+)', h.movie_external.Handler),
 
-    U(r'/1/search', h.search.Handler),
+    #U(r'/1/search', h.search.Handler),
 
     #U(r'/1/users', h.user.Collection_handler),
     #U(r'/1/users/current', h.user.Current_handler),            

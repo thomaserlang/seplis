@@ -104,8 +104,6 @@ class Database:
         self.trans = await self._conn.begin()
 
         await self.redis.flushdb()
-        from seplis.api import elasticcreate
-        await elasticcreate.create_indices(self.es)
 
     async def close(self):
         await self.engine.dispose()

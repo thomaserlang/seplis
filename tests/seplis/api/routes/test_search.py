@@ -1,12 +1,14 @@
 import pytest
-from seplis.api.testbase import client, run_file, AsyncClient, user_signin
-from seplis.api import constants, schemas, models
+from seplis.api.testbase import client, run_file, AsyncClient
+from seplis.api import schemas, models, elasticcreate
 from seplis.api.database import database
 from seplis import config
 from pydantic import parse_obj_as
 
 @pytest.mark.asyncio
 async def test_search(client: AsyncClient):
+    await elasticcreate.create_indices(database.es)
+
     movie1: schemas.Movie = await models.Movie.save(schemas.Movie_create(
         title='National Treasure',
         externals={
