@@ -18,7 +18,6 @@ class Play_server(Base):
     url = sa.Column(sa.String(200))
     secret = sa.Column(sa.String(200))
 
-
     @staticmethod
     async def save(data: schemas.Play_server_create | schemas.Play_server_update, id_: int | None, user_id: int) -> schemas.Play_server_with_secret:
         d = data.dict(exclude_unset=True)

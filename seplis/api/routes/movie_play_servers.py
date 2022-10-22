@@ -4,12 +4,11 @@ from tornado import web
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
 
-router = APIRouter(prefix='/2/series/{series_id}/episodes/{episode_number}/play-servers')
+router = APIRouter(prefix='/2/movies/{movie_id}/play-servers')
 
 @router.get('', response_model=list[schemas.Play_request])
-async def get_episode_play_servers(
-    series_id: int, 
-    episode_number: int,
+async def get_movie_play_servers(
+    movie_id: int,
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
 ):
@@ -23,9 +22,8 @@ async def get_episode_play_servers(
             play_id=web.create_signed_value(
                 secret=row.secret,
                 name='play_id',
-                value=schemas.Play_id_info_episode(
-                    series_id=series_id,
-                    number=episode_number,
+                value=schemas.Play_id_info_movie(
+                    movie_id=movie_id,
                 ).json(),
                 version=2,
             ).decode('utf-8'),

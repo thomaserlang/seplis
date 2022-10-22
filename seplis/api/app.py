@@ -41,7 +41,7 @@ urls = [
     #U(r'/1/movies/([0-9]+)/update', h.movie.Update_handler),    
     #U(r'/1/movies/([0-9]+)/watched', h.movie_watched.Handler),
     #U(r'/1/movies/([0-9]+)/position', h.movie_position.Handler),
-    U(r'/1/movies/([0-9]+)/stared', h.movie_stared.Handler),
+    #U(r'/1/movies/([0-9]+)/stared', h.movie_stared.Handler),
     #U(r'/1/movies/([0-9]+)/images', h.image.Handler, {'relation_type': 'movie'}),
     #U(r'/1/movies/([0-9]+)/images/([0-9]+)', h.image.Handler),
     #U(r'/1/movies/([0-9]+)/images/([0-9]+)/data', h.image.Data_handler),

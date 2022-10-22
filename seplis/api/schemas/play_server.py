@@ -33,6 +33,10 @@ class Play_request(BaseModel):
 
 
 class Play_id_info_episode(BaseModel):
-    type: str
+    type: str = 'series'
     series_id: int
     number: int
+
+class Play_id_info_movie(BaseModel):
+    type: str = 'movie'
+    movie_id: int

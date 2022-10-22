@@ -16,6 +16,7 @@ from .routes import (
     movie_watched,
     movie_watched_position,
     movie_stared,
+    movie_play_servers,
     series,
     series_user_settings,
     series_user_stats,
@@ -33,9 +34,10 @@ app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)
 app.include_router(movie_stared.router)
-app.include_router(series.router)
+app.include_router(movie_play_servers.router)
 app.include_router(user.router)
 app.include_router(token.router)
+app.include_router(series.router)
 app.include_router(series_user_stats.router)
 app.include_router(series_user_rating.router)
 app.include_router(series_user_settings.router)
@@ -44,6 +46,7 @@ app.include_router(episode_watched_position.router)
 app.include_router(episode_to_watch.router)
 app.include_router(episode_play_servers.router)
 app.include_router(last_watched_episode.router)
+
 
 @app.on_event('startup')
 async def startup():
