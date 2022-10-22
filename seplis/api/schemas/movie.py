@@ -38,3 +38,11 @@ class Movie_watched(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class Movie_stared(BaseModel):
+    created_at: datetime | None = None
+    stared = False
+
+    class Config:
+        orm_mode = True

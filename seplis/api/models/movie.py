@@ -164,7 +164,7 @@ class Movie_watched(Base):
 
 
     @staticmethod
-    async def increment(user_id: int, movie_id: int, data: schemas.Movie_watched_increment) -> schemas.Movie_watched:
+    async def increment(user_id: int | str, movie_id: int, data: schemas.Movie_watched_increment) -> schemas.Movie_watched:
         async with database.session() as session:
             sql = sa.dialects.mysql.insert(Movie_watched).values(
                 movie_id=movie_id,
@@ -195,7 +195,7 @@ class Movie_watched(Base):
 
 
     @staticmethod
-    async def decrement(user_id: int, movie_id: int) -> schemas.Movie_watched | None:
+    async def decrement(user_id: int | str, movie_id: int) -> schemas.Movie_watched | None:
         async with database.session() as session:
             w = await session.scalar(sa.select(Movie_watched).where(
                 Movie_watched.movie_id == movie_id,
@@ -265,7 +265,7 @@ class Movie_watched(Base):
 
 
     @staticmethod
-    async def set_position(user_id: int, movie_id: int, position: int):
+    async def set_position(user_id: int | str, movie_id: int, position: int):
         if position == 0:
             await Movie_watched.reset_position(user_id=user_id, movie_id=movie_id)
             return
@@ -285,7 +285,7 @@ class Movie_watched(Base):
 
 
     @staticmethod
-    async def reset_position(user_id: int, movie_id: int):
+    async def reset_position(user_id: int | str, movie_id: int):
         async with database.session() as session:
             w = await session.scalar(sa.select(Movie_watched).where(
                 Movie_watched.movie_id == movie_id,
@@ -341,6 +341,25 @@ class Movie_stared(Base):
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
     created_at = sa.Column(sa.DateTime)
+
+    @staticmethod
+    async def set_stared(user_id: int | str, movie_id: int):
+        async with database.session() as session:
+            await session.execute(sa.insert(Movie_stared).values(
+                movie_id=movie_id,
+                user_id=user_id,
+                created_at=datetime.now(tz=timezone.utc),
+            ).prefix_with('IGNORE'))
+            await session.commit()
+
+    @staticmethod
+    async def remove_stared(user_id: int | str, movie_id: int):
+        async with database.session() as session:
+            await session.execute(sa.delete(Movie_stared).where(
+                Movie_stared.movie_id == movie_id,
+                Movie_stared.user_id == user_id,
+            ))
+            await session.commit()
 
 
 @rebuild_cache.register('movies')

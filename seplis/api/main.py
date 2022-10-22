@@ -15,6 +15,7 @@ from .routes import (
     movie,
     movie_watched,
     movie_watched_position,
+    movie_stared,
     series,
     series_user_settings,
     series_user_stats,
@@ -31,6 +32,7 @@ app.include_router(health.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)
+app.include_router(movie_stared.router)
 app.include_router(series.router)
 app.include_router(user.router)
 app.include_router(token.router)

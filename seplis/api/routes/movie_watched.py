@@ -2,7 +2,6 @@ from fastapi import Depends, Security, Response, APIRouter
 import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
-from ... import logger
 
 router = APIRouter(prefix='/2/movies/{movie_id}/watched')
 
@@ -31,7 +30,6 @@ async def watched_increment(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):  
     data = schemas.Movie_watched_increment.parse_obj(request) if request else schemas.Movie_watched_increment()
-    logger.info(data.watched_at)
     w = await models.Movie_watched.increment(
         user_id=user.id,
         movie_id=movie_id,
