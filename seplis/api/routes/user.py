@@ -44,7 +44,6 @@ async def change_password(
     matches = await run_in_threadpool(pbkdf2_sha256.verify, data.current_password, password)
     if not matches:
         raise exceptions.Wrong_password()
-    logger.error(user.token)
     await models.User.change_password(
         user_id=user.id,
         new_password=data.new_password,
