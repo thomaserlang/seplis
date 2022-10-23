@@ -32,9 +32,9 @@ class Movie_watched_increment(BaseModel):
     watched_at: datetime = default_datetime
 
 class Movie_watched(BaseModel):
-    times: int
-    position: int | None
-    watched_at: datetime
+    times = 0
+    position = 0
+    watched_at: datetime | None = None
 
     class Config:
         orm_mode = True

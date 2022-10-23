@@ -38,9 +38,9 @@ class Episode_watched_increment(BaseModel):
 
 class Episode_watched(BaseModel):
     episode_number: int
-    times: int
-    position: int
-    watched_at: datetime
+    times = 0
+    position = 0
+    watched_at: datetime | None = None
 
     class Config:
         orm_mode = True

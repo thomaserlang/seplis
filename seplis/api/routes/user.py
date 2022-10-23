@@ -54,7 +54,6 @@ async def change_password(
 @router.get('', response_model=list[schemas.User_public])
 async def get_users(
     username: str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession = Depends(get_session),
 ):
     users = await session.scalars(sa.select(models.User).where(models.User.username == username))

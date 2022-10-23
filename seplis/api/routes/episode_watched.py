@@ -1,4 +1,4 @@
-from fastapi import Depends, Security, Response, APIRouter, Body
+from fastapi import Depends, Security, APIRouter, Body
 import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants, exceptions
@@ -10,7 +10,6 @@ router = APIRouter(prefix='/2/series')
 async def get_watched(
     series_id: int,
     episode_number: int,
-    response: Response,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):
@@ -19,10 +18,10 @@ async def get_watched(
         models.Episode_watched.show_id == series_id,
         models.Episode_watched.episode_number == episode_number,
     ))
-    if not ew:
-        response.status_code = 204
-    else:
+    if ew:
         return schemas.Episode_watched.from_orm(ew)
+    else:
+        return schemas.Episode_watched(episode_number=episode_number)
 
 
 @router.post('/{series_id}/episodes/{episode_number}/watched', response_model=schemas.Episode_watched)
@@ -54,7 +53,6 @@ async def watched_increment(
 async def watched_decrement(
     series_id: int,
     episode_number: int,
-    response: Response,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),    
 ):
@@ -73,7 +71,7 @@ async def watched_decrement(
     if ew:
         return schemas.Episode_watched.from_orm(ew)
     else:
-        response.status_code = 204
+        return schemas.Episode_watched(episode_number=episode_number)
 
 
 @router.post('/{series_id}/episodes/watched-range', status_code=204)

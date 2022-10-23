@@ -44,10 +44,18 @@ async def test_episode_watched(client: AsyncClient):
     assert data.watched_at != None
 
     r = await client.delete(f'/2/series/{series.id}/episodes/1/watched')
-    assert r.status_code == 204, r.content
+    data = schemas.Episode_watched.parse_obj(r.json())
+    assert data.times == 0
+    assert data.position == 0
+    assert data.watched_at == None
+
 
     r = await client.get(f'/2/series/{series.id}/episodes/1/watched')
-    assert r.status_code == 204, r.content
+    data = schemas.Episode_watched.parse_obj(r.json())
+    assert data.times == 0
+    assert data.position == 0
+    assert data.watched_at == None
+
 
 
     r = await client.post(f'/2/series/{series.id}/episodes/watched-range', json={
