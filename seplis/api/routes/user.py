@@ -8,6 +8,7 @@ from ... import logger
 
 router = APIRouter(prefix='/2/users')
 
+
 @router.post('', response_model=schemas.User, status_code=201)
 async def create_user(user_data: schemas.User_create) -> schemas.User_basic:
     return await models.User.save(user_data)

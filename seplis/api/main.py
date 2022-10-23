@@ -12,6 +12,7 @@ from .routes import (
     health,
     user,
     token,
+    reset_password,
     search,
     movie,
     movie_watched,
@@ -33,6 +34,7 @@ from .routes import (
 app = FastAPI()
 app.include_router(health.router)
 app.include_router(user.router)
+app.include_router(reset_password.router)
 app.include_router(token.router)
 app.include_router(search.router)
 app.include_router(movie.router)
