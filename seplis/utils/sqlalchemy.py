@@ -1,15 +1,13 @@
-import logging
 import math
+import sqlalchemy as sa
+from sqlalchemy import func, orm, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Request
 from typing import Any
 from seplis.utils import *
 from seplis.api import exceptions
 from seplis.api.base.pagination import Pagination
-from ..api import schemas 
-
-import sqlalchemy as sa
-from sqlalchemy import func, orm, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from ..api import schemas
 
 class Base_query(orm.Query):
  
@@ -29,11 +27,11 @@ class Base_query(orm.Query):
         return pagination
 
 async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_query, request: Request, scalars: bool = True) -> schemas.Page_result:
-    query = query.limit(page_query.per_page).offset((page_query.page-1)*page_query.per_page)
+    limited = query.limit(page_query.per_page).offset((page_query.page-1)*page_query.per_page)
     if scalars:
-        items = await session.scalars(query)
+        items = await session.scalars(limited)
     else:
-        items = await session.execute(query)
+        items = await session.execute(limited)
     items = items.all()
     if page_query.page == 1 and len(items) < page_query.per_page:
         total = len(items)

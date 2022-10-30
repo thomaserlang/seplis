@@ -81,7 +81,7 @@ async def request_update(series_id: int):
 async def get_episodes(
     series_id: int,
     request: Request,
-    season: int = None,
+    season: int | None = None,
     page_query: schemas.Page_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):

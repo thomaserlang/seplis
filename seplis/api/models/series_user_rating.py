@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from .base import Base
 from datetime import datetime
 
-class User_show_rating(Base):
+class Series_user_rating(Base):
     __tablename__ = 'user_show_ratings'
 
     user_id = sa.Column(sa.Integer, autoincrement=False, primary_key=True)

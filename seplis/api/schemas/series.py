@@ -1,4 +1,4 @@
-from pydantic import BaseModel, AnyHttpUrl, constr, conint
+from pydantic import BaseModel, AnyHttpUrl, constr, conint, Field
 from datetime import datetime, date, time
 from .image import Image
 from .helper import default_datetime
@@ -70,25 +70,35 @@ class Series_base(BaseModel):
     language: constr(min_length=1, max_length=100, strip_whitespace=True) | None
 
 
+class Series_user_rating_update(BaseModel):
+    rating: conint(ge=1, le=10)
+
+class Series_user_rating(BaseModel):
+    rating: int | None
+
+    class Config:
+        orm_mode = True
+
+
+class Series_embeddings(BaseModel):
+    user_rating: Series_user_rating | None
+
 class Series_create(Series_base):
     poster_image_id: conint(gt=0) | None
     episodes: list[Episode_create] | None
 
-
 class Series_update(Series_create):
     episodes: list[Episode_update] | None
-
 
 class Series(Series_base):
     id: int
     created_at: datetime
     updated_at: datetime | None
     status: int
-    fans: int
     seasons: list[dict[str, int]]
     total_episodes: int
     poster_image: Image | None
-
+    
     class Config:
         orm_mode = True
 
@@ -101,11 +111,13 @@ class Series_user_stats(BaseModel):
         orm_mode = True
 
 
-class Series_user_rating_update(BaseModel):
-    rating: conint(ge=1, le=10)
-
-class Series_user_rating(BaseModel):
-    rating: int | None
+class Series_following(BaseModel):
+    following: bool = False
+    created_at: datetime | None = None
 
     class Config:
         orm_mode = True
+
+
+class Series_with_user_rating(Series):
+    user_rating: Series_user_rating | None = None

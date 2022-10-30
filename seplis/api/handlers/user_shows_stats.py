@@ -22,9 +22,9 @@ class Handler(base.Handler):
     def query_fan_of(self, user_id):
         with new_session() as session:
             r = session.query(
-                sa.func.count(models.Show_fan.show_id).label('user_fan_of'),
+                sa.func.count(models.Series_following.show_id).label('user_fan_of'),
             ).filter(
-                models.Show_fan.user_id == user_id,
+                models.Series_following.user_id == user_id,
             ).first()
             if not r:
                 return {'fan_of': 0}

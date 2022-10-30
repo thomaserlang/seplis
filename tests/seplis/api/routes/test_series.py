@@ -294,13 +294,6 @@ async def test_series(client: AsyncClient):
     r = await client.get(f'/2/series/{series_id}/episodes/3')
     assert r.status_code == 404, r.content
 
-
-    # TODO: Test search when implemented
-    #r = await client.get(f'/2/search?title=QWERTY2')
-    #assert r.status_code == 200, r.content
-    #data = r.json()
-
-
     config.data.api.storitch = 'http://storitch'
     r = await client.post(f'/2/series/{series_id}/images', 
         files={

@@ -48,7 +48,7 @@ async def send_reset_link(
 
 @router.post('/reset-password', status_code=204)
 async def reset_password(
-    key = Body(..., embed=True, min_length=36),
+    key: str = Body(..., embed=True, min_length=36),
     new_password: schemas.USER_PASSWORD_TYPE = Body(..., embed=True),
     session: AsyncSession = Depends(get_session),
 ):

@@ -1,6 +1,9 @@
 import redis.asyncio as redis
 import os
 from redis.asyncio.sentinel import Sentinel
+import aiomysql
+from warnings import filterwarnings
+filterwarnings('ignore', module=r"aiomysql")
 
 from arq import create_pool, ArqRedis
 from arq.connections import RedisSettings

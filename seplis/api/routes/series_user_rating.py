@@ -15,9 +15,9 @@ async def get_rating(
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
 ):
-    rating = await session.scalar(sa.select(models.User_show_rating.rating).where(
-        models.User_show_rating.user_id == user.id,
-        models.User_show_rating.show_id == series_id,
+    rating = await session.scalar(sa.select(models.Series_user_rating.rating).where(
+        models.Series_user_rating.user_id == user.id,
+        models.Series_user_rating.show_id == series_id,
     ))
     return schemas.Series_user_rating(rating=rating)
 
@@ -29,7 +29,7 @@ async def update_rating(
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
 ):
-    sql = sa.dialects.mysql.insert(models.User_show_rating).values(
+    sql = sa.dialects.mysql.insert(models.Series_user_rating).values(
         user_id=user.id,
         show_id=series_id,
         rating=data.rating,
@@ -48,7 +48,7 @@ async def delete_rating(
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
 ):
-    await session.execute(sa.delete(models.User_show_rating).where(        
-        models.User_show_rating.user_id == user.id,
-        models.User_show_rating.show_id == series_id,
+    await session.execute(sa.delete(models.Series_user_rating).where(        
+        models.Series_user_rating.user_id == user.id,
+        models.Series_user_rating.show_id == series_id,
     ))

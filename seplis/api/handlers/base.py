@@ -315,11 +315,11 @@ class Handler(web.RequestHandler):
                 s['user_rating'] = None
                 show_ids[s['id']] = s
             q = session.query(
-                models.User_show_rating.rating, 
-                models.User_show_rating.show_id,
+                models.Series_user_rating.rating, 
+                models.Series_user_rating.show_id,
             ).filter(
-                models.User_show_rating.user_id == user_id,
-                models.User_show_rating.show_id.in_(show_ids.keys()),
+                models.Series_user_rating.user_id == user_id,
+                models.Series_user_rating.show_id.in_(show_ids.keys()),
             ).all()
             if not q:
                 return

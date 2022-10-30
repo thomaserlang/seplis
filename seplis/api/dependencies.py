@@ -7,7 +7,7 @@ from .schemas import User_authenticated
 from .database import database
 from . import models, exceptions
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/1/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/2/token")
 
 async def get_session() -> AsyncSession:
     async with database.session() as session:

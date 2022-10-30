@@ -10,10 +10,12 @@ set_logger(f'api-{config.data.api.port}.log')
 
 from .routes import (
     health,
-    user,
+    series_following,
     token,
     reset_password,
     search,
+    user,
+    user_series_following,
     movie,
     movie_watched,
     movie_watched_position,
@@ -27,16 +29,17 @@ from .routes import (
     episode_watched_position,
     episode_to_watch,
     episode_play_servers,
-    last_watched_episode,
+    episode_last_watched,
 )
 
 
 app = FastAPI()
 app.include_router(health.router)
-app.include_router(user.router)
 app.include_router(reset_password.router)
 app.include_router(token.router)
 app.include_router(search.router)
+app.include_router(user.router)
+app.include_router(user_series_following.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)
@@ -46,11 +49,12 @@ app.include_router(series.router)
 app.include_router(series_user_stats.router)
 app.include_router(series_user_rating.router)
 app.include_router(series_user_settings.router)
+app.include_router(series_following.router)
 app.include_router(episode_watched.router)
 app.include_router(episode_watched_position.router)
 app.include_router(episode_to_watch.router)
 app.include_router(episode_play_servers.router)
-app.include_router(last_watched_episode.router)
+app.include_router(episode_last_watched.router)
 
 
 @app.on_event('startup')

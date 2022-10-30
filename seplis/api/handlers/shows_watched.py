@@ -43,12 +43,12 @@ class Handler(base.Pagination_handler):
             sort = args.get('sort', ['watched_at'])[0]            
             if sort == 'user_rating':
                 query = query.outerjoin(
-                    (models.User_show_rating, sa.and_(
-                        models.User_show_rating.show_id == models.Series.id,
-                        models.User_show_rating.user_id == user_id,
+                    (models.Series_user_rating, sa.and_(
+                        models.Series_user_rating.show_id == models.Series.id,
+                        models.Series_user_rating.user_id == user_id,
                     ))
                 ).order_by(
-                    sa.desc(models.User_show_rating.rating),
+                    sa.desc(models.Series_user_rating.rating),
                     sa.desc(ew.watched_at), 
                     sa.desc(elw.show_id)
                 )

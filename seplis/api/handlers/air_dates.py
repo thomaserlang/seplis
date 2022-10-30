@@ -60,8 +60,8 @@ class Handler(base.Handler):
         to_ = (now + timedelta(days=args['days_ahead'])).date()
         with new_session() as session:
             rows = session.query(models.Episode, models.Series).filter(
-                models.Show_fan.user_id == user_id,
-                models.Show_fan.show_id == models.Series.id,
+                models.Series_following.user_id == user_id,
+                models.Series_following.show_id == models.Series.id,
                 models.Episode.show_id == models.Series.id,
                 sa.func.date(models.Episode.air_datetime) >= from_,
                 sa.func.date(models.Episode.air_datetime) <= to_,
