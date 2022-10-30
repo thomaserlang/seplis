@@ -4,7 +4,6 @@ import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
 
-
 router = APIRouter(prefix='/2/series/{series_id}/episodes/{episode_number}/watched-position')
 
 

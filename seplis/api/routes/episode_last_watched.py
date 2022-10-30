@@ -1,4 +1,3 @@
-from urllib.parse import urljoin
 from fastapi import APIRouter, Depends, Response, Security
 import sqlalchemy as sa
 
@@ -6,7 +5,7 @@ from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
 from ... import logger
 
-router = APIRouter(prefix='/2/series/{series_id}/last-watched-episode')
+router = APIRouter(prefix='/2/series/{series_id}/episode-last-watched')
 
 DESCRIPTION = """
 Get the user's latest watched episode for a series.
@@ -14,7 +13,7 @@ The episode must be the latest completed.
 """
 
 @router.get('', response_model=schemas.Episode_with_user_watched, description=DESCRIPTION)
-async def get_episode_to_watch(
+async def get_last_watched_episode(
     series_id: int,
     response: Response,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),

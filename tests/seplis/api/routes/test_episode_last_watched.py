@@ -3,7 +3,7 @@ from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 from seplis.api import constants, schemas, models
 
 @pytest.mark.asyncio
-async def test_episode_to_watch(client: AsyncClient):
+async def test_episode_last_watched(client: AsyncClient):
     await user_signin(client, [str(constants.LEVEL_USER)])
 
     series: schemas.Series = await models.Series.save(schemas.Series_create(
@@ -17,11 +17,11 @@ async def test_episode_to_watch(client: AsyncClient):
 
 
     # Test no watched episodes
-    r = await client.get(f'/2/series/{series.id}/last-watched-episode')
+    r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 204, r.content
 
     # set episode 1 as watching
-    r = await client.put(f'/2/series/{series.id}/episodes/1/position', 
+    r = await client.put(f'/2/series/{series.id}/episodes/1/watched-position', 
         json={'position': 200}
     )
     assert r.status_code == 204
@@ -29,18 +29,18 @@ async def test_episode_to_watch(client: AsyncClient):
     # Since we have not completed the first episode 
     # and it's the only episode we have watched the result
     # should be empty 
-    r = await client.get(f'/2/series/{series.id}/last-watched-episode')
+    r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 204, r.content
 
 
     # Start watching episode 2.
     # Episode 1 should now be the latest watched even though it 
     # is not completed.
-    r = await client.put(f'/2/series/{series.id}/episodes/2/position', 
+    r = await client.put(f'/2/series/{series.id}/episodes/2/watched-position', 
         json={'position': 202}
     )
     assert r.status_code == 204
-    r = await client.get(f'/2/series/{series.id}/last-watched-episode')
+    r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 200, r.content
     data = schemas.Episode_with_user_watched.parse_obj(r.json())
     assert data.number == 1
@@ -51,7 +51,7 @@ async def test_episode_to_watch(client: AsyncClient):
     # Episode 2 should now be the last watched
     r = await client.post(f'/2/series/{series.id}/episodes/2/watched')
     assert r.status_code == 200
-    r = await client.get(f'/2/series/{series.id}/last-watched-episode')
+    r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 200, r.content
     data = schemas.Episode_with_user_watched.parse_obj(r.json())
     assert data.number == 2
@@ -63,9 +63,12 @@ async def test_episode_to_watch(client: AsyncClient):
     r = await client.post(f'/2/series/{series.id}/episodes/1/watched')
     # unwatch episode 2
     r = await client.delete(f'/2/series/{series.id}/episodes/2/watched')
-    assert r.status_code == 204
+    assert r.status_code == 200, r.content
+    data = schemas.Episode_watched.parse_obj(r.json())
+    assert data.position == 0
+    assert data.times == 0
     # episode 1 should now be the last watched
-    r = await client.get(f'/2/series/{series.id}/last-watched-episode')
+    r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 200, r.content
     data = schemas.Episode_with_user_watched.parse_obj(r.json())
     assert data.number, 1
@@ -75,7 +78,7 @@ async def test_episode_to_watch(client: AsyncClient):
     assert r.status_code == 200
     r = await client.post(f'/2/series/{series.id}/episodes/2/watched')
     assert r.status_code == 200
-    r = await client.get(f'/2/series/{series.id}/last-watched-episode')
+    r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 200, r.content
     data = schemas.Episode_with_user_watched.parse_obj(r.json())
     assert data.number == 2
