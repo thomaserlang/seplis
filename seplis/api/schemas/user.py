@@ -78,3 +78,14 @@ class User_series_settings(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class User_series_stats(BaseModel):
+    series_following: int
+    series_watched: int
+    series_finished: int
+    episodes_watched: int
+    episodes_watched_minutes: int
+
+    class Config:
+        orm_mode = True
