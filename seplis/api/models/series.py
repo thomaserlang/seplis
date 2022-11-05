@@ -168,7 +168,6 @@ class Series(Base):
             ])
         return r_genres
         
-
     @staticmethod
     async def _save_for_search(series: "Series"):
         doc = series.title_document()
@@ -226,10 +225,6 @@ class Series(Base):
     @staticmethod
     async def update_seasons(session: AsyncSession, series_id: int) -> None:
         """Counts the number of episodes per season.
-        Sets the value in the variable `self.seasons`.
-
-        Must be called if one or more episodes for the show has
-        been added/edited/deleted.
 
             [
                 {
@@ -259,19 +254,19 @@ class Series(Base):
         seasons = []
         total_episodes = 0
         for row in rows:
+            total_episodes += row['total']
             if not row['season']:
                 continue
-            total_episodes += row['total']
             seasons.append({
                 'season': row['season'],
                 'from': row['from'],
                 'to': row['to'],
                 'total': row['total'],
             })
-        await session.execute(sa.update(Series).where(Series.id == series_id).values({
-            'seasons': seasons,
-            'total_episodes': total_episodes
-        }))
+        await session.execute(sa.update(Series).where(Series.id == series_id).values(
+            seasons=seasons,
+            total_episodes=total_episodes,
+        ))
 
     @staticmethod
     async def get_by_external(session: AsyncSession, external_title: str, external_value: str) -> 'Series':
