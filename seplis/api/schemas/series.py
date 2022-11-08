@@ -102,7 +102,6 @@ class Series(Series_base):
     class Config:
         orm_mode = True
 
-
 class Series_user_stats(BaseModel):
     episodes_watched: int = 0
     episodes_watched_minutes: int = 0
@@ -121,3 +120,15 @@ class Series_following(BaseModel):
 
 class Series_with_user_rating(Series):
     user_rating: Series_user_rating | None = None
+
+
+class Series_with_episodes(Series):
+    episodes: list[Episode] = []
+
+
+class Series_air_dates(BaseModel):
+    air_date: date
+    series: list[Series_with_episodes]
+
+    class Config:
+        orm_mode = True
