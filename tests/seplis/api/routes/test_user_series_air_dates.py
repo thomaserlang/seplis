@@ -26,7 +26,7 @@ async def test_series_user_stats(client: AsyncClient):
         title='Test series 2',
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1, season=1, episode=1, air_datetime=air_dates[0]),
-            schemas.Episode_create(title='Episode 2', number=2, season=2, episode=1, air_datetime=air_dates[2]),
+            schemas.Episode_create(title='Episode 2', number=2, season=2, episode=2, air_datetime=air_dates[2]),
         ]
     ), series_id=None)
 

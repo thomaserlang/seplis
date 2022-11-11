@@ -1,4 +1,5 @@
 import asyncio
+from typing import Literal
 import sqlalchemy as sa
 from fastapi import HTTPException
 from datetime import datetime
@@ -9,6 +10,10 @@ from .base import Base
 from ..database import database
 from .. import schemas, rebuild_cache
 from ... import config, logger, utils, constants
+
+from .series_following import Series_following
+from .series_user_rating import Series_user_rating
+from .episode import Episode, Episode_watched, Episode_watching
 
 class Series(Base):
     __tablename__ = 'shows'
@@ -278,6 +283,89 @@ class Series(Base):
         if r:
             return r.first()
 
+
+def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE):
+    query = sa.select(
+        Series, 
+        Series_user_rating.rating, 
+        sa.func.IF(Series_following.user_id != None, 1, 0).label('following'),
+        Episode_watched,
+        Episode,
+    ).join(
+        Series_user_rating, sa.and_(
+            Series_user_rating.show_id == Series.id,
+            Series_user_rating.user_id == user_id,
+        ),
+        isouter=True,
+    ).join(        
+        Series_following, sa.and_(
+            Series_following.show_id == Series.id,
+            Series_following.user_id == user_id,
+        ),
+        isouter=True,
+    ).join(        
+        Episode_watching, sa.and_(
+            Episode_watching.show_id == Series.id,
+            Episode_watching.user_id == user_id,
+        ),
+        isouter=True,
+    ).join(        
+        Episode_watched, sa.and_(
+            Episode_watched.show_id == Episode_watching.show_id,
+            Episode_watched.episode_number == Episode_watching.episode_number,
+            Episode_watched.user_id == Episode_watching.user_id,
+        ),
+        isouter=True,
+    ).join(        
+        Episode, sa.and_(
+            Episode.show_id == Episode_watching.show_id,
+            Episode.number == Episode_watching.episode_number,
+        ),
+        isouter=True,
+    )
+
+    if sort == 'user_rating_desc':
+        query = query.order_by(
+            sa.desc(Series_user_rating.rating),
+            sa.desc(Series.id),
+        )
+    elif sort == 'user_rating_asc':
+        query = query.order_by(
+            sa.asc(Series_user_rating.rating),
+            sa.asc(Series.id),
+        )
+    elif sort == 'followed_at_desc':
+        query = query.order_by(
+            sa.desc(Series_following.created_at),
+            sa.desc(Series.id),
+        )
+    elif sort == 'followed_at_asc':
+        query = query.order_by(
+            sa.asc(Series_following.created_at),
+            sa.asc(Series.id),
+        )
+    elif sort == 'watched_at_desc':
+        query = query.order_by(
+            sa.desc(Episode_watched.watched_at),
+            sa.desc(Series.id),
+        )
+    elif sort == 'watched_at_asc':
+        query = query.order_by(
+            sa.asc(Episode_watched.watched_at),
+            sa.asc(Series.id),
+        )
+
+    return query
+
+def series_user_result_parse(row: any):
+    return schemas.Series_user(
+        series=schemas.Series.from_orm(row.Series),
+        rating=row.rating,
+        following=row.following == 1,
+        last_episode_watched=schemas.Episode.from_orm(row.Episode) if row.Episode else None,
+        last_episode_watched_data=schemas.Episode_watched.from_orm(row.Episode_watched) if row.Episode_watched else None,
+    )
+    
 
 class Series_external(Base):
     __tablename__ = 'show_externals'

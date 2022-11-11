@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel, AnyHttpUrl, constr, conint, Field
 from datetime import datetime, date, time
 from .image import Image
@@ -80,9 +81,6 @@ class Series_user_rating(BaseModel):
         orm_mode = True
 
 
-class Series_embeddings(BaseModel):
-    user_rating: Series_user_rating | None
-
 class Series_create(Series_base):
     poster_image_id: conint(gt=0) | None
     episodes: list[Episode_create] | None
@@ -118,8 +116,22 @@ class Series_following(BaseModel):
         orm_mode = True
 
 
-class Series_with_user_rating(Series):
-    user_rating: Series_user_rating | None = None
+SERIES_USER_SORT_TYPE = Literal[
+    'followed_at_asc', 
+    'followed_at_desc', 
+    'user_rating_asc', 
+    'user_rating_desc',
+]
+
+class Series_user(BaseModel):
+    series: Series
+    rating: int | None
+    following: bool
+    last_episode_watched: Episode | None 
+    last_episode_watched_data: Episode_watched | None
+
+    class Config:
+        orm_mode = True
 
 
 class Series_with_episodes(Series):
