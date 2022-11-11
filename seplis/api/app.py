@@ -61,7 +61,7 @@ urls = [
     #U(r'/1/users/([a-z0-9]+)/(?:series|shows)-following/([0-9]+)', h.shows_following.Handler),
     #U(r'/1/users/([a-z0-9]+)/(?:series|show)-stats', h.user_shows_stats.Handler),
     #U(r'/1/users/([a-z0-9]+)/air-dates', h.air_dates.Handler),
-    U(r'/1/users/([a-z0-9]+)/(?:series|shows)-watched', h.shows_watched.Handler,),
+    #U(r'/1/users/([a-z0-9]+)/(?:series|shows)-watched', h.shows_watched.Handler,),
     U(r'/1/users/([a-z0-9]+)/(?:series|shows)-recently-aired', h.shows_recently_aired.Handler),
     U(r'/1/users/([a-z0-9]+)/(?:series|shows)-countdown', h.shows_countdown.Handler),
     U(r'/1/users/([a-z0-9]+)/(?:series|shows)-etw', h.shows_etw.Handler),
