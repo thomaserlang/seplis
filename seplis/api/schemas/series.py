@@ -121,6 +121,8 @@ SERIES_USER_SORT_TYPE = Literal[
     'followed_at_desc', 
     'user_rating_asc', 
     'user_rating_desc',
+    'watched_at_asc',
+    'watched_at_desc',
 ]
 
 class Series_user(BaseModel):
@@ -136,6 +138,14 @@ class Series_user(BaseModel):
 
 class Series_with_episodes(Series):
     episodes: list[Episode] = []
+
+
+class Series_and_episode(BaseModel):
+    series: Series
+    episode: Episode
+
+    class Config:
+        orm_mode = True
 
 
 class Series_air_dates(BaseModel):

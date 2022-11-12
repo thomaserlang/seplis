@@ -19,6 +19,7 @@ from .routes import (
     user_series_watched,
     user_series_stats,
     user_series_air_dates,
+    user_series_recently_aired,
     movie,
     movie_watched,
     movie_watched_position,
@@ -46,6 +47,7 @@ app.include_router(user_series_following.router)
 app.include_router(user_series_watched.router)
 app.include_router(user_series_stats.router)
 app.include_router(user_series_air_dates.router)
+app.include_router(user_series_recently_aired.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)

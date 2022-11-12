@@ -284,7 +284,7 @@ class Series(Base):
             return r.first()
 
 
-def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE):
+def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
     last_watched_episode = sa.orm.aliased(Episode, name='last_watched_episode')
     query = sa.select(
         Series, 
