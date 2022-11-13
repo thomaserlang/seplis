@@ -30,6 +30,7 @@ async def test_movie_watched(client: AsyncClient):
     data = schemas.Page_result[schemas.Movie_user].parse_obj(r.json())
     assert data.total == 2
     assert data.items[0].movie.title == 'Movie 2'
+    assert data.items[0].watched_data.times == 1
     assert data.items[1].movie.title == 'Movie 1'
     
 
