@@ -142,6 +142,56 @@ class Movie(Base):
         )
 
 
+def movie_user_query(user_id: int, sort: schemas.MOVIE_USER_SORT_TYPE | None):
+    query = sa.select(
+        Movie,        
+        sa.func.IF(Movie_stared.user_id != None, 1, 0).label('stared'),
+        Movie_watched,
+    ).join(
+        Movie_stared, sa.and_(
+            Movie_stared.user_id == user_id,
+            Movie_stared.movie_id == Movie.id,
+        ),
+        isouter=True,
+    ).join(
+        Movie_watched, sa.and_(
+            Movie_watched.user_id == user_id,
+            Movie_watched.movie_id == Movie.id,
+        ),
+        isouter=True,
+    )
+
+    if sort == 'stared_desc':
+        query = query.order_by(
+            sa.desc(Movie_stared.created_at),
+            sa.desc(Movie.id),
+        )
+    elif sort == 'stared_asc':
+        query = query.order_by(
+            sa.asc(Movie_stared.created_at),
+            sa.asc(Movie.id),
+        )
+    elif sort == 'watched_at_asc':
+        query = query.order_by(
+            sa.asc(Movie_watched.watched_at),
+            sa.asc(Movie.id),
+        )
+    elif sort == 'watched_at_asc':
+        query = query.order_by(
+            sa.asc(Movie_watched.watched_at),
+            sa.asc(Movie.id),
+        )
+
+    return query
+
+def movie_user_result_parse(row: any):
+    return schemas.Movie_user(
+        movie=schemas.Movie.from_orm(row.Movie),
+        stared=row.stared == 1,
+        watched_data=schemas.Movie_watched.from_orm(row.Movie_watched),
+    )
+
+
 class Movie_external(Base):
     __tablename__ = 'movie_externals'
 

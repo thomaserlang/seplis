@@ -27,6 +27,7 @@ from .routes import (
     movie_watched_position,
     movie_stared,
     movie_play_servers,
+    user_movies_stared,
     series,
     series_user_settings,
     series_user_stats,
@@ -57,6 +58,7 @@ app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)
 app.include_router(movie_stared.router)
 app.include_router(movie_play_servers.router)
+app.include_router(user_movies_stared.router)
 app.include_router(series.router)
 app.include_router(series_user_stats.router)
 app.include_router(series_user_rating.router)

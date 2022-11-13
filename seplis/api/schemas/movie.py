@@ -1,3 +1,4 @@
+from typing import Literal
 from pydantic import BaseModel, constr, conint
 from datetime import datetime, date
 from .image import Image
@@ -44,5 +45,21 @@ class Movie_stared(BaseModel):
     created_at: datetime | None = None
     stared = False
 
+    class Config:
+        orm_mode = True
+
+
+MOVIE_USER_SORT_TYPE = Literal[
+    'stared_at_asc',
+    'stared_at_desc',
+    'watched_at_asc',
+    'watched_at_desc',
+]
+
+class Movie_user(BaseModel):
+    movie: Movie
+    stared: bool
+    watched_data: Movie_watched
+    
     class Config:
         orm_mode = True
