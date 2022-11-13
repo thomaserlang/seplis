@@ -22,12 +22,13 @@ from .routes import (
     user_series_recently_aired,
     user_series_countdown,
     user_series_to_watch,
+    user_movies_stared,
+    user_movies_watched,
     movie,
     movie_watched,
     movie_watched_position,
     movie_stared,
     movie_play_servers,
-    user_movies_stared,
     series,
     series_user_settings,
     series_user_stats,
@@ -53,12 +54,13 @@ app.include_router(user_series_air_dates.router)
 app.include_router(user_series_recently_aired.router)
 app.include_router(user_series_countdown.router)
 app.include_router(user_series_to_watch.router)
+app.include_router(user_movies_stared.router)
+app.include_router(user_movies_watched.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)
 app.include_router(movie_stared.router)
 app.include_router(movie_play_servers.router)
-app.include_router(user_movies_stared.router)
 app.include_router(series.router)
 app.include_router(series_user_stats.router)
 app.include_router(series_user_rating.router)

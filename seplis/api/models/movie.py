@@ -171,10 +171,10 @@ def movie_user_query(user_id: int, sort: schemas.MOVIE_USER_SORT_TYPE | None):
             sa.asc(Movie_stared.created_at),
             sa.asc(Movie.id),
         )
-    elif sort == 'watched_at_asc':
+    elif sort == 'watched_at_desc':
         query = query.order_by(
-            sa.asc(Movie_watched.watched_at),
-            sa.asc(Movie.id),
+            sa.desc(Movie_watched.watched_at),
+            sa.desc(Movie.id),
         )
     elif sort == 'watched_at_asc':
         query = query.order_by(
