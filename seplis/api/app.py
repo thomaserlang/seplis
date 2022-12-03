@@ -67,8 +67,8 @@ urls = [
     #U(r'/1/users/([a-z0-9]+)/(?:series|shows)-etw', h.shows_etw.Handler),
     #U(r'/1/users/me/movies-stared', h.movies_stared.Handler),
     #U(r'/1/users/([0-9]+)/movies-stared', h.movies_stared.Handler),
-    U(r'/1/users/me/movies-watched', h.movies_watched.Handler),
-    U(r'/1/users/([0-9]+)/movies-watched', h.movies_watched.Handler),
+    #U(r'/1/users/me/movies-watched', h.movies_watched.Handler),
+    #U(r'/1/users/([0-9]+)/movies-watched', h.movies_watched.Handler),
         
     U(r'/1/play-servers', h.play_server.Collection_handler),
     U(r'/1/play-servers/([0-9]+)', h.play_server.Handler),
