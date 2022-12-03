@@ -27,7 +27,15 @@ export function pad(str, max) {
 }
 
 export function episodeNumber(show, episode) {
-    switch (show.episode_type) {
+    let type = show.episode_type
+    if (type == 2) {
+        if (!episode.season || !episode.episode)
+            type = 1
+    } else if (type == 3) {
+        if (!episode.air_date)
+            type = 1
+    }
+    switch (type) {
         case 1: return`Episode ${episode.number}`; break;
         case 2: return`S${pad(episode.season,2)} · E${pad(episode.episode, 2)}`; break;
         case 3: return`Airdate: ${episode.air_date}`; break;
@@ -35,7 +43,15 @@ export function episodeNumber(show, episode) {
 }
 
 export function episodeTitle(show, episode) {
-    switch (show.episode_type) {
+    let type = show.episode_type
+    if (type == 2) {
+        if (!episode.season || !episode.episode)
+            type = 1
+    } else if (type == 3) {
+        if (!episode.air_date)
+            type = 1
+    }
+    switch (type) {
         case 1: return`${episode.number}: ${episode.title}`; break;
         case 2: return`S${pad(episode.season,2)}E${pad(episode.episode, 2)}: ${episode.title}`; break;
         case 3: return`${episode.air_date}: ${episode.title}`; break;
