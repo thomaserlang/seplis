@@ -36,28 +36,14 @@ async def create_token(
     if not matches:
         raise exceptions.Wrong_email_or_password_exception()
 
-    token = models.Token(
-        app_id=app.id,
-        user_id=user.id,
-        user_level=user.level,
-    )
-    await session.commit()
-    await token.cache()
-    return schemas.Token(access_token=token.token)
+    token = await models.Token.new_token(user_id=user.id, app_id=app.id, user_level=user.level)
+
+    return schemas.Token(access_token=token)
 
 
 @router.post('/progress-token', status_code=201, response_model=schemas.Token)
 async def create_progress_token(
-    session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
 ):
-    token = models.Token(
-        app_id=None,
-        user_id=user.id,
-        user_level=constants.LEVEL_PROGRESS,
-        expires=datetime.utcnow()+timedelta(days=1),
-    )
-    session.add(token)
-    await session.commit()
-    await token.cache()
-    return schemas.Token(access_token=token.token)
+    token = await models.Token.new_token(user_id=user.id, user_level=constants.LEVEL_PROGRESS, expires_days=1)
+    return schemas.Token(access_token=token)

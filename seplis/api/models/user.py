@@ -8,17 +8,19 @@ from seplis import utils
 from seplis.api.database import database
 from seplis.api import constants, exceptions, rebuild_cache
 from seplis.api.decorators import new_session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from passlib.hash import pbkdf2_sha256
 
-class User(Base):
+class User_public(Base):
     __tablename__ = 'users'
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     username = sa.Column(sa.String(45), unique=True)
+    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
+
+class User(User_public):
     email = sa.Column(sa.String(100), unique=True)
     password = sa.Column(sa.String(200))
-    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
     level = sa.Column(sa.Integer, default=constants.LEVEL_USER)
 
     @classmethod
@@ -84,40 +86,31 @@ class Token(Base):
     expires = sa.Column(sa.DateTime)
     user_level = sa.Column(sa.Integer)
 
-    _cache_name  = 'seplis:tokens:{}:user'
+    @staticmethod
+    async def new_token(user_id: str, app_id: str | None = None, user_level: int = constants.LEVEL_USER, expires_days = constants.USER_TOKEN_EXPIRE_DAYS) -> str:
+        async with database.session() as session:
+            token = utils.random_key(255)
+            await session.execute(sa.insert(Token).values(
+                app_id=app_id,
+                user_id=user_id,
+                user_level=user_level,
+                expires=datetime.now(tz=timezone.utc) + timedelta(days=expires_days),
+                token=token,                                
+            ))
+            await session.commit()
+            p = database.redis.pipeline()
+            p.hset(f'seplis:tokens:{token}:user', 'id', user_id)
+            p.hset(f'seplis:tokens:{token}:user', 'level', user_level)
+            await p.execute()
+            return token
 
-    def __init__(self, app_id: int, user_id: int, user_level: int, expires: datetime=None):
-        '''Auto genrates a token and sets expires to a year from now if `expires` is `None`.'''
-        self.app_id = app_id
-        self.user_id = user_id
-        self.user_level = user_level
-        self.expires = expires if expires else \
-            datetime.utcnow() + timedelta(days=constants.USER_TOKEN_EXPIRE_DAYS)
-        self.token = utils.random_key(255)
-
-    async def cache(self, pipe: Pipeline = None):
-        name = self.cache_name
-        _pipe = pipe
-        if not pipe:
-            _pipe = database.redis.pipeline()     
-        _pipe.hset(name, 'id', self.user_id)
-        _pipe.hset(name, 'level', self.user_level)
-        if self.expires:
-            _pipe.expireat(name, self.expires)
-        if not pipe:
-            await _pipe.execute()
-    
     @classmethod
     async def get(cls, token: str) -> schemas.User_authenticated:
-        r = await database.redis.hgetall(cls._cache_name.format(token))
+        r = await database.redis.hgetall(f'seplis:tokens:{token}:user')
         if r:
             d = schemas.User_authenticated.parse_obj(r)
             d.token = token
             return d
-
-    @property
-    def cache_name(self):
-        return self._cache_name.format(self.token)
 
 
 class User_series_settings(Base):

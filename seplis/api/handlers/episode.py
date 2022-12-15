@@ -131,8 +131,8 @@ class Play_servers_handler(base.Handler):
     def _get(self, series_id, number):
         with new_session() as session:
             p = session.query(models.Play_server).filter(
-                models.Play_access.user_id == self.current_user.id,
-                models.Play_server.id == models.Play_access.play_server_id,
+                models.Play_server_access.user_id == self.current_user.id,
+                models.Play_server.id == models.Play_server_access.play_server_id,
             ).options(
                 sa.orm.undefer_group('secret')
             ).all()

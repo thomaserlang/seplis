@@ -24,6 +24,7 @@ from .routes import (
     user_series_to_watch,
     user_movies_stared,
     user_movies_watched,
+    user_play_server_invite_accept,
     movie,
     movie_watched,
     movie_watched_position,
@@ -38,6 +39,7 @@ from .routes import (
     episode_to_watch,
     episode_play_servers,
     episode_last_watched,
+    play_server,
 )
 
 
@@ -56,6 +58,7 @@ app.include_router(user_series_countdown.router)
 app.include_router(user_series_to_watch.router)
 app.include_router(user_movies_stared.router)
 app.include_router(user_movies_watched.router)
+app.include_router(user_play_server_invite_accept.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)
@@ -71,6 +74,7 @@ app.include_router(episode_watched_position.router)
 app.include_router(episode_to_watch.router)
 app.include_router(episode_play_servers.router)
 app.include_router(episode_last_watched.router)
+app.include_router(play_server.router)
 
 
 @app.on_event('startup')

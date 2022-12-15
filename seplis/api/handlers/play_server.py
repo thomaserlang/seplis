@@ -150,8 +150,8 @@ class Access_handler(base.Pagination_handler):
             users = session.query(models.User).filter(
                 models.Play_server.id == server_id,
                 models.Play_server.user_id == self.current_user.id,
-                models.Play_access.play_server_id == models.Play_server.id,
-                models.User.id == models.Play_access.user_id,
+                models.Play_server_access.play_server_id == models.Play_server.id,
+                models.User.id == models.Play_server_access.user_id,
             ).order_by(models.User.name).paginate(
                 page=self.page, per_page=self.per_page,
             )
@@ -170,7 +170,7 @@ class Access_handler(base.Pagination_handler):
     def _put(self, server_id, access_user_id):
         with new_session() as session:
             self.check_server(session, server_id)
-            ac = models.Play_access(
+            ac = models.Play_server_access(
                 play_server_id=server_id,
                 user_id=access_user_id,
             )
@@ -181,9 +181,9 @@ class Access_handler(base.Pagination_handler):
     def _delete(self, server_id, access_user_id):
         with new_session() as session:
             self.check_server(session, server_id)
-            ac = session.query(models.Play_access).filter(
-                models.Play_access.play_server_id == models.Play_server.id,
-                models.Play_access.user_id == access_user_id,
+            ac = session.query(models.Play_server_access).filter(
+                models.Play_server_access.play_server_id == models.Play_server.id,
+                models.Play_server_access.user_id == access_user_id,
             ).first()
             if ac:
                 session.delete(ac)

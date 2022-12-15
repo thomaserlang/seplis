@@ -1,12 +1,10 @@
 import asyncio, logging, os, pytest, pytest_asyncio
 from httpx import AsyncClient
-from sqlalchemy import create_engine, event, insert, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import create_engine, insert, select
 from seplis import config, config_load, utils
 from seplis.utils import  json_loads
 from urllib.parse import urlencode
 from tornado.testing import AsyncHTTPTestCase
-#from seplis.api.connections import database
 from seplis.api.app import Application
 from seplis.api import elasticcreate, constants, models
 from seplis.api.decorators import new_session
@@ -14,6 +12,7 @@ from seplis.api.decorators import new_session
 from fastapi.testclient import TestClient
 from seplis.api.main import app
 from seplis.api.database import database
+from seplis.api import schemas
 from seplis import logger
 
 @pytest_asyncio.fixture(scope='function')
@@ -25,34 +24,15 @@ async def client():
     await database.close_test()
 
 async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LEVEL_USER)], app_level=constants.LEVEL_GOD) -> int:
-    # Scopes will be turned in to actual scopes later
-    async with database.session() as session:
-        user = models.User(
-            username='testuser',
-            email='test@example.com',
-            level=int(scopes[0]),
-            password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',
-        )
-        session.add(user)
-        await session.flush()
-        app = models.App(
-            user_id=user.id,
-            name='testbase app',
-            redirect_uri='',
-            level=app_level,
-        )
-        session.add(app)
-        await session.flush()
-        access_token = models.Token(
-            user_id=user.id,
-            user_level=int(scopes[0]),
-            app_id=app.id,
-        )
-        session.add(access_token)
-        await session.commit()
-        await access_token.cache()
-        client.headers['Authorization'] = f'Bearer {access_token.token}'
-        return user.id
+    user = await models.User.save(user_data=schemas.User_create(
+        username='testuser',
+        email='test@example.com',
+        level=int(scopes[0]),
+        password='1'*10,
+    ))
+    token = await models.Token.new_token(user_id=user.id, expires_days=1, user_level=int(scopes[0]))
+    client.headers['Authorization'] = f'Bearer {token}'
+    return user.id
 
 def run_file(file_):
     import subprocess

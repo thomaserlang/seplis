@@ -8,6 +8,7 @@ from seplis.utils import *
 from seplis.api import exceptions
 from seplis.api.base.pagination import Pagination
 from ..api import schemas
+from uuid6 import uuid7
 
 class Base_query(orm.Query):
  
@@ -182,3 +183,36 @@ def setup_before_after_events(session):
 
     sa.event.listen(session, 'before_flush', _before_flush)
     sa.event.listen(session, 'after_flush', _after_flush)
+
+
+class UUID(sa.types.UserDefinedType):
+    cache_ok = True
+
+    def get_col_spec(self, **kw):
+        return "UUID"
+
+    def bind_processor(self, dialect):
+        def process(value):
+            if value is not None:
+                value = str(value)
+            return value
+
+        return process
+
+    def result_processor(self, dialect, coltype):
+        def process(value):
+            if value is not None:
+                value = str(value)
+            return value
+
+        return process
+
+
+def uuid7_mariadb():
+    '''
+    Since the MariaDB UUID data type reorderes the stored UUID to be more index friendly
+    for UUIDv1 (nnnnnnnnnnnn-vsss-Vhhh-mmmm-llllllll), we have to reorder the UUIDv7
+    https://mariadb.com/kb/en/uuid-data-type/
+    '''
+    a = str(uuid7())
+    return f'{a[24:32]}-{a[32:36]}-{a[19:23]}-{a[14:18]}-{a[0:8]}{a[9:13]}'

@@ -70,10 +70,10 @@ urls = [
     #U(r'/1/users/me/movies-watched', h.movies_watched.Handler),
     #U(r'/1/users/([0-9]+)/movies-watched', h.movies_watched.Handler),
         
-    U(r'/1/play-servers', h.play_server.Collection_handler),
-    U(r'/1/play-servers/([0-9]+)', h.play_server.Handler),
-    U(r'/1/play-servers/([0-9]+)/users', h.play_server.Access_handler),
-    U(r'/1/play-servers/([0-9]+)/users/([0-9]+)', h.play_server.Access_handler),
+    #U(r'/1/play-servers', h.play_server.Collection_handler),
+    #U(r'/1/play-servers/([0-9]+)', h.play_server.Handler),
+    #U(r'/1/play-servers/([0-9]+)/users', h.play_server.Access_handler),
+    #U(r'/1/play-servers/([0-9]+)/users/([0-9]+)', h.play_server.Access_handler),
 
     U(r'/1/apps', h.app.Handler),
     U(r'/1/apps/([0-9]+)', h.app.Handler),

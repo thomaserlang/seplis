@@ -82,8 +82,8 @@ class Play_servers_handler(base.Handler):
     async def get(self, movie_id):
         async with self.async_session() as session:
             results = await session.scalars(select(models.Play_server).where(
-                models.Play_access.user_id == self.current_user.id,
-                models.Play_server.id == models.Play_access.play_server_id,
+                models.Play_server_access.user_id == self.current_user.id,
+                models.Play_server.id == models.Play_server_access.play_server_id,
             ).options(
                 orm.undefer_group('secret')
             ))

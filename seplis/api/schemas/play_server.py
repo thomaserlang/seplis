@@ -1,5 +1,6 @@
 from pydantic import BaseModel, constr
-
+from datetime import datetime
+from .user import User_public
 
 class Play_server_create(BaseModel):
     name: constr(min_length=1, max_length=45)
@@ -14,7 +15,7 @@ class Play_server_update(BaseModel):
 
 
 class Play_server(BaseModel):
-    id: int
+    id: str
     name: str
 
     class Config:
@@ -40,3 +41,28 @@ class Play_id_info_episode(BaseModel):
 class Play_id_info_movie(BaseModel):
     type: str = 'movie'
     movie_id: int
+
+
+class Play_server_invite_create(BaseModel):
+    user_id: int
+
+
+class Play_server_invite_id(BaseModel):
+    invite_id: str
+
+    class Config:
+        orm_mode = True
+
+
+class Play_server_invite(BaseModel):
+    user: User_public
+    created_at: datetime
+    expires_at: datetime
+
+    class Config:
+        orm_mode = True
+
+
+class Play_server_access(BaseModel):
+    user: User_public
+    created_at: datetime

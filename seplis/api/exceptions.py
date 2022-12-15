@@ -352,3 +352,33 @@ class Play_server_unknown(API_exception):
             code=2200,
             message='Unknown play server',
         )
+
+class Play_server_invite_invalid(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(
+            self,
+            status_code=400,
+            code=2250,
+            message='Invite id is invalid',
+        )
+
+class Play_server_invite_already_has_access(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(
+            self,
+            status_code=400,
+            code=2251,
+            message='The user does already have access to this play server',
+        )
+
+class Play_server_access_user_no_access(API_exception):
+
+    def __init__(self):
+        API_exception.__init__(
+            self,
+            status_code=400,
+            code=2260,
+            message='The user doesn\'t have access to this play server',
+        )
