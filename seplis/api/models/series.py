@@ -158,22 +158,16 @@ class Series(Base):
 
     @staticmethod
     async def _save_genres(session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
-        wait_for = [Genre.get_or_create_genre(session, genre) \
-            for genre in genres if isinstance(genre, str)]
-        if wait_for:
-            ids = await asyncio.gather(*wait_for)
-            genres.extend(ids)
-
-        genres: set[int] = set([genre for genre in genres if isinstance(genre, int)])
+        genre_ids = await Genre.get_or_create_genres(session, genres)
         current_genres: set[int] = set()
         if patch:
             current_genres = set(await session.scalars(sa.select(Series_genre.genre_id).where(Series_genre.series_id == series_id)))
         else:
             await session.execute(sa.delete(Series_genre).where(Series_genre.series_id == series_id))
-        genres = (genres - current_genres)
-        if genres:
+        new_genre_ids = (genre_ids - current_genres)
+        if new_genre_ids:
             await session.execute(sa.insert(Series_genre).prefix_with('IGNORE'), [
-                {'series_id': series_id, 'genre_id': genre_id} for genre_id in genres
+                {'series_id': series_id, 'genre_id': genre_id} for genre_id in new_genre_ids
             ])
         rr = await session.scalars(sa.select(Genre).where(Series_genre.series_id == series_id, Genre.id == Series_genre.genre_id).order_by(Genre.name))
         return [schemas.Genre.from_orm(r) for r in rr]
