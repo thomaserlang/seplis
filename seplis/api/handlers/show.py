@@ -145,7 +145,7 @@ class Handler(base.Handler):
         numbers = [episode['number'] for episode in episodes_dict]
         ep_g = {episode['number']: episode for episode in episodes_dict}
         episodes = session.query(models.Episode).filter(
-            models.Episode.show_id == show_id,
+            models.Episode.series_id == show_id,
             models.Episode.number.in_(numbers),
         ).all()
         for episode in episodes:
@@ -290,8 +290,8 @@ class Handler(base.Handler):
             self.is_logged_in()
             user_id = self.current_user.id
         with new_session() as session:
-            rows = session.query(models.Series_following.show_id).filter(
-                models.Series_following.user_id == user_id,
+            rows = session.query(models.Series_follower.series_id).filter(
+                models.Series_follower.user_id == user_id,
             ).all()
             if not rows:
                 return
@@ -316,10 +316,10 @@ class Handler(base.Handler):
                 show_ids[s['id']] = s
             q = session.query(
                 models.Series_user_rating.rating, 
-                models.Series_user_rating.show_id,
+                models.Series_user_rating.series_id,
             ).filter(
                 models.Series_user_rating.user_id == self.current_user.id,
-                models.Series_user_rating.show_id.in_(show_ids.keys()),
+                models.Series_user_rating.series_id.in_(show_ids.keys()),
             ).all()
             if not q:
                 return

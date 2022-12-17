@@ -16,21 +16,21 @@ async def get_series_recently_aired(
 ):
     dt = datetime.now(tz=timezone.utc)
     episodes_query = sa.select(
-        models.Episode.show_id,
+        models.Episode.series_id,
         sa.func.min(models.Episode.number).label('episode_number'),
     ).where(
-        models.Series_following.user_id == user.id,
-        models.Episode.show_id == models.Series_following.show_id,
+        models.Series_follower.user_id == user.id,
+        models.Episode.series_id == models.Series_follower.series_id,
         models.Episode.air_datetime > (dt-timedelta(days=7)),
         models.Episode.air_datetime < dt,
-    ).group_by(models.Episode.show_id).subquery()
+    ).group_by(models.Episode.series_id).subquery()
     query = sa.select(models.Series, models.Episode).where(
         models.Series.id == episodes_query.c.show_id,
-        models.Episode.show_id == models.Series.id,
+        models.Episode.series_id == models.Series.id,
         models.Episode.number == episodes_query.c.episode_number,
     ).order_by(
         sa.desc(models.Episode.air_datetime), 
-        models.Episode.show_id,
+        models.Episode.series_id,
     )
 
     p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request, scalars=False)

@@ -24,7 +24,7 @@ class Handler(base.Pagination_handler):
     def get_shows(self, user_id):
         args = self.validate_arguments()
         with new_session() as session:
-            elw = models.Episode_watching
+            elw = models.Episode_last_finished
             ew = models.Episode_watched
             query = session.query(
                 models.Series,
@@ -33,10 +33,10 @@ class Handler(base.Pagination_handler):
             ).filter(
                 elw.user_id == user_id,
                 ew.user_id == elw.user_id,
-                ew.show_id == elw.show_id,
+                ew.series_id == elw.series_id,
                 ew.episode_number == elw.episode_number,            
-                models.Series.id == elw.show_id,
-                models.Episode.show_id == elw.show_id,
+                models.Series.id == elw.series_id,
+                models.Episode.series_id == elw.series_id,
                 models.Episode.number == elw.episode_number,
             )
 
@@ -44,18 +44,18 @@ class Handler(base.Pagination_handler):
             if sort == 'user_rating':
                 query = query.outerjoin(
                     (models.Series_user_rating, sa.and_(
-                        models.Series_user_rating.show_id == models.Series.id,
+                        models.Series_user_rating.series_id == models.Series.id,
                         models.Series_user_rating.user_id == user_id,
                     ))
                 ).order_by(
                     sa.desc(models.Series_user_rating.rating),
                     sa.desc(ew.watched_at), 
-                    sa.desc(elw.show_id)
+                    sa.desc(elw.series_id)
                 )
             else:
                 query = query.order_by(
                     sa.desc(ew.watched_at), 
-                    sa.desc(elw.show_id)
+                    sa.desc(elw.series_id)
                 )
 
             genres = list(filter(None, args.get('genre', [])))

@@ -16,7 +16,7 @@ async def get_position(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):
     ew = await session.scalar(sa.select(models.Episode_watched).where(
-        models.Episode_watched.show_id == series_id,
+        models.Episode_watched.series_id == series_id,
         models.Episode_watched.episode_number == episode_number,
         models.Episode_watched.user_id == user.id,
     ))

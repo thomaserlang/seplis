@@ -45,12 +45,12 @@ class Handler(base.Handler):
                 models.Episode_watched.episode_number,
                 models.Episode_watched.position,
             ).filter(
-                models.Episode_watching.user_id == user_id,
-                models.Episode_watching.show_id == show_id,
-                models.Episode_watched.show_id == models.Episode_watching.show_id,
-                models.Episode_watched.user_id == models.Episode_watching.user_id,
+                models.Episode_last_finished.user_id == user_id,
+                models.Episode_last_finished.series_id == show_id,
+                models.Episode_watched.series_id == models.Episode_last_finished.series_id,
+                models.Episode_watched.user_id == models.Episode_last_finished.user_id,
                 models.Episode_watched.episode_number ==\
-                    models.Episode_watching.episode_number,
+                    models.Episode_last_finished.episode_number,
             ).first()
 
             episode_number = 1
@@ -63,12 +63,12 @@ class Handler(base.Handler):
                 models.Episode,
                 models.Episode_watched,
             ).filter(
-                models.Episode.show_id == show_id,
+                models.Episode.series_id == show_id,
                 models.Episode.number == episode_number,
             ).outerjoin(
                 (models.Episode_watched, and_(
                     models.Episode_watched.user_id == user_id,
-                    models.Episode_watched.show_id == models.Episode.show_id,
+                    models.Episode_watched.series_id == models.Episode.series_id,
                     models.Episode_watched.episode_number == models.Episode.number,
                 ))
             ).first()

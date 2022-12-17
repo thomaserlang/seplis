@@ -6,7 +6,7 @@ from .helper import default_datetime
 
 
 class Movie_create(BaseModel):   
-    title: constr(min_length=1, max_length=200, strip_whitespace=True)
+    title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
     status: conint(gt=-1, lt=5) | None
@@ -23,9 +23,13 @@ class Movie_create(BaseModel):
     popularity: confloat(ge=0.0) | None
     rating: confloat(ge=0.0, le=10.0) | None
 
+    class Config:
+        extra = 'forbid'
 
-class Movie_update(Movie_create):    
-    title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
+
+class Movie_update(Movie_create):
+    pass
+
 
 class Movie(BaseModel):
     id: int

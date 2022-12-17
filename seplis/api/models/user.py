@@ -114,10 +114,10 @@ class Token(Base):
 
 
 class User_series_settings(Base):
-    __tablename__ = 'user_show_subtitle_lang'
+    __tablename__ = 'user_series_settings'
     
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
-    show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
+    series_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     subtitle_lang = sa.Column(sa.String)
     audio_lang = sa.Column(sa.String)
 

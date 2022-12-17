@@ -18,23 +18,23 @@ class Handler(base.Pagination_handler):
         with new_session() as session:
             now_ = datetime.utcnow()
             episodes = session.query(
-                models.Episode_watched.show_id.label('show_id'),
+                models.Episode_watched.series_id.label('show_id'),
                 func.max(models.Episode_watched.episode_number).label('episode_number'),
             ).filter(
                 models.Episode_watched.user_id == user_id,
-                models.Series_following.user_id == models.Episode_watched.user_id,
-                models.Series_following.show_id == models.Episode_watched.show_id,
+                models.Series_follower.user_id == models.Episode_watched.user_id,
+                models.Series_follower.series_id == models.Episode_watched.series_id,
                 models.Episode_watched.times > 0,
-            ).group_by(models.Episode_watched.show_id).subquery()
+            ).group_by(models.Episode_watched.series_id).subquery()
 
             p = session.query(models.Series, models.Episode).filter(
                 models.Series.id == episodes.c.show_id,
-                models.Episode.show_id == models.Series.id,
+                models.Episode.series_id == models.Series.id,
                 models.Episode.number == episodes.c.episode_number+1,
                 models.Episode.air_datetime <= now_,
             ).order_by(
                 desc(models.Episode.air_datetime),
-                models.Episode.show_id,
+                models.Episode.series_id,
             ).paginate(page=self.page, per_page=self.per_page)
             p.records = [{
                 'show': r.Show.serialize(), 

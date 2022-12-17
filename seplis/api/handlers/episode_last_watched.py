@@ -26,8 +26,8 @@ class Handler(base.Handler):
                 models.Episode_watched,
             ).filter(
                 models.Episode_watched.user_id == self.current_user.id,
-                models.Episode_watched.show_id == show_id,
-                models.Episode.show_id == models.Episode_watched.show_id,
+                models.Episode_watched.series_id == show_id,
+                models.Episode.series_id == models.Episode_watched.series_id,
                 models.Episode.number == models.Episode_watched.episode_number,
             ).order_by(
                 sa.desc(models.Episode_watched.watched_at),

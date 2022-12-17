@@ -41,8 +41,6 @@ class Movie(Base):
                 if not movie_id:
                     r = await session.execute(sa.insert(Movie))
                     movie_id = r.lastrowid
-                    if not movie_data.original_title:
-                        data['original_title'] = movie_data.title
                     data['created_at'] = datetime.now(tz=timezone.utc)
                 else:
                     m = await session.scalar(sa.select(Movie.id).where(Movie.id == movie_id))
@@ -55,8 +53,8 @@ class Movie(Base):
                     data['externals'] = await cls._save_externals(session, movie_id, data['externals'], patch)
                 if 'alternative_titles' in data:
                     data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, data['alternative_titles'], patch)
-                await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**data))
-                logger.info(data)
+                if data:
+                    await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**data))
                 movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
                 await session.commit()
                 await cls._save_for_search(movie)

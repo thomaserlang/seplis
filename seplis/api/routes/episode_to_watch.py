@@ -43,12 +43,12 @@ async def get_episode_to_watch(
         models.Episode_watched.episode_number,
         models.Episode_watched.position,
     ).where(
-        models.Episode_watching.user_id == user.id,
-        models.Episode_watching.show_id == series_id,
-        models.Episode_watched.show_id == models.Episode_watching.show_id,
-        models.Episode_watched.user_id == models.Episode_watching.user_id,
+        models.Episode_last_finished.user_id == user.id,
+        models.Episode_last_finished.series_id == series_id,
+        models.Episode_watched.series_id == models.Episode_last_finished.series_id,
+        models.Episode_watched.user_id == models.Episode_last_finished.user_id,
         models.Episode_watched.episode_number ==\
-            models.Episode_watching.episode_number,
+            models.Episode_last_finished.episode_number,
     ))
     ew = ew.first()
 
@@ -62,12 +62,12 @@ async def get_episode_to_watch(
         models.Episode,
         models.Episode_watched,
     ).where(
-        models.Episode.show_id == series_id,
+        models.Episode.series_id == series_id,
         models.Episode.number == episode_number,
     ).join(
         models.Episode_watched, sa.and_(
             models.Episode_watched.user_id == user.id,
-            models.Episode_watched.show_id == models.Episode.show_id,
+            models.Episode_watched.series_id == models.Episode.series_id,
             models.Episode_watched.episode_number == models.Episode.number,
         ),
         isouter=True

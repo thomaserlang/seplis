@@ -18,21 +18,21 @@ class Handler(base.Pagination_handler):
         with new_session() as session:
             now_ = datetime.utcnow()
             episodes = session.query(
-                models.Episode.show_id.label('show_id'),
+                models.Episode.series_id.label('show_id'),
                 func.min(models.Episode.number).label('episode_number'),
             ).filter(
-                models.Series_following.user_id == user_id,
-                models.Episode.show_id == models.Series_following.show_id,
+                models.Series_follower.user_id == user_id,
+                models.Episode.series_id == models.Series_follower.series_id,
                 models.Episode.air_datetime > (now_-timedelta(days=7)),
                 models.Episode.air_datetime < now_,
-            ).group_by(models.Episode.show_id).subquery()
+            ).group_by(models.Episode.series_id).subquery()
             p = session.query(models.Series, models.Episode).filter(
                 models.Series.id == episodes.c.show_id,
-                models.Episode.show_id == models.Series.id,
+                models.Episode.series_id == models.Series.id,
                 models.Episode.number == episodes.c.episode_number,
             ).order_by(
                 desc(models.Episode.air_datetime),
-                models.Episode.show_id,
+                models.Episode.series_id,
             ).paginate(page=self.page, per_page=self.per_page)
             p.records = [{
                 'show': r.Show.serialize(), 

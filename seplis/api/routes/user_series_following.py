@@ -16,8 +16,8 @@ async def get_series_following(
 ):
     query = models.series_user_query(user_id=user.id, sort=sort)
     query = query.where(
-        models.Series_following.user_id == user.id,
-        models.Series.id == models.Series_following.show_id,
+        models.Series_follower.user_id == user.id,
+        models.Series.id == models.Series_follower.series_id,
     )
 
     p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request, scalars=False)

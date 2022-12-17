@@ -24,8 +24,8 @@ async def get_last_watched_episode(
         models.Episode_watched,
     ).where(
         models.Episode_watched.user_id == user.id,
-        models.Episode_watched.show_id == series_id,
-        models.Episode.show_id == models.Episode_watched.show_id,
+        models.Episode_watched.series_id == series_id,
+        models.Episode.series_id == models.Episode_watched.series_id,
         models.Episode.number == models.Episode_watched.episode_number,
     ).order_by(
         sa.desc(models.Episode_watched.watched_at),

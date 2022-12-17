@@ -22,9 +22,9 @@ async def get_user_stats(
         ), 0).label('episodes_watched_minutes'),
     ).where(        
         models.Episode_watched.user_id == user.id,
-        models.Episode_watched.show_id == series_id,
-        models.Episode.show_id == models.Episode_watched.show_id,
+        models.Episode_watched.series_id == series_id,
+        models.Episode.series_id == models.Episode_watched.series_id,
         models.Episode.number == models.Episode_watched.episode_number,
-        models.Series.id == models.Episode_watched.show_id,
+        models.Series.id == models.Episode_watched.series_id,
     ))
     return schemas.Series_user_stats.parse_obj(q.first())

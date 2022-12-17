@@ -22,9 +22,9 @@ class Handler(base.Handler):
     def query_fan_of(self, user_id):
         with new_session() as session:
             r = session.query(
-                sa.func.count(models.Series_following.show_id).label('user_fan_of'),
+                sa.func.count(models.Series_follower.series_id).label('user_fan_of'),
             ).filter(
-                models.Series_following.user_id == user_id,
+                models.Series_follower.user_id == user_id,
             ).first()
             if not r:
                 return {'fan_of': 0}
@@ -37,7 +37,7 @@ class Handler(base.Handler):
         with new_session() as session:
             r = session.query(
                 sa.func.count(sa.func.distinct(
-                    models.Episode_watched.show_id
+                    models.Episode_watched.series_id
                 )).label('shows_watched'),
             ).filter(
                 models.Episode_watched.user_id == user_id,
@@ -62,9 +62,9 @@ class Handler(base.Handler):
                 ).label('episodes_watched_minutes'),
             ).filter(
                 models.Episode_watched.user_id == user_id,
-                models.Episode.show_id == models.Episode_watched.show_id,
+                models.Episode.series_id == models.Episode_watched.series_id,
                 models.Episode.number == models.Episode_watched.episode_number,
-                models.Series.id == models.Episode_watched.show_id,
+                models.Series.id == models.Episode_watched.series_id,
             ).first()
             d = {
                 'episodes_watched': 0,

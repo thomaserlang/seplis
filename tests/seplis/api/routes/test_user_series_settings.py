@@ -1,4 +1,3 @@
-from urllib import response
 import pytest
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 from seplis.api import constants, schemas, models

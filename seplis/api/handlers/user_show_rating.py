@@ -45,7 +45,7 @@ class Handler(base.Handler):
         with new_session() as session:
             r = session.query(models.Series_user_rating.rating).filter(
                 models.Series_user_rating.user_id == self.current_user.id,
-                models.Series_user_rating.show_id == show_id,
+                models.Series_user_rating.series_id == show_id,
             ).first()
             return {
                 'rating': r.rating if r else None,
@@ -56,6 +56,6 @@ class Handler(base.Handler):
         with new_session() as session:
             session.query(models.Series_user_rating).filter(
                 models.Series_user_rating.user_id == self.current_user.id,
-                models.Series_user_rating.show_id == show_id,
+                models.Series_user_rating.series_id == show_id,
             ).delete()
             session.commit()

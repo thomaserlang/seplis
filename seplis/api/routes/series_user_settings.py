@@ -15,7 +15,7 @@ async def get_series_user_settings(
 ):
     settings = await session.scalar(sa.select(models.User_series_settings).where(
         models.User_series_settings.user_id == user.id,
-        models.User_series_settings.show_id == series_id,
+        models.User_series_settings.series_id == series_id,
     ))
     if not settings:
         return schemas.User_series_settings()
@@ -32,11 +32,11 @@ async def set_series_user_settings(
 ):
     settings = await session.scalar(sa.select(models.User_series_settings).where(
         models.User_series_settings.user_id == user.id,
-        models.User_series_settings.show_id == series_id,
+        models.User_series_settings.series_id == series_id,
     ))
     if not settings:
         await session.execute(sa.insert(models.User_series_settings).values(
-            show_id=series_id,
+            series_id=series_id,
             user_id=user.id,
             **data.dict()
         ))
@@ -45,11 +45,11 @@ async def set_series_user_settings(
             **data.dict()
         ).where(
             models.User_series_settings.user_id == user.id,
-            models.User_series_settings.show_id == series_id,
+            models.User_series_settings.series_id == series_id,
         ))
     settings = await session.scalar(sa.select(models.User_series_settings).where(
         models.User_series_settings.user_id == user.id,
-        models.User_series_settings.show_id == series_id,
+        models.User_series_settings.series_id == series_id,
     ))
     await session.commit()
     return settings

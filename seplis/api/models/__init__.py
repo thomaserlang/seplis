@@ -1,6 +1,6 @@
 from .base import *
 from .series import *
-from .series_following import *
+from .series_follower import *
 from .image import *
 from .episode import *
 from .user import *

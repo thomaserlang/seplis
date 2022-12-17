@@ -10,33 +10,24 @@ from ... import logger
 class Episode(Base):
     __tablename__ = 'episodes'
 
-    show_id = sa.Column(sa.Integer, primary_key=True)
+    series_id = sa.Column(sa.Integer, primary_key=True)
     number = sa.Column(sa.Integer, primary_key=True)
-    title = sa.Column(sa.String(200), unique=True)
+    title = sa.Column(sa.String(200))
+    original_title = sa.Column(sa.String(200))
     air_date = sa.Column(sa.Date)
-    air_time = sa.Column(sa.Time)
     air_datetime = sa.Column(sa.DateTime)
-    description_text = sa.Column(sa.Text)
-    description_title = sa.Column(sa.String(45))
-    description_url = sa.Column(sa.String(200))
+    plot = sa.Column(sa.String(2000))
     season = sa.Column(sa.Integer)
     episode = sa.Column(sa.Integer)
     runtime = sa.Column(sa.Integer)
-
-    @property
-    def description(self):
-        return {
-            'text': self.description_text,
-            'title': self.description_title,
-            'url': self.description_url,
-        }
+    rating = sa.Column(sa.DECIMAL(4, 2))
 
 
 class Episode_watched_history(Base):
     __tablename__ = 'episodes_watched_history'
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    series_id = sa.Column(sa.Integer, sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'), primary_key=False, autoincrement=False)
+    series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=False, autoincrement=False)
     episode_number = sa.Column(sa.Integer)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id', onupdate='cascade', ondelete='cascade'), primary_key=False, autoincrement=False)
     watched_at = sa.Column(sa.DateTime)
@@ -46,7 +37,7 @@ class Episode_watched(Base):
     """Episode watched by the user."""
     __tablename__ = 'episodes_watched'
 
-    show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
+    series_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     episode_number = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     times = sa.Column(sa.Integer, default=0)
@@ -73,7 +64,7 @@ class Episode_watched(Base):
             user_id=user_id,
             watched_at=data.watched_at,
         )
-        sql_watching = sa.dialects.mysql.insert(Episode_watching).values(
+        sql_watching = sa.dialects.mysql.insert(Episode_last_finished).values(
             show_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
@@ -90,7 +81,7 @@ class Episode_watched(Base):
     @staticmethod
     async def decrement(session: AsyncSession, user_id: int, series_id: int, episode_number: int):
         w = await session.scalar(sa.select(Episode_watched).where(
-            Episode_watched.show_id == series_id,
+            Episode_watched.series_id == series_id,
             Episode_watched.episode_number == episode_number,
             Episode_watched.user_id == user_id,
         ))
@@ -99,7 +90,7 @@ class Episode_watched(Base):
         if w.times <= 1:
             await asyncio.gather(
                 session.execute(sa.delete(Episode_watched).where(
-                    Episode_watched.show_id == series_id,
+                    Episode_watched.series_id == series_id,
                     Episode_watched.episode_number == episode_number,
                     Episode_watched.user_id == user_id,
                 )),
@@ -119,7 +110,7 @@ class Episode_watched(Base):
                     Episode_watched_history.watched_at.desc()
                 ).limit(1))
                 await session.execute(sa.update(Episode_watched).where(
-                    Episode_watched.show_id == series_id,
+                    Episode_watched.series_id == series_id,
                     Episode_watched.episode_number == episode_number,
                     Episode_watched.user_id == user_id,
                 ).values(
@@ -145,7 +136,7 @@ class Episode_watched(Base):
                     Episode_watched_history.watched_at.desc()
                 ).limit(1))
                 await session.execute(sa.update(Episode_watched).where(
-                    Episode_watched.show_id == series_id,
+                    Episode_watched.series_id == series_id,
                     Episode_watched.episode_number == episode_number,
                     Episode_watched.user_id == user_id,
                 ).values(
@@ -172,7 +163,7 @@ class Episode_watched(Base):
             watched_at=sql.inserted.watched_at,
             position=sql.inserted.position,
         )
-        sql_watching = sa.dialects.mysql.insert(Episode_watching).values(
+        sql_watching = sa.dialects.mysql.insert(Episode_last_finished).values(
             show_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
@@ -188,7 +179,7 @@ class Episode_watched(Base):
     @staticmethod
     async def reset_position(session: AsyncSession, user_id: int, series_id: int, episode_number: int):
         w = await session.scalar(sa.select(Episode_watched).where(
-            Episode_watched.show_id == series_id,
+            Episode_watched.series_id == series_id,
             Episode_watched.episode_number == episode_number,
             Episode_watched.user_id == user_id,
         ))
@@ -197,7 +188,7 @@ class Episode_watched(Base):
         if w.times < 1:
             await asyncio.gather(
                 session.execute(sa.delete(Episode_watched).where(
-                    Episode_watched.show_id == series_id,
+                    Episode_watched.series_id == series_id,
                     Episode_watched.episode_number == episode_number,
                     Episode_watched.user_id == user_id,
                 )),
@@ -217,7 +208,7 @@ class Episode_watched(Base):
                     Episode_watched_history.watched_at.desc()
                 ).limit(1))
                 await session.execute(sa.update(Episode_watched).where(
-                    Episode_watched.show_id == series_id,
+                    Episode_watched.series_id == series_id,
                     Episode_watched.episode_number == episode_number,
                     Episode_watched.user_id == user_id,
                 ).values(
@@ -231,9 +222,9 @@ class Episode_watched(Base):
 
     @staticmethod
     async def set_prev_watched(session: AsyncSession, user_id: int, series_id:int, episode_number: int):
-        lew = await session.scalar(sa.select(Episode_watching).where(
-            Episode_watching.show_id == series_id,
-            Episode_watching.user_id == user_id,
+        lew = await session.scalar(sa.select(Episode_last_finished).where(
+            Episode_last_finished.series_id == series_id,
+            Episode_last_finished.user_id == user_id,
         ))
         if lew and lew.episode_number == episode_number:
             ep = await session.scalar(sa.select(Episode_watched_history).where(
@@ -245,22 +236,22 @@ class Episode_watched(Base):
                 sa.desc(Episode_watched_history.episode_number),
             ).limit(1))
             if not ep:
-                await session.execute(sa.delete(Episode_watching).where(
-                    Episode_watching.user_id == user_id,
-                    Episode_watching.show_id == series_id,
+                await session.execute(sa.delete(Episode_last_finished).where(
+                    Episode_last_finished.user_id == user_id,
+                    Episode_last_finished.series_id == series_id,
                 ))
             else:
-                await session.execute(sa.update(Episode_watching).values(
+                await session.execute(sa.update(Episode_last_finished).values(
                     episode_number=ep.episode_number,
                 ).where(
-                    Episode_watching.show_id == series_id,
-                    Episode_watching.user_id == user_id,
+                    Episode_last_finished.series_id == series_id,
+                    Episode_last_finished.user_id == user_id,
                 ))
 
 
-class Episode_watching(Base):
+class Episode_last_finished(Base):
     __tablename__ = 'episode_watching'
 
-    show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
+    series_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     episode_number = sa.Column(sa.Integer)

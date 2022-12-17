@@ -15,7 +15,7 @@ async def get_watched(
 ):
     ew = await session.scalar(sa.select(models.Episode_watched).where(
         models.Episode_watched.user_id == user.id,
-        models.Episode_watched.show_id == series_id,
+        models.Episode_watched.series_id == series_id,
         models.Episode_watched.episode_number == episode_number,
     ))
     if ew:
@@ -42,7 +42,7 @@ async def watched_increment(
     )
     ew = await session.scalar(sa.select(models.Episode_watched).where(
         models.Episode_watched.user_id == user.id,
-        models.Episode_watched.show_id == series_id,
+        models.Episode_watched.series_id == series_id,
         models.Episode_watched.episode_number == episode_number,
     ))
     await session.commit()
@@ -64,7 +64,7 @@ async def watched_decrement(
     )
     ew = await session.scalar(sa.select(models.Episode_watched).where(
         models.Episode_watched.user_id == user.id,
-        models.Episode_watched.show_id == series_id,
+        models.Episode_watched.series_id == series_id,
         models.Episode_watched.episode_number == episode_number,
     ))
     await session.commit()

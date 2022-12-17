@@ -16,8 +16,8 @@ async def get_series_watched(
 ):
     query = models.series_user_query(user_id=user.id, sort=sort)
     query = query.where(
-        models.Episode_watching.user_id == user.id,
-        models.Series.id == models.Episode_watching.show_id,
+        models.Episode_last_finished.user_id == user.id,
+        models.Series.id == models.Episode_last_finished.series_id,
     )
 
     p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request, scalars=False)

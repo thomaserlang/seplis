@@ -1,7 +1,7 @@
 import asyncio
 import sqlalchemy as sa
 from fastapi import HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from .episode import Episode
 from .base import Base
@@ -10,25 +10,22 @@ from ..database import database
 from .. import schemas, rebuild_cache
 from ... import config, logger, utils, constants
 
-from .series_following import Series_following
+from .series_follower import Series_follower
 from .series_user_rating import Series_user_rating
-from .episode import Episode, Episode_watched, Episode_watching
+from .episode import Episode, Episode_watched, Episode_last_finished
 from .genre import Genre
 
 class Series(Base):
-    __tablename__ = 'shows'
-    __serialize_ignore__ = ('description_text', 'description_title', 'description_url',
-                            'importer_info', 'importer_episodes', 'poster_image_id')
+    __tablename__ = 'series'
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
-    updated_at = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
+    created_at = sa.Column(sa.DateTime)
+    updated_at = sa.Column(sa.DateTime)
     status = sa.Column(sa.Integer, default=0, nullable=False)
-    fans = sa.Column(sa.Integer, default=0)
     title = sa.Column(sa.String(200))
-    description_text = sa.Column(sa.Text)
-    description_title = sa.Column(sa.String(45))
-    description_url = sa.Column(sa.String(200))
+    original_title = sa.Column(sa.String(200))
+    plot = sa.Column(sa.String(2000))
+    tagline = sa.Column(sa.String(500))
     premiered = sa.Column(sa.Date)
     ended = sa.Column(sa.Date)
     externals = sa.Column(sa.JSON(), default=lambda: {})
@@ -46,14 +43,9 @@ class Series(Base):
     )
     total_episodes = sa.Column(sa.Integer, default=0)
     language = sa.Column(sa.String(100))
+    popularity = sa.Column(sa.DECIMAL(precision=12, scale=4))
+    rating = sa.Column(sa.DECIMAL(4, 2))
 
-    @property
-    def description(self):
-        return {
-            'text': self.description_text,
-            'title': self.description_title,
-            'url': self.description_url,
-        }
 
     @property
     def importers(self):
@@ -70,10 +62,15 @@ class Series(Base):
                 if not series_id:
                     r = await session.execute(sa.insert(Series))
                     series_id = r.lastrowid
+                    data['created_at'] = datetime.now(tz=timezone.utc)                    
+                    if not series.original_title:
+                        data['original_title'] = series.title
                 else:
                     m = await session.scalar(sa.select(Series.id).where(Series.id == series_id))
                     if not m:
                         raise HTTPException(404, f'Unknown series id: {series_id}')
+                    data['updated_at'] = datetime.now(tz=timezone.utc)
+
                 if 'externals' in data:
                     data['externals'] = await cls._save_externals(session, series_id, data['externals'], patch)
                 if 'alternative_titles' in data:
@@ -82,13 +79,12 @@ class Series(Base):
                     data['genres'] = await cls._save_genres(session, series_id, data['genres'], patch)
                 if 'importers' in data:
                     data.update(utils.flatten(data.pop('importers'), 'importer'))
-                if 'description' in data:
-                    data.update(utils.flatten(data.pop('description'), 'description'))
+
                 if series.episodes:
                     data.pop('episodes')
                     await cls._save_episodes(session, series_id, series.episodes)
-
-                await session.execute(sa.update(Series).where(Series.id == series_id).values(**data))
+                if data:
+                    await session.execute(sa.update(Series).where(Series.id == series_id).values(**data))
                 series = await session.scalar(sa.select(Series).where(Series.id == series_id))
                 await session.commit()
                 await cls._save_for_search(series)
@@ -116,34 +112,34 @@ class Series(Base):
     async def _save_externals(session: AsyncSession, series_id: str | int, externals: dict[str, str | None], patch: bool):
         current_externals = {}
         if not patch:
-            await session.execute(sa.delete(Series_external).where(Series_external.show_id == series_id))
+            await session.execute(sa.delete(Series_external).where(Series_external.series_id == series_id))
         else:
             current_externals = await session.scalar(sa.select(Series.externals).where(Series.id == series_id))
 
         for key in externals:
             if externals[key]:
-                r = await session.scalar(sa.select(Series_external.show_id).where(
+                r = await session.scalar(sa.select(Series_external.series_id).where(
                     Series_external.title == key,
                     Series_external.value == externals[key],
-                    Series_external.show_id != series_id,
+                    Series_external.series_id != series_id,
                 ))
                 if r:
                     raise HTTPException(400, f'Series with {key}={externals[key]} already exists (Series id: {r}).')
             
             if (key not in current_externals):
                 await session.execute(sa.insert(Series_external)\
-                    .values(show_id=series_id, title=key, value=externals[key]))
+                    .values(series_id=series_id, title=key, value=externals[key]))
                 current_externals[key] = externals[key]
             elif (current_externals[key] != externals[key]):
                 if (externals[key]):
                     await session.execute(sa.update(Series_external).where(
-                        Series_external.show_id == series_id,
+                        Series_external.series_id == series_id,
                         Series_external.title == key,
                     ).values(value=externals[key]))
                     current_externals[key] = externals[key]
                 else:
                     await session.execute(sa.delete(Series_external).where(
-                        Series_external.show_id == series_id,
+                        Series_external.series_id == series_id,
                         Series_external.title == key
                     ))
                     current_externals.pop(key)
@@ -184,28 +180,31 @@ class Series(Base):
             document=doc.dict(),
         )
 
+
     @classmethod
     async def _save_episodes(cls, session: AsyncSession, series_id: int, episodes: list[schemas.Episode_create | schemas.Episode_update]):
-        async def _save_episode(episode: schemas.Episode_create | schemas.Episode_update):
-            e = await session.scalar(sa.select(Episode.number).where(
-                Episode.show_id == series_id,
-                Episode.number == episode.number,
+        async def _save_episode(episode_data: schemas.Episode_create | schemas.Episode_update):
+            episode_number: Episode = await session.scalar(sa.select(Episode.number).where(
+                Episode.series_id == series_id,
+                Episode.number == episode_data.number,
             ))
-            data = episode.dict(exclude_unset=True)
-            if 'description' in data:
-                data.update(utils.flatten(data.pop('description'), 'description'))
-            if e != None:
+            data = episode_data.dict(exclude_unset=True)
+            if 'air_datetime' in data and not 'air_date' in data:
+                data['air_date'] = episode_data.air_datetime.date() if episode_data.air_datetime else None
+            if episode_number != None:
                 await session.execute(sa.update(Episode).values(data).where(
-                    Episode.show_id == series_id,
-                    Episode.number == episode.number,
+                    Episode.series_id == series_id,
+                    Episode.number == episode_data.number,
                 ))
             else:
+                logger.info(data)
                 await session.execute(sa.insert(Episode).values(
-                    show_id=series_id,
+                    series_id=series_id,
                     **data,
                 ))
         await asyncio.gather(*[_save_episode(episode) for episode in episodes])
         await cls.update_seasons(session, series_id)
+
 
     def title_document(self) -> schemas.Search_title_document:
         if not self.title:
@@ -254,7 +253,7 @@ class Series(Base):
             sa.func.max(Episode.number).label('to'),
             sa.func.count(Episode.number).label('total'),
         ).where(
-            Episode.show_id == series_id,
+            Episode.series_id == series_id,
         ).group_by(Episode.season))
         seasons = []
         total_episodes = 0
@@ -278,7 +277,7 @@ class Series(Base):
         r = await session.scalars(sa.select(Series).where(
             Series_external.title == external_title,
             Series_external.value == external_value,
-            Series.id == Series_external.show_id,
+            Series.id == Series_external.series_id,
         ))
         if r:
             return r.first()
@@ -289,38 +288,38 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
     query = sa.select(
         Series, 
         Series_user_rating.rating, 
-        sa.func.IF(Series_following.user_id != None, 1, 0).label('following'),
+        sa.func.IF(Series_follower.user_id != None, 1, 0).label('following'),
         Episode_watched,
         last_watched_episode,
     ).join(
         Series_user_rating, sa.and_(
-            Series_user_rating.show_id == Series.id,
+            Series_user_rating.series_id == Series.id,
             Series_user_rating.user_id == user_id,
         ),
         isouter=True,
     ).join(        
-        Series_following, sa.and_(
-            Series_following.show_id == Series.id,
-            Series_following.user_id == user_id,
+        Series_follower, sa.and_(
+            Series_follower.series_id == Series.id,
+            Series_follower.user_id == user_id,
         ),
         isouter=True,
     ).join(        
-        Episode_watching, sa.and_(
-            Episode_watching.show_id == Series.id,
-            Episode_watching.user_id == user_id,
+        Episode_last_finished, sa.and_(
+            Episode_last_finished.series_id == Series.id,
+            Episode_last_finished.user_id == user_id,
         ),
         isouter=True,
     ).join(        
         Episode_watched, sa.and_(
-            Episode_watched.show_id == Episode_watching.show_id,
-            Episode_watched.episode_number == Episode_watching.episode_number,
-            Episode_watched.user_id == Episode_watching.user_id,
+            Episode_watched.series_id == Episode_last_finished.series_id,
+            Episode_watched.episode_number == Episode_last_finished.episode_number,
+            Episode_watched.user_id == Episode_last_finished.user_id,
         ),
         isouter=True,
     ).join(        
         last_watched_episode, sa.and_(
-            last_watched_episode.show_id == Episode_watching.show_id,
-            last_watched_episode.number == Episode_watching.episode_number,
+            last_watched_episode.series_id == Episode_last_finished.series_id,
+            last_watched_episode.number == Episode_last_finished.episode_number,
         ),
         isouter=True,
     )
@@ -337,12 +336,12 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
         )
     elif sort == 'followed_at_desc':
         query = query.order_by(
-            sa.desc(Series_following.created_at),
+            sa.desc(Series_follower.created_at),
             sa.desc(Series.id),
         )
     elif sort == 'followed_at_asc':
         query = query.order_by(
-            sa.asc(Series_following.created_at),
+            sa.asc(Series_follower.created_at),
             sa.asc(Series.id),
         )
     elif sort == 'watched_at_desc':
@@ -369,9 +368,9 @@ def series_user_result_parse(row: any):
     
 
 class Series_external(Base):
-    __tablename__ = 'show_externals'
+    __tablename__ = 'series_externals'
 
-    show_id = sa.Column(sa.Integer, primary_key=True)
+    series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True)
     title = sa.Column(sa.String(45), primary_key=True)
     value = sa.Column(sa.String(45))
 
@@ -379,7 +378,7 @@ class Series_external(Base):
 class Series_genre(Base):
     __tablename__ = 'series_genres'
 
-    series_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
+    series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True, autoincrement=False)
     genre_id = sa.Column(sa.Integer, sa.ForeignKey('genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
 

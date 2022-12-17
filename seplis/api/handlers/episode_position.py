@@ -23,7 +23,7 @@ class Handler(base.Handler):
     def _get(self, show_id, episode_number):
         with new_session() as session:
             r = session.query(models.Episode_watched).filter(
-                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.series_id == show_id,
                 models.Episode_watched.episode_number == episode_number,
             ).first()
             if r:
@@ -45,14 +45,14 @@ class Handler(base.Handler):
         data = self.validate(self.__schema__)
         with new_session() as session:            
             episode = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
+                models.Episode.series_id == show_id,
                 models.Episode.number == episode_number,
             ).first()
             if not episode:
                 raise exceptions.Episode_unknown()
 
             ew = session.query(models.Episode_watched).filter(
-                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.series_id == show_id,
                 models.Episode_watched.episode_number == episode_number,
                 models.Episode_watched.user_id == self.current_user.id,
             ).first()
@@ -77,7 +77,7 @@ class Handler(base.Handler):
     def reset_position(self, show_id, episode_number):
         with new_session() as session:
             ew = session.query(models.Episode_watched).filter(
-                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.series_id == show_id,
                 models.Episode_watched.episode_number == episode_number,
                 models.Episode_watched.user_id == self.current_user.id,
             ).first()

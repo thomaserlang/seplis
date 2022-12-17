@@ -10,7 +10,7 @@ async def following_series(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession = Depends(get_session),
 ):
-    return await models.Series_following.get(series_id=series_id, user_id=user.id, session=session)
+    return await models.Series_follower.get(series_id=series_id, user_id=user.id, session=session)
     
 
 @router.put('', status_code=204)
@@ -19,7 +19,7 @@ async def follow_series(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession = Depends(get_session),
 ):
-    await models.Series_following.follow(series_id=series_id, user_id=user.id, session=session)
+    await models.Series_follower.follow(series_id=series_id, user_id=user.id, session=session)
     await session.commit()
 
 
@@ -29,5 +29,5 @@ async def unfollow_series(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession = Depends(get_session),
 ):
-    await models.Series_following.unfollow(series_id=series_id, user_id=user.id, session=session)
+    await models.Series_follower.unfollow(series_id=series_id, user_id=user.id, session=session)
     await session.commit()

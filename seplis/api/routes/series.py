@@ -29,7 +29,7 @@ async def get_series_by_external(
     series = await session.scalar(sa.select(models.Series).where(
         models.Series_external.title == external_name,
         models.Series_external.value == external_id,
-        models.Series.id == models.Series_external.show_id,
+        models.Series.id == models.Series_external.series_id,
     ))
     if not series:
         raise HTTPException(404, 'Unknown series')
@@ -86,7 +86,7 @@ async def get_episodes(
     session: AsyncSession = Depends(get_session),
 ):
     query = sa.select(models.Episode).where(
-        models.Episode.show_id == series_id,
+        models.Episode.series_id == series_id,
     )
     if season:
         query = query.where(models.Episode.season == season)
@@ -102,7 +102,7 @@ async def get_episode(
     session: AsyncSession = Depends(get_session),
 ):
     episode = await session.scalar(sa.select(models.Episode).where(
-        models.Episode.show_id == series_id,
+        models.Episode.series_id == series_id,
         models.Episode.number == number,
     ))
     if not episode:
@@ -118,7 +118,7 @@ async def delete_episode(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
 ):
     await session.execute(sa.delete(models.Episode).where(
-        models.Episode.show_id == series_id,
+        models.Episode.series_id == series_id,
         models.Episode.number == number,
     ))
 

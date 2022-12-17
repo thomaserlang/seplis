@@ -20,9 +20,9 @@ async def get_air_dates(
 ):
     now = datetime.now(tz=timezone.utc)
     rows = await session.execute(sa.select(models.Episode, models.Series).where(
-        models.Series_following.user_id == user.id,
-        models.Series_following.show_id == models.Series.id,
-        models.Episode.show_id == models.Series.id,
+        models.Series_follower.user_id == user.id,
+        models.Series_follower.series_id == models.Series.id,
+        models.Episode.series_id == models.Series.id,
         sa.func.date(models.Episode.air_datetime) >= (now - timedelta(days=days_back)).date(),
         sa.func.date(models.Episode.air_datetime) <= (now + timedelta(days=days_ahead)).date(),
     ).order_by(

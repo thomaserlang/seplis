@@ -1,34 +1,38 @@
 from typing import Literal
-from pydantic import BaseModel, AnyHttpUrl, constr, conint, Field
-from datetime import datetime, date, time
+from pydantic import BaseModel, constr, conint, confloat
+from datetime import datetime, date
 from .image import Image
 from .genre import Genre
 from .helper import default_datetime
 from datetime import datetime
 
-class Description_schema(BaseModel):
-    text: constr(min_length=1, max_length=2000, strip_whitespace=True) | None
-    title: constr(min_length=1, max_length=45, strip_whitespace=True) | None
-    url: AnyHttpUrl | None
-
-
 class Episode_create(BaseModel):
-    title: constr(max_length=200, strip_whitespace=True) | None
+    title: constr(max_length=200, strip_whitespace=True)
+    original_title: constr(max_length=200, strip_whitespace=True) | None
     number: conint(gt=0)
     season: conint(gt=0) | None
     episode: conint(gt=0) | None
     air_date: date | None
-    air_time: time | None
     air_datetime: datetime | None
-    description: Description_schema | None
+    plot: constr(min_length=1, max_length=2000, strip_whitespace=True) | None
     runtime: conint(ge=0) | None
+    rating: confloat(ge=0.0, le=10.0) | None
+
+    class Config:
+        extra = 'forbid'
 
 
 class Episode_update(Episode_create):
-    pass
+    title: constr(max_length=200, strip_whitespace=True) | None
 
 
-class Episode(Episode_create):
+class Episode(BaseModel):
+    title: str | None
+    number: int
+    season: int | None
+    plot: str | None
+    runtime: int | None
+    rating: float | None
 
     class Config:
         orm_mode = True
@@ -68,10 +72,12 @@ class Series_user_rating(BaseModel):
 
 class Series_create(BaseModel):
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
+    original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
     externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True), constr(min_length=1, max_length=45, strip_whitespace=True) | None] | None
     status: conint(gt=-1) | None
-    description: Description_schema | None
+    plot: constr(min_length=1, max_length=2000, strip_whitespace=True) | None
+    tagline: constr(min_length=1, max_length=500, strip_whitespace=True) | None
     premiered: date | None
     ended: date | None
     importers: Series_importers | None
@@ -80,7 +86,13 @@ class Series_create(BaseModel):
     episode_type: conint(gt=0, lt=4) | None
     language: constr(min_length=1, max_length=100, strip_whitespace=True) | None
     poster_image_id: conint(gt=0) | None
+    popularity: confloat(ge=0.0) | None
+    rating: confloat(ge=0.0, le=10.0) | None
     episodes: list[Episode_create] | None
+    
+    class Config:
+        extra = 'forbid'
+
 
 class Series_update(Series_create):
     episodes: list[Episode_update] | None
@@ -90,13 +102,14 @@ class Series(BaseModel):
     title: str | None
     alternative_titles: list[str]
     externals: dict
-    description: Description_schema
+    plot: str | None
+    tagline: str | None
     premiered: date | None
     ended: date | None
     importers: Series_importers
     runtime: int | None
     genres: list[Genre]
-    episode_type: int 
+    episode_type: int | None
     language: str | None
     created_at: datetime
     updated_at: datetime | None
@@ -104,6 +117,8 @@ class Series(BaseModel):
     seasons: list[dict[str, int]]
     total_episodes: int = 0
     poster_image: Image | None
+    popularity: float | None
+    rating: float | None
     
     class Config:
         orm_mode = True

@@ -38,7 +38,7 @@ class Handler(base.Handler):
             with new_session() as session:
                 ew = session.query(models.Episode_watched).filter(
                     models.Episode_watched.user_id == self.current_user.id,
-                    models.Episode_watched.show_id == show_id,
+                    models.Episode_watched.series_id == show_id,
                     models.Episode_watched.episode_number == number,
                 ).first()
                 result['_source']['user_watched'] = ew.serialize() if ew else None
@@ -95,7 +95,7 @@ class Handler(base.Handler):
         with new_session() as session:
             ew = session.query(models.Episode_watched).filter(
                 models.Episode_watched.user_id == self.current_user.id,
-                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.series_id == show_id,
                 models.Episode_watched.episode_number.in_(numbers),
             ).all()
             for i in episodes:
@@ -112,7 +112,7 @@ class Handler(base.Handler):
     def _delete(self, show_id, number):
         with new_session() as session:
             e = session.query(models.Episode).filter(
-                models.Episode.show_id == show_id,
+                models.Episode.series_id == show_id,
                 models.Episode.number == number,
             ).first()
             if not e:

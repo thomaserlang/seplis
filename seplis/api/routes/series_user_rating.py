@@ -17,7 +17,7 @@ async def get_rating(
 ):
     rating = await session.scalar(sa.select(models.Series_user_rating.rating).where(
         models.Series_user_rating.user_id == user.id,
-        models.Series_user_rating.show_id == series_id,
+        models.Series_user_rating.series_id == series_id,
     ))
     return schemas.Series_user_rating(rating=rating)
 
@@ -31,7 +31,7 @@ async def update_rating(
 ):
     sql = sa.dialects.mysql.insert(models.Series_user_rating).values(
         user_id=user.id,
-        show_id=series_id,
+        series_id=series_id,
         rating=data.rating,
         updated_at=datetime.now(tz=timezone.utc),
     )
@@ -50,5 +50,5 @@ async def delete_rating(
 ):
     await session.execute(sa.delete(models.Series_user_rating).where(        
         models.Series_user_rating.user_id == user.id,
-        models.Series_user_rating.show_id == series_id,
+        models.Series_user_rating.series_id == series_id,
     ))

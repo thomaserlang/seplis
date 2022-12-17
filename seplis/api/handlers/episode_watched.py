@@ -45,7 +45,7 @@ class Handler(base.Handler):
     def _get(self, show_id, episode_number):
         with new_session() as session:
             ew = session.query(models.Episode_watched).filter(
-                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.series_id == show_id,
                 models.Episode_watched.episode_number == episode_number,
                 models.Episode_watched.user_id == self.current_user.id,
             ).first()
@@ -71,7 +71,7 @@ class Handler(base.Handler):
     def _delete(self, show_id, episode_number):
         with new_session() as session:
             ew = session.query(models.Episode_watched).filter(
-                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.series_id == show_id,
                 models.Episode_watched.episode_number == episode_number,
                 models.Episode_watched.user_id == self.current_user.id,
             ).first()
@@ -82,14 +82,14 @@ class Handler(base.Handler):
 
 def set_watched(session, user_id, show_id, episode_number, times):
     episode = session.query(models.Episode).filter(
-        models.Episode.show_id == show_id,
+        models.Episode.series_id == show_id,
         models.Episode.number == episode_number,
     ).first()
     if not episode:
         raise exceptions.Episode_unknown()
 
     ew = session.query(models.Episode_watched).filter(
-        models.Episode_watched.show_id == show_id,
+        models.Episode_watched.series_id == show_id,
         models.Episode_watched.episode_number == episode_number,
         models.Episode_watched.user_id == user_id,
     ).first()
@@ -130,7 +130,7 @@ class Range_handler(base.Handler):
         episode = None
         with new_session() as session:
             episodes = session.query(models.Episode.number).filter(
-                models.Episode.show_id == show_id,
+                models.Episode.series_id == show_id,
                 models.Episode.number >= from_,
                 models.Episode.number <= to,
             ).order_by(asc(models.Episode.number)).all()
@@ -156,7 +156,7 @@ class Range_handler(base.Handler):
     def _delete(self, show_id, from_, to):
         with new_session() as session:
             ews = session.query(models.Episode_watched).filter(
-                models.Episode_watched.show_id == show_id,
+                models.Episode_watched.series_id == show_id,
                 models.Episode_watched.user_id == self.current_user.id,
                 models.Episode_watched.episode_number >= from_,
                 models.Episode_watched.episode_number <= to,
