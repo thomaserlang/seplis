@@ -2,6 +2,7 @@ from typing import Literal
 from pydantic import BaseModel, AnyHttpUrl, constr, conint, Field
 from datetime import datetime, date, time
 from .image import Image
+from .genre import Genre
 from .helper import default_datetime
 from datetime import datetime
 
@@ -56,21 +57,6 @@ class Series_importers(BaseModel):
     episodes: constr(min_length=1, max_length=45, strip_whitespace=True) | None
 
 
-class Series_base(BaseModel):
-    title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
-    alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
-    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True), constr(min_length=1, max_length=45, strip_whitespace=True) | None] | None
-    status: conint(gt=-1) | None
-    description: Description_schema | None
-    premiered: date | None
-    ended: date | None
-    importers: Series_importers | None
-    runtime: conint(gt=0, lt=1440) | None
-    genres: list[constr(min_length=1, max_length=45)] | None
-    episode_type: conint(gt=0, lt=4) | None
-    language: constr(min_length=1, max_length=100, strip_whitespace=True) | None
-
-
 class Series_user_rating_update(BaseModel):
     rating: conint(ge=1, le=10)
 
@@ -80,21 +66,43 @@ class Series_user_rating(BaseModel):
     class Config:
         orm_mode = True
 
-
-class Series_create(Series_base):
+class Series_create(BaseModel):
+    title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
+    alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
+    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True), constr(min_length=1, max_length=45, strip_whitespace=True) | None] | None
+    status: conint(gt=-1) | None
+    description: Description_schema | None
+    premiered: date | None
+    ended: date | None
+    importers: Series_importers | None
+    runtime: conint(gt=0, lt=1440) | None
+    genres: list[str | int] | None
+    episode_type: conint(gt=0, lt=4) | None
+    language: constr(min_length=1, max_length=100, strip_whitespace=True) | None
     poster_image_id: conint(gt=0) | None
     episodes: list[Episode_create] | None
 
 class Series_update(Series_create):
     episodes: list[Episode_update] | None
 
-class Series(Series_base):
+class Series(BaseModel):
     id: int
+    title: str | None
+    alternative_titles: list[str]
+    externals: dict
+    description: Description_schema
+    premiered: date | None
+    ended: date | None
+    importers: Series_importers
+    runtime: int | None
+    genres: list[Genre]
+    episode_type: int 
+    language: str | None
     created_at: datetime
     updated_at: datetime | None
     status: int
     seasons: list[dict[str, int]]
-    total_episodes: int
+    total_episodes: int = 0
     poster_image: Image | None
     
     class Config:

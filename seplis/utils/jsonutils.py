@@ -3,9 +3,13 @@ from collections import OrderedDict
 from tornado import escape
 from datetime import datetime
 from sqlalchemy.engine import Row
+from pydantic import BaseModel
+from seplis import logger
 
 def default(obj):
-    if isinstance(obj, set):
+    if isinstance(obj, BaseModel):
+        return obj.dict()
+    elif isinstance(obj, set):
         return list(obj)
     elif hasattr(obj, 'to_dict'):
         return obj.to_dict()

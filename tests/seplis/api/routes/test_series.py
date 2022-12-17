@@ -62,8 +62,8 @@ async def test_series(client: AsyncClient):
     assert data['externals'] == {
         'imdb': 'tt123456799',
     }
-    assert 'Action' in data['genres']
-    assert 'Thriller' in data['genres']
+    assert 'Action' == data['genres'][0]['name']
+    assert 'Thriller' == data['genres'][1]['name']
     assert 'QWERTY 2' in data['alternative_titles']
     assert 'QWERTY 3' in data['alternative_titles']
     assert data['runtime'] == 40
@@ -112,8 +112,8 @@ async def test_series(client: AsyncClient):
         'imdb': 'tt123456799',
     }
     assert data['episode_type'] == constants.SHOW_EPISODE_TYPE_AIR_DATE
-    assert 'Action' in data['genres']
-    assert 'Thriller' in data['genres']
+    assert 'Action' == data['genres'][0]['name']
+    assert 'Thriller' == data['genres'][1]['name']
 
     r = await client.patch(f'/2/series/{series_id}', json={
         'title': 'QWERTY2',
@@ -135,9 +135,9 @@ async def test_series(client: AsyncClient):
     })
     assert r.status_code == 200, r.content
     data = r.json()
-    assert 'Action' in data['genres']
-    assert 'Thriller' in data['genres']
-    assert 'Comedy' in data['genres']
+    assert 'Action' == data['genres'][0]['name']
+    assert 'Comedy' == data['genres'][1]['name']
+    assert 'Thriller' == data['genres'][2]['name']
 
     r = await client.put(f'/2/series/{series_id}', json={
         'title': 'QWERTY2',
@@ -158,9 +158,9 @@ async def test_series(client: AsyncClient):
     })
     assert r.status_code == 200, r.content
     data = r.json()
-    assert 'Action' in data['genres']
-    assert 'Thriller' not in data['genres']
-    assert 'Comedy' in data['genres']
+    assert 'Action' == data['genres'][0]['name']
+    assert 'Comedy' == data['genres'][1]['name']
+    assert len(data['genres']) == 2
     assert data['importers'] == {
         'info': 'tvmaze',
         'episodes': 'tvmaze',

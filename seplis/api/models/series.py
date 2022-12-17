@@ -1,5 +1,4 @@
 import asyncio
-from typing import Literal
 import sqlalchemy as sa
 from fastapi import HTTPException
 from datetime import datetime
@@ -14,6 +13,7 @@ from ... import config, logger, utils, constants
 from .series_following import Series_following
 from .series_user_rating import Series_user_rating
 from .episode import Episode, Episode_watched, Episode_watching
+from .genre import Genre
 
 class Series(Base):
     __tablename__ = 'shows'
@@ -150,28 +150,34 @@ class Series(Base):
         return current_externals
 
     @staticmethod
-    async def _save_alternative_titles(session, series_id: str | int, alternative_titles: list[str], patch: bool):
+    async def _save_alternative_titles(session: AsyncSession, series_id: str | int, alternative_titles: list[str], patch: bool):
         if not patch:
             return set(alternative_titles)
         current_alternative_titles = await session.scalar(sa.select(Series.alternative_titles).where(Series.id == series_id))
         return set(current_alternative_titles + alternative_titles)
 
     @staticmethod
-    async def _save_genres(session, series_id: str | int, genres: list[str], patch: bool):
-        genres = set(genres)
-        current_genres = set()
+    async def _save_genres(session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
+        wait_for = [Genre.get_or_create_genre(session, genre) \
+            for genre in genres if isinstance(genre, str)]
+        if wait_for:
+            ids = await asyncio.gather(*wait_for)
+            genres.extend(ids)
+
+        genres: set[int] = set([genre for genre in genres if isinstance(genre, int)])
+        current_genres: set[int] = set()
         if patch:
-            current_genres = set(await session.scalar(sa.select(Series.genres).where(Series.id == series_id)))
-            r_genres = current_genres | genres
+            current_genres = set(await session.scalars(sa.select(Series_genre.genre_id).where(Series_genre.series_id == series_id)))
         else:
-            r_genres = genres
-            await session.execute(sa.delete(Series_genre).where(Series_genre.show_id == series_id))
+            await session.execute(sa.delete(Series_genre).where(Series_genre.series_id == series_id))
         genres = (genres - current_genres)
         if genres:
             await session.execute(sa.insert(Series_genre).prefix_with('IGNORE'), [
-                {'show_id': series_id, 'genre': g} for g in genres
+                {'series_id': series_id, 'genre_id': genre_id} for genre_id in genres
             ])
-        return r_genres
+        rr = await session.scalars(sa.select(Genre).where(Series_genre.series_id == series_id, Genre.id == Series_genre.genre_id).order_by(Genre.name))
+        return [schemas.Genre.from_orm(r) for r in rr]
+
         
     @staticmethod
     async def _save_for_search(series: "Series"):
@@ -377,14 +383,11 @@ class Series_external(Base):
 
 
 class Series_genre(Base):
-    __tablename__ = 'show_genres'
+    __tablename__ = 'series_genres'
 
-    show_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
-    genre = sa.Column(sa.String(100), primary_key=True)
+    series_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
+    genre_id = sa.Column(sa.Integer, sa.ForeignKey('genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
-class Genre(Base):
-    __tablename__ = 'genres'
-    genre = sa.Column(sa.String(100), primary_key=True)
 
 @rebuild_cache.register('shows')
 def rebuild_shows():
