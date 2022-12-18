@@ -3,6 +3,7 @@ from pydantic import BaseModel, constr, conint, confloat
 from datetime import datetime, date
 from .image import Image
 from .helper import default_datetime
+from .genre import Genre
 
 
 class Movie_create(BaseModel):   
@@ -22,6 +23,7 @@ class Movie_create(BaseModel):
     revenue: conint(ge=0) | None
     popularity: confloat(ge=0.0) | None
     rating: confloat(ge=0.0, le=10.0) | None
+    genres: list[str | int] | None
 
     class Config:
         extra = 'forbid'
@@ -47,7 +49,8 @@ class Movie(BaseModel):
     budget: int | None
     revenue: int | None
     popularity: float | None
-    rating: float | None
+    rating: float | None    
+    genres: list[Genre]
 
     class Config:
         orm_mode = True

@@ -13,6 +13,7 @@ async def test_movie(client: AsyncClient):
 
     r = await client.post('/2/movies', json={
         'title': 'National Treasure',
+        'original_title': 'National Treasure',
         'externals': {
             'imdb': 'tt0368891',
         },
@@ -35,6 +36,7 @@ async def test_movie(client: AsyncClient):
     assert data.original_title == data.title
     assert data.popularity == 4728.432
     assert data.rating == 7.25
+    assert data.genres[0].name == 'Adventure'
 
     r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200
