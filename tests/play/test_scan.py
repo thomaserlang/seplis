@@ -2,7 +2,6 @@ import unittest
 import mock
 from datetime import datetime
 from seplis.play.database import database
-from seplis.play.decorators import new_session
 from seplis.play.scan import Movie_scan, Play_scan, Series_scan, Parsed_episode_season, \
     Parsed_episode_air_date, Parsed_episode_number
 from seplis.play import models

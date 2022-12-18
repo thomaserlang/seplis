@@ -6,26 +6,9 @@ from fastapi import Request
 from typing import Any
 from seplis.utils import *
 from seplis.api import exceptions
-from seplis.api.base.pagination import Pagination
 from ..api import schemas
 from uuid6 import uuid7
 
-class Base_query(orm.Query):
- 
-    def paginate(self, page=1, per_page=25) -> Pagination:
-        records = self.limit(per_page).offset((page-1)*per_page).all()
-        if page == 1 and len(records) < per_page:
-            total = len(records)
-        else:
-            total = self.order_by(None).count()
- 
-        pagination = Pagination(
-            page=page,
-            per_page=per_page,
-            total=total,
-            records=records,
-        )
-        return pagination
 
 async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_query, request: Request, scalars: bool = True) -> schemas.Page_result:
     limited = query.limit(page_query.per_page).offset((page_query.page-1)*page_query.per_page)

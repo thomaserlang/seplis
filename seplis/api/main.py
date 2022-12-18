@@ -3,9 +3,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from .database import database
 from . import exceptions
-from .. import config, set_logger, config_load, logger
+from .. import config, set_logger, logger
 
-config_load()
 set_logger(f'api-{config.data.api.port}.log')
 
 from .routes import (
