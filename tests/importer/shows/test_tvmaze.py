@@ -3,7 +3,7 @@ import responses
 import mock
 from datetime import datetime
 from unittest import TestCase
-from seplis.importer.shows.tvmaze import Tvmaze
+from seplis.importer.series.tvmaze import Tvmaze
 from seplis import schemas
 from seplis.api import constants
 

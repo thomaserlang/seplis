@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .genre import Genre
 from .base import Base
 from ..database import database
-from .. import schemas, rebuild_cache
+from .. import schemas, rebuild_cache, exceptions
 from ... import config, logger
 
 class Movie(Base):
@@ -21,6 +21,7 @@ class Movie(Base):
     updated_at = sa.Column(sa.DateTime(timezone=True))
     status = sa.Column(sa.SmallInteger)
     plot = sa.Column(sa.String(2000))
+    tagline = sa.Column(sa.String(500))
     language = sa.Column(sa.String(20))
     poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
     poster_image = sa.orm.relationship('Image', lazy=False)
@@ -58,7 +59,6 @@ class Movie(Base):
                 movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
                 await session.commit()
                 await cls._save_for_search(movie)
-                logger.info(movie.popularity)
                 return schemas.Movie.from_orm(movie)
 
 
@@ -87,17 +87,26 @@ class Movie(Base):
         if not patch:
             await session.execute(sa.delete(Movie_external).where(Movie_external.movie_id == movie_id))
         else:
-            current_externals = await session.scalar(sa.select(Movie.externals).where(Movie.id == movie_id))
+            result = await session.scalars(sa.select(Movie_external).where(Movie_external.movie_id == movie_id))
+            if result:
+                for external in result:
+                    current_externals[external.title] = external.value
 
         for key in externals:
             if externals[key]:
-                r = await session.scalar(sa.select(Movie_external.movie_id).where(
+                dup_movie = await session.scalar(sa.select(Movie).where(
                     Movie_external.title == key,
                     Movie_external.value == externals[key],
                     Movie_external.movie_id != movie_id,
+                    Movie.id == Movie_external.movie_id,
                 ))
-                if r:
-                    raise HTTPException(400, f'Movie with {key}={externals[key]} already exists (Movie id: {r}).')
+                if dup_movie:
+                    raise exceptions.Movie_external_duplicated(
+                        external_title=key,
+                        external_value=externals[key],
+                        movie=schemas.Movie.from_orm(dup_movie)
+                    )
+                    
             if (key not in current_externals):
                 await session.execute(sa.insert(Movie_external)\
                     .values(movie_id=movie_id, title=key, value=externals[key]))

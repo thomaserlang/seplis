@@ -1,10 +1,6 @@
 import base64
-import logging
 import os
 from datetime import datetime
-from typing import Any
-import tornado.escape
-import collections
 import codecs
 import mimetypes
 import sys
@@ -13,7 +9,6 @@ import io
 import sqlalchemy as sa
 from fastapi import Request
 
-from .validate import *
 from .jsonutils import *
 from . import sqlalchemy
 from ..api import schemas
@@ -23,28 +18,6 @@ def random_key(length=30):
         os.urandom(length)
     ).decode('utf-8')
   
-
-def url_encode_tornado_arguments(arguments):
-    '''
-    Converts the following:
-
-        {
-            'param1': ['a', 'b'],
-            'param2': ['c'],
-        }
-
-    into the following string:
-
-        param1=a&param1=b&param2=c
-
-    :arguemnts: dict
-    :returns: str
-    '''
-    return '&'.join(
-        ['{}={}'.format(arg, tornado.escape.url_escape(value.decode('utf-8') \
-            if isinstance(value, bytes) else str(value))) \
-                for arg in arguments for value in arguments[arg]]
-    )
 
 def parse_link_header(link_header):
     '''

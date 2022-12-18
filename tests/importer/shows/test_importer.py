@@ -4,12 +4,12 @@ import mock
 import requests.exceptions
 from unittest import TestCase
 from datetime import date
-from seplis.importer.shows.importer import client, importers, update_show, \
-    update_show_info, update_show_images, update_show_episodes, \
+from seplis.importer.series.importer import client, importers, update_series, \
+    update_series_info, update_series_images, update_series_episodes, \
     _save_image, _upload_image, _show_info_changes, _show_episode_changes, \
     _importers_with_support, _cleanup_episodes, _importer_incremental, \
-    update_shows_incremental, Importer_exception, Importer_upload_image_exception
-from seplis.importer.shows.base import Series_importer_base
+    update_series_incremental, Importer_exception, Importer_upload_image_exception
+from seplis.importer.series.base import Series_importer_base
 
 class Test_update_shows_incremental(TestCase):
 
@@ -18,7 +18,7 @@ class Test_update_shows_incremental(TestCase):
     def test(self, _importer_incremental):
         importers['test'] = mock.Mock()
 
-        update_shows_incremental()
+        update_series_incremental()
 
         _importer_incremental.assert_called_with(importers['test'])
 
@@ -74,7 +74,7 @@ class Test_update_show(TestCase):
             },
         }
         update_show_info.return_value = show
-        update_show(show)
+        update_series(show)
         update_show_info.assert_called_with(show)
         update_show_episodes.assert_called_with(show)
         update_show_images.assert_called_with(show)
@@ -95,7 +95,7 @@ class Test_update_show_info(TestCase):
         }
         call_importer.return_value = {'title': 'Test show'}
         client.patch.return_value = {'title': 'Test show'}
-        info = update_show_info(show)
+        info = update_series_info(show)
         self.assertEqual(info, {'title': 'Test show'})
         call_importer.assert_called_with(
             external_name=show['importers']['info'],
@@ -110,7 +110,7 @@ class Test_update_show_info(TestCase):
 
         # Check that show returns if the import does not exist
         call_importer.return_value = None
-        info = update_show_info(show)
+        info = update_series_info(show)
         self.assertEqual(info, show)
 
 class Test_update_show_episodes(TestCase):
@@ -129,7 +129,7 @@ class Test_update_show_episodes(TestCase):
         }
         client.get().all.return_value = []
         call_importer.return_value = [{'number': 1}]
-        update_show_episodes(show)
+        update_series_episodes(show)
         call_importer.assert_called_with(
             external_name=show['importers']['episodes'],
             method='episodes',
@@ -155,7 +155,7 @@ class Test_update_show_episodes(TestCase):
         }
         client.get().all.return_value = []
         call_importer.return_value = None    
-        update_show_episodes(show)
+        update_series_episodes(show)
 
 class Test__cleanup_episodes(TestCase):
 
@@ -231,7 +231,7 @@ class Test_update_show_images(TestCase):
         ]
         client.get().all.return_value = existing_images
 
-        update_show_images(show)
+        update_series_images(show)
         _save_image.assert_called_with(show['id'], imported_images[2])
         _upload_image.assert_called_with(show['id'], existing_images[0])
 

@@ -4,7 +4,6 @@ from .base import Base
 from sqlalchemy import orm
 from sqlalchemy.orm.attributes import get_history
 from seplis import utils
-from seplis.api.connections import database
 from seplis.api import rebuild_cache
 from datetime import datetime
 

@@ -1,7 +1,7 @@
 # coding=UTF-8
 from unittest import TestCase
 from datetime import date
-from seplis.importer.shows.base import Series_importer_base
+from seplis.importer.series.base import Series_importer_base
 
 class test_show_importer_base(TestCase):
 

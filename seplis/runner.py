@@ -1,6 +1,15 @@
 import click, signal, sys
 import uvicorn
 from seplis import config, logger, set_logger
+import asyncio
+
+async def run_task(task):
+    from seplis.api.database import database
+    await database.setup()
+    try:
+        await task
+    finally:
+        await database.close()
 
 @click.group()
 @click.option('--config', default=None, help='path to the config file')
@@ -40,39 +49,54 @@ def rebuild_cache():
     import seplis.api.rebuild_cache
     seplis.api.rebuild_cache.main()
 
-@cli.command()
-def update_shows():
-    import seplis.importer
-    set_logger('importer_update_shows.log')
-    seplis.importer.series.update_shows_incremental()
 
 @cli.command()
-@click.argument('show_id')
-def update_show(show_id):
+def update_series_incremental():
     import seplis.importer
-    set_logger('importer_update_show_by_id.log')
-    seplis.importer.series.update_series_by_id(show_id)
+    set_logger('importer_update_series.log')    
+    asyncio.run(run_task(seplis.importer.series.update_series_incremental()))
+
+
+@cli.command()
+@click.argument('series_id')
+def update_series(series_id):
+    import seplis.importer
+    set_logger('importer_update_series_by_id.log')
+    asyncio.run(run_task(seplis.importer.series.update_series_by_id(series_id)))
+
 
 @cli.command()
 @click.option('--from_id', default=1, help='which show to start from')
 @click.option('--do_async', is_flag=True, help='send the update task to the workers')
-def update_shows_all(from_id, do_async):
-    import seplis.importer
-    set_logger('importer_update_shows_all.log')
-    seplis.importer.series.update_series_bulk(from_id, do_async=do_async)
+def update_series_bulk(from_id, do_async):
+    import seplis.importer    
+    set_logger('importer_update_series_bulk.log')
+    asyncio.run(run_task(seplis.importer.series.update_series_bulk(from_id, do_async=do_async)))
+
 
 @cli.command()
 @click.argument('movie_id')
 def update_movie(movie_id):
     import seplis.importer
     set_logger('importer_update_movie.log')
-    seplis.importer.movies.update_movie(movie_id)
+    asyncio.run(run_task(seplis.importer.movies.update_movie(movie_id=movie_id)))
+
 
 @cli.command()
-def update_movies():
+def update_movies_incremental():
     import seplis.importer
-    set_logger('importer_update_movies.log')
-    seplis.importer.movies.update_incremental()
+    set_logger('importer_update_movies_incremental.log')
+    asyncio.run(run_task(seplis.importer.movies.update_incremental()))
+
+
+@cli.command()
+@click.option('--from_id', default=1, help='which show to start from')
+@click.option('--do_async', is_flag=True, help='send the update task to the workers')
+def update_movies_bulk(from_id, do_async):
+    import seplis.importer
+    set_logger('importer_update_movies_bulk.log')
+    asyncio.run(run_task(seplis.importer.movies.update_movies_bulk(from_id, do_async=do_async)))
+
 
 @cli.command()
 @click.option('-n', default=1, help='worker number')
@@ -122,11 +146,7 @@ def dev_server():
     seplis.dev_server.main()
 
 def main():
-    signal.signal(signal.SIGINT, sigint_handler)
     cli()
-
-def sigint_handler(signal, frame):
-    sys.exit()
 
 if __name__ == "__main__":
     main()

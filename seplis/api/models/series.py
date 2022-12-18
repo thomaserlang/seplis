@@ -80,7 +80,7 @@ class Series(Base):
                 if 'importers' in data:
                     data.update(utils.flatten(data.pop('importers'), 'importer'))
 
-                if series.episodes:
+                if 'episodes' in data:
                     data.pop('episodes')
                     await cls._save_episodes(session, series_id, series.episodes)
                 if data:

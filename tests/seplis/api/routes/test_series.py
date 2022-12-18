@@ -289,7 +289,7 @@ async def test_series(client: AsyncClient):
             'external_id': 'test',
         }
     )
-    assert r.status_code == 400, r.content
+    assert r.status_code == 422, r.status_code
 
     respx.put("http://storitch/store/session").mock(return_value=httpx.Response(200, json={
         'type': 'image',

@@ -17,7 +17,7 @@ class Database:
     
     def __init__(self):
         self.engine: AsyncEngine = None
-        self.session: sessionmaker = None
+        self.session: AsyncSession = None
         self.es: AsyncElasticsearch = None
         self.redis: redis.Redis = None
         self.redis_queue: ArqRedis = None

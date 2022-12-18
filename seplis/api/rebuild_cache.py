@@ -1,6 +1,5 @@
 import sys
 from seplis.api import elasticcreate
-from seplis.api.connections import database
 from collections import defaultdict
 
 rebuilders = defaultdict(list)

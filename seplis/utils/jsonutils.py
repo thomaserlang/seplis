@@ -30,4 +30,4 @@ def json_dumps(obj):
     ).decode('utf-8')
 
 def json_loads(s):
-    return orjson.loads(s.decode())
+    return orjson.loads(s.decode() if isinstance(s, bytes) else s)

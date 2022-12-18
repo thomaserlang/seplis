@@ -1,7 +1,7 @@
 import requests, json
-from dateutil import parser
-from seplis.api import constants
 from seplis import config, logger
+from seplis.api import schemas
+from dateutil import parser
 from .base import Series_importer_base, register_importer
 
 class Thetvdb(Series_importer_base):
@@ -34,62 +34,55 @@ class Thetvdb(Series_importer_base):
             return headers
         raise Exception('Unknown status code from thetvdb: {} {}'.format(r.status_code, r.content))
 
-    def info(self, series_id):
+    async def info(self, external_id: int) -> schemas.Series_update:
         r = requests.get(
-            self._url+'/series/{}'.format(series_id),
+            self._url+'/series/{}'.format(external_id),
             headers=self.login_headers(),
         )
         if r.status_code == 200:
             data = r.json()['data']
-            description = None
-            if data['overview']:
-                description = {
-                    'text': data['overview'],
-                    'title': 'TheTVDB',
-                    'url': 'http://thetvdb.com/?tab=series&id={}'.format(series_id), 
-                }
             externals = {
-                'thetvdb': str(series_id),
+                'thetvdb': str(external_id),
             }
             if data['imdbId']:
                 externals['imdb'] = data['imdbId']
 
-            return {
-                'title': data['seriesName'],
-                'description': description,
-                'premiered': self.parse_date(data['firstAired']),
-                'ended': None,
-                'externals': externals,
-                'status': self.parse_status(data['status']),
-                'runtime': int(data['runtime']) if data['runtime'] else None,
-                'genres': data['genre'],
-            }
+            return schemas.Series_update(
+                title=data['seriesName'],
+                original_title=data['seriesName'],
+                plot=data['summary'][:2000] if data['summary'] else None,
+                premiered=self.parse_date(data['firstAired']),
+                externals=externals,
+                status=self.parse_status(data['status']),
+                runtime=int(data['runtime']) if data['runtime'] else None,
+                genres=data['genre'],
+            )
 
-    def episodes(self, series_id):
+
+    async def episodes(self, external_id: int) -> list[schemas.Episode_update]:
         headers = self.login_headers()
-        episodes = []
+        episodes: list[schemas.Episode_update] = []
         data = {'links': { 'next': 1 } }
         while data['links']['next']:
             r = requests.get(
-                self._url+'/series/{}/episodes?page={}'.format(series_id, data['links']['next']),
+                self._url+'/series/{}/episodes?page={}'.format(external_id, data['links']['next']),
                 headers=headers,
             )
             if r.status_code == 200:
                 data = r.json()
                 if data['data']:
-                    episodes.extend(
-                        self.parse_episodes(data['data'])
-                    )
+                    episodes.extend(self.parse_episodes(data['data']))
             else:
                 break
-        episodes = sorted(episodes, key=lambda k: (k['season'], k['episode']))
-        for i, e in enumerate(episodes):
-            e['number'] = i + 1
-        return episodes if episodes else None
+        episodes = sorted(episodes, key=lambda k: (k.season, k.episode))
+        for i, episode in enumerate(episodes):
+            episode.number = i + 1
+        return episodes
 
-    def images(self, series_id):        
+
+    async def images(self, external_id: int) -> list[schemas.Image_import]:
         r = requests.get(
-            self._url+'/series/{}/images/query'.format(series_id),
+            self._url+'/series/{}/images/query'.format(external_id),
             params={
                 'keyType': 'poster',
                 'resolution': '680x1000',
@@ -102,16 +95,16 @@ class Thetvdb(Series_importer_base):
             if not data:
                 return images
             for image in sorted(data, reverse=True, key=lambda img: float(img['ratingsInfo']['average'])):
-                images.append({
-                    'external_name': 'thetvdb',
-                    'external_id': str(image['id']),
-                    'source_url': 'http://thetvdb.com/banners/{}'.format(image['fileName']),
-                    'source_title': 'TheTVDB',
-                    'type': constants.IMAGE_TYPE_POSTER,
-                })
+                images.append(schemas.Image_import(
+                    external_name='thetvdb',
+                    external_id=str(image['id']),
+                    source_url=f'http://thetvdb.com/banners/{image["fileName"]}',
+                    type='poster',
+                ))
         return images
 
-    def incremental_updates(self):
+
+    async def incremental_updates(self) -> list[str]:
         timestamp = self.last_update_timestamp()
         r = requests.get(
             self._url+'/updated/query',
@@ -125,6 +118,7 @@ class Thetvdb(Series_importer_base):
             return
         return [str(s['id']) for s in data]
 
+
     def parse_status(self, status_str):
         if status_str == 'Ended':
             return 2
@@ -132,7 +126,7 @@ class Thetvdb(Series_importer_base):
             return 1
         return 1
 
-    def parse_episodes(self, episodes):
+    def parse_episodes(self, episodes) -> list[schemas.Episode_update]:
         _episodes = []
         for episode in episodes:
             try:
@@ -145,24 +139,16 @@ class Thetvdb(Series_importer_base):
                 logger.exception('Parsing episode "{}" faild with error: {}'.format(e))
         return _episodes
 
-    def parse_episode(self, episode):
-        description = None
-        if episode['overview']:
-            description = {
-                'text': episode['overview'],
-                'title': 'TheTVDB',
-                'url': 'http://thetvdb.com',
-            }
-        d = self.parse_date(episode['firstAired']) if episode['firstAired'] else None
-        return {
-            'title': episode['episodeName'],
-            'description': description,
-            'number': episode['absoluteNumber'],
-            'season': episode['airedSeason'],
-            'episode': episode['airedEpisodeNumber'],
-            'air_date': d,
-            'air_datetime': f'{d}T00:00:00Z' if d else None,
-        }
+    def parse_episode(self, episode) -> schemas.Episode_update:
+        return schemas.Episode_update(
+            title=episode['episodeName'],
+            original_title=episode['episodeName'],
+            plot=episode['overview'],
+            number=episode['absoluteNumber'],
+            season=episode['airedSeason'],
+            episode=episode['airedEpisodeNumber'],
+            air_date=self.parse_date(episode['firstAired']) if episode['firstAired'] else None,
+        )
 
     def parse_date(self, date):
         if not date:

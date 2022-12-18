@@ -290,12 +290,11 @@ class Append_fields_not_allowed(API_exception):
         )
 
 class Image_external_duplicate(API_exception):    
-    def __init__(self, duplicate_image):
+    def __init__(self, message):
         API_exception.__init__(self,
             status_code=400,
             code=2000,
-            message='An image with the external name and id does already exist',
-            extra=duplicate_image,
+            message=message,
         )
 
 class Image_unknown(API_exception):
@@ -378,4 +377,20 @@ class Play_server_access_user_no_access(API_exception):
             status_code=400,
             code=2260,
             message='The user doesn\'t have access to this play server',
+        )
+
+
+class Movie_external_duplicated(API_exception):
+
+    def __init__(self, external_title, external_value, movie):
+        API_exception.__init__(
+            self,
+            status_code=400,
+            code=2305,
+            message=f'A movie with external name: "{external_title}" and id: "{external_value}" does already exist',
+            extra={
+                'movie': movie,
+                'external_title': external_title,
+                'external_value': external_value,
+            }
         )

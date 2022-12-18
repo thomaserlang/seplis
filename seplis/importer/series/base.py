@@ -1,6 +1,8 @@
 import os, os.path
 import time
 from seplis import config
+from seplis.api import schemas
+from typing import Literal
 
 importers = {}
 
@@ -10,35 +12,25 @@ def register_importer(obj):
     if not obj.external_name:
         raise Exception('The importer external_name can\'t be `None`')
     if obj.external_name in importers:
-        raise Exception('{} is already registered as an indexer'.format(
-            obj.external_name
-        ))
+        raise Exception(f'{obj.external_name} is already registered as an indexer')
     importers[obj.external_name] = obj
 
 class Series_importer_base(object):
+    display_name: str
+    external_name: str
+    supported: tuple[Literal['info', 'episodes', 'images']]
 
-    display_name = None
-    
-    external_name = None
-
-    supported = ()
-    """Tuple of supported import methods
-        - info
-        - episodes
-        - images
-    """
-
-    def info(self, series_id):
+    async def info(self, external_id: str) -> schemas.Series_update:
         """Override this function and return a show.
         The return result must match `schemas.Show`.
         """
 
-    def episodes(self, series_id):
+    async def episodes(self, external_id: str) -> list[schemas.Episode_update]:
         """Override this function and return a list of episodes.
         The return result must match [`schemas.Episode`]
         """
 
-    def images(self, series_id):
+    async def images(self, external_id: str) -> list[schemas.Image_import]:
         """Override this function and return a list of images
         of the show.
         The return result must match [`schemas.Image_required`].
@@ -46,14 +38,13 @@ class Series_importer_base(object):
         The image will be downloaded from url in `source_url`.
         """
 
-    def incremental_updates(self):
-        """Override this function and return a list of show ids that has changed
+    async def incremental_updates(self) -> list[str]:
+        """Override this function and return a list of ids that has changed
         since last check.
         Use `last_update_timestamp` and `save_timestamp`.
-        The return must be a list of str/int.
         """
 
-    def last_update_timestamp(self):
+    def last_update_timestamp(self) -> int:
         """Get the unix timestamp from when `incremental_updates()` was last run.
         For this to work it's required that `incremental_updates()`
         calls `save_timestamp()` after it's done.
@@ -72,7 +63,7 @@ class Series_importer_base(object):
         with open(path, 'r') as f:
             return int(f.readline())
 
-    def save_timestamp(self, timestamp):
+    def save_timestamp(self, timestamp) -> int:
         """Saves a timestamp in a file.
         If timestamp is `None` the current time will be used.
 

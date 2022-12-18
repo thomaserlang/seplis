@@ -1,6 +1,7 @@
 from urllib.parse import urljoin
 import sqlalchemy as sa
 import io
+import urllib.parse
 from fastapi import UploadFile
 from .base import Base
 from ... import config, utils, logger
@@ -32,15 +33,18 @@ class Image(Base):
             raise exceptions.File_upload_no_files()
 
         if not image_data.file:
-            f = await httpx_client.get(image_data.source_url)
-            image_data.file = UploadFile('image', io.BytesIO(f.content))
+            r = await httpx_client.get(image_data.source_url, follow_redirects=True)
+            if r.status_code != 200:
+                logger.error(f'File download of image failed: {r.content}')
+                raise exceptions.API_exception(500, 0, 'Unable to store the image')
+            image_data.file = UploadFile(urllib.parse.urlparse(image_data.source_url).path, io.BytesIO(r.content))
 
         async def upload_bytes():
             while content := await image_data.file.read(128*1024):
                 yield content
 
         r = await httpx_client.put(
-            urljoin(config.data.api.storitch, '/store/session'), 
+            urljoin(config.data.api.storitch, '/store/session'),
             headers={
                 'storitch-json': utils.json_dumps({
                     'finished': True,
@@ -55,7 +59,6 @@ class Image(Base):
             raise exceptions.API_exception(500, 0, 'Unable to store the image')
         
         file = utils.json_loads(r.content)
-
         if file['type'] != 'image':
             raise exceptions.Image_no_data()
 

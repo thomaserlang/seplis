@@ -30,7 +30,7 @@ def upgrade():
     op.alter_column('user_series_settings', 'show_id', existing_type=sa.Integer, new_column_name='series_id')
     op.drop_column('series', 'fans')
     op.add_column('series', sa.Column('original_title', sa.String(200)))
-    op.execute('update series set original_title=title')
+    op.execute('update series set original_title=title, genres="[]"')
     op.drop_column('series', 'description_url')
     op.drop_column('series', 'description_title')
     op.alter_column('series', 'description_text', 

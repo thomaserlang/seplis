@@ -1,8 +1,16 @@
-import requests
-from tornado import httpclient
-from urllib.parse import urljoin, urlencode
 from seplis import utils, config
-from .exceptions import API_error
+from httpx import AsyncClient as _AsyncClient
+
+def AsyncClient() -> _AsyncClient:    
+    return _AsyncClient(
+        base_url=config.data.client.api_url, 
+        headers={
+            'Authorization': f'Bearer {config.data.client.access_token}',
+        })
+
+
+
+'''
 
 TIMEOUT = 60 # seconds
 LINK_TYPES = ('next', 'prev', 'first', 'last')
@@ -202,7 +210,7 @@ class Async_client(object):
 class Client():
 
     def __init__(self, url, client_id=None, client_secret=None, 
-                 access_token=None, version='1'):
+                 access_token=None, version='2'):
         self.url = urljoin(url, str(version))
         self.client_id = client_id
         self.client_secret = client_secret
@@ -247,3 +255,5 @@ class Client():
     def patch(self, uri, json=None, timeout=TIMEOUT, **kwargs):
         return self._fetch(uri, 'PATCH', timeout=timeout,
             json=json, **kwargs)
+
+'''

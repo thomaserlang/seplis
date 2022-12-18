@@ -105,69 +105,6 @@ def sort_parser(sort, sort_lookup, sort_list=None):
     return sort_list
 
 
-def setup_before_after_events(session):
-    """Call this after setting up the `sessionmaker` to
-    activate before and after insert/update events.
-
-    Supported events in the model:
-        * before_insert
-        * after_insert
-        * before_update
-        * after_update
-        * before_delete
-        * after_delete
-        * before_upsert
-        * after_upsert
-
-    Do not make changes to the model object in after_* events.
-
-    Example:
-
-    class Users(Base):
-        __table_name__ = 'users'
-
-        id = sa.Column(sa.Integer)
-
-        def before_insert(self):
-            # check something or change some fields
-
-        def after_insert(self):
-            self.save_to_cache()
-    """
-    def _after_flush(session, flush_context):
-        for target in session.new:
-            if hasattr(target, 'after_insert'): 
-                target.after_insert()
-            if hasattr(target, 'after_upsert'): 
-                target.after_upsert()
-        for target in session.dirty:
-            if hasattr(target, 'after_update'):
-                target.after_update()
-            if hasattr(target, 'after_upsert'): 
-                target.after_upsert()
-        for target in session.deleted:
-            if hasattr(target, 'after_delete'):
-                target.after_delete()
-
-    def _before_flush(session, flush_context, instances):
-        for target in session.new:
-            if hasattr(target, 'before_insert'): 
-                target.before_insert()
-            if hasattr(target, 'before_upsert'): 
-                target.before_upsert()
-        for target in session.dirty:
-            if hasattr(target, 'before_update'):
-                target.before_update()
-            if hasattr(target, 'before_upsert'): 
-                target.before_upsert()
-        for target in session.deleted:
-            if hasattr(target, 'before_delete'):
-                target.before_delete()
-
-    sa.event.listen(session, 'before_flush', _before_flush)
-    sa.event.listen(session, 'after_flush', _after_flush)
-
-
 class UUID(sa.types.UserDefinedType):
     cache_ok = True
 

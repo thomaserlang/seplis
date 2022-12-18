@@ -2,7 +2,7 @@
 import mock
 import responses
 from unittest import TestCase
-from seplis.importer.shows.thetvdb import Thetvdb
+from seplis.importer.series.thetvdb import Thetvdb
 from seplis import schemas
 from seplis.api import constants
 

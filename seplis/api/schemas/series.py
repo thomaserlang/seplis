@@ -92,10 +92,12 @@ class Series_create(BaseModel):
     
     class Config:
         extra = 'forbid'
+        validate_assignment = True
 
 
 class Series_update(Series_create):
     episodes: list[Episode_update] | None
+
 
 class Series(BaseModel):
     id: int
@@ -106,15 +108,15 @@ class Series(BaseModel):
     tagline: str | None
     premiered: date | None
     ended: date | None
-    importers: Series_importers
+    importers = Series_importers()
     runtime: int | None
-    genres: list[Genre]
+    genres: list[Genre] = []
     episode_type: int | None
     language: str | None
     created_at: datetime
     updated_at: datetime | None
     status: int
-    seasons: list[dict[str, int]]
+    seasons: list[dict] = []
     total_episodes: int = 0
     poster_image: Image | None
     popularity: float | None
