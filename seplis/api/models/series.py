@@ -197,11 +197,11 @@ class Series(Base):
                     Episode.number == episode_data.number,
                 ))
             else:
-                logger.info(data)
                 await session.execute(sa.insert(Episode).values(
                     series_id=series_id,
                     **data,
                 ))
+        
         await asyncio.gather(*[_save_episode(episode) for episode in episodes])
         await cls.update_seasons(session, series_id)
 

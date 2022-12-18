@@ -1,6 +1,9 @@
 from typing import Literal
 from pydantic import BaseModel, AnyHttpUrl
 from datetime import datetime
+from fastapi import UploadFile
+
+IMAGE_TYPES = Literal['poster', 'backdrop']
 
 
 class Image_create(BaseModel):
@@ -8,7 +11,13 @@ class Image_create(BaseModel):
     external_id: str | None
 
 
-IMAGE_TYPES = Literal['poster', 'backdrop']
+class Image_import(BaseModel):
+    external_name: str
+    external_id: str
+    source_url: str | None
+    type: IMAGE_TYPES
+    file: UploadFile | None
+
 
 class Image(Image_create):
     id: int

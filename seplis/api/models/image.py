@@ -1,7 +1,12 @@
 from urllib.parse import urljoin
 import sqlalchemy as sa
+import io
+from fastapi import UploadFile
 from .base import Base
-from seplis import config
+from ... import config, utils, logger
+from .. import schemas, exceptions, models
+from ..dependencies import httpx_client
+from ..database import database
 from datetime import datetime
 
 class Image(Base):
@@ -21,3 +26,58 @@ class Image(Base):
     @property
     def url(self):
         return urljoin(config.data.api.image_url, self.hash)
+
+    async def save(relation_type: str, relation_id: str, image_data: schemas.Image_import) -> schemas.Image:
+        if not image_data.file and not image_data.source_url:
+            raise exceptions.File_upload_no_files()
+
+        if not image_data.file:
+            f = await httpx_client.get(image_data.source_url)
+            image_data.file = UploadFile('image', io.BytesIO(f.content))
+
+        async def upload_bytes():
+            while content := await image_data.file.read(128*1024):
+                yield content
+
+        r = await httpx_client.put(
+            urljoin(config.data.api.storitch, '/store/session'), 
+            headers={
+                'storitch-json': utils.json_dumps({
+                    'finished': True,
+                    'filename': image_data.file.filename,
+                }),
+                'content-type': 'application/octet-stream',
+            },
+            content=upload_bytes()
+        )
+        if r.status_code != 200:
+            logger.error(f'File upload failed: {r.content}')
+            raise exceptions.API_exception(500, 0, 'Unable to store the image')
+        
+        file = utils.json_loads(r.content)
+
+        if file['type'] != 'image':
+            raise exceptions.Image_no_data()
+
+        async with database.session() as session:
+            if image_data.external_name or image_data.external_id:
+                q = await session.scalar(sa.select(models.Image.id).where(
+                    models.Image.external_name == image_data.external_name,
+                    models.Image.external_id == image_data.external_id,
+                ))
+                if q:
+                    raise exceptions.Image_external_duplicate(f'An image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id} already exists')
+
+            r = await session.execute(sa.insert(models.Image).values(
+                relation_type=relation_type,
+                relation_id=relation_id,
+                external_name=image_data.external_name,
+                external_id=image_data.external_id,
+                height=file['height'],
+                width=file['width'],
+                hash=file['hash'],
+                type=image_data.type,
+            ))
+            image = await session.scalar(sa.select(models.Image).where(models.Image.id == r.lastrowid))
+            await session.commit()
+            return schemas.Image.from_orm(image)
