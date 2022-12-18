@@ -1,13 +1,10 @@
 import sqlalchemy as sa
 from starlette.concurrency import run_in_threadpool
-from redis.asyncio.client import Pipeline
-
 from .. import schemas, exceptions
 from .base import Base
 from seplis import utils
 from seplis.api.database import database
 from seplis.api import constants, exceptions, rebuild_cache
-from seplis.api.decorators import new_session
 from datetime import datetime, timedelta, timezone
 from passlib.hash import pbkdf2_sha256
 

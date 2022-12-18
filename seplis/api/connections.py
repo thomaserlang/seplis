@@ -1,13 +1,9 @@
-import asyncio
 import redis
-import logging
-from tornado.httpclient import AsyncHTTPClient, HTTPError
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import orm, event
 from seplis import config, utils
-from seplis.api import exceptions
 from elasticsearch import AsyncElasticsearch, Elasticsearch, helpers
 from rq import Queue
 

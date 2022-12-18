@@ -1,12 +1,11 @@
 import logging
 import sqlalchemy as sa
 from .base import Base
-from sqlalchemy import event, orm
+from sqlalchemy import orm
 from sqlalchemy.orm.attributes import get_history
 from seplis import utils
 from seplis.api.connections import database
-from seplis.api import constants, exceptions, rebuild_cache
-from seplis.api.decorators import new_session, auto_session
+from seplis.api import rebuild_cache
 from datetime import datetime
 
 class App(Base):
@@ -39,30 +38,6 @@ class App(Base):
         self.client_id = utils.random_key()
         self.client_secret = utils.random_key()
         self.created = datetime.utcnow()
-
-    def serialize(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'name': self.name,
-            'client_id': self.client_id,
-            'client_secret': self.client_secret,
-            'redirect_uri': self.redirect_uri,
-            'level': self.level,
-            'created': utils.isoformat(self.created), 
-            'updated': utils.isoformat(self.updated) if self.updated else None,
-        }
-
-    def after_upsert(self):
-        self.cache()
-
-    def after_update(self):
-        client_id_hist = get_history(self.client_id)
-        if client_id_hist.deleted:
-            session = orm.Session.object_session(self)
-            session.pipe.delete(self._cache_name_client_id.format(
-                client_id_hist.deleted[0]
-            ))
 
     @classmethod
     def get(cls, id_):

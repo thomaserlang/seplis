@@ -44,14 +44,14 @@ def rebuild_cache():
 def update_shows():
     import seplis.importer
     set_logger('importer_update_shows.log')
-    seplis.importer.shows.update_shows_incremental()
+    seplis.importer.series.update_shows_incremental()
 
 @cli.command()
 @click.argument('show_id')
 def update_show(show_id):
     import seplis.importer
     set_logger('importer_update_show_by_id.log')
-    seplis.importer.shows.update_show_by_id(show_id)
+    seplis.importer.series.update_series_by_id(show_id)
 
 @cli.command()
 @click.option('--from_id', default=1, help='which show to start from')
@@ -59,7 +59,7 @@ def update_show(show_id):
 def update_shows_all(from_id, do_async):
     import seplis.importer
     set_logger('importer_update_shows_all.log')
-    seplis.importer.shows.update_shows_all(from_id, do_async=do_async)
+    seplis.importer.series.update_series_bulk(from_id, do_async=do_async)
 
 @cli.command()
 @click.argument('movie_id')

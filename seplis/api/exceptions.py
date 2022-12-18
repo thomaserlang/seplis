@@ -1,6 +1,4 @@
-from tornado.web import HTTPError
-
-class API_exception(HTTPError):
+class API_exception(Exception):
     
     def __init__(self, status_code, code, message, errors=None, extra=None):
         '''
@@ -13,7 +11,6 @@ class API_exception(HTTPError):
         :param extra: object
             Extra information for the exception.
         '''
-        HTTPError.__init__(self, status_code, message)
         self.status_code = status_code
         self.code = code
         self.errors = errors

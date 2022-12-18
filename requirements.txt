@@ -34,3 +34,4 @@ python-multipart==0.0.5
 email-validator==1.2.1
 freezegun==1.2.2
 uuid6==2022.10.25
+tornado

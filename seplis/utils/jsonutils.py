@@ -1,6 +1,5 @@
 import orjson, decimal
 from collections import OrderedDict
-from tornado import escape
 from datetime import datetime
 from sqlalchemy.engine import Row
 from pydantic import BaseModel
@@ -31,4 +30,4 @@ def json_dumps(obj):
     ).decode('utf-8')
 
 def json_loads(s):
-    return orjson.loads(escape.native_str(s))
+    return orjson.loads(s.decode())
