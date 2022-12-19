@@ -1,10 +1,10 @@
 import sqlalchemy as sa
 import httpx
+import asyncio
 from seplis import config, constants, logger
 from seplis.api.database import database
 from seplis.api import models, schemas
 
-# Status: 0: Canceled, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production
 statuses = {
     'Unknown': 0,
     'Released': 1,
@@ -124,6 +124,7 @@ async def update_movie_metadata(movie: schemas.Movie):
     data.language = r['original_language']
     data.alternative_titles = [a['title'] for a in r['alternative_titles']['titles']]
     data.genres = [genre['name'] for genre in r['genres']]
+    data.popularity = r['popularity']
     await models.Movie.save(movie_data=data, movie_id=movie.id, patch=True)
 
 
@@ -149,8 +150,9 @@ async def update_images(movie: schemas.Movie):
         return
     m = r.json()
     logger.debug(f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
-    for image in m['images']['posters']:
-        try:   
+
+    async def save_image(image):
+        try:
             key = f'themoviedb-{image["file_path"]}'
             if key not in image_external_ids:
                 source_url = f'https://image.tmdb.org/t/p/original{image["file_path"]}'
@@ -164,12 +166,15 @@ async def update_images(movie: schemas.Movie):
                         type='poster',
                         source_url=source_url,
                     )
-                )                
+                )
                 image_external_ids[key] = saved_image
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception:
             logger.exception(f'[Movie: {movie.id}] Failed saving image')
+
+    await asyncio.gather(*[save_image(image) for image in m['images']['posters']])
+
 
     if not movie.poster_image and m['poster_path']:
         key = f'themoviedb-{m["poster_path"]}'

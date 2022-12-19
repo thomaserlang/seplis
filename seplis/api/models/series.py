@@ -55,16 +55,16 @@ class Series(Base):
         }
  
     @classmethod
-    async def save(cls, series: schemas.Series_create | schemas.Series_update, series_id: int | str | None, patch=False) -> schemas.Series:
-        data = series.dict(exclude_unset=True)
+    async def save(cls, series_data: schemas.Series_create | schemas.Series_update, series_id: int | str | None, patch=False) -> schemas.Series:
+        data = series_data.dict(exclude_unset=True)
         async with database.session() as session:
             async with session.begin():
                 if not series_id:
                     r = await session.execute(sa.insert(Series))
                     series_id = r.lastrowid
                     data['created_at'] = datetime.now(tz=timezone.utc)                    
-                    if not series.original_title:
-                        data['original_title'] = series.title
+                    if not series_data.original_title:
+                        data['original_title'] = series_data.title
                 else:
                     m = await session.scalar(sa.select(Series.id).where(Series.id == series_id))
                     if not m:
@@ -82,13 +82,13 @@ class Series(Base):
 
                 if 'episodes' in data:
                     data.pop('episodes')
-                    await cls._save_episodes(session, series_id, series.episodes)
+                    await cls._save_episodes(session, series_id, series_data.episodes)
                 if data:
                     await session.execute(sa.update(Series).where(Series.id == series_id).values(**data))
-                series = await session.scalar(sa.select(Series).where(Series.id == series_id))
+                series_data = await session.scalar(sa.select(Series).where(Series.id == series_id))
                 await session.commit()
-                await cls._save_for_search(series)
-                return schemas.Series.from_orm(series)
+                await cls._save_for_search(series_data)
+                return schemas.Series.from_orm(series_data)
 
     @classmethod
     async def delete(self, series_id: int):    

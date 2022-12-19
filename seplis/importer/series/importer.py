@@ -1,5 +1,6 @@
 import time
 import sqlalchemy as sa
+import asyncio
 from seplis import logger
 from seplis.api.database import database
 from seplis.api import models, schemas
@@ -11,7 +12,7 @@ async def update_series_by_id(series_id):
         result = await session.scalar(sa.select(models.Series).where(models.Series.id == series_id))
         if not result:
             logger.error(f'Unknown series: {series_id}')
-        update_series(schemas.Series.from_orm(result))
+        await update_series(schemas.Series.from_orm(result))
 
 
 async def update_series_bulk(from_series_id=None, do_async=False):
@@ -96,10 +97,12 @@ async def update_series_info(series: schemas.Series):
         external_id=series.externals[series.importers.info],
     )
     if info:
-        await models.Series.save(series=info, series_id=series.id)
+        await models.Series.save(series_data=info, series_id=series.id, patch=True)
 
 
 async def update_series_episodes(series: schemas.Series):
+    if not series.importers.episodes:
+        return
     episodes: list[schemas.Episode_create] = await call_importer(
         external_name=series.importers.episodes,
         method='episodes',
@@ -107,7 +110,7 @@ async def update_series_episodes(series: schemas.Series):
     )
     if episodes != None:
         update = schemas.Series_update(episodes=episodes)
-        await models.Series.save(series=update, series_id=series.id)
+        await models.Series.save(series_data=update, series_id=series.id, patch=False)
 
 
 async def update_series_images(series: schemas.Series):
@@ -126,6 +129,20 @@ async def update_series_images(series: schemas.Series):
         ))
         current_images = {f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
     images_added: list[schemas.Image] = []
+
+    async def save_image(image):
+        try:
+            if f'{image.external_name}-{image.external_id}' not in current_images:
+                images_added.append(await models.Image.save(
+                    relation_type='series', 
+                    relation_id=series.id,
+                    image_data=image,
+                ))
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            logger.exception('save_image')
+
     for name in imp_names:
         try:
             imp_images: list[schemas.Image_import] = await call_importer(
@@ -135,23 +152,24 @@ async def update_series_images(series: schemas.Series):
             )
             if not imp_images:
                 continue
-            for image_data in imp_images:
-                if f'{image_data.external_name}-{image_data.external_id}' not in current_images:
-                    images_added.append(await models.Image.save(
-                        relation_type='series', 
-                        relation_id=series.id,
-                        image_data=image_data,
-                    ))
+            await asyncio.gather(*[save_image(image) for image in imp_images])
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception:
             logger.exception('update_show_images')
+            
+
     if not series.poster_image:
         all_images: list[schemas.Image] = []
         all_images.extend(images_added)
         all_images.extend(current_images.values())
         if all_images:
-            await models.Series.save(schemas.Series_update(poster_image_id=all_images[0].id), series_id=series.id)
+            await models.Series.save(
+                series_data=schemas.Series_update(
+                    poster_image_id=all_images[0].id
+                ), 
+                series_id=series.id
+            )
 
 
 def _importers_with_support(show_externals, support):

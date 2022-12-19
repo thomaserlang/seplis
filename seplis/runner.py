@@ -11,6 +11,7 @@ async def run_task(task):
     finally:
         await database.close()
 
+
 @click.group()
 @click.option('--config', default=None, help='path to the config file')
 @click.option('--log_path', '-lp', default=None, help='a folder to store the log files in')
@@ -23,24 +24,29 @@ def cli(config, log_path, log_level):
     if log_level:
         seplis.config.data.logging.level = log_level
 
+
 @cli.command()
 def web():
     uvicorn.run('seplis.web.main:app', host='0.0.0.0', port=config.data.web.port, reload=config.data.debug)
+
 
 @cli.command()
 def api():
     uvicorn.run('seplis.api.main:app', host='0.0.0.0', port=config.data.api.port, reload=config.data.debug)
 
+
 @cli.command()
 def play_server():
     uvicorn.run('seplis.play.main:app', host='0.0.0.0', port=config.data.play.port, reload=config.data.debug)
+
 
 @cli.command()
 def upgrade():
     set_logger('upgrade.log')
     import seplis.api.migrate
     seplis.api.migrate.upgrade()
-    
+
+
 @cli.command()
 def rebuild_cache():
     set_logger('rebuild_cache.log')
@@ -90,12 +96,34 @@ def update_movies_incremental():
 
 
 @cli.command()
-@click.option('--from_id', default=1, help='which show to start from')
+@click.option('--from_id', default=1, help='which series to start from')
 @click.option('--do_async', is_flag=True, help='send the update task to the workers')
 def update_movies_bulk(from_id, do_async):
     import seplis.importer
     set_logger('importer_update_movies_bulk.log')
     asyncio.run(run_task(seplis.importer.movies.update_movies_bulk(from_id, do_async=do_async)))
+
+
+@cli.command()
+def update_popularity():
+    import seplis.importer
+    set_logger('importer_update_popularity.log')
+    asyncio.run(run_task(seplis.importer.movies.update_popularity()))
+    asyncio.run(run_task(seplis.importer.series.update_popularity()))
+
+
+@cli.command()
+def update_movies_popularity():
+    import seplis.importer
+    set_logger('importer_update_movies_popularity.log')
+    asyncio.run(run_task(seplis.importer.movies.update_popularity()))
+
+
+@cli.command()
+def update_series_popularity():
+    import seplis.importer
+    set_logger('importer_update_series_popularity.log')
+    asyncio.run(run_task(seplis.importer.series.update_popularity()))
 
 
 @cli.command()
@@ -106,6 +134,7 @@ def worker(n):
     from seplis.api.connections import database
     database.connect()
     seplis.tasks.worker.main()
+
 
 @cli.command()
 @click.option('--disable-cleanup', is_flag=True, help='Disable cleanup after scan')
@@ -120,6 +149,7 @@ def play_scan(disable_cleanup, disable_thumbnails):
     if not disable_cleanup:
         seplis.play.scan.cleanup()
 
+
 @cli.command()
 def play_scan_watch():
     set_logger('play_scan_watch.log')
@@ -130,6 +160,7 @@ def play_scan_watch():
     seplis.play.scan.upgrade_scan_db()
     seplis.play.scan_watch.main()
 
+
 @cli.command()
 def play_scan_cleanup():
     set_logger('play_scan_cleanup.log')
@@ -138,12 +169,14 @@ def play_scan_cleanup():
     database.connect()
     seplis.play.scan.upgrade_scan_db()
     seplis.play.scan.cleanup()
-    
+
+
 @cli.command()
 def dev_server():
     set_logger('dev_server', to_sentry=False)
     import seplis.dev_server
     seplis.dev_server.main()
+
 
 def main():
     cli()

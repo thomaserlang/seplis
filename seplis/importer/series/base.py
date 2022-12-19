@@ -1,10 +1,13 @@
 import os, os.path
 import time
+import httpx
 from seplis import config
 from seplis.api import schemas
 from typing import Literal
 
 importers = {}
+
+client = httpx.AsyncClient()
 
 def register_importer(obj):
     if not isinstance(obj, Series_importer_base):

@@ -52,7 +52,7 @@ async def update_series(
     data: schemas.Series_update,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
-    return await models.Series.save(series_id=series_id, series=data, patch=False)
+    return await models.Series.save(series_id=series_id, series_data=data, patch=False)
 
 
 @router.patch('/{series_id}', response_model=schemas.Series)
@@ -61,7 +61,7 @@ async def patch_series(
     data: schemas.Series_update,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
-    return await models.Series.save(series_id=series_id, series=data, patch=True)
+    return await models.Series.save(series_id=series_id, series_data=data, patch=True)
 
 
 @router.delete('/{series_id}', status_code=204)
