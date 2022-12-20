@@ -13,7 +13,7 @@ class Series_follower(Base):
 
     async def follow(series_id: int, user_id: int | str, session: AsyncSession):
         await session.execute(sa.insert(Series_follower).values(
-            show_id=series_id,
+            series_id=series_id,
             user_id=user_id,
             created_at=datetime.now(tz=timezone.utc),
         ).prefix_with('IGNORE'))
