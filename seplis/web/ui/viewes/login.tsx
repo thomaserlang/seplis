@@ -74,7 +74,7 @@ export default function Login() {
             spacing="1rem"
         >
             <Avatar src="/static/img/apple-touch-icon.png" />
-            <Box minW={{ base: "90%", md: "468px" }} p="2rem" backgroundColor="blackAlpha.300" rounded="md">
+            <Box minW={{ base: "90%", md: "468px" }} p="2rem" backgroundColor="blackAlpha.400" rounded="md">
                 <form onSubmit={onSubmit}>
                 <Stack spacing="1rem">
                     <Heading>Log in to SEPLIS</Heading>
@@ -103,8 +103,10 @@ export default function Login() {
                     
                     <Input {...register('next')} type="hidden" />
                         
-                    <Stack alignItems="end">
-                        <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText='Logging in'>Log in</Button>
+                    <Stack align="end">
+                        <div>
+                            <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText='Logging in'>Log in</Button>
+                        </div>
                     </Stack>
                 </Stack>
                 </form>
