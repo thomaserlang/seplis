@@ -12,22 +12,51 @@ import {
   Avatar,
   FormControl,
   FormHelperText,
+  Alert,
+  AlertTitle,
+  AlertIcon,
 } from '@chakra-ui/react'
 import { FaUserAlt, FaLock } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
+import axios, { AxiosError } from 'axios'
+import { useEffect, useState } from 'react'
+import { IToken } from 'seplis/interfaces/token'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { StringParam, useQueryParam } from 'use-query-params'
 
-const CFaUserAlt = chakra(FaUserAlt);
-const CFaLock = chakra(FaLock);
+const CFaUserAlt = chakra(FaUserAlt)
+const CFaLock = chakra(FaLock)
+
+interface ILogin {
+    login: string
+    password: string
+    next: string
+}
 
 export default function Login() {
-    const {
-        handleSubmit,
-        register,
-        formState: { errors, isSubmitting },
-    } = useForm()
+    const { handleSubmit, register, formState: { isSubmitting }, resetField, setFocus, setValue } = useForm<ILogin>()
+    const [ error, setError ] = useState<string>(null)
+    const [ next ] = useQueryParam('next', StringParam)
+    const navigate = useNavigate()
+    useEffect(() => {
+        document.title = 'SEPLIS - Login in'
+        setValue('next', next)
+    })
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data)
+    const onSubmit = handleSubmit(async (data) => {
+        try {
+            setError(null)
+            const r = await axios.post<IToken>('/api/token', {
+                login: data.login,
+                password: data.password,
+            })
+            localStorage.setItem('accessToken', r.data.access_token)
+            navigate(data.next?data.next:'/')
+        } catch(e) {
+            setError(((e as AxiosError).response.data as any).message)
+            resetField('password')
+            setFocus('password')
+        }
     })
 
     return <Flex
@@ -49,12 +78,19 @@ export default function Login() {
                 <form onSubmit={onSubmit}>
                 <Stack spacing="1rem">
                     <Heading>Log in to SEPLIS</Heading>
+
+                    {error && <Alert status="error" rounded="md">
+                        <AlertIcon />
+                        <AlertTitle>{error}</AlertTitle>    
+                    </Alert>}
+
                     <FormControl>
                         <InputGroup>
                             <InputLeftElement pointerEvents="none" children={<CFaUserAlt />} />
                             <Input {...register('login')} type="input" placeholder="email or username" isRequired />
                         </InputGroup>
                     </FormControl>
+
                     <FormControl>
                         <InputGroup>
                             <InputLeftElement pointerEvents="none" children={<CFaLock />} />
@@ -64,8 +100,11 @@ export default function Login() {
                             <Link>Reset password</Link>
                         </FormHelperText>
                     </FormControl>
+                    
+                    <Input {...register('next')} type="hidden" />
+                        
                     <Stack alignItems="end">
-                        <Button type="submit" colorScheme="blue">Log in</Button>
+                        <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText='Logging in'>Log in</Button>
                     </Stack>
                 </Stack>
                 </form>

@@ -59,7 +59,7 @@ class User_change_password(BaseModel):
 
 class Token_create(BaseModel):
     grant_type: Literal['password']
-    username: str
+    login: str
     password: str
     client_id: str
 

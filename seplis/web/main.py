@@ -1,14 +1,15 @@
 import os
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Body
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from aiohttp import ClientSession
-from . import client
-from seplis import config, set_logger, config_load
+from fastapi.responses import HTMLResponse, JSONResponse
+from seplis import config, set_logger, config_load, logger
+from seplis.api import schemas
 
 config_load()
 set_logger(f'web-{config.data.web.port}.log')
+
+from .client import client
 
 app = FastAPI()
 app.mount('/static', StaticFiles(directory=os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')), name='static')
@@ -17,7 +18,6 @@ templates = Jinja2Templates(
     auto_reload=config.data.debug,
 )
 templates.env.globals['config'] = config
-http_client = ClientSession()
 
 @app.get('/health')
 async def health():
@@ -37,6 +37,23 @@ async def tvmaze_lookup(tvmaze: int = None, imdb: str = None, thetvdb: int = Non
     async with http_client.get(url, params=params) as r:
         return await r.json()
 
+
+@app.post('/api/token', response_model=schemas.Token)
+async def login(
+    login: str = Body(embed=True),
+    password: str = Body(embed=True),
+):
+    r = await client.post('/2/token', json={
+        'login': login,
+        'password': password,
+        'grant_type': 'password',
+        'client_id': config.data.client.id,
+    })
+    if r.status_code >= 400:
+        return JSONResponse(content=r.json(), status_code=r.status_code)
+    return r.json()
+
+
 @app.get('/movie/{movie_id}', response_class=HTMLResponse)
 @app.get('/movie/{movie_id}/{path:path}', response_class=HTMLResponse)
 async def render(request: Request, movie_id: int, path: str = None):
@@ -49,6 +66,7 @@ async def render(request: Request, movie_id: int, path: str = None):
         'movie': movie.data,
     })
 
+
 @app.get('/show/{series_id}', response_class=HTMLResponse)
 @app.get('/show/{series_id}/{path:path}', response_class=HTMLResponse)
 async def render(request: Request, series_id: int, path: str = None):
@@ -60,6 +78,7 @@ async def render(request: Request, series_id: int, path: str = None):
         'request': request, 
         'series': series.data,
     })
+
 
 @app.get('/{path:path}', response_class=HTMLResponse)
 async def render(request: Request, path: str):

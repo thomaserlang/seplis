@@ -47,13 +47,13 @@ class Wrong_password(API_exception):
             errors=None,
         )
 
-class Wrong_email_or_password_exception(API_exception):
+class Wrong_login_or_password(API_exception):
 
     def __init__(self):
         API_exception.__init__(self,
             status_code=401,
             code=1000, 
-            message='Wrong email and/or password',
+            message='Wrong login and/or password',
             errors=None,
         )
 

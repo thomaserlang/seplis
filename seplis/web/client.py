@@ -1,15 +1,9 @@
-from seplis import utils, config
-from httpx import AsyncClient as _AsyncClient
+from seplis import utils, config, logger
+from httpx import AsyncClient
 
-def AsyncClient() -> _AsyncClient:    
-    return _AsyncClient(
-        base_url=config.data.client.api_url, 
-        headers={
-            'Authorization': f'Bearer {config.data.client.access_token}',
-        })
-
-
-
+client = AsyncClient(
+    base_url=config.data.client.api_url,
+)
 '''
 
 TIMEOUT = 60 # seconds

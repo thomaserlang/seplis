@@ -1,0 +1,20 @@
+{
+    "compilerOptions": { 
+        "target": "es6",
+        "jsx": "react-jsx",
+        "allowJs": true,
+        "strictFunctionTypes": true,
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "outDir": "./dist/",
+        "noImplicitAny": true,
+        "allowSyntheticDefaultImports": true,
+        "paths": {
+            "seplis/*": ["./seplis/web/ui/*"],
+        }
+    },
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ]
+}

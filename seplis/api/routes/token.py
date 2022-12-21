@@ -30,11 +30,11 @@ async def create_token(
     )))
 
     if not user:
-        raise exceptions.Wrong_email_or_password_exception()
+        raise exceptions.Wrong_login_or_password()
 
     matches = await run_in_threadpool(pbkdf2_sha256.verify, data.password, user.password if user else '')
     if not matches:
-        raise exceptions.Wrong_email_or_password_exception()
+        raise exceptions.Wrong_login_or_password()
 
     token = await models.Token.new_token(user_id=user.id, app_id=app.id, user_level=user.level)
 

@@ -8,20 +8,12 @@
         <link rel="manifest" href="/static/img/manifest.json">
         <link rel="mask-icon" href="/static/img/safari-pinned-tab.svg" color="#428bca">
         <meta name="theme-color" content="#428bca">
-        {% block title %}
-            <title>{{ title }}</title>
-        {% end %}
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-        <script type="text/javascript">
-            seplisBaseUrl = "{{config.data.client.public_api_url}}";
-            seplisClientId = "{{config.data.client.id}}";
-            seplisChromecastAppId = "{{config.data.web.chromecast_appid}}";
+        <title>SEPLIS</title>
+        <script>
+            document.seplisBaseUrl = "{{ config.data.client.public_api_url }}";
         </script>
-        {% block head %}{% end %}
     </head>
     <body>
         <div id="root"></div>
-        {% block body_outside %}{% end %}
     </body>
 </html>
