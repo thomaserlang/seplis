@@ -11,6 +11,7 @@ async def test_token(client: AsyncClient):
         'email': 'test1@example.net',
         'password': '1234567890',
     })
+    assert r.status_code == 201, r.content
     async with database.session() as session:
         app = models.App(
             user_id=1,
@@ -25,7 +26,7 @@ async def test_token(client: AsyncClient):
     # wrong client id
     r = await client.post('/2/token', json={
         'client_id': 'WRONG',
-        'username': 'testuser1',
+        'login': 'testuser1',
         'password': '1234567890',
         'grant_type': 'password',
     })
@@ -37,7 +38,7 @@ async def test_token(client: AsyncClient):
     # wrong password
     r = await client.post('/2/token', json={
         'client_id': app.client_id,
-        'username': 'testuser1',
+        'login': 'testuser1',
         'password': 'WRONG',
         'grant_type': 'password',
     })
@@ -49,7 +50,7 @@ async def test_token(client: AsyncClient):
     # wrong username
     r = await client.post('/2/token', json={
         'client_id': app.client_id,
-        'username': 'WRONG',
+        'login': 'WRONG',
         'password': '1234567890',
         'grant_type': 'password',
     })
@@ -60,7 +61,7 @@ async def test_token(client: AsyncClient):
     # correct password
     r = await client.post('/2/token', json={
         'client_id': app.client_id,
-        'username': 'testuser1',
+        'login': 'testuser1',
         'password': '1234567890',
         'grant_type': 'password',
     })
@@ -71,7 +72,7 @@ async def test_token(client: AsyncClient):
 
     r = await client.post('/2/token', json={
         'client_id': app.client_id,
-        'username': 'test1@example.net',
+        'login': 'test1@example.net',
         'password': '1234567890',
         'grant_type': 'password',
     })

@@ -17,7 +17,7 @@ async def create_token(
 ):
     app: models.App = await session.scalar(sa.select(models.App).where(models.App.client_id == data.client_id))
     if not app:
-        raise exceptions.OAuth_unknown_client_id_exception(data.client_id)
+        raise exceptions.OAuth_unknown_client_id_exception()
     
     if app.level != constants.LEVEL_GOD:
         raise exceptions.OAuth_unauthorized_grant_type_level_request_exception(
@@ -25,8 +25,8 @@ async def create_token(
         )
     
     user: models.User = await session.scalar(sa.select(models.User).where(sa.or_(
-        models.User.email == data.username, 
-        models.User.username == data.username,
+        models.User.email == data.login, 
+        models.User.username == data.login,
     )))
 
     if not user:

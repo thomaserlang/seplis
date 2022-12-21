@@ -103,12 +103,12 @@ class OAuth_unsuported_grant_type_exception(API_exception):
 
 class OAuth_unknown_client_id_exception(API_exception):
 
-    def __init__(self, client_id):
+    def __init__(self):
         API_exception.__init__(
             self,
             status_code=400,
             code=1007,
-            message='Unknown client_id: {}'.format(client_id),
+            message='Unknown client_id',
         )
 
 class OAuth_unauthorized_grant_type_level_request_exception(API_exception):
