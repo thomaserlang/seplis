@@ -252,7 +252,6 @@ class Transcoder:
     def segment_time(self) -> int:
         return 5 if self.find_ffmpeg_arg('-c:v') == 'copy' else 1
 
-<<<<<<< HEAD:seplis/play/transcoders/video.py
 def subprocess_env() -> Dict:
     env = {}
     if config.data.play.ffmpeg_logfile:
@@ -260,9 +259,6 @@ def subprocess_env() -> Dict:
     return env
 
 def to_subprocess_arguments(args) -> list[str]:
-=======
-def to_subprocess_arguments(args) -> List[str]:
->>>>>>> main:seplis/play/handlers/transcoders/video.py
     l = []
     for a in args:
         for key, value in a.items():
