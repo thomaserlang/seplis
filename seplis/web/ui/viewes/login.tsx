@@ -18,11 +18,12 @@ import {
 } from '@chakra-ui/react'
 import { FaUserAlt, FaLock } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { IToken } from 'seplis/interfaces/token'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { StringParam, useQueryParam } from 'use-query-params'
+import { ErrorMessageFromResponse } from '../components/error'
 
 const CFaUserAlt = chakra(FaUserAlt)
 const CFaLock = chakra(FaLock)
@@ -53,7 +54,7 @@ export default function Login() {
             localStorage.setItem('accessToken', r.data.access_token)
             navigate(data.next?data.next:'/')
         } catch(e) {
-            setError(((e as AxiosError).response.data as any).message)
+            setError(ErrorMessageFromResponse(e))
             resetField('password')
             setFocus('password')
         }
@@ -64,7 +65,7 @@ export default function Login() {
         width="100wh"
         justifyContent="center"
         alignItems="center"
-        marginTop="2rem"
+        marginTop="4rem"
     >
         <Stack
             flexDir="column"
