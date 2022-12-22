@@ -147,6 +147,7 @@ class Play_scan(object):
         logger.info(f'[{key}] Creating thumbnails')
         cmd = [
             os.path.join(config.data.play.ffmpeg_folder, 'ffmpeg'),
+            '-vsync', '0',
             '-i', path,
             '-vf', 'fps=1/60,scale=320:-2',
             '-lossless', '0',
@@ -159,7 +160,10 @@ class Play_scan(object):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        process.communicate()
+        output, err = process.communicate()
+        if process.returncode > 0:
+            os.rmdir(thumb)
+            logger.error(err)
 
 class Movie_scan(Play_scan):
 

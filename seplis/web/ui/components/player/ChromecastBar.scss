@@ -1,0 +1,31 @@
+#castbar {    
+    position: fixed;
+    cursor: default;
+    left: 0;
+    bottom: 0;
+    z-index: 1030;
+    width: 100%;
+    background-color: #000;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-top:1px solid #ccc;
+
+    .text {
+        font-size: 16px;
+        text-align: center;
+        white-space: nowrap;
+    }
+    
+    a {
+        color: #fff;
+        cursor: pointer;
+    }
+
+    a:hover {
+        text-decoration: none;
+    }
+}
+
+body {
+    margin-bottom: 100px;
+}

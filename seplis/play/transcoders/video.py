@@ -128,6 +128,7 @@ class Transcoder:
             {'-copyts': None},
             {'-start_at_zero': None},
             {'-avoid_negative_ts': 'disabled'},
+            {'-muxdelay': '0'},
         ]
 
         self.ffmpeg_args = args
@@ -148,10 +149,7 @@ class Transcoder:
         self.ffmpeg_args.append({'-c:v': codec})
         if codec == 'lib264':
             self.ffmpeg_args.extend([
-                {'-x264opts': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'},                
-                {'-force_key_frames': 'expr:gte(t,n_forced*1)'},
-                {'-g': '24'},
-                {'-keyint_min': '24'},
+                {'-x264opts': 'subme=0:me_range=4:rc_lookahead=10:me=hex:8x8dct=0:partitions=none'},
             ])
         elif codec == 'libx265':
             self.ffmpeg_args.extend([
@@ -178,8 +176,6 @@ class Transcoder:
                 self.ffmpeg_args.append({'-filter:v': f'scale=width={width}:height=-2'})
 
             self.ffmpeg_args.extend([
-                {f'-r': '23.975999999999999'},
-                {'-fps_mode': 'auto'},
                 {'-crf': self._get_crf(width, codec)}
             ])
 
@@ -220,11 +216,13 @@ class Transcoder:
 
         if self.settings.audio_channels:
             self.ffmpeg_args.append({'-ac': str(self.settings.audio_channels)})
+        
+        # Fix for hls eac3 or ac3 not playing or just no audio
+        self.ffmpeg_args.append({'-ac': str(self.metadata['streams'][index.index]['channels'])})
 
         codec = codecs_to_libary.get(self.settings.transcode_audio_codec, self.settings.transcode_audio_codec)    
         self.ffmpeg_args.extend([
-            {'-filter_complex': f'[0:{index.index}] aresample=async=1:ochl=\'stereo\':rematrix_maxval=0.000000dB:osr=48000[2]'},
-            {'-map': '[2]'},
+            {'-map': f'0:{index.index}'},
             {'-c:a': codec},
         ])
 
@@ -254,6 +252,7 @@ class Transcoder:
     def segment_time(self) -> int:
         return 5 if self.find_ffmpeg_arg('-c:v') == 'copy' else 1
 
+<<<<<<< HEAD:seplis/play/transcoders/video.py
 def subprocess_env() -> Dict:
     env = {}
     if config.data.play.ffmpeg_logfile:
@@ -261,6 +260,9 @@ def subprocess_env() -> Dict:
     return env
 
 def to_subprocess_arguments(args) -> list[str]:
+=======
+def to_subprocess_arguments(args) -> List[str]:
+>>>>>>> main:seplis/play/handlers/transcoders/video.py
     l = []
     for a in args:
         for key, value in a.items():
@@ -268,6 +270,12 @@ def to_subprocess_arguments(args) -> list[str]:
             if value:
                 l.append(value)
     return l
+
+def subprocess_env() -> Dict:
+    env = {}
+    if config.data.play.ffmpeg_logfile:
+        env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
+    return env
 
 def get_video_stream(metadata: Dict) -> Dict:
     for stream in metadata['streams']:
@@ -295,11 +303,14 @@ def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
                     index = None
         else:
             index = None
+    first = None
     for i, stream in enumerate(metadata['streams']):
         if stream['codec_type'] == codec_type:
             group_index += 1
+            if not first:
+                first = Stream_index(index=i, group_index=group_index)
             if lang == '':
-                return Stream_index(index=i, group_index=group_index)
+                return first
             if 'tags' in stream:
                 l = stream['tags'].get('language') or stream['tags'].get('title')
                 if not l:
@@ -310,12 +321,13 @@ def stream_index_by_lang(metadata: Dict, codec_type:str, lang: str):
                         return Stream_index(index=i, group_index=group_index)
     logger.warning(f'Found no {codec_type} with language: {lang}')
     logger.warning(f'Available {codec_type}: {", ".join(langs)}')
+    return first
 
 def close_session_callback(session):
     close_session(session)
 
 def close_session(session):
-    logger.debug(f'[{session}] Closing')
+    logger.info(f'[{session}] Closing')
     if session not in sessions:
         return
     s = sessions[session]
