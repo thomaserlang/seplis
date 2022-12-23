@@ -18,7 +18,7 @@ class ConfigRedisModel(BaseModel):
         return v or values['ip']
 
 class ConfigElasticsearch(BaseModel):
-    host: Union[str, List[str]] = 'https://127.0.0.1:9200'
+    host: Union[str, List[str]] = 'http://127.0.0.1:9200'
     user: Optional[str]
     password: Optional[str]
     verify_certs = True
@@ -136,7 +136,8 @@ def load(path=None):
         raise Exception(f'Config: "{path}" could not be found.')
     with open(path) as f:
         data = yaml.load(f, Loader=yaml.SafeLoader)
-        config.data = ConfigModel(**data)
+        if data:
+            config.data = ConfigModel(**data)
 
     if config.data.play.temp_folder:
         try:
