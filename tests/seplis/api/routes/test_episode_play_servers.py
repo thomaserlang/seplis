@@ -20,7 +20,7 @@ async def test_episode_play_servers(client: AsyncClient):
         name='Test',
         url='http://example.net',
         secret='1'*20,
-    ), id_=None, user_id=user_id)
+    ), play_server_id=None, user_id=user_id)
 
     # Let's get the server that the user has access to
     # with a play id, that we can use when contacting the server.

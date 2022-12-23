@@ -14,7 +14,7 @@ async def test_play_server(client: AsyncClient):
     assert r.status_code == 201, r.content
     play_server = schemas.Play_server.parse_obj(r.json())
 
-    movie = await models.Movie.save(movie_data=schemas.Movie_create(
+    movie = await models.Movie.save(data=schemas.Movie_create(
         title='Test',
     ), movie_id=None)
 

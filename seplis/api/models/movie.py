@@ -35,27 +35,27 @@ class Movie(Base):
 
 
     @classmethod
-    async def save(cls, movie_data: schemas.Movie_create | schemas.Movie_update, movie_id: int | str | None = None, patch: bool = False) -> schemas.Movie:
+    async def save(cls, data: schemas.Movie_create | schemas.Movie_update, movie_id: int | None = None, patch: bool = True) -> schemas.Movie:
         async with database.session() as session:
             async with session.begin():
-                data = movie_data.dict(exclude_unset=True)
+                _data = data.dict(exclude_unset=True)
                 if not movie_id:
                     r = await session.execute(sa.insert(Movie))
                     movie_id = r.lastrowid
-                    data['created_at'] = datetime.now(tz=timezone.utc)
+                    _data['created_at'] = datetime.now(tz=timezone.utc)
                 else:
                     m = await session.scalar(sa.select(Movie.id).where(Movie.id == movie_id))
                     if not m:
                         raise HTTPException(404, f'Unknown movie id: {movie_id}')
-                    data['updated_at'] = datetime.now(tz=timezone.utc)
-                if 'genres' in data:
-                    data['genres'] = await cls._save_genres(session, movie_id, data['genres'], patch)
-                if 'externals' in data:
-                    data['externals'] = await cls._save_externals(session, movie_id, data['externals'], patch)
-                if 'alternative_titles' in data:
-                    data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, data['alternative_titles'], patch)
-                if data:
-                    await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**data))
+                    _data['updated_at'] = datetime.now(tz=timezone.utc)
+                if 'genres' in _data:
+                    _data['genres'] = await cls._save_genres(session, movie_id, _data['genres'], patch)
+                if 'externals' in _data:
+                    _data['externals'] = await cls._save_externals(session, movie_id, _data['externals'], patch)
+                if 'alternative_titles' in _data:
+                    _data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, _data['alternative_titles'], patch)
+                if _data:
+                    await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**_data))
                 movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
                 await session.commit()
                 await cls._save_for_search(movie)

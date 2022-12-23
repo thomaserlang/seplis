@@ -1,4 +1,6 @@
 from fastapi import APIRouter, Depends, Request, Security
+from fastapi.security.base import SecurityBase
+from fastapi.security.utils import get_authorization_scheme_param
 import sqlalchemy as sa
 
 from ..dependencies import authenticated, get_session, AsyncSession
@@ -27,7 +29,7 @@ async def create_play_server(
     data: schemas.Play_server_create,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
 ):
-    p = await models.Play_server.save(data=data, id_=None, user_id=user.id)
+    p = await models.Play_server.save(data=data, play_server_id=None, user_id=user.id)
     return p
 
 
@@ -37,7 +39,7 @@ async def update_play_server(
     data: schemas.Play_server_update,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
 ):
-    p = await models.Play_server.save(data=data, id_=play_server_id, user_id=user.id)
+    p = await models.Play_server.save(data=data, play_server_id=play_server_id, user_id=user.id)
     return p
 
 
@@ -133,4 +135,44 @@ async def remove_play_server_access(
         play_server_id=play_server_id,
         owner_user_id=user.id,
         user_id=user_id,
+    )
+
+
+
+class Play_server_secret(SecurityBase):
+
+    async def __call__(self, request: Request) -> str | None:
+        authorization: str = request.headers.get('Authorization')
+        scheme, param = get_authorization_scheme_param(authorization)
+        if not authorization or scheme.lower() != "secret":
+            raise exceptions.Forbidden('Missing play server secret in authorization')
+        return param
+play_server_secret = Play_server_secret()
+
+
+@router.put('/{play_server_id}/movies', status_code=204)
+async def register_play_server_movies_put(
+    play_server_id: str,
+    data: list[schemas.Play_server_movie_create],
+    secret: str = Security(play_server_secret),
+):
+    await models.Play_server_movie.save(
+        play_server_id=play_server_id,
+        play_server_secret=secret,
+        data=data,
+        patch=False,
+    )
+
+
+@router.patch('/{play_server_id}/movies', status_code=204)
+async def register_play_server_patch(
+    play_server_id: str,
+    data: list[schemas.Play_server_movie_create],
+    secret: str = Security(play_server_secret),
+):
+    await models.Play_server_movie.save(
+        play_server_id=play_server_id,
+        play_server_secret=secret,
+        data=data,
+        patch=True,
     )

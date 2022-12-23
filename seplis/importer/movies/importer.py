@@ -125,7 +125,7 @@ async def update_movie_metadata(movie: schemas.Movie):
     data.alternative_titles = [a['title'] for a in r['alternative_titles']['titles']]
     data.genres = [genre['name'] for genre in r['genres']]
     data.popularity = r['popularity']
-    await models.Movie.save(movie_data=data, movie_id=movie.id, patch=True)
+    await models.Movie.save(data=data, movie_id=movie.id, patch=True)
 
 
 async def update_images(movie: schemas.Movie):
@@ -181,6 +181,6 @@ async def update_images(movie: schemas.Movie):
         if key not in image_external_ids:
             key =  f'themoviedb-{m["images"]["posters"][0]["file_path"]}'
         logger.info(f'[Movie: {movie.id}] Setting new primary image: "{image_external_ids[key].id}"')
-        await models.Movie.save(movie_data=schemas.Movie_update(
+        await models.Movie.save(data=schemas.Movie_update(
             poster_image_id=image_external_ids[key].id,
         ), movie_id=movie.id)

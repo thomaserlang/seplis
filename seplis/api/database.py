@@ -1,3 +1,4 @@
+import functools
 import redis.asyncio as redis
 import os
 from redis.asyncio.sentinel import Sentinel
@@ -120,3 +121,17 @@ class Database:
         await self.close()
 
 database = Database()
+
+
+def auto_session(method):
+    @functools.wraps(method)
+    async def wrapper(*args, **kwargs):
+        if kwargs.get('session'):
+            return await method(*args, **kwargs)
+        else:
+            async with database.session() as session:
+                kwargs['session'] = session
+                result = await method(*args, **kwargs)
+                await session.commit()
+                return result
+    return wrapper

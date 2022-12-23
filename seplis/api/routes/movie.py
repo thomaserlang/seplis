@@ -37,7 +37,7 @@ async def update_movie(
     data: schemas.Movie_update,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
-    return await models.Movie.save(movie_id=movie_id, movie_data=data, patch=False)
+    return await models.Movie.save(movie_id=movie_id, data=data, patch=False)
 
 
 @router.patch('/{movie_id}', response_model=schemas.Movie)
@@ -46,7 +46,7 @@ async def patch_movie(
     data: schemas.Movie_update,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
-    return await models.Movie.save(movie_id=movie_id, movie_data=data, patch=True)
+    return await models.Movie.save(movie_id=movie_id, data=data, patch=True)
 
 
 @router.delete('/{movie_id}', status_code=204)

@@ -1,6 +1,7 @@
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, constr, conint
 from datetime import datetime
 from .user import User_public
+from .helper import default_datetime
 
 class Play_server_create(BaseModel):
     name: constr(min_length=1, max_length=45)
@@ -66,3 +67,14 @@ class Play_server_invite(BaseModel):
 class Play_server_access(BaseModel):
     user: User_public
     created_at: datetime
+
+
+class Play_server_movie_create(BaseModel):
+    movie_id: int
+    created_at: datetime = default_datetime
+
+
+class Play_server_episode_create(BaseModel):
+    series_id: int
+    episode_number: conint(ge=1)
+    created_at: datetime = default_datetime

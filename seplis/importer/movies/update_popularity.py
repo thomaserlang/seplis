@@ -23,13 +23,13 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                 if movies[id_].popularity == data.popularity:
                     continue
                 logger.info(f'Updating movie: {movies[id_].id}, popularity: {data.popularity}')
-                await models.Movie.save(movie_id=movies[id_].id, movie_data=schemas.Movie_update(
+                await models.Movie.save(movie_id=movies[id_].id, data=schemas.Movie_update(
                     popularity=data.popularity
                 ))
 
             elif create_above_popularity != None and data.popularity >= create_above_popularity:
                 logger.info(f'Creating themoviedb id {id_}, popularity: {data.popularity}')
-                movie = await models.Movie.save(movie_data=schemas.Movie_create(
+                movie = await models.Movie.save(data=schemas.Movie_create(
                     externals={
                         'themoviedb': id_,
                     },
