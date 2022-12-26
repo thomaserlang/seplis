@@ -261,7 +261,7 @@ class Play_server_episode(Base):
             sql = sa.dialects.mysql.insert(Play_server_episode).values([{
                 'play_server_id': play_server_id,
                 'series_id': r.series_id,
-                'episode_number': r.epispde_number,
+                'episode_number': r.episode_number,
                 'created_at': r.created_at,
                 'updated_at': dt,
             } for r in data])
@@ -274,7 +274,7 @@ class Play_server_episode(Base):
 
     @auto_session
     @staticmethod
-    async def delete(play_server_id: str, play_server_secret: str, series_id: int, episode_number: int, patch=True, session: AsyncSession = None):
+    async def delete(play_server_id: str, play_server_secret: str, series_id: int, episode_number: int, session: AsyncSession = None):
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
             Play_server.secret == play_server_secret,

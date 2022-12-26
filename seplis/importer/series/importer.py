@@ -97,7 +97,7 @@ async def update_series_info(series: schemas.Series):
         external_id=series.externals[series.importers.info],
     )
     if info:
-        await models.Series.save(series_data=info, series_id=series.id, patch=True)
+        await models.Series.save(data=info, series_id=series.id, patch=True)
 
 
 async def update_series_episodes(series: schemas.Series):
@@ -110,7 +110,7 @@ async def update_series_episodes(series: schemas.Series):
     )
     if episodes != None:
         update = schemas.Series_update(episodes=episodes)
-        await models.Series.save(series_data=update, series_id=series.id, patch=False)
+        await models.Series.save(data=update, series_id=series.id, patch=False)
 
 
 async def update_series_images(series: schemas.Series):
@@ -165,7 +165,7 @@ async def update_series_images(series: schemas.Series):
         all_images.extend(current_images.values())
         if all_images:
             await models.Series.save(
-                series_data=schemas.Series_update(
+                data=schemas.Series_update(
                     poster_image_id=all_images[0].id
                 ), 
                 series_id=series.id

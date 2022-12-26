@@ -25,7 +25,7 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                 if series[id_].popularity == data.popularity:
                     continue
                 logger.info(f'Updating series: {series[id_].id}, popularity: {data.popularity}')
-                await models.Series.save(series_id=series[id_].id, series_data=schemas.Series_update(
+                await models.Series.save(series_id=series[id_].id, data=schemas.Series_update(
                     popularity=data.popularity
                 ))
 
@@ -40,7 +40,7 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
 
                 if series_data.externals['imdb'] in series:
                     logger.info(f'Adding themoviedb id {id_} to externals, popularity: {data.popularity}')
-                    await models.Series.save(series_id=series[series_data.externals['imdb']].id, series_data=schemas.Series_update(
+                    await models.Series.save(series_id=series[series_data.externals['imdb']].id, data=schemas.Series_update(
                         externals={'themoviedb': id_},
                         popularity=data.popularity,
                     ), patch=True)
@@ -51,7 +51,7 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                     info='themoviedb',
                     episodes='themoviedb',
                 )
-                s = await models.Series.save(series_data=series_data, series_id=None)
+                s = await models.Series.save(data=series_data, series_id=None)
                 await importer.update_series(series=s)
 
         except (KeyboardInterrupt, SystemExit):

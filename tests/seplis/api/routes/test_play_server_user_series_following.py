@@ -14,7 +14,7 @@ async def test_play_server(client: AsyncClient):
     assert r.status_code == 201, r.content
     play_server = schemas.Play_server.parse_obj(r.json())
 
-    series = await models.Series.save(series_data=schemas.Series_create(
+    series = await models.Series.save(data=schemas.Series_create(
         title='Test',
     ), series_id=None)
 

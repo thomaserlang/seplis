@@ -138,7 +138,6 @@ async def remove_play_server_access(
     )
 
 
-
 class Play_server_secret(SecurityBase):
 
     async def __call__(self, request: Request) -> str | None:
@@ -165,7 +164,7 @@ async def register_play_server_movies_put(
 
 
 @router.patch('/{play_server_id}/movies', status_code=204)
-async def register_play_server_patch(
+async def register_play_server_movie_patch(
     play_server_id: str,
     data: list[schemas.Play_server_movie_create],
     secret: str = Security(play_server_secret),
@@ -175,4 +174,60 @@ async def register_play_server_patch(
         play_server_secret=secret,
         data=data,
         patch=True,
+    )
+
+
+@router.delete('/{play_server_id}/movies/{movie_id}', status_code=204)
+async def delete_movie_from_play_server(
+    play_server_id: str,
+    movie_id: int,
+    secret: str = Security(play_server_secret),
+):
+    await models.Play_server_movie.delete(
+        play_server_id=play_server_id,
+        movie_id=movie_id,
+        secret=secret,
+    )
+
+
+@router.put('/{play_server_id}/series', status_code=204)
+async def register_play_server_episode_put(
+    play_server_id: str,
+    data: list[schemas.Play_server_episode_create],
+    secret: str = Security(play_server_secret),
+):
+    await models.Play_server_episode.save(
+        play_server_id=play_server_id,
+        play_server_secret=secret,
+        data=data,
+        patch=False,
+    )
+
+
+@router.patch('/{play_server_id}/series', status_code=204)
+async def register_play_server_episode_patch(
+    play_server_id: str,
+    data: list[schemas.Play_server_movie_create],
+    secret: str = Security(play_server_secret),
+):
+    await models.Play_server_series.save(
+        play_server_id=play_server_id,
+        play_server_secret=secret,
+        data=data,
+        patch=True,
+    )
+
+
+@router.delete('/{play_server_id}/series/{series_id}/episode/{episode_number}', status_code=204)
+async def delete_episode_from_play_server(
+    play_server_id: str,
+    series_id: int,
+    episode_number: int,
+    secret: str = Security(play_server_secret),
+):
+    await models.Play_server_episode.delete(
+        play_server_id=play_server_id,
+        series_id=series_id,
+        episode_number=episode_number,
+        secret=secret,
     )

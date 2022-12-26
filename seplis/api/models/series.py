@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .episode import Episode
 from .base import Base
 
-from ..database import database
+from ..database import auto_session, database
 from .. import schemas, rebuild_cache
 from ... import config, logger, utils, constants
 
@@ -55,40 +55,39 @@ class Series(Base):
         }
  
     @classmethod
-    async def save(cls, series_data: schemas.Series_create | schemas.Series_update, series_id: int | str | None, patch=False) -> schemas.Series:
-        data = series_data.dict(exclude_unset=True)
-        async with database.session() as session:
-            async with session.begin():
-                if not series_id:
-                    r = await session.execute(sa.insert(Series))
-                    series_id = r.lastrowid
-                    data['created_at'] = datetime.now(tz=timezone.utc)                    
-                    if not series_data.original_title:
-                        data['original_title'] = series_data.title
-                else:
-                    m = await session.scalar(sa.select(Series.id).where(Series.id == series_id))
-                    if not m:
-                        raise HTTPException(404, f'Unknown series id: {series_id}')
-                    data['updated_at'] = datetime.now(tz=timezone.utc)
+    @auto_session
+    async def save(cls, data: schemas.Series_create | schemas.Series_update, series_id: int | None = None, patch=True, session=None) -> schemas.Series:
+        _data = data.dict(exclude_unset=True)
+        if not series_id:
+            r = await session.execute(sa.insert(Series))
+            series_id = r.lastrowid
+            _data['created_at'] = datetime.now(tz=timezone.utc)                    
+            if not data.original_title:
+                _data['original_title'] = data.title
+        else:
+            m = await session.scalar(sa.select(Series.id).where(Series.id == series_id))
+            if not m:
+                raise HTTPException(404, f'Unknown series id: {series_id}')
+            _data['updated_at'] = datetime.now(tz=timezone.utc)
 
-                if 'externals' in data:
-                    data['externals'] = await cls._save_externals(session, series_id, data['externals'], patch)
-                if 'alternative_titles' in data:
-                    data['alternative_titles'] = await cls._save_alternative_titles(session, series_id, data['alternative_titles'], patch)
-                if 'genres' in data:
-                    data['genres'] = await cls._save_genres(session, series_id, data['genres'], patch)
-                if 'importers' in data:
-                    data.update(utils.flatten(data.pop('importers'), 'importer'))
+        if 'externals' in _data:
+            _data['externals'] = await cls._save_externals(session, series_id, _data['externals'], patch)
+        if 'alternative_titles' in _data:
+            _data['alternative_titles'] = await cls._save_alternative_titles(session, series_id, _data['alternative_titles'], patch)
+        if 'genres' in _data:
+            _data['genres'] = await cls._save_genres(session, series_id, _data['genres'], patch)
+        if 'importers' in _data:
+            _data.update(utils.flatten(_data.pop('importers'), 'importer'))
 
-                if 'episodes' in data:
-                    data.pop('episodes')
-                    await cls._save_episodes(session, series_id, series_data.episodes)
-                if data:
-                    await session.execute(sa.update(Series).where(Series.id == series_id).values(**data))
-                series_data = await session.scalar(sa.select(Series).where(Series.id == series_id))
-                await session.commit()
-                await cls._save_for_search(series_data)
-                return schemas.Series.from_orm(series_data)
+        if 'episodes' in _data:
+            _data.pop('episodes')
+            await cls._save_episodes(session, series_id, data.episodes)
+        if _data:
+            await session.execute(sa.update(Series).where(Series.id == series_id).values(**_data))
+        data = await session.scalar(sa.select(Series).where(Series.id == series_id))
+        await cls._save_for_search(data)
+        return schemas.Series.from_orm(data)
+
 
     @classmethod
     async def delete(self, series_id: int):    
