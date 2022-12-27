@@ -216,9 +216,9 @@ class Transcoder:
 
         if self.settings.audio_channels:
             self.ffmpeg_args.append({'-ac': str(self.settings.audio_channels)})
-        
-        # Fix for hls eac3 or ac3 not playing or just no audio
-        self.ffmpeg_args.append({'-ac': str(self.metadata['streams'][index.index]['channels'])})
+        else:
+            # Fix for hls eac3 or ac3 not playing or just no audio
+            self.ffmpeg_args.append({'-ac': str(self.metadata['streams'][index.index]['channels'])})
 
         codec = codecs_to_libary.get(self.settings.transcode_audio_codec, self.settings.transcode_audio_codec)    
         self.ffmpeg_args.extend([
