@@ -186,7 +186,7 @@ async def delete_movie_from_play_server(
     await models.Play_server_movie.delete(
         play_server_id=play_server_id,
         movie_id=movie_id,
-        secret=secret,
+        play_server_secret=secret,
     )
 
 
@@ -207,10 +207,10 @@ async def register_play_server_episode_put(
 @router.patch('/{play_server_id}/series', status_code=204)
 async def register_play_server_episode_patch(
     play_server_id: str,
-    data: list[schemas.Play_server_movie_create],
+    data: list[schemas.Play_server_episode_create],
     secret: str = Security(play_server_secret),
 ):
-    await models.Play_server_series.save(
+    await models.Play_server_episode.save(
         play_server_id=play_server_id,
         play_server_secret=secret,
         data=data,
@@ -218,7 +218,7 @@ async def register_play_server_episode_patch(
     )
 
 
-@router.delete('/{play_server_id}/series/{series_id}/episode/{episode_number}', status_code=204)
+@router.delete('/{play_server_id}/series/{series_id}/episodes/{episode_number}', status_code=204)
 async def delete_episode_from_play_server(
     play_server_id: str,
     series_id: int,
@@ -229,5 +229,5 @@ async def delete_episode_from_play_server(
         play_server_id=play_server_id,
         series_id=series_id,
         episode_number=episode_number,
-        secret=secret,
+        play_server_secret=secret,
     )

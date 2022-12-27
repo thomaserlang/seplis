@@ -172,7 +172,9 @@ async def test_play_server_register_movies(client: AsyncClient):
         assert r[0].movie_id == movie1.id
         assert r[1].movie_id == movie2.id
 
-    r = await client.delete(f'/2/play-server/{play_server.id}/movies/{movie1.id}')
+    r = await client.delete(f'/2/play-servers/{play_server.id}/movies/{movie1.id}', headers={
+        'Authorization': f'Secret {"2"*20}',
+    })
     assert r.status_code == 204
 
     async with database.session() as session:
@@ -195,7 +197,7 @@ async def test_play_server_register_movies(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_play_server_register_movies(client: AsyncClient):
+async def test_play_server_register_episodes(client: AsyncClient):
     user_id = await user_signin(client)
 
     play_server: schemas.Play_server = await models.Play_server.save(data=schemas.Play_server_create(
@@ -255,7 +257,9 @@ async def test_play_server_register_movies(client: AsyncClient):
         assert r[0].series_id == series1.id
         assert r[1].series_id == series2.id
 
-    r = await client.delete(f'/2/play-server/{play_server.id}/series/{series1.id}/episodes/1')
+    r = await client.delete(f'/2/play-servers/{play_server.id}/series/{series1.id}/episodes/1', headers={
+        'Authorization': f'Secret {"2"*20}',
+    })
     assert r.status_code == 204
 
     async with database.session() as session:

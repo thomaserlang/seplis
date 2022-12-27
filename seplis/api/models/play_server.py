@@ -187,8 +187,8 @@ class Play_server_movie(Base):
     updated_at = sa.Column(sa.DateTime, nullable=False)
 
 
-    @auto_session
     @staticmethod
+    @auto_session
     async def save(play_server_id: str, play_server_secret: str, data: list[schemas.Play_server_movie_create], patch=True, session: AsyncSession = None):
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
@@ -216,8 +216,8 @@ class Play_server_movie(Base):
             await session.execute(sql)
         
     
-    @auto_session
     @staticmethod
+    @auto_session
     async def delete(play_server_id: str, play_server_secret: str, movie_id: int, patch=True, session: AsyncSession = None):
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
@@ -241,8 +241,8 @@ class Play_server_episode(Base):
     updated_at = sa.Column(sa.DateTime, nullable=False)
 
 
-    @auto_session
     @staticmethod
+    @auto_session
     async def save(play_server_id: str, play_server_secret: str, data: list[schemas.Play_server_episode_create], patch=True, session: AsyncSession = None):
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
@@ -272,15 +272,15 @@ class Play_server_episode(Base):
             await session.execute(sql)
 
 
-    @auto_session
     @staticmethod
+    @auto_session
     async def delete(play_server_id: str, play_server_secret: str, series_id: int, episode_number: int, session: AsyncSession = None):
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
             Play_server.secret == play_server_secret,
         ))
         if not p:
-            raise exceptions.Play_server_unknown()        
+            raise exceptions.Play_server_unknown()
         await session.execute(sa.delete(Play_server_episode).where(
             Play_server_episode.play_server_id == play_server_id,
             Play_server_episode.series_id == series_id,
