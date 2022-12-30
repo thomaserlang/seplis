@@ -29,7 +29,7 @@
     "html-webpack-plugin": "^5.5.0",
     "fecha": "^2.3.3",
     "file-loader": "^6.2.0",
-    "flat": "^4.0.0",
+    "flat": "^5.0.1",
     "form-serialize": "^0.7.2",
     "jquery": "^3.3.1",
     "popper.js": "^1.15.0",
