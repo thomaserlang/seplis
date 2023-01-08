@@ -9,8 +9,9 @@
         "outDir": "./dist/",
         "noImplicitAny": true,
         "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
         "paths": {
-            "seplis/*": ["./seplis/web/ui/*"],
+            "@seplis/*": ["seplis/web/ui/*"],
         }
     },
     "exclude": [

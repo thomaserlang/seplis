@@ -14,7 +14,7 @@ module.exports = (env, argv) => {
         resolve: {
             extensions: [ '.tsx', '.ts', '.js' ],
             alias: {
-                klips: path.resolve(__dirname, 'klips/web/ui/'),
+                '@seplis': path.resolve(__dirname, 'seplis/web/ui/'),
             }
         },    
         module: {
