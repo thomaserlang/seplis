@@ -140,6 +140,11 @@ async def remove_play_server_access(
 
 class Play_server_secret(SecurityBase):
 
+    def __init__(self):
+        from fastapi.openapi.models import SecurityBase, SecuritySchemeType
+        self.model = SecurityBase(description='Add secret to authorization header', type=SecuritySchemeType.apiKey)
+        self.scheme_name = self.__class__.__name__
+
     async def __call__(self, request: Request) -> str | None:
         authorization: str = request.headers.get('Authorization')
         scheme, param = get_authorization_scheme_param(authorization)
