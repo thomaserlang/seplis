@@ -1,6 +1,6 @@
 import os, pathlib
 from typing import List, Literal, Optional, Tuple, Union
-from pydantic import AnyHttpUrl, BaseModel, BaseSettings, conint, validator
+from pydantic import AnyHttpUrl, BaseModel, BaseSettings, conint, validator, DirectoryPath
 import yaml, tempfile
 
 class ConfigRedisModel(BaseModel):
@@ -63,7 +63,7 @@ class ConfigClientModel(BaseModel):
 
 class ConfigPlayScanModel(BaseModel):
     type: Literal['series', 'movies']
-    path: pathlib.Path
+    path: DirectoryPath
     make_thumbnails: bool = False
 
 class ConfigPlayModel(BaseModel):
@@ -79,6 +79,7 @@ class ConfigPlayModel(BaseModel):
     temp_folder: pathlib.Path = os.path.join(tempfile.gettempdir(), 'seplis_play')
     thumbnails_path: Optional[pathlib.Path]
     session_timeout = 10 # Timeout for HLS sessions
+    server_id: str | None = None
 
 class ConfigSMTPModel(BaseModel):
     server = '127.0.0.1'

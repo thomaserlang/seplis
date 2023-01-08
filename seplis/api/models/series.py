@@ -248,7 +248,7 @@ class Series(Base):
 
         rows = await session.execute(sa.select(
             Episode.season.label('season'), 
-            sa.func.min(Episode.number).label('from'),
+            sa.func.min(Episode.number).label('from_'),
             sa.func.max(Episode.number).label('to'),
             sa.func.count(Episode.number).label('total'),
         ).where(
@@ -257,14 +257,14 @@ class Series(Base):
         seasons = []
         total_episodes = 0
         for row in rows:
-            total_episodes += row['total']
-            if not row['season']:
+            total_episodes += row.total
+            if not row.season:
                 continue
             seasons.append({
-                'season': row['season'],
-                'from': row['from'],
-                'to': row['to'],
-                'total': row['total'],
+                'season': row.season,
+                'from': row.from_,
+                'to': row.to,
+                'total': row.total,
             })
         await session.execute(sa.update(Series).where(Series.id == series_id).values(
             seasons=seasons,

@@ -190,7 +190,7 @@ async def delete_movie_from_play_server(
     )
 
 
-@router.put('/{play_server_id}/series', status_code=204)
+@router.put('/{play_server_id}/episodes', status_code=204)
 async def register_play_server_episode_put(
     play_server_id: str,
     data: list[schemas.Play_server_episode_create],
@@ -204,7 +204,7 @@ async def register_play_server_episode_put(
     )
 
 
-@router.patch('/{play_server_id}/series', status_code=204)
+@router.patch('/{play_server_id}/episodes', status_code=204)
 async def register_play_server_episode_patch(
     play_server_id: str,
     data: list[schemas.Play_server_episode_create],

@@ -1,4 +1,5 @@
 import asyncio
+import sqlalchemy as sa
 from fastapi import APIRouter, Response
 from pydantic import BaseModel
 from seplis.api.database import database
@@ -29,7 +30,7 @@ async def db_check() -> Health_response:
     )
     try:
         async with database.session() as s:
-            await s.execute('SELECT 1')
+            await s.execute(sa.text('SELECT 1'))
     except Exception as e:
         r.error = True
         r.message = f'Error: {str(e)}'

@@ -59,8 +59,8 @@ async def test_user(client: AsyncClient):
     assert r.status_code == 401, r.content
 
     r = await client.post('/2/users/me/change-password', json={
-        'current_password': '123456',
-        'new_password': '1234567890',
+        'current_password': '1'*10,
+        'new_password': '12345678901',
     })
     assert r.status_code == 204, r.content    
     

@@ -24,6 +24,7 @@ async def get_user(
         raise exceptions.Not_found('User not found')
     return schemas.User.from_orm(u)
 
+
 @router.put('/me', response_model=schemas.User, status_code=200)
 async def update_user(
     user_data: schemas.User_update,
@@ -38,10 +39,11 @@ async def change_password(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession = Depends(get_session),
 ):
-    password = await session.scalar(sa.select(models.User.password).where(models.User.id == user.id))
-    if not password:
+    password_hash = await session.scalar(sa.select(models.User.password).where(models.User.id == user.id))
+    if not password_hash:
         raise exceptions.User_unknown()
-    matches = await run_in_threadpool(pbkdf2_sha256.verify, data.current_password, password)
+
+    matches = await run_in_threadpool(pbkdf2_sha256.verify, data.current_password, password_hash)
     if not matches:
         raise exceptions.Wrong_password()
     await models.User.change_password(

@@ -12,7 +12,7 @@ async def test_episode_play_servers(client: AsyncClient):
         title='Test series',
         runtime=30,
         episodes=[
-            schemas.Episode_create(number=1),
+            schemas.Episode_create(number=1, title='1'),
         ]
     ), series_id=None)
 

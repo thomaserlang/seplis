@@ -10,8 +10,8 @@ async def test_episode_last_watched(client: AsyncClient):
         title='Test series',
         runtime=30,
         episodes=[
-            schemas.Episode_create(number=1),
-            schemas.Episode_create(number=2),
+            schemas.Episode_create(number=1, title='1'),
+            schemas.Episode_create(number=2, title='2'),
         ]
     ), series_id=None)
 

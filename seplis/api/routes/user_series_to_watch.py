@@ -24,7 +24,7 @@ async def get_series_recently_aired(
         models.Episode_watched.times > 0,
     ).group_by(models.Episode_watched.series_id).subquery()
     query = sa.select(models.Series, models.Episode).where(
-        models.Series.id == episodes_query.c.show_id,
+        models.Series.id == episodes_query.c.series_id,
         models.Episode.series_id == models.Series.id,
         models.Episode.number == episodes_query.c.episode_number+1,
         models.Episode.air_datetime <= datetime.now(tz=timezone.utc),

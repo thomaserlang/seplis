@@ -39,7 +39,6 @@ services:
       - /var/storitch:/var/storitch
   caddy:
     image: caddy:2
-    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"

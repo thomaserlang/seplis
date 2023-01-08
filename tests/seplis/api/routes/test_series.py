@@ -269,6 +269,12 @@ async def test_series(client: AsyncClient):
     assert len(episodes.items) == 1, episodes
     assert episodes.items[0].number == 3
 
+    r = await client.get(f'/2/series/{series_id}/episodes?air_date=2014-01-01')
+    assert r.status_code == 200, r.content
+    episodes = schemas.Page_result[schemas.Episode].parse_obj(r.json())
+    assert len(episodes.items) == 1, episodes
+    assert episodes.items[0].number == 1
+
     r = await client.get(f'/2/series/{series_id}/episodes/3')
     assert r.status_code == 200, r.content
 

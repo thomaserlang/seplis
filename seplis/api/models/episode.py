@@ -47,7 +47,7 @@ class Episode_watched(Base):
     @staticmethod
     async def increment(session: AsyncSession, user_id: int, series_id: int, episode_number: int, data: schemas.Episode_watched_increment):
         sql = sa.dialects.mysql.insert(Episode_watched).values(
-            show_id=series_id,
+            series_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
             watched_at=data.watched_at,
@@ -65,7 +65,7 @@ class Episode_watched(Base):
             watched_at=data.watched_at,
         )
         sql_watching = sa.dialects.mysql.insert(Episode_last_finished).values(
-            show_id=series_id,
+            series_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
         ).on_duplicate_key_update(
@@ -153,7 +153,7 @@ class Episode_watched(Base):
             await Episode_watched.reset_position(session=session, user_id=user_id, series_id=series_id, episode_number=episode_number)
             return
         sql = sa.dialects.mysql.insert(Episode_watched).values(
-            show_id=series_id,
+            series_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
             watched_at=datetime.now(tz=timezone.utc),
@@ -164,7 +164,7 @@ class Episode_watched(Base):
             position=sql.inserted.position,
         )
         sql_watching = sa.dialects.mysql.insert(Episode_last_finished).values(
-            show_id=series_id,
+            series_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
         ).on_duplicate_key_update(
@@ -250,7 +250,7 @@ class Episode_watched(Base):
 
 
 class Episode_last_finished(Base):
-    __tablename__ = 'episode_watching'
+    __tablename__ = 'episode_last_finished'
 
     series_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)

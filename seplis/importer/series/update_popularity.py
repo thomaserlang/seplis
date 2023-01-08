@@ -10,13 +10,14 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
     logger.info('Updating series popularity')
     series: dict[str, schemas.Series] = {}
     async with database.session() as session:
-        result = await session.execute(sa.select(models.Series))
-        for r in result.yield_per(1000):
-            s = schemas.Series.from_orm(r.Series)
-            if s.externals.get('themoviedb'):
-                series[s.externals['themoviedb']] = s
-            if s.externals.get('imdb'):
-                series[s.externals['imdb']] = s            
+        result = await session.stream(sa.select(models.Series))
+        async for db_series in result.yield_per(500):
+            for r in db_series:
+                s = schemas.Series.from_orm(r)
+                if s.externals.get('themoviedb'):
+                    series[s.externals['themoviedb']] = s
+                if s.externals.get('imdb'):
+                    series[s.externals['imdb']] = s            
 
     async for data in get_ids('movie_ids'):
         try:
@@ -29,8 +30,7 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                     popularity=data.popularity
                 ))
 
-            elif create_above_popularity != None and data.popularity >= create_above_popularity:
-                
+            elif create_above_popularity != None and data.popularity >= create_above_popularity:                
                 series_data = await TheMovieDB().info(id_)
                 if not series_data:
                     continue

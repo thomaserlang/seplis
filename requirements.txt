@@ -1,6 +1,6 @@
 PyMySQL==1.0.2
 PyYAML==6.0
-sqlalchemy[asyncio]==1.4.36
+sqlalchemy[asyncio]==1.4.46
 alembic==1.7.7
 aniso8601==8.0.0
 elasticsearch[async]==8.2.3
@@ -16,7 +16,6 @@ responses
 honcho==1.0.1
 ua-parser==0.10.0
 aiosmtplib==1.1.6
-watchdog==0.10.2
 pydantic==1.9.1
 aiomysql==0.1.1
 pytest==7.2.0
@@ -36,3 +35,5 @@ freezegun==1.2.2
 uuid6==2022.10.25
 tornado
 aiorun==2022.11.1
+watchfiles==0.18.1
+aiosqlite==0.18.0

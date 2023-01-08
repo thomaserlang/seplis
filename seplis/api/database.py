@@ -91,8 +91,8 @@ class Database:
                 port=u.port,
             )
             engine = create_engine(u)
-            engine.execute(text(f'CREATE SCHEMA IF NOT EXISTS {db} DEFAULT CHARACTER SET utf8mb4;'))
-            engine.dispose()
+            with engine.begin() as conn:
+                conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS {db} DEFAULT CHARACTER SET utf8mb4;'))
             from alembic.config import Config
             from alembic import command
             cfg = Config(os.path.dirname(os.path.abspath(__file__))+'/alembic.ini')

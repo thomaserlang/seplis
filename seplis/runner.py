@@ -1,4 +1,4 @@
-import click, signal, sys
+import click
 import uvicorn
 from seplis import config, logger, set_logger
 import asyncio
@@ -136,39 +136,39 @@ def worker(n):
     seplis.tasks.worker.main()
 
 
+async def play_scan_task(task):
+    from seplis.play.database import database
+    import seplis.play.scan
+    seplis.play.scan.upgrade_scan_db()
+    database.setup()
+    try:
+        await task
+    finally:
+        await database.close()
+
 @cli.command()
 @click.option('--disable-cleanup', is_flag=True, help='Disable cleanup after scan')
 @click.option('--disable-thumbnails', is_flag=True, help='Disable making thumbnails')
 def play_scan(disable_cleanup, disable_thumbnails):
     set_logger('play_scan.log')
     import seplis.play.scan
-    from seplis.play.database import database
-    database.connect()
-    seplis.play.scan.upgrade_scan_db()
-    r = seplis.play.scan.scan(disable_thumbnails=disable_thumbnails)
-    if not disable_cleanup:
-        seplis.play.scan.cleanup()
-
+    asyncio.run(play_scan_task(seplis.play.scan.scan(
+        disable_cleanup=disable_cleanup,
+        disable_thumbnails=disable_thumbnails,
+    )))
 
 @cli.command()
 def play_scan_watch():
     set_logger('play_scan_watch.log')
     import seplis.play.scan_watch
-    import seplis.play.scan
-    from seplis.play.database import database
-    database.connect()
-    seplis.play.scan.upgrade_scan_db()
-    seplis.play.scan_watch.main()
+    asyncio.run(play_scan_task(seplis.play.scan_watch.main()))
 
 
 @cli.command()
 def play_scan_cleanup():
     set_logger('play_scan_cleanup.log')
     import seplis.play.scan
-    from seplis.play.database import database
-    database.connect()
-    seplis.play.scan.upgrade_scan_db()
-    seplis.play.scan.cleanup()
+    asyncio.run(play_scan_task(seplis.play.scan.cleanup()))
 
 
 @cli.command()

@@ -1,96 +1,56 @@
-import time
-from watchdog.observers import Observer  
-from watchdog.events import PatternMatchingEventHandler
-from seplis.play import scan
+import asyncio
+import os
+from watchfiles import awatch, Change
+from seplis.play.scanners import Movie_scan, Episode_scan, Play_scan
 from seplis import config, logger
 
-class Handler(PatternMatchingEventHandler):
 
-    def __init__(self, scan_path, type_, make_thumbnails=False):
-        logger.info(f'Watching {type_}: {scan_path}')
-        patterns = ['*.'+t for t in config.data.play.media_types]
-        super().__init__(patterns=patterns)
-        self.type = type_
-        self.wait_list = {}
-        if type_ == 'series':
-            self.scanner = scan.Series_scan(scan_path=scan_path, make_thumbnails=make_thumbnails)
-        elif type_ == 'movies':
-            self.scanner = scan.Movie_scan(scan_path=scan_path, make_thumbnails=make_thumbnails)
-        else:
-            raise Exception(f'Type: {type_} is not supported for watching')
+async def main():
+    scanners: dict[str, scan.Play_scan] = {}
+    for scan in config.data.play.scan:
+        scanners[scan.path] = get_scanner(type_=scan.type, scan_path=scan.path, make_thumbnails=scan.make_thumbnails)
+    waiting = {}
+    async for changes in awatch(*[str(scan.path) for scan in config.data.play.scan]):
+        scanner: scan.Play_scan = None
+        for c in changes:
+            changed, path = c
+            for base_path in scanners:
+                if path.lower().startswith(str(base_path).lower()):
+                    scanner = scanners[base_path]
+                    break
+            if path in waiting:
+                waiting[path].cancel()
+                waiting.pop(path)
+                
+            waiting[path] = asyncio.create_task(parse( 
+                scanner=scanner, 
+                path=path, 
+                changed=changed, 
+                waiting=waiting
+            ))
 
-    def parse(self, event):
-        if event.is_directory:
-            logger.info(f'{event.src_path} is a directory, skipping')
-            return
-        path = event.src_path
-        if event.event_type == 'moved':
-            path = event.dest_path        
-        logger.info(event.key)
-        return (self.scanner.parse(path), path)
-            
-    def update(self, event):
-        try:
-            item = self.parse(event)
-            if item:
-                self.scanner.save_item(item[0], item[1])
-        except:
-            logger.exception('update') 
 
-    def on_created(self, event):
-        self.update(event)
+def get_scanner(type_: str, scan_path: str, make_thumbnails: bool) -> Play_scan:
+    if type_ == 'series':
+        return Episode_scan(scan_path=scan_path, make_thumbnails=make_thumbnails)
+    elif type_ == 'movies':
+        return Movie_scan(scan_path=scan_path, make_thumbnails=make_thumbnails)
 
-    def on_deleted(self, event):
-        try:
-            item = self.parse(event)
-            if item:
-                self.scanner.delete_item(item[0], item[1])
-        except:
-            logger.exception('on_deleted')
 
-    def on_moved(self, event):
-        event.event_type = 'deleted'
-        try:
-            item = self.parse(event)
-            if item:
-                self.scanner.delete_item(item[0], item[1])
-            event.event_type = 'moved'
-            self.update(event)
-        except:
-            logger.exception('on_moved')
-
-def main():
-    if not config.data.play.scan:
-        raise Exception('''
-            Nothing to scan. Add a path in the config file.
-
-            Example:
-
-                play:
-                    scan:
-                        -
-                            type: series | movies
-                            path: /a/path/to/the/series
-            ''')
-    
-    obs = Observer()
-    logger.info('Play scan watch started')
-    for s in config.data.play.scan:
-        event_handler = Handler(
-            scan_path=str(s.path),
-            type_=s.type,
-            make_thumbnails=s.make_thumbnails,
-        )
-        obs.schedule(
-            event_handler,
-            str(s.path),
-            recursive=True,
-        )
-    obs.start()
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        obs.stop()
-    obs.join()
-    logger.info('Play scan watch stopped')
+async def parse(scanner: Play_scan, path: str, changed: Change, waiting: dict):
+    if changed in (Change.added, Change.modified):
+        await asyncio.sleep(3)
+    waiting.pop(path, None)
+    info = os.path.splitext(path)
+    if len(info) != 2:
+        return
+    if info[1][1:].lower() not in config.data.play.media_types:
+        return
+    parsed = scanner.parse(path)
+    if parsed:
+        if changed in (Change.added, Change.modified):
+            logger.info(f'Added/changed: {path}')
+            await scanner.save_item(parsed, path)
+        elif changed == Change.deleted:
+            logger.info(f'Deleted: {path}')
+            await scanner.delete_item(parsed, path)

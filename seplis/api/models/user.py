@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from starlette.concurrency import run_in_threadpool
 from .. import schemas, exceptions
 from .base import Base
-from seplis import utils
+from seplis import utils, logger
 from seplis.api.database import database
 from seplis.api import constants, exceptions, rebuild_cache
 from datetime import datetime, timedelta, timezone

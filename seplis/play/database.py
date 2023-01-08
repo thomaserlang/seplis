@@ -25,9 +25,9 @@ class Database:
         self.engine = None
         self.session = None
 
-    def setup(self, database_url):
+    def setup(self):
         self.engine = create_async_engine(
-            database_url.replace('mysqldb', 'aiomysql').replace('pymysql', 'aiomysql'),
+            config.data.play.database.replace('mysqldb', 'aiomysql').replace('pymysql', 'aiomysql').replace('sqlite:', 'sqlite+aiosqlite:'),
             echo=False,
             pool_recycle=3599,
             pool_pre_ping=True,
@@ -35,5 +35,8 @@ class Database:
             json_deserializer=lambda s: utils.json_loads(s),
         )
         self.session = sessionmaker(self.engine, expire_on_commit=False, class_=AsyncSession)
+
+    async def close(self):
+        await self.engine.dispose()
 
 database = Database()

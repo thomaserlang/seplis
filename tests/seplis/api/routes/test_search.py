@@ -162,12 +162,12 @@ async def test_search(client: AsyncClient):
     # Test the walking dead
     series5: schemas.Series = await models.Series.save(schemas.Series_create(
         title='The Walking Dead',
-        release_date='2010-10-31',
+        premiered='2010-10-31',
     ), series_id=None)
 
     series6: schemas.Series = await models.Series.save(schemas.Series_create(
         title='Fear the Walking Dead',
-        release_date='2015-08-23',
+        premiered='2015-08-23',
     ), series_id=None)
 
     await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')

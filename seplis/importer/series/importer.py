@@ -21,17 +21,18 @@ async def update_series_bulk(from_series_id=None, do_async=False):
         query = sa.select(models.Series)
         if from_series_id:
             query = query.where(models.Series.id >= from_series_id)
-        result = await session.execute(query)
-        for series in result.yield_per(500):
-            try:
-                if not do_async:
-                    await update_series(schemas.Series.from_orm(series.Series))
-                else:
-                    await database.redis_queue.enqueue_job('update_series', series_id=series.Series.id)
-            except (KeyboardInterrupt, SystemExit):
-                break
-            except Exception:
-                logger.exception('update_series_bulk')
+        result = await session.stream(query)
+        async for db_series in result.yield_per(500):
+            for series in db_series:
+                try:
+                    if not do_async:
+                        await update_series(schemas.Series.from_orm(series.Series))
+                    else:
+                        await database.redis_queue.enqueue_job('update_series', series_id=series.Series.id)
+                except (KeyboardInterrupt, SystemExit):
+                    break
+                except Exception:
+                    logger.exception('update_series_bulk')
 
 
 async def update_series_incremental():

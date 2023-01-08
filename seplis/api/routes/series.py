@@ -1,8 +1,7 @@
-from urllib.parse import urljoin
 from fastapi import APIRouter, Depends, HTTPException, Security, Request, UploadFile, Form
 import sqlalchemy as sa
-
-from ..dependencies import authenticated, get_session, AsyncSession, httpx_client
+from datetime import date
+from ..dependencies import authenticated, get_session, AsyncSession
 from ..database import database
 from .. import models, schemas, constants
 from ... import logger, utils, config
@@ -82,6 +81,8 @@ async def get_episodes(
     series_id: int,
     request: Request,
     season: int | None = None,
+    episode: int | None = None,
+    air_date: date | None = None,
     page_query: schemas.Page_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
@@ -90,6 +91,10 @@ async def get_episodes(
     )
     if season:
         query = query.where(models.Episode.season == season)
+    if episode:
+        query = query.where(models.Episode.episode == episode)
+    if air_date:
+        query = query.where(models.Episode.air_date == air_date)
     p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request)
     p.items = [schemas.Episode.from_orm(episode) for episode in p.items]
     return p

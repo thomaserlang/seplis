@@ -11,16 +11,16 @@ async def test_series_user_stats(client: AsyncClient):
         title='Test series',
         runtime=30,
         episodes=[
-            schemas.Episode_create(number=1),
-            schemas.Episode_create(number=2),
-            schemas.Episode_create(number=3, runtime=40),
+            schemas.Episode_create(number=1, title='1'),
+            schemas.Episode_create(number=2, title='2'),
+            schemas.Episode_create(number=3, title='3', runtime=40),
         ]
     ), series_id=None)
     series2: schemas.Series = await models.Series.save(schemas.Series_create(
         title='Test series',
         runtime=30,
         episodes=[
-            schemas.Episode_create(number=1),
+            schemas.Episode_create(number=1, title='1'),
         ]
     ), series_id=None)
 

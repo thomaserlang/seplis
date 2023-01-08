@@ -10,11 +10,12 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
     logger.info('Updating movie popularity')
     movies: dict[str, schemas.Movie] = {}
     async with database.session() as session:
-        result = await session.execute(sa.select(models.Movie))
-        for r in result.yield_per(1000):
-            s = schemas.Movie.from_orm(r.Movie)
-            if s.externals.get('themoviedb'):
-                movies[s.externals['themoviedb']] = s
+        result = await session.stream(sa.select(models.Movie))
+        async for db_movies in result.yield_per(500):
+            for movie in db_movies:
+                s = schemas.Movie.from_orm(movie)
+                if s.externals.get('themoviedb'):
+                    movies[s.externals['themoviedb']] = s
 
     async for data in get_ids('movie_ids'):
         try:

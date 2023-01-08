@@ -38,17 +38,18 @@ async def update_movies_bulk(from_movie_id=None, do_async=False):
         query = sa.select(models.Movie)
         if from_movie_id:
             query = query.where(models.Movie.id >= from_movie_id)
-        result = await session.execute(query)
-        for movie in result.yield_per(500):
-            try:
-                if not do_async:
-                    await update_movie(movie=schemas.Movie.from_orm(movie.Movie))
-                else:
-                    await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
-            except (KeyboardInterrupt, SystemExit):
-                break
-            except Exception:
-                logger.exception('update_series_bulk')
+        result = await session.stream(query)
+        async for movies in result.yield_per(500):
+            for movie in movies:
+                try:
+                    if not do_async:
+                        await update_movie(movie=schemas.Movie.from_orm(movie.Movie))
+                    else:
+                        await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
+                except (KeyboardInterrupt, SystemExit):
+                    break
+                except Exception:
+                    logger.exception('update_series_bulk')
 
 
 async def update_incremental():

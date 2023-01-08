@@ -56,8 +56,8 @@ async def episodes_watched(session: AsyncSession, user_id: int | str) -> dict[st
     ))
     r = r.first()
     return {
-        'episodes_watched': r['episodes_watched'] or 0,
-        'episodes_watched_minutes': r['episodes_watched_minutes'] or 0,
+        'episodes_watched': r.episodes_watched or 0,
+        'episodes_watched_minutes': r.episodes_watched_minutes or 0,
     }
 
 

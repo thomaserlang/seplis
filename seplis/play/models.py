@@ -1,6 +1,5 @@
 import sqlalchemy as sa
-from sqlalchemy.ext.declarative import declarative_base
-base = declarative_base()
+base = sa.orm.declarative_base()
 
 class Episode(base):
     __tablename__ = 'episodes'

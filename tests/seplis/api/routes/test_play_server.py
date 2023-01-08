@@ -215,7 +215,7 @@ async def test_play_server_register_episodes(client: AsyncClient):
         episodes=[schemas.Episode_create(title='EP2', number=1)]
     ))    
 
-    r = await client.put(f'/2/play-servers/{play_server.id}/series', json=[
+    r = await client.put(f'/2/play-servers/{play_server.id}/episodes', json=[
         {'series_id': series1.id, 'episode_number': 1},
     ], headers={
         'Authorization': f'Secret {"2"*20}',
@@ -226,7 +226,7 @@ async def test_play_server_register_episodes(client: AsyncClient):
         r = await session.scalars(sa.select(models.Play_server_episode))
         assert r.all()[0].series_id == series1.id
 
-    r = await client.patch(f'/2/play-servers/{play_server.id}/series', json=[
+    r = await client.patch(f'/2/play-servers/{play_server.id}/episodes', json=[
         {'series_id': series2.id, 'episode_number': 1},
     ], headers={
         'Authorization': f'Secret {"2"*20}',
@@ -242,7 +242,7 @@ async def test_play_server_register_episodes(client: AsyncClient):
         assert r[1].series_id == series2.id
 
 
-    r = await client.patch(f'/2/play-servers/{play_server.id}/series', json=[
+    r = await client.patch(f'/2/play-servers/{play_server.id}/episodes', json=[
         {'series_id': series2.id, 'episode_number': 1},
     ], headers={
         'Authorization': f'Secret {"2"*20}',
@@ -269,7 +269,7 @@ async def test_play_server_register_episodes(client: AsyncClient):
         r = r.all()
         assert r[0].series_id == series2.id
 
-    r = await client.put(f'/2/play-servers/{play_server.id}/series', json=[], headers={
+    r = await client.put(f'/2/play-servers/{play_server.id}/episodes', json=[], headers={
         'Authorization': f'Secret {"2"*20}',
     })
     assert r.status_code == 204, r.content

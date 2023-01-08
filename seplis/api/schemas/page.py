@@ -36,7 +36,7 @@ class Page_links(BaseModel):
 class Page_result(GenericModel, Generic[T]):
     items: list[T]
     links = Page_links()
-    total: int
-    per_page: int
-    page: int
-    pages: int
+    total: int = 0
+    per_page: int = 25
+    page: int = 0
+    pages: int = 0
