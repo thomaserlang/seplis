@@ -1,10 +1,12 @@
 import React from 'react'
-import { BrowserRouter, createBrowserRouter, Route, RouterProvider, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ChakraProvider, extendTheme, type ThemeConfig } from '@chakra-ui/react'
 
-import Login from './viewes/login'
+import Login from './pages/login'
+import Home from './pages/home'
+
 import { QueryParamProvider } from 'use-query-params'
 import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6'
 
@@ -35,10 +37,12 @@ createRoot(document.getElementById("root")).render(
         <ChakraProvider theme={theme}>
             <BrowserRouter>
                 <QueryParamProvider adapter={ReactRouter6Adapter}>
-                    <Routes>
-                        <Route path="/" element={<div>test</div>} /> 
-                        <Route path="/login" element={<Login />} />
-                    </Routes>
+                    <QueryClientProvider client={queryClient}>
+                        <Routes>
+                            <Route path="/" element={<Home />} /> 
+                            <Route path="/login" element={<Login />} />
+                        </Routes>
+                    </QueryClientProvider>
                 </QueryParamProvider>
             </BrowserRouter>
         </ChakraProvider>

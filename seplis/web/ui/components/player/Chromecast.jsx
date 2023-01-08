@@ -148,7 +148,7 @@ class Chromecast {
                     },
                     startTime: startTime,
                     subtitleOffset: subtitleOffset || 0,
-                    apiUrl: seplisBaseUrl,
+                    apiUrl: (window as any).seplisAPI,
                 }
                 let playUrl = result[0].playServer.play_url+`/files/${session}/transcode`+
                     `?play_id=${result[0].playServer.play_id}`+
@@ -239,7 +239,7 @@ class Chromecast {
                     audioLang: audioLang || '',
                     subtitleLang: subtitleLang || '',
                     subtitleOffset: subtitleOffset || 0,
-                    apiUrl: seplisBaseUrl,
+                    apiUrl: (window as any).seplisAPI,
                 }
                 const playUrl = result[0].playServer.play_url+`/files/${session}/transcode`+
                     `?play_id=${result[0].playServer.play_id}`+

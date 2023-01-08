@@ -20,10 +20,10 @@ import { FaUserAlt, FaLock } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { IToken } from 'seplis/interfaces/token'
 import { useNavigate } from 'react-router-dom'
 import { StringParam, useQueryParam } from 'use-query-params'
-import { ErrorMessageFromResponse } from '../components/error'
+import { IToken } from '@seplis/interfaces/token'
+import { ErrorMessageFromResponse } from '@seplis/components/error'
 
 const CFaUserAlt = chakra(FaUserAlt)
 const CFaLock = chakra(FaLock)
@@ -40,9 +40,9 @@ export default function Login() {
     const [ next ] = useQueryParam('next', StringParam)
     const navigate = useNavigate()
     useEffect(() => {
-        document.title = 'SEPLIS - Login in'
+        document.title = 'Login in | SEPLIS'
         setValue('next', next)
-    })
+    }, [])
 
     const onSubmit = handleSubmit(async (data) => {
         try {

@@ -1,9 +1,18 @@
-import Axios from 'axios'
+import Axios, { AxiosError } from 'axios'
 
-const axios = Axios.create({
-    baseURL: (window as any).seplisBaseUrl
+
+const api = Axios.create({
+    baseURL: (window as any).seplisAPI
 })
 if (localStorage.getItem('accessToken'))
-    axios.defaults.headers['Authorization'] = localStorage.getItem('accessToken')
+    api.defaults.headers['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`
 
-export default axios
+
+api.interceptors.response.use((response) => response, (error: AxiosError) => {
+    if (error.response.status == 401) {
+        location.href = '/login'
+    }
+    throw error
+})
+
+export default api
