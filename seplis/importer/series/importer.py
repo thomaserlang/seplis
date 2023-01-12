@@ -26,9 +26,9 @@ async def update_series_bulk(from_series_id=None, do_async=False):
             for series in db_series:
                 try:
                     if not do_async:
-                        await update_series(schemas.Series.from_orm(series.Series))
+                        await update_series(schemas.Series.from_orm(series))
                     else:
-                        await database.redis_queue.enqueue_job('update_series', series_id=series.Series.id)
+                        await database.redis_queue.enqueue_job('update_series', series_id=series.id)
                 except (KeyboardInterrupt, SystemExit):
                     break
                 except Exception:
