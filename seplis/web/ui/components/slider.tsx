@@ -33,6 +33,8 @@ export default function Slider<S = undefined>({title, url, parseItem}: IProps<S>
             setPage(1)
             setIndex(0)
             setItems(newItems)
+        }, {
+            keepPreviousData: true
         })
     
     useEffect(() => {
@@ -56,6 +58,7 @@ export default function Slider<S = undefined>({title, url, parseItem}: IProps<S>
     return RenderSlider(title, items, isInitialLoading, setPage, index, setIndex)    
 }
 
+
 function RenderSlider(
     title: string, 
     items: ISliderItem[], 
@@ -78,7 +81,7 @@ function RenderSlider(
 
     if (isLoading || !items) {
         return <Box> 
-            <Heading as="h2" className="row-header">{title}</Heading>
+            <h2 className="row-header">{title}</h2>
             <Box className="slider">
                 <HStack>
                     {[...Array(displayItemCount).keys()].map((key) => (                
@@ -90,26 +93,34 @@ function RenderSlider(
     }
 
     return <Box> 
-        <Heading as="h2" className="row-header">{title}</Heading>
+        <h2 className="row-header">{title}</h2>
         <Box className="slider">
             <HStack>
                 {items.slice(index, index+displayItemCount).map(item => (
                     <Box className="slider-item" key={item.key}>
                         <Image 
                             src={`${item.img}@SX320.webp`} 
-                            fallback={<Center height='100%'><Text style={{fontSize: '1.4vw'}}>
+                            fallback={<Center height='100%'><Text>
                                 {item.title || 'No title'}
                             </Text></Center>}
                         />
                     </Box>
                 ))}
 
-
-                {(items.length < displayItemCount) && [...Array(displayItemCount-items.length).keys()].map(key => (
+                {(items.length < index+displayItemCount) && [...Array((index+displayItemCount)-items.length).keys()].map(key => (
                     <Box className="slider-item" key={`empty-${key}`}></Box>
                 )) }
-                {index > 0 && 
-                    <div className="slider-button left-button" onClick={() => {
+
+                {index > 0 && <div className="slider-peek prev">
+                    {(items[index-1]?.img) &&
+                        <div className="image">
+                            <Image 
+                                src={`${items[index-1].img}@SX320.webp`}
+                            />
+                        </div>}
+
+                    <div className="background"></div>
+                    <div className="button" onClick={() => {
                         setIndex((index) => {
                             let i = index - displayItemCount
                             if (i < 0)
@@ -117,12 +128,20 @@ function RenderSlider(
                             return i
                         })
                     }}>
-                        <ChevronLeftIcon boxSize="2vw" />
-                    </div>}
+                        <ChevronLeftIcon />
+                    </div>
+                </div>}
 
 
-                {items.length > index+displayItemCount && 
-                    <div className="slider-button right-button" onClick={() => {
+                {items.length > index+displayItemCount && <div className="slider-peek next">
+                    {(items[index + displayItemCount]?.img) &&
+                        <div className="image">
+                            <Image 
+                                src={`${items[index + displayItemCount].img}@SX320.webp`}
+                            />
+                        </div>}
+                    <div className="background"></div>
+                    <div className="button" onClick={() => {
                         setIndex((index) =>  {
                             setPage((page) => page + 1)
                             let i = index + displayItemCount
@@ -131,9 +150,9 @@ function RenderSlider(
                             return i
                         })
                     }}>
-                        <ChevronRightIcon boxSize="2vw" />
-                    </div>}
-
+                        <ChevronRightIcon />
+                    </div>                
+                </div>}
 
             </HStack>
         </Box>
@@ -145,9 +164,9 @@ function rowWidthItems() {
     if (width >= 1600)
         return 12
     else if (width >= 1100)
-        return 8
+        return 7
     else if (width >= 600)
         return 6
     else 
-        return 4
+        return 3
 }
