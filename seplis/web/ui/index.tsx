@@ -33,6 +33,10 @@ const theme = extendTheme({
     }
 })
 
+import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'
+
+spatialInit({})
+
 createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <ChakraProvider theme={theme}>
@@ -40,7 +44,7 @@ createRoot(document.getElementById("root")).render(
                 <QueryParamProvider adapter={ReactRouter6Adapter}>
                     <QueryClientProvider client={queryClient}>
                         <Routes>
-                            <Route path="/" element={<Home />} /> 
+                            <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Login />} />
                         </Routes>
                     </QueryClientProvider>

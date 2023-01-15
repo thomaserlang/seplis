@@ -1,8 +1,12 @@
+import { FocusHandler, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { ISeriesUser } from '@seplis/interfaces/series'
 import Slider from './slider'
 
-export default function SliderRecentlyWatched() {      
-    
+interface IProps {
+    onFocus?: FocusHandler,
+}
+
+export default function SliderRecentlyWatched(props: IProps) {    
     return <Slider<ISeriesUser>
         title="Watched" 
         url="/2/users/me/series-watched"
@@ -13,5 +17,6 @@ export default function SliderRecentlyWatched() {
                 img: item.series.poster_image?.url,
             }
         )}
+        onFocus={props.onFocus}
     />
 }

@@ -26,12 +26,18 @@
     padding: 0 2.785vw;
     user-select: none;
     overflow: hidden;
+    width: 100%;
 
     .slider-item {
         border-radius: 0.2vw;
         aspect-ratio: auto 603 / 887;
         border: 1px solid #000;
+        box-sizing: border-box;
         overflow: hidden;
+
+        &.focused {            
+            border: 7px solid #fff;
+        }
 
         img {
             object-fit: cover;
@@ -74,7 +80,7 @@
         width: 2.5vw;
         height: 100%;
         cursor: pointer;
-        border-radius: 0.2vw;
+        overflow: hidden;
 
         @media screen and (min-width: 1100px) and (max-width: 1599px) {
             width: 3.9vw;
@@ -86,6 +92,10 @@
 
         @media screen and (max-width: 599px) {
             width: 35px;
+        }
+
+        &.focused {            
+            border: 7px solid #fff;
         }
 
         .image {
@@ -157,7 +167,7 @@
 
     }        
     
-    &:hover .button, &:focus .slider-peek .button {
+    &:hover .slider-peek .button {
         visibility: visible;
     }
 
@@ -167,6 +177,16 @@
     
     .next {
         right: 0px;
+    }
+
+    .slider-peek.prev {        
+        border-top-right-radius: 0.2vw;
+        border-bottom-right-radius: 0.2vw;
+    }
+
+    .slider-peek.next {        
+        border-top-left-radius: 0.2vw;
+        border-bottom-left-radius: 0.2vw;
     }
       
 }

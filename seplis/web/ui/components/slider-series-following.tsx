@@ -1,11 +1,12 @@
-import api from '@seplis/api'
-import { IPageResult } from '@seplis/interfaces/page'
+import { FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import { ISeriesUser } from '@seplis/interfaces/series'
-import { ISliderItem } from '@seplis/interfaces/slider'
-import { useQuery } from '@tanstack/react-query'
 import Slider from './slider'
 
-export default function SliderSeriesFollowing() {
+interface IProps {
+    onFocus?: FocusHandler,
+}
+
+export default function SliderSeriesFollowing(props: IProps) {
     return <Slider<ISeriesUser>
         title="Following" 
         url="/2/users/me/series-following"
@@ -16,5 +17,6 @@ export default function SliderSeriesFollowing() {
                 img: item.series.poster_image?.url,
             }
         )}
+        onFocus={props.onFocus}
     />
 }
