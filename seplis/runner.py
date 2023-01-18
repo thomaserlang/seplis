@@ -127,12 +127,11 @@ def update_series_popularity():
 
 
 @cli.command()
-@click.option('-n', default=1, help='worker number')
-def worker(n):
-    set_logger(f'worker-{n}.log')
+def worker():
+    import logging
+    logging.basicConfig(level=config.data.logging.level.upper())
     import seplis.tasks.worker
-    from seplis.api.connections import database
-    database.connect()
+    set_logger(f'worker.log')
     seplis.tasks.worker.main()
 
 
@@ -146,6 +145,7 @@ async def play_scan_task(task):
     finally:
         await database.close()
 
+
 @cli.command()
 @click.option('--disable-cleanup', is_flag=True, help='Disable cleanup after scan')
 @click.option('--disable-thumbnails', is_flag=True, help='Disable making thumbnails')
@@ -156,6 +156,7 @@ def play_scan(disable_cleanup, disable_thumbnails):
         disable_cleanup=disable_cleanup,
         disable_thumbnails=disable_thumbnails,
     )))
+
 
 @cli.command()
 def play_scan_watch():

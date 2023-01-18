@@ -12,6 +12,7 @@ class ConfigRedisModel(BaseModel):
     master_name = 'mymaster'
     password: Optional[str]
     queue_name = 'seplis:queue'
+    job_completion_wait = 0
     
     @validator('host', pre=True, always=True)
     def default_host(cls, v, *, values, **kwargs):
