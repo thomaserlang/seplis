@@ -15,7 +15,6 @@ async def play_db_test():
     from seplis.play import scan
     config_load()
     set_logger('play_test')
-    logger.error('PLAY DB')
     config.data.test = True
     config.data.play.server_id = '123'
     with tempfile.TemporaryDirectory() as dir:

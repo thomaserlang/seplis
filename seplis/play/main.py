@@ -29,7 +29,7 @@ app.mount('/files', StaticFiles(directory=config.data.play.temp_folder), name='f
 
 @app.on_event('startup')
 async def startup():
-    database.setup(config.data.play.database)
+    database.setup()
 
 @app.on_event('shutdown')
 async def shutdown():

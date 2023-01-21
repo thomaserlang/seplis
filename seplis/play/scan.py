@@ -123,5 +123,4 @@ def upgrade_scan_db():
     )
     cfg.set_main_option('script_location', 'seplis.play:migration')
     cfg.set_main_option('url', config.data.play.database)
-    logger.error(config.data.play.database)
     command.upgrade(cfg, 'head')
