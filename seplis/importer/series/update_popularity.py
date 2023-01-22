@@ -13,11 +13,14 @@ async def update_popularity(create_series = True, create_above_popularity: float
         result = await session.stream(sa.select(models.Series))
         async for db_series in result.yield_per(500):
             for r in db_series:
-                s = schemas.Series.from_orm(r)
-                if s.externals.get('themoviedb'):
-                    series[s.externals['themoviedb']] = s
-                if s.externals.get('imdb'):
-                    series[s.externals['imdb']] = s            
+                try:
+                    s = schemas.Series.from_orm(r)
+                    if s.externals.get('themoviedb'):
+                        series[s.externals['themoviedb']] = s
+                    if s.externals.get('imdb'):
+                        series[s.externals['imdb']] = s
+                except Exception as e:
+                    logger.error(e)      
 
     async for data in get_ids('tv_series_ids'):
         try:

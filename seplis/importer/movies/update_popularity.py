@@ -15,9 +15,12 @@ async def update_popularity(create_movies = True, create_above_popularity: float
         result = await session.stream(sa.select(models.Movie))
         async for db_movies in result.yield_per(500):
             for movie in db_movies:
-                s = schemas.Movie.from_orm(movie)
-                if s.externals.get('themoviedb'):
-                    movies[s.externals['themoviedb']] = s
+                try:
+                    s = schemas.Movie.from_orm(movie)
+                    if s.externals.get('themoviedb'):
+                        movies[s.externals['themoviedb']] = s
+                except Exception as e:
+                    logger.error(e)
 
     async for data in get_ids('movie_ids'):
         try:
@@ -40,5 +43,5 @@ async def update_popularity(create_movies = True, create_above_popularity: float
             raise
         except exceptions.API_exception as e:
             logger.error(e.message)
-        except Exception:
-            logger.exception(f'update_popularity {data.id}')
+        except Exception as e:
+            logger.exception(e)
