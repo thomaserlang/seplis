@@ -1,16 +1,19 @@
 import click
 import uvicorn
 from seplis import config, logger, set_logger
+from seplis.api import exceptions
 import asyncio
 
 async def run_task(task):
     from seplis.api.database import database
     await database.setup()
     try:
-        await task
-    finally:
-        await database.close()
-
+        try:
+            await task
+        finally:
+            await database.close()
+    except exceptions.API_exception as e:
+        logger.error(e.message)
 
 @click.group()
 @click.option('--config', default=None, help='path to the config file')
@@ -86,7 +89,6 @@ def update_movie(movie_id):
     import seplis.importer
     set_logger('importer_update_movie.log')
     asyncio.run(run_task(seplis.importer.movies.update_movie(movie_id=movie_id)))
-
 
 @cli.command()
 def update_movies_incremental():

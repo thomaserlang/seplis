@@ -1,4 +1,6 @@
 import sqlalchemy as sa
+
+from seplis.api import exceptions
 from ..themoviedb_export import get_ids
 from . import importer
 from ...api.database import database
@@ -30,15 +32,13 @@ async def update_popularity(create_movies = True, create_above_popularity: float
 
             elif create_movies and create_above_popularity != None and data.popularity >= create_above_popularity:
                 logger.info(f'Creating themoviedb id {id_}, popularity: {data.popularity}')
-                movie = await models.Movie.save(data=schemas.Movie_create(
-                    externals={
-                        'themoviedb': id_,
-                    },
-                    popularity=data.popularity,    
-                ))
-                await importer.update_movie(movie=movie)
+                movie = await models.Movie.save(
+                    data=await importer.get_movie_data(id_)
+                )
                 
         except (KeyboardInterrupt, SystemExit):
             raise
+        except exceptions.API_exception as e:
+            logger.error(e.message)
         except Exception:
             logger.exception(f'update_popularity {data.id}')

@@ -3,7 +3,7 @@ import httpx
 import asyncio
 from seplis import config, constants, logger
 from seplis.api.database import database
-from seplis.api import models, schemas
+from seplis.api import exceptions, models, schemas
 
 statuses = {
     'Unknown': 0,
@@ -48,6 +48,8 @@ async def update_movies_bulk(from_movie_id=None, do_async=False):
                         await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
                 except (KeyboardInterrupt, SystemExit):
                     break
+                except exceptions.API_exception as e:
+                    logger.error(e.message)
                 except Exception:
                     logger.exception('update_series_bulk')
 
@@ -74,15 +76,22 @@ async def update_incremental():
                     continue
                 movie = schemas.Movie.from_orm(result)
                 if movie:
-                    await update_movie(movie=movie)
+                    try:
+                        await update_movie(movie=movie)
+                    except (KeyboardInterrupt, SystemExit):
+                        break
+                    except exceptions.API_exception as e:
+                        logger.error(e.message)
+                    except Exception:
+                        logger.exception('update_series_bulk')
             if data['page'] == data['total_pages']:
                 break
 
 
 async def update_movie_metadata(movie: schemas.Movie):
     logger.info(f'[Movie: {movie.id}] Updating metadata')
-    data = schemas.Movie_update(externals={})
-    if not movie.externals.get('themoviedb'):
+    themoviedb = movie.externals.get('themoviedb')
+    if not themoviedb:
         if not movie.externals.get('imdb'):
             logger.info(f'[Movie: {movie.id}] externals.imdb doesn\'t exist')
             return            
@@ -100,21 +109,26 @@ async def update_movie_metadata(movie: schemas.Movie):
         if not r['movie_results']:
             logger.warning(f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"')
             return
-        data.externals['themoviedb'] = r['movie_results'][0]['id']
-        movie.externals['themoviedb'] = r['movie_results'][0]['id']
+        themoviedb = r['movie_results'][0]['id']
+    data = await get_movie_data(themoviedb)
+    await models.Movie.save(data=data, movie_id=movie.id, patch=True)
 
-    r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}', params={
+async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
+    r = await client.get(f'https://api.themoviedb.org/3/movie/{themoviedb}', params={
         'api_key': config.data.client.themoviedb,
         'append_to_response': 'alternative_titles',
     })
     if r.status_code >= 400:
-        logger.error(f'[Movie: {movie.id}] Failed to get movie from themoviedb: {r.content}')
+        logger.error(f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}')
         return
     r = r.json()
     
-    if r['imdb_id'] and movie.externals.get('imdb') != r['imdb_id']:
+    data = schemas.Movie_update()
+    data.externals = {
+        'themoviedb': themoviedb,
+    }
+    if r.get('imdb_id'):
         data.externals['imdb'] = r['imdb_id']
-
     data.title = r['title']
     data.original_title = r['original_title']
     data.status = statuses.get(r['status'], 0)
@@ -126,8 +140,7 @@ async def update_movie_metadata(movie: schemas.Movie):
     data.alternative_titles = [a['title'] for a in r['alternative_titles']['titles']]
     data.genres = [genre['name'] for genre in r['genres']]
     data.popularity = r['popularity']
-    await models.Movie.save(data=data, movie_id=movie.id, patch=True)
-
+    return data
 
 async def update_images(movie: schemas.Movie):
     logger.info(f'[Movie: {movie.id}] Updating images')

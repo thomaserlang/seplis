@@ -3,7 +3,7 @@ import sqlalchemy as sa
 import asyncio
 from seplis import logger
 from seplis.api.database import database
-from seplis.api import models, schemas
+from seplis.api import exceptions, models, schemas
 from .base import importers
 
 
@@ -31,8 +31,8 @@ async def update_series_bulk(from_series_id=None, do_async=False):
                         await database.redis_queue.enqueue_job('update_series', series_id=series.id)
                 except (KeyboardInterrupt, SystemExit):
                     break
-                except Exception:
-                    logger.exception('update_series_bulk')
+                except Exception as e:
+                    logger.exception(e)
 
 
 async def update_series_incremental():
@@ -45,8 +45,8 @@ async def update_series_incremental():
             await _importer_incremental(importers[key])
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception:
-            logger.exception('update_series_incremental')
+        except Exception as e:
+            logger.exception(e)
 
 
 async def _importer_incremental(importer):
@@ -71,8 +71,10 @@ async def _importer_incremental(importer):
                     await update_series_images(series)
             except (KeyboardInterrupt, SystemExit):
                 raise
-            except Exception:
-                logger.exception('_importer_incremental')
+            except exceptions.API_exception as e:
+                logger.error(e.message)
+            except Exception as e:
+                logger.exception(e)
     importer.save_timestamp(timestamp)
 
 
