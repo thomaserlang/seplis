@@ -6,6 +6,7 @@ import { ChakraProvider, extendTheme, type ThemeConfig } from '@chakra-ui/react'
 
 import Login from './pages/login'
 import Home from './pages/home'
+import Movie from './pages/movie'
 
 import { QueryParamProvider } from 'use-query-params'
 import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6'
@@ -46,6 +47,7 @@ createRoot(document.getElementById("root")).render(
                         <Routes>
                             <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Login />} />
+                            <Route path="/movies/:movieId" element={<Movie />} />
                         </Routes>
                     </QueryClientProvider>
                 </QueryParamProvider>

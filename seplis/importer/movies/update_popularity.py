@@ -6,7 +6,7 @@ from ...api import models, schemas
 from ... import logger
 
 
-async def update_popularity(create_above_popularity: float | None = 1.0):
+async def update_popularity(create_movies = True, create_above_popularity: float | None = 1.0):
     logger.info('Updating movie popularity')
     movies: dict[str, schemas.Movie] = {}
     async with database.session() as session:
@@ -28,7 +28,7 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                     popularity=data.popularity
                 ))
 
-            elif create_above_popularity != None and data.popularity >= create_above_popularity:
+            elif create_movies and create_above_popularity != None and data.popularity >= create_above_popularity:
                 logger.info(f'Creating themoviedb id {id_}, popularity: {data.popularity}')
                 movie = await models.Movie.save(data=schemas.Movie_create(
                     externals={

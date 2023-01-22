@@ -6,7 +6,7 @@ from ...api import models, schemas
 from ... import logger
 
 
-async def update_popularity(create_above_popularity: float | None = 1.0):
+async def update_popularity(create_series = True, create_above_popularity: float | None = 1.0):
     logger.info('Updating series popularity')
     series: dict[str, schemas.Series] = {}
     async with database.session() as session:
@@ -19,7 +19,7 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                 if s.externals.get('imdb'):
                     series[s.externals['imdb']] = s            
 
-    async for data in get_ids('movie_ids'):
+    async for data in get_ids('tv_series_ids'):
         try:
             id_ = str(data.id)
             if id_ in series:
@@ -30,7 +30,7 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                     popularity=data.popularity
                 ))
 
-            elif create_above_popularity != None and data.popularity >= create_above_popularity:                
+            elif create_series and create_above_popularity != None and data.popularity >= create_above_popularity:                
                 series_data = await TheMovieDB().info(id_)
                 if not series_data:
                     continue
@@ -44,15 +44,15 @@ async def update_popularity(create_above_popularity: float | None = 1.0):
                         externals={'themoviedb': id_},
                         popularity=data.popularity,
                     ), patch=True)
-                    continue
-
-                logger.info(f'Creating themoviedb id {id_}, popularity: {data.popularity}')
-                series_data.importers = schemas.Series_importers(
-                    info='themoviedb',
-                    episodes='themoviedb',
-                )
-                s = await models.Series.save(data=series_data, series_id=None)
-                await importer.update_series(series=s)
+                
+                else:
+                    logger.info(f'Creating themoviedb id {id_}, popularity: {data.popularity}')
+                    series_data.importers = schemas.Series_importers(
+                        info='themoviedb',
+                        episodes='themoviedb',
+                    )
+                    s = await models.Series.save(data=series_data, series_id=None)
+                    await importer.update_series(series=s)
 
         except (KeyboardInterrupt, SystemExit):
             raise

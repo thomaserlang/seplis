@@ -43,7 +43,7 @@ async def update_movies_bulk(from_movie_id=None, do_async=False):
             for movie in movies:
                 try:
                     if not do_async:
-                        await update_movie(movie=schemas.Movie.from_orm(movie.Movie))
+                        await update_movie(movie=schemas.Movie.from_orm(movie))
                     else:
                         await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
                 except (KeyboardInterrupt, SystemExit):

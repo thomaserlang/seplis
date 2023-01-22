@@ -6,16 +6,19 @@ from typing import Literal, AsyncIterator
 from datetime import datetime, timezone, timedelta
 from seplis import logger, utils
 from aiofile import async_open
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 client = httpx.AsyncClient()
 
 class Id_data(BaseModel):
     id: int
-    original_title: str
+    original_title: str = Field(alias='original_name')
     popularity: float
-    adult: bool
-    video: bool
+    adult: bool = None
+    video: bool = None
+    
+    class Config:
+        allow_population_by_field_name = True
 
 
 async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterator[Id_data]:
