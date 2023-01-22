@@ -45,7 +45,6 @@ async def test_movies(play_db_test: Database):
         r = await session.scalar(sa.select(models.Movie))
     assert r == None
 
-
 @pytest.mark.asyncio
 async def test_movie_parse():
     from seplis.play.scanners import Movie_scan

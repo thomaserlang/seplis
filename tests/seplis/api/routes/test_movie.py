@@ -16,6 +16,7 @@ async def test_movie(client: AsyncClient):
         'original_title': 'National Treasure',
         'externals': {
             'imdb': 'tt0368891',
+            'no': None,
         },
         'alternative_titles': [
             'National Treasure 2004',
@@ -32,6 +33,7 @@ async def test_movie(client: AsyncClient):
     assert data.id > 0
     assert data.title == 'National Treasure'
     assert data.externals['imdb'] == 'tt0368891'
+    assert 'no' not in data.externals
     assert data.alternative_titles == ['National Treasure 2004']
     assert data.original_title == data.title
     assert data.popularity == 4728.432

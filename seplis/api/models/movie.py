@@ -108,9 +108,10 @@ class Movie(Base):
                     )
                     
             if (key not in current_externals):
-                await session.execute(sa.insert(Movie_external)\
-                    .values(movie_id=movie_id, title=key, value=externals[key]))
-                current_externals[key] = externals[key]
+                if externals[key]:
+                    await session.execute(sa.insert(Movie_external)\
+                        .values(movie_id=movie_id, title=key, value=externals[key]))
+                    current_externals[key] = externals[key]
             elif (current_externals[key] != externals[key]):
                 if (externals[key]):
                     await session.execute(sa.update(Movie_external).where(

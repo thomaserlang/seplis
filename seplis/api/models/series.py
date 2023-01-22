@@ -126,9 +126,10 @@ class Series(Base):
                     raise HTTPException(400, f'Series with {key}={externals[key]} already exists (Series id: {r}).')
             
             if (key not in current_externals):
-                await session.execute(sa.insert(Series_external)\
-                    .values(series_id=series_id, title=key, value=externals[key]))
-                current_externals[key] = externals[key]
+                if externals[key]:
+                    await session.execute(sa.insert(Series_external)\
+                        .values(series_id=series_id, title=key, value=externals[key]))
+                    current_externals[key] = externals[key]
             elif (current_externals[key] != externals[key]):
                 if (externals[key]):
                     await session.execute(sa.update(Series_external).where(

@@ -26,6 +26,7 @@ async def test_series(client: AsyncClient):
         },
         'externals': {
             'imdb': 'tt123456799',
+            'no': None
         },
         'genres': [
             'Action',
