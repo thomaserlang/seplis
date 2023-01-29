@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons"
-import { Box, Center, HStack, Image, Skeleton, Text } from "@chakra-ui/react"
+import { Box, HStack, Image, Skeleton } from "@chakra-ui/react"
 import api from "@seplis/api"
 import { IPageResult } from "@seplis/interfaces/page"
 import { ISliderItem } from "@seplis/interfaces/slider"

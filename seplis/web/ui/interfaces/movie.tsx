@@ -20,3 +20,9 @@ export interface IMovie {
     rating: number | null;
     genres: IGenre[];
 }
+
+
+export interface IMovieStared {
+    stared: boolean
+    created_at: string
+}
