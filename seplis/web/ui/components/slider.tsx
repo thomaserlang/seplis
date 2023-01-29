@@ -4,10 +4,11 @@ import api from "@seplis/api"
 import { IPageResult } from "@seplis/interfaces/page"
 import { ISliderItem } from "@seplis/interfaces/slider"
 import { useQuery } from "@tanstack/react-query"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useFocusable, FocusContext, FocusHandler } from "@noriginmedia/norigin-spatial-navigation"
 
 import './slider.less'
+import { Poster } from "./poster"
 
 interface IProps<S = undefined> {
     title: string,
@@ -116,19 +117,14 @@ function Card({ item, onFocus, viewItemIndex }: { item: ISliderItem, onFocus: Fo
     const { ref, focused } = useFocusable({
         onFocus: onFocus,    
     })
-    return <Box className={`slider-item ${focused?'focused':''}`} key={item.key} ref={ref} data-view-index={viewItemIndex} >
-        <Image
-            src={`${item.img}@SX320.webp`}
-            fallback={<Center height='100%'><Text>
-                {item.title || 'No title'}
-            </Text></Center>}
-        />
+    return <Box className={`poster-container slider-item ${focused?'focused':''}`} key={item.key} ref={ref} data-view-index={viewItemIndex} >
+        <Poster url={`${item.img}@SX320.webp`} title={item.title} />
     </Box>
 }
 
 
 function EmptyCard() {
-    return <Box className="slider-item"></Box>
+    return <Box className="poster-container slider-item"></Box>
 }
 
 

@@ -1,4 +1,4 @@
-type ImageTypes = 'poster' | 'backdrop'
+export type ImageTypes = 'poster' | 'backdrop'
 
 
 export interface IImageCreate {

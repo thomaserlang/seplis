@@ -4,6 +4,8 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ChakraProvider, extendTheme, type ThemeConfig } from '@chakra-ui/react'
 
+import './index.less'
+
 import Login from './pages/login'
 import Home from './pages/home'
 import Movie from './pages/movie'

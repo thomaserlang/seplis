@@ -4,7 +4,6 @@ from datetime import datetime, date
 from .image import Image
 from .genre import Genre
 from .helper import default_datetime
-from datetime import datetime
 
 class Episode_create(BaseModel):
     title: constr(max_length=200, strip_whitespace=True)
@@ -28,11 +27,16 @@ class Episode_update(Episode_create):
 
 class Episode(BaseModel):
     title: str | None
+    original_title: str | None
     number: int
     season: int | None
+    episode: int | None
+    air_date: date | None
+    air_datetime: datetime | None
     plot: str | None
     runtime: int | None
     rating: float | None
+
 
     class Config:
         orm_mode = True

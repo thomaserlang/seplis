@@ -4,8 +4,9 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .database import database
 from . import exceptions
-from .. import config, set_logger, logger
+from .. import config, set_logger, logger, config_load
 
+config_load()
 set_logger(f'api-{config.data.api.port}.log')
 
 from .routes import (

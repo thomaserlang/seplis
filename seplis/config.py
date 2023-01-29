@@ -111,7 +111,7 @@ class ConfigModel(BaseSettings):
 
 class Config:
     def __init__(self):
-        self.data = ConfigModel()
+        self.data = None
 config = Config()
 
 def load(path=None):
@@ -134,6 +134,7 @@ def load(path=None):
                     break
     if not path:
         raise Exception('No config file specified.')
+    
     if not os.path.isfile(path):
         raise Exception(f'Config: "{path}" could not be found.')
     with open(path) as f:

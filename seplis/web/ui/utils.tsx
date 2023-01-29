@@ -1,4 +1,4 @@
-import querystring from 'query-string'
+import { IEpisode, ISeries } from './interfaces/series';
 
 export function isAuthed() {
     return (localStorage.getItem('access_token') !== null);
@@ -21,13 +21,13 @@ export function getUserLevel() {
     return localStorage.getItem('user_level') || null;
 }
 
-export function pad(str, max) {
-  str = str.toString();
-  return str.length < max ? pad("0" + str, max) : str;
+export function pad(str: string | number, max: number): string {
+    str = str.toString();
+    return str.length < max ? pad("0" + str, max) : str;
 }
 
-export function episodeNumber(show, episode) {
-    let type = show.episode_type
+export function episodeNumber(series: ISeries, episode: IEpisode) {
+    let type = series.episode_type
     if (type == 2) {
         if (!episode.season || !episode.episode)
             type = 1
@@ -42,8 +42,8 @@ export function episodeNumber(show, episode) {
     }
 }
 
-export function episodeTitle(show, episode) {
-    let type = show.episode_type
+export function episodeTitle(series: ISeries, episode: IEpisode) {
+    let type = series.episode_type
     if (type == 2) {
         if (!episode.season || !episode.episode)
             type = 1
@@ -68,25 +68,27 @@ export function guid() {
         s4() + '-' + s4() + s4() + s4();
 }
 
-export function secondsToTime(secs) {
-    let hours = Math.floor(secs / 3600);
-    let minutes = Math.floor((secs - (hours * 3600)) / 60);
-    let seconds = Math.floor(secs - (hours * 3600) - (minutes * 60));
-
+export function secondsToTime(secs: number) {
+    const hours = Math.floor(secs / 3600);
+    const minutes = Math.floor((secs - (hours * 3600)) / 60);
+    const seconds = Math.floor(secs - (hours * 3600) - (minutes * 60));
+    let hoursStr = ''
+    let minutesStr = ''
+    let secondsStr = ''
     if (hours < 10) 
-        hours = "0"+hours;
+        hoursStr = "0"+hours;
     if (minutes < 10) 
-        minutes = "0"+minutes;
+        minutesStr = "0"+minutes;
     if (seconds < 10)
-        seconds = "0"+seconds;
-    return (hours>0?hours+':':'')+minutes+':'+seconds;
+        secondsStr = "0"+seconds;
+    return (hours>0?hoursStr+':':'')+minutesStr+':'+secondsStr;
 }
 
-export function dateInDays(dt) {
+export function dateInDays(dt: Date | string) {
     if (typeof(dt) == "string") {
         dt = new Date(dt);
     }
-    let seconds = Math.abs(dt-new Date().getTime())/1000;
+    let seconds = Math.abs(dt.getTime()-new Date().getTime())/1000;
     let minutes, hours, days;
     let l = [];
     [minutes, seconds] = divmod(seconds, 60);
@@ -99,7 +101,7 @@ export function dateInDays(dt) {
     return l.join(' ');
 }
 
-export function secondsToPretty(seconds, showTotalHours) {
+export function secondsToPretty(seconds: number, showTotalHours: boolean) {
     let totalHours = Math.round((((seconds/60)/60)*10))/10;
     if (seconds < 60) return pluralize(seconds, 'second');
     let minutes, hours, days, months, years;
@@ -122,15 +124,15 @@ export function secondsToPretty(seconds, showTotalHours) {
     return r;
 }
 
-export function pluralize(num, word) {
+export function pluralize(num: number, word: string) {
     if (num != 1) word = word + 's';
     return `${num} ${word}`
 }
 
-export function divmod(a, b) {
+export function divmod(a: number, b: number) {
     return [Math.floor(a / b), a % b];
 }
 
-export function locationQuery() {
-    return querystring.parse(location.search)
+export function setTitle(title: string) {
+    document.title = `${title} | SEPLIS`
 }

@@ -23,11 +23,15 @@ export interface IEpisodeUpdate extends IEpisodeCreate {
 
 export interface IEpisode {
     title: string | null
+    original_title: string | null
     number: number
     season: number | null
+    episode: number | null
     plot: string | null
     runtime: number | null
     rating: number | null
+    air_date: string | null
+    air_datetime: string | null
 }
 
 export interface IEpisodeWatchedIncrement {
