@@ -1,5 +1,5 @@
 import { StarIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Heading, Icon, Tag } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Icon, Link, Tag } from '@chakra-ui/react';
 import { IMovie } from '@seplis/interfaces/movie';
 import { Poster } from '../poster';
 import { langCodeToLang, secondsToHourMin } from '../../utils'
@@ -26,6 +26,7 @@ export default function Movie({ movie }: IProps) {
                     <StaredButton movieId={movie.id} />
                 </Flex>
                 <Plot movie={movie} />
+                <ExternalLinks movie={movie} />
             </Flex>
         </Flex>
     </Flex>
@@ -73,4 +74,13 @@ function MoviePoster({ movie }: { movie: IMovie }) {
             <Poster url={`${movie.poster_image?.url}@SX320.webp`} title={movie.title} />
         </div>
     </div>
+}
+
+function ExternalLinks({ movie }: { movie: IMovie }) {
+    if (!movie.externals.imdb || !movie.externals.themoviedb)
+        return
+    return <Flex columnGap="0.5rem">
+        {movie.externals.imdb && <Link href={`https://imdb.com/title/${movie.externals.imdb}`} isExternal>IMDb</Link>}
+        {movie.externals.themoviedb && <Link href={`https://www.themoviedb.org/movie/${movie.externals.themoviedb}`} isExternal>TheMovieDB</Link>}
+    </Flex>
 }
