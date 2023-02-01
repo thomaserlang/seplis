@@ -1,10 +1,11 @@
 import { StarIcon } from '@chakra-ui/icons';
-import { Box, Flex, Heading, Tag } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Icon, Tag } from '@chakra-ui/react';
 import { IMovie } from '@seplis/interfaces/movie';
 import { Poster } from '../poster';
 import { langCodeToLang, secondsToHourMin } from '../../utils'
 import StaredButton from './stared-button';
 import { IGenre } from '@seplis/interfaces/genre';
+import { FaPlay } from 'react-icons/fa';
 
 interface IProps {
     movie: IMovie
@@ -20,6 +21,10 @@ export default function Movie({ movie }: IProps) {
                 <Title movie={movie} />
                 <BaseInfo movie={movie} />
                 <Genres genres={movie.genres} />
+                <Flex columnGap="0.5rem" marginTop="0.5rem" marginBottom="0.5rem">
+                    <Button leftIcon={<Icon as={FaPlay} />}>Play</Button>
+                    <StaredButton movieId={movie.id} />
+                </Flex>
                 <Plot movie={movie} />
             </Flex>
         </Flex>
@@ -36,32 +41,30 @@ function Genres({ genres }: { genres: IGenre[] }) {
 
 function BaseInfo({ movie }: { movie: IMovie }) {
     return <Flex columnGap="0.5rem" rowGap="0.5rem" direction="row" wrap="wrap">
-        <div>{movie.release_date && <strong>{movie.release_date.substring(0, 4)}</strong>}</div>
-        <div>{secondsToHourMin(movie.runtime)}</div>
-        <div>{langCodeToLang(movie.language)}</div>
-        <div>{movie.rating} <StarIcon boxSize={2} /></div>
+        {movie.release_date && <div><strong title={movie.release_date}>{movie.release_date.substring(0, 4)}</strong></div>}
+        {movie.runtime && <div>{secondsToHourMin(movie.runtime)}</div>}
+        {movie.language && <div>{langCodeToLang(movie.language)}</div>}
+        {movie.rating && <div title="IMDb rating">{movie.rating} <StarIcon boxSize={2} /></div>}
     </Flex>
 }
 
 function Plot({ movie }: { movie: IMovie }) {
-    return <Flex direction="column" rowGap="0.5rem">
-        <div><i>{movie.tagline}</i></div>
-
-        <div>
-            {movie.plot}
-        </div>
-    </Flex>
+    if (!movie.plot)
+        return
+    return <Box>
+        <Box><strong>Plot</strong></Box>
+        <Box>{movie.plot}</Box>
+    </Box>
 }
 
 function Title({ movie }: { movie: IMovie }) {
-    return <Flex direction="column" rowGap="0.5rem">
-            <Flex columnGap="0.5rem" justifyContent="flex-start">
-            <Heading>{movie.title || '<Missing title>'}</Heading>
-            <Box marginLeft="auto"><StaredButton movieId={movie.id} /></Box>
-        </Flex>
+    return <Box>
+        <Heading as="h1">{movie.title || '<Missing title>'}</Heading>
+        {movie.original_title != movie.title && 
+            <Heading as="h2" fontSize="1.5rem" color="RGBA(255, 255, 255, 0.36)">{movie.original_title}</Heading>}
 
-        {movie.original_title != movie.title && <Heading as="h2">movie.original_title</Heading>}
-    </Flex>
+        {movie.tagline && <div><i>{movie.tagline}</i></div>}
+    </Box>
 }
 
 function MoviePoster({ movie }: { movie: IMovie }) {

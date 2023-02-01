@@ -1,11 +1,12 @@
-import { StarIcon } from "@chakra-ui/icons"
-import { Button, useToast } from "@chakra-ui/react"
-import api from "@seplis/api"
-import { IMovieStared } from "@seplis/interfaces/movie"
-import { isAuthed } from "@seplis/utils"
-import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
-import { ErrorMessageFromResponse } from "../error"
+import { StarIcon } from '@chakra-ui/icons'
+import { Button, useToast } from '@chakra-ui/react'
+import api from '@seplis/api'
+import { IMovieStared } from '@seplis/interfaces/movie'
+import { isAuthed } from '@seplis/utils'
+import { useQuery } from '@tanstack/react-query'
+import { useState } from 'react'
+import { ErrorMessageFromResponse } from '../error'
+import { FaPlay } from 'react-icons/fa'
 
 interface IProps {
     movieId: number
@@ -52,7 +53,8 @@ export default function StaredButton({ movieId }: IProps) {
         colorScheme={'green'} 
         variant={stared?'solid':'outline'}
         onClick={handleClick}
+        leftIcon={<StarIcon />}
     >
-        <StarIcon />
+        {stared?'Stared':'Star'}
     </Button>
 }
