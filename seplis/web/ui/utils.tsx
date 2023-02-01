@@ -1,7 +1,7 @@
 import { IEpisode, ISeries } from './interfaces/series';
 
 export function isAuthed() {
-    return (localStorage.getItem('access_token') !== null);
+    return (localStorage.getItem('accessToken') !== null);
 }
 
 export function requireAuthed() {
@@ -135,4 +135,21 @@ export function divmod(a: number, b: number) {
 
 export function setTitle(title: string) {
     document.title = `${title} | SEPLIS`
+}
+
+export function secondsToHourMin(minutes: number) {
+    if (!minutes)
+        return
+    const hours = Math.floor(minutes / 60)
+    const minutesLeft = minutes % 60
+    let s = ''
+    if (hours > 0)
+        s += `${hours}h`
+    if (minutes > 0)
+        s += ` ${minutesLeft}m`
+    return s.trim()
+}
+
+export function langCodeToLang(code: string) {
+    return new Intl.DisplayNames(['en'], { type: 'language' }).of(code)
 }

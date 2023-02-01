@@ -2,6 +2,7 @@ import { StarIcon } from "@chakra-ui/icons"
 import { Button, useToast } from "@chakra-ui/react"
 import api from "@seplis/api"
 import { IMovieStared } from "@seplis/interfaces/movie"
+import { isAuthed } from "@seplis/utils"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
 import { ErrorMessageFromResponse } from "../error"
@@ -15,6 +16,8 @@ export default function StaredButton({ movieId }: IProps) {
     const [loading, setLoading] = useState(false)
     const [stared, setStared] = useState(false)
     const { isInitialLoading } = useQuery([movieId], async () => {
+        if (!isAuthed())
+            return
         const result = await api.get<IMovieStared>(`/2/movies/${movieId}/stared`)
         setStared(result.data.stared)
         return result.data
