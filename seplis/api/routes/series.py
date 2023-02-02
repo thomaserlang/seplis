@@ -71,8 +71,11 @@ async def delete_series(
     await models.Series.delete(series_id)
 
 
-@router.delete('/{series_id}/update', status_code=204)
-async def request_update(series_id: int):
+@router.post('/{series_id}/update', status_code=204)
+async def request_update(
+    series_id: int,
+    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+):
     await database.redis_queue.enqueue_job('update_series', series_id)
 
 

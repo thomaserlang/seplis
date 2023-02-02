@@ -1,11 +1,12 @@
 import { StarIcon } from '@chakra-ui/icons';
-import { Box, Button, Flex, Heading, Icon, Link, Tag } from '@chakra-ui/react';
+import { Box, Button, Flex, Heading, Icon, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Tag, useDisclosure } from '@chakra-ui/react';
 import { IMovie } from '@seplis/interfaces/movie';
 import { Poster } from '../poster';
 import { langCodeToLang, secondsToHourMin } from '../../utils'
 import StaredButton from './stared-button';
 import { IGenre } from '@seplis/interfaces/genre';
-import { FaPlay } from 'react-icons/fa';
+import { FaCog, FaPlay } from 'react-icons/fa';
+import Settings from './settings';
 
 interface IProps {
     movie: IMovie
@@ -24,6 +25,7 @@ export default function Movie({ movie }: IProps) {
                 <Flex columnGap="0.5rem" marginTop="0.5rem" marginBottom="0.5rem">
                     <Button leftIcon={<Icon as={FaPlay} />}>Play</Button>
                     <StaredButton movieId={movie.id} />
+                    <DisplaySettings movie={movie} />
                 </Flex>
                 <Plot movie={movie} />
                 <ExternalLinks movie={movie} />
@@ -83,4 +85,25 @@ function ExternalLinks({ movie }: { movie: IMovie }) {
         {movie.externals.imdb && <Link href={`https://imdb.com/title/${movie.externals.imdb}`} isExternal>IMDb</Link>}
         {movie.externals.themoviedb && <Link href={`https://www.themoviedb.org/movie/${movie.externals.themoviedb}`} isExternal>TheMovieDB</Link>}
     </Flex>
+}
+
+function DisplaySettings({ movie }: { movie: IMovie }) {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+
+    return <>
+        <Button onClick={onOpen} leftIcon={<FaCog />}>Settings</Button>
+
+        <Modal onClose={onClose} isOpen={isOpen}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>{movie.title} - Settings</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Box marginBottom="1rem">
+                        <Settings movie={movie} />
+                    </Box>
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
 }

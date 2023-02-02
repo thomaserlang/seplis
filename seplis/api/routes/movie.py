@@ -57,9 +57,12 @@ async def delete_movie(
     await models.Movie.delete(movie_id=movie_id)
 
 
-@router.delete('/{movie_id}/update', status_code=204)
-async def request_update(movie_id: int):
-    await database.redis_queue.enqueue_job('update_series', movie_id)
+@router.post('/{movie_id}/update', status_code=204)
+async def request_update(
+    movie_id: int,
+    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+):
+    await database.redis_queue.enqueue_job('update_movie', movie_id)
     
 
 @router.post('/{movie_id}/images', response_model=schemas.Image, status_code=201)

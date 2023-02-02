@@ -1,5 +1,6 @@
 import { IImage } from './image'
 import { IGenre } from './genre'
+import { TExternals } from './types'
 
 
 export interface IEpisodeCreate {
@@ -72,7 +73,7 @@ export interface ISeriesCreate {
     title: string | null
     original_title: string | null
     alternative_titles: string[] | null
-    externals: { [key: string]: string | null } | null
+    externals: TExternals | null
     status: number | null
     plot: string | null
     tagline: string | null
@@ -93,7 +94,7 @@ export interface ISeries {
     id: number
     title: string | null
     alternative_titles: string[]
-    externals: { [key: string]: string }
+    externals: TExternals
     plot: string | null
     tagline: string | null
     premiered: Date | null
