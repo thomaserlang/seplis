@@ -151,5 +151,9 @@ export function secondsToHourMin(minutes: number) {
 }
 
 export function langCodeToLang(code: string) {
-    return new Intl.DisplayNames(['en'], { type: 'language' }).of(code)
+    try {
+        return new Intl.DisplayNames(['en'], { type: 'language' }).of(code)
+    } catch (e) {
+        return code
+    }
 }

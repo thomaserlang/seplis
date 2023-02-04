@@ -102,8 +102,7 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus }
 
 
 function Cards({ items, onFocus }: { items: ISliderItem[], onFocus: FocusHandler }) {
-    const { ref, focusKey } = useFocusable({
-    })
+    const { ref, focusKey } = useFocusable()
     return <FocusContext.Provider value={focusKey}>
         <HStack ref={ref} width="100%">
             {items.map((item, index) => <Card key={item.key} item={item} onFocus={onFocus} viewItemIndex={index} />)}

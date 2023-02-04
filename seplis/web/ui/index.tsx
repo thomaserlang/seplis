@@ -43,7 +43,7 @@ spatialInit({})
 createRoot(document.getElementById("root")).render(
     <React.StrictMode>
         <ChakraProvider theme={theme}>
-            <BrowserRouter>
+            <BrowserRouter >
                 <QueryParamProvider adapter={ReactRouter6Adapter}>
                     <QueryClientProvider client={queryClient}>
                         <Routes>

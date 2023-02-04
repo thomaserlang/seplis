@@ -12,7 +12,7 @@ export default function Home() {
     
     useEffect(() => {
         focusSelf()
-      }, [focusSelf])
+    }, [focusSelf])
 
     const onRowFocus = useCallback(({ y }: { y: number }) => {
         window.scrollTo({
