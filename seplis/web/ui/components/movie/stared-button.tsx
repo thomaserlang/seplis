@@ -18,7 +18,7 @@ export default function StaredButton({ movieId }: IProps) {
     const [loading, setLoading] = useState(false)
     const [stared, setStared] = useState(false)
 
-    const { isInitialLoading } = useQuery(['movie', movieId], async () => {
+    const { isInitialLoading } = useQuery(['movie', 'stared-button', movieId], async () => {
         if (!isAuthed())
             return        
         const result = await api.get<IMovieStared>(`/2/movies/${movieId}/stared`)

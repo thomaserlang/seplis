@@ -10,7 +10,7 @@ import { MovieSkeleton } from "@seplis/components/movie/skeleton"
 
 export default function MoviePage() {
     const { movieId } = useParams()
-    const { isInitialLoading, data } = useQuery<IMovie>([movieId], async () => {
+    const { isInitialLoading, data } = useQuery<IMovie>(['movie', movieId], async () => {
         const data = await api.get<IMovie>(`/2/movies/${movieId}`)
         setTitle(data.data.title)
         return data.data
