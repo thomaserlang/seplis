@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom"
 export default function PlayButton({ movieId }: { movieId: number }) {
     const [canPlay, setCanPlay] = useState(false)
     const navigate = useNavigate()
-    const { isInitialLoading } = useQuery([movieId], async () => {
+    const { isInitialLoading } = useQuery(['play-button', 'movie', movieId], async () => {
         if (!isAuthed())
             return
         const result = await api.get<IPlayRequest[]>(`/2/movies/${movieId}/play-servers`)

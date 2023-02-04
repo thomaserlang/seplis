@@ -17,9 +17,10 @@ export default function StaredButton({ movieId }: IProps) {
     const toast = useToast()
     const [loading, setLoading] = useState(false)
     const [stared, setStared] = useState(false)
-    const { isInitialLoading } = useQuery([movieId], async () => {
+
+    const { isInitialLoading } = useQuery(['movie', movieId], async () => {
         if (!isAuthed())
-            return
+            return        
         const result = await api.get<IMovieStared>(`/2/movies/${movieId}/stared`)
         setStared(result.data.stared)
         return result.data
