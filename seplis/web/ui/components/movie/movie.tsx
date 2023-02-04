@@ -1,11 +1,11 @@
 import { StarIcon } from '@chakra-ui/icons'
-import { Box, Button, Flex, Heading, HStack, Icon, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Tag, useDisclosure } from '@chakra-ui/react'
+import { Text, Box, Button, Flex, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Tag, useDisclosure } from '@chakra-ui/react'
 import { IMovie } from '@seplis/interfaces/movie'
 import { Poster } from '../poster'
 import { langCodeToLang, secondsToHourMin } from '../../utils'
 import StaredButton from './stared-button'
 import { IGenre } from '@seplis/interfaces/genre'
-import { FaCog, FaPlay } from 'react-icons/fa'
+import { FaCog } from 'react-icons/fa'
 import Settings from './settings'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { useEffect } from 'react'
@@ -24,50 +24,34 @@ export default function Movie({ movie }: IProps) {
     }, [])
 
     return <FocusContext.Provider value={focusKey}>
-        <Flex>
+        <Flex gap="1rem">
             <MoviePoster movie={movie} />
-            <Box marginLeft="1rem" maxWidth="800px" ref={ref}>
+            <Flex gap="0.5rem" direction="column" maxWidth="800px" ref={ref}>
                 <Title movie={movie} />
-
-                <Box marginTop="0.5rem">
-                    <BaseInfo movie={movie} />
-                </Box>
-
-                <Box marginTop="0.5rem">
-                    <Genres genres={movie.genres} />
-                </Box>
-
-                <Box marginTop="1rem">
-                    <Buttons movie={movie} />
-                </Box>
-
-                <Box marginTop="1rem">
-                    <Plot movie={movie} />
-                </Box>
-
-                <Box marginTop="0.5rem">
-                    <ExternalLinks movie={movie} />
-                </Box>
-
-            </Box>
+                <BaseInfo movie={movie} />                
+                <Genres genres={movie.genres} />
+                <Buttons movie={movie} />
+                <Plot movie={movie} />                
+                <ExternalLinks movie={movie} />
+            </Flex>
         </Flex>
     </FocusContext.Provider>
 }
 
 function Buttons({ movie }: { movie: IMovie }) {
-    return <HStack spacing="0.5rem" wrap="wrap">
+    return <Flex gap="0.5rem" wrap="wrap" padding="0.25rem 0">
         <PlayButton movieId={movie.id} />
         <StaredButton movieId={movie.id} />
         <DisplaySettings movie={movie} />
-    </HStack>
+    </Flex>
 }
 
 function Genres({ genres }: { genres: IGenre[] }) {
-    return <HStack spacing="0.5rem" wrap="wrap">
+    return <Flex gap="0.5rem" wrap="wrap" padding="0.25rem 0">
         {genres.map(genre => (
             <Genre key={genre.id} genre={genre} />
         ))}
-    </HStack>
+    </Flex>
 }
 
 function Genre({ genre }: { genre: IGenre }) {
@@ -81,20 +65,20 @@ function Genre({ genre }: { genre: IGenre }) {
 }
 
 function BaseInfo({ movie }: { movie: IMovie }) {
-    return <HStack spacing="0.5rem" wrap="wrap">
-        {movie.release_date && <div><strong title={movie.release_date}>{movie.release_date.substring(0, 4)}</strong></div>}
-        {movie.runtime && <div>{secondsToHourMin(movie.runtime)}</div>}
-        {movie.language && <div>{langCodeToLang(movie.language)}</div>}
-        {movie.rating && <div title="IMDb rating">{movie.rating} <StarIcon boxSize={2} /></div>}
-    </HStack>
+    return <Flex gap="0.5rem" wrap="wrap">
+        {movie.release_date && <Text><strong title={movie.release_date}>{movie.release_date.substring(0, 4)}</strong></Text>}
+        {movie.runtime && <Text>{secondsToHourMin(movie.runtime)}</Text>}
+        {movie.language && <Text>{langCodeToLang(movie.language)}</Text>}
+        {movie.rating && <Text title="IMDb rating">{movie.rating} <StarIcon boxSize={2} /></Text>}
+    </Flex>
 }
 
 function Plot({ movie }: { movie: IMovie }) {
     if (!movie.plot)
         return
     return <Box>
-        <Box><strong>Plot</strong></Box>
-        <Box>{movie.plot}</Box>
+        <Text><strong>Plot</strong></Text>
+        <Text>{movie.plot}</Text>
     </Box>
 }
 
@@ -104,7 +88,7 @@ function Title({ movie }: { movie: IMovie }) {
         {movie.original_title != movie.title &&
             <Heading as="h2" fontSize="1.5rem" color="RGBA(255, 255, 255, 0.36)">{movie.original_title}</Heading>}
 
-        {movie.tagline && <div><i>{movie.tagline}</i></div>}
+        {movie.tagline && <Text><i>{movie.tagline}</i></Text>}
     </Box>
 }
 
@@ -119,10 +103,10 @@ function MoviePoster({ movie }: { movie: IMovie }) {
 function ExternalLinks({ movie }: { movie: IMovie }) {
     if (!movie.externals.imdb || !movie.externals.themoviedb)
         return
-    return <HStack spacing="0.5rem">
+    return <Flex gap="0.5rem">
         {movie.externals.imdb && <Link href={`https://imdb.com/title/${movie.externals.imdb}`} isExternal>IMDb</Link>}
         {movie.externals.themoviedb && <Link href={`https://www.themoviedb.org/movie/${movie.externals.themoviedb}`} isExternal>TheMovieDB</Link>}
-    </HStack>
+    </Flex>
 }
 
 function DisplaySettings({ movie }: { movie: IMovie }) {
