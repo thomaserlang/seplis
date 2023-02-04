@@ -16,6 +16,9 @@ async def get_episode_play_servers(
     query: list[models.Play_server] = await session.scalars(sa.select(models.Play_server).where(
         models.Play_server_access.user_id == user.id,
         models.Play_server.id == models.Play_server_access.play_server_id,
+        models.Play_server_episode.play_server_id == models.Play_server.id,
+        models.Play_server_episode.series_id == series_id,
+        models.Play_server_episode.episode_number == episode_number,
     ))
     play_ids: list[schemas.Play_request] = []
     for row in query:

@@ -22,6 +22,21 @@ async def test_episode_play_servers(client: AsyncClient):
         secret='1'*20,
     ), play_server_id=None, user_id=user_id)
 
+    await models.Play_server_episode.save(
+        play_server_id=play_server.id,
+        play_server_secret='1'*20,
+        data=[
+            schemas.Play_server_episode_create(
+                series_id=series.id,
+                episode_number=1,
+            ),
+            schemas.Play_server_episode_create(
+                series_id=series.id,
+                episode_number=2,
+            ),
+        ]
+    )
+
     # Let's get the server that the user has access to
     # with a play id, that we can use when contacting the server.
     r = await client.get(f'/2/series/{series.id}/episodes/1/play-servers')
