@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useParams } from "react-router-dom"
 import Movie from "@seplis/components/movie/movie"
 import { Box } from "@chakra-ui/react"
+import { MovieSkeleton } from "@seplis/components/movie/skeleton"
 
 
 export default function MoviePage() {
@@ -14,12 +15,9 @@ export default function MoviePage() {
         setTitle(data.data.title)
         return data.data
     })
-    
-    if (isInitialLoading)
-        return <div>LODAING</div>
 
-    return <Box margin="1rem"> 
-        <Movie movie={data} />
+    return <Box margin="1rem">
+        {isInitialLoading ? <MovieSkeleton /> : <Movie movie={data} />}
     </Box>
 }
 
