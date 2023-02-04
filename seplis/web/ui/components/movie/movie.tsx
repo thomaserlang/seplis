@@ -83,7 +83,7 @@ function Plot({ movie }: { movie: IMovie }) {
 }
 
 function Title({ movie }: { movie: IMovie }) {
-    return <Box>
+    return <Box marginTop="-7px">
         <Heading as="h1">{movie.title || '<Missing title>'}</Heading>
         {movie.original_title != movie.title &&
             <Heading as="h2" fontSize="1.5rem" color="RGBA(255, 255, 255, 0.36)">{movie.original_title}</Heading>}
