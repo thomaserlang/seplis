@@ -10,6 +10,7 @@ import Settings from './settings'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { useEffect } from 'react'
 import { focusedBorder } from '@seplis/styles'
+import PlayButton from './play-button'
 
 interface IProps {
     movie: IMovie
@@ -55,23 +56,10 @@ export default function Movie({ movie }: IProps) {
 
 function Buttons({ movie }: { movie: IMovie }) {
     return <HStack spacing="0.5rem" wrap="wrap">
-        <PlayButton movie={movie} />
+        <PlayButton movieId={movie.id} />
         <StaredButton movieId={movie.id} />
         <DisplaySettings movie={movie} />
     </HStack>
-}
-
-function PlayButton({ movie }: { movie: IMovie }) {
-    const { ref, focused } = useFocusable({
-        focusKey: 'MOVIE_PLAY'
-    })
-    return <Button
-        ref={ref}
-        leftIcon={<Icon as={FaPlay} />}
-        style={focused ? focusedBorder : null}
-    >
-        Play
-    </Button>
 }
 
 function Genres({ genres }: { genres: IGenre[] }) {
