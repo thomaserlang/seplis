@@ -12,7 +12,7 @@ Get the user's latest watched episode for a series.
 The episode must be the latest completed.
 """
 
-@router.get('', response_model=schemas.Episode_with_user_watched, description=DESCRIPTION)
+@router.get('', response_model=schemas.Episode, description=DESCRIPTION)
 async def get_last_watched_episode(
     series_id: int,
     response: Response,
@@ -46,6 +46,6 @@ async def get_last_watched_episode(
         if eps[0].Episode_watched.position > 0:
             e = eps[1]
 
-    episode = schemas.Episode_with_user_watched.from_orm(e.Episode)
+    episode = schemas.Episode.from_orm(e.Episode)
     episode.user_watched = schemas.Episode_watched.from_orm(e.Episode_watched)
     return episode

@@ -32,7 +32,7 @@ episodes the result will be empty 204`.
 
 """
 
-@router.get('', response_model=schemas.Episode_with_user_watched, description=DESCRIPTION)
+@router.get('', response_model=schemas.Episode, description=DESCRIPTION)
 async def get_episode_to_watch(
     series_id: int | str,
     response: Response,
@@ -78,7 +78,7 @@ async def get_episode_to_watch(
         response.status_code = 204
         return
 
-    episode = schemas.Episode_with_user_watched.from_orm(e.Episode)
-    if e.Episode_watched:
-        episode.user_watched = schemas.Episode_watched.from_orm(e.Episode_watched)
+    episode = schemas.Episode.from_orm(e.Episode)
+    episode.user_watched = schemas.Episode_watched.from_orm(e.Episode_watched) if e.Episode_watched else \
+        schemas.Episode_watched(episode_number=e.Episode.number)
     return episode

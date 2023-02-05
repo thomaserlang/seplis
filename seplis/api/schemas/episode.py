@@ -1,6 +1,19 @@
-from pydantic import BaseModel, constr, conint, confloat, validator
+from pydantic import BaseModel, constr, conint, confloat
 from datetime import datetime, date
 from .helper import default_datetime
+
+
+class Episode_watched_increment(BaseModel):
+    watched_at: datetime = default_datetime
+
+class Episode_watched(BaseModel):
+    episode_number: int
+    times = 0
+    position = 0
+    watched_at: datetime | None = None
+
+    class Config:
+        orm_mode = True
 
 
 class Episode_create(BaseModel):
@@ -34,24 +47,7 @@ class Episode(BaseModel):
     plot: str | None
     runtime: int | None
     rating: float | None
-
-    class Config:
-        orm_mode = True
-
-
-class Episode_watched_increment(BaseModel):
-    watched_at: datetime = default_datetime
-
-
-class Episode_watched(BaseModel):
-    episode_number: int
-    times = 0
-    position = 0
-    watched_at: datetime | None = None
-
-    class Config:
-        orm_mode = True
-
-
-class Episode_with_user_watched(Episode):
     user_watched: Episode_watched | None
+
+    class Config:
+        orm_mode = True
