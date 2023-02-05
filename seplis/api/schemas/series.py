@@ -1,5 +1,6 @@
+import logging
 from typing import Literal
-from pydantic import BaseModel, constr, conint, confloat
+from pydantic import BaseModel, constr, conint, confloat, validator
 from datetime import datetime, date
 from .image import Image
 from .genre import Genre
@@ -78,7 +79,7 @@ class Series_create(BaseModel):
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
-    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True), constr(min_length=1, max_length=45, strip_whitespace=True) | None] | None = {}
+    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True), constr(min_length=0, max_length=45, strip_whitespace=True) | None] | None = {}
     status: conint(gt=-1) | None
     plot: constr(min_length=1, max_length=2000, strip_whitespace=True) | None
     tagline: constr(min_length=1, max_length=500, strip_whitespace=True) | None
@@ -98,6 +99,13 @@ class Series_create(BaseModel):
         extra = 'forbid'
         validate_assignment = True
 
+    @validator('externals')
+    def externals_none_value(cls, externals):
+        for e in externals:
+            if externals[e] == '':
+                externals[e] = None
+        return externals
+
 
 class Series_update(Series_create):
     episodes: list[Episode_update] | None
@@ -106,6 +114,7 @@ class Series_update(Series_create):
 class Series(BaseModel):
     id: int
     title: str | None
+    original_title: str | None
     alternative_titles: list[str]
     externals: dict[str, str]
     plot: str | None

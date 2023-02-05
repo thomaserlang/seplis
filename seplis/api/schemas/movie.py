@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, constr, conint, confloat
+from pydantic import BaseModel, constr, conint, confloat, validator
 from datetime import datetime, date
 from .image import Image
 from .helper import default_datetime
@@ -13,7 +13,7 @@ class Movie_create(BaseModel):
     status: conint(gt=-1, lt=5) | None
     plot: constr(min_length=0, max_length=2000, strip_whitespace=True) | None
     tagline: constr(min_length=0, max_length=500, strip_whitespace=True) | None
-    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True), constr(min_length=1, max_length=45, strip_whitespace=True) | None] | None
+    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True), constr(min_length=0, max_length=45, strip_whitespace=True) | None] | None
     status: conint(ge=0, le=5) | None # Status: 0: Unknown, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production, 6: Canceled,
     language: constr(min_length=1, max_length=20) | None
     runtime: conint(ge=0) | None
@@ -28,6 +28,13 @@ class Movie_create(BaseModel):
     class Config:
         extra = 'forbid'
         validate_assignment = True
+
+    @validator('externals')
+    def externals_none_value(cls, externals):
+        for e in externals:
+            if externals[e] == '':
+                externals[e] = None
+        return externals
 
 
 class Movie_update(Movie_create):
