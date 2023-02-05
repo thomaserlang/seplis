@@ -35,6 +35,7 @@ from .routes import (
     series_user_settings,
     series_user_stats,
     series_user_rating,
+    episodes,
     episode_watched,
     episode_watched_position,
     episode_to_watch,
