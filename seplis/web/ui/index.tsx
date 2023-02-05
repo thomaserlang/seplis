@@ -9,6 +9,7 @@ import './index.less'
 import Login from './pages/login'
 import Home from './pages/home'
 import Movie from './pages/movie'
+import Series from './pages/series'
 
 import { QueryParamProvider } from 'use-query-params'
 import { ReactRouter6Adapter } from 'use-query-params/adapters/react-router-6'
@@ -50,6 +51,7 @@ createRoot(document.getElementById("root")).render(
                             <Route path="/" element={<Home />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/movies/:movieId" element={<Movie />} />
+                            <Route path="/series/:seriesId" element={<Series />} />
                         </Routes>
                     </QueryClientProvider>
                 </QueryParamProvider>

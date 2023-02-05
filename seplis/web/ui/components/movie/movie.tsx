@@ -101,7 +101,7 @@ function MoviePoster({ movie }: { movie: IMovie }) {
 }
 
 function ExternalLinks({ movie }: { movie: IMovie }) {
-    if (!movie.externals.imdb || !movie.externals.themoviedb)
+    if (!movie.externals.imdb && !movie.externals.themoviedb)
         return
     return <Flex gap="0.5rem">
         {movie.externals.imdb && <Link href={`https://imdb.com/title/${movie.externals.imdb}`} isExternal>IMDb</Link>}
