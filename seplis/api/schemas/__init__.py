@@ -2,6 +2,7 @@ from .page import *
 from .image import *
 from .movie import *
 from .series import *
+from .episode import *
 from .search import *
 from .user import *
 from .play_server import *
