@@ -1,7 +1,7 @@
 from fastapi import Depends, HTTPException, Security, Request
 import sqlalchemy as sa
 from datetime import date
-from ..dependencies import authenticated, get_session, AsyncSession
+from ..dependencies import authenticated, authenticated_if_expand, get_expand, get_session, AsyncSession
 from .. import models, schemas, constants
 from ... import logger, utils, config
 from .series import router
@@ -14,6 +14,8 @@ async def get_episodes(
     season: int | None = None,
     episode: int | None = None,
     air_date: date | None = None,
+    expand: list[str] | None = Depends(get_expand),
+    user: schemas.User_authenticated | None = Security(authenticated_if_expand, scopes=[str(constants.LEVEL_PROGRESS)]),
     page_query: schemas.Page_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
@@ -28,6 +30,10 @@ async def get_episodes(
         query = query.where(models.Episode.air_date == air_date)
     p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request)
     p.items = [schemas.Episode.from_orm(episode) for episode in p.items]
+    if expand:
+        if 'user_watched' in expand:
+            logger.info(user)
+            await expand_user_watched(series_id=series_id, user_id=user.id, episodes=p.items, session=session)
     return p
 
 
@@ -35,6 +41,8 @@ async def get_episodes(
 async def get_episode(
     series_id: int,
     number: int,
+    expand: list[str] | None = Depends(get_expand),
+    user: schemas.User_authenticated | None = Security(authenticated_if_expand, scopes=[str(constants.LEVEL_PROGRESS)]),
     session: AsyncSession = Depends(get_session),
 ):
     episode = await session.scalar(sa.select(models.Episode).where(
@@ -43,7 +51,13 @@ async def get_episode(
     ))
     if not episode:
         raise HTTPException(404, 'Unknown episode')
-    return schemas.Episode.from_orm(episode)
+    
+    episode = schemas.Episode.from_orm(episode)
+    if expand:
+        expand = [e.strip() for e in expand.split(',')]
+        if 'user_watched' in expand:
+            await expand_user_watched(series_id=series_id, user_id=user.id, episodes=[episode], session=session)
+    return episode
 
 
 @router.delete('/{series_id}/episodes/{number}', status_code=204)
@@ -57,3 +71,20 @@ async def delete_episode(
         models.Episode.series_id == series_id,
         models.Episode.number == number,
     ))
+
+
+async def expand_user_watched(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):
+    _episodes: dict[int, schemas.Episode] = {}
+    for episode in episodes:
+        episode.user_watched = schemas.Episode_watched(episode_number=episode.number)
+        _episodes[episode.number] = episode
+    result: list[models.Episode_watched] = await session.scalars(sa.select(
+        models.Episode_watched,
+    ).where(
+        models.Episode_watched.user_id == user_id,
+        models.Episode_watched.series_id == series_id,
+        models.Episode_watched.episode_number.in_(set(_episodes.keys())),
+    ))
+    for episode_watched in result:
+        _episodes[episode_watched.episode_number].user_watched = \
+            schemas.Episode_watched.from_orm(episode_watched)
