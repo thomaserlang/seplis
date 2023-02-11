@@ -37,7 +37,7 @@ interface ILogin {
 
 export default function Login() {
     const { handleSubmit, register, formState: { isSubmitting }, resetField, setFocus, setValue } = useForm<ILogin>()
-    const [ error, setError ] = useState<string>(null)
+    const [ error, setError ] = useState<JSX.Element>(null)
     const [ next ] = useQueryParam('next', StringParam)
     const navigate = useNavigate()
     useEffect(() => {

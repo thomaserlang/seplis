@@ -1,18 +1,29 @@
 import { AxiosError } from "axios"
 
-export function ErrorMessageFromResponse(errorObj: any): string {
-    console.log(errorObj)
+export function ErrorMessageFromResponse(errorObj: any): JSX.Element {
     if (!errorObj)
-        return 'Unknown error'
+        return <>Unknown error</>
 
     if (typeof errorObj === 'string')
-        return errorObj
+        return <>{errorObj}</>
     
     if (errorObj.isAxiosError) {
         const e: AxiosError = errorObj
-        if ((e.response?.data as any)?.message)
+        const data = (e.response?.data as any)
+        if (data?.message)
             return (e.response?.data as any)?.message
-        return e.message
+        if ((e.response.status == 422) && (data?.detail))
+            return <>
+                {data.detail.length > 0 && (
+                    <ul>
+                        {data.detail.map((error: any, index: any) => (
+                        <li key={index}>
+                            <strong>{error['loc'].join('.')}:</strong> {error['msg']}
+                        </li>
+                        ))}
+                    </ul>)}
+            </>
+        return <>{e.message}</>
     }
-    return errorObj.message
+    return <>{errorObj.message}</>
 }

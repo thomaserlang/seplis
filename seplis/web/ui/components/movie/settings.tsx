@@ -16,7 +16,7 @@ export default function Settings({ movie }: { movie: IMovie }) {
             externals: {...movie.externals}
         }
     })
-    const [ error, setError ] = useState<string>(null)
+    const [ error, setError ] = useState<JSX.Element>(null)
     const toast = useToast()
 
     const onSubmit = handleSubmit(async (data) => {
