@@ -42,9 +42,10 @@ export default function Login() {
     useEffect(() => {
         document.title = 'Login in | SEPLIS'
         setValue('next', next)
+        setFocus('login')
     }, [])
 
-    const onSubmit = handleSubmit(async (data) => {
+    const submit = async (data: ILogin) => {
         try {
             setError(null)
             const r = await axios.post<IToken>('/api/token', {
@@ -58,7 +59,13 @@ export default function Login() {
             resetField('password')
             setFocus('password')
         }
-    })
+    }
+
+    const onKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
+        if (event.key === "Enter") {
+            handleSubmit(submit)();
+        }
+    }
 
     return <Flex
         flexDirection="column"
@@ -76,7 +83,10 @@ export default function Login() {
         >
             <Avatar src="/static/img/apple-touch-icon.png" />
             <Box minW={{ base: "90%", md: "468px" }} p="2rem" backgroundColor="blackAlpha.400" rounded="md">
-                <form onSubmit={onSubmit}>
+                <form 
+                    onSubmit={handleSubmit(submit)}
+                    onKeyDown={onKeyDown}
+                >
                 <Stack spacing="1rem">
                     <Heading>Log in to SEPLIS</Heading>
 
@@ -88,14 +98,14 @@ export default function Login() {
                     <FormControl>
                         <InputGroup>
                             <InputLeftElement pointerEvents="none" children={<CFaUserAlt />} />
-                            <Input {...register('login')} type="input" placeholder="email or username" isRequired />
+                            <Input {...register('login', {required: true})} type="input" placeholder="email or username" />
                         </InputGroup>
                     </FormControl>
 
                     <FormControl>
                         <InputGroup>
                             <InputLeftElement pointerEvents="none" children={<CFaLock />} />
-                            <Input {...register('password')} type="password" placeholder="Password" isRequired/>
+                            <Input {...register('password', {required: true})} type="password" placeholder="Password" />
                         </InputGroup>
                         <FormHelperText textAlign="right">
                             <Link>Reset password</Link>
