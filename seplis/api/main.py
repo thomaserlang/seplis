@@ -109,11 +109,30 @@ async def shutdown():
 
 
 @app.exception_handler(exceptions.API_exception)
-async def unicorn_exception_handler(request: Request, exc: exceptions.API_exception):
+async def api_exception_handler(request: Request, exc: exceptions.API_exception):
     return JSONResponse(
         status_code=exc.status_code,
         content={
             'code': exc.code,
             'message': exc.message,
+            'errors': exc.errors,
+            'extra': exc.extra,
+        },
+        headers={
+            'access-control-allow-origin': '*',
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={
+            'code': 0,
+            'message': 'Internal server error',
+        },
+        headers={
+            'access-control-allow-origin': '*',
         },
     )
