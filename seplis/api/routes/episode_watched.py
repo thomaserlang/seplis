@@ -1,4 +1,5 @@
 from fastapi import Depends, Security, APIRouter, Body
+from pydantic import conint
 import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants, exceptions
@@ -9,8 +10,8 @@ router = APIRouter(prefix='/2/series')
 
 @router.get('/{series_id}/episodes/{episode_number}/watched', response_model=schemas.Episode_watched)
 async def get_watched(
-    series_id: int,
-    episode_number: int,
+    series_id: conint(ge=1),
+    episode_number: conint(ge=1),
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):
@@ -27,8 +28,8 @@ async def get_watched(
 
 @router.post('/{series_id}/episodes/{episode_number}/watched', response_model=schemas.Episode_watched)
 async def watched_increment(
-    series_id: int,
-    episode_number: int,
+    series_id: conint(ge=1),
+    episode_number: conint(ge=1),
     request: dict | None = None,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
@@ -52,8 +53,8 @@ async def watched_increment(
 
 @router.delete('/{series_id}/episodes/{episode_number}/watched', response_model=schemas.Episode_watched)
 async def watched_decrement(
-    series_id: int,
-    episode_number: int,
+    series_id: conint(ge=1),
+    episode_number: conint(ge=1),
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),    
 ):
@@ -77,9 +78,9 @@ async def watched_decrement(
 
 @router.post('/{series_id}/episodes/watched-range', status_code=204)
 async def watched_increment_range(
-    series_id: int,
-    from_episode_number: int = Body(..., embed=True),
-    to_episode_number: int = Body(..., embed=True),
+    series_id: conint(ge=1),
+    from_episode_number: int = Body(..., embed=True, ge=1),
+    to_episode_number: int = Body(..., embed=True, ge=1),
     request: dict | None = None,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
