@@ -126,7 +126,8 @@ async def expand_user_can_watch(series_id: int, user_id: int, episodes: list[sch
     result: list[models.Play_server_episode] = await session.scalars(sa.select(
         models.Play_server_episode,
     ).where(
-        models.Play_server_episode.user_id == user_id,
+        models.Play_server_access.user_id == user_id,
+        models.Play_server_episode.play_server_id == models.Play_server_access.play_server_id,
         models.Play_server_episode.series_id == series_id,
         models.Play_server_episode.episode_number.in_(set(_episodes.keys())),
     ).group_by(models.Play_server_episode.episode_number))
