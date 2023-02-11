@@ -5,20 +5,16 @@ from typing import TypeVar, Generic
 
 T = TypeVar('T')
 
+
 class Page_cursor_query(BaseModel):
     before: str | None
     after: str | None
-    limit = 25
-
-
-class Page_cursor_links(BaseModel):
-    next: AnyHttpUrl | None
-    prev: AnyHttpUrl | None
+    first: conint(ge=1, le=100) = 25
 
 
 class Page_cursor_result(GenericModel, Generic[T]):
     items: list[T]
-    links = Page_cursor_links()
+    cursor: str | None
 
 
 class Page_query(BaseModel):

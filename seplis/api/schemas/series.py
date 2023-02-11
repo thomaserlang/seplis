@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, constr, conint, confloat, validator
+from pydantic import BaseModel, constr, conint, confloat, validator, Field
 from datetime import datetime, date
 from .image import Image
 from .genre import Genre
@@ -57,6 +57,12 @@ class Series_update(Series_create):
     episodes: list[Episode_update] | None
 
 
+class Series_season(BaseModel, allow_population_by_field_name=True):
+    season: int
+    from_: int = Field(..., alias='from')
+    to: int
+    total: int
+
 class Series(BaseModel):
     id: int
     title: str | None
@@ -75,7 +81,7 @@ class Series(BaseModel):
     created_at: datetime
     updated_at: datetime | None
     status: int
-    seasons: list[dict] = []
+    seasons: list[Series_season] = []
     total_episodes: int = 0
     poster_image: Image | None
     popularity: float | None

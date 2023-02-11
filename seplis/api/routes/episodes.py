@@ -8,16 +8,18 @@ from ... import logger, utils, config
 from .series import router
 
 
-@router.get('/{series_id}/episodes', response_model=schemas.Page_result[schemas.Episode])
+@router.get('/{series_id}/episodes', response_model=schemas.Page_cursor_result[schemas.Episode])
 async def get_episodes(
     series_id: int,
     request: Request,
     season: int | None = None,
     episode: int | None = None,
     air_date: date | None = None,
+    air_date_ge: date | None = None,
+    air_date_le: date | None = None,
     expand: list[str] | None = Depends(get_expand),
     user: schemas.User_authenticated | None = Security(authenticated_if_expand, scopes=[str(constants.LEVEL_PROGRESS)]),
-    page_query: schemas.Page_query = Depends(),
+    page_cursor: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
     query = sa.select(models.Episode).where(
@@ -29,7 +31,17 @@ async def get_episodes(
         query = query.where(models.Episode.episode == episode)
     if air_date:
         query = query.where(models.Episode.air_date == air_date)
-    p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request)
+    if air_date_ge:
+        query = query.where(models.Episode.air_date >= air_date_ge)
+    if air_date_le:
+        query = query.where(models.Episode.air_date <= air_date_le)
+
+    p = await utils.sqlalchemy.paginate_cursor(
+        session=session, 
+        query=query, 
+        page_cursor=page_cursor,
+        fields=[models.Episode.number],    
+    )
     p.items = [schemas.Episode.from_orm(episode) for episode in p.items]
     if expand:
         expand_tasks = []

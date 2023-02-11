@@ -1,6 +1,7 @@
+from base64 import urlsafe_b64decode, urlsafe_b64encode
 import math
 import sqlalchemy as sa
-from sqlalchemy import func, orm, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Request
 from typing import Any
@@ -31,12 +32,31 @@ async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_q
     page.links = create_page_links(request=request, page=page)
     return page
 
-def create_cursor_links(request: Request, after: str | None, before: str | None):
-    url = request.url.remove_query_params(['after', 'before'])
-    return schemas.Page_cursor_links(
-        next=str(url.include_query_params(after=after)),
-        prev=str(url.include_query_params(before=before)) if 'after=' in request.url.query else None,
+
+async def paginate_cursor(session: AsyncSession, query: Any, fields: list[Any], page_cursor: schemas.Page_cursor_query):
+    query = query.limit(page_cursor.first+1).order_by(*[sa.asc(field) for field in fields])
+    query_cursor = page_cursor.after or page_cursor.before
+    if query_cursor:
+        cursor_list = urlsafe_b64decode(query_cursor.encode()).decode().split(',')
+        if page_cursor.after:
+            query = query.where(sa.tuple_(*fields) > sa.tuple_(*cursor_list))
+        else:
+            query = query.where(sa.tuple_(*fields) < sa.tuple_(*cursor_list))
+
+    items = await session.scalars(query)
+    items = items.all()
+
+    cursor: str | None = None
+    if len(items) > page_cursor.first:
+        items = items[:-1]
+        cursor = urlsafe_b64encode(','.join([str(getattr(items[-1], f.key)) for f in fields]).encode()).decode()
+        
+    page = schemas.Page_cursor_result(
+        items=items,
+        cursor=cursor,
     )
+    return page
+
 
 def create_page_links(request: Request, page: schemas.Page_result):
     url = request.url
@@ -46,6 +66,7 @@ def create_page_links(request: Request, page: schemas.Page_result):
         prev=str(url.include_query_params(page=page.page-1)) if page.page > 1 else None,
         last=str(url.include_query_params(page=page.pages)) if page.pages > 1 else None 
     )
+
 
 def sort_parser(sort, sort_lookup, sort_list=None):
     """
