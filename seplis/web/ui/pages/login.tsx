@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { IToken } from '@seplis/interfaces/token'
 import { ErrorMessageFromResponse } from '@seplis/components/error'
+import { setAuthorizationHeader } from '@seplis/api'
 
 const CFaUserAlt = chakra(FaUserAlt)
 const CFaLock = chakra(FaLock)
@@ -52,7 +53,8 @@ export default function Login() {
                 login: data.login,
                 password: data.password,
             })
-            localStorage.setItem('accessToken', r.data.access_token)
+            localStorage.setItem('accessToken', r.data.access_token)            
+            setAuthorizationHeader()
             navigate(data.next?data.next:'/')
         } catch(e) {
             setError(ErrorMessageFromResponse(e))
