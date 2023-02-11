@@ -220,8 +220,8 @@ async def test_series(client: AsyncClient):
     assert r.status_code == 200, r.content
     series = schemas.Series.parse_obj(r.json())
     assert series.seasons == [
-        {'total': 2, 'season': 1, 'to': 2, 'from': 1}, 
-        {'total': 1, 'season': 2, 'to': 3, 'from': 3},
+        schemas.Series_season(total=2, season=1, to=2, from_=1),
+        schemas.Series_season(total=1, season=2, to=3, from_=3),
     ]
 
     r = await client.put(f'/2/series/{series_id}', json={

@@ -227,7 +227,7 @@ class Series(Base):
         )
 
     @staticmethod
-    async def update_seasons(session: AsyncSession, series_id: int) -> None:
+    async def update_seasons(session: AsyncSession, series_id: int):
         """Counts the number of episodes per season.
 
             [
@@ -255,18 +255,18 @@ class Series(Base):
         ).where(
             Episode.series_id == series_id,
         ).group_by(Episode.season))
-        seasons = []
+        seasons: list[schemas.Series_season] = []
         total_episodes = 0
         for row in rows:
             total_episodes += row.total
             if not row.season:
                 continue
-            seasons.append({
-                'season': row.season,
-                'from': row.from_,
-                'to': row.to,
-                'total': row.total,
-            })
+            seasons.append(schemas.Series_season(
+                season=row.season,
+                from_=row.from_,
+                to=row.to,
+                total=row.total,
+            ))
         await session.execute(sa.update(Series).where(Series.id == series_id).values(
             seasons=seasons,
             total_episodes=total_episodes,
