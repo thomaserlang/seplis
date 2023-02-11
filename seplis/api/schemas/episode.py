@@ -16,6 +16,10 @@ class Episode_watched(BaseModel):
         orm_mode = True
 
 
+class User_can_watch(BaseModel):
+    on_play_server = False
+
+
 class Episode_create(BaseModel):
     title: constr(max_length=200, strip_whitespace=True)
     original_title: constr(max_length=200, strip_whitespace=True) | None
@@ -48,6 +52,7 @@ class Episode(BaseModel):
     runtime: int | None
     rating: float | None
     user_watched: Episode_watched | None
+    user_can_watch: User_can_watch | None
 
     class Config:
         orm_mode = True
