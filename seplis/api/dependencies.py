@@ -1,11 +1,9 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import Depends
+from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from httpx import AsyncClient
-from .schemas import User_authenticated
 from .database import database
 from . import exceptions
-from .. import logger
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/2/token")
 
@@ -32,11 +30,15 @@ async def authenticated(security_scopes: SecurityScopes, token: str = Depends(oa
 
 async def authenticated_if_expand(
     security_scopes: SecurityScopes, 
-    token: str = Depends(oauth2_scheme),
+    request: Request,
     expand: str | None = None, 
-) -> User_authenticated:
+):
     if expand:
-        return await _check_token(token=token, security_scopes=security_scopes)
+        token = await oauth2_scheme(request)
+        return await _check_token(
+            security_scopes=security_scopes, 
+            token=token
+        )
 
 
 async def get_expand(expand: str | None = None):
