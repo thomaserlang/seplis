@@ -3,6 +3,7 @@ import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants, exceptions
 
+
 router = APIRouter(prefix='/2/series')
 
 

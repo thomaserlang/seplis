@@ -46,35 +46,40 @@ class Episode_watched(Base):
 
     @staticmethod
     async def increment(session: AsyncSession, user_id: int, series_id: int, episode_number: int, data: schemas.Episode_watched_increment):
-        sql = sa.dialects.mysql.insert(Episode_watched).values(
+        episode_watched = sa.dialects.mysql.insert(Episode_watched).values(
             series_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
             watched_at=data.watched_at,
             times=1
         )
-        sql = sql.on_duplicate_key_update(
-            watched_at=sql.inserted.watched_at,
+        episode_watched = episode_watched.on_duplicate_key_update(
+            watched_at=episode_watched.inserted.watched_at,
             times=Episode_watched.times + 1,
             position=0,
         )
-        sql_history = sa.insert(Episode_watched_history).values(
+
+        watched_history = sa.insert(Episode_watched_history).values(
             series_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
             watched_at=data.watched_at,
         )
-        sql_watching = sa.dialects.mysql.insert(Episode_last_finished).values(
+
+        episode_last_finished = sa.dialects.mysql.insert(Episode_last_finished).values(
             series_id=series_id,
             episode_number=episode_number,
             user_id=user_id,
         ).on_duplicate_key_update(
             episode_number=episode_number,
         )
+        
+        # Including this in the gather makes it not directly avaialble 
+        # for a select query afterwards
+        await session.execute(episode_watched) 
         await asyncio.gather(
-            session.execute(sql),
-            session.execute(sql_history),
-            session.execute(sql_watching),
+            session.execute(watched_history),
+            session.execute(episode_last_finished),
         )
 
 
