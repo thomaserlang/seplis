@@ -5,8 +5,6 @@ from seplis.api import constants, schemas, models
 
 @pytest.mark.asyncio
 async def test_episode_to_watch(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_USER)])
-
     series: schemas.Series = await models.Series.save(schemas.Series_create(
         title='Test series',
         runtime=30,
@@ -24,6 +22,8 @@ async def test_episode_to_watch(client: AsyncClient):
         assert episode.user_watched == None
 
 
+    await user_signin(client, [str(constants.LEVEL_USER)])
+    
     r = await client.get(f'/2/series/{series.id}/episodes', params={
         'expand': 'something, user_watched'
     })
