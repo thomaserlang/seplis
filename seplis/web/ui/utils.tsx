@@ -128,7 +128,7 @@ export function secondsToHourMin(minutes: number) {
     let s = ''
     if (hours > 0)
         s += `${hours}h`
-    if (minutes > 0)
+    if (minutesLeft > 0)
         s += ` ${minutesLeft}m`
     return s.trim()
 }
