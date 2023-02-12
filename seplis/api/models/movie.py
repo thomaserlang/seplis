@@ -3,6 +3,7 @@ import sqlalchemy as sa
 from fastapi import HTTPException
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
+from seplis.utils.sqlalchemy import UtcDateTime
 from .genre import Genre
 from .base import Base
 from ..database import database
@@ -17,8 +18,8 @@ class Movie(Base):
     original_title = sa.Column(sa.String(200))
     alternative_titles = sa.Column(sa.JSON, nullable=False)
     externals = sa.Column(sa.JSON, nullable=False)
-    created_at = sa.Column(sa.DateTime(timezone=True))
-    updated_at = sa.Column(sa.DateTime(timezone=True))
+    created_at = sa.Column(UtcDateTime)
+    updated_at = sa.Column(UtcDateTime)
     status = sa.Column(sa.SmallInteger)
     plot = sa.Column(sa.String(2000))
     tagline = sa.Column(sa.String(500))
@@ -249,7 +250,7 @@ class Movie_watched(Base):
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
     times = sa.Column(sa.SmallInteger)
     position = sa.Column(sa.SmallInteger)
-    watched_at = sa.Column(sa.DateTime)
+    watched_at = sa.Column(UtcDateTime)
 
 
     @staticmethod
@@ -421,7 +422,7 @@ class Movie_watched_history(Base):
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'))
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
-    watched_at = sa.Column(sa.DateTime)
+    watched_at = sa.Column(UtcDateTime)
 
 
 class Movie_stared(Base):
@@ -429,7 +430,7 @@ class Movie_stared(Base):
     
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
-    created_at = sa.Column(sa.DateTime)
+    created_at = sa.Column(UtcDateTime)
 
     @staticmethod
     async def set_stared(user_id: int | str, movie_id: int):

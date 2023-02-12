@@ -1,5 +1,5 @@
-import uuid
 import sqlalchemy as sa
+from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from seplis import logger, utils
 from datetime import datetime, timezone, timedelta
@@ -10,8 +10,8 @@ class Play_server(Base):
     __tablename__ = 'play_servers'
 
     id = sa.Column(utils.sqlalchemy.UUID, primary_key=True)
-    created_at = sa.Column(sa.DateTime)
-    updated_at = sa.Column(sa.DateTime)
+    created_at = sa.Column(UtcDateTime)
+    updated_at = sa.Column(UtcDateTime)
     user_id = sa.Column(sa.Integer)
     name = sa.Column(sa.String(45))
     url = sa.Column(sa.String(200))
@@ -69,7 +69,7 @@ class Play_server_access(Base):
 
     play_server_id = sa.Column(utils.sqlalchemy.UUID, primary_key=True)
     user_id = sa.Column(sa.Integer, primary_key=True)
-    created_at = sa.Column(sa.DateTime)
+    created_at = sa.Column(UtcDateTime)
 
 
     @staticmethod
@@ -97,8 +97,8 @@ class Play_server_invite(Base):
     play_server_id = sa.Column(utils.sqlalchemy.UUID, sa.ForeignKey('play_servers.id', ondelete='cascade', onupdate='cascade'), primary_key=True,)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'), primary_key=True)
     invite_id = sa.Column(utils.sqlalchemy.UUID, nullable=False)
-    created_at = sa.Column(sa.DateTime, nullable=False)
-    expires_at = sa.Column(sa.DateTime, nullable=False)
+    created_at = sa.Column(UtcDateTime, nullable=False)
+    expires_at = sa.Column(UtcDateTime, nullable=False)
 
 
     @staticmethod
@@ -183,8 +183,8 @@ class Play_server_movie(Base):
 
     play_server_id = sa.Column(utils.sqlalchemy.UUID, sa.ForeignKey('play_servers.id', onupdate='cascade', ondelete='cascade'), primary_key=True)
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False)
-    created_at = sa.Column(sa.DateTime, nullable=False)
-    updated_at = sa.Column(sa.DateTime, nullable=False)
+    created_at = sa.Column(UtcDateTime, nullable=False)
+    updated_at = sa.Column(UtcDateTime, nullable=False)
 
 
     @staticmethod
@@ -237,8 +237,8 @@ class Play_server_episode(Base):
     play_server_id = sa.Column(utils.sqlalchemy.UUID, sa.ForeignKey('play_servers.id', onupdate='cascade', ondelete='cascade'), primary_key=True)
     series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False)
     episode_number = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
-    created_at = sa.Column(sa.DateTime, nullable=False)
-    updated_at = sa.Column(sa.DateTime, nullable=False)
+    created_at = sa.Column(UtcDateTime, nullable=False)
+    updated_at = sa.Column(UtcDateTime, nullable=False)
 
 
     @staticmethod

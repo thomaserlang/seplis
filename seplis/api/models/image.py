@@ -3,6 +3,8 @@ import sqlalchemy as sa
 import io
 import urllib.parse
 from fastapi import UploadFile
+
+from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from ... import config, utils, logger
 from .. import schemas, exceptions, models
@@ -21,7 +23,7 @@ class Image(Base):
     height = sa.Column(sa.Integer)
     width = sa.Column(sa.Integer)
     hash = sa.Column(sa.String(64))
-    created_at = sa.Column(sa.DateTime, default=datetime.now)
+    created_at = sa.Column(UtcDateTime, default=datetime.utcnow)
     type = sa.Column(sa.String(50))
 
     @property

@@ -1,6 +1,7 @@
 import asyncio
 import sqlalchemy as sa
 from datetime import datetime, timezone
+from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from ..dependencies import AsyncSession
 from .. import schemas
@@ -15,7 +16,7 @@ class Episode(Base):
     title = sa.Column(sa.String(200))
     original_title = sa.Column(sa.String(200))
     air_date = sa.Column(sa.Date)
-    air_datetime = sa.Column(sa.DateTime)
+    air_datetime = sa.Column(UtcDateTime)
     plot = sa.Column(sa.String(2000))
     season = sa.Column(sa.Integer)
     episode = sa.Column(sa.Integer)
@@ -30,7 +31,7 @@ class Episode_watched_history(Base):
     series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=False, autoincrement=False)
     episode_number = sa.Column(sa.Integer)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id', onupdate='cascade', ondelete='cascade'), primary_key=False, autoincrement=False)
-    watched_at = sa.Column(sa.DateTime)
+    watched_at = sa.Column(UtcDateTime)
 
 
 class Episode_watched(Base):
@@ -42,7 +43,7 @@ class Episode_watched(Base):
     episode_number = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     times = sa.Column(sa.Integer, default=0)
     position = sa.Column(sa.Integer, default=0)
-    watched_at = sa.Column(sa.DateTime)
+    watched_at = sa.Column(UtcDateTime)
 
     @staticmethod
     async def increment(session: AsyncSession, user_id: int, series_id: int, episode_number: int, data: schemas.Episode_watched_increment):

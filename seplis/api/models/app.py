@@ -1,5 +1,7 @@
 import logging
 import sqlalchemy as sa
+
+from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from sqlalchemy import orm
 from sqlalchemy.orm.attributes import get_history
@@ -17,8 +19,8 @@ class App(Base):
     client_secret = sa.Column(sa.String(45))
     redirect_uri = sa.Column(sa.String(45))
     level = sa.Column(sa.Integer)
-    created = sa.Column(sa.DateTime, default=datetime.utcnow)
-    updated = sa.Column(sa.DateTime, onupdate=datetime.utcnow)
+    created = sa.Column(UtcDateTime, default=datetime.utcnow)
+    updated = sa.Column(UtcDateTime, onupdate=datetime.utcnow)
 
     _cache_name_id = 'apps:{}'
     _cache_name_client_id = 'apps:client_id:{}'

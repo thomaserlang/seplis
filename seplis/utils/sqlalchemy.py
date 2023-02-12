@@ -3,6 +3,8 @@ import math
 import sqlalchemy as sa
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.types import DateTime, TypeDecorator
+from datetime import datetime, timezone
 from fastapi import Request
 from typing import Any
 from seplis.utils import *
@@ -157,3 +159,23 @@ def uuid7_mariadb():
     '''
     a = str(uuid7())
     return f'{a[24:32]}-{a[32:36]}-{a[19:23]}-{a[14:18]}-{a[0:8]}{a[9:13]}'
+
+
+class UtcDateTime(TypeDecorator):
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            if not isinstance(value, datetime):
+                raise TypeError('expected datetime.datetime, not ' +
+                                repr(value))
+            return value.astimezone(timezone.utc)
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=timezone.utc)
+            else:
+                value = value.astimezone(timezone.utc)
+        return value

@@ -49,7 +49,7 @@ async def test_episode_to_watch(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_pagination_test(client: AsyncClient):
+async def test_pagination(client: AsyncClient):
     series: schemas.Series = await models.Series.save(schemas.Series_create(
         title='Test series',
         runtime=30,

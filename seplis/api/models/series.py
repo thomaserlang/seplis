@@ -3,6 +3,8 @@ import sqlalchemy as sa
 from fastapi import HTTPException
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from seplis.utils.sqlalchemy import UtcDateTime
 from .episode import Episode
 from .base import Base
 
@@ -19,8 +21,8 @@ class Series(Base):
     __tablename__ = 'series'
 
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    created_at = sa.Column(sa.DateTime)
-    updated_at = sa.Column(sa.DateTime)
+    created_at = sa.Column(UtcDateTime)
+    updated_at = sa.Column(UtcDateTime)
     status = sa.Column(sa.Integer, default=0, nullable=False)
     title = sa.Column(sa.String(200))
     original_title = sa.Column(sa.String(200))

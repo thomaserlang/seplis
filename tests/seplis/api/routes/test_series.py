@@ -245,17 +245,6 @@ async def test_series(client: AsyncClient):
     series = schemas.Series.parse_obj(r.json())
     assert series.alternative_titles == []
 
-    r = await client.get(f'/2/series/{series_id}/episodes?per_page=1')
-    assert r.status_code == 200, r.content
-    episodes = schemas.Page_result[schemas.Episode].parse_obj(r.json())
-    assert len(episodes.items) == 1, episodes
-    assert episodes.items[0].number == 1
-    
-    r = await client.get(f'/2/series/{series_id}/episodes?per_page=1&page=2')
-    assert r.status_code == 200, r.content
-    episodes = schemas.Page_result[schemas.Episode].parse_obj(r.json())
-    assert len(episodes.items) == 1, episodes
-    assert episodes.items[0].number == 2
 
     r = await client.get(f'/2/series/{series_id}/episodes?season=1')
     assert r.status_code == 200, r.content

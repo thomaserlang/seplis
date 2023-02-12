@@ -1,5 +1,7 @@
 import sqlalchemy as sa
 from starlette.concurrency import run_in_threadpool
+
+from seplis.utils.sqlalchemy import UtcDateTime
 from .. import schemas, exceptions
 from .base import Base
 from seplis import utils, logger
@@ -13,7 +15,7 @@ class User_public(Base):
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     username = sa.Column(sa.String(45), unique=True)
-    created_at = sa.Column(sa.DateTime, default=datetime.utcnow)
+    created_at = sa.Column(UtcDateTime, default=datetime.utcnow)
 
 class User(User_public):
     email = sa.Column(sa.String(100), unique=True)
@@ -80,7 +82,7 @@ class Token(Base):
     user_id = sa.Column(sa.Integer)
     app_id = sa.Column(sa.Integer)
     token = sa.Column(sa.String(255), primary_key=True)
-    expires = sa.Column(sa.DateTime)
+    expires = sa.Column(UtcDateTime)
     user_level = sa.Column(sa.Integer)
 
     @staticmethod
