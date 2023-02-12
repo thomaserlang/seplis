@@ -1,17 +1,13 @@
 export interface IPageCursorQuery {
     before: string | null
     after: string | null
-    limit: number
+    first: number
 }
   
-export interface IPageCursorLinks {
-    next: string | null
-    prev: string | null
-}
 
 export interface IPageCursorResult<T> {
     items: T[]
-    links: IPageCursorLinks
+    cursor: string | null
 }
 
 export interface IPageQuery {

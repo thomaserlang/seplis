@@ -34,6 +34,15 @@ const theme = extendTheme({
         seplis: {
             100: '#36c',
         }
+    },
+    components: {
+        Popover: {
+            variants: {
+                responsive: {
+                    content: { width: "unset" },
+                },
+            },
+        },
     }
 })
 

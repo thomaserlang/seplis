@@ -1,56 +1,7 @@
 import { IImage } from './image'
 import { IGenre } from './genre'
 import { TExternals } from './types'
-
-
-export interface IEpisodeCreate {
-    title: string
-    original_title: string | null
-    number: number
-    season: number | null
-    episode: number | null
-    air_date: Date | null
-    air_datetime: Date | null
-    plot: string | null
-    runtime: number | null
-    rating: number | null
-}
-  
-
-export interface IEpisodeUpdate extends IEpisodeCreate {
-    title: string | null
-}
-
-
-export interface IEpisode {
-    title: string | null
-    original_title: string | null
-    number: number
-    season: number | null
-    episode: number | null
-    plot: string | null
-    runtime: number | null
-    rating: number | null
-    air_date: string | null
-    air_datetime: string | null
-}
-
-export interface IEpisodeWatchedIncrement {
-    watched_at: Date
-}
-
-
-export interface IEpisodeWatched {
-    episode_number: number
-    times: number
-    position: number
-    watched_at: Date | null
-}
-
-
-export interface IEpisodeWithUserWatched extends IEpisode {
-    user_watched: IEpisodeWatched | null
-}
+import { IEpisode, IEpisodeCreate, IEpisodeWatched } from './episode'
 
 
 export interface ISeriesImporters {
@@ -90,6 +41,15 @@ export interface ISeriesCreate {
     episodes: IEpisodeCreate[] | null
 }
 
+
+export interface ISeriesSeason {
+    season: number
+    from: number
+    to: number
+    total: number
+}
+
+
 export interface ISeries {
     id: number
     title: string | null
@@ -108,7 +68,7 @@ export interface ISeries {
     created_at: string
     updated_at: string | null
     status: number
-    seasons: { [key: string]: any }[]
+    seasons: ISeriesSeason[]
     total_episodes: number
     poster_image: IImage | null
     popularity: number | null

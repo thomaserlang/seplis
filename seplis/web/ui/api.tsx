@@ -1,4 +1,5 @@
-import Axios, { AxiosError } from 'axios'
+import Axios, { AxiosError, AxiosRequestConfig } from 'axios'
+import { IPageCursorResult } from './interfaces/page'
 
 
 const api = Axios.create({
@@ -19,3 +20,18 @@ api.interceptors.response.use((response) => response, (error: AxiosError) => {
 })
 
 export default api
+
+export async function GetAllCursor<T = any, D = any>(url: string, config?: AxiosRequestConfig<D>) {
+    let result = await api.get<IPageCursorResult<T>>(url, config)
+    if (!config.params)
+        config.params = {}
+    const items = result.data.items
+    if (result.data.cursor)
+        do {
+            config.params['after'] = result.data.cursor
+            result = await api.get<IPageCursorResult<T>>(url, config)
+            items.push(...result.data.items)
+        } while (result.data.cursor !== null)
+    return items
+}
+

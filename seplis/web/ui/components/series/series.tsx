@@ -8,6 +8,7 @@ import { langCodeToLang, secondsToHourMin } from '@seplis/utils'
 import { useEffect } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { Poster } from '../poster'
+import Episodes from './episodes'
 import FollowingButton from './following-button'
 import Settings from './settings'
 
@@ -19,16 +20,19 @@ export default function Series({ series }: { series: ISeries }) {
     }, [])
 
     return <FocusContext.Provider value={focusKey}>
-        <Flex gap="1rem">
-            <SeriesPoster series={series} />
-            <Flex gap="0.5rem" direction="column" maxWidth="800px" ref={ref}>
-                <Title series={series} />
-                <BaseInfo series={series} />                
-                <Genres genres={series.genres} />
-                <Buttons series={series} />
-                <Plot series={series} />                
-                <ExternalLinks series={series} />
+        <Flex direction="column" gap="1rem" maxWidth="1075px">
+            <Flex gap="1rem">
+                <SeriesPoster series={series} />
+                <Flex gap="0.5rem" direction="column" maxWidth="800px" ref={ref}>
+                    <Title series={series} />
+                    <BaseInfo series={series} />
+                    <Genres genres={series.genres} />
+                    <Buttons series={series} />
+                    <Plot series={series} />
+                    <ExternalLinks series={series} />
+                </Flex>
             </Flex>
+            <Episodes series={ series } />
         </Flex>
     </FocusContext.Provider>
 }

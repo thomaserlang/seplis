@@ -1,4 +1,4 @@
-import { IEpisode, ISeries } from './interfaces/series';
+import { IEpisode } from "./interfaces/episode";
 
 export function isAuthed() {
     return (localStorage.getItem('accessToken') !== null);
@@ -26,36 +26,19 @@ export function pad(str: string | number, max: number): string {
     return str.length < max ? pad("0" + str, max) : str;
 }
 
-export function episodeNumber(series: ISeries, episode: IEpisode) {
-    let type = series.episode_type
-    if (type == 2) {
-        if (!episode.season || !episode.episode)
-            type = 1
-    } else if (type == 3) {
-        if (!episode.air_date)
-            type = 1
-    }
-    switch (type) {
-        case 1: return`Episode ${episode.number}`; break;
-        case 2: return`S${pad(episode.season,2)} · E${pad(episode.episode, 2)}`; break;
-        case 3: return`Airdate: ${episode.air_date}`; break;
-    }
+export function episodeNumber(episode: IEpisode) {
+    if (!episode.season || !episode.episode)
+        return `Episode ${episode.number}`
+    else
+        return `S${pad(episode.season,2)}E${pad(episode.episode, 2)}`
 }
 
-export function episodeTitle(series: ISeries, episode: IEpisode) {
-    let type = series.episode_type
-    if (type == 2) {
-        if (!episode.season || !episode.episode)
-            type = 1
-    } else if (type == 3) {
-        if (!episode.air_date)
-            type = 1
-    }
-    switch (type) {
-        case 1: return`${episode.number}: ${episode.title}`; break;
-        case 2: return`S${pad(episode.season,2)}E${pad(episode.episode, 2)}: ${episode.title}`; break;
-        case 3: return`${episode.air_date}: ${episode.title}`; break;
-    }
+export function episodeTitle(episode: IEpisode) {
+    return `${episodeNumber(episode)}: ${episode.title}`
+}
+
+export function EpisodeAirdate(episode: IEpisode) {
+    return episode.air_date || 'Unknown airdate'
 }
 
 export function guid() {
@@ -88,8 +71,8 @@ export function dateInDays(dt: Date | string) {
     if (typeof(dt) == "string") {
         dt = new Date(dt);
     }
-    let seconds = Math.abs(dt.getTime()-new Date().getTime())/1000;
-    let minutes, hours, days;
+    let seconds = Math.abs(dt.getTime()-new Date().getTime())/1000
+    let minutes, hours, days
     let l = [];
     [minutes, seconds] = divmod(seconds, 60);
     [hours, minutes] = divmod(minutes, 60);
