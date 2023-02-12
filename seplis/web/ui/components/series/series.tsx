@@ -193,7 +193,7 @@ function SeasonEpisodes({ series }: { series: ISeries }) {
     return <>
         {series.seasons.length > 0 && <Flex gap="0.5rem" direction="column">
             <Heading fontSize="2xl">Episodes</Heading>
-            <Episodes series={series} />
+            <Episodes series={series} defaultSeason={series.seasons[series.seasons.length - 1].season} />
         </Flex>}
     </>
 }
