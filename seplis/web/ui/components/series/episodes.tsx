@@ -16,10 +16,10 @@ interface IProps {
 
 export default function Episodes({ series, defaultSeason = 1 }: IProps) {
     const [season, setSeason] = useState(defaultSeason)
-    return <>
+    return <Flex gap="0.5rem" direction="column">
         <SeasonSelect seasons={series.seasons} defaultSeason={defaultSeason} onSelect={setSeason} />
         <RenderEpisodes seriesId={series.id} season={season} />
-    </>
+    </Flex>
 }
 
 
