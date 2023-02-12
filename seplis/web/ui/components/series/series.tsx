@@ -46,7 +46,7 @@ function SeriesPoster({ series: series }: { series: ISeries }) {
 }
 
 function Title({ series }: { series: ISeries }) {
-    return <Box marginTop="-7px">
+    return <Box marginTop="-7px" lineHeight="1">
         <Heading as="h1">{series.title || '<Missing title>'}</Heading>
         {series.original_title != series.title &&
             <Heading as="h2" fontSize="1.5rem" color="RGBA(255, 255, 255, 0.36)">{series.original_title}</Heading>}
@@ -62,7 +62,7 @@ function Plot({ series }: { series: ISeries }) {
 }
 
 function BaseInfo({ series }: { series: ISeries }) {
-    return <Flex gap="0.75rem" wrap="wrap">
+    return <Flex gap="0.75rem" wrap="wrap" lineHeight="1">
         {series.premiered && <Text><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></Text>}
         {series.language && <Text>{langCodeToLang(series.language)}</Text>}
         {series.runtime && <Text>{secondsToHourMin(series.runtime)}</Text>}
