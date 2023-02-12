@@ -58,10 +58,7 @@ function Title({ series }: { series: ISeries }) {
 function Plot({ series }: { series: ISeries }) {
     if (!series.plot)
         return
-    return <Box>
-        <Text><strong>Plot</strong></Text>
-        <Text>{series.plot}</Text>
-    </Box>
+    return <Text>{series.plot}</Text>
 }
 
 function BaseInfo({ series }: { series: ISeries }) {
