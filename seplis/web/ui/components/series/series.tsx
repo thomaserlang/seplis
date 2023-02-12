@@ -14,6 +14,7 @@ import Episodes from './episodes'
 import FollowingButton from './following-button'
 import Settings from './settings'
 
+
 export default function Series({ series }: { series: ISeries }) {
     const { ref, focusKey, setFocus } = useFocusable()
 
@@ -34,11 +35,15 @@ export default function Series({ series }: { series: ISeries }) {
                     <ExternalLinks series={series} />
                 </Flex>
             </Flex>
+
             <UserEpisodes series={series} />
-            <Episodes series={series} />
+
+            <SeasonEpisodes series={series} />
+
         </Flex>
     </FocusContext.Provider>
 }
+
 
 function SeriesPoster({ series: series }: { series: ISeries }) {
     return <div className="poster-container-sizing">
@@ -47,6 +52,7 @@ function SeriesPoster({ series: series }: { series: ISeries }) {
         </div>
     </div>
 }
+
 
 function Title({ series }: { series: ISeries }) {
     return <Box marginTop="-7px" lineHeight="1">
@@ -58,11 +64,13 @@ function Title({ series }: { series: ISeries }) {
     </Box>
 }
 
+
 function Plot({ series }: { series: ISeries }) {
     if (!series.plot)
         return
     return <Text>{series.plot}</Text>
 }
+
 
 function BaseInfo({ series }: { series: ISeries }) {
     return <Flex columnGap="0.75rem" rowGap="0.5rem" wrap="wrap" lineHeight="1">
@@ -74,6 +82,7 @@ function BaseInfo({ series }: { series: ISeries }) {
         {series.rating && <Text title="IMDb rating">{series.rating} <StarIcon boxSize={2} /></Text>}
     </Flex>
 }
+
 
 function SeasonsText({ seasons }: { seasons: ISeriesSeason[] }) {
     return <>
@@ -92,6 +101,7 @@ function EpisodesText({ seasons }: { seasons: ISeriesSeason[] }) {
     </>
 }
 
+
 function Genres({ genres }: { genres: IGenre[] }) {
     return <Flex gap="0.5rem" wrap="wrap" padding="0.25rem 0">
         {genres.map(genre => (
@@ -99,6 +109,7 @@ function Genres({ genres }: { genres: IGenre[] }) {
         ))}
     </Flex>
 }
+
 
 function Genre({ genre }: { genre: IGenre }) {
     const { ref, focused } = useFocusable()
@@ -110,12 +121,14 @@ function Genre({ genre }: { genre: IGenre }) {
     </Tag>
 }
 
+
 function Buttons({ series }: { series: ISeries }) {
     return <Flex gap="0.5rem" wrap="wrap" padding="0.25rem 0">
         <FollowingButton seriesId={series.id} />
         <DisplaySettings series={series} />
     </Flex>
 }
+
 
 function ExternalLinks({ series }: { series: ISeries }) {
     if (!series.externals.imdb && !series.externals.themoviedb)
@@ -165,7 +178,17 @@ function UserEpisodes({ series }: { series: ISeries }) {
     if (!isAuthed())
         return
     return <Flex wrap="wrap" gap="0.5rem">
-        <Flex grow="1" basis="45%"><EpisodeLastWatched seriesId={series.id} /></Flex>
-        <Flex grow="1" basis="45%"><EpisodeToWatch seriesId={series.id} /></Flex>
+        <Flex grow="1"><EpisodeLastWatched seriesId={series.id} /></Flex>
+        <Flex grow="1"><EpisodeToWatch seriesId={series.id} /></Flex>
     </Flex>
+}
+
+
+function SeasonEpisodes({ series }: { series: ISeries }) {
+    return <>
+        {series.seasons.length > 0 && <Flex gap="0.5rem" direction="column">
+            <Heading fontSize="2xl">Episodes</Heading>
+            <Episodes series={series} />
+        </Flex>}
+    </>
 }
