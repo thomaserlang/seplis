@@ -8,7 +8,7 @@ interface IProps {
 export function Poster({ url, title }: IProps) {
     return <Image
         src={url}
-        fallback={<Center height='100%'><Text>
+        fallback={<Center height='100%' backgroundColor="blackAlpha.400"><Text>
             {title || 'No title'}
         </Text></Center>}
     />
