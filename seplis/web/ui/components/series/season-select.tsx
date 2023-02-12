@@ -8,6 +8,8 @@ interface IProps {
 }
 
 export default function SeasonSelect({ seasons, onSelect, defaultSeason=1 }: IProps) {
+    if (!seasons || (seasons.length == 0))
+        return null
     return <Select defaultValue={defaultSeason} onChange={(value) => {
         if (onSelect)
             onSelect(parseInt(value.currentTarget.value))
