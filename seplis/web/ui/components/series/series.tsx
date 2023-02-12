@@ -67,10 +67,10 @@ function Plot({ series }: { series: ISeries }) {
 function BaseInfo({ series }: { series: ISeries }) {
     return <Flex gap="0.75rem" wrap="wrap">
         {series.premiered && <Text><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></Text>}
+        {series.language && <Text>{langCodeToLang(series.language)}</Text>}
         {series.runtime && <Text>{secondsToHourMin(series.runtime)}</Text>}
         <SeasonsText seasons={series.seasons} />
         <EpisodesText seasons={series.seasons} />
-        {series.language && <Text>{langCodeToLang(series.language)}</Text>}
         {series.rating && <Text title="IMDb rating">{series.rating} <StarIcon boxSize={2} /></Text>}
     </Flex>
 }
