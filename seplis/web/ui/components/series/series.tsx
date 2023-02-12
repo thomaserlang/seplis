@@ -5,7 +5,7 @@ import { IGenre } from '@seplis/interfaces/genre'
 import { ISeries, ISeriesSeason } from '@seplis/interfaces/series'
 import { focusedBorder } from '@seplis/styles'
 import { isAuthed, langCodeToLang, secondsToHourMin } from '@seplis/utils'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { Poster } from '../poster'
 import EpisodeLastWatched from './episode-last-watched'
@@ -68,9 +68,12 @@ function Title({ series }: { series: ISeries }) {
 
 
 function Plot({ series }: { series: ISeries }) {
+    const [expand, setExpand] = useState(false)
     if (!series.plot)
         return
-    return <Text>{series.plot}</Text>
+    return <Text noOfLines={expand ? null : 3} onClick={() => {
+        setExpand(!expand)
+    }}>{series.plot}</Text>
 }
 
 
