@@ -6,20 +6,17 @@ import WatchedButton from "./episode-watched-button";
 
 export default function EpisodeCard({ seriesId, episode }: { seriesId: number, episode: IEpisode }) {
     return <Flex 
-        backgroundColor="blackAlpha.500"
-        padding="0.5rem" 
-        gap="0.5rem" 
-        direction="column" 
-        rounded="md"
-        width="100%"
+        gap="0.5rem"
+        direction="column"
         grow="1"
         basis="300px"
+        layerStyle="episodeCard"
     >
         <Text noOfLines={1} lineHeight="1">{episode.title}</Text>        
         <Text noOfLines={1} lineHeight="1">{episodeNumber(episode)} · {EpisodeAirdate(episode)}</Text>
         <Flex gap="0.5rem">
-            <WatchedButton seriesId={seriesId} data={episode.user_watched} />
-            <Box marginLeft="auto"><PlayButton seriesId={seriesId} episode={episode} /></Box>
+            <WatchedButton seriesId={seriesId} episodeNumber={episode.number} data={episode.user_watched} />
+            <Box marginLeft="auto"><PlayButton seriesId={seriesId} episodeNumber={episode.number} canPlay={episode.user_can_watch?.on_play_server} /></Box>
         </Flex>
     </Flex>
 }

@@ -57,3 +57,10 @@ export interface IEpisode {
 export interface IEpisodeWatchedIncrement {
     watched_at: Date
 }
+
+
+export interface IEventEpisodeWatched {
+    seriesId: number
+    episodeNumber: number
+    watched: IEpisodeWatched
+}

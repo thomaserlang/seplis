@@ -36,7 +36,6 @@ episodes the result will be empty 204`.
 @router.get('', response_model=schemas.Episode, description=DESCRIPTION)
 async def get_episode_to_watch(
     series_id: int | str,
-    response: Response,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
     session: AsyncSession=Depends(get_session),
 ):
@@ -76,7 +75,6 @@ async def get_episode_to_watch(
     e = e.first()
     
     if not e:
-        response.status_code = 204
         return
 
     episode = schemas.Episode.from_orm(e.Episode)

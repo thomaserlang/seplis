@@ -4,10 +4,12 @@ import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-naviga
 import { IGenre } from '@seplis/interfaces/genre'
 import { ISeries, ISeriesSeason } from '@seplis/interfaces/series'
 import { focusedBorder } from '@seplis/styles'
-import { langCodeToLang, secondsToHourMin } from '@seplis/utils'
+import { isAuthed, langCodeToLang, secondsToHourMin } from '@seplis/utils'
 import { useEffect } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { Poster } from '../poster'
+import EpisodeLastWatched from './episode-last-watched'
+import EpisodeToWatch from './episode-to-watch'
 import Episodes from './episodes'
 import FollowingButton from './following-button'
 import Settings from './settings'
@@ -32,7 +34,8 @@ export default function Series({ series }: { series: ISeries }) {
                     <ExternalLinks series={series} />
                 </Flex>
             </Flex>
-            <Episodes series={ series } />
+            <UserEpisodes series={series} />
+            <Episodes series={series} />
         </Flex>
     </FocusContext.Provider>
 }
@@ -74,7 +77,7 @@ function BaseInfo({ series }: { series: ISeries }) {
 
 function SeasonsText({ seasons }: { seasons: ISeriesSeason[] }) {
     return <>
-        {seasons && <Text>{seasons.length} {seasons.length == 1?'season':'seasons'}</Text>}
+        {seasons && <Text>{seasons.length} {seasons.length == 1 ? 'season' : 'seasons'}</Text>}
     </>
 }
 
@@ -85,7 +88,7 @@ function EpisodesText({ seasons }: { seasons: ISeriesSeason[] }) {
             episodes += season.total
         }
     return <>
-        <Text>{episodes} {episodes == 1?'episode':'episodes'}</Text>
+        <Text>{episodes} {episodes == 1 ? 'episode' : 'episodes'}</Text>
     </>
 }
 
@@ -153,4 +156,16 @@ function DisplaySettings({ series }: { series: ISeries }) {
             </ModalContent>
         </Modal>
     </>
+}
+
+
+function UserEpisodes({ series }: { series: ISeries }) {
+    if (series.seasons.length == 0)
+        return
+    if (!isAuthed())
+        return
+    return <Flex wrap="wrap" gap="0.5rem">
+        <Flex grow="1" basis="45%"><EpisodeLastWatched seriesId={series.id} /></Flex>
+        <Flex grow="1" basis="45%"><EpisodeToWatch seriesId={series.id} /></Flex>
+    </Flex>
 }

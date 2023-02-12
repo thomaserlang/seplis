@@ -19,6 +19,7 @@ const queryClient = new QueryClient({
         queries: {
             retry: false,
             refetchOnWindowFocus: false,
+            keepPreviousData: true,
         },
     },
 })
@@ -43,6 +44,13 @@ const theme = extendTheme({
                 },
             },
         },
+    },
+    layerStyles: {
+        episodeCard: {
+            backgroundColor: 'blackAlpha.500',
+            padding: '0.5rem',
+            borderRadius: 'md',
+        }
     }
 })
 

@@ -16,7 +16,6 @@ The episode must be the latest completed.
 @router.get('', response_model=schemas.Episode, description=DESCRIPTION)
 async def get_last_watched_episode(
     series_id: int,
-    response: Response,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
     session: AsyncSession=Depends(get_session),
 ):
@@ -35,14 +34,12 @@ async def get_last_watched_episode(
     eps = eps.all()
     
     if not eps:
-        response.status_code = 204
-        return
+        return Response(status_code=204)
         
     e = eps[0]
     if len(eps) == 1:
         if eps[0].Episode_watched.position > 0:
-            response.status_code = 204
-            return
+            return Response(status_code=204)
     else:
         if eps[0].Episode_watched.position > 0:
             e = eps[1]
