@@ -9,6 +9,7 @@ import { useEffect } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { Poster } from '../poster'
 import EpisodeLastWatched from './episode-last-watched'
+import EpisodeNextToAir from './episode-next-to-air'
 import EpisodeToWatch from './episode-to-watch'
 import Episodes from './episodes'
 import FollowingButton from './following-button'
@@ -33,6 +34,7 @@ export default function Series({ series }: { series: ISeries }) {
                     <Buttons series={series} />
                     <Plot series={series} />
                     <ExternalLinks series={series} />
+                    <EpisodeNextToAir seriesId={series.id} />
                 </Flex>
             </Flex>
 

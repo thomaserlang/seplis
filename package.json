@@ -34,6 +34,7 @@
     "@sentry/tracing": "^7.25.0",
     "@tanstack/react-query": "^4.19.1",
     "axios": "^1.2.1",
+    "dayjs": "^1.11.7",
     "framer-motion": "^7.10.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
