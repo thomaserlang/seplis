@@ -1,15 +1,18 @@
-import { Flex, Skeleton } from "@chakra-ui/react"
+import { Box, Flex, Skeleton } from "@chakra-ui/react"
 
 export default function SeriesSkeleton() {
-    return <Flex>
-        <div className="poster-container-sizing">
-            <div className="poster-container" style={{ 'flexShrink': '0' }}>
-                <Skeleton height="100%" />
-            </div>
-        </div>
-        <Flex marginLeft="1rem" width="800px" direction="column">
-            <Skeleton height="40px" />
-            <Skeleton marginTop="1rem" flex="1 1 auto" />
+    return <Flex direction="column" gap="1rem" maxWidth="1075px">
+        <Flex gap="1rem">
+            <Box className="poster-container-sizing">
+                <Box className="poster-container" flexShrink="1">
+                    <Skeleton height="100%" borderRadius="md" />
+                </Box>
+            </Box>
+            <Flex gap="0.5rem" direction="column" basis="800px" grow="1" maxWidth="800px">
+                <Skeleton height="40px" borderRadius="md" />
+                <Skeleton flex="1 1 auto" borderRadius="md" />
+            </Flex>
         </Flex>
+        <Skeleton height="120px" borderRadius="md" />
     </Flex>
 }

@@ -62,7 +62,7 @@ function Plot({ series }: { series: ISeries }) {
 }
 
 function BaseInfo({ series }: { series: ISeries }) {
-    return <Flex gap="0.75rem" wrap="wrap" lineHeight="1">
+    return <Flex columnGap="0.75rem" rowGap="0.5rem" wrap="wrap" lineHeight="1">
         {series.premiered && <Text><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></Text>}
         {series.language && <Text>{langCodeToLang(series.language)}</Text>}
         {series.runtime && <Text>{secondsToHourMin(series.runtime)}</Text>}

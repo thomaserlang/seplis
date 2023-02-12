@@ -6,6 +6,7 @@ import { isAuthed } from '@seplis/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import EpisodeCard from './episode-card'
+import EpisodeSkeleton from './episode-card-skeleton'
 import SeasonSelect from './season-select'
 
 
@@ -36,23 +37,27 @@ export function RenderEpisodes({ seriesId, season }: { seriesId: number, season?
     })
 
     if (isInitialLoading)
-        return <>Loading episodes</>
+        return <Flex wrap="wrap" gap="0.5rem"><LoadingEpisodes /></Flex>
 
     return <Flex wrap="wrap" gap="0.5rem">
         {data.map(episode => (
-            <Flex
+            <EpisodeCard
                 key={`episode-${episode.number}`}
-                grow="1"
-                basis="300px"
-            >
-                <EpisodeCard
-                    seriesId={seriesId}
-                    episode={episode}
-                />
-            </Flex>
+                seriesId={seriesId}
+                episode={episode}
+            />
         ))}
         <Flex height="0px" grow="1" basis="300px"></Flex>
         <Flex height="0px" grow="1" basis="300px"></Flex>
         <Flex height="0px" grow="1" basis="300px"></Flex>
     </Flex>
+}
+
+
+export function LoadingEpisodes({ number = 6 }: { number?: number }) {
+    return <>
+        {[...Array(number)].map((_, i) => {
+            return <EpisodeSkeleton key={i} />
+        })}
+    </>
 }
