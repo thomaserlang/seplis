@@ -2,7 +2,7 @@ import { StarIcon } from '@chakra-ui/icons'
 import { Box, Button, Flex, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Tag, Text, useDisclosure } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { IGenre } from '@seplis/interfaces/genre'
-import { ISeries } from '@seplis/interfaces/series'
+import { ISeries, ISeriesSeason } from '@seplis/interfaces/series'
 import { focusedBorder } from '@seplis/styles'
 import { langCodeToLang, secondsToHourMin } from '@seplis/utils'
 import { useEffect } from 'react'
@@ -65,12 +65,31 @@ function Plot({ series }: { series: ISeries }) {
 }
 
 function BaseInfo({ series }: { series: ISeries }) {
-    return <Flex gap="0.5rem" wrap="wrap">
+    return <Flex gap="0.75rem" wrap="wrap">
         {series.premiered && <Text><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></Text>}
         {series.runtime && <Text>{secondsToHourMin(series.runtime)}</Text>}
+        <SeasonsText seasons={series.seasons} />
+        <EpisodesText seasons={series.seasons} />
         {series.language && <Text>{langCodeToLang(series.language)}</Text>}
         {series.rating && <Text title="IMDb rating">{series.rating} <StarIcon boxSize={2} /></Text>}
     </Flex>
+}
+
+function SeasonsText({ seasons }: { seasons: ISeriesSeason[] }) {
+    return <>
+        {seasons && <Text>{seasons.length} {seasons.length == 1?'season':'seasons'}</Text>}
+    </>
+}
+
+function EpisodesText({ seasons }: { seasons: ISeriesSeason[] }) {
+    let episodes = 0
+    if (seasons)
+        for (const season of seasons) {
+            episodes += season.total
+        }
+    return <>
+        <Text>{episodes} {episodes == 1?'episode':'episodes'}</Text>
+    </>
 }
 
 function Genres({ genres }: { genres: IGenre[] }) {
