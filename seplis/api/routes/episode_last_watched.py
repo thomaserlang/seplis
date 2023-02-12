@@ -4,6 +4,7 @@ import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
 from ... import logger
+from .episodes import expand_user_can_watch
 
 router = APIRouter(prefix='/2/series/{series_id}/episode-last-watched')
 
@@ -48,4 +49,5 @@ async def get_last_watched_episode(
 
     episode = schemas.Episode.from_orm(e.Episode)
     episode.user_watched = schemas.Episode_watched.from_orm(e.Episode_watched)
+    await expand_user_can_watch(series_id=series_id, user_id=user.id, episodes=[episode], session=session)
     return episode
