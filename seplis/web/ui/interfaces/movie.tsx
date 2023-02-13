@@ -23,7 +23,21 @@ export interface IMovie {
 }
 
 
+export interface IMovieWatched {
+    times: number
+    position: number
+    watched_at: string
+}
+
+
 export interface IMovieStared {
     stared: boolean
     created_at: string
+}
+
+
+export interface IMovieUser {
+    movie: IMovie
+    stared: boolean
+    watched_data: IMovieWatched
 }

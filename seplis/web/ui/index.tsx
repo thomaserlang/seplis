@@ -7,7 +7,6 @@ import { ChakraProvider, extendTheme, type ThemeConfig } from '@chakra-ui/react'
 import './index.less'
 
 import Login from './pages/login'
-import Home from './pages/home'
 import Movie from './pages/movie'
 import Series from './pages/series'
 
@@ -55,6 +54,7 @@ const theme = extendTheme({
 })
 
 import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'
+import SeriesHome from './pages/series/home'
 
 spatialInit({})
 
@@ -65,9 +65,10 @@ createRoot(document.getElementById("root")).render(
                 <QueryParamProvider adapter={ReactRouter6Adapter}>
                     <QueryClientProvider client={queryClient}>
                         <Routes>
-                            <Route path="/" element={<Home />} />
+                            <Route path="/" element={<SeriesHome />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/movies/:movieId" element={<Movie />} />
+                            <Route path="/series/home" element={<SeriesHome />} />
                             <Route path="/series/:seriesId" element={<Series />} />
                         </Routes>
                     </QueryClientProvider>

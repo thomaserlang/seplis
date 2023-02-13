@@ -1,23 +1,25 @@
-import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons"
-import { Box, HStack, Image, Skeleton } from "@chakra-ui/react"
-import api from "@seplis/api"
-import { IPageResult } from "@seplis/interfaces/page"
-import { ISliderItem } from "@seplis/interfaces/slider"
-import { useQuery } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
-import { useFocusable, FocusContext, FocusHandler } from "@noriginmedia/norigin-spatial-navigation"
+import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
+import { Box, Heading, HStack, Image, Skeleton } from '@chakra-ui/react'
+import api from '@seplis/api'
+import { IPageResult } from '@seplis/interfaces/page'
+import { ISliderItem } from '@seplis/interfaces/slider'
+import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import { useFocusable, FocusContext, FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 
 import './slider.less'
-import { Poster } from "./poster"
+import { Poster } from './poster'
 
 interface IProps<S = undefined> {
     title: string,
     url: string,
     onFocus?: FocusHandler,
-    parseItem: (items: S) => ISliderItem
+    onItemSelected?: (item: S) => void
+    parseItem: (item: S) => ISliderItem
 }
 
-export default function Slider<S = undefined>({ title, url, parseItem, onFocus }: IProps<S>) {
+
+export default function Slider<S = undefined>({ title, url, parseItem, onFocus, onItemSelected }: IProps<S>) {
     const [items, setItems] = useState<ISliderItem[]>([])
     const [page, setPage] = useState(1)
     const [index, setIndex] = useState(0)
@@ -28,12 +30,16 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus }
     const { isInitialLoading } = useQuery([title], async () => {
         const data = await api.get<IPageResult<S>>(url, {
             params: {
-                per_page: loadPerPage*2,
+                per_page: loadPerPage * 2,
             }
         })
         const newItems: ISliderItem[] = []
-        for (const item of data.data.items)
-            newItems.push(parseItem(item))
+        for (const item of data.data.items) {
+            const r = parseItem(item)
+            newItems.push(r)
+            if (!r.data)
+                r.data = item
+        }
         setPage(1)
         setIndex(0)
         setItems(newItems)
@@ -63,16 +69,16 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus }
     const onCardFocus = (layout: any, props: any, details: any) => {
         const event = details.event as KeyboardEvent
         if (event?.code == 'ArrowRight') {
-            if (items.length-index >= displayItemCount) {
+            if (items.length - index >= displayItemCount) {
                 if (layout.node.getAttribute('data-view-index') > 1)
-                    setIndex(index+1)
+                    setIndex(index + 1)
                 if ((index % loadPerPage) === 0)
-                    setPage(page+1)
+                    setPage(page + 1)
             }
         } else if (!event || event?.code == 'ArrowLeft') {
-            if (index>0)
-                setIndex(index-1)
-        } 
+            if (index > 0)
+                setIndex(index - 1)
+        }
 
     }
 
@@ -88,10 +94,14 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus }
 
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
-            <h2 className="row-header">{title}</h2>
+            <Heading className="row-header" >{title}</Heading>
             <HStack className="slider">
                 {(!isInitialLoading && items) ? <>
-                    <Cards items={items.slice(index, index + displayItemCount)} onFocus={onCardFocus} />
+                    <Cards<S>
+                        items={items.slice(index, index + displayItemCount)}
+                        onFocus={onCardFocus}
+                        onItemSelected={onItemSelected}
+                    />
                     <PeekCard index={index} items={items} next={false} setIndex={setIndex} setPage={setPage} />
                     <PeekCard index={index} items={items} next={true} setIndex={setIndex} setPage={setPage} />
                 </> : SkeletonCards()}
@@ -101,23 +111,45 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus }
 }
 
 
-function Cards({ items, onFocus }: { items: ISliderItem[], onFocus: FocusHandler }) {
+function Cards<S = any>({ items, onFocus, onItemSelected }: { items: ISliderItem[], onFocus: FocusHandler, onItemSelected: (item: S) => void }) {
     const { ref, focusKey } = useFocusable()
     return <FocusContext.Provider value={focusKey}>
         <HStack ref={ref} width="100%">
-            {items.map((item, index) => <Card key={item.key} item={item} onFocus={onFocus} viewItemIndex={index} />)}
+            {items.map((item, index) => <Card<S>
+                key={item.key}
+                item={item}
+                onFocus={onFocus}
+                onItemSelected={onItemSelected}
+                viewItemIndex={index}
+            />)}
             {[...Array(rowWidthItems() - items.length).keys()].map(i => <EmptyCard key={`empty-${i}`} />)}
         </HStack>
     </FocusContext.Provider>
 }
 
 
-function Card({ item, onFocus, viewItemIndex }: { item: ISliderItem, onFocus: FocusHandler, viewItemIndex: number }) {
+function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: { item: ISliderItem, onFocus: FocusHandler, onItemSelected: (item: S) => void, viewItemIndex: number }) {
     const { ref, focused } = useFocusable({
-        onFocus: onFocus,    
+        onFocus: onFocus,
+        onEnterPress: () => {
+            onItemSelected(item.data)
+        },
     })
-    return <Box className={`poster-container slider-item ${focused?'focused':''}`} key={item.key} ref={ref} data-view-index={viewItemIndex} >
-        <Poster url={`${item.img}@SX320.webp`} title={item.title} />
+    return <Box
+        className={`slider-item ${focused ? 'focused' : ''}`}
+        key={item.key} ref={ref}
+        data-view-index={viewItemIndex}
+        borderRadius="md"
+        cursor="pointer"
+        onClick={() => {
+            onItemSelected(item.data)
+        }}
+    >
+        {item.topText && <Box backgroundColor="black" textAlign="center">{item.topText}</Box>}
+        <Box className="poster-container" borderRadius="0">
+            <Poster url={`${item.img}@SX320.webp`} title={item.title} />
+        </Box>
+        {item.bottomText && <Box backgroundColor="black" textAlign="center">{item.bottomText}</Box>}
     </Box>
 }
 

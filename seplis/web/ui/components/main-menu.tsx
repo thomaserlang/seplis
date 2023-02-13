@@ -1,8 +1,15 @@
 import { ChevronDownIcon, SearchIcon } from '@chakra-ui/icons'
 import { Avatar, Box, Button, Flex, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList } from '@chakra-ui/react'
+import { Link, useNavigate } from 'react-router-dom'
 import { SearchButtonDialog } from './search'
 
 export default function MainMenu() {
+    const navigate = useNavigate()
+
+    function click(url: string) {
+        navigate(url)
+    }
+
     return <Flex 
         gap="0.75rem"
         backgroundColor="blackAlpha.500"
@@ -27,7 +34,7 @@ export default function MainMenu() {
                 Series
             </MenuButton>
             <MenuList>
-                <MenuItem>Home</MenuItem>
+                <Link to="/series/home"><MenuItem>Home</MenuItem></Link>
                 <MenuItem>Air dates</MenuItem>
                 <MenuItem>Countdown</MenuItem>
                 <MenuItem>Following</MenuItem>

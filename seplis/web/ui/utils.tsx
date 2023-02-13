@@ -105,6 +105,14 @@ export function dateInDays(dt: Date | string) {
 }
 
 
+export function dateCountdown(dt: string) {
+    const m = (new Date(dt).getTime() - new Date().getTime())
+    if (m > 0)
+        return <>in <span title={dt}>{dateInDays(dt)}</span></>
+    return <><span title={dt}>{dateInDays(dt)}</span> ago</>
+}
+
+
 export function secondsToPretty(seconds: number, showTotalHours: boolean) {
     let totalHours = Math.round((((seconds/60)/60)*10))/10;
     if (seconds < 60) return pluralize(seconds, 'second');
