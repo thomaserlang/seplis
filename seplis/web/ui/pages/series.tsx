@@ -1,11 +1,12 @@
-import { Box } from "@chakra-ui/react"
-import api from "@seplis/api"
-import Series from "@seplis/components/series/series"
-import SeriesSkeleton from "@seplis/components/series/skeleton"
-import { ISeries } from "@seplis/interfaces/series"
-import { setTitle } from "@seplis/utils"
-import { useQuery } from "@tanstack/react-query"
-import { useParams } from "react-router-dom"
+import { Box } from '@chakra-ui/react'
+import api from '@seplis/api'
+import MainMenu from '@seplis/components/main-menu'
+import Series from '@seplis/components/series/series'
+import SeriesSkeleton from '@seplis/components/series/skeleton'
+import { ISeries } from '@seplis/interfaces/series'
+import { setTitle } from '@seplis/utils'
+import { useQuery } from '@tanstack/react-query'
+import { useParams } from 'react-router-dom'
 
 
 export default function SeriesPage() {    
@@ -16,7 +17,10 @@ export default function SeriesPage() {
         return data.data
     })
 
-    return <Box margin="1rem">
-        {isInitialLoading ? <SeriesSkeleton /> : <Series series={data} />}
-    </Box>
+    return <>
+        <MainMenu />
+        <Box margin='1rem'>
+            {isInitialLoading ? <SeriesSkeleton /> : <Series series={data} />}
+        </Box>
+    </>
 }
