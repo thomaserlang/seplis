@@ -4,13 +4,13 @@ import { ISeriesSeason } from '@seplis/interfaces/series'
 interface IProps {
     seasons: ISeriesSeason[]
     onSelect?: (season: number) => void,
-    defaultSeason?: number
+    season: number
 }
 
-export default function SeasonSelect({ seasons, onSelect, defaultSeason=1 }: IProps) {
+export default function SeasonSelect({ seasons, onSelect, season }: IProps) {
     if (!seasons || (seasons.length == 0))
         return null
-    return <Select defaultValue={defaultSeason} onChange={(value) => {
+    return <Select value={season} onChange={(value) => {
         if (onSelect)
             onSelect(parseInt(value.currentTarget.value))
     }}>

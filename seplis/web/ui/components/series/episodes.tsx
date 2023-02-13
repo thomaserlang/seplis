@@ -4,7 +4,7 @@ import { IEpisode } from '@seplis/interfaces/episode'
 import { ISeries } from '@seplis/interfaces/series'
 import { isAuthed } from '@seplis/utils'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import EpisodeCard from './episode-card'
 import EpisodeSkeleton from './episode-card-skeleton'
 import SeasonSelect from './season-select'
@@ -17,8 +17,11 @@ interface IProps {
 
 export default function Episodes({ series, defaultSeason = 1 }: IProps) {
     const [season, setSeason] = useState(defaultSeason)
+    useEffect(() => {
+        setSeason(defaultSeason)
+    }, [series.id])
     return <Flex gap="0.5rem" direction="column">
-        <SeasonSelect seasons={series.seasons} defaultSeason={defaultSeason} onSelect={setSeason} />
+        <SeasonSelect seasons={series.seasons} season={season} onSelect={setSeason} />
         <RenderEpisodes seriesId={series.id} season={season} />
     </Flex>
 }
