@@ -27,7 +27,7 @@ async def get_series_recently_aired(
         models.Episode.series_id == models.Series.id,
         models.Episode.number == episodes_query.c.episode_number,
     ).order_by(
-        sa.desc(models.Episode.air_datetime), 
+        sa.asc(models.Episode.air_datetime), 
         models.Episode.series_id,
     )
 
