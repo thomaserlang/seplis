@@ -14,7 +14,10 @@ export default function EpisodeNextToAir({ seriesId }: { seriesId: number }) {
                 'first': 1,
             }
         })
-        return r.data.items[0]
+        if (r.data.items.length >= 1)
+            return r.data.items[0]
+        else
+            return null
     })
     if (!data)
         return
