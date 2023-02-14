@@ -20,14 +20,14 @@ interface IProps<S = undefined> {
 
 
 export default function Slider<S = undefined>({ title, url, parseItem, onFocus, onItemSelected }: IProps<S>) {
-    const [items, setItems] = useState<ISliderItem[]>([])
+    const [items, setItems] = useState<ISliderItem[]>(null)
     const [page, setPage] = useState(1)
     const [index, setIndex] = useState(0)
     const [displayItemCount, setDisplayItemCount] = useState(() => (rowWidthItems()))
     const { ref, focusKey } = useFocusable({ onFocus })
     const loadPerPage = 12
 
-    const { isInitialLoading } = useQuery([title], async () => {
+    const { isInitialLoading } = useQuery(['slider', title, url], async () => {
         const data = await api.get<IPageResult<S>>(url, {
             params: {
                 per_page: loadPerPage * 2,
@@ -45,7 +45,7 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
         setItems(newItems)
         return data
     }, {
-        keepPreviousData: true
+        keepPreviousData: false
     })
 
     useEffect(() => {
@@ -79,7 +79,6 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
             if (index > 0)
                 setIndex(index - 1)
         }
-
     }
 
     function handleResize() {
@@ -91,10 +90,10 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
             return window.removeEventListener('resize', handleResize)
         }
     }, [])
-
+    
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
-            <Heading className="row-header" >{title}</Heading>
+            <Heading className="row-header">{title}</Heading>
             <HStack className="slider">
                 {(!isInitialLoading && items) ? <>
                     <Cards<S>
@@ -161,7 +160,7 @@ function EmptyCard() {
 
 function SkeletonCards() {
     return [...Array(rowWidthItems()).keys()].map((key) => (
-        <Skeleton key={`skeleton-${key}`} className="slider-item" />
+        <Skeleton key={`skeleton-${key}`} className="poster-container slider-item" rounded="md" />
     ))
 }
 

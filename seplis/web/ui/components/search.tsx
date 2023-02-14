@@ -58,7 +58,6 @@ export function Search({ afterSelected }: { afterSelected?: (item: ISearchTitleR
             else if (item.type == 'series')
                 navigate(`/series/${item.id}`)
             if (afterSelected)
-
                 afterSelected(item)
         }} />}
     </Flex>
