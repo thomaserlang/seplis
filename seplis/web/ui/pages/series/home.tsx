@@ -55,6 +55,21 @@ export default function SeriesHome() {
                 />
 
                 <Slider<ISeriesAndEpisode>
+                    title="Series to Watch"
+                    url="/2/users/me/series-to-watch"
+                    parseItem={(item) => (
+                        {
+                            key: `series-${item.series.id}`,
+                            title: item.series.title,
+                            img: item.series.poster_image?.url,
+                            bottomText: episodeNumber(item.episode),
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={itemSelected}
+                />
+
+                <Slider<ISeriesAndEpisode>
                     title="Recently Aired"
                     url="/2/users/me/series-recently-aired"
                     parseItem={(item) => (
@@ -79,21 +94,6 @@ export default function SeriesHome() {
                             img: item.series.poster_image?.url,
                             bottomText: episodeNumber(item.episode),
                             topText: dateCountdown(item.episode.air_datetime),
-                        }
-                    )}
-                    onFocus={onRowFocus}
-                    onItemSelected={itemSelected}
-                />
-
-                <Slider<ISeriesAndEpisode>
-                    title="Episodes to Watch"
-                    url="/2/users/me/series-to-watch"
-                    parseItem={(item) => (
-                        {
-                            key: `series-${item.series.id}`,
-                            title: item.series.title,
-                            img: item.series.poster_image?.url,
-                            bottomText: episodeNumber(item.episode),
                         }
                     )}
                     onFocus={onRowFocus}

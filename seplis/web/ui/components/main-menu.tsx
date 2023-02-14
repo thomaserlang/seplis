@@ -38,7 +38,7 @@ export default function MainMenu() {
                 <MenuItem>Air dates</MenuItem>
                 <MenuItem>Countdown</MenuItem>
                 <MenuItem>Following</MenuItem>
-                <MenuItem>Episodes to Watch</MenuItem>
+                <MenuItem>Series to Watch</MenuItem>
                 <MenuItem>Recently aired</MenuItem>
                 <MenuItem>Watched</MenuItem>
                 <MenuItem>Stats</MenuItem>
