@@ -28,5 +28,5 @@ export default function EpisodeNextToAir({ seriesId }: { seriesId: number }) {
 function countdown(air_datetime: string) {
     if (!air_datetime)
         return ''
-    return <> , {dateCountdown(air_datetime)}</>
+    return <>, {dateCountdown(air_datetime)}</>
 }
