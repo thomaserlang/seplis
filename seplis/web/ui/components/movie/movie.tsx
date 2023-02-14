@@ -8,7 +8,7 @@ import { IGenre } from '@seplis/interfaces/genre'
 import { FaCog } from 'react-icons/fa'
 import Settings from './settings'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { focusedBorder } from '@seplis/styles'
 import PlayButton from './play-button'
 
@@ -74,12 +74,14 @@ function BaseInfo({ movie }: { movie: IMovie }) {
 }
 
 function Plot({ movie }: { movie: IMovie }) {
+    const [expand, setExpand] = useState(false)
     if (!movie.plot)
         return
-    return <Box>
-        <Text><strong>Plot</strong></Text>
-        <Text>{movie.plot}</Text>
-    </Box>
+    return <Text cursor="pointer" noOfLines={expand ? null : 3} onClick={() => {
+        setExpand(!expand)
+    }}>
+        {movie.plot}
+    </Text>
 }
 
 function Title({ movie }: { movie: IMovie }) {

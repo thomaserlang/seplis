@@ -71,7 +71,7 @@ function Plot({ series }: { series: ISeries }) {
     const [expand, setExpand] = useState(false)
     if (!series.plot)
         return
-    return <Text noOfLines={expand ? null : 3} onClick={() => {
+    return <Text cursor="pointer" noOfLines={expand ? null : 3} onClick={() => {
         setExpand(!expand)
     }}>{series.plot}</Text>
 }
