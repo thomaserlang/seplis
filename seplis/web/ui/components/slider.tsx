@@ -94,7 +94,7 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
             <Heading className="row-header">{title}</Heading>
-            <HStack className="slider">
+            <HStack className="slider" alignItems="stretch">
                 {(!isInitialLoading && items) ? <>
                     <Cards<S>
                         items={items.slice(index, index + displayItemCount)}
