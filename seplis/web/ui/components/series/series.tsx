@@ -108,6 +108,8 @@ function EpisodesText({ seasons }: { seasons: ISeriesSeason[] }) {
 
 
 function Genres({ genres }: { genres: IGenre[] }) {
+    if (!genres || (genres.length < 0))
+        return null
     return <Wrap padding="0.25rem 0">
         {genres.map(genre => (
             <WrapItem key={genre.id}><Genre genre={genre} /></WrapItem>
