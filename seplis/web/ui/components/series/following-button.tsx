@@ -9,18 +9,21 @@ import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { focusedBorder } from '@seplis/styles'
 import { ISeriesFollowing } from '@seplis/interfaces/series'
 
-export default function StaredButton({ seriesId }: { seriesId: number }) {
+
+export default function FollowingButton({ seriesId }: { seriesId: number }) {
     const toast = useToast()
     const [loading, setLoading] = useState(false)
     const [following, setFollowing] = useState(false)
 
+    // TODO: look into using useMutation instead, this is stupid
     const { isInitialLoading } = useQuery(['series', 'following-button', seriesId], async () => {
-        if (!isAuthed())
-            return null
         const result = await api.get<ISeriesFollowing>(`/2/series/${seriesId}/following`)
         setFollowing(result.data.following)
         return result.data
+    }, {
+        enabled: isAuthed()
     })
+
     const handleClick = async () => {
         setLoading(true)
         try {
