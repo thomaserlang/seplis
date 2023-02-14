@@ -55,6 +55,7 @@ const theme = extendTheme({
 
 import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'
 import SeriesHome from './pages/series/home'
+import MoviesHome from './pages/movies/home'
 
 spatialInit({})
 
@@ -67,6 +68,7 @@ createRoot(document.getElementById("root")).render(
                         <Routes>
                             <Route path="/" element={<SeriesHome />} />
                             <Route path="/login" element={<Login />} />
+                            <Route path="/movies/home" element={<MoviesHome />} />
                             <Route path="/movies/:movieId" element={<Movie />} />
                             <Route path="/series/home" element={<SeriesHome />} />
                             <Route path="/series/:seriesId" element={<Series />} />

@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom"
 import Movie from "@seplis/components/movie/movie"
 import { Box } from "@chakra-ui/react"
 import { MovieSkeleton } from "@seplis/components/movie/skeleton"
+import MainMenu from "@seplis/components/main-menu"
 
 
 export default function MoviePage() {
@@ -16,8 +17,11 @@ export default function MoviePage() {
         return data.data
     })
 
-    return <Box margin="1rem">
-        {isInitialLoading ? <MovieSkeleton /> : <Movie movie={data} />}
-    </Box>
+    return <>
+        <MainMenu />
+        <Box margin="1rem">
+            {isInitialLoading ? <MovieSkeleton /> : <Movie movie={data} />}
+        </Box>
+    </>
 }
 
