@@ -24,11 +24,11 @@ export default function EpisodeToWatch({ seriesId }: { seriesId: number }) {
 
     if (isInitialLoading)
         return <Box width="100%">
-            <Heading as="h2" fontSize="2xl" marginBottom="0.25rem">To watch</Heading>
+            <Heading fontWeight="600" fontSize="2xl" marginBottom="0.25rem">To watch</Heading>
             <EpisodeSkeleton />
         </Box>
     return <Box width="100%">
-        <Heading as="h2" fontSize="2xl" marginBottom="0.25rem">To watch</Heading>
+        <Heading fontWeight="600" fontSize="2xl" marginBottom="0.25rem">To watch</Heading>
         {data && <EpisodeCard seriesId={seriesId} episode={data} />}
         {!data && <Text color="gray.400">No episodes to watch</Text>}
     </Box>

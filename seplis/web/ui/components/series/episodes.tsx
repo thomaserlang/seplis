@@ -1,4 +1,4 @@
-import { Flex } from '@chakra-ui/react'
+import { Flex, Stack, Wrap, WrapItem } from '@chakra-ui/react'
 import { GetAllCursor } from '@seplis/api'
 import { IEpisode } from '@seplis/interfaces/episode'
 import { ISeries } from '@seplis/interfaces/series'
@@ -20,10 +20,10 @@ export default function Episodes({ series, defaultSeason = 1 }: IProps) {
     useEffect(() => {
         setSeason(defaultSeason)
     }, [series.id])
-    return <Flex gap="0.5rem" direction="column">
+    return <Stack>
         <SeasonSelect seasons={series.seasons} season={season} onSelect={setSeason} />
         <RenderEpisodes seriesId={series.id} season={season} />
-    </Flex>
+    </Stack>
 }
 
 
@@ -40,27 +40,29 @@ export function RenderEpisodes({ seriesId, season }: { seriesId: number, season?
     })
 
     if (isInitialLoading)
-        return <Flex wrap="wrap" gap="0.5rem"><LoadingEpisodes /></Flex>
+        return <LoadingEpisodes />
 
-    return <Flex wrap="wrap" gap="0.5rem">
+    return <Wrap>
         {data.map(episode => (
-            <EpisodeCard
+            <Flex grow="1" basis="300px"><WrapItem width="100%"><EpisodeCard
                 key={`episode-${episode.number}`}
                 seriesId={seriesId}
                 episode={episode}
-            />
+            /></WrapItem></Flex>
         ))}
-        <Flex height="0px" grow="1" basis="300px"></Flex>
-        <Flex height="0px" grow="1" basis="300px"></Flex>
-        <Flex height="0px" grow="1" basis="300px"></Flex>
-    </Flex>
+        <Flex height="0px" grow="1" basis="300px"><WrapItem width="100%"></WrapItem></Flex>
+        <Flex height="0px" grow="1" basis="300px"><WrapItem width="100%"></WrapItem></Flex>
+        <Flex height="0px" grow="1" basis="300px"><WrapItem width="100%"></WrapItem></Flex>
+    </Wrap>
 }
 
 
 export function LoadingEpisodes({ number = 6 }: { number?: number }) {
     return <>
-        {[...Array(number)].map((_, i) => {
-            return <EpisodeSkeleton key={i} />
-        })}
+        <Wrap>
+            {[...Array(number)].map((_, i) => (
+                <Flex grow="1" basis="300px"><WrapItem width="100%"><EpisodeSkeleton key={i} /></WrapItem></Flex>
+            ))}
+        </Wrap>
     </>
 }

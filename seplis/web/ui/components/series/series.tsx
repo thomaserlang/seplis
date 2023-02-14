@@ -1,5 +1,5 @@
 import { StarIcon } from '@chakra-ui/icons'
-import { Box, Button, Flex, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Tag, Text, useDisclosure } from '@chakra-ui/react'
+import { Box, Button, Flex, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Stack, Tag, Text, useDisclosure, Wrap, WrapItem } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { IGenre } from '@seplis/interfaces/genre'
 import { ISeries, ISeriesSeason } from '@seplis/interfaces/series'
@@ -24,10 +24,10 @@ export default function Series({ series }: { series: ISeries }) {
     }, [])
 
     return <FocusContext.Provider value={focusKey}>
-        <Flex direction="column" gap="1rem" maxWidth="1075px">
-            <Flex gap="1rem">
+        <Stack direction="column" spacing="1rem" maxWidth="1075px">
+            <Stack spacing="1rem" direction="row" >
                 <SeriesPoster series={series} />
-                <Flex gap="0.5rem" direction="column" maxWidth="800px" ref={ref}>
+                <Stack spacing="0.5rem" direction="column" maxWidth="800px" ref={ref}>
                     <Title series={series} />
                     <BaseInfo series={series} />
                     <Genres genres={series.genres} />
@@ -35,14 +35,14 @@ export default function Series({ series }: { series: ISeries }) {
                     <Plot series={series} />
                     <ExternalLinks series={series} />
                     <EpisodeNextToAir seriesId={series.id} />
-                </Flex>
-            </Flex>
+                </Stack>
+            </Stack>
 
             <UserEpisodes series={series} />
 
             <SeasonEpisodes series={series} />
 
-        </Flex>
+        </Stack>
     </FocusContext.Provider>
 }
 
@@ -57,7 +57,7 @@ function SeriesPoster({ series: series }: { series: ISeries }) {
 
 
 function Title({ series }: { series: ISeries }) {
-    return <Box marginTop="-7px" lineHeight="1">
+    return <Box marginTop="-7px" lineHeight="1.3">
         <Heading as="h1">{series.title || '<Missing title>'}</Heading>
         {series.original_title != series.title &&
             <Heading as="h2" fontSize="1.5rem" color="RGBA(255, 255, 255, 0.36)">{series.original_title}</Heading>}
@@ -78,14 +78,14 @@ function Plot({ series }: { series: ISeries }) {
 
 
 function BaseInfo({ series }: { series: ISeries }) {
-    return <Flex columnGap="0.75rem" rowGap="0.5rem" wrap="wrap" lineHeight="1">
-        {series.premiered && <Text><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></Text>}
-        {series.language && <Text>{langCodeToLang(series.language)}</Text>}
-        {series.runtime && <Text>{secondsToHourMin(series.runtime)}</Text>}
+    return <Wrap spacingX="0.75rem" lineHeight="1.3">        
+        {series.premiered && <WrapItem><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></WrapItem>}
+        {series.language && <WrapItem>{langCodeToLang(series.language)}</WrapItem>}
+        {series.runtime && <WrapItem>{secondsToHourMin(series.runtime)}</WrapItem>}
         <SeasonsText seasons={series.seasons} />
         <EpisodesText seasons={series.seasons} />
-        {series.rating && <Text title="IMDb rating">{series.rating} <StarIcon boxSize={2} /></Text>}
-    </Flex>
+        {series.rating && <WrapItem title="IMDb rating"><Flex alignItems="center">{series.rating} <StarIcon marginLeft="0.2rem" boxSize={3} /></Flex></WrapItem>}
+    </Wrap>
 }
 
 
@@ -108,11 +108,11 @@ function EpisodesText({ seasons }: { seasons: ISeriesSeason[] }) {
 
 
 function Genres({ genres }: { genres: IGenre[] }) {
-    return <Flex gap="0.5rem" wrap="wrap" padding="0.25rem 0">
+    return <Wrap padding="0.25rem 0">
         {genres.map(genre => (
-            <Genre key={genre.id} genre={genre} />
+            <WrapItem key={genre.id}><Genre genre={genre} /></WrapItem>
         ))}
-    </Flex>
+    </Wrap>
 }
 
 
@@ -128,20 +128,24 @@ function Genre({ genre }: { genre: IGenre }) {
 
 
 function Buttons({ series }: { series: ISeries }) {
-    return <Flex gap="0.5rem" wrap="wrap" padding="0.25rem 0">
-        <FollowingButton seriesId={series.id} />
-        <DisplaySettings series={series} />
-    </Flex>
+    return <Wrap padding="0.25rem 0">
+        <WrapItem><FollowingButton seriesId={series.id} /></WrapItem>
+        <WrapItem><DisplaySettings series={series} /></WrapItem>
+    </Wrap>
 }
 
 
 function ExternalLinks({ series }: { series: ISeries }) {
     if (!series.externals.imdb && !series.externals.themoviedb)
         return
-    return <Flex gap="0.5rem">
-        {series.externals.imdb && <Link href={`https://imdb.com/title/${series.externals.imdb}`} isExternal>IMDb</Link>}
-        {series.externals.themoviedb && <Link href={`https://www.themoviedb.org/movie/${series.externals.themoviedb}`} isExternal>TheMovieDB</Link>}
-    </Flex>
+    return <Wrap>
+        <WrapItem>
+            {series.externals.imdb && <Link href={`https://imdb.com/title/${series.externals.imdb}`} isExternal>IMDb</Link>}
+        </WrapItem>
+        <WrapItem>
+            {series.externals.themoviedb && <Link href={`https://www.themoviedb.org/movie/${series.externals.themoviedb}`} isExternal>TheMovieDB</Link>}
+        </WrapItem>
+    </Wrap>
 }
 
 
@@ -182,18 +186,18 @@ function UserEpisodes({ series }: { series: ISeries }) {
         return
     if (!isAuthed())
         return
-    return <Flex wrap="wrap" gap="0.5rem">
-        <Flex grow="1"><EpisodeToWatch seriesId={series.id} /></Flex>
-        <Flex grow="1"><EpisodeLastWatched seriesId={series.id} /></Flex>
-    </Flex>
+    return <Wrap>
+        <Flex grow="1"><WrapItem width="100%"><EpisodeToWatch seriesId={series.id} /></WrapItem></Flex>
+        <Flex grow="1"><WrapItem width="100%"><EpisodeLastWatched seriesId={series.id} /></WrapItem></Flex>
+    </Wrap>
 }
 
 
 function SeasonEpisodes({ series }: { series: ISeries }) {
     return <>
-        {series.seasons.length > 0 && <Flex gap="0.5rem" direction="column">
-            <Heading fontSize="2xl">Episodes</Heading>
+        {series.seasons.length > 0 && <Stack>
+            <Heading fontSize="2xl" fontWeight="600">Episodes</Heading>
             <Episodes series={series} defaultSeason={series.seasons[series.seasons.length - 1].season} />
-        </Flex>}
+        </Stack>}
     </>
 }

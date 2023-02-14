@@ -24,11 +24,11 @@ export default function EpisodeLastWatched({ seriesId }: { seriesId: number }) {
 
     if (isInitialLoading)
         return <Box width="100%">    
-            <Heading as="h2" fontSize="2xl" marginBottom="0.25rem">Previously watched</Heading>
+            <Heading fontWeight="600" fontSize="2xl" marginBottom="0.25rem">Previously watched</Heading>
             <EpisodeSkeleton />
         </Box>
     return <Box width="100%">
-        <Heading as="h2" fontSize="2xl" marginBottom="0.25rem">Previously watched</Heading>
+        <Heading fontWeight="600" fontSize="2xl" marginBottom="0.25rem">Previously watched</Heading>
         {data && <EpisodeCard seriesId={seriesId} episode={data} />}
         {!data && <Text color="gray.400">You haven't watched an episode yet</Text>}
     </Box>

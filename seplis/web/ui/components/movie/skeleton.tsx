@@ -1,15 +1,15 @@
-import { Flex, Skeleton } from "@chakra-ui/react";
+import { Skeleton, Stack } from "@chakra-ui/react";
 
 export function MovieSkeleton() {
-    return <Flex>
+    return <Stack direction="row" spacing="1rem" maxWidth="1100px">
         <div className="poster-container-sizing">
             <div className="poster-container" style={{ 'flexShrink': '0' }}>
-                <Skeleton height="100%" />
+                <Skeleton height="100%" borderRadius="md" />
             </div>
         </div>
-        <Flex marginLeft="1rem" width="800px" direction="column">
-            <Skeleton height="40px" />
-            <Skeleton marginTop="1rem" flex="1 1 auto" />
-        </Flex>
-    </Flex>
+        <Stack marginLeft="1rem" width="100%" direction="column">
+            <Skeleton height="40px" borderRadius="md" />
+            <Skeleton marginTop="1rem"  borderRadius="md" flex="1 1 auto" />
+        </Stack>
+    </Stack>
 }

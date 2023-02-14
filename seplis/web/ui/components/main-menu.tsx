@@ -1,5 +1,5 @@
-import { ChevronDownIcon, SearchIcon } from '@chakra-ui/icons'
-import { Avatar, Box, Button, Flex, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList } from '@chakra-ui/react'
+import { ChevronDownIcon } from '@chakra-ui/icons'
+import { Avatar, Box, Button, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Stack } from '@chakra-ui/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { SearchButtonDialog } from './search'
 
@@ -10,16 +10,17 @@ export default function MainMenu() {
         navigate(url)
     }
 
-    return <Flex 
-        gap="0.75rem"
+    return <Stack
         backgroundColor="blackAlpha.500"
         padding="0.6rem"
         paddingLeft="1rem"
         paddingRight="1rem"
-        justifyContent="center" 
         alignItems="center"
+        direction="row"
+        spacing="0.75rem"
     >
-        <Flex 
+
+        <Flex
             fontSize="2xl"
             color="seplis.100"
             fontWeight="600"
@@ -47,7 +48,7 @@ export default function MainMenu() {
             </MenuList>
         </Menu>
 
-        
+
         <Menu>
             <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
                 Movies
@@ -61,15 +62,13 @@ export default function MainMenu() {
             </MenuList>
         </Menu>
 
-
         <SearchButtonDialog />
-        
 
-        <Flex
-            marginLeft="auto"
+        <Box
+            style={{ marginLeft: 'auto' }}
         >
             <Avatar size="md" name='USER' />
-        </Flex>
+        </Box>
 
-    </Flex>
+    </Stack>
 }

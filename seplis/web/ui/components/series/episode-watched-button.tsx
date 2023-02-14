@@ -1,5 +1,5 @@
 import { AddIcon, MinusIcon } from '@chakra-ui/icons'
-import { Button, ButtonGroup, Flex, IconButton, Popover, PopoverContent, PopoverTrigger, useDisclosure, useToast } from '@chakra-ui/react'
+import { Button, ButtonGroup, IconButton, Popover, PopoverContent, PopoverTrigger, Stack, useDisclosure, useToast } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { IEpisodeWatched, IEpisodeWatchedDefault, IEventEpisodeWatched } from '@seplis/interfaces/episode'
 import { EVENT_EPISODE_WATCHED, TriggerEpisodeWatched, useEventListener } from '@seplis/events'
@@ -85,7 +85,7 @@ export default function WatchedButton({ seriesId, episodeNumber, data }: { serie
                 />
             </PopoverTrigger>
             <PopoverContent padding="0.5rem">
-                <Flex gap="0.5rem">
+                <Stack direction="row">
                     <IconButton
                         colorScheme="red"
                         aria-label="Decrement watched"
@@ -100,7 +100,7 @@ export default function WatchedButton({ seriesId, episodeNumber, data }: { serie
                         onClick={increment}
                         isLoading={isUpdating}
                     />
-                </Flex>
+                </Stack>
             </PopoverContent>
         </Popover>}
     </>

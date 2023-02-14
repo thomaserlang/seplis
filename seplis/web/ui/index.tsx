@@ -49,8 +49,8 @@ const theme = extendTheme({
             backgroundColor: 'blackAlpha.500',
             padding: '0.5rem',
             borderRadius: 'md',
-        }
-    }
+        },
+    },
 })
 
 import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'

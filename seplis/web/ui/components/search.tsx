@@ -1,5 +1,5 @@
 import { SearchIcon } from '@chakra-ui/icons'
-import { Text, Button, Flex, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, FormControl, FormLabel, Switch, Box, AspectRatio, Skeleton, Heading, Tag } from '@chakra-ui/react'
+import { Text, Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, FormControl, FormLabel, Switch, Box, AspectRatio, Skeleton, Heading, Tag, Stack } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { ITitleSearchResult as ISearchTitleResult } from '@seplis/interfaces/search'
 import { useQuery } from '@tanstack/react-query'
@@ -47,10 +47,10 @@ export function Search({ afterSelected }: { afterSelected?: (item: ISearchTitleR
         keepPreviousData: false,
     })
 
-    return <Flex direction="column" gap="0.5rem">
+    return <Stack direction="column">
         <SearchInput onChange={setValue} />
 
-        {isFetching && <RenderItemSkeleton />}
+        { isFetching && <RenderItemSkeleton />}
 
         {!isFetching && <RenderItems items={data} onSelected={(item) => {
             if (item.type == 'movie')
@@ -60,7 +60,7 @@ export function Search({ afterSelected }: { afterSelected?: (item: ISearchTitleR
             if (afterSelected)
                 afterSelected(item)
         }} />}
-    </Flex>
+    </Stack>
 }
 
 
@@ -68,17 +68,17 @@ function RenderItems({ items, onSelected }: { items: ISearchTitleResult[], onSel
     if (!items)
         return null
     if (items.length === 0)
-        return <Heading as="h2" fontSize="1.25rem">No results</Heading>
-    return <Flex direction="column" gap="0.5rem">
+        return <Heading as="h2" fontSize="1.25rem" fontWeight="600">No results</Heading>
+    return <Stack direction="column">
         {items.map(item => (
             <RenderItem key={`${item.type}-${item.id}`} item={item} onSelected={onSelected} />
         ))}
-    </Flex>
+    </Stack>
 }
 
 function RenderItem({ item, onSelected }: { item: ISearchTitleResult, onSelected: (item: ISearchTitleResult) => void }) {
-    return <Flex
-        gap="0.5rem"
+    return <Stack
+        direction="row"
         backgroundColor="blackAlpha.500"
         padding="0.5rem"
         rounded="md"
@@ -90,12 +90,12 @@ function RenderItem({ item, onSelected }: { item: ISearchTitleResult, onSelected
         <AspectRatio width="15%" ratio={603 / 887} rounded="sm" overflow="hidden">
             <Poster url={`${item.poster_image?.url}@SX320.webp`} title={item.title} />
         </AspectRatio>
-        <Flex direction="column" gap="0.5rem" lineHeight="1">
+        <Stack direction="column" lineHeight="1.3" spacing="0.25rem">
             <Text fontWeight="600">{item.title}</Text>
             {item.release_date ? <Text>{item.release_date.substring(0,4)}</Text> : null}
-            <Flex><ShowType type={item.type} /></Flex>
-        </Flex>
-    </Flex>
+            <Stack direction="row"><ShowType type={item.type} /></Stack>
+        </Stack>
+    </Stack>
 }
 
 
@@ -109,8 +109,8 @@ function ShowType({ type }: { type: string }) {
 
 
 function RenderItemSkeleton() {
-    return <Flex
-        gap="0.5rem"
+    return <Stack
+        direction="row"
         backgroundColor="blackAlpha.500"
         padding="0.5rem"
         rounded="md"
@@ -118,11 +118,11 @@ function RenderItemSkeleton() {
         <AspectRatio width="15%" ratio={603 / 887} rounded="sm" overflow="hidden">
             <Skeleton height="100%" />
         </AspectRatio>
-        <Flex flex="1" gap="0.5rem" direction="column">
+        <Stack width="100%">
             <Skeleton height="30px" width="45%" />
             <Skeleton height="30px" width="27%" />
-        </Flex>
-    </Flex>
+        </Stack>
+    </Stack>
 }
 
 
