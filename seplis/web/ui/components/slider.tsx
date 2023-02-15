@@ -18,7 +18,6 @@ interface IProps<S = undefined> {
     parseItem: (item: S) => ISliderItem
 }
 
-
 export default function Slider<S = undefined>({ title, url, parseItem, onFocus, onItemSelected }: IProps<S>) {
     const [items, setItems] = useState<ISliderItem[]>(null)
     const [page, setPage] = useState(1)
@@ -90,7 +89,7 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
             return window.removeEventListener('resize', handleResize)
         }
     }, [])
-    
+
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
             <Heading className="row-header">{title}</Heading>
@@ -103,14 +102,14 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
                     />
                     <PeekCard index={index} items={items} next={false} setIndex={setIndex} setPage={setPage} />
                     <PeekCard index={index} items={items} next={true} setIndex={setIndex} setPage={setPage} />
-                </> : SkeletonCards()}
+                </> : <SkeletonCards />}
             </HStack>
         </Box>
     </FocusContext.Provider>
 }
 
 
-function Cards<S = any>({ items, onFocus, onItemSelected }: { items: ISliderItem[], onFocus: FocusHandler, onItemSelected: (item: S) => void }) {
+export function Cards<S = any>({ items, onFocus, onItemSelected }: { items: ISliderItem[], onFocus: FocusHandler, onItemSelected: (item: S) => void }) {
     const { ref, focusKey } = useFocusable()
     return <FocusContext.Provider value={focusKey}>
         <HStack ref={ref} width="100%">
@@ -127,7 +126,7 @@ function Cards<S = any>({ items, onFocus, onItemSelected }: { items: ISliderItem
 }
 
 
-function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: { item: ISliderItem, onFocus: FocusHandler, onItemSelected: (item: S) => void, viewItemIndex: number }) {
+export function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: { item: ISliderItem, onFocus: FocusHandler, onItemSelected: (item: S) => void, viewItemIndex: number }) {
     const { ref, focused } = useFocusable({
         onFocus: onFocus,
         onEnterPress: () => {
@@ -140,15 +139,16 @@ function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: { item:
         data-view-index={viewItemIndex}
         borderRadius="md"
         cursor="pointer"
+        overflow="hidden"
         onClick={() => {
             onItemSelected(item.data)
         }}
     >
-        {item.topText && <Box backgroundColor="black" textAlign="center">{item.topText}</Box>}
+        {item.topText !== undefined && <Box backgroundColor="black" textAlign="center">{item.topText}</Box>}
         <Box className="poster-container" borderRadius="0">
             <Poster url={`${item.img}@SX320.webp`} title={item.title} />
         </Box>
-        {item.bottomText && <Box backgroundColor="black" textAlign="center">{item.bottomText}</Box>}
+        {item.bottomText !== undefined && <Box backgroundColor="black" textAlign="center">{item.bottomText}</Box>}
     </Box>
 }
 
@@ -158,10 +158,12 @@ function EmptyCard() {
 }
 
 
-function SkeletonCards() {
-    return [...Array(rowWidthItems()).keys()].map((key) => (
-        <Skeleton key={`skeleton-${key}`} className="poster-container slider-item" rounded="md" />
-    ))
+export function SkeletonCards() {
+    return <>
+        {[...Array(rowWidthItems()).keys()].map((key) => (
+            <Skeleton key={`skeleton-${key}`} className="poster-container slider-item" rounded="md" width="100%" height="100%" />
+        ))}
+    </>
 }
 
 

@@ -34,8 +34,9 @@ export default function SeriesHome() {
     }
 
     return <>
+        <MainMenu />
+        
         <FocusContext.Provider value={focusKey}>
-            <MainMenu />
 
             <Stack ref={ref} marginTop="0.5rem">
 

@@ -36,11 +36,7 @@ export default function MainMenu() {
             </MenuButton>
             <MenuList>
                 <Link to="/series/home"><MenuItem>Home</MenuItem></Link>
-                <MenuItem>Air dates</MenuItem>
-                <MenuItem>Countdown</MenuItem>
-                <MenuItem>Following</MenuItem>
-                <MenuItem>Series to Watch</MenuItem>
-                <MenuItem>Recently aired</MenuItem>
+                <Link to="/series/following"><MenuItem>Following</MenuItem></Link>
                 <MenuItem>Watched</MenuItem>
                 <MenuItem>Stats</MenuItem>
                 <MenuDivider />
