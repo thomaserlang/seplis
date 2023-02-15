@@ -44,8 +44,7 @@ export function RenderEpisodes({ seriesId, season }: { seriesId: number, season?
 
     return <Wrap>
         {data.map(episode => (
-            <Flex grow="1" basis="300px"><WrapItem width="100%"><EpisodeCard
-                key={`episode-${episode.number}`}
+            <Flex key={`episode-${episode.number}`} grow="1" basis="300px"><WrapItem width="100%"><EpisodeCard
                 seriesId={seriesId}
                 episode={episode}
             /></WrapItem></Flex>
@@ -61,7 +60,7 @@ export function LoadingEpisodes({ number = 6 }: { number?: number }) {
     return <>
         <Wrap>
             {[...Array(number)].map((_, i) => (
-                <Flex grow="1" basis="300px"><WrapItem width="100%"><EpisodeSkeleton key={i} /></WrapItem></Flex>
+                <Flex key={i} grow="1" basis="300px"><WrapItem width="100%"><EpisodeSkeleton /></WrapItem></Flex>
             ))}
         </Wrap>
     </>
