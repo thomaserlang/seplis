@@ -11,7 +11,6 @@ router = APIRouter(prefix='/2/movies/{movie_id}/watched-position')
 @router.get('', response_model=schemas.Movie_watched)
 async def get_position(
     movie_id: int,
-    response: Response,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):
@@ -19,9 +18,8 @@ async def get_position(
         models.Movie_watched.movie_id == movie_id,
         models.Movie_watched.user_id == user.id,
     ))
-    if not ew:
-        response.status_code = 204
-        return
+    if not ew:        
+        return Response(status_code=204)
     return schemas.Movie_watched.from_orm(ew)
     
 

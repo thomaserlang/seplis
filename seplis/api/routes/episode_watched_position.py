@@ -11,7 +11,6 @@ router = APIRouter(prefix='/2/series/{series_id}/episodes/{episode_number}/watch
 async def get_position(
     series_id: int, 
     episode_number: int,
-    response: Response,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):
@@ -21,10 +20,9 @@ async def get_position(
         models.Episode_watched.user_id == user.id,
     ))
     if not ew:
-        response.status_code = 204
-        return
+        return Response(status_code=204)
     return schemas.Episode_watched.from_orm(ew)
-    
+
 
 @router.put('', status_code=204)
 async def set_position(

@@ -13,14 +13,12 @@ router = APIRouter(prefix='/2')
 
 @router.post('/send-reset-password', status_code=204)
 async def send_reset_link(
-    response: Response,
     email: EmailStr = Body(..., embed=True),
     session: AsyncSession = Depends(get_session),
 ):
     user_id = await session.scalar(sa.select(models.User.id).where(models.User.email == email))
     if not user_id:
-        response.status_code = 204
-        return
+        return Response(status_code=204)
     
     url = await models.Reset_password.create_reset_url(user_id)
 
