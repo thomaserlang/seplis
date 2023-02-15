@@ -33,7 +33,7 @@ export function RenderEpisodes({ seriesId, season }: { seriesId: number, season?
             params: {
                 'expand': isAuthed() ? 'user_watched,user_can_watch' : null,
                 'season': season ? season : null,
-                'first': 100,
+                'per_page': 100,
             }
         })
         return result

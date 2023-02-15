@@ -24,6 +24,8 @@ async def get_episodes(
 ):
     query = sa.select(models.Episode).where(
         models.Episode.series_id == series_id,
+    ).order_by(
+        models.Episode.number
     )
     if season:
         query = query.where(models.Episode.season == season)
@@ -38,11 +40,10 @@ async def get_episodes(
 
     p = await utils.sqlalchemy.paginate_cursor(
         session=session, 
-        query=query, 
+        query=query,
         page_cursor=page_cursor,
-        fields=[models.Episode.number],    
     )
-    p.items = [schemas.Episode.from_orm(episode) for episode in p.items]
+    p.items = [schemas.Episode.from_orm(row[0]) for row in p.items]
     if expand:
         expand_tasks = []
         if 'user_watched' in expand:

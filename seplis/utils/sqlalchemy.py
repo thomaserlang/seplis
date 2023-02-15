@@ -1,6 +1,4 @@
-from base64 import urlsafe_b64decode, urlsafe_b64encode
 import math
-import sqlalchemy as sa
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.types import DateTime, TypeDecorator
@@ -11,9 +9,11 @@ from seplis.utils import *
 from seplis.api import exceptions
 from ..api import schemas
 from uuid6 import uuid7
+from .sqlakeyset.paging import get_page
+from .sqlakeyset.results import unserialize_bookmark
 
 
-async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_query, request: Request, scalars: bool = True) -> schemas.Page_result:
+async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_query, request: Request, scalars = True) -> schemas.Page_result:
     limited = query.limit(page_query.per_page).offset((page_query.page-1)*page_query.per_page)
     if scalars:
         items = await session.scalars(limited)
@@ -35,29 +35,18 @@ async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_q
     return page
 
 
-async def paginate_cursor(session: AsyncSession, query: Any, fields: list[Any], page_cursor: schemas.Page_cursor_query):
-    query = query.limit(page_cursor.first+1).order_by(*[sa.asc(field) for field in fields])
-    query_cursor = page_cursor.after or page_cursor.before
-    if query_cursor:
-        cursor_list = urlsafe_b64decode(query_cursor.encode()).decode().split(',')
-        if page_cursor.after:
-            query = query.where(sa.tuple_(*fields) > sa.tuple_(*cursor_list))
-        else:
-            query = query.where(sa.tuple_(*fields) < sa.tuple_(*cursor_list))
-
-    items = await session.scalars(query)
-    items = items.all()
-
-    cursor: str | None = None
-    if len(items) > page_cursor.first:
-        items = items[:-1]
-        cursor = urlsafe_b64encode(','.join([str(getattr(items[-1], f.key)) for f in fields]).encode()).decode()
-        
-    page = schemas.Page_cursor_result(
-        items=items,
-        cursor=cursor,
+async def paginate_cursor(session: AsyncSession, query: Any, page_cursor: schemas.Page_cursor_query, backwards=False):
+    page = await get_page(
+        db=session, 
+        selectable=query, 
+        per_page=page_cursor.per_page, 
+        place=unserialize_bookmark(page_cursor.cursor)[0] if page_cursor.cursor else None, 
+        backwards=backwards,
     )
-    return page
+    return schemas.Page_cursor_result(
+        items=page,
+        cursor=page.paging.bookmark_next if page.paging.has_next else None,
+    )
 
 
 def create_page_links(request: Request, page: schemas.Page_result):

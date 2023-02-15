@@ -28,7 +28,7 @@ export async function GetAllCursor<T = any, D = any>(url: string, config?: Axios
     const items = result.data.items
     if (result.data.cursor)
         do {
-            config.params['after'] = result.data.cursor
+            config.params['cursor'] = result.data.cursor
             result = await api.get<IPageCursorResult<T>>(url, config)
             items.push(...result.data.items)
         } while (result.data.cursor !== null)

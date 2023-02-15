@@ -63,7 +63,7 @@ async def test_pagination(client: AsyncClient):
     ), series_id=None)
 
     r = await client.get(f'/2/series/{series.id}/episodes', params={
-        'first': 1,
+        'per_page': 1,
     })
     data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
     assert len(data.items) == 1
@@ -71,20 +71,12 @@ async def test_pagination(client: AsyncClient):
     assert len(data.cursor) > 1
 
     r = await client.get(f'/2/series/{series.id}/episodes', params={
-        'first': 1,
-        'after': data.cursor,
+        'per_page': 1,
+        'cursor': data.cursor,
     })
     data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
     assert len(data.items) == 1
     assert data.items[0].number == 2
-
-    r = await client.get(f'/2/series/{series.id}/episodes', params={
-        'first': 1,
-        'before': data.cursor,
-    })
-    data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
-    assert len(data.items) == 1
-    assert data.items[0].number == 1
 
 
 if __name__ == '__main__':

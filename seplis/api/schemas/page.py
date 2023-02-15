@@ -7,9 +7,8 @@ T = TypeVar('T')
 
 
 class Page_cursor_query(BaseModel):
-    before: str | None
-    after: str | None
-    first: conint(ge=1, le=100) = 25
+    cursor: str | None
+    per_page: conint(ge=1, le=100) = 25
 
 
 class Page_cursor_result(GenericModel, Generic[T]):
