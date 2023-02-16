@@ -1,7 +1,7 @@
 import { Alert, AlertIcon, AlertTitle, Flex, Skeleton } from '@chakra-ui/react'
 import { FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
-import { IPageCursorResult, IPageCursorTotalResult } from '@seplis/interfaces/page'
+import { IPageCursorTotalResult } from '@seplis/interfaces/page'
 import { ISliderItem } from '@seplis/interfaces/slider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'

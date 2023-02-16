@@ -38,23 +38,8 @@ export default function SeriesHome() {
         
         <FocusContext.Provider value={focusKey}>
 
-            <Stack ref={ref} marginTop="0.5rem">
-            
-            <Slider<ISeriesUser>
-                    title="Following"
-                    url="/2/users/me/series-following"
-                    parseItem={(item) => (
-                        {
-                            key: `series-${item.series.id}`,
-                            title: item.series.title,
-                            img: item.series.poster_image?.url,
-                            bottomText: episodeNumber(item.last_episode_watched),
-                        }
-                    )}
-                    onFocus={onRowFocus}
-                    onItemSelected={itemSelected}
-                />
-                
+            <Stack ref={ref} marginTop="0.5rem" marginBottom="0.5rem">
+
                 <Slider<ISeriesUser>
                     title="Watched"
                     url="/2/users/me/series-watched"
