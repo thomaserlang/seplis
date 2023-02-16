@@ -1,4 +1,4 @@
-import { Alert, AlertIcon, AlertTitle, Flex, Skeleton } from '@chakra-ui/react'
+import { Alert, AlertIcon, AlertTitle, Button, Flex, Skeleton } from '@chakra-ui/react'
 import { FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
 import { IPageCursorTotalResult } from '@seplis/interfaces/page'
@@ -17,24 +17,20 @@ interface IProps<S = any> {
     parseItem: (item: S) => ISliderItem
 }
 
-const SplitWidths = ['75px', '100px', '125px', '150px']
+const SplitWidths = ['100px', '125px', null, '175px', null, '250px']
 
 export default function List<S = any>({ title, url, urlParams, onFocus, onItemSelected, parseItem }: IProps) {
-    const [error, setError] = useState<JSX.Element>(null)
     const [items, setItems] = useState<ISliderItem[]>([])
-    const { isInitialLoading, data } = useInfiniteQuery(['list', title, url, urlParams], async ({ pageParam = null }) => {
-        try {
-            const r = await api.get<IPageCursorTotalResult<S>>(url, {
-                params: {
-                    ...urlParams,
-                    cursor: pageParam,
-                },
-            })
-            return r.data
-        } catch (e) {
-            setError(ErrorMessageFromResponse(e))
-            return null
-        }
+    const { isInitialLoading, data, error, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery(['list', title, url, urlParams], async ({ pageParam = null }) => {
+        const r = await api.get<IPageCursorTotalResult<S>>(url, {
+            params: {
+                ...urlParams,
+                cursor: pageParam,
+            },
+        })
+        return r.data
+    }, {
+        getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,
     })
 
     useEffect(() => {
@@ -49,24 +45,29 @@ export default function List<S = any>({ title, url, urlParams, onFocus, onItemSe
     if (error)
         return <Alert status="error" rounded="md">
             <AlertIcon />
-            <AlertTitle>{error}</AlertTitle>
+            <AlertTitle>{ErrorMessageFromResponse(error)}</AlertTitle>
         </Alert>
 
-    return <Flex gap="0.75rem" wrap="wrap">
-        {isInitialLoading && <SkeletonCards amount={24} />}
-
-        {!isInitialLoading && items && items.map((item, i) => {
-            return <Flex key={item.key} grow="1" basis={SplitWidths}>
-                <Card
-                    item={item}
-                    onFocus={onFocus}
-                    onItemSelected={onItemSelected}
-                    viewItemIndex={i}
-                />
-            </Flex>
-        })}
-        <BlankCards amount={24} />
-    </Flex>
+    return <>
+        <Flex gap="0.75rem" wrap="wrap">
+            {!isInitialLoading && items && items.map((item, i) => {
+                return <Flex key={item.key} grow="1" basis={SplitWidths}>
+                    <Card
+                        item={item}
+                        onFocus={onFocus}
+                        onItemSelected={onItemSelected}
+                        viewItemIndex={i}
+                    />
+                </Flex>
+            })}
+            {(isInitialLoading || isFetchingNextPage) && <SkeletonCards amount={24} />}
+            <BlankCards amount={12} />
+        </Flex>
+        
+        {hasNextPage && <Flex marginBottom="2rem" alignItems="center" justifyContent="center">
+            <Button onClick={() => fetchNextPage()} size="lg">Load more</Button>
+        </Flex>}
+    </>
 }
 
 export function SkeletonCards({ amount }: { amount: number }) {

@@ -33,9 +33,7 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
         })
         return data.data
     }, {
-        getNextPageParam: (lastPage) => {
-            return lastPage.cursor ?? undefined
-        },
+        getNextPageParam: (lastPage) => { return lastPage.cursor ?? undefined },
     })
 
     useEffect(() => {
@@ -109,7 +107,7 @@ export function Cards<S = any>({ items, onFocus, onItemSelected }: { items: ISli
 }
 
 
-export function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: { item: ISliderItem, onFocus: FocusHandler, onItemSelected: (item: S) => void, viewItemIndex: number }) {
+export function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: { item: ISliderItem, onFocus: FocusHandler, onItemSelected: (item: S) => void, viewItemIndex?: number }) {
     const { ref, focused } = useFocusable({
         onFocus: onFocus,
         onEnterPress: () => {
