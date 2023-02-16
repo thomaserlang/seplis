@@ -24,16 +24,15 @@ async def test_user_series_following(client: AsyncClient):
 
     r = await client.get('/2/users/me/series-watched')
     assert r.status_code == 200
-    data = schemas.Page_result[schemas.Series_user].parse_obj(r.json())
-    assert data.total == 0
+    data = schemas.Page_cursor_total_result[schemas.Series_user].parse_obj(r.json())
+    assert data.items == []
 
     r = await client.post(f'/2/series/{series1.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
     
     r = await client.get('/2/users/me/series-watched')
     assert r.status_code == 200, r.content
-    data = schemas.Page_result[schemas.Series_user].parse_obj(r.json())
-    assert data.total == 1
+    data = schemas.Page_cursor_total_result[schemas.Series_user].parse_obj(r.json())
     assert data.items[0].series.id == series1.id
     assert data.items[0].last_episode_watched.number == 1
 
@@ -43,7 +42,8 @@ async def test_user_series_following(client: AsyncClient):
 
     r = await client.get('/2/users/me/series-watched')
     assert r.status_code == 200, r.content
-    data = schemas.Page_result[schemas.Series_user].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Series_user].parse_obj(r.json())
+    assert len(data.items) == 2
     assert data.total == 2
     assert data.items[0].series.id == series2.id
     assert data.items[0].last_episode_watched.number == 2

@@ -22,7 +22,7 @@ async def test_play_server(client: AsyncClient):
 
     r = await client.get(f'/2/play-servers/{play_server.id}/user-movies-stared')
     assert r.status_code == 200
-    data = schemas.Page_result[schemas.Movie].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
     assert data.items[0].id == movie.id
 
 

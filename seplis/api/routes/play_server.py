@@ -5,22 +5,22 @@ import sqlalchemy as sa
 
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants, exceptions
-from ... import utils, logger
+from ... import utils
 
 router = APIRouter(prefix='/2/play-servers')
 
-@router.get('', response_model=schemas.Page_result[schemas.Play_server])
+@router.get('', response_model=schemas.Page_cursor_total_result[schemas.Play_server])
 async def get_play_servers(
-    request: Request,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
-    page_query: schemas.Page_query = Depends(),
+    page_query: schemas.Page_cursor_query = Depends(),
 ):
     query = sa.select(models.Play_server).where(
         models.Play_server.user_id == user.id,
     ).order_by(sa.asc(models.Play_server.name))
 
-    p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request)
+    p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
+    p.items = [row.Play_server for row in p.items]
     return p
 
 
@@ -80,13 +80,12 @@ async def create_play_server_invite(
     return p
 
 
-@router.get('/{play_server_id}/invites', response_model=schemas.Page_result[schemas.Play_server_invite])
+@router.get('/{play_server_id}/invites', response_model=schemas.Page_cursor_total_result[schemas.Play_server_invite])
 async def get_play_server_invites(
     play_server_id: str,
-    request: Request,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
-    page_query: schemas.Page_query = Depends(),
+    page_query: schemas.Page_cursor_query = Depends(),
 ):
     query = sa.select(models.Play_server_invite.created_at, models.Play_server_invite.expires_at, models.User_public).where(
         models.Play_server.user_id == user.id,
@@ -95,7 +94,7 @@ async def get_play_server_invites(
         models.User_public.id == models.Play_server_invite.user_id,
     ).order_by(sa.asc(models.Play_server.name))
 
-    p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request, scalars=False)
+    p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
     p.items = [schemas.Play_server_invite(
         created_at=r.created_at,
         expires_at=r.expires_at,
@@ -103,13 +102,12 @@ async def get_play_server_invites(
     return p
 
 
-@router.get('/{play_server_id}/access', response_model=schemas.Page_result[schemas.Play_server_access])
+@router.get('/{play_server_id}/access', response_model=schemas.Page_cursor_total_result[schemas.Play_server_access])
 async def get_play_server_access(
     play_server_id: str,
-    request: Request,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
-    page_query: schemas.Page_query = Depends(),
+    page_query: schemas.Page_cursor_query = Depends(),
 ):
     query = sa.select(models.Play_server_access.created_at, models.User_public).where(
         models.Play_server.user_id == user.id,
@@ -118,7 +116,7 @@ async def get_play_server_access(
         models.User_public.id == models.Play_server_access.user_id,
     ).order_by(sa.asc(models.User_public.username), sa.asc(models.User_public.id))
 
-    p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request, scalars=False)
+    p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
     p.items = [schemas.Play_server_access(
         created_at=r.created_at,
         user=schemas.User_public.from_orm(r.User_public)) for r in p.items]

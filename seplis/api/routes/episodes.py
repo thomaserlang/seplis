@@ -1,17 +1,16 @@
 import asyncio
-from fastapi import Depends, HTTPException, Security, Request
+from fastapi import Depends, HTTPException, Security
 import sqlalchemy as sa
 from datetime import date
 from ..dependencies import authenticated, authenticated_if_expand, get_expand, get_session, AsyncSession
 from .. import models, schemas, constants
-from ... import logger, utils, config
+from ... import utils
 from .series import router
 
 
 @router.get('/{series_id}/episodes', response_model=schemas.Page_cursor_result[schemas.Episode])
 async def get_episodes(
     series_id: int,
-    request: Request,
     season: int | None = None,
     episode: int | None = None,
     air_date: date | None = None,
@@ -41,7 +40,7 @@ async def get_episodes(
     p = await utils.sqlalchemy.paginate_cursor(
         session=session, 
         query=query,
-        page_cursor=page_cursor,
+        page_query=page_cursor,
     )
     p.items = [schemas.Episode.from_orm(row[0]) for row in p.items]
     if expand:

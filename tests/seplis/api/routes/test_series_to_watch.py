@@ -27,8 +27,8 @@ async def test_user_series_following(client: AsyncClient):
 
     r = await client.get('/2/users/me/series-to-watch')
     assert r.status_code == 200
-    data = schemas.Page_result[schemas.Series_and_episode].parse_obj(r.json())
-    assert data.total == 0
+    data = schemas.Page_cursor_result[schemas.Series_and_episode].parse_obj(r.json())
+    assert len(data.items) == 0
 
     r = await client.put(f'/2/series/{series1.id}/following')
     assert r.status_code == 204, r.content
@@ -42,11 +42,9 @@ async def test_user_series_following(client: AsyncClient):
     
     r = await client.get('/2/users/me/series-to-watch')
     assert r.status_code == 200
-    data = schemas.Page_result[schemas.Series_and_episode].parse_obj(r.json())
-    assert data.total == 1
+    data = schemas.Page_cursor_result[schemas.Series_and_episode].parse_obj(r.json())
     assert data.items[0].series.title == 'Test series'
     assert data.items[0].episode.number == 2
-
 
 
 if __name__ == '__main__':

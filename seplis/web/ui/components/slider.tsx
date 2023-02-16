@@ -1,14 +1,13 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
 import { Box, Heading, HStack, Image, Skeleton } from '@chakra-ui/react'
 import api from '@seplis/api'
-import { IPageResult } from '@seplis/interfaces/page'
+import { IPageCursorResult } from '@seplis/interfaces/page'
 import { ISliderItem } from '@seplis/interfaces/slider'
-import { useQuery } from '@tanstack/react-query'
+import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useFocusable, FocusContext, FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
-
-import './slider.less'
 import { Poster } from './poster'
+import './slider.less'
 
 interface IProps<S = undefined> {
     title: string,
@@ -19,51 +18,34 @@ interface IProps<S = undefined> {
 }
 
 export default function Slider<S = undefined>({ title, url, parseItem, onFocus, onItemSelected }: IProps<S>) {
-    const [items, setItems] = useState<ISliderItem[]>(null)
-    const [page, setPage] = useState(1)
+    const [items, setItems] = useState<ISliderItem[]>([])
     const [index, setIndex] = useState(0)
     const [displayItemCount, setDisplayItemCount] = useState(() => (rowWidthItems()))
     const { ref, focusKey } = useFocusable({ onFocus })
     const loadPerPage = 12
 
-    const { isInitialLoading } = useQuery(['slider', title, url], async () => {
-        const data = await api.get<IPageResult<S>>(url, {
+    const { data, isInitialLoading, fetchNextPage } = useInfiniteQuery(['slider', title, url], async ({ pageParam = null }) => {
+        const data = await api.get<IPageCursorResult<S>>(url, {
             params: {
                 per_page: loadPerPage * 2,
+                cursor: pageParam,
             }
         })
-        const newItems: ISliderItem[] = []
-        for (const item of data.data.items) {
-            const r = parseItem(item)
-            newItems.push(r)
-            if (!r.data)
-                r.data = item
-        }
-        setPage(1)
-        setIndex(0)
-        setItems(newItems)
-        return data
+        return data.data
     }, {
-        keepPreviousData: false
+        getNextPageParam: (lastPage) => {
+            return lastPage.cursor ?? undefined
+        },
     })
 
     useEffect(() => {
-        if (page == 1)
-            return
-        const fetch = async () => {
-            const data = await api.get<IPageResult<S>>(url, {
-                params: {
-                    per_page: loadPerPage,
-                    page: page + 1,
-                }
-            })
-            const newItems: ISliderItem[] = []
-            for (const item of data.data.items)
-                newItems.push(parseItem(item))
-            setItems([...items, ...newItems])
-        }
-        fetch()
-    }, [page])
+        const items = data?.pages.flatMap((page) => page.items.map((item) => {
+            const i = parseItem(item)
+            i.data = item
+            return i
+        })) ?? []
+        setItems(items)
+    }, [data])
 
     const onCardFocus = (layout: any, props: any, details: any) => {
         const event = details.event as KeyboardEvent
@@ -72,7 +54,7 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
                 if (layout.node.getAttribute('data-view-index') > 1)
                     setIndex(index + 1)
                 if ((index % loadPerPage) === 0)
-                    setPage(page + 1)
+                    fetchNextPage()
             }
         } else if (!event || event?.code == 'ArrowLeft') {
             if (index > 0)
@@ -90,6 +72,7 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
         }
     }, [])
 
+
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
             <Heading className="row-header">{title}</Heading>
@@ -100,8 +83,8 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
                         onFocus={onCardFocus}
                         onItemSelected={onItemSelected}
                     />
-                    <PeekCard index={index} items={items} next={false} setIndex={setIndex} setPage={setPage} />
-                    <PeekCard index={index} items={items} next={true} setIndex={setIndex} setPage={setPage} />
+                    <PeekCard index={index} items={items} next={false} setIndex={setIndex} fetchNextPage={fetchNextPage} />
+                    <PeekCard index={index} items={items} next={true} setIndex={setIndex} fetchNextPage={fetchNextPage} />
                 </> : <SkeletonCards />}
             </HStack>
         </Box>
@@ -171,10 +154,10 @@ interface IPeekCardProps {
     index: number
     items: ISliderItem[]
     setIndex: React.Dispatch<React.SetStateAction<number>>
-    setPage: React.Dispatch<React.SetStateAction<number>>
+    fetchNextPage: () => void
     next: boolean
 }
-function PeekCard({ index, items, next, setIndex, setPage }: IPeekCardProps) {
+function PeekCard({ index, items, next, setIndex, fetchNextPage }: IPeekCardProps) {
     const displayCount = rowWidthItems()
     let itemIndex = 0
     if (next) {
@@ -198,7 +181,7 @@ function PeekCard({ index, items, next, setIndex, setPage }: IPeekCardProps) {
 
     const nextClick = () => {
         setIndex((index) => {
-            setPage((page) => page + 1)
+            fetchNextPage()
             let i = index + displayCount
             if (i > (items.length - 1))
                 i = (items.length - 1) - displayCount

@@ -250,7 +250,7 @@ class Movie_watched(Base):
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
     times = sa.Column(sa.SmallInteger)
     position = sa.Column(sa.SmallInteger)
-    watched_at = sa.Column(UtcDateTime)
+    watched_at = sa.Column(UtcDateTime, nullable=False)
 
 
     @staticmethod
@@ -430,7 +430,7 @@ class Movie_stared(Base):
     
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
-    created_at = sa.Column(UtcDateTime)
+    created_at = sa.Column(UtcDateTime, nullable=False)
 
     @staticmethod
     async def set_stared(user_id: int | str, movie_id: int):

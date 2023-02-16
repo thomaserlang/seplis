@@ -248,20 +248,20 @@ async def test_series(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series_id}/episodes?season=1')
     assert r.status_code == 200, r.content
-    episodes = schemas.Page_result[schemas.Episode].parse_obj(r.json())
+    episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
     assert len(episodes.items) == 2, episodes
     assert episodes.items[0].number == 1
     assert episodes.items[1].number == 2
 
     r = await client.get(f'/2/series/{series_id}/episodes?season=2')
     assert r.status_code == 200, r.content
-    episodes = schemas.Page_result[schemas.Episode].parse_obj(r.json())
+    episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
     assert len(episodes.items) == 1, episodes
     assert episodes.items[0].number == 3
 
     r = await client.get(f'/2/series/{series_id}/episodes?air_date=2014-01-01')
     assert r.status_code == 200, r.content
-    episodes = schemas.Page_result[schemas.Episode].parse_obj(r.json())
+    episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
     assert len(episodes.items) == 1, episodes
     assert episodes.items[0].number == 1
 
@@ -326,7 +326,7 @@ async def test_series(client: AsyncClient):
     
     r = await client.get(f'/2/series/{series_id}/images')
     assert r.status_code == 200
-    data = schemas.Page_result[schemas.Image].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Image].parse_obj(r.json())
     assert data.total == 1
     assert data.items[0].id > 0
 

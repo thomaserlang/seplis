@@ -41,9 +41,9 @@ class Episode_watched(Base):
     series_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
     episode_number = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
-    times = sa.Column(sa.Integer, default=0)
-    position = sa.Column(sa.Integer, default=0)
-    watched_at = sa.Column(UtcDateTime)
+    times = sa.Column(sa.Integer, default=0, nullable=False)
+    position = sa.Column(sa.Integer, default=0, nullable=False)
+    watched_at = sa.Column(UtcDateTime, nullable=False)
 
     @staticmethod
     async def increment(session: AsyncSession, user_id: int, series_id: int, episode_number: int, data: schemas.Episode_watched_increment):

@@ -83,7 +83,7 @@ class OC:
         if _get_order_direction(x) is None:
             x = asc(x)
         self.uo = x
-        _warn_if_nullable(self.comparable_value)
+        #_warn_if_nullable(self.comparable_value)
         self.full_name = str(self.element)
         try:
             table_name, name = self.full_name.split(".", 1)

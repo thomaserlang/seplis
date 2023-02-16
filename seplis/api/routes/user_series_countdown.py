@@ -1,18 +1,17 @@
-from fastapi import APIRouter, Depends, Request, Security
+from fastapi import APIRouter, Depends, Security
 import sqlalchemy as sa
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
 from ... import utils
 
 router = APIRouter(prefix='/2/users/me/series-countdown')
 
-@router.get('', response_model=schemas.Page_result[schemas.Series_and_episode])
+@router.get('', response_model=schemas.Page_cursor_result[schemas.Series_and_episode])
 async def get_series_recently_aired(
-    request: Request,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
-    page_query: schemas.Page_query = Depends(),
+    page_query: schemas.Page_cursor_query = Depends(),
 ):
     episodes_query = sa.select(
         models.Episode.series_id,
@@ -31,6 +30,6 @@ async def get_series_recently_aired(
         models.Episode.series_id,
     )
 
-    p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request, scalars=False)
+    p = await utils.sqlalchemy.paginate_cursor(session=session, query=query, page_query=page_query)
     p.items = [schemas.Series_and_episode(series=item.Series, episode=item.Episode) for item in p.items]
     return p

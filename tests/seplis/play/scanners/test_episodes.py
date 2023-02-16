@@ -169,7 +169,7 @@ async def test_episode_number_lookup(play_db_test: Database):
     # test parsed episode season
     respx.get('/2/series/1/episodes', params={'season': '1', 'episode': '2'}).mock(
         return_value=httpx.Response(200, 
-            json=schemas.Page_result[schemas.Episode](
+            json=schemas.Page_cursor_result[schemas.Episode](
                 items=[schemas.Episode(number=2)]
             ).dict())
     )
@@ -187,7 +187,7 @@ async def test_episode_number_lookup(play_db_test: Database):
     # test parsed episode air_date
     respx.get('/2/series/1/episodes', params={'air_date': '2014-11-14'}).mock(
         return_value=httpx.Response(200, 
-            json=schemas.Page_result[schemas.Episode](
+            json=schemas.Page_cursor_result[schemas.Episode](
                 items=[schemas.Episode(number=3)]
             ).dict())
     )

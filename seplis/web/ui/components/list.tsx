@@ -1,10 +1,10 @@
 import { Alert, AlertIcon, AlertTitle, Flex, Skeleton } from '@chakra-ui/react'
 import { FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
-import { IPageResult } from '@seplis/interfaces/page'
+import { IPageCursorResult, IPageCursorTotalResult } from '@seplis/interfaces/page'
 import { ISliderItem } from '@seplis/interfaces/slider'
-import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useInfiniteQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
 import { ErrorMessageFromResponse } from './error'
 import { Card } from './slider'
 
@@ -21,10 +21,14 @@ const SplitWidths = ['75px', '100px', '125px', '150px']
 
 export default function List<S = any>({ title, url, urlParams, onFocus, onItemSelected, parseItem }: IProps) {
     const [error, setError] = useState<JSX.Element>(null)
-    const { isInitialLoading, data } = useQuery(['list', title, url, urlParams], async () => {
+    const [items, setItems] = useState<ISliderItem[]>([])
+    const { isInitialLoading, data } = useInfiniteQuery(['list', title, url, urlParams], async ({ pageParam = null }) => {
         try {
-            const r = await api.get<IPageResult<S>>(url, {
-                params: urlParams,
+            const r = await api.get<IPageCursorTotalResult<S>>(url, {
+                params: {
+                    ...urlParams,
+                    cursor: pageParam,
+                },
             })
             return r.data
         } catch (e) {
@@ -32,6 +36,15 @@ export default function List<S = any>({ title, url, urlParams, onFocus, onItemSe
             return null
         }
     })
+
+    useEffect(() => {
+        const items = data?.pages.flatMap((page) => page.items.map((item) => {
+            const i = parseItem(item)
+            i.data = item
+            return i
+        })) ?? []
+        setItems(items)
+    }, [data])
 
     if (error)
         return <Alert status="error" rounded="md">
@@ -42,12 +55,10 @@ export default function List<S = any>({ title, url, urlParams, onFocus, onItemSe
     return <Flex gap="0.75rem" wrap="wrap">
         {isInitialLoading && <SkeletonCards amount={24} />}
 
-        {!isInitialLoading && data && data.items.map((item, i) => {
-            const p = parseItem(item)
-            p.data = item
-            return <Flex key={p.key} grow="1" basis={SplitWidths}>
+        {!isInitialLoading && items && items.map((item, i) => {
+            return <Flex key={item.key} grow="1" basis={SplitWidths}>
                 <Card
-                    item={p}
+                    item={item}
                     onFocus={onFocus}
                     onItemSelected={onItemSelected}
                     viewItemIndex={i}

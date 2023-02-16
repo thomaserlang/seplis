@@ -79,7 +79,7 @@ async def test_play_server_invite(client: AsyncClient):
 
     r = await client.get(f'/2/play-servers/{server.id}/invites')
     assert r.status_code == 200, r.content
-    invites = schemas.Page_result[schemas.Play_server_invite].parse_obj(r.json())
+    invites = schemas.Page_cursor_total_result[schemas.Play_server_invite].parse_obj(r.json())
     assert invites.items[0].user.id == user.id
     assert invites.items[0].created_at != None
     assert invites.items[0].expires_at != None
@@ -102,13 +102,13 @@ async def test_play_server_invite(client: AsyncClient):
 
     r = await client.get(f'/2/play-servers/{server.id}/invites')
     assert r.status_code == 200, r.content
-    invites = schemas.Page_result[schemas.Play_server_invite].parse_obj(r.json())
+    invites = schemas.Page_cursor_total_result[schemas.Play_server_invite].parse_obj(r.json())
     assert invites.total == 0
 
 
     r = await client.get(f'/2/play-servers/{server.id}/access')
     assert r.status_code == 200, r.content
-    users = schemas.Page_result[schemas.Play_server_access].parse_obj(r.json())
+    users = schemas.Page_cursor_total_result[schemas.Play_server_access].parse_obj(r.json())
     assert users.items[0].user.id == user.id
     assert users.items[1].user.id == user_id
 

@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Security, Request, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, Security, UploadFile, Form
 import sqlalchemy as sa
-from datetime import date
 from ..dependencies import authenticated, get_session, AsyncSession
 from ..database import database
 from .. import models, schemas, constants
-from ... import logger, utils, config
+from ... import utils
 
 router = APIRouter(prefix='/2/series')
 
@@ -120,12 +119,11 @@ async def delete_image(
     await session.commit()
 
 
-@router.get('/{series_id}/images', response_model=schemas.Page_result[schemas.Image])
+@router.get('/{series_id}/images', response_model=schemas.Page_cursor_total_result[schemas.Image])
 async def get_images(
     series_id: int,
-    request: Request,
     type: schemas.IMAGE_TYPES | None = None,
-    page_query: schemas.Page_query = Depends(),
+    page_query: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
     query = sa.select(models.Image).where(
@@ -134,6 +132,6 @@ async def get_images(
     )
     if type:
         query = query.where(models.Image.type == type)
-    p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request)
-    p.items = [schemas.Image.from_orm(image) for image in p.items]
+    p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
+    p.items = [schemas.Image.from_orm(row.Image) for row in p.items]
     return p

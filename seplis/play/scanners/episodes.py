@@ -426,7 +426,7 @@ class Episode_number(object):
             raise Exception('Unknown parsed episode object')
         r = await client.get(f'/2/series/{episode.series_id}/episodes', params=params)
         r.raise_for_status()
-        episodes = schemas.Page_result[schemas.Episode].parse_obj(r.json())
+        episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
         if not episodes:
             return
         return episodes.items[0].number

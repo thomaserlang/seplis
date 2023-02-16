@@ -7,12 +7,11 @@ from ... import utils
 
 router = APIRouter(prefix='/2/users/me/series-recently-aired')
 
-@router.get('', response_model=schemas.Page_result[schemas.Series_and_episode])
+@router.get('', response_model=schemas.Page_cursor_result[schemas.Series_and_episode])
 async def get_series_recently_aired(
-    request: Request,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
-    page_query: schemas.Page_query = Depends(),
+    page_query: schemas.Page_cursor_query = Depends(),
 ):
     dt = datetime.now(tz=timezone.utc)
     episodes_query = sa.select(
@@ -33,6 +32,6 @@ async def get_series_recently_aired(
         models.Episode.series_id,
     )
 
-    p = await utils.sqlalchemy.paginate(session=session, query=query, page_query=page_query, request=request, scalars=False)
+    p = await utils.sqlalchemy.paginate_cursor(session=session, query=query, page_query=page_query)
     p.items = [schemas.Series_and_episode(series=item.Series, episode=item.Episode) for item in p.items]
     return p

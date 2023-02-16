@@ -13,25 +13,8 @@ class Page_cursor_query(BaseModel):
 
 class Page_cursor_result(GenericModel, Generic[T]):
     items: list[T]
-    cursor: str | None
+    cursor: str | None = None
 
 
-class Page_query(BaseModel):
-    page: conint(ge=1) = 1
-    per_page: conint(ge=1, le=100) = 25
-
-
-class Page_links(BaseModel):
-    next: AnyHttpUrl | None
-    prev: AnyHttpUrl | None
-    first: AnyHttpUrl | None
-    last: AnyHttpUrl | None
-
-
-class Page_result(GenericModel, Generic[T]):
-    items: list[T]
-    links = Page_links()
+class Page_cursor_total_result(Page_cursor_result, Generic[T]):
     total: int = 0
-    per_page: int = 25
-    page: int = 0
-    pages: int = 0

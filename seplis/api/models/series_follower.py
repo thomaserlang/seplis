@@ -11,7 +11,7 @@ class Series_follower(Base):
 
     series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
-    created_at = sa.Column(UtcDateTime)
+    created_at = sa.Column(UtcDateTime, nullable=False)
 
     async def follow(series_id: int, user_id: int | str, session: AsyncSession):
         await session.execute(sa.insert(Series_follower).values(

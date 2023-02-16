@@ -134,7 +134,7 @@ async def test_movie(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie_id}/images')
     assert r.status_code == 200, r.content
-    data = schemas.Page_result[schemas.Image].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Image].parse_obj(r.json())
     assert data.total == 1
     assert data.items[0].id > 0
 

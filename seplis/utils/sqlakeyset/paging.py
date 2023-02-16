@@ -91,7 +91,9 @@ async def get_page(db: AsyncSession, selectable, per_page: int, place: Optional[
 
     # Finally, construct the `Page` object.
     # Trim off the extra columns and return as a correct-as-possible sqlalchemy Row.
-    out_rows = [row[: -len(extra_columns) or None] for row in rows]
+
+    # TODO: need to convert them back into `Row`
+    #out_rows = [row[: -len(extra_columns) or None] for row in rows]
     key_rows = [tuple(col.get_from_row(row) for col in mapped_ocols) for row in rows]
-    paging = Paging(out_rows, per_page, order_cols, backwards, place, markers=key_rows)
+    paging = Paging(rows, per_page, order_cols, backwards, place, markers=key_rows)
     return Page(paging.rows, paging, keys=row_keys[: -len(extra_columns) or None])

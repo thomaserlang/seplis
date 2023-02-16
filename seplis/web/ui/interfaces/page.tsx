@@ -1,32 +1,17 @@
 export interface IPageCursorQuery {
-    before: string | null
-    after: string | null
-    first: number
+    cursor: string | null
+    per_page: number
 }
-  
+
 
 export interface IPageCursorResult<T> {
     items: T[]
     cursor: string | null
 }
 
-export interface IPageQuery {
-    page: number
-    per_page: number
-}
 
-export interface IPageLinks {
-    next: string | null
-    prev: string | null
-    first: string | null
-    last: string | null
-}
-
-export interface IPageResult<T> {
+export interface IPageCursorTotalResult<T> {
     items: T[]
-    links: IPageLinks
+    cursor: string | null
     total: number
-    per_page: number
-    page: number
-    pages: number
 }

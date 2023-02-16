@@ -7,7 +7,6 @@ import sys
 import uuid
 import io
 import sqlalchemy as sa
-from fastapi import Request
 
 from .jsonutils import *
 from . import sqlalchemy

@@ -52,11 +52,11 @@ def parsedate(x):
 
 
 def binencode(x):
-    return base64.b64encode(x).decode("utf-8")
+    return base64.urlsafe_b64encode(x).decode("utf-8")
 
 
 def bindecode(x):
-    return base64.b64decode(x.encode("utf-8"))
+    return base64.urlsafe_b64decode(x.encode("utf-8"))
 
 
 TYPES = [

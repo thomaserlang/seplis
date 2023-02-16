@@ -1,11 +1,10 @@
-import math
-from sqlalchemy import func, select
+import asyncio
+import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.types import DateTime, TypeDecorator
 from datetime import datetime, timezone
 from fastapi import Request
 from typing import Any
-from seplis.utils import *
 from seplis.api import exceptions
 from ..api import schemas
 from uuid6 import uuid7
@@ -13,108 +12,34 @@ from .sqlakeyset.paging import get_page
 from .sqlakeyset.results import unserialize_bookmark
 
 
-async def paginate(session: AsyncSession, query: Any, page_query: schemas.Page_query, request: Request, scalars = True) -> schemas.Page_result:
-    limited = query.limit(page_query.per_page).offset((page_query.page-1)*page_query.per_page)
-    if scalars:
-        items = await session.scalars(limited)
-    else:
-        items = await session.execute(limited)
-    items = items.all()
-    if page_query.page == 1 and len(items) < page_query.per_page:
-        total = len(items)
-    else:
-        total = await session.scalar(select(func.count()).select_from(query.order_by(None).subquery()))
-    page = schemas.Page_result(
-        page=page_query.page,
-        per_page=page_query.per_page,
-        total=total,
-        items=items,
-        pages=int(math.ceil(float(total) / page_query.per_page))
-    )
-    page.links = create_page_links(request=request, page=page)
-    return page
-
-
-async def paginate_cursor(session: AsyncSession, query: Any, page_cursor: schemas.Page_cursor_query, backwards=False):
+async def paginate_cursor(session: AsyncSession, query: Any, page_query: schemas.Page_cursor_query, backwards=False):
+    place = None
+    if page_query.cursor:
+        place, backwards = unserialize_bookmark(page_query.cursor)
     page = await get_page(
         db=session, 
         selectable=query, 
-        per_page=page_cursor.per_page, 
-        place=unserialize_bookmark(page_cursor.cursor)[0] if page_cursor.cursor else None, 
+        per_page=page_query.per_page, 
+        place=place, 
         backwards=backwards,
     )
     return schemas.Page_cursor_result(
-        items=page,
+        items=page.paging.rows,
         cursor=page.paging.bookmark_next if page.paging.has_next else None,
     )
 
 
-def create_page_links(request: Request, page: schemas.Page_result):
-    url = request.url
-    return schemas.Page_links(
-        first=str(url.include_query_params(page=1)),
-        next=str(url.include_query_params(page=page.page+1)) if page.page < page.pages else None,
-        prev=str(url.include_query_params(page=page.page-1)) if page.page > 1 else None,
-        last=str(url.include_query_params(page=page.pages)) if page.pages > 1 else None 
+async def paginate_cursor_total(session: AsyncSession, query: Any, page_query: schemas.Page_cursor_query, backwards=False):
+    count_subquery = query.order_by(None).options(sa.orm.noload("*")).subquery()
+    result = await asyncio.gather(
+        paginate_cursor(session, query, page_query, backwards),
+        session.scalar(sa.select(sa.func.count(sa.literal_column("*"))).select_from(count_subquery))
     )
-
-
-def sort_parser(sort, sort_lookup, sort_list=None):
-    """
-    Parses a list of string sort types to SQLAlchemy field sorts.
-
-    Example:
-
-        sort_lookup = {
-            'journal_entry_id': models.Journal_entry.id,
-            'patient': {
-                'first_name': models.Patient.first_name,
-            }
-        }
-
-        sort = sort_parser(
-            'patient.first_name, -journal_entry_id',
-            sort_lookup
-        )
-
-        session.query(
-            models.Patient,
-            models.Journal_entry,
-        ).order_by(
-            *sort
-        )
-
-    :param sort: [`str`]
-    :param sort_lookup: [`SQLAlchemy model field`]
-    :returns: [`SQLAlchemy model sort field`]
-    """
-    if sort_list == None:
-        sort_list = []
-    sort = filter(None, sort.split(','))
-    for s in sort:
-        if '.' in s:
-            sub = s.split('.', 1)
-            key = sub[0]
-            if not isinstance(sort_lookup[key], dict):
-                continue
-            if len(sub) == 2:
-                sort_parser(sub[1], sort_lookup[key], sort_list)
-            continue
-        sort_type = sa.asc
-        s = s.strip()
-        if s.endswith(':desc'):
-            sort_type = sa.desc
-            s = s[:-5]
-        elif s.endswith(':asc'):
-            s = s[:-4]
-        if s not in sort_lookup or isinstance(sort_lookup[s], dict):
-            raise exceptions.Sort_not_allowed(s)
-        sort_list.append(
-            sort_type(
-                sort_lookup[s]
-            )
-        )
-    return sort_list
+    return schemas.Page_cursor_total_result(
+        items=result[0].items,
+        cursor=result[0].cursor,
+        total=result[1],
+    )
 
 
 class UUID(sa.types.UserDefinedType):

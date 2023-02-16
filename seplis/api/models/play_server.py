@@ -10,7 +10,7 @@ class Play_server(Base):
     __tablename__ = 'play_servers'
 
     id = sa.Column(utils.sqlalchemy.UUID, primary_key=True)
-    created_at = sa.Column(UtcDateTime)
+    created_at = sa.Column(UtcDateTime, nullable=False)
     updated_at = sa.Column(UtcDateTime)
     user_id = sa.Column(sa.Integer)
     name = sa.Column(sa.String(45))
@@ -69,7 +69,7 @@ class Play_server_access(Base):
 
     play_server_id = sa.Column(utils.sqlalchemy.UUID, primary_key=True)
     user_id = sa.Column(sa.Integer, primary_key=True)
-    created_at = sa.Column(UtcDateTime)
+    created_at = sa.Column(UtcDateTime, nullable=True)
 
 
     @staticmethod

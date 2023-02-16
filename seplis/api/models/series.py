@@ -289,7 +289,7 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
     last_watched_episode = sa.orm.aliased(Episode, name='last_watched_episode')
     query = sa.select(
         Series, 
-        Series_user_rating.rating, 
+        sa.func.coalesce(Series_user_rating.rating, -1).label('rating_'),
         sa.func.IF(Series_follower.user_id != None, 1, 0).label('following'),
         Episode_watched,
         last_watched_episode,
@@ -328,12 +328,12 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
 
     if sort == 'user_rating_desc':
         query = query.order_by(
-            sa.desc(Series_user_rating.rating),
+            sa.desc(sa.func.coalesce(Series_user_rating.rating, -1)),
             sa.desc(Series.id),
         )
     elif sort == 'user_rating_asc':
         query = query.order_by(
-            sa.asc(Series_user_rating.rating),
+            sa.asc(sa.func.coalesce(Series_user_rating.rating, -1)),
             sa.asc(Series.id),
         )
     elif sort == 'followed_at_desc':
@@ -362,7 +362,7 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
 def series_user_result_parse(row: any):
     return schemas.Series_user(
         series=schemas.Series.from_orm(row.Series),
-        rating=row.rating,
+        rating=row.rating_ if row.rating_ == -1 else None,
         following=row.following == 1,
         last_episode_watched=schemas.Episode.from_orm(row.last_watched_episode) if row.last_watched_episode else None,
         last_episode_watched_data=schemas.Episode_watched.from_orm(row.Episode_watched) if row.Episode_watched else None,
