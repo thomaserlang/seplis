@@ -1,30 +1,37 @@
-import { Alert, AlertIcon, AlertTitle, Button, Flex, Skeleton } from '@chakra-ui/react'
+import { Alert, AlertIcon, AlertTitle, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, Heading, Skeleton, useDisclosure } from '@chakra-ui/react'
 import { FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
 import { IPageCursorTotalResult } from '@seplis/interfaces/page'
 import { ISliderItem } from '@seplis/interfaces/slider'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
+import { FaFilter } from 'react-icons/fa'
 import { ErrorMessageFromResponse } from './error'
 import { Card } from './slider'
+import { removeEmpty } from '../utils'
 
 interface IProps<S = any> {
     title: string
     url: string
-    urlParams?: any
+    urlParams?: Object
     onFocus?: FocusHandler,
     onItemSelected?: (item: S) => void
     parseItem: (item: S) => ISliderItem
+    renderFilter?: TRenderFilter
 }
+
+type TRenderFilter = (options?: {
+    onClose: () => void
+}) => JSX.Element
 
 const SplitWidths = ['100px', '125px', null, '175px', null, '250px']
 
-export default function List<S = any>({ title, url, urlParams, onFocus, onItemSelected, parseItem }: IProps) {
+export default function List<S = any>({ title, url, urlParams, renderFilter, onFocus, onItemSelected, parseItem }: IProps) {
     const [items, setItems] = useState<ISliderItem[]>([])
     const { isInitialLoading, data, error, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery(['list', title, url, urlParams], async ({ pageParam = null }) => {
         const r = await api.get<IPageCursorTotalResult<S>>(url, {
             params: {
-                ...urlParams,
+                ...removeEmpty(urlParams),
                 cursor: pageParam,
             },
         })
@@ -49,8 +56,13 @@ export default function List<S = any>({ title, url, urlParams, onFocus, onItemSe
         </Alert>
 
     return <>
+        <Flex wrap="wrap">
+            <Heading as="h1" marginBottom="1rem" fontSize={['1.5rem', '2rem']}>{title.replace('{total}', data?.pages?.[0]?.total?.toString() || '...')}</Heading>
+            <Box marginLeft="auto"><FilterButton renderFilter={renderFilter} /></Box>
+        </Flex>
+
         <Flex gap="0.75rem" wrap="wrap">
-            {!isInitialLoading && items && items.map((item, i) => {
+            {items && items.map((item, i) => {
                 return <Flex key={item.key} grow="1" basis={SplitWidths}>
                     <Card
                         item={item}
@@ -63,14 +75,15 @@ export default function List<S = any>({ title, url, urlParams, onFocus, onItemSe
             {(isInitialLoading || isFetchingNextPage) && <SkeletonCards amount={24} />}
             <BlankCards amount={12} />
         </Flex>
-        
+
         {hasNextPage && <Flex marginBottom="2rem" alignItems="center" justifyContent="center">
             <Button onClick={() => fetchNextPage()} size="lg">Load more</Button>
         </Flex>}
     </>
 }
 
-export function SkeletonCards({ amount }: { amount: number }) {
+
+function SkeletonCards({ amount }: { amount: number }) {
     return <>
         {[...Array(amount).keys()].map((key) => (
             <Flex key={`skeleton-${key}`} grow="1" basis={SplitWidths} >
@@ -80,10 +93,36 @@ export function SkeletonCards({ amount }: { amount: number }) {
     </>
 }
 
-export function BlankCards({ amount }: { amount: number }) {
+
+function BlankCards({ amount }: { amount: number }) {
     return <>
         {[...Array(amount).keys()].map((key) => (
             <Flex key={`blank-${key}`} height="0px" grow="1" basis={SplitWidths}></Flex>
         ))}
+    </>
+}
+
+
+function FilterButton({ renderFilter }: { renderFilter: TRenderFilter }) {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    return <>
+        <Button colorScheme="blue" rightIcon={<FaFilter />} onClick={onOpen}>Filter</Button>
+        <Drawer
+            isOpen={isOpen}
+            placement='right'
+            onClose={onClose}
+        >
+            <DrawerOverlay />
+            <DrawerContent>
+                <DrawerCloseButton />
+                <DrawerHeader>Filter</DrawerHeader>
+
+                <DrawerBody>
+                    {renderFilter({
+                        onClose: onClose,
+                    })}
+                </DrawerBody>
+            </DrawerContent>
+        </Drawer>
     </>
 }

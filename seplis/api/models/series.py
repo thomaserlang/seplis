@@ -285,7 +285,7 @@ class Series(Base):
             return r.first()
 
 
-def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
+def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None, filter_query: schemas.Series_user_query_filter | None):
     last_watched_episode = sa.orm.aliased(Episode, name='last_watched_episode')
     query = sa.select(
         Series, 
@@ -326,6 +326,20 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
         isouter=True,
     )
 
+    if filter_query:
+        logger.info(filter_query.genre_id)
+        if filter_query.genre_id:
+            if len(filter_query.genre_id) == 1:
+                query = query.where(
+                    Series_genre.genre_id == filter_query.genre_id[0],
+                    Series.id == Series_genre.series_id,
+                )
+            else:                
+                query = query.where(
+                    Series_genre.genre_id.in_(filter_query.genre_id),
+                    Series.id == Series_genre.series_id,
+                )
+
     if sort == 'user_rating_desc':
         query = query.order_by(
             sa.desc(sa.func.coalesce(Series_user_rating.rating, -1)),
@@ -338,22 +352,32 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None):
         )
     elif sort == 'followed_at_desc':
         query = query.order_by(
-            sa.desc(Series_follower.created_at),
+            sa.desc(sa.func.coalesce(Series_follower.created_at, -1)),
             sa.desc(Series.id),
         )
     elif sort == 'followed_at_asc':
         query = query.order_by(
-            sa.asc(Series_follower.created_at),
+            sa.asc(sa.func.coalesce(Series_follower.created_at, -1)),
             sa.asc(Series.id),
         )
     elif sort == 'watched_at_desc':
         query = query.order_by(
-            sa.desc(Episode_watched.watched_at),
+            sa.desc(sa.func.coalesce(Episode_watched.watched_at, -1)),
             sa.desc(Series.id),
         )
     elif sort == 'watched_at_asc':
         query = query.order_by(
-            sa.asc(Episode_watched.watched_at),
+            sa.asc(sa.func.coalesce(Episode_watched.watched_at, -1)),
+            sa.asc(Series.id),
+        )
+    elif sort == 'rating_desc':
+        query = query.order_by(
+            sa.func.coalesce(Series.rating, -1),
+            sa.desc(Series.id),
+        )
+    elif sort == 'rating_asc':
+        query = query.order_by(
+            sa.func.coalesce(Series.rating, -1),
             sa.asc(Series.id),
         )
 

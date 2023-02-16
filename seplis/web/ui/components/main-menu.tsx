@@ -37,7 +37,7 @@ export default function MainMenu() {
             <MenuList>
                 <Link to="/series/home"><MenuItem>Home</MenuItem></Link>
                 <Link to="/series/following"><MenuItem>Following</MenuItem></Link>
-                <MenuItem>Watched</MenuItem>
+                <Link to="/series/watched"><MenuItem>Watched</MenuItem></Link>
                 <MenuItem>Stats</MenuItem>
                 <MenuDivider />
                 <MenuItem>New series</MenuItem>

@@ -1,4 +1,5 @@
 from typing import Literal
+from fastapi import Query
 from pydantic import BaseModel, constr, conint, confloat, validator, Field
 from datetime import datetime, date
 from .image import Image
@@ -113,7 +114,19 @@ SERIES_USER_SORT_TYPE = Literal[
     'user_rating_desc',
     'watched_at_asc',
     'watched_at_desc',
+    'rating_asc',
+    'rating_desc',
 ]
+
+
+class Series_query_filter:
+    def __init__(self, genre_id: list[int] = Query(default=None)):
+        self.genre_id = genre_id    
+
+
+class Series_user_query_filter(Series_query_filter):
+    pass
+
 
 class Series_user(BaseModel):
     series: Series

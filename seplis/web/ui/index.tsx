@@ -57,6 +57,7 @@ import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'
 import SeriesHome from './pages/series/home'
 import MoviesHome from './pages/movies/home'
 import SeriesFollowing from './pages/series/following'
+import SeriesWatched from './pages/series/watched'
 
 spatialInit({})
 
@@ -73,6 +74,7 @@ createRoot(document.getElementById("root")).render(
                             <Route path="/movies/:movieId" element={<Movie />} />
                             <Route path="/series/home" element={<SeriesHome />} />
                             <Route path="/series/following" element={<SeriesFollowing />} />
+                            <Route path="/series/watched" element={<SeriesWatched />} />
                             <Route path="/series/:seriesId" element={<Series />} />
                         </Routes>
                     </QueryClientProvider>

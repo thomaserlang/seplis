@@ -43,6 +43,7 @@ from .routes import (
     play_server,
     play_server_user_series_following,
     play_server_user_movies_stared,
+    genres,
 )
 
 
@@ -79,6 +80,7 @@ app.include_router(episode_last_watched.router)
 app.include_router(play_server.router)
 app.include_router(play_server_user_series_following.router)
 app.include_router(play_server_user_movies_stared.router)
+app.include_router(genres.router)
 
 
 app.add_middleware(

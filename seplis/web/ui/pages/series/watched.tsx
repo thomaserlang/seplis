@@ -4,17 +4,17 @@ import SeriesUserList from '@seplis/components/series/user-list'
 import { setTitle } from '@seplis/utils'
 import { useEffect } from 'react'
 
-export default function SeriesFollowing() {    
+export default function SeriesWatched() {    
     useEffect(() => {
-        setTitle('Series Following')
+        setTitle('Series Watched')
     }, [])
 
-    return <>    
+    return <>
         <MainMenu />
         <Box marginTop="1rem"></Box>
         <SeriesUserList 
-            title="Following {total} series" 
-            url="/2/users/me/series-following"
+            title="Watched {total} series" 
+            url="/2/users/me/series-watched"
         />
     </>
 }

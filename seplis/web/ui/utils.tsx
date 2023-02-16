@@ -176,3 +176,10 @@ export function langCodeToLang(code: string) {
         return code
     }
 }
+
+
+export function removeEmpty(obj: Object) {
+    return Object.entries(obj)
+      .filter(([_, v]) => (v != null) && (v != '') && (v != 0))
+      .reduce((acc, [k, v]) => ({ ...acc, [k]: v }), {});
+}

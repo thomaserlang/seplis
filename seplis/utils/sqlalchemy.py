@@ -3,13 +3,12 @@ import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.types import DateTime, TypeDecorator
 from datetime import datetime, timezone
-from fastapi import Request
 from typing import Any
-from seplis.api import exceptions
 from ..api import schemas
 from uuid6 import uuid7
 from .sqlakeyset.paging import get_page
 from .sqlakeyset.results import unserialize_bookmark
+from .. import logger
 
 
 async def paginate_cursor(session: AsyncSession, query: Any, page_query: schemas.Page_cursor_query, backwards=False):
@@ -84,10 +83,14 @@ class UtcDateTime(TypeDecorator):
             if not isinstance(value, datetime):
                 raise TypeError('expected datetime.datetime, not ' +
                                 repr(value))
-            return value.astimezone(timezone.utc)
+            if value.tzinfo is None:
+                value = value.replace(tzinfo=timezone.utc)
+            else:
+                value = value.astimezone(timezone.utc)
+            return value
 
     def process_result_value(self, value, dialect):
-        if value is not None:
+        if value is not None and isinstance(value, datetime):
             if value.tzinfo is None:
                 value = value.replace(tzinfo=timezone.utc)
             else:

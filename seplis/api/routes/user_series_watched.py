@@ -11,8 +11,9 @@ async def get_series_watched(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
     page_cursor: schemas.Page_cursor_query = Depends(),
+    filter_query: schemas.Series_user_query_filter = Depends(),
 ):
-    query = models.series_user_query(user_id=user.id, sort=sort)
+    query = models.series_user_query(user_id=user.id, sort=sort, filter_query=filter_query)
     query = query.where(
         models.Episode_last_finished.user_id == user.id,
         models.Series.id == models.Episode_last_finished.series_id,
