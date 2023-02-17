@@ -97,7 +97,7 @@ async def update_series_info(series: schemas.Series):
     info: schemas.Series_update = await call_importer(
         external_name=series.importers.info,
         method='info',
-        external_id=series.externals[series.importers.info],
+        external_id=series.externals.get(series.importers.info),
     )
     if info:
         await models.Series.save(data=info, series_id=series.id, patch=True)
