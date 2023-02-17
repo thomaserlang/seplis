@@ -87,7 +87,7 @@ function SkeletonCards({ amount }: { amount: number }) {
     return <>
         {[...Array(amount).keys()].map((key) => (
             <Flex key={`skeleton-${key}`} grow="1" basis={SplitWidths} >
-                <Skeleton className="poster-container slider-item" rounded="md" width="100%" height="100%" />
+                <Skeleton className="poster-container" rounded="md" width="100%" height="100%" />
             </Flex>
         ))}
     </>

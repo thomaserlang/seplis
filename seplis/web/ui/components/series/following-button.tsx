@@ -2,64 +2,70 @@ import { StarIcon } from '@chakra-ui/icons'
 import { Button, useToast } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { isAuthed } from '@seplis/utils'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { ErrorMessageFromResponse } from '../error'
 import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { focusedBorder } from '@seplis/styles'
 import { ISeriesFollowing } from '@seplis/interfaces/series'
 
+const a = async (seriesId: number) => {
+    await api.delete(`/2/series/${seriesId}/following`)
+}
+
+interface IToggleFollowing  {
+    seriesId: number
+    following: boolean
+}
 
 export default function FollowingButton({ seriesId }: { seriesId: number }) {
     const toast = useToast()
-    const [loading, setLoading] = useState(false)
-    const [following, setFollowing] = useState(false)
+    const queryClient = useQueryClient()
 
-    // TODO: look into using useMutation instead, this is stupid
-    const { isInitialLoading } = useQuery(['series', 'following-button', seriesId], async () => {
-        const result = await api.get<ISeriesFollowing>(`/2/series/${seriesId}/following`)
-        setFollowing(result.data.following)
-        return result.data
+    const toggleFollowing = useMutation(async (following: boolean) => {
+        await queryClient.cancelQueries(['series', 'following-button', seriesId])
+        let data: ISeriesFollowing
+        if (following) {
+            data = await api.delete(`/2/series/${seriesId}/following`)
+        } else {
+            data = await api.put(`/2/series/${seriesId}/following`)            
+        }
+        queryClient.setQueryData(['series', 'following-button', seriesId], { following: !following})
     }, {
-        enabled: isAuthed()
-    })
-
-    const handleClick = async () => {
-        setLoading(true)
-        try {
-            if (following) {
-                await api.delete(`/2/series/${seriesId}/following`)
-                setFollowing(false)
-            } else {
-                await api.put(`/2/series/${seriesId}/following`)
-                setFollowing(true)
-            }
-        } catch (e) {
+        onError: (e) => {            
             toast({
                 title: ErrorMessageFromResponse(e),
                 status: 'error',
                 isClosable: true,
                 position: 'top',
             })
-
-        } finally {
-            setLoading(false)
         }
-    }
-    const { ref, focused } = useFocusable({
-        onEnterPress: () => handleClick()
     })
 
+    const { isInitialLoading, data } = useQuery(['series', 'following-button', seriesId], async () => {
+        const result = await api.get<ISeriesFollowing>(`/2/series/${seriesId}/following`)
+        return result.data
+    }, {
+        enabled: isAuthed()
+    })
+
+    const handleClick = () => {
+        toggleFollowing.mutate(data.following)
+    }
+
+    const { ref, focused } = useFocusable({
+        onEnterPress: () => handleClick,
+    })
 
     return <Button
         ref={ref}
-        isLoading={isInitialLoading || loading}
+        isLoading={isInitialLoading || toggleFollowing.isLoading}
         colorScheme={'green'}
-        variant={following ? 'solid' : 'outline'}
+        variant={data?.following ? 'solid' : 'outline'}
         onClick={handleClick}
         leftIcon={<StarIcon />}
         style={focused ? focusedBorder : null}
     >
-        {following ? 'Following' : 'Follow'}
+        {data?.following ? 'Following' : 'Follow'}
     </Button>
 }
