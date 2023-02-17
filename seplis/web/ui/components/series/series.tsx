@@ -40,7 +40,7 @@ export default function Series({ series }: { series: ISeries }) {
     }, [])
 
     return <FocusContext.Provider value={focusKey}>
-        <Stack direction="column" spacing="1rem" maxWidth="1075px">
+        <Stack direction="column" spacing="1rem" maxWidth="1100px">
             <Stack spacing="1rem" direction="row" >
                 <SeriesPoster series={series} />
                 <Stack spacing="0.5rem" direction="column" maxWidth="800px" ref={ref}>
