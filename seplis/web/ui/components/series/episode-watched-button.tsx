@@ -4,8 +4,7 @@ import { IEpisodeWatched, IEpisodeWatchedDefault, IEventEpisodeWatched } from '@
 import { EVENT_EPISODE_WATCHED, TriggerEpisodeWatched, useEventListener } from '@seplis/events'
 import { useEffect, useState } from 'react'
 import { ErrorMessageFromResponse } from '../error'
-import WatchedButton from '../watched-button'
-
+import { WatchedButton } from '../watched-button'
 
 export default function EpisodeWatchedButton({ seriesId, episodeNumber, data }: { seriesId: number, episodeNumber: number, data?: IEpisodeWatched }) {
     if (!data) data = IEpisodeWatchedDefault(0)

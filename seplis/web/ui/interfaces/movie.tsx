@@ -28,6 +28,13 @@ export interface IMovieWatched {
     position: number
     watched_at: string
 }
+export function IMovieWatchedDefault(EpisodeNumber: number): IMovieWatched {
+    return {
+        times: 0,
+        position: 0,
+        watched_at: null,
+    }
+}
 
 
 export interface IMovieStared {
@@ -40,4 +47,10 @@ export interface IMovieUser {
     movie: IMovie
     stared: boolean
     watched_data: IMovieWatched
+}
+
+
+export interface IEventMovieWatched {
+    movieId: number
+    watched: IMovieWatched
 }

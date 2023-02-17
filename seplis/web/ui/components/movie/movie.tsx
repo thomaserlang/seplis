@@ -11,6 +11,7 @@ import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-naviga
 import { useEffect, useState } from 'react'
 import { focusedBorder } from '@seplis/styles'
 import PlayButton from './play-button'
+import { MovieWatchedButton } from './watched-button'
 
 interface IProps {
     movie: IMovie
@@ -41,6 +42,7 @@ export default function Movie({ movie }: IProps) {
 function Buttons({ movie }: { movie: IMovie }) {
     return <Wrap padding="0.25rem 0">
         <WrapItem><PlayButton movieId={movie.id} /></WrapItem>
+        <WrapItem><MovieWatchedButton movieId={movie.id} /></WrapItem>
         <WrapItem><StaredButton movieId={movie.id} /></WrapItem>
         <WrapItem><DisplaySettings movie={movie} /></WrapItem>
     </Wrap>

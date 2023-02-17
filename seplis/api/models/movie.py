@@ -289,26 +289,25 @@ class Movie_watched(Base):
     @staticmethod
     async def increment(user_id: int | str, movie_id: int, data: schemas.Movie_watched_increment) -> schemas.Movie_watched:
         async with database.session() as session:
-            sql = sa.dialects.mysql.insert(Movie_watched).values(
+            watched = sa.dialects.mysql.insert(Movie_watched).values(
                 movie_id=movie_id,
                 user_id=user_id,
                 watched_at=data.watched_at.astimezone(timezone.utc),
                 times=1
             )
-            sql = sql.on_duplicate_key_update(
-                watched_at=sql.inserted.watched_at,
+            watched = watched.on_duplicate_key_update(
+                watched_at=watched.inserted.watched_at,
                 times=Movie_watched.times + 1,
                 position=0,
             )
-            sql_history = sa.insert(Movie_watched_history).values(
+            watched_history = sa.insert(Movie_watched_history).values(
                 movie_id=movie_id,
                 user_id=user_id,
                 watched_at=data.watched_at.astimezone(timezone.utc),
             )
-            await asyncio.gather(
-                session.execute(sql),
-                session.execute(sql_history),
-            )
+            
+            await session.execute(watched)
+            await session.execute(watched_history)
             w = await session.scalar(sa.select(Movie_watched).where(
                 Movie_watched.movie_id == movie_id,
                 Movie_watched.user_id == user_id,

@@ -1,5 +1,6 @@
-import { IEpisodeWatched, IEventEpisodeWatched } from "@seplis/interfaces/episode";
-import { DependencyList, useEffect } from "react";
+import { DependencyList, useEffect } from 'react'
+import { IEpisodeWatched, IEventEpisodeWatched } from './interfaces/episode'
+import { IEventMovieWatched, IMovieWatched } from './interfaces/movie'
 
 export const EVENT_EPISODE_WATCHED = 'EpisodeWatched'
 export function TriggerEpisodeWatched(seriesId: number, episodeNumber: number, watched: IEpisodeWatched) {
@@ -12,6 +13,19 @@ export function TriggerEpisodeWatched(seriesId: number, episodeNumber: number, w
     })
     window.dispatchEvent(e)
 }
+
+
+export const EVENT_MOVIE_WATCHED = 'MovieWatched'
+export function TriggerMovieWatched(movieId: number, watched: IMovieWatched) {
+    const e = new CustomEvent<IEventMovieWatched>(EVENT_MOVIE_WATCHED, {
+        detail: {
+            movieId: movieId,
+            watched: watched,
+        }
+    })
+    window.dispatchEvent(e)
+}
+
 
 
 export function useEventListener<T = any>(eventName: string, handler: (data: T) => void, deps?: DependencyList) {

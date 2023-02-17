@@ -6,11 +6,11 @@ interface IProps {
     times?: number
     position?: number
     isUpdating?: boolean
-    onIncrement: () => void
-    onDecrement: () => void
+    onIncrement?: () => void
+    onDecrement?: () => void
 }
 
-export default function WatchedButton({ onIncrement, onDecrement, times = 0, position = 0, isUpdating = false }: IProps) {
+export function WatchedButton({ onIncrement, onDecrement, times = 0, position = 0, isUpdating = false }: IProps) {
     const { onOpen, onClose, isOpen } = useDisclosure()
 
     return <Box>
@@ -77,6 +77,6 @@ const BaseButton = forwardRef<any, IButton>((props, ref) => {
         >
             Watched
         </Button>
-        <Button onClick={props.onClick}>{props.times}</Button>
+        <Button onClick={props.onClick} isLoading={props.isUpdating}>{props.times}</Button>
     </ButtonGroup>
 })
