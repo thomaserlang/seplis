@@ -28,7 +28,7 @@ export default function Settings({ series }: { series: ISeries }) {
             setError(null)
             const result = await api.patch<ISeries>(`/2/series/${series.id}`, data)
             toast({
-                title: 'Series settings saved',
+                title: 'Series saved',
                 status: 'success',
                 isClosable: true,
                 position: 'top',
@@ -55,7 +55,7 @@ export default function Settings({ series }: { series: ISeries }) {
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel>The Movie DB</FormLabel>
+                    <FormLabel>TMDb</FormLabel>
                     <Input {...register('externals.themoviedb')} type='text' />
                 </FormControl>
 
@@ -75,7 +75,7 @@ export default function Settings({ series }: { series: ISeries }) {
                 <FormControl>
                     <FormLabel>Info</FormLabel>
                     <Select {...register('importers.info')}>
-                        <option value="themoviedb">The Movie DB</option>
+                        <option value="themoviedb">TMDb</option>
                         <option value="thetvdb">TheTVDB</option>
                         <option value="tvmaze">TVMaze</option>
                     </Select>
@@ -84,7 +84,7 @@ export default function Settings({ series }: { series: ISeries }) {
                 <FormControl>
                     <FormLabel>Episodes</FormLabel>
                     <Select {...register('importers.episodes')}>
-                        <option value="themoviedb">The Movie DB</option>
+                        <option value="themoviedb">TMDb</option>
                         <option value="thetvdb">TheTVDB</option>
                         <option value="tvmaze">TVMaze</option>
                     </Select>

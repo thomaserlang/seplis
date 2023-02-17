@@ -50,7 +50,7 @@ export default function Settings({ movie }: { movie: IMovie }) {
                 </FormControl>
 
                 <FormControl>
-                    <FormLabel>The Movie DB</FormLabel>
+                    <FormLabel>TMDb</FormLabel>
                     <Input {...register('externals.themoviedb')}  type='text' />
                 </FormControl>
 

@@ -88,15 +88,6 @@ export interface ISeriesFollowing {
 }
 
 
-type ISeriesUserSortType =
-    | 'followed_at_asc'
-    | 'followed_at_desc'
-    | 'user_rating_asc'
-    | 'user_rating_desc'
-    | 'watched_at_asc'
-    | 'watched_at_desc'
-
-
 export interface ISeriesUser {
     series: ISeries
     rating: number | null

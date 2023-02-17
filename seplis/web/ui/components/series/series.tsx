@@ -186,7 +186,7 @@ function DisplaySettings({ series }: { series: ISeries }) {
         <Modal onClose={onClose} isOpen={isOpen}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{series.title} - Settings</ModalHeader>
+                <ModalHeader>Settings</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <Box marginBottom="1rem">
