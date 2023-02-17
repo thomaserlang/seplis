@@ -7,16 +7,32 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ErrorMessageFromResponse } from '../error'
 
+
+export function SeriesUpdate({ series }: { series: ISeries }) {
+    const onSave = async (data: IData) => {
+        const result = await api.patch<ISeries>(`/2/series/${series.id}`, data)
+        return result.data
+    }
+
+    return <SettingsForm
+        externals={series.externals}
+        importers={series.importers}
+        onSave={onSave}
+    />
+}
+
+
 interface IData {
     externals: TExternals
     importers: ISeriesImporters
+    onSave: (data: IData) => Promise<ISeries>
 }
 
-export default function Settings({ series }: { series: ISeries }) {
+export function SettingsForm({ externals, importers, onSave }: IData) {
     const { handleSubmit, register, formState: { isSubmitting } } = useForm<IData>({
         defaultValues: {
-            externals: { ...series.externals },
-            importers: { ...series.importers },
+            externals: { ...externals },
+            importers: { ...importers },
         }
     })
     const [error, setError] = useState<JSX.Element>(null)
@@ -26,14 +42,14 @@ export default function Settings({ series }: { series: ISeries }) {
     const onSubmit = handleSubmit(async (data) => {
         try {
             setError(null)
-            const result = await api.patch<ISeries>(`/2/series/${series.id}`, data)
+            const series = await onSave(data)
             toast({
                 title: 'Series saved',
                 status: 'success',
                 isClosable: true,
                 position: 'top',
             })
-            queryClient.setQueryData(['series', series.id], result.data)
+            queryClient.setQueryData(['series', series.id], series)
             api.post(`/2/series/${series.id}/update`)
         } catch (e) {
             setError(ErrorMessageFromResponse(e))

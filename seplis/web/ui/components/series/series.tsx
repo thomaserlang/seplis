@@ -15,7 +15,7 @@ import EpisodeNextToAir from './episode-next-to-air'
 import EpisodeToWatch from './episode-to-watch'
 import Episodes from './episodes'
 import FollowingButton from './following-button'
-import Settings from './settings'
+import {SeriesUpdate} from './settings'
 import SeriesSkeleton from './skeleton'
 
 
@@ -190,7 +190,7 @@ function DisplaySettings({ series }: { series: ISeries }) {
                 <ModalCloseButton />
                 <ModalBody>
                     <Box marginBottom="1rem">
-                        <Settings series={series} />
+                        <SeriesUpdate series={series} />
                     </Box>
                 </ModalBody>
             </ModalContent>
