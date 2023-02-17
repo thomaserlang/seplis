@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
-import { Box, Heading, HStack, Image, Skeleton } from '@chakra-ui/react'
+import { Box, Flex, Heading, HStack, Image, Skeleton } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { IPageCursorResult } from '@seplis/interfaces/page'
 import { ISliderItem } from '@seplis/interfaces/slider'
@@ -114,13 +114,15 @@ export function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: 
             onItemSelected(item.data)
         },
     })
-    return <Box
+    return <Flex
         className={`slider-item ${focused ? 'focused' : ''}`}
         key={item.key} ref={ref}
         data-view-index={viewItemIndex}
         borderRadius="md"
         cursor="pointer"
         overflow="hidden"
+        grow="1"
+        direction="column"
         onClick={() => {
             onItemSelected(item.data)
         }}
@@ -130,7 +132,7 @@ export function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: 
             <Poster url={`${item.img}@SX320.webp`} title={item.title} />
         </Box>
         {item.bottomText !== undefined && <Box backgroundColor="black" textAlign="center">{item.bottomText}</Box>}
-    </Box>
+    </Flex>
 }
 
 
