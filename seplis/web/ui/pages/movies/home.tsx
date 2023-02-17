@@ -1,7 +1,7 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Stack, useDisclosure } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
-import Movie from '@seplis/components/movie/movie'
+import { MovieLoad } from '@seplis/components/movie/movie'
 import Slider from '@seplis/components/slider'
 import { IMovie, IMovieUser } from '@seplis/interfaces/movie'
 import { setTitle } from '@seplis/utils'
@@ -76,7 +76,7 @@ export default function MoviesHome() {
             <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
                 <ModalCloseButton />
                 <ModalBody>
-                    <Movie movie={movie} />
+                    {isOpen && <MovieLoad movieId={movie.id} />}
                 </ModalBody>
             </ModalContent>
         </Modal>

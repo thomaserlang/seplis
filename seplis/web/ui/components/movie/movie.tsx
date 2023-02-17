@@ -12,12 +12,24 @@ import { useEffect, useState } from 'react'
 import { focusedBorder } from '@seplis/styles'
 import PlayButton from './play-button'
 import { MovieWatchedButton } from './watched-button'
+import api from '@seplis/api'
+import { useQuery } from '@tanstack/react-query'
+import { MovieSkeleton } from './skeleton'
 
-interface IProps {
-    movie: IMovie
+
+export function MovieLoad({ movieId, onLoaded }: { movieId: number, onLoaded?: (movie: IMovie) => void }) {
+    const { isInitialLoading, data } = useQuery<IMovie>(['movie', movieId], async () => {
+        const data = await api.get<IMovie>(`/2/movies/${movieId}`)
+        if (onLoaded) onLoaded(data.data)
+        return data.data
+    })
+    return <>
+        {isInitialLoading ? <MovieSkeleton /> : <Movie movie={data} />}
+    </>
 }
 
-export default function Movie({ movie }: IProps) {
+
+export default function Movie({ movie }: { movie: IMovie }) {
     const { ref, focusKey, setFocus } = useFocusable()
 
     useEffect(() => {
@@ -29,10 +41,10 @@ export default function Movie({ movie }: IProps) {
             <MoviePoster movie={movie} />
             <Stack direction="column" spacing="0.35rem" maxWidth="800px" ref={ref}>
                 <Title movie={movie} />
-                <BaseInfo movie={movie} />                
+                <BaseInfo movie={movie} />
                 <Genres genres={movie.genres} />
                 <Buttons movie={movie} />
-                <Plot movie={movie} />                
+                <Plot movie={movie} />
                 <ExternalLinks movie={movie} />
             </Stack>
         </Stack>

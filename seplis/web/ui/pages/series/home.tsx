@@ -1,7 +1,7 @@
 import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Stack, useDisclosure } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
-import Series from '@seplis/components/series/series'
+import { SeriesLoad } from '@seplis/components/series/series'
 import Slider from '@seplis/components/slider'
 import { ISeries, ISeriesAndEpisode, ISeriesUser } from '@seplis/interfaces/series'
 import { dateCountdown, episodeNumber, setTitle } from '@seplis/utils'
@@ -108,7 +108,7 @@ export default function SeriesHome() {
             <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
                 <ModalCloseButton />
                 <ModalBody>
-                    <Series series={series} />
+                    {isOpen && <SeriesLoad seriesId={series.id} />}
                 </ModalBody>
             </ModalContent>
         </Modal>

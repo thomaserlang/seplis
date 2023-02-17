@@ -1,7 +1,7 @@
 import { Box, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, useDisclosure } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import ImageList from '@seplis/components/list'
-import Series from '@seplis/components/series/series'
+import { SeriesLoad } from '@seplis/components/series/series'
 import { ISeries, ISeriesUser } from '@seplis/interfaces/series'
 import { useEffect, useState } from 'react'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
@@ -58,7 +58,7 @@ export default function SeriesUserList({ title, url }: { title: string, url: str
             <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
                 <ModalCloseButton />
                 <ModalBody>
-                    <Series series={series} />
+                    {isOpen && <SeriesLoad seriesId={series.id} />}
                 </ModalBody>
             </ModalContent>
         </Modal>

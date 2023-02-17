@@ -1,10 +1,12 @@
 import { StarIcon } from '@chakra-ui/icons'
 import { Box, Button, Flex, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Stack, Tag, Text, useDisclosure, Wrap, WrapItem } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
+import api from '@seplis/api'
 import { IGenre } from '@seplis/interfaces/genre'
 import { ISeries, ISeriesSeason } from '@seplis/interfaces/series'
 import { focusedBorder } from '@seplis/styles'
 import { isAuthed, langCodeToLang, secondsToHourMin } from '@seplis/utils'
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { Poster } from '../poster'
@@ -14,6 +16,20 @@ import EpisodeToWatch from './episode-to-watch'
 import Episodes from './episodes'
 import FollowingButton from './following-button'
 import Settings from './settings'
+import SeriesSkeleton from './skeleton'
+
+
+export function SeriesLoad({ seriesId, onLoaded }: {seriesId: number, onLoaded?: (movie: ISeries) => void}) {
+    const { isInitialLoading, data } = useQuery<ISeries>(['series', seriesId], async () => {
+        const data = await api.get<ISeries>(`/2/series/${seriesId}`)
+        if (onLoaded) onLoaded(data.data)
+        return data.data
+    })
+
+    return <>
+        {isInitialLoading ? <SeriesSkeleton /> : <Series series={data} />}
+    </>
+}
 
 
 export default function Series({ series }: { series: ISeries }) {

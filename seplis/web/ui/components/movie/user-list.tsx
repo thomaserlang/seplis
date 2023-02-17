@@ -4,7 +4,7 @@ import ImageList from '@seplis/components/list'
 import { IMovie, IMovieUser } from '@seplis/interfaces/movie'
 import { useEffect, useState } from 'react'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
-import Movie from './movie'
+import { MovieLoad } from './movie'
 import { MovieUserFilter } from './user-filter'
 
 
@@ -58,7 +58,7 @@ export default function MovieUserList({ title, url }: { title: string, url: stri
             <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
                 <ModalCloseButton />
                 <ModalBody>
-                    <Movie movie={movie} />
+                    {isOpen && <MovieLoad movieId={movie.id} />}
                 </ModalBody>
             </ModalContent>
         </Modal>
