@@ -12,8 +12,9 @@ async def get_movies_watched(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
+    filter_query: schemas.Movie_user_query_filter = Depends(),
 ):
-    query = models.movie_user_query(user_id=user.id, sort=sort).where(
+    query = models.movie_user_query(user_id=user.id, sort=sort, filter_query=filter_query).where(
         models.Movie_watched.user_id == user.id,
         models.Movie.id == models.Movie_watched.movie_id,
     )

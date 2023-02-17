@@ -58,6 +58,8 @@ import SeriesHome from './pages/series/home'
 import MoviesHome from './pages/movies/home'
 import SeriesFollowing from './pages/series/following'
 import SeriesWatched from './pages/series/watched'
+import MoviesStared from './pages/movies/stared'
+import MoviesWatched from './pages/movies/watched'
 
 spatialInit({})
 
@@ -71,6 +73,8 @@ createRoot(document.getElementById("root")).render(
                             <Route path="/" element={<SeriesHome />} />
                             <Route path="/login" element={<Login />} />
                             <Route path="/movies/home" element={<MoviesHome />} />
+                            <Route path="/movies/stared" element={<MoviesStared />} />
+                            <Route path="/movies/watched" element={<MoviesWatched />} />
                             <Route path="/movies/:movieId" element={<Movie />} />
                             <Route path="/series/home" element={<SeriesHome />} />
                             <Route path="/series/following" element={<SeriesFollowing />} />

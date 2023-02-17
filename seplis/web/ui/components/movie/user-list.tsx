@@ -1,17 +1,17 @@
 import { Box, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, useDisclosure } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import ImageList from '@seplis/components/list'
-import Series from '@seplis/components/series/series'
-import { ISeries, ISeriesUser } from '@seplis/interfaces/series'
+import { IMovie, IMovieUser } from '@seplis/interfaces/movie'
 import { useEffect, useState } from 'react'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
-import { SeriesUserFilter } from '../../components/series/user-filter'
+import Movie from './movie'
+import { MovieUserFilter } from './user-filter'
 
 
-export default function SeriesUserList({ title, url }: { title: string, url: string }) {
+export default function MovieUserList({ title, url }: { title: string, url: string }) {
     const { ref, focusKey, focusSelf } = useFocusable()
     const { isOpen, onOpen, onClose } = useDisclosure()
-    const [series, setSeries] = useState<ISeries>(null)
+    const [movie, setMovie] = useState<IMovie>(null)
 
     const [query, setQuery] = useQueryParams({
         sort: withDefault(StringParam, ""),
@@ -25,7 +25,7 @@ export default function SeriesUserList({ title, url }: { title: string, url: str
     return <>
         <FocusContext.Provider value={focusKey}>
             <Box ref={ref}>
-                <ImageList<ISeriesUser>
+                <ImageList<IMovieUser>
                     title={title}
                     url={url}
                     urlParams={{
@@ -34,17 +34,17 @@ export default function SeriesUserList({ title, url }: { title: string, url: str
                     }}
                     parseItem={(item) => (
                         {
-                            key: `series-${item.series.id}`,
-                            title: item.series.title,
-                            img: item.series.poster_image?.url,
+                            key: `movie-${item.movie.id}`,
+                            title: item.movie.title,
+                            img: item.movie.poster_image?.url,
                         }
                     )}
-                    onItemSelected={(item: ISeriesUser) => {
-                        setSeries(item.series)
+                    onItemSelected={(item: IMovieUser) => {
+                        setMovie(item.movie)
                         onOpen()
                     }}
                     renderFilter={(options) => {
-                        return <SeriesUserFilter defaultValue={query} onSubmit={(data) => {
+                        return <MovieUserFilter defaultValue={query} onSubmit={(data) => {
                             setQuery(data)
                             options.onClose()
                         }} />
@@ -58,7 +58,7 @@ export default function SeriesUserList({ title, url }: { title: string, url: str
             <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
                 <ModalCloseButton />
                 <ModalBody>
-                    <Series series={series} />
+                    <Movie movie={movie} />
                 </ModalBody>
             </ModalContent>
         </Modal>

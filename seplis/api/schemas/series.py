@@ -116,6 +116,8 @@ SERIES_USER_SORT_TYPE = Literal[
     'watched_at_desc',
     'rating_asc',
     'rating_desc',
+    'popularity_asc',
+    'popularity_desc',
 ]
 
 

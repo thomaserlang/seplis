@@ -184,7 +184,7 @@ class Movie(Base):
         )
 
 
-def movie_user_query(user_id: int, sort: schemas.MOVIE_USER_SORT_TYPE | None):
+def movie_user_query(user_id: int, sort: schemas.MOVIE_USER_SORT_TYPE | None, filter_query: schemas.Movie_user_query_filter | None):
     query = sa.select(
         Movie,        
         sa.func.IF(Movie_stared.user_id != None, 1, 0).label('stared'),
@@ -203,24 +203,57 @@ def movie_user_query(user_id: int, sort: schemas.MOVIE_USER_SORT_TYPE | None):
         isouter=True,
     )
 
-    if sort == 'stared_desc':
+    if filter_query:
+        if filter_query.genre_id:
+            if len(filter_query.genre_id) == 1:
+                query = query.where(
+                    Movie_genre.genre_id == filter_query.genre_id[0],
+                    Movie.id == Movie_genre.movie_id,
+                )
+            else:                
+                query = query.where(
+                    Movie_genre.genre_id.in_(filter_query.genre_id),
+                    Movie.id == Movie_genre.movie_id,
+                )
+
+    if sort == 'stared_at_desc':
         query = query.order_by(
-            sa.desc(Movie_stared.created_at),
+            sa.desc(sa.func.coalesce(Movie_stared.created_at, -1)),
             sa.desc(Movie.id),
         )
-    elif sort == 'stared_asc':
+    elif sort == 'stared_at_asc':
         query = query.order_by(
-            sa.asc(Movie_stared.created_at),
+            sa.asc(sa.func.coalesce(Movie_stared.created_at, -1)),
             sa.asc(Movie.id),
         )
     elif sort == 'watched_at_desc':
         query = query.order_by(
-            sa.desc(Movie_watched.watched_at),
+            sa.desc(sa.func.coalesce(Movie_watched.watched_at, -1)),
             sa.desc(Movie.id),
         )
     elif sort == 'watched_at_asc':
         query = query.order_by(
-            sa.asc(Movie_watched.watched_at),
+            sa.asc(sa.func.coalesce(Movie_watched.watched_at, -1)),
+            sa.asc(Movie.id),
+        )
+    elif sort == 'rating_desc':
+        query = query.order_by(
+            sa.desc(sa.func.coalesce(Movie.rating, -1)),
+            sa.desc(Movie.id),
+        )
+    elif sort == 'rating_asc':
+        query = query.order_by(
+            sa.asc(sa.func.coalesce(Movie.rating, -1)),
+            sa.asc(Movie.id),
+        )
+    elif sort == 'popularity_desc':
+        query = query.order_by(
+            sa.desc(sa.func.coalesce(Movie.popularity, -1)),
+            sa.desc(Movie.id),
+        )
+    elif sort == 'popularity_asc':
+        query = query.order_by(
+            sa.asc(sa.func.coalesce(Movie.popularity, -1)),
             sa.asc(Movie.id),
         )
 

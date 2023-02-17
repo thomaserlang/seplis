@@ -327,7 +327,6 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None, 
     )
 
     if filter_query:
-        logger.info(filter_query.genre_id)
         if filter_query.genre_id:
             if len(filter_query.genre_id) == 1:
                 query = query.where(
@@ -378,6 +377,16 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None, 
     elif sort == 'rating_asc':
         query = query.order_by(
             sa.func.coalesce(Series.rating, -1),
+            sa.asc(Series.id),
+        )
+    elif sort == 'popularity_desc':
+        query = query.order_by(
+            sa.func.coalesce(Series.popularity, -1),
+            sa.desc(Series.id),
+        )
+    elif sort == 'popularity_asc':
+        query = query.order_by(
+            sa.func.coalesce(Series.popularity, -1),
             sa.asc(Series.id),
         )
 

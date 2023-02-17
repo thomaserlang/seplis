@@ -51,8 +51,8 @@ export default function MainMenu() {
             </MenuButton>
             <MenuList>
                 <Link to="/movies/home"><MenuItem>Home</MenuItem></Link>
-                <MenuItem>Stared</MenuItem>
-                <MenuItem>Watched</MenuItem>
+                <Link to="/movies/stared"><MenuItem>Stared</MenuItem></Link>
+                <Link to="/movies/watched"><MenuItem>Watched</MenuItem></Link>
                 <MenuDivider />
                 <MenuItem>New movie</MenuItem>
             </MenuList>

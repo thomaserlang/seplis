@@ -1,14 +1,14 @@
 import { Box, Button, Heading, Stack } from '@chakra-ui/react'
 import { SelectGenre } from '@seplis/components/select-genre'
 import { useForm } from 'react-hook-form'
-import { SelectSeriesUserSort } from './user-sort-select'
+import { SelectMovieUserSort } from './user-sort-select'
 
 interface IUserFilterData {
     genre_id: number
     sort: string
 }
 
-export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUserFilterData, onSubmit?: (data: IUserFilterData) => void }) {
+export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUserFilterData, onSubmit?: (data: IUserFilterData) => void }) {
     const { register, handleSubmit } = useForm<IUserFilterData>({
         defaultValues: defaultValue,
     })
@@ -22,7 +22,7 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
 
             <Box marginBottom="0.25rem">
                 <Heading fontSize="16px" fontWeight="600" marginBottom="0.25rem">Sort</Heading>
-                <SelectSeriesUserSort {...register('sort')} />
+                <SelectMovieUserSort {...register('sort')} />
             </Box>
 
             <Button type="submit" colorScheme="blue">Apply filter</Button>
