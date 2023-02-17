@@ -2,7 +2,7 @@ import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 import { IEpisode } from '@seplis/interfaces/episode'
 import { EpisodeAirdate, episodeNumber } from '@seplis/utils'
 import { PlayButton } from './episode-play-button'
-import WatchedButton from './episode-watched-button'
+import EpisodeWatchedButton from './episode-watched-button'
 
 export default function EpisodeCard({ seriesId, episode }: { seriesId: number, episode: IEpisode }) {
     return <Flex 
@@ -15,7 +15,7 @@ export default function EpisodeCard({ seriesId, episode }: { seriesId: number, e
             <Text noOfLines={1} lineHeight="1.3">{episode.title}</Text>        
             <Text noOfLines={1} lineHeight="1.3">{episodeNumber(episode)} · {EpisodeAirdate(episode)}</Text>
             <Stack direction="row">
-                <WatchedButton seriesId={seriesId} episodeNumber={episode.number} data={episode.user_watched} />
+                <EpisodeWatchedButton seriesId={seriesId} episodeNumber={episode.number} data={episode.user_watched} />
                 <Box marginLeft="auto"><PlayButton seriesId={seriesId} episodeNumber={episode.number} canPlay={episode.user_can_watch?.on_play_server} /></Box>
             </Stack>
         </Stack>

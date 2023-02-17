@@ -7,7 +7,7 @@ import { forwardRef, useEffect, useState } from 'react'
 import { ErrorMessageFromResponse } from '../error'
 
 
-export default function WatchedButton({ seriesId, episodeNumber, data }: { seriesId: number, episodeNumber: number, data?: IEpisodeWatched }) {
+export default function EpisodeWatchedButton({ seriesId, episodeNumber, data }: { seriesId: number, episodeNumber: number, data?: IEpisodeWatched }) {
     if (!data) data = IEpisodeWatchedDefault(0)
     const toast = useToast()
     const [watched, setWatched] = useState<IEpisodeWatched>({ ...data })
