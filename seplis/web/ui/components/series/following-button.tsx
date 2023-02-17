@@ -18,11 +18,10 @@ export default function FollowingButton({ seriesId }: { seriesId: number }) {
 
     const toggleFollowing = useMutation(async (following: boolean) => {
         await queryClient.cancelQueries(['series', 'following-button', seriesId])
-        let data: ISeriesFollowing
         if (following) {
-            data = await api.delete(`/2/series/${seriesId}/following`)
+            await api.delete(`/2/series/${seriesId}/following`)
         } else {
-            data = await api.put(`/2/series/${seriesId}/following`)            
+            await api.put(`/2/series/${seriesId}/following`)            
         }
         queryClient.setQueryData(['series', 'following-button', seriesId], { following: !following})
     }, {
