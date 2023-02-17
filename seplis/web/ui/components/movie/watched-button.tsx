@@ -16,7 +16,6 @@ export function MovieWatchedButtonData({ movieId, data }: { movieId: number, dat
     const [isUpdating, setUpdating] = useState(false)
 
     useEventListener<IEventMovieWatched>(EVENT_MOVIE_WATCHED, ((data) => {
-        console.log(data)
         if ((data.movieId == movieId))
             setWatched({ ...data.watched })
     }), [])
