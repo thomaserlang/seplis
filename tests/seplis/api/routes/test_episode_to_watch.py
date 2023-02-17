@@ -77,6 +77,16 @@ async def test_episode_to_watch(client: AsyncClient):
     ntw = schemas.Episode.parse_obj(r.json())
     assert ntw.number == 1
 
+    
+    r = await client.post(f'/2/series/{series.id}/episodes/watched-range', json={
+        'from_episode_number': 1,
+        'to_episode_number': 3,
+    })
+    assert r.status_code == 204
+    
+    r = await client.get(next_to_watch_url)
+    assert r.status_code == 204
+
 
 if __name__ == '__main__':
     run_file(__file__)

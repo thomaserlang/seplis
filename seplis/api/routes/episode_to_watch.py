@@ -75,7 +75,7 @@ async def get_episode_to_watch(
     e = e.first()
     
     if not e:
-        return
+        return Response(status_code=204)
 
     episode = schemas.Episode.from_orm(e.Episode)
     episode.user_watched = schemas.Episode_watched.from_orm(e.Episode_watched) if e.Episode_watched else \
