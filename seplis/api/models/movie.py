@@ -3,6 +3,7 @@ import sqlalchemy as sa
 from fastapi import HTTPException
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
+from seplis import utils
 from seplis.utils.sqlalchemy import UtcDateTime
 from .genre import Genre
 from .base import Base
@@ -105,7 +106,7 @@ class Movie(Base):
                     raise exceptions.Movie_external_duplicated(
                         external_title=key,
                         external_value=externals[key],
-                        movie=schemas.Movie.from_orm(dup_movie)
+                        movie=utils.json_loads(utils.json_dumps(schemas.Movie.from_orm(dup_movie)))
                     )
                     
             if (key not in current_externals):
