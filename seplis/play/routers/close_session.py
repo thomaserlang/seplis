@@ -1,11 +1,10 @@
 from fastapi import APIRouter, HTTPException
-from . import transcoders
+from ..transcoders.video import sessions, close_session
 
 router = APIRouter()
 
 @router.get('/close-session/{session}', status_code=204)
 async def get_close_session(session: str):    
-    if session not in transcoders.video.sessions:
+    if session not in sessions:
         raise HTTPException(404, 'Unknown session')
-
-    transcoders.video.close_session(session)
+    close_session(session)

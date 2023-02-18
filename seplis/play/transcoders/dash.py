@@ -1,5 +1,4 @@
 import asyncio, os
-from seplis import config
 from . import video
 
 class Dash_transcoder(video.Transcoder):
@@ -21,7 +20,7 @@ class Dash_transcoder(video.Transcoder):
     def media_name(self) -> str:
         return 'media.mpd'
 
-    async def wait_for_media(self) -> bool:
+    async def wait_for_media(self):
         while True:
             await asyncio.sleep(0.5)
             if os.path.exists(self.media_path):

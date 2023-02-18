@@ -1,6 +1,5 @@
 import asyncio, os
 from aiofile import async_open
-from seplis import config
 from . import video
 
 class Hls_transcoder(video.Transcoder):
@@ -23,11 +22,10 @@ class Hls_transcoder(video.Transcoder):
     def media_name(self) -> str:
         return 'media.m3u8'
 
-    async def wait_for_media(self) -> bool:
+    async def wait_for_media(self):
         files = 0
 
         while True:
-            await asyncio.sleep(0.5)
             if os.path.exists(self.media_path):
                 async with async_open(self.media_path, "r") as afp:
                     async for line in afp:
@@ -35,3 +33,4 @@ class Hls_transcoder(video.Transcoder):
                             files += 1   
             if files >= 1:
                 return True
+            await asyncio.sleep(0.5)
