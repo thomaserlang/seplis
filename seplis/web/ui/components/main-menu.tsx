@@ -1,5 +1,5 @@
-import { ChevronDownIcon } from '@chakra-ui/icons'
-import { Avatar, Box, Button, Flex, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
+import { ChevronDownIcon, HamburgerIcon } from '@chakra-ui/icons'
+import { Avatar, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
 import { Link, useNavigate, } from 'react-router-dom'
 import { MovieNew } from './movie/settings'
 import { SearchButtonDialog } from './search'
@@ -24,10 +24,73 @@ export default function MainMenu() {
             </Flex>
         </Link>
 
-        <Button marginRight="0.75rem">Watch</Button>
+
+        <Flex display={['none', 'flex']}>
+            <MenuItems />
+        </Flex>
+
+        <Box display={['block', 'none']} marginRight="0.75rem">
+            <MobileMenu />
+        </Box>
+
+
+        <Box marginRight="0.75rem">
+            <SearchButtonDialog />
+        </Box>
+
+        <Box
+            style={{ marginLeft: 'auto' }}
+        >
+            <Menu>
+                <MenuButton>
+
+                    <Avatar size="md" name='USER' />
+                </MenuButton>
+                <MenuList>
+                    <Link to="/user/change-password"><MenuItem>Change password</MenuItem></Link>
+                    <Link to="/user/logout"><MenuItem>Logout</MenuItem></Link>
+                </MenuList>
+            </Menu>
+        </Box>
+
+    </Flex>
+}
+
+function MobileMenu() {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    return <>
+        <IconButton
+            aria-label="Menu"
+            icon={<HamburgerIcon />}
+            onClick={onOpen}
+        />
+        <Drawer
+            isOpen={isOpen}
+            placement='right'
+            onClose={onClose}
+        >
+            <DrawerOverlay />
+            <DrawerContent>
+                <DrawerCloseButton />
+                <DrawerHeader>SEPLIS</DrawerHeader>
+                <DrawerBody>
+                    {isOpen &&
+                        <Flex direction="column" gap="1rem" justifyContent="center">
+                            <MenuItems />
+                        </Flex>}
+                </DrawerBody>
+            </DrawerContent>
+        </Drawer>
+    </>
+}
+
+
+function MenuItems() {
+    return <>
+        <Button marginRight={["0", "0.75rem"]}>Watch</Button>
 
         <Menu>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} marginRight="0.75rem">
+            <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>
                 Series
             </MenuButton>
             <MenuList>
@@ -42,7 +105,7 @@ export default function MainMenu() {
 
 
         <Menu>
-            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} marginRight="0.75rem">
+            <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>
                 Movies
             </MenuButton>
             <MenuList>
@@ -53,18 +116,7 @@ export default function MainMenu() {
                 <MovieNewMenuItem />
             </MenuList>
         </Menu>
-
-        <Box marginRight="0.75rem">
-            <SearchButtonDialog />
-        </Box>
-
-        <Box
-            style={{ marginLeft: 'auto' }}
-        >
-            <Avatar size="md" name='USER' />
-        </Box>
-
-    </Flex>
+    </>
 }
 
 
