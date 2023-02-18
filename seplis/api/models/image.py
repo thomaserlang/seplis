@@ -39,7 +39,7 @@ class Image(Base):
             if r.status_code != 200:
                 logger.error(f'File download of image failed: {r.content}')
                 raise exceptions.API_exception(500, 0, 'Unable to store the image')
-            image_data.file = UploadFile(urllib.parse.urlparse(image_data.source_url).path, io.BytesIO(r.content))
+            image_data.file = UploadFile(io.BytesIO(r.content), filename=urllib.parse.urlparse(image_data.source_url).path)
 
         async def upload_bytes():
             while content := await image_data.file.read(128*1024):
