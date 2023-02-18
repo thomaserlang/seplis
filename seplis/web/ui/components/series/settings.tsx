@@ -1,4 +1,4 @@
-import { Alert, AlertIcon, AlertTitle, Button, Flex, FormControl, FormLabel, Heading, Input, Select, useToast } from '@chakra-ui/react'
+import { Alert, Button, Flex, FormControl, FormLabel, Heading, Input, Select, useToast } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { ISeries, ISeriesImporters } from '@seplis/interfaces/series'
 import { TExternals } from '@seplis/interfaces/types'
@@ -8,9 +8,26 @@ import { useForm } from 'react-hook-form'
 import { ErrorMessageFromResponse } from '../error'
 
 
+export function SeriesNew({onDone}: {onDone?: (seriesId: number) => void}) {
+    const onSave = async (data: IData) => {
+        const result = await api.post<ISeries>('/2/series', data)
+        if (onDone)
+            onDone(result.data.id)
+        return result.data
+    }
+
+    return <SettingsForm
+        externals={{}}
+        importers={{info: '', episodes: ''}}
+        onSave={onSave}
+    />
+}
+
+
 export function SeriesUpdate({ series }: { series: ISeries }) {
     const onSave = async (data: IData) => {
         const result = await api.patch<ISeries>(`/2/series/${series.id}`, data)
+        api.post(`/2/series/${series.id}/update`)
         return result.data
     }
 
@@ -50,7 +67,6 @@ export function SettingsForm({ externals, importers, onSave }: IData) {
                 position: 'top',
             })
             queryClient.setQueryData(['series', series.id], series)
-            api.post(`/2/series/${series.id}/update`)
         } catch (e) {
             setError(ErrorMessageFromResponse(e))
         }
@@ -59,15 +75,14 @@ export function SettingsForm({ externals, importers, onSave }: IData) {
     return <form onSubmit={onSubmit}>
         <Flex wrap="wrap" gap="1rem">
             {error && <Alert status="error" rounded="md">
-                <AlertIcon />
-                <AlertTitle>{error}</AlertTitle>
+                {error}
             </Alert>}
 
             <Flex direction="column" gap="0.5rem" basis="400px">
                 <Heading fontSize="1.25rem" fontWeight="600">Externals</Heading>
                 <FormControl>
                     <FormLabel>IMDb</FormLabel>
-                    <Input {...register('externals.imdb')} type='text' />
+                    <Input {...register('externals.imdb', {required: true})} type='text' />
                 </FormControl>
 
                 <FormControl>

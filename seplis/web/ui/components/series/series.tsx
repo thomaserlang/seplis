@@ -15,20 +15,24 @@ import EpisodeNextToAir from './episode-next-to-air'
 import EpisodeToWatch from './episode-to-watch'
 import Episodes from './episodes'
 import FollowingButton from './following-button'
-import {SeriesUpdate} from './settings'
+import { SeriesUpdate } from './settings'
 import SeriesSkeleton from './skeleton'
 
 
-export function SeriesLoad({ seriesId, onLoaded }: {seriesId: number, onLoaded?: (movie: ISeries) => void}) {
+export function SeriesLoad({ seriesId, onLoaded }: { seriesId: number, onLoaded?: (movie: ISeries) => void }) {
     const { isInitialLoading, data } = useQuery<ISeries>(['series', seriesId], async () => {
         const data = await api.get<ISeries>(`/2/series/${seriesId}`)
         if (onLoaded) onLoaded(data.data)
         return data.data
     })
 
-    return <>
-        {isInitialLoading ? <SeriesSkeleton /> : <Series series={data} />}
-    </>
+    if (isInitialLoading)
+        return <SeriesSkeleton />
+
+    if (!data.title)
+        return <SeriesWaitingForData series={data} />
+
+    return <Series series={data} />
 }
 
 
@@ -63,6 +67,15 @@ export default function Series({ series }: { series: ISeries }) {
 }
 
 
+function SeriesWaitingForData({ series }: { series: ISeries }) {
+    return <Flex direction="column" align="center" gap="1rem">
+        <Heading>Series hasn't been updated, waiting for data</Heading>
+        <Heading>Refresh to update</Heading>
+        <DisplaySettings series={series} />
+    </Flex>
+}
+
+
 function SeriesPoster({ series: series }: { series: ISeries }) {
     return <div className="poster-container-sizing">
         <div className="poster-container" style={{ 'flexShrink': '0' }}>
@@ -94,7 +107,7 @@ function Plot({ series }: { series: ISeries }) {
 
 
 function BaseInfo({ series }: { series: ISeries }) {
-    return <Wrap spacingX="0.75rem" lineHeight="1.3">        
+    return <Wrap spacingX="0.75rem" lineHeight="1.3">
         {series.premiered && <WrapItem><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></WrapItem>}
         {series.language && <WrapItem>{langCodeToLang(series.language)}</WrapItem>}
         {series.runtime && <WrapItem>{secondsToHourMin(series.runtime)}</WrapItem>}

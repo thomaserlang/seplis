@@ -18,11 +18,13 @@ export function ErrorMessageFromResponse(errorObj: any): JSX.Element {
                     <ul>
                         {data.detail.map((error: any, index: any) => (
                         <li key={index}>
-                            <strong>{error['loc'].join('.')}:</strong> {error['msg']}
+                            {error['loc'].join('.')}: {error['msg']}
                         </li>
                         ))}
                     </ul>)}
             </>
+        else if (data?.detail)
+            return data.detail
         return <>{e.message}</>
     }
     return <>{errorObj.message}</>

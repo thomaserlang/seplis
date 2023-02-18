@@ -6,7 +6,7 @@ import { langCodeToLang, secondsToHourMin } from '../../utils'
 import StaredButton from './stared-button'
 import { IGenre } from '@seplis/interfaces/genre'
 import { FaCog } from 'react-icons/fa'
-import Settings from './settings'
+import { MovieUpdate } from './settings'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { useEffect, useState } from 'react'
 import { focusedBorder } from '@seplis/styles'
@@ -23,9 +23,14 @@ export function MovieLoad({ movieId, onLoaded }: { movieId: number, onLoaded?: (
         if (onLoaded) onLoaded(data.data)
         return data.data
     })
-    return <>
-        {isInitialLoading ? <MovieSkeleton /> : <Movie movie={data} />}
-    </>
+
+    if (isInitialLoading)
+        return <MovieSkeleton />
+
+    if (!data?.title)
+        return <SeriesWaitingForData movie={data} />
+
+    return <Movie movie={data} />
 }
 
 
@@ -51,6 +56,16 @@ export default function Movie({ movie }: { movie: IMovie }) {
     </FocusContext.Provider>
 }
 
+
+function SeriesWaitingForData({ movie }: { movie: IMovie }) {
+    return <Flex direction="column" align="center" gap="1rem">
+        <Heading>Movie hasn't been updated, waiting for data</Heading>
+        <Heading>Refresh to update</Heading>
+        <DisplaySettings movie={movie} />
+    </Flex>
+}
+
+
 function Buttons({ movie }: { movie: IMovie }) {
     return <Wrap padding="0.25rem 0">
         <WrapItem><PlayButton movieId={movie.id} /></WrapItem>
@@ -59,6 +74,7 @@ function Buttons({ movie }: { movie: IMovie }) {
         <WrapItem><DisplaySettings movie={movie} /></WrapItem>
     </Wrap>
 }
+
 
 function Genres({ genres }: { genres: IGenre[] }) {
     if (!genres || (genres.length < 0))
@@ -71,6 +87,7 @@ function Genres({ genres }: { genres: IGenre[] }) {
     </Wrap>
 }
 
+
 function Genre({ genre }: { genre: IGenre }) {
     const { ref, focused } = useFocusable()
     return <Tag
@@ -81,6 +98,7 @@ function Genre({ genre }: { genre: IGenre }) {
     </Tag>
 }
 
+
 function BaseInfo({ movie }: { movie: IMovie }) {
     return <Wrap spacingX="0.75rem" lineHeight="1.3">
         {movie.release_date && <WrapItem><strong title={movie.release_date}>{movie.release_date.substring(0, 4)}</strong></WrapItem>}
@@ -89,6 +107,7 @@ function BaseInfo({ movie }: { movie: IMovie }) {
         {movie.rating && <WrapItem title="IMDb rating"><Flex alignItems="center">{movie.rating} <StarIcon marginLeft="0.2rem" boxSize={3} /></Flex></WrapItem>}
     </Wrap>
 }
+
 
 function Plot({ movie }: { movie: IMovie }) {
     const [expand, setExpand] = useState(false)
@@ -101,6 +120,7 @@ function Plot({ movie }: { movie: IMovie }) {
     </Text>
 }
 
+
 function Title({ movie }: { movie: IMovie }) {
     return <Box marginTop="-7px" lineHeight="1.3">
         <Heading as="h1">{movie.title || '<Missing title>'}</Heading>
@@ -111,6 +131,7 @@ function Title({ movie }: { movie: IMovie }) {
     </Box>
 }
 
+
 function MoviePoster({ movie }: { movie: IMovie }) {
     return <div className="poster-container-sizing">
         <div className="poster-container" style={{ 'flexShrink': '0' }}>
@@ -118,6 +139,7 @@ function MoviePoster({ movie }: { movie: IMovie }) {
         </div>
     </div>
 }
+
 
 function ExternalLinks({ movie }: { movie: IMovie }) {
     if (!movie.externals.imdb && !movie.externals.themoviedb)
@@ -127,6 +149,7 @@ function ExternalLinks({ movie }: { movie: IMovie }) {
         {movie.externals.themoviedb && <WrapItem><Link href={`https://www.themoviedb.org/movie/${movie.externals.themoviedb}`} isExternal>TheMovieDB</Link></WrapItem>}
     </Wrap>
 }
+
 
 function DisplaySettings({ movie }: { movie: IMovie }) {
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -147,11 +170,11 @@ function DisplaySettings({ movie }: { movie: IMovie }) {
         <Modal onClose={onClose} isOpen={isOpen}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>{movie.title} - Settings</ModalHeader>
+                <ModalHeader>Settings</ModalHeader>
                 <ModalCloseButton />
                 <ModalBody>
                     <Box marginBottom="1rem">
-                        <Settings movie={movie} />
+                        <MovieUpdate movie={movie} />
                     </Box>
                 </ModalBody>
             </ModalContent>
