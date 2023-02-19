@@ -77,16 +77,8 @@ export function secondsToTime(secs: number) {
     const hours = Math.floor(secs / 3600);
     const minutes = Math.floor((secs - (hours * 3600)) / 60);
     const seconds = Math.floor(secs - (hours * 3600) - (minutes * 60));
-    let hoursStr = ''
-    let minutesStr = ''
-    let secondsStr = ''
-    if (hours < 10) 
-        hoursStr = "0"+hours;
-    if (minutes < 10) 
-        minutesStr = "0"+minutes;
-    if (seconds < 10)
-        secondsStr = "0"+seconds;
-    return (hours>0?hoursStr+':':'')+minutesStr+':'+secondsStr;
+    
+    return (hours>0?pad(hours, 2)+':':'')+pad(minutes, 2)+':'+pad(seconds, 2);
 }
 
 

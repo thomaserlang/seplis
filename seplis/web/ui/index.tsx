@@ -43,6 +43,14 @@ const theme = extendTheme({
                 },
             },
         },
+        Button: {
+            variants: {
+                playButton: {
+                    backgroundColor: '#000',
+                    fontSize: '42px',
+                }
+            }
+        }
     },
     layerStyles: {
         episodeCard: {
@@ -60,6 +68,7 @@ import SeriesFollowing from './pages/series/following'
 import SeriesWatched from './pages/series/watched'
 import MoviesStared from './pages/movies/stared'
 import MoviesWatched from './pages/movies/watched'
+import PlayEpisode from './pages/series/play-episode'
 
 spatialInit({})
 
@@ -80,6 +89,7 @@ createRoot(document.getElementById("root")).render(
                             <Route path="/series/following" element={<SeriesFollowing />} />
                             <Route path="/series/watched" element={<SeriesWatched />} />
                             <Route path="/series/:seriesId" element={<Series />} />
+                            <Route path="/series/:seriesId/episodes/:episodeNumber/play" element={<PlayEpisode />} />
                         </Routes>
                     </QueryClientProvider>
                 </QueryParamProvider>

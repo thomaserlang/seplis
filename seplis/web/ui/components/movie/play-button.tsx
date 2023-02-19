@@ -1,12 +1,12 @@
-import { Button, Icon } from "@chakra-ui/react"
-import { useFocusable } from "@noriginmedia/norigin-spatial-navigation"
-import api from "@seplis/api"
-import { IPlayRequest } from "@seplis/interfaces/play-server-request"
-import { focusedBorder } from "@seplis/styles"
-import { isAuthed } from "@seplis/utils"
-import { useQuery } from "@tanstack/react-query"
-import { FaPlay } from "react-icons/fa"
-import { useNavigate } from "react-router-dom"
+import { Button, Icon } from '@chakra-ui/react'
+import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
+import api from '@seplis/api'
+import { IPlayRequest } from '@seplis/interfaces/play-server'
+import { focusedBorder } from '@seplis/styles'
+import { isAuthed } from '@seplis/utils'
+import { useQuery } from '@tanstack/react-query'
+import { FaPlay } from 'react-icons/fa'
+import { useNavigate } from 'react-router-dom'
 
 
 export default function PlayButton({ movieId }: { movieId: number }) {

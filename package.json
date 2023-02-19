@@ -36,6 +36,7 @@
     "axios": "^1.2.1",
     "dayjs": "^1.11.7",
     "framer-motion": "^7.10.3",
+    "hls.js": "^1.3.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.41.0",
