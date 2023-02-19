@@ -80,7 +80,6 @@ async def get_episode(
     
     episode = schemas.Episode.from_orm(episode)
     if expand:
-        expand = [e.strip() for e in expand.split(',')]
         expand_tasks = []
         if 'user_watched' in expand:
             expand_tasks.append(expand_user_watched(
