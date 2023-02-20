@@ -38,7 +38,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     onPlay,
     onLoadingState,
 }: IProps, ref) => {
-    const [sessionUUID, setSessionUUID] = useState(guid())
+    const [sessionUUID, setSessionUUID] = useState(null)
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
     const baseTime = useRef(startTime)
@@ -53,6 +53,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     }), [videoElement.current])
 
     useEffect(() => {
+        console.log(sessionUUID)
         if (!sessionUUID) {
             setSessionUUID(guid())
             return
