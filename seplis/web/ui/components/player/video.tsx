@@ -53,7 +53,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     }), [videoElement.current])
 
     useEffect(() => {
-        console.log(sessionUUID)
         if (!sessionUUID) {
             setSessionUUID(guid())
             return
@@ -105,8 +104,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             axios.get(`${source.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
                 if (e.response.status == 404) {
                     clearInterval(t)
-                    baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
-                    setSessionUUID(null)                    
+                    baseTime.current = getCurrentTime(videoElement.current, baseTime.current)              
                 }
             })
         }, 4000)
