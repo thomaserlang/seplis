@@ -16,7 +16,8 @@ async def get_metadata(play_id) -> list[dict]:
             models.Movie.movie_id == data['movie_id'],
         )
     async with database.session() as session:
-        return await session.scalars(query)
+        r = await session.scalars(query)
+        return r.all()
 
 def decode_play_id(play_id: str) -> list[dict]:
     data = web.decode_signed_value(
