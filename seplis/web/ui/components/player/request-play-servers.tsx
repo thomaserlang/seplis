@@ -1,5 +1,5 @@
 import api from '@seplis/api'
-import { IPlayRequest, IPlayServerSources, IPlaySource } from '@seplis/interfaces/play-server'
+import { IPlayRequest, IPlayServerRequestSources, IPlaySource } from '@seplis/interfaces/play-server'
 import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 
@@ -7,8 +7,7 @@ import axios from 'axios'
 export function useGetPlayServers(url: string) {
     return useQuery(['play-server', url], async () => {
         const result = await api.get<IPlayRequest[]>(url)
-
-        const sourcePromises: Promise<IPlayServerSources>[] = []
+        const sourcePromises: Promise<IPlayServerRequestSources>[] = []
         for (const request of result.data) {
             sourcePromises.push(getPlayServerSources(request))
         }
@@ -27,7 +26,7 @@ async function getPlayServerSources(playRequest: IPlayRequest) {
             timeout: 2000,
 
         })
-        const data: IPlayServerSources = {
+        const data: IPlayServerRequestSources = {
             request: playRequest,
             sources: result.data,
         }

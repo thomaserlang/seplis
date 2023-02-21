@@ -1,9 +1,10 @@
 import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
-import { IPlayServerSource, IPlayServerSources } from '@seplis/interfaces/play-server'
+import { IPlayServerRequestSource, IPlayServerRequestSources } from '@seplis/interfaces/play-server'
 import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import { pickStartSource } from './pick-source'
 import { useGetPlayServers } from './request-play-servers'
 import Slider from './slider'
 import { IVideoControls, Video } from './video'
@@ -17,45 +18,50 @@ export interface IPlayNextProps {
 export interface IPlayerProps {
     getPlayServersUrl: string,
     startTime: number
+    loading: boolean
     title?: string,
     playNext?: IPlayNextProps
+    onTimeUpdate: (time: number, duration: number) => void
 }
 
-export default function Player({ getPlayServersUrl, title, startTime = -1, playNext }: IPlayerProps) {
+export default function Player({ getPlayServersUrl, title, startTime = 0, playNext, loading, onTimeUpdate }: IPlayerProps) {
     const playServers = useGetPlayServers(getPlayServersUrl)
 
-    if (playServers.isLoading || !title || startTime < 0)
+    if (playServers.isLoading || playServers.isFetching || loading)
         return <Loading />
 
     if (!playServers.data || (playServers.data.length === 0))
         return <h1>No play server has this content available</h1>
 
     return <VideoPlayer
-        playServers={playServers.data}
+        key={getPlayServersUrl}
+        playServerSources={playServers.data}
         title={title}
         startTime={startTime}
         playNext={playNext}
+        onTimeUpdate={onTimeUpdate}
     />
 }
 
+
 interface IVideoPlayerProps {
-    playServers: IPlayServerSources[]
+    playServerSources: IPlayServerRequestSources[]
     title: string
     startTime: number
     playNext: IPlayNextProps
+    onTimeUpdate: (time: number, duration: number) => void
 }
 
-function VideoPlayer({ playServers, title, startTime, playNext }: IVideoPlayerProps) {
-    const [source, setSource] = useState(pickStartSource(playServers))
+function VideoPlayer({ playServerSources, title, startTime, playNext, onTimeUpdate }: IVideoPlayerProps) {
+    const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
+        () => pickStartSource(playServerSources))
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
     const [showBigPlay, setShowBigPlay] = useState(false)
-    const [fullscreen, setFullscreen] = useState(false)
     const [showControls, setShowControls] = useState(1)
-    const [volume, setVolume] = useState(parseFloat(localStorage.getItem('volume')) || 0.5)
     const hideControlsTimer = useRef<NodeJS.Timeout>()
-    const video = useRef<IVideoControls>()
+    const videoControls = useRef<IVideoControls>()
     const wrapper = useRef<HTMLDivElement>()
 
     useEffect(() => {
@@ -69,21 +75,16 @@ function VideoPlayer({ playServers, title, startTime, playNext }: IVideoPlayerPr
         }
     }, [showControls])
 
-
     useEffect(() => {
+        videoControls.current.setVolume(parseFloat(localStorage.getItem('volume')) || 0.5)
+
         const keyDown = (e: globalThis.KeyboardEvent) => {
             if (e.code == 'Space')
-                video.current.togglePlay()
+                videoControls.current.togglePlay()
         }
         document.addEventListener('keydown', keyDown)
-
         return () => document.removeEventListener('keydown', keyDown)
     }, [])
-
-    useEffect(() => {
-        localStorage.setItem('volume', volume.toString())
-        video.current.setVolume(volume)
-    }, [volume])
 
     return <Box
         ref={wrapper}
@@ -104,9 +105,11 @@ function VideoPlayer({ playServers, title, startTime, playNext }: IVideoPlayerPr
         }}
     >
         <Video
-            ref={video}
-            source={source}
+            ref={videoControls}
+            source={requestSource}
+            startTime={startTime}
             onTimeUpdate={(time) => {
+                onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
                 if ((showControls > 0) && (!hideControlsTimer.current))
                     setShowControls(showControls + 1)
@@ -125,7 +128,7 @@ function VideoPlayer({ playServers, title, startTime, playNext }: IVideoPlayerPr
 
 
         {!paused && loading && <Loading />}
-        {showBigPlay && <BigPlay onClick={() => video.current.togglePlay()} />}
+        {showBigPlay && <BigPlay onClick={() => videoControls.current.togglePlay()} />}
 
         {(showControls || paused) && <ControlsTop>
             <PlayButton aria-label="back" icon={<FaTimes />} />
@@ -138,34 +141,31 @@ function VideoPlayer({ playServers, title, startTime, playNext }: IVideoPlayerPr
                 <Box fontSize="14px">{secondsToTime(time)}</Box>
                 <Flex grow="1">
                     <Slider
-                        duration={source.source.duration}
+                        duration={requestSource.source.duration}
                         currentTime={time}
-                        playRequest={source.request}
+                        playRequest={requestSource.request}
                         onTimeChange={(time) => {
-                            video.current.setCurrentTime(time)
+                            videoControls.current.setCurrentTime(time)
                         }}
                     />
                 </Flex>
-                <Box fontSize="14px">{secondsToTime(source.source.duration)}</Box>
+                <Box fontSize="14px">{secondsToTime(requestSource.source.duration)}</Box>
             </Flex>
 
             <Flex gap="0.5rem">
                 {paused ?
-                    <PlayButton aria-label="Play" icon={<FaPlay />} onClick={() => video.current.togglePlay()} /> :
-                    <PlayButton aria-label="Pause" icon={<FaPause />} onClick={() => video.current.togglePlay()} />
+                    <PlayButton aria-label="Play" icon={<FaPlay />} onClick={() => videoControls.current.togglePlay()} /> :
+                    <PlayButton aria-label="Pause" icon={<FaPause />} onClick={() => videoControls.current.togglePlay()} />
                 }
 
-                <PlayButton aria-label="Rewind 15 seconds" icon={<FaUndo />} onClick={() => video.current.setCurrentTime(time - 15)} />
-                <PlayButton aria-label="Forward 15 seconds" icon={<FaRedo />} onClick={() => video.current.setCurrentTime(time + 15)} />
-                <VolumeButton volume={volume} setVolume={setVolume} />
+                <PlayButton aria-label="Rewind 15 seconds" icon={<FaUndo />} onClick={() => videoControls.current.setCurrentTime(time - 15)} />
+                <PlayButton aria-label="Forward 15 seconds" icon={<FaRedo />} onClick={() => videoControls.current.setCurrentTime(time + 15)} />
+                <VolumeButton videoControls={videoControls.current} />
 
                 <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
                     {playNext && <PlayNext {...playNext} />}
                     <PlayButton aria-label="Settings" icon={<FaCog />} />
-                    {fullscreen ?
-                        <PlayButton aria-label="Open fullscreen" icon={<FaExpand />} onClick={() => fullscreenToggle(wrapper.current, setFullscreen)} /> :
-                        <PlayButton aria-label="Exit fullscreen" icon={<FaArrowsAlt />} onClick={() => fullscreenToggle(wrapper.current, setFullscreen)} />
-                    }
+                    <FullscreenButton wrapper={wrapper.current} />
                 </Flex>
             </Flex>
         </ControlsBottom>}
@@ -173,7 +173,18 @@ function VideoPlayer({ playServers, title, startTime, playNext }: IVideoPlayerPr
 }
 
 
-function VolumeButton({ volume, setVolume }: { volume: number, setVolume: (n: number) => void }) {
+function FullscreenButton({ wrapper }: { wrapper: HTMLElement }) {
+    const [fullscreen, setFullscreen] = useState(false)
+    return <>{fullscreen ?
+        <PlayButton aria-label="Open fullscreen" icon={<FaExpand />} onClick={() => fullscreenToggle(wrapper, setFullscreen)} /> :
+        <PlayButton aria-label="Exit fullscreen" icon={<FaArrowsAlt />} onClick={() => fullscreenToggle(wrapper, setFullscreen)} />
+    }</>
+}
+
+
+function VolumeButton({ videoControls }: { videoControls: IVideoControls }) {
+    const [volume, setVolume] = useState(parseFloat(localStorage.getItem('volume')) || 0.5)
+
     function volumeIcon() {
         if (volume >= 0.5)
             return <FaVolumeUp />
@@ -191,6 +202,8 @@ function VolumeButton({ volume, setVolume }: { volume: number, setVolume: (n: nu
             <PopoverArrow />
             <PopoverBody>
                 <VolumeBar defaultVolume={volume} onChange={(volume) => {
+                    localStorage.setItem('volume', volume.toString())
+                    videoControls.setVolume(volume)
                     setVolume(volume)
                 }} />
             </PopoverBody>
@@ -300,20 +313,4 @@ function fullscreenToggle(element: HTMLElement, setFullscreen: (fullscreen: bool
         }
         setFullscreen(false)
     }
-}
-
-
-function pickStartSource(playServers: IPlayServerSources[]) {
-    let s: IPlayServerSource = {
-        request: playServers[0].request,
-        source: playServers[0].sources[0],
-    }
-    for (const playServer of playServers.reverse())
-        for (const source of playServer.sources)
-            if (source.width <= 1920)
-                s = {
-                    request: playServer.request,
-                    source: source,
-                }
-    return s
 }

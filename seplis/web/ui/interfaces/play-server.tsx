@@ -23,13 +23,13 @@ export interface IPlaySource {
 }
 
 
-export interface IPlayServerSource {
+export interface IPlayServerRequestSource {
     request: IPlayRequest
     source: IPlaySource
 }
 
 
-export interface IPlayServerSources {
+export interface IPlayServerRequestSources {
     request: IPlayRequest
     sources: IPlaySource[]
 }

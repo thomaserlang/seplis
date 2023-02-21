@@ -1,11 +1,11 @@
-import { IPlayServerSource } from '@seplis/interfaces/play-server'
+import { IPlayServerRequestSource } from '@seplis/interfaces/play-server'
 import { guid } from '@seplis/utils'
 import axios from 'axios'
 import Hls, { ErrorData } from 'hls.js'
 import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, useState } from 'react'
 
 interface IProps {
-    source: IPlayServerSource
+    source: IPlayServerRequestSource
     startTime?: number
     audio?: string
     resolutionWidth?: number
@@ -38,10 +38,10 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     onPlay,
     onLoadingState,
 }: IProps, ref) => {
-    const [sessionUUID, setSessionUUID] = useState(null)
+    const [sessionUUID, setSessionUUID] = useState<string>(guid())
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
-    const baseTime = useRef(startTime)
+    const baseTime = useRef<number>(startTime)
 
     useImperativeHandle(ref, () => ({
         sessionUUID: () => sessionUUID,
@@ -53,18 +53,19 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     }), [videoElement.current])
 
     useEffect(() => {
-        if (!sessionUUID) {
-            setSessionUUID(guid())
-            return
-        }
+        baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
+    }, [source, audio, resolutionWidth])
+
+    useEffect(() => {
         const url = getPlayUrl({
             videoElement: videoElement.current,
             resolutionWidth: resolutionWidth,
             sessionUUID: sessionUUID,
             audio: audio,
             source: source,
-            startTime: baseTime.current,
+            startTime: Math.round(baseTime.current),
         })
+        
         if (!Hls.isSupported()) {
             videoElement.current.src = url
             videoElement.current.load()
@@ -72,6 +73,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 if (onAutoPlayFailed) onAutoPlayFailed()
             })
         } else {
+            if (hls.current) hls.current.destroy()
             hls.current = new Hls({
                 startLevel: 0,
                 manifestLoadingTimeOut: 30000,
@@ -88,19 +90,8 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             if (onHlsError)
                 hls.current.on(Hls.Events.ERROR, (e, data) => { onHlsError(videoElement.current, hls.current, data, setSessionUUID) })
         }
-        return () => {
-            if (hls.current) hls.current.destroy()
-            if (sessionUUID)
-                axios.get(`${source.request.play_url}/close-session/${sessionUUID}`).catch(() => { })
-        }
-    }, [sessionUUID])
-
-    useEffect(() => {
-        setSessionUUID(guid())
-    }, [source, audio, resolutionWidth])
-
-    useEffect(() => {
-        const t = setInterval(() => {
+        
+        let t = setInterval(() => {
             axios.get(`${source.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
                 if (e.response.status == 404) {
                     clearInterval(t)
@@ -108,10 +99,15 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 }
             })
         }, 4000)
+
         return () => {
             clearInterval(t)
+            if (hls.current) hls.current.destroy()
+            if (sessionUUID)
+                axios.get(`${source.request.play_url}/close-session/${sessionUUID}`).catch(() => { })
         }
     }, [sessionUUID])
+    
 
     return <video
         ref={videoElement}
@@ -129,7 +125,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         onCanPlayThrough={() => onLoadingState && onLoadingState(false)}
         onError={(event) => {
             if (event.currentTarget.error.code == event.currentTarget.error.MEDIA_ERR_DECODE)
-                handleMediaError(videoElement.current, hls.current, setSessionUUID)
+                handleMediaError(videoElement.current, hls.current)
         }}
         width="100%"
         style={{ position: 'fixed', height: '100%' }}
@@ -169,7 +165,7 @@ function setCurrentTime(time: number, videoElement: HTMLVideoElement, setSession
 }
 
 
-function getPlayUrl({ videoElement, source, startTime, audio, resolutionWidth, sessionUUID }: { videoElement: HTMLVideoElement, source: IPlayServerSource, startTime: number, audio: string, resolutionWidth: number, sessionUUID: string }) {
+function getPlayUrl({ videoElement, source, startTime, audio, resolutionWidth, sessionUUID }: { videoElement: HTMLVideoElement, source: IPlayServerRequestSource, startTime: number, audio: string, resolutionWidth: number, sessionUUID: string }) {
     const videoCodecs = getSupportedVideoCodecs(videoElement)
     if (videoCodecs.length == 0)
         throw new Error('No supported codecs')
@@ -216,7 +212,7 @@ function onHlsError(videoElement: HTMLVideoElement, hls: Hls, data: ErrorData, s
             case Hls.ErrorTypes.MEDIA_ERROR:
                 console.log('hls.js fatal media error encountered, try to recover')
                 hls.swapAudioCodec()
-                handleMediaError(videoElement, hls, setSessionUUID)
+                handleMediaError(videoElement, hls)
                 break
             default:
                 console.log('hls.js could not recover')
@@ -227,10 +223,9 @@ function onHlsError(videoElement: HTMLVideoElement, hls: Hls, data: ErrorData, s
 }
 
 
-function handleMediaError(videoElement: HTMLVideoElement, hls: Hls, setSessionUUID: (v: string) => void) {
+function handleMediaError(videoElement: HTMLVideoElement, hls: Hls) {
     if (hls)
         hls.recoverMediaError()
-    setSessionUUID(null)
     videoElement.play()
 }
 
@@ -239,5 +234,5 @@ function getCurrentTime(videoElement: HTMLVideoElement, baseTime: number) {
     let time = videoElement.currentTime
     if (videoElement.seekable.length <= 1 || videoElement.seekable.end(0) <= 1)
         time += baseTime
-    return time
+    return Math.round(time)
 }
