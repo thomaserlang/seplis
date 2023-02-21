@@ -56,7 +56,10 @@ class Transcoder:
     async def start(self, send_data_callback=None) -> bool | bytes:
         self.temp_folder = self.create_temp_folder()
         if self.settings.session in sessions:
-            return await asyncio.wait_for(self.wait_for_media(), timeout=60)
+            try:
+                return await asyncio.wait_for(self.wait_for_media(), timeout=5)
+            except asyncio.TimeoutError:
+                return False
         await self.set_ffmpeg_args()
         
         args = to_subprocess_arguments(self.ffmpeg_args)
