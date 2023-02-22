@@ -5,16 +5,19 @@ import { IPlaySource } from '@seplis/interfaces/play-server'
 interface IProps {
     source: IPlaySource,
     selectedWidth?: number
+    onChange: (width: number) => void
 }
 
-export function PickQuality({ source, selectedWidth }: IProps) {
+export function PickQuality({ source, selectedWidth, onChange }: IProps) {
     return <Box>
         {Object.entries(resolutionNames).sort((a, b) => parseInt(b[0]) - parseInt(a[0])).map(([width, value]) => {
             const w = parseInt(width)
             if (source.width >= w)
                 return <Box 
                     key={width}
-                    textStyle={(w == selectedWidth) || (w == source.width) ? 'selectedText' : null}
+                    textStyle={(w == selectedWidth) || (!selectedWidth && (w == source.width)) ? 'selectedText' : null}
+                    cursor="pointer"
+                    onClick={() => onChange && onChange(w)}
                 >
                     {value}
                 </Box>

@@ -71,7 +71,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             source: source,
             startTime: Math.round(baseTime.current),
         })
-        console.log(url)
         
         if (!Hls.isSupported()) {
             videoElement.current.src = url

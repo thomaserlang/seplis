@@ -56,6 +56,7 @@ interface IVideoPlayerProps {
 function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: IVideoPlayerProps) {
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
+    const [resolutionWidth, setResolutionWidth] = useState<number>()
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -63,7 +64,6 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
     const [showControls, setShowControls] = useState(1)
     const hideControlsTimer = useRef<NodeJS.Timeout>()
     const videoControls = useRef<IVideoControls>()
-    const wrapper = useRef<HTMLDivElement>()
 
     useEffect(() => {
         if (showControls === 0) return
@@ -88,7 +88,6 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
     }, [])
 
     return <Box
-        ref={wrapper}
         position="fixed"
         width="100%"
         height="100%"
@@ -109,6 +108,7 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
             ref={videoControls}
             source={requestSource}
             startTime={startTime}
+            resolutionWidth={resolutionWidth}
             onTimeUpdate={(time) => {
                 onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
@@ -167,10 +167,12 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
                     {playNext && <PlayNext {...playNext} />}
                     <SettingsButton 
                         playServers={playServers} 
-                        selectedRequestSource={requestSource} 
+                        requestSource={requestSource} 
+                        resolutionWidth={resolutionWidth}
                         onRequestSourceChange={setRequestSource}
+                        onResolutionWidthChange={setResolutionWidth}
                     />
-                    <FullscreenButton wrapper={wrapper.current} />
+                    <FullscreenButton />
                 </Flex>
             </Flex>
         </ControlsBottom>}
@@ -178,11 +180,11 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
 }
 
 
-function FullscreenButton({ wrapper }: { wrapper: HTMLElement }) {
+function FullscreenButton() {
     const [fullscreen, setFullscreen] = useState(false)
     return <>{fullscreen ?
-        <PlayButton aria-label="Open fullscreen" icon={<FaExpand />} onClick={() => fullscreenToggle(wrapper, setFullscreen)} /> :
-        <PlayButton aria-label="Exit fullscreen" icon={<FaArrowsAlt />} onClick={() => fullscreenToggle(wrapper, setFullscreen)} />
+        <PlayButton aria-label="Open fullscreen" icon={<FaExpand />} onClick={() => fullscreenToggle(document.body, setFullscreen)} /> :
+        <PlayButton aria-label="Exit fullscreen" icon={<FaArrowsAlt />} onClick={() => fullscreenToggle(document.body, setFullscreen)} />
     }</>
 }
 
