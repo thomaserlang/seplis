@@ -59,6 +59,16 @@ const theme = extendTheme({
             borderRadius: 'md',
         },
     },
+    textStyles: {
+        h2: {
+            fontSize: '1.25rem',
+            fontWeight: '600',
+        },
+        selectedText: {
+            fontWeight: 'bolder',
+        },
+    },
+    
 })
 
 import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'

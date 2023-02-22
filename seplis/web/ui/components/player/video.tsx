@@ -42,6 +42,9 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
     const baseTime = useRef<number>(startTime)
+    const prevSource = useRef(source)
+    const prevAudio = useRef(audio)
+    const prevResolutionWidth = useRef(resolutionWidth)
 
     useImperativeHandle(ref, () => ({
         sessionUUID: () => sessionUUID,
@@ -53,7 +56,10 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     }), [videoElement.current])
 
     useEffect(() => {
+        if ((prevSource.current == source) && (prevAudio.current == audio) && (prevResolutionWidth.current == resolutionWidth))
+            return
         baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
+        setSessionUUID(guid())
     }, [source, audio, resolutionWidth])
 
     useEffect(() => {
@@ -65,6 +71,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             source: source,
             startTime: Math.round(baseTime.current),
         })
+        console.log(url)
         
         if (!Hls.isSupported()) {
             videoElement.current.src = url
@@ -95,7 +102,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             axios.get(`${source.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
                 if (e.response.status == 404) {
                     clearInterval(t)
-                    baseTime.current = getCurrentTime(videoElement.current, baseTime.current)              
+                    baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
                 }
             })
         }, 4000)

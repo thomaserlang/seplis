@@ -1,4 +1,4 @@
-import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources } from '@seplis/interfaces/play-server'
 import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
@@ -6,6 +6,7 @@ import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, F
 import { Link } from 'react-router-dom'
 import { pickStartSource } from './pick-source'
 import { useGetPlayServers } from './request-play-servers'
+import { ISettingsProps, Settings } from './settings'
 import Slider from './slider'
 import { IVideoControls, Video } from './video'
 import VolumeBar from './volume-bar'
@@ -35,7 +36,7 @@ export default function Player({ getPlayServersUrl, title, startTime = 0, playNe
 
     return <VideoPlayer
         key={getPlayServersUrl}
-        playServerSources={playServers.data}
+        playServers={playServers.data}
         title={title}
         startTime={startTime}
         playNext={playNext}
@@ -45,16 +46,16 @@ export default function Player({ getPlayServersUrl, title, startTime = 0, playNe
 
 
 interface IVideoPlayerProps {
-    playServerSources: IPlayServerRequestSources[]
+    playServers: IPlayServerRequestSources[]
     title: string
     startTime: number
     playNext: IPlayNextProps
     onTimeUpdate: (time: number, duration: number) => void
 }
 
-function VideoPlayer({ playServerSources, title, startTime, playNext, onTimeUpdate }: IVideoPlayerProps) {
+function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: IVideoPlayerProps) {
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
-        () => pickStartSource(playServerSources))
+        () => pickStartSource(playServers))
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -164,7 +165,11 @@ function VideoPlayer({ playServerSources, title, startTime, playNext, onTimeUpda
 
                 <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
                     {playNext && <PlayNext {...playNext} />}
-                    <PlayButton aria-label="Settings" icon={<FaCog />} />
+                    <SettingsButton 
+                        playServers={playServers} 
+                        selectedRequestSource={requestSource} 
+                        onRequestSourceChange={setRequestSource}
+                    />
                     <FullscreenButton wrapper={wrapper.current} />
                 </Flex>
             </Flex>
@@ -209,6 +214,24 @@ function VolumeButton({ videoControls }: { videoControls: IVideoControls }) {
             </PopoverBody>
         </PopoverContent>
     </Popover>
+}
+
+
+function SettingsButton(props: ISettingsProps) {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    return <>
+        <PlayButton aria-label="Settings" onClick={onOpen} icon={<FaCog />} />
+
+        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+            <ModalOverlay />
+            <ModalContent minWidth="1100px" paddingBottom="1rem" paddingTop="1rem">
+                <ModalCloseButton />
+                <ModalBody>
+                    <Settings {...props} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
 }
 
 
