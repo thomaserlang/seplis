@@ -9,9 +9,6 @@ interface IProps {
 }
 
 export function PickSource({ playServers, selected, onChange }: IProps) {
-    let topWidth = 0
-    const sourceWidths: number[] = []
-
     return <Box>
         {playServers.map(server => (
             server.sources.sort((a, b) => b.width - a.width).map(source => (
