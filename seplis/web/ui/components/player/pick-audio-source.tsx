@@ -1,5 +1,6 @@
 import { Box } from '@chakra-ui/react'
 import { IPlaySourceStream } from '@seplis/interfaces/play-server'
+import { langCodeToLang } from '@seplis/utils'
 
 
 interface IProps {
@@ -17,7 +18,7 @@ export function PickAudioSource({ audioSources, selected, onChange }: IProps) {
                 cursor="pointer"
                 onClick={() => onChange && onChange(audio)}
             >
-                {audio.title}
+                {audio.title} [{langCodeToLang(audio.language)}]
             </Box>
         ))}
     </Box>
