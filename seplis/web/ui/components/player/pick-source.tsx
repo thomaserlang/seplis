@@ -14,7 +14,7 @@ export function PickSource({ playServers, selected, onChange }: IProps) {
 
     return <Box>
         {playServers.map(server => (
-            server.sources.map(source => (
+            server.sources.sort((a, b) => b.width - a.width).map(source => (
                 <Box
                     key={`${server.request.play_id}-${source.index}`}
                     textStyle={isSelected(selected, server.request, source) ? 'selectedText' : null}
