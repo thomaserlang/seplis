@@ -1,4 +1,4 @@
-import { IPlayServerRequestSource } from '@seplis/interfaces/play-server'
+import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { guid } from '@seplis/utils'
 import axios from 'axios'
 import Hls, { ErrorData } from 'hls.js'
@@ -7,7 +7,7 @@ import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, u
 interface IProps {
     source: IPlayServerRequestSource
     startTime?: number
-    audio?: string
+    audioSource?: IPlaySourceStream,
     resolutionWidth?: number
     children?: React.ReactNode
     onAutoPlayFailed?: () => void
@@ -29,7 +29,7 @@ export interface IVideoControls {
 export const Video = forwardRef<IVideoControls, IProps>(({
     source,
     startTime = 0,
-    audio,
+    audioSource,
     resolutionWidth,
     children,
     onAutoPlayFailed,
@@ -43,7 +43,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     const hls = useRef<Hls>(null)
     const baseTime = useRef<number>(startTime)
     const prevSource = useRef(source)
-    const prevAudio = useRef(audio)
+    const prevAudioSource = useRef(audioSource)
     const prevResolutionWidth = useRef(resolutionWidth)
 
     useImperativeHandle(ref, () => ({
@@ -56,18 +56,19 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     }), [videoElement.current])
 
     useEffect(() => {
-        if ((prevSource.current == source) && (prevAudio.current == audio) && (prevResolutionWidth.current == resolutionWidth))
+        if ((prevSource.current == source) && (prevAudioSource.current == audioSource) && (prevResolutionWidth.current == resolutionWidth))
             return
+        console.log(audioSource)
         baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
         setSessionUUID(guid())
-    }, [source, audio, resolutionWidth])
+    }, [source, audioSource, resolutionWidth])
 
     useEffect(() => {
         const url = getPlayUrl({
             videoElement: videoElement.current,
             resolutionWidth: resolutionWidth,
             sessionUUID: sessionUUID,
-            audio: audio,
+            audio: audioSource && `${audioSource.language}:${audioSource.index}`,
             source: source,
             startTime: Math.round(baseTime.current),
         })

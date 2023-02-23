@@ -120,7 +120,7 @@ class Transcoder:
             ),
         )
 
-    async def set_ffmpeg_args(self) -> None:
+    async def set_ffmpeg_args(self):
         args = [
             {'-analyzeduration': '20000000'},
             {'-probesize': '20000000'},
@@ -230,10 +230,10 @@ class Transcoder:
             {'-c:a': codec},
         ])
 
-    def stream_index_by_lang(self, codec_type: str, lang: str) -> Stream_index:
+    def stream_index_by_lang(self, codec_type: str, lang: str):
         return stream_index_by_lang(self.metadata, codec_type, lang)
 
-    def get_video_stream(self) -> Dict:
+    def get_video_stream(self):
         return get_video_stream(self.metadata)
 
     def find_ffmpeg_arg(self, key):
@@ -253,16 +253,16 @@ class Transcoder:
             os.makedirs(temp_folder)
         return temp_folder
 
-    def segment_time(self) -> int:
+    def segment_time(self):
         return 5 if self.find_ffmpeg_arg('-c:v') == 'copy' else 1
 
-def subprocess_env() -> Dict:
+def subprocess_env():
     env = {}
     if config.data.play.ffmpeg_logfile:
         env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
     return env
 
-def to_subprocess_arguments(args) -> list[str]:
+def to_subprocess_arguments(args):
     l = []
     for a in args:
         for key, value in a.items():
@@ -277,7 +277,7 @@ def subprocess_env() -> Dict:
         env['FFREPORT'] = f'file=\'{config.data.play.ffmpeg_logfile}\':level={config.data.play.ffmpeg_loglevel}'
     return env
 
-def get_video_stream(metadata: Dict) -> Dict:
+def get_video_stream(metadata: Dict):
     for stream in metadata['streams']:
         if stream['codec_type'] == 'video':
             return stream

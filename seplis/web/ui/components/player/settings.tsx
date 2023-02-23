@@ -1,5 +1,6 @@
 import { Flex, Box } from '@chakra-ui/react'
-import { IPlayServerRequestSource, IPlayServerRequestSources } from '@seplis/interfaces/play-server'
+import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
+import { PickAudioSource } from './pick-audio-source'
 import { PickQuality } from './pick-quality'
 import { PickSource } from './pick-source'
 
@@ -7,16 +8,20 @@ export interface ISettingsProps {
     playServers: IPlayServerRequestSources[],
     requestSource: IPlayServerRequestSource,
     resolutionWidth?: number,
+    audioSource?: IPlaySourceStream,
     onRequestSourceChange?: (requestSource: IPlayServerRequestSource) => void,
     onResolutionWidthChange?: (width: number) => void,
+    onAudioSourceChange?: (audioSource: IPlaySourceStream) => void,
 }
 
 export function Settings({ 
     playServers, 
     requestSource, 
     resolutionWidth,
+    audioSource,
     onRequestSourceChange,
     onResolutionWidthChange,
+    onAudioSourceChange,
 }: ISettingsProps) {
     return <Flex wrap="wrap" gap="1rem">
         <Flex basis="150px" direction="column">
@@ -39,7 +44,11 @@ export function Settings({
 
         <Flex basis="150px" grow="1" direction="column">
             <Box textStyle="h2">Audio</Box>
-            <Box></Box>
+            <PickAudioSource 
+                audioSources={requestSource.source.audio}
+                selected={audioSource}
+                onChange={onAudioSourceChange}
+            />
         </Flex>
 
 

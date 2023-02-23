@@ -1,5 +1,5 @@
 import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
-import { IPlayServerRequestSource, IPlayServerRequestSources } from '@seplis/interfaces/play-server'
+import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
@@ -57,6 +57,7 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
     const [resolutionWidth, setResolutionWidth] = useState<number>()
+    const [audioSource, setAudioSource] = useState<IPlaySourceStream>()
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -109,6 +110,7 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
             source={requestSource}
             startTime={startTime}
             resolutionWidth={resolutionWidth}
+            audioSource={audioSource}
             onTimeUpdate={(time) => {
                 onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
@@ -169,8 +171,10 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
                         playServers={playServers} 
                         requestSource={requestSource} 
                         resolutionWidth={resolutionWidth}
+                        audioSource={audioSource}
                         onRequestSourceChange={setRequestSource}
                         onResolutionWidthChange={setResolutionWidth}
+                        onAudioSourceChange={setAudioSource}
                     />
                     <FullscreenButton />
                 </Flex>
