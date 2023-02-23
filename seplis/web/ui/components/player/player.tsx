@@ -4,6 +4,7 @@ import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import { getDefaultResolutionWidth } from './pick-quality'
 import { pickStartSource } from './pick-source'
 import { useGetPlayServers } from './request-play-servers'
 import { ISettingsProps, Settings } from './settings'
@@ -56,7 +57,7 @@ interface IVideoPlayerProps {
 function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: IVideoPlayerProps) {
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
-    const [resolutionWidth, setResolutionWidth] = useState<number>()
+    const [resolutionWidth, setResolutionWidth] = useState<number>(getDefaultResolutionWidth())
     const [audioSource, setAudioSource] = useState<IPlaySourceStream>()
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)

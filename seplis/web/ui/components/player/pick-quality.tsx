@@ -17,12 +17,22 @@ export function PickQuality({ source, selectedWidth, onChange }: IProps) {
                     key={width}
                     textStyle={(w == selectedWidth) || (!selectedWidth && (w == source.width)) ? 'selectedText' : null}
                     cursor="pointer"
-                    onClick={() => onChange && onChange(w)}
+                    onClick={() => {
+                        localStorage.setItem('resolutionWidth', w.toString())
+                        if (onChange) onChange(w)
+                    }}
                 >
                     {value}
                 </Box>
         })}
     </Box>
+}
+
+
+export function getDefaultResolutionWidth() {
+    const w = localStorage.getItem('resolutionWidth')
+    if (w)
+        return parseInt(w)
 }
 
 
