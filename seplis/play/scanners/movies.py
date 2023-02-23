@@ -61,15 +61,15 @@ class Movie_scan(Play_scan):
                     sql = sa.update(models.Movie).where(
                         models.Movie.movie_id == movie_id,
                         models.Movie.path == path,
-                    ).update(
-                        metadata=metadata,
+                    ).values(
+                        meta_data=metadata,
                         modified_time=modified_time,
                     )
                 else:
                     sql = sa.insert(models.Movie).values(
                         movie_id=movie_id,
                         path=path,
-                        metadata=metadata,
+                        meta_data=metadata,
                         modified_time=modified_time,
                     )
                 await session.execute(sql)
