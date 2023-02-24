@@ -76,9 +76,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         if (!Hls.isSupported()) {
             videoElement.current.src = url
             videoElement.current.load()
-            videoElement.current.play().catch(() => {
-                if (onAutoPlayFailed) onAutoPlayFailed()
-            })
+            videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
         } else {
             if (hls.current) hls.current.destroy()
             hls.current = new Hls({
@@ -90,12 +88,10 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             hls.current.loadSource(url)
             hls.current.attachMedia(videoElement.current)
             hls.current.on(Hls.Events.MANIFEST_PARSED, () => {
-                videoElement.current.play().catch(() => {
-                    if (onAutoPlayFailed) onAutoPlayFailed()
-                })
+                videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             })
-            if (onHlsError)
-                hls.current.on(Hls.Events.ERROR, (e, data) => { onHlsError(videoElement.current, hls.current, data, setSessionUUID) })
+            hls.current.on(Hls.Events.ERROR, (e, data) => 
+                onHlsError && onHlsError(videoElement.current, hls.current, data, setSessionUUID))
         }
         
         let t = setInterval(() => {
@@ -118,9 +114,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
 
     return <video
         ref={videoElement}
-        onTimeUpdate={(e) => {
-            if (onTimeUpdate) onTimeUpdate(getCurrentTime(e.currentTarget, baseTime.current))
-        }}
+        onTimeUpdate={(e) => onTimeUpdate && onTimeUpdate(getCurrentTime(e.currentTarget, baseTime.current))}
         onPause={() => onPause && onPause()}
         onPlay={() => {
             if (onPlay) onPlay()
