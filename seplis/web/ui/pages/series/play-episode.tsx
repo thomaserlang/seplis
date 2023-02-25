@@ -1,4 +1,3 @@
-import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
 import api from '@seplis/api'
 import Player, { IPlayNextProps } from '@seplis/components/player/player'
 import { IEpisode } from '@seplis/interfaces/episode'
