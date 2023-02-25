@@ -283,7 +283,8 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
                     ((cue.to / 1000) - startTime) + subtitleOffset, 
                     cue.text
                 )
-                vtt.line = -3
+                console.log(vtt.line)
+                vtt.line = 16
                 textTrack.addCue(vtt)
             }
         }, 100)
