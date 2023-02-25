@@ -1,17 +1,17 @@
-import { Box, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, useDisclosure } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import ImageList from '@seplis/components/list'
-import { SeriesLoad } from '@seplis/components/series/series'
-import { ISeries, ISeriesUser } from '@seplis/interfaces/series'
-import { useEffect, useState } from 'react'
+import { ISeriesUser } from '@seplis/interfaces/series'
+import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { SeriesUserFilter } from '../../components/series/user-filter'
 
 
 export default function SeriesUserList({ title, url }: { title: string, url: string }) {
     const { ref, focusKey, focusSelf } = useFocusable()
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [series, setSeries] = useState<ISeries>(null)
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const [query, setQuery] = useQueryParams({
         sort: withDefault(StringParam, ""),
@@ -40,8 +40,9 @@ export default function SeriesUserList({ title, url }: { title: string, url: str
                         }
                     )}
                     onItemSelected={(item: ISeriesUser) => {
-                        setSeries(item.series)
-                        onOpen()
+                        navigate(`/series/${item.series.id}`, {state: {
+                            background: location
+                        }})
                     }}
                     renderFilter={(options) => {
                         return <SeriesUserFilter defaultValue={query} onSubmit={(data) => {
@@ -52,15 +53,5 @@ export default function SeriesUserList({ title, url }: { title: string, url: str
                 />
             </Box>
         </FocusContext.Provider>
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
-                <ModalCloseButton />
-                <ModalBody>
-                    {isOpen && <SeriesLoad seriesId={series.id} />}
-                </ModalBody>
-            </ModalContent>
-        </Modal>
     </>
 }

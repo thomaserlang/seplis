@@ -1,17 +1,17 @@
-import { Box, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, useDisclosure } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import ImageList from '@seplis/components/list'
-import { IMovie, IMovieUser } from '@seplis/interfaces/movie'
-import { useEffect, useState } from 'react'
+import { IMovieUser } from '@seplis/interfaces/movie'
+import { useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
-import { MovieLoad } from './movie'
 import { MovieUserFilter } from './user-filter'
 
 
 export default function MovieUserList({ title, url }: { title: string, url: string }) {
     const { ref, focusKey, focusSelf } = useFocusable()
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [movie, setMovie] = useState<IMovie>(null)
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const [query, setQuery] = useQueryParams({
         sort: withDefault(StringParam, ""),
@@ -40,8 +40,9 @@ export default function MovieUserList({ title, url }: { title: string, url: stri
                         }
                     )}
                     onItemSelected={(item: IMovieUser) => {
-                        setMovie(item.movie)
-                        onOpen()
+                        navigate(`/movies/${item.movie.id}`, {state: {
+                            background: location
+                        }})
                     }}
                     renderFilter={(options) => {
                         return <MovieUserFilter defaultValue={query} onSubmit={(data) => {
@@ -52,15 +53,5 @@ export default function MovieUserList({ title, url }: { title: string, url: stri
                 />
             </Box>
         </FocusContext.Provider>
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
-                <ModalCloseButton />
-                <ModalBody>
-                    {isOpen && <MovieLoad movieId={movie.id} />}
-                </ModalBody>
-            </ModalContent>
-        </Modal>
     </>
 }

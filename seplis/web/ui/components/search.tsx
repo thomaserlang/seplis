@@ -5,7 +5,7 @@ import { ITitleSearchResult as ISearchTitleResult } from '@seplis/interfaces/sea
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useDebounce } from 'usehooks-ts'
 import { Poster } from './poster'
 
@@ -18,7 +18,7 @@ export function SearchButtonDialog() {
 
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />
-                <ModalContent backgroundColor="gray.900" maxWidth="800px" paddingBottom="1rem">
+                <ModalContent backgroundColor="seplis.modalBackgroundColor" maxWidth="800px" paddingBottom="1rem">
                     <ModalHeader>Search</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
@@ -34,6 +34,7 @@ export function Search({ afterSelected }: { afterSelected?: (item: ISearchTitleR
     const [value, setValue] = useState('')
     const query = useDebounce(value, 200)
     const navigate = useNavigate()
+    const location = useLocation()
     const { data, isFetching } = useQuery(['search-suggestions', query], async ({ signal }) => {
         const r = await api.get<ISearchTitleResult[]>('/2/search', {
             params: {
@@ -54,9 +55,13 @@ export function Search({ afterSelected }: { afterSelected?: (item: ISearchTitleR
 
         {!isFetching && <RenderItems items={data} onSelected={(item) => {
             if (item.type == 'movie')
-                navigate(`/${item.type}s/${item.id}`)
+                navigate(`/${item.type}s/${item.id}`, {state: {
+                    background: location
+                }})
             else if (item.type == 'series')
-                navigate(`/series/${item.id}`)
+                navigate(`/series/${item.id}`, {state: {
+                    background: location
+                }})
             if (afterSelected)
                 afterSelected(item)
         }} />}

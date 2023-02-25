@@ -1,16 +1,38 @@
-import { Box } from '@chakra-ui/react'
+import { Box, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
 import MainMenu from '@seplis/components/main-menu'
 import { SeriesLoad } from '@seplis/components/series/series'
-import { useParams } from 'react-router-dom'
+import { setTitle } from '@seplis/utils'
+import { useNavigate, useParams } from 'react-router-dom'
 
-
-export default function SeriesPage() {    
+export default function SeriesPage() {
     const { seriesId } = useParams()
 
     return <>
         <MainMenu />
         <Box margin='1rem'>
-            <SeriesLoad seriesId={parseInt(seriesId)} />
+            <SeriesLoad seriesId={parseInt(seriesId)} onLoaded={(series) => {
+                setTitle(series.title)
+            }} />
         </Box>
+    </>
+}
+
+
+export function SeriesModalPage() {
+    const { seriesId } = useParams()
+    const navigate = useNavigate()
+
+    return <>
+        <Modal isOpen={true} onClose={() => { navigate(-1) }}>
+            <ModalOverlay />
+            <ModalContent layerStyle="baseModal">
+                <ModalCloseButton />
+                <ModalBody>
+                    <SeriesLoad seriesId={parseInt(seriesId)} onLoaded={(series) => {
+                        setTitle(series.title)
+                    }} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>
     </>
 }

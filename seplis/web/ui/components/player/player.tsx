@@ -27,6 +27,7 @@ export interface IPlayerProps {
     playNext?: IPlayNextProps
     defaultAudio?: string
     defaultSubtitle?: string
+    onClose?: () => void,
     onTimeUpdate?: (time: number, duration: number) => void
     onAudioChange?: (source: IPlaySourceStream) => void
     onSubtitleChange?: (source: IPlaySourceStream) => void
@@ -40,6 +41,7 @@ export default function Player({
     loading,
     defaultAudio,
     defaultSubtitle,
+    onClose,
     onTimeUpdate,
     onAudioChange,
     onSubtitleChange,
@@ -63,6 +65,7 @@ export default function Player({
         defaultSubtitle={defaultSubtitle}
         onAudioChange={onAudioChange}
         onSubtitleChange={onSubtitleChange}
+        onClose={onClose}
     />
 }
 
@@ -74,6 +77,7 @@ interface IVideoPlayerProps {
     playNext: IPlayNextProps
     defaultAudio?: string
     defaultSubtitle?: string
+    onClose?: () => void
     onTimeUpdate: (time: number, duration: number) => void
     onAudioChange?: (source: IPlaySourceStream) => void
     onSubtitleChange?: (source: IPlaySourceStream) => void
@@ -86,6 +90,7 @@ function VideoPlayer({
     playNext,
     defaultAudio,
     defaultSubtitle,
+    onClose,
     onTimeUpdate,
     onAudioChange,
     onSubtitleChange,
@@ -176,7 +181,7 @@ function VideoPlayer({
         {showBigPlay && <BigPlay onClick={() => videoControls.current.togglePlay()} />}
 
         {(showControls || paused) && <ControlsTop>
-            <PlayButton aria-label="back" icon={<FaTimes />} />
+            <PlayButton aria-label="back" icon={<FaTimes />} onClick={() => {onClose && onClose()}} />
         </ControlsTop>}
 
         {(showControls || paused) && <ControlsBottom>
@@ -278,7 +283,7 @@ function SettingsButton(props: ISettingsProps) {
 
         <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
             <ModalOverlay />
-            <ModalContent maxWidth="1100px" paddingBottom="1rem" paddingTop="1rem" backgroundColor="gray.900">
+            <ModalContent layerStyle="baseModal">
                 <ModalCloseButton />
                 <ModalBody>
                     <Settings {...props} />

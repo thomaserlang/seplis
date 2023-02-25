@@ -1,17 +1,17 @@
-import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Stack, useDisclosure } from '@chakra-ui/react'
+import { Stack } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
-import { SeriesLoad } from '@seplis/components/series/series'
 import Slider from '@seplis/components/slider'
-import { ISeries, ISeriesAndEpisode, ISeriesUser } from '@seplis/interfaces/series'
+import { ISeriesAndEpisode, ISeriesUser } from '@seplis/interfaces/series'
 import { dateCountdown, episodeNumber, setTitle } from '@seplis/utils'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 
 export default function SeriesHome() {
     const { ref, focusKey, focusSelf } = useFocusable()
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [series, setSeries] = useState<ISeries>(null)
+    const navigate = useNavigate()
+    const location = useLocation()
 
     useEffect(() => {
         setTitle('Series Home')
@@ -29,8 +29,9 @@ export default function SeriesHome() {
     }, [ref])
 
     const itemSelected = (item: ISeriesUser | ISeriesAndEpisode) => {
-        setSeries(item.series)
-        onOpen()
+        navigate(`/series/${item.series.id}`, {state: {
+            background: location
+        }})
     }
 
     return <>
@@ -103,15 +104,5 @@ export default function SeriesHome() {
 
             </Stack>
         </FocusContext.Provider>
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
-                <ModalCloseButton />
-                <ModalBody>
-                    {isOpen && <SeriesLoad seriesId={series.id} />}
-                </ModalBody>
-            </ModalContent>
-        </Modal>
     </>
-
 }

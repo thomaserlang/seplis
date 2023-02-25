@@ -1,18 +1,18 @@
-import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay, Stack, useDisclosure } from '@chakra-ui/react'
+import { Stack } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
-import { MovieLoad } from '@seplis/components/movie/movie'
 import Slider from '@seplis/components/slider'
-import { IMovie, IMovieUser } from '@seplis/interfaces/movie'
+import { IMovieUser } from '@seplis/interfaces/movie'
 import { setTitle } from '@seplis/utils'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 
 export default function MoviesHome() {
     const { ref, focusKey, focusSelf } = useFocusable()
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    const [movie, setMovie] = useState<IMovie>(null)
-
+    const navigate = useNavigate()
+    const location = useLocation()
+    
     useEffect(() => {
         setTitle('Movies Home')
     }, [])
@@ -29,17 +29,16 @@ export default function MoviesHome() {
     }, [ref])
 
     const itemSelected = (item: IMovieUser) => {
-        setMovie(item.movie)
-        onOpen()
+        navigate(`/movies/${item.movie.id}`, {state: {
+            background: location
+        }})
     }
 
     return <>
         <MainMenu />
         
         <FocusContext.Provider value={focusKey}>
-
             <Stack ref={ref} marginTop="0.5rem">
-
                 <Slider<IMovieUser>
                     title="Watched"
                     url="/2/users/me/movies-watched"
@@ -67,18 +66,7 @@ export default function MoviesHome() {
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
                 />
-
             </Stack>
         </FocusContext.Provider>
-
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <ModalOverlay />
-            <ModalContent maxWidth="1100px" backgroundColor="gray.900" padding="1rem 0">
-                <ModalCloseButton />
-                <ModalBody>
-                    {isOpen && <MovieLoad movieId={movie.id} />}
-                </ModalBody>
-            </ModalContent>
-        </Modal>
     </>
 }

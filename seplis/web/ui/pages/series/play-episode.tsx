@@ -1,16 +1,19 @@
+import { Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from '@chakra-ui/react'
 import api from '@seplis/api'
 import Player, { IPlayNextProps } from '@seplis/components/player/player'
 import { IEpisode } from '@seplis/interfaces/episode'
 import { IPlaySourceStream } from '@seplis/interfaces/play-server'
-import { ISeries, ISeriesUser, ISeriesUserSettings } from '@seplis/interfaces/series'
+import { ISeries, ISeriesUserSettings } from '@seplis/interfaces/series'
 import { episodeTitle } from '@seplis/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useRef } from 'react'
-import { useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 
 export default function PlayEpisode() {
     const { seriesId, episodeNumber } = useParams()
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const episode = useQuery(['episode-title-watched', seriesId, episodeNumber], async () => {
         const result = await Promise.all([
@@ -88,5 +91,11 @@ export default function PlayEpisode() {
         defaultSubtitle={episode.data?.subtitleLang}
         onAudioChange={onAudioChange}
         onSubtitleChange={onSubtitleChange}
+        onClose={() => {
+            if (location.key && location.key != 'default')
+                navigate(-1)
+            else
+                navigate(`/series/${seriesId}`)
+        }}
     />
 }

@@ -1,7 +1,7 @@
 import { setTitle } from "@seplis/utils"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { MovieLoad } from "@seplis/components/movie/movie"
-import { Box } from "@chakra-ui/react"
+import { Box, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } from "@chakra-ui/react"
 import MainMenu from "@seplis/components/main-menu"
 
 
@@ -18,3 +18,22 @@ export default function MoviePage() {
     </>
 }
 
+
+export function MovieModalPage() {
+    const { movieId } = useParams()
+    const navigate = useNavigate()
+
+    return <>
+        <Modal isOpen={true} onClose={() => { navigate(-1) }}>
+            <ModalOverlay />
+            <ModalContent layerStyle="baseModal">
+                <ModalCloseButton />
+                <ModalBody>
+                    <MovieLoad movieId={parseInt(movieId)} onLoaded={(movie) => {
+                        setTitle(movie.title)
+                    }} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
+}
