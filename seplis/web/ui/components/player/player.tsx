@@ -100,20 +100,21 @@ function VideoPlayer({
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
     const [showBigPlay, setShowBigPlay] = useState(false)
-    const [showControls, setShowControls] = useState(1)
+    const [showControls, setShowControls] = useState(true)
     const hideControlsTimer = useRef<NodeJS.Timeout>()
     const videoControls = useRef<IVideoControls>()
 
-    useEffect(() => {
-        if (showControls === 0) return
+    const startHideControlsTimer = () => {
+        if (!showControls) 
+            setShowControls(true)
         clearTimeout(hideControlsTimer.current)
         hideControlsTimer.current = setTimeout(() => {
-            setShowControls(0)
+            setShowControls(false)
         }, 4000)
         return () => {
             clearTimeout(hideControlsTimer.current)
         }
-    }, [showControls])
+    }
 
     useEffect(() => {
         videoControls.current.setVolume(parseFloat(localStorage.getItem('volume')) || 0.5)
@@ -133,14 +134,14 @@ function VideoPlayer({
         left="0"
         top="0"
         backgroundColor="#000"
-        onMouseMove={() => { setShowControls(showControls + 1) }}
-        onTouchMove={() => { setShowControls(showControls + 1) }}
+        onMouseMove={() => { startHideControlsTimer() }}
+        onTouchMove={() => { startHideControlsTimer() }}
         onClick={() => {
             if (paused) return
-            if (showControls > 0)
-                setShowControls(0)
+            if (showControls)
+                setShowControls(false)
             else
-                setShowControls(showControls + 1)
+                startHideControlsTimer()
         }}
     >
         <Video
@@ -153,10 +154,10 @@ function VideoPlayer({
             subtitleLinePosition={(showControls || paused) ? -4 : undefined}
             subtitleOffset={subtitleOffset}
             onTimeUpdate={(time) => {
-                onTimeUpdate(time, requestSource.source.duration)
+                if (onTimeUpdate) onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
-                if ((showControls > 0) && (!hideControlsTimer.current))
-                    setShowControls(showControls + 1)
+                if (showControls && !hideControlsTimer.current)
+                    startHideControlsTimer()
             }}
             onPause={() => setPaused(true)}
             onPlay={() => {
