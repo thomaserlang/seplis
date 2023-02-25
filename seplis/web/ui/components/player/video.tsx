@@ -14,6 +14,7 @@ interface IProps {
     subtitleSource?: IPlaySourceStream
     children?: React.ReactNode
     subtitleOffset?: number
+    subtitleLinePosition?: number
     onAutoPlayFailed?: () => void
     onTimeUpdate?: (time: number) => void
     onPause?: () => void
@@ -38,6 +39,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     subtitleSource,
     children,
     subtitleOffset,
+    subtitleLinePosition,
     onAutoPlayFailed,
     onTimeUpdate,
     onPause,
@@ -148,6 +150,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             startTime={baseTime.current}
             subtitleSource={subtitleSource}
             subtitleOffset={subtitleOffset}
+            subtitleLinePosition={subtitleLinePosition}
         />
     </>
 })
@@ -252,7 +255,7 @@ function getCurrentTime(videoElement: HTMLVideoElement, baseTime: number) {
 }
 
 
-function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, subtitleOffset = 0 }: { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number }) {
+function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, subtitleOffset = 0, subtitleLinePosition = 16 }: { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number, subtitleLinePosition?: number }) {
     const { data } = useQuery(['subtitle', requestSource?.request.play_id, subtitleSource?.index], async () => {
         if (!subtitleSource)
             return null
@@ -283,12 +286,21 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
                     ((cue.to / 1000) - startTime) + subtitleOffset, 
                     cue.text
                 )
-                console.log(vtt.line)
-                vtt.line = 16
+                vtt.line = subtitleLinePosition
                 textTrack.addCue(vtt)
             }
         }, 100)
     }, [data, startTime, subtitleOffset])
+
+    useEffect(() => {
+        if (!videoElement) return
+        for (const track of videoElement.textTracks) {
+            if (track.mode == 'showing')
+                for (const cue of track.cues)
+                    (cue as VTTCue).line = subtitleLinePosition
+        }
+    }, [subtitleLinePosition])
+
 
     return <></>
 }

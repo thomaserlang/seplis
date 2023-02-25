@@ -149,6 +149,7 @@ function VideoPlayer({
             resolutionWidth={resolutionWidth}
             audioSource={audioSource}
             subtitleSource={subtitleSource}
+            subtitleLinePosition={showControls ? -4 : undefined}
             onTimeUpdate={(time) => {
                 onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
