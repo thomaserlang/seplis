@@ -342,8 +342,8 @@ function ControlsBottom({ children }: { children: ReactNode }) {
 function Loading() {
     return <Flex
         position="absolute"
-        height="100%"
-        width="100%"
+        height="100vh"
+        width="100vw"
         justifyContent="center"
         align="center"
         pointerEvents="none"
