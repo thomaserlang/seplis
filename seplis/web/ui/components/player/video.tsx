@@ -99,7 +99,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             })
             hls.current.on(Hls.Events.ERROR, (e, data) => onHlsError &&
-                onHlsError(videoElement.current, hls.current, data, setSessionUUID))
+                onHlsError(videoElement.current, hls.current, data))
         }
 
         let t = setInterval(() => {
@@ -219,7 +219,7 @@ function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
 }
 
 
-function onHlsError(videoElement: HTMLVideoElement, hls: Hls, data: ErrorData, setSessionUUID: (v: string) => void) {
+function onHlsError(videoElement: HTMLVideoElement, hls: Hls, data: ErrorData) {
     console.warn(data)
     if (data.fatal) {
         switch (data.type) {
