@@ -301,6 +301,5 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
         }
     }, [subtitleLinePosition])
 
-
     return <></>
 }

@@ -47,7 +47,7 @@ export function Settings({
             />
         </Flex>
 
-        <Flex basis="150px" grow="1" direction="column">
+        <Flex basis="250px" grow="1" direction="column">
             <Box textStyle="h2">Audio</Box>
             <PickAudioSource 
                 audioSources={requestSource.source.audio}
@@ -57,7 +57,7 @@ export function Settings({
         </Flex>
 
 
-        <Flex basis="150px" grow="1" direction="column">
+        <Flex basis="250px" grow="1" direction="column">
             <Box textStyle="h2">Subtitles</Box>
             <PickSubtitleSource
                 subtitleSources={requestSource.source.subtitles}

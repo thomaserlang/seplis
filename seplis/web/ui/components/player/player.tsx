@@ -275,9 +275,9 @@ function SettingsButton(props: ISettingsProps) {
     return <>
         <PlayButton aria-label="Settings" onClick={onOpen} icon={<FaCog />} />
 
-        <Modal isOpen={isOpen} onClose={onClose} isCentered>
+        <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
             <ModalOverlay />
-            <ModalContent minWidth="1100px" paddingBottom="1rem" paddingTop="1rem">
+            <ModalContent maxWidth="1100px" paddingBottom="1rem" paddingTop="1rem">
                 <ModalCloseButton />
                 <ModalBody>
                     <Settings {...props} />
