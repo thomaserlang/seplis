@@ -1,8 +1,8 @@
+import jwt
 from sqlalchemy import select
-from tornado import web
 from fastapi import HTTPException
 from seplis.play import database, models
-from seplis import utils, config
+from seplis import logger, utils, config
 
 async def get_metadata(play_id) -> list[dict]:
     data = decode_play_id(play_id)
@@ -20,12 +20,12 @@ async def get_metadata(play_id) -> list[dict]:
         return r.all()
 
 def decode_play_id(play_id: str) -> list[dict]:
-    data = web.decode_signed_value(
-        secret=config.data.play.secret,
-        name='play_id',
-        value=play_id,
-        max_age_days=0.3,
-    )
-    if not data:
+    try:
+        data = jwt.decode(
+            play_id,
+            config.data.play.secret,
+            algorithms=['HS256'],
+        )
+        return data
+    except:
         raise HTTPException(400, 'Play id invalid')
-    return utils.json_loads(data)

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Security
 import sqlalchemy as sa
-from tornado import web
+import jwt
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
 
@@ -21,14 +21,13 @@ async def get_movie_play_servers(
     play_ids: list[schemas.Play_request] = []
     for row in query:
         play_ids.append(schemas.Play_request(
-            play_id=web.create_signed_value(
-                secret=row.secret,
-                name='play_id',
-                value=schemas.Play_id_info_movie(
+            play_id=jwt.encode(
+                schemas.Play_id_info_movie(
                     movie_id=movie_id,
-                ).json(),
-                version=2,
-            ).decode('utf-8'),
+                ).dict(),
+                row.secret,
+                algorithm='HS256',
+            ),
             play_url=row.url,
         ))
     return play_ids

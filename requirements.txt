@@ -32,7 +32,7 @@ python-multipart==0.0.5
 email-validator==1.2.1
 freezegun==1.2.2
 uuid6==2022.10.25
-tornado
 aiorun==2022.11.1
 watchfiles==0.18.1
 aiosqlite==0.18.0
+pyjwt==2.6.0
