@@ -286,7 +286,7 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
                 vtt.line = -3
                 textTrack.addCue(vtt)
             }
-        }, 10)
+        }, 100)
     }, [data, startTime, subtitleOffset])
 
     return <></>

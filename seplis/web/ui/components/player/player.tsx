@@ -27,7 +27,9 @@ export interface IPlayerProps {
     playNext?: IPlayNextProps
     defaultAudio?: string
     defaultSubtitle?: string
-    onTimeUpdate: (time: number, duration: number) => void
+    onTimeUpdate?: (time: number, duration: number) => void
+    onAudioChange?: (source: IPlaySourceStream) => void
+    onSubtitleChange?: (source: IPlaySourceStream) => void
 }
 
 export default function Player({ 
@@ -39,6 +41,8 @@ export default function Player({
     defaultAudio, 
     defaultSubtitle, 
     onTimeUpdate,
+    onAudioChange,
+    onSubtitleChange,
 }: IPlayerProps) {
     const playServers = useGetPlayServers(getPlayServersUrl)
 
@@ -57,6 +61,8 @@ export default function Player({
         onTimeUpdate={onTimeUpdate}
         defaultAudio={defaultAudio}
         defaultSubtitle={defaultSubtitle}
+        onAudioChange={onAudioChange}
+        onSubtitleChange={onSubtitleChange}
     />
 }
 
@@ -69,6 +75,8 @@ interface IVideoPlayerProps {
     defaultAudio?: string
     defaultSubtitle?: string
     onTimeUpdate: (time: number, duration: number) => void
+    onAudioChange?: (source: IPlaySourceStream) => void
+    onSubtitleChange?: (source: IPlaySourceStream) => void
 }
 
 function VideoPlayer({ 
@@ -78,7 +86,9 @@ function VideoPlayer({
     playNext,
     defaultAudio,
     defaultSubtitle, 
-    onTimeUpdate 
+    onTimeUpdate,
+    onAudioChange,
+    onSubtitleChange,
 }: IVideoPlayerProps) {
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
@@ -203,8 +213,14 @@ function VideoPlayer({
                         subtitleSource={subtitleSource}
                         onRequestSourceChange={setRequestSource}
                         onResolutionWidthChange={setResolutionWidth}
-                        onAudioSourceChange={setAudioSource}
-                        onSubtitleSourceChange={setSubtitleSource}
+                        onAudioSourceChange={(source) => {
+                            setAudioSource(source)
+                            if (onAudioChange) onAudioChange(source)
+                        }}
+                        onSubtitleSourceChange={(source) => {
+                            setSubtitleSource(source)
+                            if (onSubtitleChange) onSubtitleChange(source)
+                        }}
                     />
                     <FullscreenButton />
                 </Flex>

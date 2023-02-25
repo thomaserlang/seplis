@@ -97,6 +97,12 @@ export interface ISeriesUser {
 }
 
 
+export interface ISeriesUserSettings {
+    subtitle_lang: string | null
+    audio_lang: string | null
+}
+
+
 export interface ISeriesWithEpisodes extends ISeries {
     episodes: IEpisode[]
 }
