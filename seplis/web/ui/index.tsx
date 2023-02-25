@@ -85,6 +85,7 @@ import SeriesWatched from './pages/series/watched'
 import MoviesStared from './pages/movies/stared'
 import MoviesWatched from './pages/movies/watched'
 import PlayEpisode from './pages/series/play-episode'
+import PlayMovie from './pages/movies/play'
 
 spatialInit({})
 
@@ -113,6 +114,7 @@ function App() {
             <Route path="/movies/stared" element={<MoviesStared />} />
             <Route path="/movies/watched" element={<MoviesWatched />} />
             <Route path="/movies/:movieId" element={<Movie />} />
+            <Route path="/movies/:movieId/play" element={<PlayMovie />} />
             <Route path="/series/home" element={<SeriesHome />} />
             <Route path="/series/following" element={<SeriesFollowing />} />
             <Route path="/series/watched" element={<SeriesWatched />} />
