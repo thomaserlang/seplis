@@ -3,13 +3,17 @@ import { guid } from '@seplis/utils'
 import axios from 'axios'
 import Hls, { ErrorData } from 'hls.js'
 import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { parse as vttParse } from '../../utils/srt-vtt-parser'
+import { useQuery } from '@tanstack/react-query'
 
 interface IProps {
-    source: IPlayServerRequestSource
+    requestSource: IPlayServerRequestSource
     startTime?: number
     audioSource?: IPlaySourceStream,
     resolutionWidth?: number
+    subtitleSource?: IPlaySourceStream
     children?: React.ReactNode
+    subtitleOffset?: number
     onAutoPlayFailed?: () => void
     onTimeUpdate?: (time: number) => void
     onPause?: () => void
@@ -27,11 +31,13 @@ export interface IVideoControls {
 }
 
 export const Video = forwardRef<IVideoControls, IProps>(({
-    source,
+    requestSource,
     startTime = 0,
     audioSource,
     resolutionWidth,
+    subtitleSource,
     children,
+    subtitleOffset,
     onAutoPlayFailed,
     onTimeUpdate,
     onPause,
@@ -42,7 +48,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
     const baseTime = useRef<number>(startTime)
-    const prevSource = useRef(source)
+    const prevRequestSource = useRef(requestSource)
     const prevAudioSource = useRef(audioSource)
     const prevResolutionWidth = useRef(resolutionWidth)
 
@@ -52,16 +58,16 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         togglePlay: () => togglePlay(videoElement.current),
         paused: () => videoElement.current.paused,
         setVolume: (volume: number) => videoElement.current.volume = volume,
-        getVolume: () => videoElement.current.volume
+        getVolume: () => videoElement.current.volume,
     }), [videoElement.current])
 
     useEffect(() => {
-        if ((prevSource.current == source) && (prevAudioSource.current == audioSource) && (prevResolutionWidth.current == resolutionWidth))
+        if ((prevRequestSource.current == requestSource) && (prevAudioSource.current == audioSource) &&
+            (prevResolutionWidth.current == resolutionWidth))
             return
-        console.log(audioSource)
         baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
         setSessionUUID(guid())
-    }, [source, audioSource, resolutionWidth])
+    }, [requestSource, audioSource, resolutionWidth])
 
     useEffect(() => {
         const url = getPlayUrl({
@@ -69,10 +75,10 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             resolutionWidth: resolutionWidth,
             sessionUUID: sessionUUID,
             audio: audioSource && `${audioSource.language}:${audioSource.index}`,
-            source: source,
+            requestSource: requestSource,
             startTime: Math.round(baseTime.current),
         })
-        
+
         if (!Hls.isSupported()) {
             videoElement.current.src = url
             videoElement.current.load()
@@ -90,12 +96,12 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             hls.current.on(Hls.Events.MANIFEST_PARSED, () => {
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             })
-            hls.current.on(Hls.Events.ERROR, (e, data) => 
-                onHlsError && onHlsError(videoElement.current, hls.current, data, setSessionUUID))
+            hls.current.on(Hls.Events.ERROR, (e, data) => onHlsError &&
+                onHlsError(videoElement.current, hls.current, data, setSessionUUID))
         }
-        
+
         let t = setInterval(() => {
-            axios.get(`${source.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
+            axios.get(`${requestSource.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
                 if (e.response.status == 404) {
                     clearInterval(t)
                     baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
@@ -107,35 +113,43 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             clearInterval(t)
             if (hls.current) hls.current.destroy()
             if (sessionUUID)
-                axios.get(`${source.request.play_url}/close-session/${sessionUUID}`).catch(() => { })
+                axios.get(`${requestSource.request.play_url}/close-session/${sessionUUID}`).catch(() => { })
         }
     }, [sessionUUID])
-    
 
-    return <video
-        ref={videoElement}
-        onTimeUpdate={(e) => onTimeUpdate && onTimeUpdate(getCurrentTime(e.currentTarget, baseTime.current))}
-        onPause={() => onPause && onPause()}
-        onPlay={() => {
-            if (onPlay) onPlay()
-            onLoadingState(false)
-        }}
-        onStalled={() => onLoadingState && onLoadingState(true)}
-        onWaiting={() => onLoadingState && onLoadingState(true)}
-        onPlaying={() => onLoadingState && onLoadingState(false)}
-        onCanPlayThrough={() => onLoadingState && onLoadingState(false)}
-        onError={(event) => {
-            if (event.currentTarget.error.code == event.currentTarget.error.MEDIA_ERR_DECODE)
-                handleMediaError(videoElement.current, hls.current)
-        }}
-        width="100%"
-        style={{ position: 'fixed', height: '100%' }}
-        controls={false}
-        preload="none"
-        crossOrigin="annonymous"
-    >
-        {children}
-    </video>
+    return <>
+        <video
+            ref={videoElement}
+            onTimeUpdate={(e) => onTimeUpdate && onTimeUpdate(getCurrentTime(e.currentTarget, baseTime.current))}
+            onPause={() => onPause && onPause()}
+            onPlay={() => {
+                if (onPlay) onPlay()
+                onLoadingState(false)
+            }}
+            onStalled={() => onLoadingState && onLoadingState(true)}
+            onWaiting={() => onLoadingState && onLoadingState(true)}
+            onPlaying={() => onLoadingState && onLoadingState(false)}
+            onCanPlayThrough={() => onLoadingState && onLoadingState(false)}
+            onError={(event) => {
+                if (event.currentTarget.error.code == event.currentTarget.error.MEDIA_ERR_DECODE)
+                    handleMediaError(videoElement.current, hls.current)
+            }}
+            width="100%"
+            style={{ position: 'fixed', height: '100%' }}
+            controls={false}
+            preload="none"
+            crossOrigin="annonymous"
+        >
+            {children}
+        </video>
+        <SetSubtitle
+            videoElement={videoElement.current}
+            requestSource={requestSource}
+            startTime={baseTime.current}
+            subtitleSource={subtitleSource}
+            subtitleOffset={subtitleOffset}
+        />
+    </>
 })
 
 
@@ -166,13 +180,13 @@ function setCurrentTime(time: number, videoElement: HTMLVideoElement, setSession
 }
 
 
-function getPlayUrl({ videoElement, source, startTime, audio, resolutionWidth, sessionUUID }: { videoElement: HTMLVideoElement, source: IPlayServerRequestSource, startTime: number, audio: string, resolutionWidth: number, sessionUUID: string }) {
+function getPlayUrl({ videoElement, requestSource, startTime, audio, resolutionWidth, sessionUUID }: { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, startTime: number, audio: string, resolutionWidth: number, sessionUUID: string }) {
     const videoCodecs = getSupportedVideoCodecs(videoElement)
     if (videoCodecs.length == 0)
         throw new Error('No supported codecs')
-    return `${source.request.play_url}/transcode` +
-        `?play_id=${source.request.play_id}` +
-        `&source_index=${source.source.index}` +
+    return `${requestSource.request.play_url}/transcode` +
+        `?play_id=${requestSource.request.play_id}` +
+        `&source_index=${requestSource.source.index}` +
         `&session=${sessionUUID}` +
         `&start_time=${startTime || 0}` +
         `&audio_lang=${audio || ''}` +
@@ -225,8 +239,7 @@ function onHlsError(videoElement: HTMLVideoElement, hls: Hls, data: ErrorData, s
 
 
 function handleMediaError(videoElement: HTMLVideoElement, hls: Hls) {
-    if (hls)
-        hls.recoverMediaError()
+    if (hls) hls.recoverMediaError()
     videoElement.play()
 }
 
@@ -236,4 +249,45 @@ function getCurrentTime(videoElement: HTMLVideoElement, baseTime: number) {
     if (videoElement.seekable.length <= 1 || videoElement.seekable.end(0) <= 1)
         time += baseTime
     return Math.round(time)
+}
+
+
+function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, subtitleOffset = 0 }: { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number }) {
+    const { data } = useQuery(['subtitle', requestSource?.request.play_id, subtitleSource?.index], async () => {
+        if (!subtitleSource)
+            return null
+        const result = await axios.get<string>(`${requestSource.request.play_url}/subtitle-file` +
+            `?play_id=${requestSource.request.play_id}` +
+            `&source_index=${requestSource.source.index}` +
+            `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}`)
+        return vttParse(result.data)
+    })
+
+    useEffect(() => {
+        if (!videoElement) return
+
+        for (const track of videoElement.textTracks) {
+            track.mode = 'disabled'
+        }
+        
+        if (!data) return
+
+        // Idk why but adding a new track too fast after disabling a previous one
+        // makes the new one not show up
+        setTimeout(() => {
+            const textTrack = videoElement.addTextTrack('subtitles', subtitleSource.title, subtitleSource.language)
+            textTrack.mode = 'showing'
+            for (const cue of data.entries) {
+                const vtt = new VTTCue(
+                    ((cue.from / 1000) - startTime) + subtitleOffset, 
+                    ((cue.to / 1000) - startTime) + subtitleOffset, 
+                    cue.text
+                )
+                vtt.line = -3
+                textTrack.addCue(vtt)
+            }
+        }, 10)
+    }, [data, startTime, subtitleOffset])
+
+    return <></>
 }

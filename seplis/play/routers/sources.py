@@ -10,6 +10,8 @@ class Response_stream_model(BaseModel):
     language: str
     index: int
     codec: str | None
+    default: bool = False
+    forced: bool = False
 
 class Response_model(BaseModel):
     width: int
@@ -49,6 +51,8 @@ async def get_sources(metadata = Depends(get_metadata)):
                 language=lang or title,
                 index=stream['index'],
                 codec=stream.get('codec_name'),
+                default=stream.get('disposition', {}).get('default', 0) == 1,
+                forced=stream.get('disposition', {}).get('forced', 0) == 1,
             )
             if stream['codec_type'] == 'audio':
                 d.audio.append(s)

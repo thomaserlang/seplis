@@ -4,8 +4,10 @@ import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import { pickStartAudio } from './pick-audio-source'
 import { getDefaultResolutionWidth } from './pick-quality'
 import { pickStartSource } from './pick-source'
+import { pickStartSubtitle } from './pick-subtitle-source'
 import { useGetPlayServers } from './request-play-servers'
 import { ISettingsProps, Settings } from './settings'
 import Slider from './slider'
@@ -23,10 +25,21 @@ export interface IPlayerProps {
     loading: boolean
     title?: string,
     playNext?: IPlayNextProps
+    defaultAudio?: string
+    defaultSubtitle?: string
     onTimeUpdate: (time: number, duration: number) => void
 }
 
-export default function Player({ getPlayServersUrl, title, startTime = 0, playNext, loading, onTimeUpdate }: IPlayerProps) {
+export default function Player({ 
+    getPlayServersUrl, 
+    title, 
+    startTime = 0, 
+    playNext, 
+    loading, 
+    defaultAudio, 
+    defaultSubtitle, 
+    onTimeUpdate,
+}: IPlayerProps) {
     const playServers = useGetPlayServers(getPlayServersUrl)
 
     if (playServers.isLoading || playServers.isFetching || loading)
@@ -42,6 +55,8 @@ export default function Player({ getPlayServersUrl, title, startTime = 0, playNe
         startTime={startTime}
         playNext={playNext}
         onTimeUpdate={onTimeUpdate}
+        defaultAudio={defaultAudio}
+        defaultSubtitle={defaultSubtitle}
     />
 }
 
@@ -51,14 +66,25 @@ interface IVideoPlayerProps {
     title: string
     startTime: number
     playNext: IPlayNextProps
+    defaultAudio?: string
+    defaultSubtitle?: string
     onTimeUpdate: (time: number, duration: number) => void
 }
 
-function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: IVideoPlayerProps) {
+function VideoPlayer({ 
+    playServers, 
+    title, 
+    startTime, 
+    playNext,
+    defaultAudio,
+    defaultSubtitle, 
+    onTimeUpdate 
+}: IVideoPlayerProps) {
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
     const [resolutionWidth, setResolutionWidth] = useState<number>(getDefaultResolutionWidth())
-    const [audioSource, setAudioSource] = useState<IPlaySourceStream>()
+    const [audioSource, setAudioSource] = useState<IPlaySourceStream>(pickStartAudio(requestSource, defaultAudio))
+    const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(pickStartSubtitle(requestSource, defaultSubtitle))
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -108,10 +134,11 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
     >
         <Video
             ref={videoControls}
-            source={requestSource}
+            requestSource={requestSource}
             startTime={startTime}
             resolutionWidth={resolutionWidth}
             audioSource={audioSource}
+            subtitleSource={subtitleSource}
             onTimeUpdate={(time) => {
                 onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
@@ -173,9 +200,11 @@ function VideoPlayer({ playServers, title, startTime, playNext, onTimeUpdate }: 
                         requestSource={requestSource} 
                         resolutionWidth={resolutionWidth}
                         audioSource={audioSource}
+                        subtitleSource={subtitleSource}
                         onRequestSourceChange={setRequestSource}
                         onResolutionWidthChange={setResolutionWidth}
                         onAudioSourceChange={setAudioSource}
+                        onSubtitleSourceChange={setSubtitleSource}
                     />
                     <FullscreenButton />
                 </Flex>

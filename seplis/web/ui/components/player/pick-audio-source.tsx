@@ -1,6 +1,7 @@
 import { Box } from '@chakra-ui/react'
-import { IPlaySourceStream } from '@seplis/interfaces/play-server'
+import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { langCodeToLang } from '@seplis/utils'
+import { stringToSourceStream } from './pick-subtitle-source'
 
 
 interface IProps {
@@ -22,4 +23,14 @@ export function PickAudioSource({ audioSources, selected, onChange }: IProps) {
             </Box>
         ))}
     </Box>
+}
+
+
+export function pickStartAudio(requestSource: IPlayServerRequestSource, defaultAudio: string) {
+    const s = stringToSourceStream(defaultAudio, requestSource.source.audio)
+    if (s) return s
+    for (const sub of requestSource.source.audio) {
+        if (sub.default || sub.forced)
+            return sub
+    } 
 }

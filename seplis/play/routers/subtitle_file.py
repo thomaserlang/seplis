@@ -9,7 +9,7 @@ router = APIRouter()
 async def download_subtitle(
     source_index: int,
     lang: constr(min_length=1),
-    start_time: int | float,
+    start_time: int | float = 0,
     metadata=Depends(get_metadata)
 ):    
     if not metadata:
