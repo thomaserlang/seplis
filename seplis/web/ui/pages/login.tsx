@@ -1,21 +1,4 @@
-import {
-  Flex,
-  Heading,
-  Input,
-  Button,
-  InputGroup,
-  Stack,
-  InputLeftElement,
-  chakra,
-  Box,
-  Link,
-  Avatar,
-  FormControl,
-  FormHelperText,
-  Alert,
-  AlertTitle,
-  AlertIcon,
-} from '@chakra-ui/react'
+import { Flex, Heading, Input, Button, InputGroup, Stack, InputLeftElement, Box, Link, Avatar, FormControl, FormHelperText, Alert, AlertTitle, AlertIcon } from '@chakra-ui/react'
 import { FaUserAlt, FaLock } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
@@ -26,8 +9,6 @@ import { IToken } from '@seplis/interfaces/token'
 import { ErrorMessageFromResponse } from '@seplis/components/error'
 import { setAuthorizationHeader } from '@seplis/api'
 
-const CFaUserAlt = chakra(FaUserAlt)
-const CFaLock = chakra(FaLock)
 
 interface ILogin {
     login: string
@@ -37,9 +18,10 @@ interface ILogin {
 
 export default function Login() {
     const { handleSubmit, register, formState: { isSubmitting }, resetField, setFocus, setValue } = useForm<ILogin>()
-    const [ error, setError ] = useState<JSX.Element>(null)
-    const [ next ] = useQueryParam('next', StringParam)
+    const [error, setError] = useState<JSX.Element>(null)
+    const [next] = useQueryParam('next', StringParam)
     const navigate = useNavigate()
+
     useEffect(() => {
         document.title = 'Log in | SEPLIS'
         setValue('next', next)
@@ -53,19 +35,13 @@ export default function Login() {
                 login: data.login,
                 password: data.password,
             })
-            localStorage.setItem('accessToken', r.data.access_token)            
+            localStorage.setItem('accessToken', r.data.access_token)
             setAuthorizationHeader()
-            navigate(data.next?data.next:'/')
-        } catch(e) {
+            navigate(data.next ? data.next : '/')
+        } catch (e) {
             setError(ErrorMessageFromResponse(e))
             resetField('password')
             setFocus('password')
-        }
-    }
-
-    const onKeyDown = (event: React.KeyboardEvent<HTMLFormElement>) => {
-        if (event.key === "Enter") {
-            handleSubmit(submit)();
         }
     }
 
@@ -85,43 +61,53 @@ export default function Login() {
         >
             <Avatar src="/static/img/apple-touch-icon.png" />
             <Box minW={{ base: "90%", md: "468px" }} p="2rem" backgroundColor="blackAlpha.400" rounded="md">
-                <form 
+                <form
                     onSubmit={handleSubmit(submit)}
-                    onKeyDown={onKeyDown}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter")
+                            handleSubmit(submit)()
+                    }}
                 >
-                <Stack spacing="1rem">
-                    <Heading>Log in to SEPLIS</Heading>
+                    <Stack spacing="1rem">
+                        <Heading>Log in to SEPLIS</Heading>
 
-                    {error && <Alert status="error" rounded="md">
-                        <AlertIcon />
-                        <AlertTitle>{error}</AlertTitle>    
-                    </Alert>}
+                        {error && <Alert status="error" rounded="md">
+                            <AlertIcon />
+                            <AlertTitle>{error}</AlertTitle>
+                        </Alert>}
 
-                    <FormControl>
-                        <InputGroup>
-                            <InputLeftElement pointerEvents="none" children={<CFaUserAlt />} />
-                            <Input {...register('login', {required: true})} type="input" placeholder="email or username" />
-                        </InputGroup>
-                    </FormControl>
+                        <FormControl>
+                            <InputGroup>
+                                <InputLeftElement pointerEvents="none" children={<FaUserAlt />} />
+                                <Input {...register('login', { required: true })} type="input" placeholder="Email or username" />
+                            </InputGroup>
+                        </FormControl>
 
-                    <FormControl>
-                        <InputGroup>
-                            <InputLeftElement pointerEvents="none" children={<CFaLock />} />
-                            <Input {...register('password', {required: true})} type="password" placeholder="Password" />
-                        </InputGroup>
-                        <FormHelperText textAlign="right">
-                            <Link>Reset password</Link>
-                        </FormHelperText>
-                    </FormControl>
-                    
-                    <Input {...register('next')} type="hidden" />
-                        
-                    <Stack align="end">
-                        <div>
-                            <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText='Logging in'>Log in</Button>
-                        </div>
+                        <FormControl>
+                            <InputGroup>
+                                <InputLeftElement pointerEvents="none" children={<FaLock />} />
+                                <Input {...register('password', { required: true })} type="password" placeholder="Password" />
+                            </InputGroup>
+                            <FormHelperText textAlign="right">
+                                <Link>Reset password</Link>
+                            </FormHelperText>
+                        </FormControl>
+
+                        <Input {...register('next')} type="hidden" />
+
+                        <Flex>
+                            <Button
+                                marginLeft="auto"
+                                type="submit"
+                                colorScheme="blue"
+                                isLoading={isSubmitting}
+                                loadingText='Logging in'
+                                paddingLeft="2rem"
+                                paddingRight="2rem">
+                                Log in
+                            </Button>
+                        </Flex>
                     </Stack>
-                </Stack>
                 </form>
             </Box>
             <Box>
