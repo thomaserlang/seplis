@@ -130,6 +130,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             }}
             onStalled={() => onLoadingState && onLoadingState(true)}
             onWaiting={() => onLoadingState && onLoadingState(true)}
+            onLoadStart={() => onLoadingState && onLoadingState(true)}
             onPlaying={() => onLoadingState && onLoadingState(false)}
             onCanPlayThrough={() => onLoadingState && onLoadingState(false)}
             onError={(event) => {
