@@ -3,6 +3,7 @@ import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream 
 import { PickAudioSource } from './pick-audio-source'
 import { PickQuality } from './pick-quality'
 import { PickSource } from './pick-source'
+import { PickSubtitleOffset } from './pick-subtitle-offset'
 import { PickSubtitleSource } from './pick-subtitle-source'
 
 export interface ISettingsProps {
@@ -11,10 +12,12 @@ export interface ISettingsProps {
     resolutionWidth?: number,
     audioSource?: IPlaySourceStream,
     subtitleSource?: IPlaySourceStream,
+    subtitleOffset?: number,
     onRequestSourceChange?: (requestSource: IPlayServerRequestSource) => void,
     onResolutionWidthChange?: (width: number) => void,
     onAudioSourceChange?: (audioSource: IPlaySourceStream) => void,
     onSubtitleSourceChange?: (subtitleSource: IPlaySourceStream) => void,
+    onSubtitleOffsetChange?: (offset: number) => void,
 }
 
 export function Settings({ 
@@ -23,10 +26,12 @@ export function Settings({
     resolutionWidth,
     audioSource,
     subtitleSource,
+    subtitleOffset,
     onRequestSourceChange,
     onResolutionWidthChange,
     onAudioSourceChange,
     onSubtitleSourceChange,
+    onSubtitleOffsetChange,
 }: ISettingsProps) {
     return <Flex wrap="wrap" gap="1rem">
         <Flex basis="150px" direction="column">
@@ -69,7 +74,7 @@ export function Settings({
 
         <Flex basis="150px" grow="1" direction="column">
             <Box textStyle="h2">Subtitle offset</Box>
-            <Box></Box>
+            <PickSubtitleOffset selected={subtitleOffset} onChange={onSubtitleOffsetChange} />
         </Flex>
 
     </Flex>

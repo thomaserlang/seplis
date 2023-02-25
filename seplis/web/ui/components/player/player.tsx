@@ -95,6 +95,7 @@ function VideoPlayer({
     const [resolutionWidth, setResolutionWidth] = useState<number>(getDefaultResolutionWidth())
     const [audioSource, setAudioSource] = useState<IPlaySourceStream>(pickStartAudio(requestSource, defaultAudio))
     const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(pickStartSubtitle(requestSource, defaultSubtitle))
+    const [subtitleOffset, setSubtitleOffset] = useState<number>(0)
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
@@ -149,7 +150,8 @@ function VideoPlayer({
             resolutionWidth={resolutionWidth}
             audioSource={audioSource}
             subtitleSource={subtitleSource}
-            subtitleLinePosition={showControls ? -4 : undefined}
+            subtitleLinePosition={(showControls || paused) ? -4 : undefined}
+            subtitleOffset={subtitleOffset}
             onTimeUpdate={(time) => {
                 onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
@@ -212,6 +214,7 @@ function VideoPlayer({
                         resolutionWidth={resolutionWidth}
                         audioSource={audioSource}
                         subtitleSource={subtitleSource}
+                        subtitleOffset={subtitleOffset}
                         onRequestSourceChange={setRequestSource}
                         onResolutionWidthChange={setResolutionWidth}
                         onAudioSourceChange={(source) => {
@@ -222,6 +225,7 @@ function VideoPlayer({
                             setSubtitleSource(source)
                             if (onSubtitleChange) onSubtitleChange(source)
                         }}
+                        onSubtitleOffsetChange={setSubtitleOffset}
                     />
                     <FullscreenButton />
                 </Flex>
