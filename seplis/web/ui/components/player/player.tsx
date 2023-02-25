@@ -32,14 +32,14 @@ export interface IPlayerProps {
     onSubtitleChange?: (source: IPlaySourceStream) => void
 }
 
-export default function Player({ 
-    getPlayServersUrl, 
-    title, 
-    startTime = 0, 
-    playNext, 
-    loading, 
-    defaultAudio, 
-    defaultSubtitle, 
+export default function Player({
+    getPlayServersUrl,
+    title,
+    startTime = 0,
+    playNext,
+    loading,
+    defaultAudio,
+    defaultSubtitle,
     onTimeUpdate,
     onAudioChange,
     onSubtitleChange,
@@ -79,13 +79,13 @@ interface IVideoPlayerProps {
     onSubtitleChange?: (source: IPlaySourceStream) => void
 }
 
-function VideoPlayer({ 
-    playServers, 
-    title, 
-    startTime, 
+function VideoPlayer({
+    playServers,
+    title,
+    startTime,
     playNext,
     defaultAudio,
-    defaultSubtitle, 
+    defaultSubtitle,
     onTimeUpdate,
     onAudioChange,
     onSubtitleChange,
@@ -197,20 +197,16 @@ function VideoPlayer({
             </Flex>
 
             <Flex gap="0.5rem">
-                {paused ?
-                    <PlayButton aria-label="Play" icon={<FaPlay />} onClick={() => videoControls.current.togglePlay()} /> :
-                    <PlayButton aria-label="Pause" icon={<FaPause />} onClick={() => videoControls.current.togglePlay()} />
-                }
-
+                <PlayButton aria-label="Play or pause" icon={paused ? <FaPlay /> : <FaPause />} onClick={() => videoControls.current.togglePlay()} />
                 <PlayButton aria-label="Rewind 15 seconds" icon={<FaUndo />} onClick={() => videoControls.current.setCurrentTime(time - 15)} />
                 <PlayButton aria-label="Forward 15 seconds" icon={<FaRedo />} onClick={() => videoControls.current.setCurrentTime(time + 15)} />
                 <VolumeButton videoControls={videoControls.current} />
 
                 <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
                     {playNext && <PlayNext {...playNext} />}
-                    <SettingsButton 
-                        playServers={playServers} 
-                        requestSource={requestSource} 
+                    <SettingsButton
+                        playServers={playServers}
+                        requestSource={requestSource}
                         resolutionWidth={resolutionWidth}
                         audioSource={audioSource}
                         subtitleSource={subtitleSource}
