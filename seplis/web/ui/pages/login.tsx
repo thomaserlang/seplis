@@ -41,7 +41,7 @@ export default function Login() {
     const [ next ] = useQueryParam('next', StringParam)
     const navigate = useNavigate()
     useEffect(() => {
-        document.title = 'Login in | SEPLIS'
+        document.title = 'Log in | SEPLIS'
         setValue('next', next)
         setFocus('login')
     }, [])
