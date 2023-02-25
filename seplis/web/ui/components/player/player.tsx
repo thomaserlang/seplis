@@ -281,7 +281,7 @@ function SettingsButton(props: ISettingsProps) {
 
         <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
             <ModalOverlay />
-            <ModalContent maxWidth="1100px" paddingBottom="1rem" paddingTop="1rem">
+            <ModalContent maxWidth="1100px" paddingBottom="1rem" paddingTop="1rem" backgroundColor="gray.900">
                 <ModalCloseButton />
                 <ModalBody>
                     <Settings {...props} />
