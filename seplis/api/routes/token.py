@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, Security, Request
 from starlette.concurrency import run_in_threadpool
 from passlib.hash import pbkdf2_sha256
 import sqlalchemy as sa
-from datetime import datetime, timedelta
+
+from seplis.api.send_email import send_new_login
 
 from ..dependencies import get_session, AsyncSession, authenticated
 from .. import models, schemas, constants, exceptions
@@ -13,6 +14,7 @@ router = APIRouter(prefix='/2')
 @router.post('/token', status_code=201, response_model=schemas.Token)
 async def create_token(
     data: schemas.Token_create,
+    request: Request,
     session: AsyncSession = Depends(get_session),
 ):
     app: models.App = await session.scalar(sa.select(models.App).where(models.App.client_id == data.client_id))
@@ -37,7 +39,9 @@ async def create_token(
         raise exceptions.Wrong_login_or_password()
 
     token = await models.Token.new_token(user_id=user.id, app_id=app.id, user_level=user.level)
-
+    
+    await send_new_login(to=user.email, ip=request.client.host)
+    
     return schemas.Token(access_token=token)
 
 
