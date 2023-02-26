@@ -227,7 +227,7 @@ class User_email_duplicate(API_exception):
             self,
             status_code=400,
             code=1501,
-            message='Email does already exist',
+            message='This email has already been used',
         )
 
 class User_username_duplicate(API_exception):
@@ -237,17 +237,7 @@ class User_username_duplicate(API_exception):
             self,
             status_code=400,
             code=1502,
-            message='Username does already exist',
-        )
-
-class User_show_subtitle_lang_not_found(API_exception):
-
-    def __init__(self):
-        API_exception.__init__(
-            self,
-            status_code=404,
-            code=1510,
-            message='Unknown user, show or no default subtitle for this show',
+            message='This username is taken',
         )
 
 class Episode_unknown(API_exception):
