@@ -7,7 +7,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { IToken } from '@seplis/interfaces/token'
 import { ErrorMessageFromResponse } from '@seplis/components/error'
-import { setAuthorizationHeader } from '@seplis/api'
+import api, { setAuthorizationHeader } from '@seplis/api'
+import { IUser, IUsersLoggedIn } from '@seplis/interfaces/user'
 
 
 interface ILogin {
@@ -37,6 +38,15 @@ export default function Login() {
             })
             localStorage.setItem('accessToken', r.data.access_token)
             setAuthorizationHeader()
+            const user = await api.get<IUser>('/2/users/me')
+            const users: IUsersLoggedIn = JSON.parse(localStorage.getItem('users')) || {}
+            users[user.data.id] = {
+                ...user.data,
+                token: r.data.access_token
+            }
+            localStorage.setItem('users', JSON.stringify(users))
+            localStorage.setItem('activeUser', JSON.stringify(user.data))
+
             navigate(data.next ? data.next : '/')
         } catch (e) {
             setError(ErrorMessageFromResponse(e))

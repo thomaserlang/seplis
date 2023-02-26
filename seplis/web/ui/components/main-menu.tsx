@@ -1,5 +1,7 @@
 import { ChevronDownIcon, HamburgerIcon } from '@chakra-ui/icons'
 import { Avatar, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
+import { IUser } from '@seplis/interfaces/user'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, } from 'react-router-dom'
 import ChangePasswordForm from './change_password_form'
 import { MovieNew } from './movie/settings'
@@ -44,7 +46,7 @@ export default function MainMenu() {
         >
             <Menu>
                 <MenuButton>
-                    <Avatar size="md" name='USER' />
+                    <UserAvatar />
                 </MenuButton>
                 <MenuList>
                     {ChangePasswordMenuItem()}
@@ -183,4 +185,14 @@ function ChangePasswordMenuItem() {
             </ModalContent>
         </Modal>
     </>
+}
+
+
+function UserAvatar() {
+    const [user, setUser] = useState<IUser>()
+    useEffect(() => {
+        const user: IUser = JSON.parse(localStorage.getItem('activeUser'))
+        setUser(user)
+    }, [])
+    return <Avatar size="md" name={user?.username || 'user'} />
 }
