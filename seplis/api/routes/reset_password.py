@@ -1,13 +1,11 @@
 
 import sqlalchemy as sa
-import aiosmtplib
 from fastapi import APIRouter, Depends, Response, Body
 from pydantic import EmailStr
 from datetime import datetime, timezone
-from email.mime.text import MIMEText
 from ..dependencies import  get_session, AsyncSession
 from .. import models, schemas, exceptions
-from ... import config, logger
+from ..send_email import send_reset_password
 
 router = APIRouter(prefix='/2')
 
@@ -18,30 +16,9 @@ async def send_reset_link(
 ):
     user_id = await session.scalar(sa.select(models.User.id).where(models.User.email == email))
     if not user_id:
-        return Response(status_code=204)
-    
-    url = await models.Reset_password.create_reset_url(user_id)
-
-    smtp = aiosmtplib.SMTP(
-        hostname=config.data.smtp.server, 
-        port=int(config.data.smtp.port),
-        use_tls=config.data.smtp.use_tls,
-    )
-    await smtp.connect()
-    if config.data.smtp.user:
-        await smtp.login(config.data.smtp.user, config.data.smtp.password)
-
-    message = MIMEText(f'''
-    <html>
-    <body>
-        Reset your SEPLIS password here: <a href="{url}">{url}</a>
-    </body>
-    </html>
-    ''', 'html')
-    message["From"] = config.data.smtp.from_email
-    message["To"] = email
-    message["Subject"] = "SEPLIS Reset password"
-    await smtp.send_message(message)
+        return Response(status_code=204)    
+    url = await models.Reset_password.create_reset_link(user_id)
+    await send_reset_password(to=email, url=url)
 
 
 @router.post('/reset-password', status_code=204)

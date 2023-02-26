@@ -4,6 +4,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
+from pydantic import EmailStr
 from seplis import config, set_logger, config_load, logger
 from seplis.api import schemas
 
@@ -88,6 +89,25 @@ async def login(
     if r.status_code >= 400:
         return JSONResponse(content=r.json(), status_code=r.status_code)
     return r.json()
+
+
+@app.post('/api/send-reset-password', status_code=204)
+async def reset_password(
+    email: EmailStr = Body(..., embed=True),
+):
+    r = await client.post('/2/send-reset-password', json={'email': email})
+    if r.status_code >= 400:
+        return JSONResponse(content=r.json(), status_code=r.status_code)
+
+
+@app.post('/api/reset-password', status_code=204)
+async def reset_password(
+    key: str = Body(..., embed=True, min_length=36),
+    new_password: schemas.USER_PASSWORD_TYPE = Body(..., embed=True),
+):
+    r = await client.post('/2/reset-password', json={'key': key, 'new_password': new_password})
+    if r.status_code >= 400:
+        return JSONResponse(content=r.json(), status_code=r.status_code)
 
 
 @app.get('/{path:path}', response_class=HTMLResponse)

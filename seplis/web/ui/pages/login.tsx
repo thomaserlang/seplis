@@ -73,7 +73,7 @@ export default function Login() {
 
                         {error && <Alert status="error" rounded="md">
                             <AlertIcon />
-                            <AlertTitle>{error}</AlertTitle>
+                            {error}
                         </Alert>}
 
                         <FormControl>

@@ -1,4 +1,3 @@
-import React from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -88,6 +87,8 @@ import PlayEpisode from './pages/series/play-episode'
 import PlayMovie from './pages/movies/play'
 import Signup from './pages/signup'
 import { Logout } from './pages/logout'
+import SendResetPassword from './pages/send-reset-password'
+import ResetPassword from './pages/reset-password'
 
 spatialInit({})
 
@@ -112,6 +113,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/reset-password" element={<SendResetPassword />} />
+            <Route path="/reset-password/:key" element={<ResetPassword />} />
             <Route path="/movies/home" element={<MoviesHome />} />
             <Route path="/movies/stared" element={<MoviesStared />} />
             <Route path="/movies/watched" element={<MoviesWatched />} />

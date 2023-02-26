@@ -1,39 +1,33 @@
 import { Flex, Heading, Input, Button, InputGroup, Stack, InputLeftElement, Box, Avatar, FormControl, FormErrorMessage, Alert, AlertIcon, AlertTitle } from '@chakra-ui/react'
-import { FaUserAlt, FaLock, FaEnvelope } from 'react-icons/fa'
+import { FaEnvelope } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { IToken } from '@seplis/interfaces/token'
-import { setAuthorizationHeader } from '@seplis/api'
+import { Link } from 'react-router-dom'
 import { setTitle } from '@seplis/utils'
 import { IError, IValidationError } from '@seplis/interfaces/error'
 
 
-interface ISignUp {
+interface IResetPassword {
     [key: string]: string
-    username: string
-    password: string
     email: string
 }
 
-export default function Login() {
-    const { handleSubmit, register, formState: { isSubmitting, errors }, setFocus, setError } = useForm<ISignUp>()
+export default function SendResetPassword() {
+    const { handleSubmit, register, formState: { isSubmitting, errors }, setFocus, setError } = useForm<IResetPassword>()
     const [rootError, setRootError] = useState<string>()
-    const navigate = useNavigate()
+    const [success, setSuccess] = useState<string>()
 
     useEffect(() => {
-        setTitle('Sign up')
-        setFocus('username')
+        setTitle('Reset password')
+        setFocus('email')
     }, [])
 
-    const submit = async (data: ISignUp) => {
+    const submit = async (data: IResetPassword) => {
         try {
             setRootError(null)
-            const r = await axios.post<IToken>('/api/signup', data)
-            localStorage.setItem('accessToken', r.data.access_token)
-            setAuthorizationHeader()
-            navigate('/')
+            await axios.post('/api/send-reset-password', data)
+            setSuccess('A password reset link has been sent to your email.')
         } catch (e) {
             const data = e.response.data as IError<IValidationError>
 
@@ -42,12 +36,7 @@ export default function Login() {
                     setError(e.field[1], { message: e.message })
                 }
             } else {
-                if (data.code == 1501)
-                    setError('email', {message: data.message})
-                else if (data.code == 1502)
-                    setError('username', {message: data.message})
-                else
-                    setRootError(data.message)
+                setRootError('Failed to send password reset link, please try again')
             }
         }
     }
@@ -75,63 +64,47 @@ export default function Login() {
                     }}
                 >
                     <Stack spacing="1rem">
-                        <Heading>Sign up to SEPLIS</Heading>
+                        <Heading>Reset password to SEPLIS</Heading>
 
                         {rootError && <Alert status="error" rounded="md">
                             <AlertIcon />
                             {rootError}
                         </Alert>}
 
-                        <FormControl isInvalid={errors?.username !== undefined}>
-                            <InputGroup>
-                                <InputLeftElement pointerEvents="none" children={<FaUserAlt />} />
-                                <Input id="username" {...register('username')} type="input" placeholder="Username" />
-                            </InputGroup>
-                            <FormErrorMessage>
-                                {errors.username?.message}
-                            </FormErrorMessage>
-                        </FormControl>
-
                         <FormControl isInvalid={errors?.email !== undefined}>
                             <InputGroup>
                                 <InputLeftElement pointerEvents="none" children={<FaEnvelope />} />
-                                <Input id="email" {...register('email')} type="input" placeholder="Email" />
+                                <Input {...register('email', { disabled: !!success, required: true })} type="input" placeholder="Email" />
                             </InputGroup>
                             <FormErrorMessage>
                                 {errors.email?.message}
                             </FormErrorMessage>
                         </FormControl>
 
-                        <FormControl isInvalid={errors?.password !== undefined}>
-                            <InputGroup>
-                                <InputLeftElement pointerEvents="none" children={<FaLock />} />
-                                <Input id="password" {...register('password')} type="password" placeholder="Password" />
-                            </InputGroup>
-                            <FormErrorMessage>
-                                {errors.password?.message}
-                            </FormErrorMessage>
-                        </FormControl>
+                        {success && <Alert status="success" rounded="md">
+                            <AlertIcon />
+                            {success}
+                        </Alert>}
 
-                        <Flex>
+                        {!success && <Flex>
                             <Button
                                 marginLeft="auto"
                                 type="submit"
                                 colorScheme="blue"
                                 isLoading={isSubmitting}
-                                loadingText='Creating user'
+                                loadingText='Sending reset password link'
                                 paddingLeft="2rem"
                                 paddingRight="2rem">
-                                Sign up
+                                Reset password
                             </Button>
-                        </Flex>
+                        </Flex>}
                     </Stack>
                 </form>
             </Box>
-            <Box>
-                <Link to="/login">
-                    Login
-                </Link>
-            </Box>
+            <Flex gap="1rem">
+                <Link to="/login">Login</Link>
+                <Link to="/signup">Sign up</Link>
+            </Flex>
         </Stack>
     </Flex>
 }

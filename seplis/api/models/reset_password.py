@@ -21,7 +21,7 @@ class Reset_password(Base):
             await session.execute(sa.insert(Reset_password).values(
                 user_id=user_id,
                 key=key,
-                expires=datetime.now(tz=timezone.utc) + timedelta(hours=24),
+                expires=datetime.now(tz=timezone.utc) + timedelta(minutes=30),
             ))
             await session.commit()
             return config.data.web.url + f'/reset-password/{key}'

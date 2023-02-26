@@ -1,39 +1,37 @@
 import { Flex, Heading, Input, Button, InputGroup, Stack, InputLeftElement, Box, Avatar, FormControl, FormErrorMessage, Alert, AlertIcon, AlertTitle } from '@chakra-ui/react'
-import { FaUserAlt, FaLock, FaEnvelope } from 'react-icons/fa'
+import { FaEnvelope, FaLock } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { IToken } from '@seplis/interfaces/token'
-import { setAuthorizationHeader } from '@seplis/api'
 import { setTitle } from '@seplis/utils'
 import { IError, IValidationError } from '@seplis/interfaces/error'
+import { ErrorMessageFromResponse } from '@seplis/components/error'
 
 
-interface ISignUp {
+interface INewPassword {
     [key: string]: string
-    username: string
-    password: string
-    email: string
+    new_password: string
+    key: string
 }
 
-export default function Login() {
-    const { handleSubmit, register, formState: { isSubmitting, errors }, setFocus, setError } = useForm<ISignUp>()
-    const [rootError, setRootError] = useState<string>()
+export default function ResetPassword() {
+    const { handleSubmit, register, formState: { isSubmitting, errors }, setFocus, setError } = useForm<INewPassword>()
+    const [rootError, setRootError] = useState<JSX.Element>()
     const navigate = useNavigate()
+    const { key } = useParams()
 
     useEffect(() => {
-        setTitle('Sign up')
-        setFocus('username')
+        setTitle('Reset password')
+        setFocus('new_password')
     }, [])
 
-    const submit = async (data: ISignUp) => {
+    const submit = async (data: INewPassword) => {
         try {
             setRootError(null)
-            const r = await axios.post<IToken>('/api/signup', data)
-            localStorage.setItem('accessToken', r.data.access_token)
-            setAuthorizationHeader()
-            navigate('/')
+            await axios.post<IToken>('/api/reset-password', data)
+            navigate('/login')
         } catch (e) {
             const data = e.response.data as IError<IValidationError>
 
@@ -42,12 +40,7 @@ export default function Login() {
                     setError(e.field[1], { message: e.message })
                 }
             } else {
-                if (data.code == 1501)
-                    setError('email', {message: data.message})
-                else if (data.code == 1502)
-                    setError('username', {message: data.message})
-                else
-                    setRootError(data.message)
+                setRootError(ErrorMessageFromResponse(e))
             }
         }
     }
@@ -75,42 +68,23 @@ export default function Login() {
                     }}
                 >
                     <Stack spacing="1rem">
-                        <Heading>Sign up to SEPLIS</Heading>
+                        <Heading>New password to SEPLIS</Heading>
 
                         {rootError && <Alert status="error" rounded="md">
                             <AlertIcon />
                             {rootError}
                         </Alert>}
 
-                        <FormControl isInvalid={errors?.username !== undefined}>
-                            <InputGroup>
-                                <InputLeftElement pointerEvents="none" children={<FaUserAlt />} />
-                                <Input id="username" {...register('username')} type="input" placeholder="Username" />
-                            </InputGroup>
-                            <FormErrorMessage>
-                                {errors.username?.message}
-                            </FormErrorMessage>
-                        </FormControl>
-
-                        <FormControl isInvalid={errors?.email !== undefined}>
-                            <InputGroup>
-                                <InputLeftElement pointerEvents="none" children={<FaEnvelope />} />
-                                <Input id="email" {...register('email')} type="input" placeholder="Email" />
-                            </InputGroup>
-                            <FormErrorMessage>
-                                {errors.email?.message}
-                            </FormErrorMessage>
-                        </FormControl>
-
-                        <FormControl isInvalid={errors?.password !== undefined}>
+                        <FormControl isInvalid={errors?.new_password !== undefined}>
                             <InputGroup>
                                 <InputLeftElement pointerEvents="none" children={<FaLock />} />
-                                <Input id="password" {...register('password')} type="password" placeholder="Password" />
+                                <Input {...register('new_password', { required: true })} type="password" placeholder="New password" />
                             </InputGroup>
                             <FormErrorMessage>
-                                {errors.password?.message}
+                                {errors.new_password?.message}
                             </FormErrorMessage>
                         </FormControl>
+                        <input {...register('key')} value={key} type="hidden" />
 
                         <Flex>
                             <Button
@@ -118,20 +92,19 @@ export default function Login() {
                                 type="submit"
                                 colorScheme="blue"
                                 isLoading={isSubmitting}
-                                loadingText='Creating user'
+                                loadingText='Changing password'
                                 paddingLeft="2rem"
                                 paddingRight="2rem">
-                                Sign up
+                                Change password
                             </Button>
                         </Flex>
                     </Stack>
                 </form>
             </Box>
-            <Box>
-                <Link to="/login">
-                    Login
-                </Link>
-            </Box>
+            <Flex gap="1rem">
+                <Link to="/login">Login</Link>
+                <Link to="/signup">Sign up</Link>
+            </Flex>
         </Stack>
     </Flex>
 }

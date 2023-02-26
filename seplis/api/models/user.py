@@ -1,11 +1,12 @@
 import sqlalchemy as sa
 from starlette.concurrency import run_in_threadpool
+from seplis.api.send_email import send_password_changed
 
 from seplis.utils.sqlalchemy import UtcDateTime
 from .. import schemas, exceptions
 from .base import Base
 from seplis import utils, logger
-from seplis.api.database import database
+from seplis.api.database import auto_session, database
 from seplis.api import constants, exceptions, rebuild_cache
 from datetime import datetime, timedelta, timezone
 from passlib.hash import pbkdf2_sha256
@@ -54,26 +55,26 @@ class User(User_public):
 
 
     @classmethod
-    async def change_password(cls, user_id: int, new_password: str, current_token: str = None, expire_tokens = True):
+    @auto_session
+    async def change_password(cls, user_id: int, new_password: str, current_token: str = None, expire_tokens = True, session=None):
         password = await run_in_threadpool(pbkdf2_sha256.hash, new_password)
-        async with database.session() as session:
-            await session.execute(sa.update(User).where(User.id == user_id).values(
-                password=password,
+        await session.execute(sa.update(User).where(User.id == user_id).values(
+            password=password,
+        ))
+        if expire_tokens:
+            tokens = await session.scalars(sa.select(Token).where(
+                Token.user_id == user_id,
+                sa.or_(
+                    Token.expires >= datetime.utcnow(),
+                    Token.expires == None,
+                ),
+                Token.token != current_token,
             ))
-            if expire_tokens:
-                tokens = await session.scalars(sa.select(Token).where(
-                    Token.user_id == user_id,
-                    sa.or_(
-                        Token.expires >= datetime.utcnow(),
-                        Token.expires == None,
-                    ),
-                    Token.token != current_token,
-                ))
-                for token in tokens:
-                    await session.delete(token)
-                    await database.redis.delete(token.cache_name)
-
-            await session.commit()
+            for token in tokens:
+                await session.execute(sa.delete(Token).where(Token.token == token.token))
+                await database.redis.delete(f'seplis:tokens:{token.token}:user')
+        email = await session.scalar(sa.select(User.email).where(User.id == user_id))
+        await send_password_changed(email)
 
 
 class Token(Base):
