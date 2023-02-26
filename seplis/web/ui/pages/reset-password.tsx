@@ -34,7 +34,6 @@ export default function ResetPassword() {
             navigate('/login')
         } catch (e) {
             const data = e.response.data as IError<IValidationError>
-
             if (data?.errors) {
                 for (const e of data?.errors) {
                     setError(e.field[1], { message: e.message })
@@ -75,7 +74,7 @@ export default function ResetPassword() {
                             {rootError}
                         </Alert>}
 
-                        <FormControl isInvalid={errors?.new_password !== undefined}>
+                        <FormControl isInvalid={!!errors?.new_password}>
                             <InputGroup>
                                 <InputLeftElement pointerEvents="none" children={<FaLock />} />
                                 <Input {...register('new_password', { required: true })} type="password" placeholder="New password" />

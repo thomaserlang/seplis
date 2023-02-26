@@ -41,7 +41,7 @@ class Wrong_password(API_exception):
 
     def __init__(self):
         API_exception.__init__(self,
-            status_code=401,
+            status_code=400,
             code=999, 
             message='Wrong password',
             errors=None,

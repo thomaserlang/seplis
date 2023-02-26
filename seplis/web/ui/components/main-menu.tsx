@@ -1,6 +1,7 @@
 import { ChevronDownIcon, HamburgerIcon } from '@chakra-ui/icons'
-import { Avatar, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
+import { Avatar, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
 import { Link, useNavigate, } from 'react-router-dom'
+import ChangePasswordForm from './change_password_form'
 import { MovieNew } from './movie/settings'
 import { SearchButtonDialog } from './search'
 import { SeriesNew } from './series/settings'
@@ -43,11 +44,10 @@ export default function MainMenu() {
         >
             <Menu>
                 <MenuButton>
-
                     <Avatar size="md" name='USER' />
                 </MenuButton>
                 <MenuList>
-                    <Link to="/change-password"><MenuItem>Change password</MenuItem></Link>
+                    {ChangePasswordMenuItem()}
                     <Link to="/logout"><MenuItem>Logout</MenuItem></Link>
                 </MenuList>
             </Menu>
@@ -160,6 +160,26 @@ function MovieNewMenuItem() {
                         navigate(`/movies/${movieId}`)
                     }} />
                 </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
+}
+
+
+function ChangePasswordMenuItem() {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+
+    return <>
+        <MenuItem onClick={onOpen}>Change password</MenuItem>
+        <Modal onClose={onClose} isOpen={isOpen}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Change password</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <ChangePasswordForm />
+                </ModalBody>
+                <ModalFooter></ModalFooter>
             </ModalContent>
         </Modal>
     </>
