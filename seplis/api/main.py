@@ -1,5 +1,6 @@
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .database import database
@@ -131,6 +132,25 @@ async def exception_handler(request: Request, exc: Exception):
         content={
             'code': 0,
             'message': 'Internal server error',
+        },
+        headers={
+            'access-control-allow-origin': '*',
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(
+        status_code=422,
+        content={
+            'code': 1001,
+            'message': 'One or more fields failed validation',
+            'errors': [{
+                'field': e['loc'], 
+                'message': e['msg'],
+            } for e in exc.errors()],
+            'extra': None,
         },
         headers={
             'access-control-allow-origin': '*',

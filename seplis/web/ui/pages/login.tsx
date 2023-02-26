@@ -1,9 +1,9 @@
-import { Flex, Heading, Input, Button, InputGroup, Stack, InputLeftElement, Box, Link, Avatar, FormControl, FormHelperText, Alert, AlertTitle, AlertIcon } from '@chakra-ui/react'
+import { Flex, Heading, Input, Button, InputGroup, Stack, InputLeftElement, Box, Avatar, FormControl, FormHelperText, Alert, AlertTitle, AlertIcon } from '@chakra-ui/react'
 import { FaUserAlt, FaLock } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { StringParam, useQueryParam } from 'use-query-params'
 import { IToken } from '@seplis/interfaces/token'
 import { ErrorMessageFromResponse } from '@seplis/components/error'
@@ -89,7 +89,7 @@ export default function Login() {
                                 <Input {...register('password', { required: true })} type="password" placeholder="Password" />
                             </InputGroup>
                             <FormHelperText textAlign="right">
-                                <Link>Reset password</Link>
+                                <Link to="/reset-password">Reset password</Link>
                             </FormHelperText>
                         </FormControl>
 
@@ -111,7 +111,7 @@ export default function Login() {
                 </form>
             </Box>
             <Box>
-                <Link href="#">
+                <Link to="/signup">
                     Sign up
                 </Link>
             </Box>

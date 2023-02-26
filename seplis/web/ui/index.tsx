@@ -86,11 +86,11 @@ import MoviesStared from './pages/movies/stared'
 import MoviesWatched from './pages/movies/watched'
 import PlayEpisode from './pages/series/play-episode'
 import PlayMovie from './pages/movies/play'
+import Signup from './pages/signup'
 
 spatialInit({})
 
 createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
         <ChakraProvider theme={theme}>
             <BrowserRouter >
                 <QueryParamProvider adapter={ReactRouter6Adapter}>
@@ -100,7 +100,6 @@ createRoot(document.getElementById("root")).render(
                 </QueryParamProvider>
             </BrowserRouter>
         </ChakraProvider>
-    </React.StrictMode>
 )
 
 function App() {
@@ -110,6 +109,7 @@ function App() {
         <Routes location={background || location}>
             <Route path="/" element={<SeriesHome />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/movies/home" element={<MoviesHome />} />
             <Route path="/movies/stared" element={<MoviesStared />} />
             <Route path="/movies/watched" element={<MoviesWatched />} />
