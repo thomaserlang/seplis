@@ -1,7 +1,7 @@
 import { Flex, Heading, Input, Button, InputGroup, Stack, InputLeftElement, Box, Avatar, FormControl, FormErrorMessage, Alert, AlertIcon, AlertTitle } from '@chakra-ui/react'
 import { FaUserAlt, FaLock, FaEnvelope } from 'react-icons/fa'
 import { useForm } from 'react-hook-form'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { IToken } from '@seplis/interfaces/token'
