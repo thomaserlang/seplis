@@ -9,6 +9,8 @@ const api = Axios.create({
 export function setAuthorizationHeader() {
     if (localStorage.getItem('accessToken'))
         api.defaults.headers['Authorization'] = `Bearer ${localStorage.getItem('accessToken')}`
+    else
+        api.defaults.headers['Authorization'] = null
 }
 
 setAuthorizationHeader()
