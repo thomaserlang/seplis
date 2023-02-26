@@ -87,6 +87,7 @@ import MoviesWatched from './pages/movies/watched'
 import PlayEpisode from './pages/series/play-episode'
 import PlayMovie from './pages/movies/play'
 import Signup from './pages/signup'
+import { Logout } from './pages/logout'
 
 spatialInit({})
 
@@ -109,6 +110,7 @@ function App() {
         <Routes location={background || location}>
             <Route path="/" element={<SeriesHome />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/logout" element={<Logout />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/movies/home" element={<MoviesHome />} />
             <Route path="/movies/stared" element={<MoviesStared />} />

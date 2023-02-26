@@ -47,8 +47,8 @@ export default function MainMenu() {
                     <Avatar size="md" name='USER' />
                 </MenuButton>
                 <MenuList>
-                    <Link to="/user/change-password"><MenuItem>Change password</MenuItem></Link>
-                    <Link to="/user/logout"><MenuItem>Logout</MenuItem></Link>
+                    <Link to="/change-password"><MenuItem>Change password</MenuItem></Link>
+                    <Link to="/logout"><MenuItem>Logout</MenuItem></Link>
                 </MenuList>
             </Menu>
         </Box>
