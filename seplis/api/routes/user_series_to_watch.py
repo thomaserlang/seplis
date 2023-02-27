@@ -8,7 +8,7 @@ from ... import utils
 router = APIRouter(prefix='/2/users/me/series-to-watch')
 
 @router.get('', response_model=schemas.Page_cursor_total_result[schemas.Series_and_episode])
-async def get_series_recently_aired(
+async def get_user_series_to_watch(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
     page_cursor: schemas.Page_cursor_query = Depends(),
