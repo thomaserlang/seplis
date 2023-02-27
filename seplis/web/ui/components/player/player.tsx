@@ -163,6 +163,8 @@ function VideoPlayer({
                 setTime(time)
                 if (showControls && !hideControlsTimer.current)
                     startHideControlsTimer()
+                if (loading)
+                    setLoading(false)
             }}
             onPause={() => setPaused(true)}
             onPlay={() => {

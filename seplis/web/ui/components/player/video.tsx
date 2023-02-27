@@ -133,6 +133,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             onLoadStart={() => onLoadingState && onLoadingState(true)}
             onPlaying={() => onLoadingState && onLoadingState(false)}
             onCanPlayThrough={() => onLoadingState && onLoadingState(false)}
+            onLoadedData={() => onLoadingState && onLoadingState(false)}
             onError={(event) => {
                 if (event.currentTarget.error.code == event.currentTarget.error.MEDIA_ERR_DECODE)
                     handleMediaError(videoElement.current, hls.current)
