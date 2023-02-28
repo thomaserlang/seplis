@@ -33,6 +33,7 @@ def upgrade():
     op.execute('update series set original_title=title, genres="[]"')
     op.drop_column('series', 'description_url')
     op.drop_column('series', 'description_title')
+    op.execute('update series set description_text=null where length(description_text)>2000;')
     op.alter_column('series', 'description_text', 
         existing_type=sa.Text,
         type_=sa.String(2000),
@@ -43,6 +44,7 @@ def upgrade():
     op.add_column('series', sa.Column('tagline', sa.String(500)))
     op.drop_column('episodes', 'description_title')
     op.drop_column('episodes', 'description_url')
+    op.execute('update episodes set description_text=null where length(description_text)>2000;')
     op.alter_column('episodes', 'description_text', 
         existing_type=sa.Text, 
         type_=sa.String(2000),
@@ -52,6 +54,7 @@ def upgrade():
     op.drop_column('episodes', 'air_time')    
     op.add_column('episodes', sa.Column('original_title', sa.String(200)))
     op.execute('update episodes set original_title=title')
+    op.execute('update episodes set title=left(title, 200) where length(title)>200;')
     op.alter_column('episodes', 'title', 
         existing_type=sa.String(300),
         type_=sa.String(200),

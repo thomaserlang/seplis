@@ -18,7 +18,7 @@ def upgrade():
     op.drop_column('users', 'fan_of')
     op.drop_column('users', 'watched')
     op.alter_column('users', 'name', new_column_name='username', existing_type=sa.String(45))
-    op.alter_column('users', 'password', existing_type=sa.CHAR(87), type_=sa.String(200))
+    op.alter_column('users', 'password', existing_type=sa.CHAR(87), type_=sa.String(250))
 
 
 def downgrade():
