@@ -14,10 +14,10 @@ export default function EpisodeCard({ seriesId, episode }: { seriesId: number, e
         <Stack spacing="0.4rem">
             <Text noOfLines={1} lineHeight="1.3">{episode.title}</Text>        
             <Text noOfLines={1} lineHeight="1.3">{episodeNumber(episode)} · {EpisodeAirdate(episode)}</Text>
-            <Stack direction="row">
+            <Flex>
                 <EpisodeWatchedButton seriesId={seriesId} episodeNumber={episode.number} data={episode.user_watched} />
                 <Box marginLeft="auto"><PlayButton seriesId={seriesId} episodeNumber={episode.number} canPlay={episode.user_can_watch?.on_play_server} /></Box>
-            </Stack>
+            </Flex>
         </Stack>
     </Flex>
 }
