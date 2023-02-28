@@ -65,6 +65,7 @@ class Play_server(Base):
 
 
 class Play_server_access(Base):
+    '''Users with access to the play server'''
     __tablename__ = 'play_server_access'
 
     play_server_id = sa.Column(utils.sqlalchemy.UUID, primary_key=True)

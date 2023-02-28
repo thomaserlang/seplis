@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Security
-from ..dependencies import authenticated, get_session, Depends, AsyncSession
+from fastapi import APIRouter, Security, Depends
+from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
 
 router = APIRouter(prefix='/2/series/{series_id}/following')
 
-@router.get('')
+@router.get('', response_model=schemas.Series_following)
 async def following_series(
     series_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),

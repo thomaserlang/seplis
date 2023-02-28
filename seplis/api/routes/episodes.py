@@ -1,10 +1,10 @@
-import asyncio
 from fastapi import Depends, HTTPException, Security
 import sqlalchemy as sa
 from datetime import date
-from ..dependencies import authenticated, authenticated_if_expand, get_expand, get_session, AsyncSession
+from ..dependencies import authenticated, get_current_user_no_raise, get_expand, get_session, AsyncSession
 from .. import models, schemas, constants
 from ... import utils
+from ..expand.episodes import expand_episodes
 from .series import router
 
 
@@ -17,7 +17,7 @@ async def get_episodes(
     air_date_ge: date | None = None,
     air_date_le: date | None = None,
     expand: list[str] | None = Depends(get_expand),
-    user: schemas.User_authenticated | None = Security(authenticated_if_expand, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated | None = Depends(get_current_user_no_raise),
     page_cursor: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
@@ -43,23 +43,7 @@ async def get_episodes(
         page_query=page_cursor,
     )
     p.items = [schemas.Episode.from_orm(row[0]) for row in p.items]
-    if expand:
-        expand_tasks = []
-        if 'user_watched' in expand:
-            expand_tasks.append(expand_user_watched(
-                series_id=series_id, 
-                user_id=user.id, 
-                episodes=p.items, 
-                session=session
-            ))
-        if 'user_can_watch' in expand:
-            expand_tasks.append(expand_user_can_watch(
-                series_id=series_id, 
-                user_id=user.id, 
-                episodes=p.items, 
-                session=session
-            ))
-        await asyncio.gather(*expand_tasks)
+    await expand_episodes(episodes=p.items, series_id=series_id, user=user, expand=expand, session=session)
     return p
 
 
@@ -68,7 +52,7 @@ async def get_episode(
     series_id: int,
     number: int,
     expand: list[str] | None = Depends(get_expand),
-    user: schemas.User_authenticated | None = Security(authenticated_if_expand, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated | None = Depends(get_current_user_no_raise),
     session: AsyncSession = Depends(get_session),
 ):
     episode = await session.scalar(sa.select(models.Episode).where(
@@ -79,23 +63,7 @@ async def get_episode(
         raise HTTPException(404, 'Unknown episode')
     
     episode = schemas.Episode.from_orm(episode)
-    if expand:
-        expand_tasks = []
-        if 'user_watched' in expand:
-            expand_tasks.append(expand_user_watched(
-                series_id=series_id, 
-                user_id=user.id, 
-                episodes=[episode], 
-                session=session
-            ))
-        if 'user_can_watch' in expand:
-            expand_tasks.append(expand_user_can_watch(
-                series_id=series_id, 
-                user_id=user.id, 
-                episodes=[episode], 
-                session=session
-            ))
-        await asyncio.gather(*expand_tasks)
+    await expand_episodes(episodes=[episode], series_id=series_id, user=user, expand=expand, session=session)
     return episode
 
 
@@ -110,37 +78,3 @@ async def delete_episode(
         models.Episode.series_id == series_id,
         models.Episode.number == number,
     ))
-
-
-async def expand_user_watched(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):
-    _episodes: dict[int, schemas.Episode] = {}
-    for episode in episodes:
-        episode.user_watched = schemas.Episode_watched(episode_number=episode.number)
-        _episodes[episode.number] = episode
-    result: list[models.Episode_watched] = await session.scalars(sa.select(
-        models.Episode_watched,
-    ).where(
-        models.Episode_watched.user_id == user_id,
-        models.Episode_watched.series_id == series_id,
-        models.Episode_watched.episode_number.in_(set(_episodes.keys())),
-    ))
-    for episode_watched in result:
-        _episodes[episode_watched.episode_number].user_watched = \
-            schemas.Episode_watched.from_orm(episode_watched)
-
-
-async def expand_user_can_watch(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):
-    _episodes: dict[int, schemas.Episode] = {}
-    for episode in episodes:
-        episode.user_can_watch = schemas.User_can_watch()
-        _episodes[episode.number] = episode
-    result: list[models.Play_server_episode] = await session.scalars(sa.select(
-        models.Play_server_episode,
-    ).where(
-        models.Play_server_access.user_id == user_id,
-        models.Play_server_episode.play_server_id == models.Play_server_access.play_server_id,
-        models.Play_server_episode.series_id == series_id,
-        models.Play_server_episode.episode_number.in_(set(_episodes.keys())),
-    ).group_by(models.Play_server_episode.episode_number))
-    for episode_watched in result:
-        _episodes[episode_watched.episode_number].user_can_watch.on_play_server = True

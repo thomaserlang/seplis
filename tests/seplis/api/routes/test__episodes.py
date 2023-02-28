@@ -21,6 +21,11 @@ async def test_episode_to_watch(client: AsyncClient):
     for episode in data.items:
         assert episode.user_watched == None
 
+    
+    r = await client.get(f'/2/series/{series.id}/episodes', params={
+        'expand': 'user_watched'
+    })
+    assert r.status_code == 401
 
     await user_signin(client, [str(constants.LEVEL_USER)])
     
@@ -45,7 +50,6 @@ async def test_episode_to_watch(client: AsyncClient):
             assert episode.user_watched.times == 1
         else:
             assert episode.user_watched.times == 0
-
 
 
 @pytest.mark.asyncio

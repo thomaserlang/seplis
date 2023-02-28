@@ -1,11 +1,8 @@
-from urllib.parse import urljoin
-from fastapi import APIRouter, Depends, Response, Security
 import sqlalchemy as sa
-
+from fastapi import APIRouter, Depends, Response, Security
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
-from ... import logger
-from .episodes import expand_user_can_watch
+from ..expand.episodes import expand_user_can_watch
 
 router = APIRouter(prefix='/2/series/{series_id}/episode-to-watch')
 

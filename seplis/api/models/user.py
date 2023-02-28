@@ -108,7 +108,7 @@ class Token(Base):
         pipe.hset(f'seplis:tokens:{token}:user', 'level', user_level)
 
     @classmethod
-    async def get(cls, token: str) -> schemas.User_authenticated:
+    async def get(cls, token: str) -> schemas.User_authenticated | None:
         r = await database.redis.hgetall(f'seplis:tokens:{token}:user')
         if r:
             d = schemas.User_authenticated.parse_obj(r)
