@@ -1,28 +1,19 @@
-import sys
+import asyncio
+from seplis import logger
 from seplis.api import elasticcreate
-from collections import defaultdict
+from seplis.api.database import database
+from seplis.api.models.movie import rebuild_movies
+from seplis.api.models.series import rebuild_series
+from seplis.api.models.user import rebuild_tokens
 
-rebuilders = defaultdict(list)
 
-def register(ident):
-    '''Decorate a method to register a rebuilder.'''
-    def decorate(fn):
-        rebuilders[ident].append(fn)
-        return fn
-    return decorate
-
-def rebuild():
-    from seplis.api import models
-    print('Rebuilding cache/search data for:')
-    sys.stdout.flush()
-    database.redis.flushdb()
-    elasticcreate.create_indices()
-    for ident in rebuilders:
-        print('... {}'.format(ident))
-        for rebuilder in rebuilders[ident]:
-            rebuilder()
-        sys.stdout.flush()
-    print('Done!')
-
-def main():
-    rebuild()
+async def rebuild():
+    logger.info('Rebuilding cache/search data')
+    await database.redis.flushdb()
+    await elasticcreate.create_indices(database.es)
+    await asyncio.gather(
+        rebuild_movies(),
+        rebuild_series(),
+        rebuild_tokens(),
+    )
+    logger.info('Done')

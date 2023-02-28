@@ -3,15 +3,12 @@ import sqlalchemy as sa
 from fastapi import HTTPException
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from seplis.utils.sqlalchemy import UtcDateTime
 from .episode import Episode
 from .base import Base
-
 from ..database import auto_session, database
-from .. import schemas, rebuild_cache
+from .. import schemas
 from ... import config, logger, utils, constants
-
 from .series_follower import Series_follower
 from .series_user_rating import Series_user_rating
 from .episode import Episode, Episode_watched, Episode_last_finished
@@ -208,7 +205,7 @@ class Series(Base):
         await cls.update_seasons(session, series_id)
 
 
-    def title_document(self) -> schemas.Search_title_document:
+    def title_document(self):
         if not self.title:
             return
         titles = [self.title, *self.alternative_titles]
@@ -227,6 +224,7 @@ class Series(Base):
             imdb = self.externals.get('imdb'),
             poster_image = schemas.Image.from_orm(self.poster_image) if self.poster_image else None,
         )
+
 
     @staticmethod
     async def update_seasons(session: AsyncSession, series_id: int):
@@ -247,8 +245,6 @@ class Series(Base):
                 }
             ]
         """
-        
-
         rows = await session.execute(sa.select(
             Episode.season.label('season'), 
             sa.func.min(Episode.number).label('from_'),
@@ -273,6 +269,7 @@ class Series(Base):
             seasons=seasons,
             total_episodes=total_episodes,
         ))
+
 
     @staticmethod
     async def get_by_external(session: AsyncSession, external_title: str, external_value: str) -> 'Series':
@@ -389,8 +386,8 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None, 
             sa.func.coalesce(Series.popularity, -1),
             sa.asc(Series.id),
         )
-
     return query
+
 
 def series_user_result_parse(row: any):
     return schemas.Series_user(
@@ -417,9 +414,19 @@ class Series_genre(Base):
     genre_id = sa.Column(sa.Integer, sa.ForeignKey('genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
 
-@rebuild_cache.register('shows')
-def rebuild_shows():
-    with new_session() as session:
-        for item in session.query(Series).yield_per(10000):
-            item.to_elasticsearch()
-        session.commit()
+async def rebuild_series():
+    async def c():
+        async with database.session() as session:
+            result = await session.stream(sa.select(Series))
+            async for series in result.yield_per(1000):
+                for s in series:
+                    d = s.title_document()
+                    if not d:
+                        continue
+                    yield {
+                        '_index': config.data.api.elasticsearch.index_prefix+'titles',
+                        '_id': f'series-{s.id}',
+                        **d.dict()
+                    }
+    from elasticsearch import helpers
+    await helpers.async_bulk(database.es, c())

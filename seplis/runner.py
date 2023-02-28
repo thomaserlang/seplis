@@ -53,10 +53,8 @@ def upgrade():
 @cli.command()
 def rebuild_cache():
     set_logger('rebuild_cache.log')
-    from seplis.api.connections import database
-    database.connect()
     import seplis.api.rebuild_cache
-    seplis.api.rebuild_cache.main()
+    asyncio.run(run_task(seplis.api.rebuild_cache.rebuild()))
 
 
 @cli.command()

@@ -59,6 +59,3 @@ async def create_indices(es):
             }
         }
      })
-
-if __name__ == '__main__':
-    create_indices()

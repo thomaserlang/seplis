@@ -7,8 +7,8 @@ from seplis import utils
 from seplis.utils.sqlalchemy import UtcDateTime
 from .genre import Genre
 from .base import Base
-from ..database import database
-from .. import schemas, rebuild_cache, exceptions
+from ..database import auto_session, database
+from .. import schemas, exceptions
 from ... import config, logger
 
 class Movie(Base):
@@ -492,15 +492,19 @@ class Movie_genre(Base):
     genre_id = sa.Column(sa.Integer, sa.ForeignKey('genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
 
-@rebuild_cache.register('movies')
-def rebuild_movies():
-    def c():
-        with new_session() as session:
-            for item in session.query(Movie).yield_per(10000):
-                yield {
-                    '_index': 'titles',
-                    '_id': f'movie-{item.id}',
-                    **item.title_document()
-                }
+async def rebuild_movies():
+    async def c():
+        async with database.session() as session:
+            result = await session.stream(sa.select(Movie))
+            async for movies in result.yield_per(1000):
+                for movie in movies:
+                    d = movie.title_document()
+                    if not d:
+                        continue
+                    yield {
+                        '_index': config.data.api.elasticsearch.index_prefix+'titles',
+                        '_id': f'movie-{movie.id}',
+                        **d.dict()
+                    }
     from elasticsearch import helpers
-    helpers.async_bulk(database.es, c())
+    await helpers.async_bulk(database.es, c())

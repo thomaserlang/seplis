@@ -8,7 +8,6 @@ template_loader = jinja2.FileSystemLoader(searchpath=os.path.join(
     os.path.dirname(os.path.realpath(__file__)), 'templates'))
 templateEnv = jinja2.Environment(
     loader=template_loader,
-    auto_reload=config.data.debug,
 )
 
 async def send_email(template_name: str, subject: str, to: str, **kwargs):

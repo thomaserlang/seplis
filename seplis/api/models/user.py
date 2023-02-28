@@ -1,13 +1,12 @@
 import sqlalchemy as sa
 from starlette.concurrency import run_in_threadpool
 from seplis.api.send_email import send_password_changed
-
 from seplis.utils.sqlalchemy import UtcDateTime
 from .. import schemas, exceptions
 from .base import Base
-from seplis import utils, logger
+from seplis import utils
 from seplis.api.database import auto_session, database
-from seplis.api import constants, exceptions, rebuild_cache
+from seplis.api import constants, exceptions
 from datetime import datetime, timedelta, timezone
 from passlib.hash import pbkdf2_sha256
 
@@ -99,10 +98,14 @@ class Token(Base):
             ))
             await session.commit()
             p = database.redis.pipeline()
-            p.hset(f'seplis:tokens:{token}:user', 'id', user_id)
-            p.hset(f'seplis:tokens:{token}:user', 'level', user_level)
+            Token.cache(p, token, user_id, user_level)
             await p.execute()
             return token
+    
+    @staticmethod
+    def cache(pipe, token, user_id, user_level):
+        pipe.hset(f'seplis:tokens:{token}:user', 'id', user_id)
+        pipe.hset(f'seplis:tokens:{token}:user', 'level', user_level)
 
     @classmethod
     async def get(cls, token: str) -> schemas.User_authenticated:
@@ -122,14 +125,16 @@ class User_series_settings(Base):
     audio_lang = sa.Column(sa.String)
 
 
-@rebuild_cache.register('tokens')
-def rebuild_tokens():
-    with new_session() as session:
-        for item in session.query(Token).filter(
-                sa.or_(
-                    Token.expires >= datetime.utcnow(),
-                    Token.expires == None,
+async def rebuild_tokens():
+    async with database.session() as session:
+        result = await session.stream(sa.select(Token))
+        async for tokens in result.yield_per(10000):
+            p = database.redis.pipeline()
+            for token in tokens:
+                Token.cache(
+                    pipe=p, 
+                    token=token.token, 
+                    user_id=token.user_id,
+                    user_level=token.user_level,
                 )
-            ).yield_per(10000):
-            item.cache()
-        session.commit()
+            await p.execute()
