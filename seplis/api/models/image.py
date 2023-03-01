@@ -1,14 +1,11 @@
-from urllib.parse import urljoin
 import sqlalchemy as sa
 import io
 import urllib.parse
 from fastapi import UploadFile
-
 from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from ... import config, utils, logger
 from .. import schemas, exceptions, models
-from ..dependencies import httpx_client
 from ..database import database
 from datetime import datetime
 
@@ -28,9 +25,10 @@ class Image(Base):
 
     @property
     def url(self):
-        return urljoin(config.data.api.image_url, self.hash)
+        return urllib.parse.urljoin(config.data.api.image_url, self.hash)
 
     async def save(relation_type: str, relation_id: str, image_data: schemas.Image_import) -> schemas.Image:
+        from ..dependencies import httpx_client
         if not image_data.file and not image_data.source_url:
             raise exceptions.File_upload_no_files()
 
@@ -46,7 +44,7 @@ class Image(Base):
                 yield content
 
         r = await httpx_client.put(
-            urljoin(config.data.api.storitch, '/store/session'),
+            urllib.parse.urljoin(config.data.api.storitch, '/store/session'),
             headers={
                 'storitch-json': utils.json_dumps({
                     'finished': True,
