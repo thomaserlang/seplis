@@ -11,7 +11,7 @@ from .. import schemas
 from ... import config, logger, utils, constants
 from .series_follower import Series_follower
 from .series_user_rating import Series_user_rating
-from .episode import Episode, Episode_watched, Episode_last_finished
+from .episode import Episode, Episode_watched, Episode_last_watched
 from .genre import Genre
 
 class Series(Base):
@@ -303,22 +303,22 @@ def series_user_query(user_id: int, sort: schemas.SERIES_USER_SORT_TYPE | None, 
         ),
         isouter=True,
     ).join(        
-        Episode_last_finished, sa.and_(
-            Episode_last_finished.series_id == Series.id,
-            Episode_last_finished.user_id == user_id,
+        Episode_last_watched, sa.and_(
+            Episode_last_watched.series_id == Series.id,
+            Episode_last_watched.user_id == user_id,
         ),
         isouter=True,
     ).join(        
         Episode_watched, sa.and_(
-            Episode_watched.series_id == Episode_last_finished.series_id,
-            Episode_watched.episode_number == Episode_last_finished.episode_number,
-            Episode_watched.user_id == Episode_last_finished.user_id,
+            Episode_watched.series_id == Episode_last_watched.series_id,
+            Episode_watched.episode_number == Episode_last_watched.episode_number,
+            Episode_watched.user_id == Episode_last_watched.user_id,
         ),
         isouter=True,
     ).join(        
         last_watched_episode, sa.and_(
-            last_watched_episode.series_id == Episode_last_finished.series_id,
-            last_watched_episode.number == Episode_last_finished.episode_number,
+            last_watched_episode.series_id == Episode_last_watched.series_id,
+            last_watched_episode.number == Episode_last_watched.episode_number,
         ),
         isouter=True,
     )

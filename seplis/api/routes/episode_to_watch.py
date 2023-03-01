@@ -40,12 +40,12 @@ async def get_episode_to_watch(
         models.Episode_watched.episode_number,
         models.Episode_watched.position,
     ).where(
-        models.Episode_last_finished.user_id == user.id,
-        models.Episode_last_finished.series_id == series_id,
-        models.Episode_watched.series_id == models.Episode_last_finished.series_id,
-        models.Episode_watched.user_id == models.Episode_last_finished.user_id,
+        models.Episode_last_watched.user_id == user.id,
+        models.Episode_last_watched.series_id == series_id,
+        models.Episode_watched.series_id == models.Episode_last_watched.series_id,
+        models.Episode_watched.user_id == models.Episode_last_watched.user_id,
         models.Episode_watched.episode_number ==\
-            models.Episode_last_finished.episode_number,
+            models.Episode_last_watched.episode_number,
     ))
     ew = ew.first()
 

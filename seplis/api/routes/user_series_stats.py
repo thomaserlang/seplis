@@ -32,8 +32,8 @@ async def series_following(session: AsyncSession, user_id: int | str) -> dict[st
 
 
 async def series_watched(session: AsyncSession, user_id: int | str) -> dict[str, int]:
-    count: int = await session.scalar(sa.select(sa.func.count(models.Episode_last_finished.series_id)).where(
-        models.Episode_last_finished.user_id == user_id,
+    count: int = await session.scalar(sa.select(sa.func.count(models.Episode_last_watched.series_id)).where(
+        models.Episode_last_watched.user_id == user_id,
     ))
     return {'series_watched': count}
 
