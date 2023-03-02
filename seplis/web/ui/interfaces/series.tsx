@@ -92,15 +92,6 @@ export interface ISeriesFollowing {
 }
 
 
-export interface ISeriesUser {
-    series: ISeries
-    rating: number | null
-    following: boolean
-    last_episode_watched: IEpisode | null
-    last_episode_watched_data: IEpisodeWatched | null
-}
-
-
 export interface ISeriesUserSettings {
     subtitle_lang: string | null
     audio_lang: string | null

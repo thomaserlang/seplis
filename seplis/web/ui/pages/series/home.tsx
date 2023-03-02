@@ -2,7 +2,7 @@ import { Stack } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
 import Slider from '@seplis/components/slider'
-import { ISeries, ISeriesAndEpisode, ISeriesUser } from '@seplis/interfaces/series'
+import { ISeries, ISeriesAndEpisode } from '@seplis/interfaces/series'
 import { dateCountdown, episodeNumber, setTitle } from '@seplis/utils'
 import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -28,7 +28,7 @@ export default function SeriesHome() {
         });
     }, [ref])
 
-    const itemSelected = (item: ISeriesUser | ISeriesAndEpisode) => {
+    const itemSelected = (item: ISeriesAndEpisode) => {
         navigate(`/series/${item.series.id}`, {state: {
             background: location
         }})

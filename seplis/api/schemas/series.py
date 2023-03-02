@@ -4,7 +4,7 @@ from pydantic import BaseModel, constr, conint, confloat, validator, Field
 from datetime import datetime, date
 from .image import Image
 from .genre import Genre
-from .episode import Episode_create, Episode_update, Episode, Episode_watched, User_can_watch
+from .episode import Episode_create, Episode_update, Episode, User_can_watch
 
 
 class Series_importers(BaseModel):
@@ -131,14 +131,6 @@ class Series_query_filter:
 
 class Series_user_query_filter(Series_query_filter):
     pass
-
-
-class Series_user(BaseModel, orm_mode=True):
-    series: Series
-    rating: int | None
-    following: bool
-    last_episode_watched: Episode | None 
-    last_episode_watched_data: Episode_watched | None
 
 
 class Series_with_episodes(Series):

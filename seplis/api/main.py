@@ -17,7 +17,6 @@ from .routes import (
     reset_password,
     search,
     user,
-    user_series_following,
     user_series_stats,
     user_series_recently_aired,
     user_series_countdown,
@@ -53,7 +52,6 @@ app.include_router(reset_password.router)
 app.include_router(token.router)
 app.include_router(search.router)
 app.include_router(user.router)
-app.include_router(user_series_following.router)
 app.include_router(user_series_stats.router)
 app.include_router(user_series_recently_aired.router)
 app.include_router(user_series_countdown.router)
