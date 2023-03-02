@@ -13,8 +13,9 @@ export default function SeriesFollowing() {
         <MainMenu />
         <Box margin="1rem">
             <SeriesUserList
-                title="Following {total} series"
-                url="/2/users/me/series-following"
+                title="Series Following"
+                url="/2/series?user_following=true"
+                defaultSort='user_followed_at_desc'
             />
         </Box>
     </>

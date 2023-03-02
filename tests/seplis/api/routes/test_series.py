@@ -1,13 +1,13 @@
 import io
 import pytest, respx, httpx
-from seplis.api import constants, schemas
+from seplis.api import constants, schemas, models
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 from seplis import config
 from datetime import date
 
 @pytest.mark.asyncio
 @respx.mock
-async def test_series(client: AsyncClient):
+async def test_series_create(client: AsyncClient):
     await user_signin(client, [str(constants.LEVEL_DELETE_SHOW)])
 
     r = await client.post('/2/series', json={})
@@ -360,6 +360,55 @@ async def test_series(client: AsyncClient):
     r = await client.get(f'/2/series/{series_id}')
     assert r.status_code == 404, r.content
 
+
+
+@pytest.mark.asyncio
+@respx.mock
+async def test_series_get(client: AsyncClient):
+    r = await client.get(f'/2/series')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert data.items == [] 
+
+    series1 = await models.Series.save(data=schemas.Series_create(
+        title="Test 1",
+        episodes=[
+            schemas.Episode_create(title='Episode 1', number=1),
+        ],
+    ))
+    series2 = await models.Series.save(data=schemas.Series_create(
+        title="Test 2",
+        episodes=[
+            schemas.Episode_create(title='Episode 1', number=1),
+            schemas.Episode_create(title='Episode 2', number=2),
+        ],
+    ))
+
+
+    r = await client.get(f'/2/series?user_following=true')
+    assert r.status_code == 401
+
+    user_id = await user_signin(client, [str(constants.LEVEL_USER)])
+
+    await models.Series_follower.follow(series_id=series1.id, user_id=user_id)
+
+    r = await client.get(f'/2/series?user_following=true')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+
+    r = await client.get(f'/2/series?sort=user_last_episode_watched_at_asc')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 0
+
+    r = await client.get(f'/2/series?expand=user_following')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 2
+    data.items[0].user_following.following == True
+    data.items[1].user_following.following == False
+    
 
 if __name__ == '__main__':
     run_file(__file__)

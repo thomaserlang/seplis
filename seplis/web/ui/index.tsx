@@ -89,6 +89,7 @@ import Signup from './pages/signup'
 import { Logout } from './pages/logout'
 import SendResetPassword from './pages/send-reset-password'
 import ResetPassword from './pages/reset-password'
+import WatchHome from './pages/watch/home'
 
 spatialInit({})
 
@@ -125,6 +126,7 @@ function App() {
             <Route path="/series/watched" element={<SeriesWatched />} />
             <Route path="/series/:seriesId" element={<Series />} />
             <Route path="/series/:seriesId/episodes/:episodeNumber/play" element={<PlayEpisode />} />
+            <Route path="/watch/home" element={<WatchHome />} />
         </Routes>
         {background && <Routes>
             <Route path="/series/:seriesId" element={<SeriesModalPage />} />

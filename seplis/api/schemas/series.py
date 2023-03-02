@@ -4,7 +4,7 @@ from pydantic import BaseModel, constr, conint, confloat, validator, Field
 from datetime import datetime, date
 from .image import Image
 from .genre import Genre
-from .episode import Episode_create, Episode_update, Episode, Episode_watched
+from .episode import Episode_create, Episode_update, Episode, Episode_watched, User_can_watch
 
 
 class Series_importers(BaseModel):
@@ -15,11 +15,9 @@ class Series_importers(BaseModel):
 class Series_user_rating_update(BaseModel):
     rating: conint(ge=1, le=10)
 
-class Series_user_rating(BaseModel):
+class Series_user_rating(BaseModel, orm_mode=True):
     rating: int | None
-
-    class Config:
-        orm_mode = True
+    updated_at: datetime | None
 
 
 class Series_create(BaseModel):
@@ -58,13 +56,19 @@ class Series_update(Series_create):
     episodes: list[Episode_update] | None
 
 
+class Series_user_following(BaseModel, orm_mode=True):
+    following: bool = False
+    created_at: datetime | None = None
+
+
 class Series_season(BaseModel, allow_population_by_field_name=True):
     season: int
     from_: int = Field(..., alias='from')
     to: int
     total: int
 
-class Series(BaseModel):
+
+class Series(BaseModel, orm_mode=True):
     id: int
     title: str | None
     original_title: str | None
@@ -87,37 +91,36 @@ class Series(BaseModel):
     poster_image: Image | None
     popularity: float | None
     rating: float | None
-    
-    class Config:
-        orm_mode = True
+    user_following: Series_user_following | None
+    user_last_episode_watched: Episode | None
+    user_rating: Series_user_rating | None
+    user_can_watch: User_can_watch | None
 
-class Series_user_stats(BaseModel):
+
+class Series_user_stats(BaseModel, orm_mode=True):
     episodes_watched: int = 0
     episodes_watched_minutes: int = 0
 
-    class Config:
-        orm_mode = True
-
-
-class Series_following(BaseModel):
-    following: bool = False
-    created_at: datetime | None = None
-
-    class Config:
-        orm_mode = True
-
 
 SERIES_USER_SORT_TYPE = Literal[
-    'followed_at_asc', 
-    'followed_at_desc', 
+    'user_followed_at_asc', 
+    'user_followed_at_desc', 
     'user_rating_asc', 
     'user_rating_desc',
-    'watched_at_asc',
-    'watched_at_desc',
+    'user_last_episode_watched_at_asc',
+    'user_last_episode_watched_at_desc',
     'rating_asc',
     'rating_desc',
     'popularity_asc',
     'popularity_desc',
+]
+
+
+SERIES_EXPAND = Literal[
+    'user_following',
+    'user_can_watch',
+    'user_last_episode_watched',
+    'user_rating',
 ]
 
 
@@ -130,32 +133,23 @@ class Series_user_query_filter(Series_query_filter):
     pass
 
 
-class Series_user(BaseModel):
+class Series_user(BaseModel, orm_mode=True):
     series: Series
     rating: int | None
     following: bool
     last_episode_watched: Episode | None 
     last_episode_watched_data: Episode_watched | None
 
-    class Config:
-        orm_mode = True
-
 
 class Series_with_episodes(Series):
     episodes: list[Episode] = []
 
 
-class Series_and_episode(BaseModel):
+class Series_and_episode(BaseModel, orm_mode=True):
     series: Series
     episode: Episode
 
-    class Config:
-        orm_mode = True
 
-
-class Series_air_dates(BaseModel):
+class Series_air_dates(BaseModel, orm_mode=True):
     air_date: date
     series: list[Series_with_episodes]
-
-    class Config:
-        orm_mode = True

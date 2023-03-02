@@ -1,6 +1,6 @@
 import { Box } from '@chakra-ui/react'
 import MainMenu from '@seplis/components/main-menu'
-import SeriesUserList from '@seplis/components/series/user-list'
+import UserSeriesList from '@seplis/components/series/user-list'
 import { setTitle } from '@seplis/utils'
 import { useEffect } from 'react'
 
@@ -12,9 +12,10 @@ export default function SeriesWatched() {
     return <>
         <MainMenu />
         <Box margin="1rem">
-            <SeriesUserList
-                title="Watched {total} series"
-                url="/2/users/me/series-watched"
+            <UserSeriesList
+                title="Series Watched"
+                url="/2/series?user_has_watched=true"
+                defaultSort='user_last_episode_watched_at_desc'
             />
         </Box>
     </>

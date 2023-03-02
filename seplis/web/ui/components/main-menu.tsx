@@ -89,7 +89,14 @@ function MobileMenu() {
 
 function MenuItems() {
     return <>
-        <Button marginRight={["0", "0.75rem"]}>Watch</Button>
+        <Menu>
+            <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>
+                Watch
+            </MenuButton>
+            <MenuList>
+                <Link to="/watch/home"><MenuItem>Home</MenuItem></Link>
+            </MenuList>
+        </Menu>
 
         <Menu>
             <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>

@@ -4,7 +4,7 @@ from .. import models, schemas, constants
 
 router = APIRouter(prefix='/2/series/{series_id}/following')
 
-@router.get('', response_model=schemas.Series_following)
+@router.get('', response_model=schemas.Series_user_following)
 async def following_series(
     series_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),

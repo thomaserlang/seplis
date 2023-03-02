@@ -18,7 +18,6 @@ from .routes import (
     search,
     user,
     user_series_following,
-    user_series_watched,
     user_series_stats,
     user_series_recently_aired,
     user_series_countdown,
@@ -55,7 +54,6 @@ app.include_router(token.router)
 app.include_router(search.router)
 app.include_router(user.router)
 app.include_router(user_series_following.router)
-app.include_router(user_series_watched.router)
 app.include_router(user_series_stats.router)
 app.include_router(user_series_recently_aired.router)
 app.include_router(user_series_countdown.router)

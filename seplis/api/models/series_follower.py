@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from datetime import datetime, timezone
-
+from seplis.api.database import auto_session
 from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from ..dependencies import AsyncSession
@@ -13,27 +13,33 @@ class Series_follower(Base):
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
     created_at = sa.Column(UtcDateTime, nullable=False)
 
-    async def follow(series_id: int, user_id: int | str, session: AsyncSession):
+
+    @auto_session
+    async def follow(series_id: int, user_id: int | str, session: AsyncSession = None):
         await session.execute(sa.insert(Series_follower).values(
             series_id=series_id,
             user_id=user_id,
             created_at=datetime.now(tz=timezone.utc),
         ).prefix_with('IGNORE'))
 
-    async def unfollow(series_id: int, user_id: int | str, session: AsyncSession):
+
+    @auto_session
+    async def unfollow(series_id: int, user_id: int | str, session: AsyncSession = None):
         await session.execute(sa.delete(Series_follower).where(
             Series_follower.series_id == series_id,
             Series_follower.user_id == user_id,
         ))
 
-    async def get(series_id: int, user_id: int | str, session: AsyncSession):
+
+    @auto_session
+    async def get(series_id: int, user_id: int | str, session: AsyncSession = None):
         f = await session.scalar(sa.select(Series_follower.created_at).where(
             Series_follower.series_id == series_id,
             Series_follower.user_id == user_id,
         ))
         if f:
-            return schemas.Series_following(
+            return schemas.Series_user_following(
                 following=True,
                 created_at=f,
             )
-        return schemas.Series_following()
+        return schemas.Series_user_following()

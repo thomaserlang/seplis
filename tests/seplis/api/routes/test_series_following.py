@@ -13,7 +13,7 @@ async def test_series_following(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/following')
     assert r.status_code == 200
-    f = schemas.Series_following.parse_obj(r.json())
+    f = schemas.Series_user_following.parse_obj(r.json())
     assert f.following == False
     assert f.created_at == None
 
@@ -28,7 +28,7 @@ async def test_series_following(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/following')
     assert r.status_code == 200
-    f = schemas.Series_following.parse_obj(r.json())
+    f = schemas.Series_user_following.parse_obj(r.json())
     assert f.following == True
     assert f.created_at != None
 
@@ -38,7 +38,7 @@ async def test_series_following(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/following')
     assert r.status_code == 200
-    f = schemas.Series_following.parse_obj(r.json())
+    f = schemas.Series_user_following.parse_obj(r.json())
     assert f.following == False
     assert f.created_at == None
 

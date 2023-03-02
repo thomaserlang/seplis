@@ -6,24 +6,23 @@ export function ErrorMessageFromResponse(errorObj: any): JSX.Element {
 
     if (typeof errorObj === 'string')
         return <>{errorObj}</>
-    
+
     if (errorObj.isAxiosError) {
         const e: AxiosError = errorObj
         const data = (e.response?.data as any)
-        if (data?.message)
-            return (e.response?.data as any)?.message
-        if ((e.response.status == 422) && (data?.detail))
+        if (data?.code == 1001) {
             return <>
-                {data.detail.length > 0 && (
+                {data.errors.length > 0 && (
                     <ul>
-                        {data.detail.map((error: any, index: any) => (
-                        <li key={index}>
-                            {error['loc'].join('.')}: {error['msg']}
-                        </li>
+                        {data.errors.map((error: any, index: any) => (
+                            <li key={index}>
+                                {error['field'].join('.')}: {error['message']}
+                            </li>
                         ))}
-                    </ul>)}
+                    </ul>
+                )}
             </>
-        else if (data?.detail)
+        } else if (data?.detail)
             return data.detail
         return <>{e.message}</>
     }

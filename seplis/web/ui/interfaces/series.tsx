@@ -1,7 +1,7 @@
 import { IImage } from './image'
 import { IGenre } from './genre'
 import { TExternals } from './types'
-import { IEpisode, IEpisodeCreate, IEpisodeWatched } from './episode'
+import { IEpisode, IEpisodeCreate, IEpisodeWatched, IUserCanWatchEpisode } from './episode'
 
 
 export interface ISeriesImporters {
@@ -73,6 +73,10 @@ export interface ISeries {
     poster_image: IImage | null
     popularity: number | null
     rating: number | null
+    user_following: ISeriesUserFollowing | null
+    user_last_episode_watched: IEpisode | null
+    user_rating: ISeriesUserRating | null
+    user_can_watch: IUserCanWatchEpisode | null
 }
 
 
@@ -117,4 +121,10 @@ export interface ISeriesAndEpisode {
 export interface ISeriesAirDates {
     air_date: Date
     series: ISeriesWithEpisodes[]
+}
+
+
+export interface ISeriesUserFollowing {
+    following: boolean
+    created_at: string
 }

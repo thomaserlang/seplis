@@ -2,7 +2,7 @@ import { Stack } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
 import Slider from '@seplis/components/slider'
-import { ISeriesAndEpisode, ISeriesUser } from '@seplis/interfaces/series'
+import { ISeries, ISeriesAndEpisode, ISeriesUser } from '@seplis/interfaces/series'
 import { dateCountdown, episodeNumber, setTitle } from '@seplis/utils'
 import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -33,6 +33,11 @@ export default function SeriesHome() {
             background: location
         }})
     }
+    const seriesSelected = (series: ISeries) => {
+        navigate(`/series/${series.id}`, {state: {
+            background: location
+        }})
+    }
 
     return <>
         <MainMenu />
@@ -41,19 +46,19 @@ export default function SeriesHome() {
 
             <Stack ref={ref} marginTop="0.5rem" marginBottom="0.5rem">
 
-                <Slider<ISeriesUser>
+                <Slider<ISeries>
                     title="Watched"
-                    url="/2/users/me/series-watched"
-                    parseItem={(item) => (
+                    url="/2/series?user_has_watched=true&sort=user_last_episode_watched_at_desc"
+                    parseItem={(series) => (
                         {
-                            key: `series-${item.series.id}`,
-                            title: item.series.title,
-                            img: item.series.poster_image?.url,
-                            bottomText: episodeNumber(item.last_episode_watched),
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
+                            bottomText: episodeNumber(series.user_last_episode_watched),
                         }
                     )}
                     onFocus={onRowFocus}
-                    onItemSelected={itemSelected}
+                    onItemSelected={seriesSelected}
                 />
 
                 <Slider<ISeriesAndEpisode>

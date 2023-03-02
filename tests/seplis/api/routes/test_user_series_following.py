@@ -17,30 +17,30 @@ async def test_user_series_following(client: AsyncClient):
     r = await client.put(f'/2/series/{series1.id}/following')
     assert r.status_code == 204
 
-    r = await client.get(f'/2/users/me/series-following')
+    r = await client.get(f'/2/series?user_following=true')
     assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Series_user].parse_obj(r.json())
-    assert data.total == 1, data
-    assert data.items[0].series.id == series1.id
+    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+    assert data.items[0].id == series1.id
 
     r = await client.put(f'/2/series/{series2.id}/following')
     assert r.status_code == 204
 
-    r = await client.get(f'/2/users/me/series-following?per_page=1&sort=followed_at_asc')
+    r = await client.get(f'/2/series?user_following=true&per_page=1&sort=user_followed_at_asc')
     assert r.status_code == 200, r.content
-    data = schemas.Page_cursor_total_result[schemas.Series_user].parse_obj(r.json())
-    assert data.total == 2, data
-    assert data.items[0].series.id == series1.id
+    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+    assert data.items[0].id == series1.id
 
-    r = await client.get(f'/2/users/me/series-following', params={
+    r = await client.get(f'/2/series?user_following=true', params={
         'cursor': data.cursor,
         'per_page': 1,
-        'sort': 'followed_at_asc',
+        'sort': 'user_followed_at_asc',
     })
     assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Series_user].parse_obj(r.json())
-    assert data.total == 2, data
-    assert data.items[0].series.id == series2.id
+    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+    assert data.items[0].id == series2.id
 
 
 if __name__ == '__main__':
