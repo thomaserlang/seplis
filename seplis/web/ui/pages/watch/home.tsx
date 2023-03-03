@@ -2,7 +2,7 @@ import { Stack } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
 import Slider from '@seplis/components/slider'
-import { ISeriesAndEpisode } from '@seplis/interfaces/series'
+import { ISeries, ISeriesAndEpisode } from '@seplis/interfaces/series'
 import { episodeNumber, setTitle } from '@seplis/utils'
 import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -28,11 +28,17 @@ export default function WatchHome() {
         });
     }, [ref])
 
-    const itemSelected = (item: ISeriesAndEpisode) => {
+    const itemSelected = useCallback((item: ISeriesAndEpisode) => {
         navigate(`/series/${item.series.id}`, {state: {
             background: location
         }})
-    }
+    }, [])
+
+    const seriesSelected = useCallback((series: ISeries) => {
+        navigate(`/series/${series.id}`, {state: {
+            background: location
+        }})
+    }, [])
 
     return <>
         <MainMenu />
@@ -54,6 +60,20 @@ export default function WatchHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
+                />
+
+                <Slider<ISeries>
+                    title="Series you haven't watched"
+                    url="/2/series?user_has_watched=false&user_can_watch=true"
+                    parseItem={(series) => (
+                        {
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={seriesSelected}
                 />
 
 
