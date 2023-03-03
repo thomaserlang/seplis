@@ -13,17 +13,19 @@ router = APIRouter(prefix='/2/series')
 @router.get('', response_model=schemas.Page_cursor_result[schemas.Series])
 async def get_series(
     expand: list[schemas.SERIES_EXPAND] | None = Depends(get_expand),
-    user: schemas.User_authenticated | None = Depends(get_current_user_no_raise),
+    user: schemas.User_authenticated | None = Depends(
+        get_current_user_no_raise),
     page_cursor: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
     user_can_watch: bool = None,
     user_following: bool = None,
     user_has_watched: bool = None,
-    filter_query: schemas.Series_user_query_filter = Depends(schemas.Series_user_query_filter),
+    filter_query: schemas.Series_user_query_filter = Depends(
+        schemas.Series_user_query_filter),
     sort: schemas.SERIES_USER_SORT_TYPE = 'popularity_desc',
 ):
     query = sa.select(models.Series)
-    
+
     if user_can_watch:
         if not user:
             raise exceptions.Not_signed_in_exception()
@@ -34,23 +36,49 @@ async def get_series(
             models.Play_server_episode.episode_number == 1,
         )
 
-    if user_following or sort.startswith('user_followed_at'):
+    if user_following == True or sort.startswith('user_followed_at'):
         if not user:
             raise exceptions.Not_signed_in_exception()
         query = query.where(
             models.Series_follower.user_id == user.id,
             models.Series_follower.series_id == models.Series.id,
         )
+    elif user_following == False:
+        if not user:
+            raise exceptions.Not_signed_in_exception()
+        query = query.join(
+            models.Series_follower, 
+            sa.and_(
+                models.Series_follower.user_id == user.id,
+                models.Series_follower.series_id == models.Series.id,
+            ), 
+            isouter=True,
+        ).where(
+            models.Series_follower.series_id == None,
+        )
 
-    if user_has_watched or sort.startswith('user_last_episode_watched_at'):
+    if user_has_watched == True or sort.startswith('user_last_episode_watched_at'):
         if not user:
             raise exceptions.Not_signed_in_exception()
         query = query.where(
             models.Episode_last_watched.user_id == user.id,
             models.Series.id == models.Episode_last_watched.series_id,
-            models.Episode_watched.user_id ==  models.Episode_last_watched.user_id,
-            models.Episode_watched.series_id ==  models.Episode_last_watched.series_id,
+            models.Episode_watched.user_id == models.Episode_last_watched.user_id,
+            models.Episode_watched.series_id == models.Episode_last_watched.series_id,
             models.Episode_watched.episode_number == models.Episode_last_watched.episode_number,
+        )
+    elif user_has_watched == False:
+        if not user:
+            raise exceptions.Not_signed_in_exception()
+        query = query.join(
+            models.Episode_last_watched, 
+            sa.and_(
+                models.Episode_last_watched.user_id == user.id,
+                models.Series.id == models.Episode_last_watched.series_id,
+            ), 
+            isouter=True,
+        ).where(
+            models.Episode_last_watched.series_id == None,
         )
 
     if filter_query:
@@ -60,7 +88,7 @@ async def get_series(
                     models.Series_genre.genre_id == filter_query.genre_id[0],
                     models.Series.id == models.Series_genre.series_id,
                 )
-            else:                
+            else:
                 query = query.where(
                     models.Series_genre.genre_id.in_(filter_query.genre_id),
                     models.Series.id == models.Series_genre.series_id,
@@ -72,12 +100,12 @@ async def get_series(
             direction(sa.func.coalesce(models.Series_user_rating.rating, -1)),
             direction(models.Series.id),
         )
-    elif sort.startswith('user_followed_at'):
+    elif sort.startswith('user_followed_at') and user_following != False:
         query = query.order_by(
             direction(sa.func.coalesce(models.Series_follower.created_at, -1)),
             direction(models.Series.id),
         )
-    elif sort.startswith('user_last_episode_watched_at'):
+    elif sort.startswith('user_last_episode_watched_at') and user_has_watched != False:
         query = query.order_by(
             direction(sa.func.coalesce(models.Episode_watched.watched_at, -1)),
             direction(models.Series.id),
@@ -92,9 +120,14 @@ async def get_series(
             direction(sa.func.coalesce(models.Series.popularity, -1)),
             direction(models.Series.id),
         )
-
+    else:        
+        query = query.order_by(
+            direction(sa.func.coalesce(models.Series.popularity, -1)),
+            direction(models.Series.id),
+        )
+    
     p = await utils.sqlalchemy.paginate_cursor(
-        session=session, 
+        session=session,
         query=query,
         page_query=page_cursor,
     )
@@ -105,10 +138,11 @@ async def get_series(
 
 @router.get('/{series_id}', response_model=schemas.Series)
 async def get_series_one(
-    series_id: int, 
-    session: AsyncSession=Depends(get_session),
+    series_id: int,
+    session: AsyncSession = Depends(get_session),
     expand: list[str] | None = Depends(get_expand),
-    user: schemas.User_authenticated | None = Depends(get_current_user_no_raise),
+    user: schemas.User_authenticated | None = Depends(
+        get_current_user_no_raise),
 ):
     series = await session.scalar(sa.select(models.Series).where(models.Series.id == series_id))
     if not series:
@@ -121,8 +155,8 @@ async def get_series_one(
 @router.get('/externals/{external_name}/{external_id}', response_model=schemas.Series)
 async def get_series_by_external(
     external_name: str,
-    external_id: str, 
-    session: AsyncSession=Depends(get_session),
+    external_id: str,
+    session: AsyncSession = Depends(get_session),
 ):
     series = await session.scalar(sa.select(models.Series).where(
         models.Series_external.title == external_name,
@@ -137,7 +171,8 @@ async def get_series_by_external(
 @router.post('', status_code=201, response_model=schemas.Series)
 async def create_series(
     data: schemas.Series_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     series = await models.Series.save(data, series_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_series', int(series.id))
@@ -148,7 +183,8 @@ async def create_series(
 async def update_series(
     series_id: int,
     data: schemas.Series_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     return await models.Series.save(series_id=series_id, data=data, patch=False)
 
@@ -157,7 +193,8 @@ async def update_series(
 async def patch_series(
     series_id: int,
     data: schemas.Series_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     return await models.Series.save(series_id=series_id, data=data, patch=True)
 
@@ -165,7 +202,8 @@ async def patch_series(
 @router.delete('/{series_id}', status_code=204)
 async def delete_series(
     series_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
 ):
     await models.Series.delete(series_id)
 
@@ -173,7 +211,8 @@ async def delete_series(
 @router.post('/{series_id}/update', status_code=204)
 async def request_update(
     series_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     await database.redis_queue.enqueue_job('update_series', series_id)
 
@@ -182,10 +221,12 @@ async def request_update(
 async def create_image(
     series_id: int,
     image: UploadFile,
-    external_name: str | None = Form(default=None, min_length=1, max_length=50),
+    external_name: str | None = Form(
+        default=None, min_length=1, max_length=50),
     external_id: str | None = Form(default=None, min_length=1, max_length=50),
     type: schemas.IMAGE_TYPES = Form(),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     image_data = schemas.Image_import(
         external_name=external_name,
@@ -205,7 +246,8 @@ async def delete_image(
     series_id: int,
     image_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     await session.execute(sa.update(models.Series).values(poster_image_id=None).where(
         models.Series.id == series_id,

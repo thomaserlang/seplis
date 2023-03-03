@@ -1,6 +1,7 @@
 import asyncio
 import sqlalchemy as sa
 from datetime import datetime, timezone
+from seplis.api.database import auto_session
 from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from ..dependencies import AsyncSession
@@ -46,7 +47,8 @@ class Episode_watched(Base):
     watched_at = sa.Column(UtcDateTime, nullable=False)
 
     @staticmethod
-    async def increment(session: AsyncSession, user_id: int, series_id: int, episode_number: int, data: schemas.Episode_watched_increment):
+    @auto_session
+    async def increment(user_id: int, series_id: int, episode_number: int, data: schemas.Episode_watched_increment, session: AsyncSession=None):
         episode_watched = sa.dialects.mysql.insert(Episode_watched).values(
             series_id=series_id,
             episode_number=episode_number,
@@ -85,7 +87,8 @@ class Episode_watched(Base):
 
 
     @staticmethod
-    async def decrement(session: AsyncSession, user_id: int, series_id: int, episode_number: int):
+    @auto_session
+    async def decrement(user_id: int, series_id: int, episode_number: int, session: AsyncSession):
         w = await session.scalar(sa.select(Episode_watched).where(
             Episode_watched.series_id == series_id,
             Episode_watched.episode_number == episode_number,
@@ -154,7 +157,8 @@ class Episode_watched(Base):
 
 
     @staticmethod
-    async def set_position(session: AsyncSession, user_id, series_id: int, episode_number: int, position: int):
+    @auto_session
+    async def set_position(user_id, series_id: int, episode_number: int, position: int, session: AsyncSession):
         if position == 0:
             await Episode_watched.reset_position(session=session, user_id=user_id, series_id=series_id, episode_number=episode_number)
             return
@@ -183,7 +187,8 @@ class Episode_watched(Base):
 
 
     @staticmethod
-    async def reset_position(session: AsyncSession, user_id: int, series_id: int, episode_number: int):
+    @auto_session
+    async def reset_position(user_id: int, series_id: int, episode_number: int, session: AsyncSession):
         w = await session.scalar(sa.select(Episode_watched).where(
             Episode_watched.series_id == series_id,
             Episode_watched.episode_number == episode_number,
@@ -227,7 +232,8 @@ class Episode_watched(Base):
 
 
     @staticmethod
-    async def set_prev_watched(session: AsyncSession, user_id: int, series_id:int, episode_number: int):
+    @auto_session
+    async def set_prev_watched(user_id: int, series_id:int, episode_number: int, session: AsyncSession = None):
         lew = await session.scalar(sa.select(Episode_last_watched).where(
             Episode_last_watched.series_id == series_id,
             Episode_last_watched.user_id == user_id,

@@ -396,6 +396,13 @@ async def test_series_get(client: AsyncClient):
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
+    assert data.items[0].id == series1.id
+    
+    r = await client.get(f'/2/series?user_following=false')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+    assert data.items[0].id == series2.id
 
     r = await client.get(f'/2/series?sort=user_last_episode_watched_at_asc')
     assert r.status_code == 200
@@ -408,7 +415,24 @@ async def test_series_get(client: AsyncClient):
     assert len(data.items) == 2
     data.items[0].user_following.following == True
     data.items[1].user_following.following == False
+
+
+    await models.Episode_watched.increment(series_id=series2.id, episode_number=1, user_id=user_id, data=schemas.Episode_watched_increment())
     
+    r = await client.get(f'/2/series?user_has_watched=true&expand=user_last_episode_watched')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+    assert data.items[0].id == series2.id
+    assert data.items[0].user_last_episode_watched.number == 1
+
+
+    r = await client.get(f'/2/series?user_has_watched=false')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+    assert data.items[0].id == series1.id    
+
 
 if __name__ == '__main__':
     run_file(__file__)
