@@ -1,6 +1,6 @@
 from seplis.api import schemas
 from .base import Series_importer_base, register_importer, client
-from seplis import logger, config
+from seplis import config
 
 statuses = {
     'Unknown': 0,
@@ -127,5 +127,18 @@ class TheMovieDB(Series_importer_base):
             if data['page'] == data['total_pages']:
                 break
         return ids
+    
+
+    async def lookup_from_imdb(self, imdb: str):
+        r = await client.get(f'https://api.themoviedb.org/3/find/{imdb}', params={
+            'api_key': config.data.client.themoviedb,
+            'external_source': 'imdb_id',
+        })
+        if r.status_code == 200:
+            data = r.json()
+            if not data['tv_results']:
+                return
+            return data['tv_results'][0]['id']
+
 
 register_importer(TheMovieDB())

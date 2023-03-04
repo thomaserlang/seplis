@@ -86,9 +86,19 @@ async def update_series(series: schemas.Series):
         logger.warn(f'Series {series.id} has no importers')
         return
     logger.info(f'Updating series: {series.id}')
+    await check_external_ids(series)
     await update_series_info(series)
     await update_series_episodes(series)
     await update_series_images(series)
+
+
+async def check_external_ids(series: schemas.Series):
+    if not series.externals.get('themoviedb') and series.externals.get('imdb'):
+        id_ = await call_importer('themoviedb', 'lookup_from_imdb', series.externals['imdb'])
+        if id_:
+            await models.Series.save(data=schemas.Series_update(externals={
+                'themoviedb': id_,
+            }), series_id=series.id, patch=True)
 
 
 async def update_series_info(series: schemas.Series):
