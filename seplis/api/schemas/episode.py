@@ -20,7 +20,7 @@ class User_can_watch(BaseModel):
     on_play_server = False
 
 
-class Episode_create(BaseModel):
+class Episode_create(BaseModel, extra='forbid'):
     title: constr(max_length=200, strip_whitespace=True)
     original_title: constr(max_length=200, strip_whitespace=True) | None
     number: conint(gt=0)
@@ -31,9 +31,6 @@ class Episode_create(BaseModel):
     plot: constr(min_length=1, max_length=2000, strip_whitespace=True) | None
     runtime: conint(ge=0) | None
     rating: confloat(ge=0.0, le=10.0) | None
-
-    class Config:
-        extra = 'forbid'
 
 
 class Episode_update(Episode_create):

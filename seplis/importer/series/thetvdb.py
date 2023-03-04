@@ -50,7 +50,7 @@ class Thetvdb(Series_importer_base):
             return schemas.Series_update(
                 title=data['seriesName'],
                 original_title=data['seriesName'],
-                plot=data['summary'][:2000] if data['summary'] else None,
+                plot=data['summary'][:2000] if data.get('summary') else None,
                 premiered=self.parse_date(data['firstAired']),
                 externals=externals,
                 status=self.parse_status(data['status']),
@@ -134,16 +134,18 @@ class Thetvdb(Series_importer_base):
                     continue
                 if episode['airedEpisodeNumber'] == 0:
                     continue
+                if not episode['absoluteNumber']:
+                    continue
                 _episodes.append(self.parse_episode(episode))
             except ValueError as e:
-                logger.exception('Parsing episode "{}" faild with error: {}'.format(e))
+                logger.exception(f'Parsing episode "{episode}" faild with error: {e}')
         return _episodes
 
     def parse_episode(self, episode) -> schemas.Episode_update:
         return schemas.Episode_update(
             title=episode['episodeName'],
             original_title=episode['episodeName'],
-            plot=episode['overview'],
+            plot=episode.get('overview'),
             number=episode['absoluteNumber'],
             season=episode['airedSeason'],
             episode=episode['airedEpisodeNumber'],
