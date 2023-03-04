@@ -2,7 +2,7 @@ import { Stack } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
 import Slider from '@seplis/components/slider'
-import { IMovieUser } from '@seplis/interfaces/movie'
+import { IMovie } from '@seplis/interfaces/movie'
 import { setTitle } from '@seplis/utils'
 import { useCallback, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -28,8 +28,8 @@ export default function MoviesHome() {
         });
     }, [ref])
 
-    const itemSelected = (item: IMovieUser) => {
-        navigate(`/movies/${item.movie.id}`, {state: {
+    const itemSelected = (movie: IMovie) => {
+        navigate(`/movies/${movie.id}`, {state: {
             background: location
         }})
     }
@@ -39,28 +39,28 @@ export default function MoviesHome() {
         
         <FocusContext.Provider value={focusKey}>
             <Stack ref={ref} marginTop="0.5rem">
-                <Slider<IMovieUser>
+                <Slider<IMovie>
                     title="Watched"
-                    url="/2/users/me/movies-watched"
-                    parseItem={(item) => (
+                    url="/2/movies?user_has_watched=true&sort=user_last_watched_at_desc"
+                    parseItem={(movie) => (
                         {
-                            key: `movie-${item.movie.id}`,
-                            title: item.movie.title,
-                            img: item.movie.poster_image?.url,
+                            key: `movie-${movie.id}`,
+                            title: movie.title,
+                            img: movie.poster_image?.url,
                         }
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
                 />
 
-                <Slider<IMovieUser>
+                <Slider<IMovie>
                     title="Stared"
-                    url="/2/users/me/movies-stared"
-                    parseItem={(item) => (
+                    url="/2/movies?user_stared=true&sort=user_stared_at_desc"
+                    parseItem={(movie) => (
                         {
-                            key: `movie-${item.movie.id}`,
-                            title: item.movie.title,
-                            img: item.movie.poster_image?.url,
+                            key: `movie-${movie.id}`,
+                            title: movie.title,
+                            img: movie.poster_image?.url,
                         }
                     )}
                     onFocus={onRowFocus}

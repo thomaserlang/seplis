@@ -12,12 +12,13 @@ import './slider.less'
 interface IProps<S = undefined> {
     title: string,
     url: string,
+    hideIfEmpty?: boolean,
     onFocus?: FocusHandler,
     onItemSelected?: (item: S) => void
     parseItem: (item: S) => ISliderItem
 }
 
-export default function Slider<S = undefined>({ title, url, parseItem, onFocus, onItemSelected }: IProps<S>) {
+export default function Slider<S = undefined>({ title, url, hideIfEmpty = false, parseItem, onFocus, onItemSelected }: IProps<S>) {
     const [items, setItems] = useState<ISliderItem[]>([])
     const [index, setIndex] = useState(0)
     const [displayItemCount, setDisplayItemCount] = useState(() => (rowWidthItems()))
@@ -70,6 +71,8 @@ export default function Slider<S = undefined>({ title, url, parseItem, onFocus, 
         }
     }, [])
 
+    if (hideIfEmpty && !isInitialLoading && items.length === 0)
+        return null
 
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>

@@ -14,10 +14,10 @@ async def test_movie_watched(client: AsyncClient):
         title='Movie 2',
     ), movie_id=None)
     
-    r = await client.get(f'/2/users/me/movies-watched')
+    r = await client.get(f'/2/movies?user_has_watched=true')
     assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Movie_user].parse_obj(r.json())
-    assert data.total == 0
+    data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    assert len(data.items) == 0
 
     r = await client.post(f'/2/movies/{movie1.id}/watched')
     assert r.status_code == 200, r.body
@@ -25,13 +25,14 @@ async def test_movie_watched(client: AsyncClient):
     r = await client.post(f'/2/movies/{movie2.id}/watched')
     assert r.status_code == 200, r.body
     
-    r = await client.get(f'/2/users/me/movies-watched')
-    assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Movie_user].parse_obj(r.json())
-    assert data.total == 2
-    assert data.items[0].movie.title == 'Movie 2'
-    assert data.items[0].watched_data.times == 1
-    assert data.items[1].movie.title == 'Movie 1'
+    r = await client.get(f'/2/movies?user_has_watched=true&expand=user_watched')
+    assert r.status_code == 200, r.content
+    data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    assert len(data.items) == 2
+    assert data.items[0].title == 'Movie 1'
+    assert data.items[0].user_watched.times == 1
+    assert data.items[1].title == 'Movie 2'
+    assert data.items[1].user_watched.times == 1
     
 
 if __name__ == '__main__':

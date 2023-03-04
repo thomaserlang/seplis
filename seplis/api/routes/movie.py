@@ -1,19 +1,36 @@
-from urllib.parse import urljoin
-from fastapi import APIRouter, Depends, HTTPException, Security, UploadFile, Form, Request
+from fastapi import APIRouter, Depends, HTTPException, Security, UploadFile, Form
 import sqlalchemy as sa
-
-from seplis.api import constants
-from ..dependencies import authenticated, get_session, AsyncSession, httpx_client
+from ... import utils
+from ...api import constants
+from ...api.filter.movies.query_filter_schema import Movie_query_filter
 from .. import models, schemas
+from ..dependencies import authenticated, get_session, AsyncSession
 from ..database import database
-from ... import config, utils, logger
+from ..filter.movies import filter_movies
 
 router = APIRouter(prefix='/2/movies')
 
+
+@router.get('', response_model=schemas.Page_cursor_result[schemas.Movie])
+async def get_movies(
+    page_cursor: schemas.Page_cursor_query = Depends(),
+    session: AsyncSession = Depends(get_session),
+    filter_query: Movie_query_filter = Depends(),
+):
+    query = sa.select(models.Movie)
+    p = await filter_movies(
+        query=query,
+        session=session,
+        filter_query=filter_query,
+        page_cursor=page_cursor,
+    )
+    return p
+
+
 @router.get('/{movie_id}', response_model=schemas.Movie)
 async def get_movie(
-    movie_id: int, 
-    session: AsyncSession=Depends(get_session),
+    movie_id: int,
+    session: AsyncSession = Depends(get_session),
 ):
     movie = await session.scalar(sa.select(models.Movie).where(models.Movie.id == movie_id))
     if not movie:
@@ -24,7 +41,8 @@ async def get_movie(
 @router.post('', status_code=201, response_model=schemas.Movie)
 async def create_movie(
     data: schemas.Movie_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     movie = await models.Movie.save(data, movie_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_movie', int(movie.id))
@@ -35,7 +53,8 @@ async def create_movie(
 async def update_movie(
     movie_id: int,
     data: schemas.Movie_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     return await models.Movie.save(movie_id=movie_id, data=data, patch=False)
 
@@ -44,7 +63,8 @@ async def update_movie(
 async def patch_movie(
     movie_id: int,
     data: schemas.Movie_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     return await models.Movie.save(movie_id=movie_id, data=data, patch=True)
 
@@ -52,7 +72,8 @@ async def patch_movie(
 @router.delete('/{movie_id}', status_code=204)
 async def delete_movie(
     movie_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
 ):
     await models.Movie.delete(movie_id=movie_id)
 
@@ -60,10 +81,11 @@ async def delete_movie(
 @router.post('/{movie_id}/update', status_code=204)
 async def request_update(
     movie_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     await database.redis_queue.enqueue_job('update_movie', movie_id)
-    
+
 
 @router.post('/{movie_id}/images', response_model=schemas.Image, status_code=201)
 async def create_image(
@@ -72,7 +94,8 @@ async def create_image(
     type: schemas.IMAGE_TYPES = Form(),
     external_name: str = Form(default=None, min_length=1, max_length=50),
     external_id: str = Form(default=None, min_length=1, max_length=50),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     image_data = schemas.Image_import(
         external_name=external_name,
@@ -92,7 +115,8 @@ async def delete_image(
     movie_id: int,
     image_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
 ):
     await session.execute(sa.update(models.Movie).values(poster_image_id=None).where(
         models.Movie.id == movie_id,

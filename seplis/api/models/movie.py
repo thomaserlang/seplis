@@ -185,89 +185,6 @@ class Movie(Base):
         )
 
 
-def movie_user_query(user_id: int, sort: schemas.MOVIE_USER_SORT_TYPE | None, filter_query: schemas.Movie_user_query_filter | None):
-    query = sa.select(
-        Movie,        
-        sa.func.IF(Movie_stared.user_id != None, 1, 0).label('stared'),
-        Movie_watched,
-    ).join(
-        Movie_stared, sa.and_(
-            Movie_stared.user_id == user_id,
-            Movie_stared.movie_id == Movie.id,
-        ),
-        isouter=True,
-    ).join(
-        Movie_watched, sa.and_(
-            Movie_watched.user_id == user_id,
-            Movie_watched.movie_id == Movie.id,
-        ),
-        isouter=True,
-    )
-
-    if filter_query:
-        if filter_query.genre_id:
-            if len(filter_query.genre_id) == 1:
-                query = query.where(
-                    Movie_genre.genre_id == filter_query.genre_id[0],
-                    Movie.id == Movie_genre.movie_id,
-                )
-            else:                
-                query = query.where(
-                    Movie_genre.genre_id.in_(filter_query.genre_id),
-                    Movie.id == Movie_genre.movie_id,
-                )
-
-    if sort == 'stared_at_desc':
-        query = query.order_by(
-            sa.desc(sa.func.coalesce(Movie_stared.created_at, -1)),
-            sa.desc(Movie.id),
-        )
-    elif sort == 'stared_at_asc':
-        query = query.order_by(
-            sa.asc(sa.func.coalesce(Movie_stared.created_at, -1)),
-            sa.asc(Movie.id),
-        )
-    elif sort == 'watched_at_desc':
-        query = query.order_by(
-            sa.desc(sa.func.coalesce(Movie_watched.watched_at, -1)),
-            sa.desc(Movie.id),
-        )
-    elif sort == 'watched_at_asc':
-        query = query.order_by(
-            sa.asc(sa.func.coalesce(Movie_watched.watched_at, -1)),
-            sa.asc(Movie.id),
-        )
-    elif sort == 'rating_desc':
-        query = query.order_by(
-            sa.desc(sa.func.coalesce(Movie.rating, -1)),
-            sa.desc(Movie.id),
-        )
-    elif sort == 'rating_asc':
-        query = query.order_by(
-            sa.asc(sa.func.coalesce(Movie.rating, -1)),
-            sa.asc(Movie.id),
-        )
-    elif sort == 'popularity_desc':
-        query = query.order_by(
-            sa.desc(sa.func.coalesce(Movie.popularity, -1)),
-            sa.desc(Movie.id),
-        )
-    elif sort == 'popularity_asc':
-        query = query.order_by(
-            sa.asc(sa.func.coalesce(Movie.popularity, -1)),
-            sa.asc(Movie.id),
-        )
-
-    return query
-
-def movie_user_result_parse(row: any):
-    return schemas.Movie_user(
-        movie=schemas.Movie.from_orm(row.Movie),
-        stared=row.stared == 1,
-        watched_data=schemas.Movie_watched.from_orm(row.Movie_watched),
-    )
-
-
 class Movie_external(Base):
     __tablename__ = 'movie_externals'
 
@@ -288,7 +205,7 @@ class Movie_watched(Base):
 
 
     @staticmethod
-    async def increment(user_id: int | str, movie_id: int, data: schemas.Movie_watched_increment) -> schemas.Movie_watched:
+    async def increment(user_id: int | str, movie_id: int, data: schemas.Movie_watched_increment):
         async with database.session() as session:
             watched = sa.dialects.mysql.insert(Movie_watched).values(
                 movie_id=movie_id,
@@ -318,7 +235,7 @@ class Movie_watched(Base):
 
 
     @staticmethod
-    async def decrement(user_id: int | str, movie_id: int) -> schemas.Movie_watched | None:
+    async def decrement(user_id: int | str, movie_id: int):
         async with database.session() as session:
             w = await session.scalar(sa.select(Movie_watched).where(
                 Movie_watched.movie_id == movie_id,

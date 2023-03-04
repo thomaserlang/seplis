@@ -13,8 +13,8 @@ export default function MoviesWatched() {
         <MainMenu />
         <Box margin="1rem">
             <MovieUserList
-                title="Watched {total} movies"
-                url="/2/users/me/movies-watched"
+                title="Movies Watched"
+                url="/2/movies?user_has_watched=true&sort=user_last_watched_at_desc"
             />
         </Box>
     </>

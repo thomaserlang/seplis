@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import ImageList from '@seplis/components/list'
-import { IMovieUser } from '@seplis/interfaces/movie'
+import { IMovie } from '@seplis/interfaces/movie'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
@@ -25,22 +25,22 @@ export default function MovieUserList({ title, url }: { title: string, url: stri
     return <>
         <FocusContext.Provider value={focusKey}>
             <Box ref={ref}>
-                <ImageList<IMovieUser>
+                <ImageList<IMovie>
                     title={title}
                     url={url}
                     urlParams={{
                         ...query,
                         'per_page': 50,
                     }}
-                    parseItem={(item) => (
+                    parseItem={(movie) => (
                         {
-                            key: `movie-${item.movie.id}`,
-                            title: item.movie.title,
-                            img: item.movie.poster_image?.url,
+                            key: `movie-${movie.id}`,
+                            title: movie.title,
+                            img: movie.poster_image?.url,
                         }
                     )}
-                    onItemSelected={(item: IMovieUser) => {
-                        navigate(`/movies/${item.movie.id}`, {state: {
+                    onItemSelected={(movie: IMovie) => {
+                        navigate(`/movies/${movie.id}`, {state: {
                             background: location
                         }})
                     }}

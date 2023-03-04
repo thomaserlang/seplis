@@ -1,5 +1,4 @@
 from typing import Literal
-from fastapi import Query
 from pydantic import BaseModel, constr, conint, confloat, validator
 from datetime import datetime, date
 from .image import Image
@@ -7,7 +6,7 @@ from .helper import default_datetime
 from .genre import Genre
 
 
-class Movie_create(BaseModel):   
+class Movie_create(BaseModel, extra='forbid', validate_assignment=True):   
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
@@ -26,9 +25,6 @@ class Movie_create(BaseModel):
     rating: confloat(ge=0.0, le=10.0) | None
     genres: list[str | int] | None
 
-    class Config:
-        extra = 'forbid'
-        validate_assignment = True
 
     @validator('externals')
     def externals_none_value(cls, externals):
@@ -42,7 +38,22 @@ class Movie_update(Movie_create):
     pass
 
 
-class Movie(BaseModel):
+class Movie_watched_increment(BaseModel):
+    watched_at: datetime = default_datetime
+
+
+class Movie_watched(BaseModel, orm_mode=True):
+    times = 0
+    position = 0
+    watched_at: datetime | None = None
+
+
+class Movie_stared(BaseModel, orm_mode=True):
+    created_at: datetime | None = None
+    stared = False
+
+
+class Movie(BaseModel, orm_mode=True):
     id: int
     poster_image: Image | None
     title: str | None
@@ -60,55 +71,27 @@ class Movie(BaseModel):
     popularity: float | None
     rating: float | None    
     genres: list[Genre]
-
-    class Config:
-        orm_mode = True
-
-
-class Movie_watched_increment(BaseModel):
-    watched_at: datetime = default_datetime
-
-class Movie_watched(BaseModel):
-    times = 0
-    position = 0
-    watched_at: datetime | None = None
-
-    class Config:
-        orm_mode = True
-
-
-class Movie_stared(BaseModel):
-    created_at: datetime | None = None
-    stared = False
-
-    class Config:
-        orm_mode = True
+    user_watched: Movie_watched | None
+    user_stared: Movie_stared | None
 
 
 MOVIE_USER_SORT_TYPE = Literal[
-    'stared_at_asc',
-    'stared_at_desc',
-    'watched_at_asc',
-    'watched_at_desc',
+    'user_stared_at_asc',
+    'user_stared_at_desc',
+    'user_last_watched_at_asc',
+    'user_last_watched_at_desc',
     'rating_asc',
     'rating_desc',
     'popularity_asc',
     'popularity_desc',
+    'user_play_server_movie_added_asc',
+    'user_play_server_movie_added_desc',
 ]
 
-class Movie_query_filter:
-    def __init__(self, genre_id: list[int] = Query(default=None)):
-        self.genre_id = genre_id    
 
-
-class Movie_user_query_filter(Movie_query_filter):
-    pass
-
-
-class Movie_user(BaseModel):
-    movie: Movie
-    stared: bool
-    watched_data: Movie_watched
-    
-    class Config:
-        orm_mode = True
+MOVIE_EXPAND = Literal[
+    'user_stared',
+    'user_can_watch',
+    'user_rating',
+    'user_watched',
+]
