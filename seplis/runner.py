@@ -105,11 +105,19 @@ def update_movies_bulk(from_id, do_async):
 
 
 @cli.command()
-def update_popularity():
+@click.option('--create', is_flag=True, help='Enables creation of series/movies that we don\'t have')
+@click.option('--create_above_popularity', default=None, help='create the series/movie if the specified popularity value is larger')
+def update_popularity(create, create_above_popularity):
     import seplis.importer
     set_logger('importer_update_popularity.log')
-    asyncio.run(run_task(seplis.importer.movies.update_popularity()))
-    asyncio.run(run_task(seplis.importer.series.update_popularity()))
+    asyncio.run(run_task(seplis.importer.movies.update_popularity(
+        create_movies=create or create_above_popularity,
+        create_above_popularity=float(create_above_popularity) if create_above_popularity else 1.0,
+    )))
+    asyncio.run(run_task(seplis.importer.series.update_popularity(
+        create_series=create or create_above_popularity,
+        create_above_popularity=float(create_above_popularity) if create_above_popularity else 1.0,
+    )))
 
 
 @cli.command()
