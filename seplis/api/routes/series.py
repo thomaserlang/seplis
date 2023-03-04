@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import APIRouter, Depends, HTTPException, Security, UploadFile, Form
 from ..expand.series import expand_series
 from ..filter.series import filter_series
-from ..filter.query_filter_schema import Series_query_filter
+from ..filter.series.query_filter_schema import Series_query_filter
 from ... import utils
 from ..dependencies import authenticated, get_current_user_no_raise, get_expand, get_session, AsyncSession
 from ..database import database

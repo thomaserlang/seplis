@@ -44,10 +44,10 @@ async def test_user_series_following(client: AsyncClient):
     assert r.status_code == 200, r.content
     data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 2
-    assert data.items[0].id == series2.id
-    assert data.items[0].user_last_episode_watched.number == 2
-    assert data.items[1].id == series1.id
-    assert data.items[1].user_last_episode_watched.number == 1
+    assert data.items[0].id == series1.id
+    assert data.items[0].user_last_episode_watched.number == 1
+    assert data.items[1].id == series2.id
+    assert data.items[1].user_last_episode_watched.number == 2
 
 
 if __name__ == '__main__':
