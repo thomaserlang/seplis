@@ -15,7 +15,7 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.drop_column('series_followers', 'datetime')
+    op.execute('ALTER TABLE series_followers DROP COLUMN IF EXISTS datetime;')
     op.execute('update series_followers set created_at="2011-01-01 00:00:00" where isnull(created_at)')
 
 
