@@ -62,6 +62,20 @@ export default function WatchHome() {
                     onItemSelected={itemSelected}
                 />
 
+<               Slider<ISeries>
+                    title="Series recently added"
+                    url="/2/series?user_can_watch=true&sort=user_play_server_series_added_desc"
+                    parseItem={(series) => (
+                        {
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={seriesSelected}
+                />
+
                 <Slider<ISeries>
                     title="Series you haven't watched"
                     url="/2/series?user_has_watched=false&user_can_watch=true"

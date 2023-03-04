@@ -4,7 +4,8 @@ from ... import exceptions, models
 
 
 def filter_user_following(query, filter_query: Series_query_filter):
-    has_sort = ('user_followed_at_asc' in filter_query.sort or 'user_followed_at_desc' in filter_query.sort)
+    has_sort = ('user_followed_at_asc' in filter_query.sort or 
+                'user_followed_at_desc' in filter_query.sort)
     if filter_query.user_following == None and not has_sort:
         return query
     if not filter_query.user:

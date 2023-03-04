@@ -1,11 +1,11 @@
 import sqlalchemy as sa
 from .query_filter_schema import Series_query_filter
 from ... import exceptions, models
-from seplis import logger
 
 
 def filter_has_watched(query, filter_query: Series_query_filter):
-    has_sort = ('user_last_episode_watched_at_asc' in filter_query.sort or 'user_last_episode_watched_at_desc' in filter_query.sort)
+    has_sort = ('user_last_episode_watched_at_asc' in filter_query.sort or 
+                'user_last_episode_watched_at_desc' in filter_query.sort)
     if filter_query.user_has_watched == None and not has_sort:
         return query
     if not filter_query.user:

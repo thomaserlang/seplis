@@ -112,6 +112,8 @@ SERIES_USER_SORT_TYPE = Literal[
     'rating_desc',
     'popularity_asc',
     'popularity_desc',
+    'user_play_server_series_added_asc',
+    'user_play_server_series_added_desc',
 ]
 
 
