@@ -1,5 +1,4 @@
 from typing import Literal
-from fastapi import Query
 from pydantic import BaseModel, constr, conint, confloat, validator, Field
 from datetime import datetime, date
 from .image import Image
@@ -122,15 +121,6 @@ SERIES_EXPAND = Literal[
     'user_last_episode_watched',
     'user_rating',
 ]
-
-
-class Series_query_filter:
-    def __init__(self, genre_id: list[int] = Query(default=None)):
-        self.genre_id = genre_id    
-
-
-class Series_user_query_filter(Series_query_filter):
-    pass
 
 
 class Series_with_episodes(Series):

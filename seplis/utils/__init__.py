@@ -7,10 +7,8 @@ import sys
 import uuid
 import io
 import sqlalchemy as sa
-
 from .jsonutils import *
 from . import sqlalchemy
-from ..api import schemas
 
 def random_key(length=30):
     return base64.b64encode(

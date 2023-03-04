@@ -4,7 +4,8 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from httpx import AsyncClient
 from .database import database
 from .models.user import Token
-from . import exceptions, schemas
+from . import exceptions
+from .schemas.user import User
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/2/token")
 oauth2_scheme_no_raise = OAuth2PasswordBearer(tokenUrl="/2/token", auto_error=False)
@@ -27,7 +28,7 @@ async def get_current_user_no_raise(token: str = Depends(oauth2_scheme_no_raise)
 
 async def authenticated(
     security_scopes: SecurityScopes, 
-    user: schemas.User = Depends(get_current_user),
+    user: User = Depends(get_current_user),
 ):
     if user.level < int(security_scopes.scope_str):
         raise exceptions.Forbidden(
