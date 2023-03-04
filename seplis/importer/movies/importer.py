@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 import httpx
 import asyncio
-from seplis import config, constants, logger
+from seplis import config, logger
 from seplis.api.database import database
 from seplis.api import exceptions, models, schemas
 
@@ -17,10 +17,11 @@ statuses = {
 
 client = httpx.AsyncClient()
 
-async def update_movie(movie_id=None, movie: schemas.Movie | None=None):
+
+async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
     if movie_id:
         async with database.session() as session:
-            result = await session.scalar(sa.select(models.Movie).where(models.Movie.id == movie_id))    
+            result = await session.scalar(sa.select(models.Movie).where(models.Movie.id == movie_id))
             if not result:
                 logger.error(f'Unknown movie: {movie_id}')
                 return
@@ -50,8 +51,8 @@ async def update_movies_bulk(from_movie_id=None, do_async=False):
                     break
                 except exceptions.API_exception as e:
                     logger.error(e.message)
-                except Exception:
-                    logger.exception('update_series_bulk')
+                except Exception as e:
+                    logger.exception(e)
 
 
 async def update_incremental():
@@ -82,8 +83,8 @@ async def update_incremental():
                         break
                     except exceptions.API_exception as e:
                         logger.error(e.message)
-                    except Exception:
-                        logger.exception('update_series_bulk')
+                    except Exception as e:
+                        logger.exception(e)
             if data['page'] == data['total_pages']:
                 break
 
@@ -94,7 +95,7 @@ async def update_movie_metadata(movie: schemas.Movie):
     if not themoviedb:
         if not movie.externals.get('imdb'):
             logger.info(f'[Movie: {movie.id}] externals.imdb doesn\'t exist')
-            return            
+            return
         r = await client.get(
             f'https://api.themoviedb.org/3/find/{movie.externals["imdb"]}',
             params={
@@ -103,15 +104,18 @@ async def update_movie_metadata(movie: schemas.Movie):
             }
         )
         if r.status_code >= 400:
-            logger.error(f'[Movie: {movie.id}] Failed to get movie "{movie.externals["imdb"]}" by imdb: {r.content}')
+            logger.error(
+                f'[Movie: {movie.id}] Failed to get movie "{movie.externals["imdb"]}" by imdb: {r.content}')
             return
         r = r.json()
         if not r['movie_results']:
-            logger.warning(f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"')
+            logger.warning(
+                f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"')
             return
         themoviedb = r['movie_results'][0]['id']
     data = await get_movie_data(themoviedb)
     await models.Movie.save(data=data, movie_id=movie.id, patch=True)
+
 
 async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     r = await client.get(f'https://api.themoviedb.org/3/movie/{themoviedb}', params={
@@ -119,10 +123,11 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
         'append_to_response': 'alternative_titles',
     })
     if r.status_code >= 400:
-        logger.error(f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}')
+        logger.error(
+            f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}')
         return
     r = r.json()
-    
+
     data = schemas.Movie_update()
     data.externals = {
         'themoviedb': themoviedb,
@@ -137,10 +142,12 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     data.plot = r['overview'] or None
     data.tagline = r['tagline'] or None
     data.language = r['original_language']
-    data.alternative_titles = [a['title'] for a in r['alternative_titles']['titles']]
+    data.alternative_titles = [a['title']
+                               for a in r['alternative_titles']['titles']]
     data.genres = [genre['name'] for genre in r['genres']]
     data.popularity = r['popularity']
     return data
+
 
 async def update_images(movie: schemas.Movie):
     logger.info(f'[Movie: {movie.id}] Updating images')
@@ -153,17 +160,20 @@ async def update_images(movie: schemas.Movie):
             models.Image.relation_type == 'movie',
             models.Image.relation_id == movie.id,
         ))
-        image_external_ids = {f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
+        image_external_ids = {
+            f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
 
     r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}', params={
         'append_to_response': 'images',
         'api_key': config.data.client.themoviedb,
     })
     if r.status_code >= 400:
-        logger.error(f'[Movie: {movie.id}] Failed to get movie images for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}')
+        logger.error(
+            f'[Movie: {movie.id}] Failed to get movie images for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}')
         return
     m = r.json()
-    logger.debug(f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
+    logger.debug(
+        f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
 
     async def save_image(image):
         try:
@@ -189,12 +199,12 @@ async def update_images(movie: schemas.Movie):
 
     await asyncio.gather(*[save_image(image) for image in m['images']['posters']])
 
-
     if not movie.poster_image and m['poster_path']:
         key = f'themoviedb-{m["poster_path"]}'
         if key not in image_external_ids:
-            key =  f'themoviedb-{m["images"]["posters"][0]["file_path"]}'
-        logger.info(f'[Movie: {movie.id}] Setting new primary image: "{image_external_ids[key].id}"')
+            key = f'themoviedb-{m["images"]["posters"][0]["file_path"]}'
+        logger.info(
+            f'[Movie: {movie.id}] Setting new primary image: "{image_external_ids[key].id}"')
         await models.Movie.save(data=schemas.Movie_update(
             poster_image_id=image_external_ids[key].id,
         ), movie_id=movie.id)

@@ -7,7 +7,7 @@ from seplis.api import exceptions, models, schemas
 from .base import importers
 
 
-async def update_series_by_id(series_id):    
+async def update_series_by_id(series_id):
     async with database.session() as session:
         result = await session.scalar(sa.select(models.Series).where(models.Series.id == series_id))
         if not result:
@@ -50,7 +50,7 @@ async def update_series_incremental():
 
 
 async def _importer_incremental(importer):
-    timestamp = time.time()    
+    timestamp = time.time()
     external_ids = await importer.incremental_updates()
     if not external_ids:
         return
@@ -118,7 +118,7 @@ async def update_series_episodes(series: schemas.Series):
 
 async def update_series_images(series: schemas.Series):
     if series.poster_image:
-        # Need a better way to only download images in the 
+        # Need a better way to only download images in the
         # correct size from THETVDB.
         # Right now a lot of time and bandwidth is spent redownloading
         # the same images just to find out that they are not 680x1000...
@@ -130,14 +130,15 @@ async def update_series_images(series: schemas.Series):
             models.Image.relation_id == series.id,
             models.Image.relation_type == 'series',
         ))
-        current_images = {f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
+        current_images = {
+            f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
     images_added: list[schemas.Image] = []
 
     async def save_image(image):
         try:
             if f'{image.external_name}-{image.external_id}' not in current_images:
                 images_added.append(await models.Image.save(
-                    relation_type='series', 
+                    relation_type='series',
                     relation_id=series.id,
                     image_data=image,
                 ))
@@ -149,7 +150,7 @@ async def update_series_images(series: schemas.Series):
     for name in imp_names:
         try:
             imp_images: list[schemas.Image_import] = await call_importer(
-                external_name=name, 
+                external_name=name,
                 method='images',
                 external_id=series.externals[name],
             )
@@ -160,7 +161,6 @@ async def update_series_images(series: schemas.Series):
             raise
         except Exception:
             logger.exception('update_show_images')
-            
 
     if not series.poster_image:
         all_images: list[schemas.Image] = []
@@ -170,7 +170,7 @@ async def update_series_images(series: schemas.Series):
             await models.Series.save(
                 data=schemas.Series_update(
                     poster_image_id=all_images[0].id
-                ), 
+                ),
                 series_id=series.id
             )
 
@@ -193,7 +193,7 @@ async def call_importer(external_name, method, *args, **kwargs):
     im = importers.get(external_name)
     if not im:
         logger.warn(
-            'Series "{}" has an unknown importer at {} ' 
+            'Series "{}" has an unknown importer at {} '
             'with external name "{}"'.format(
                 kwargs.get('external_id'),
                 method,
