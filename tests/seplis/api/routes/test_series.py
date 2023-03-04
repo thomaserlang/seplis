@@ -1,9 +1,12 @@
 import io
-import pytest, respx, httpx
+import pytest
+import respx
+import httpx
 from seplis.api import constants, schemas, models
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 from seplis import config
 from datetime import date
+
 
 @pytest.mark.asyncio
 @respx.mock
@@ -42,7 +45,7 @@ async def test_series_create(client: AsyncClient):
     data = schemas.Series.parse_obj(r.json())
     series_id = data.id
 
-    r = await client.get(f'/2/series/{series_id}')    
+    r = await client.get(f'/2/series/{series_id}')
     data = schemas.Series.parse_obj(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY'
@@ -68,7 +71,7 @@ async def test_series_create(client: AsyncClient):
     data = schemas.Series.parse_obj(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY'
-    
+
     r = await client.patch(f'/2/series/{series_id}', json={
         'title': 'QWERTY2',
         'plot': 'The cases of the Naval Criminal Investigative Service.',
@@ -152,21 +155,21 @@ async def test_series_create(client: AsyncClient):
     assert data.importers == {
         'info': 'tvmaze',
         'episodes': 'tvmaze',
-    }    
+    }
     assert data.externals == {
         'imdb': 'tt123456797',
     }
     assert data.premiered == date(2003, 1, 2)
-    
+
     r = await client.get(f'/2/series/externals/imdb/tt123456797')
     data = schemas.Series.parse_obj(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY2'
 
     # it should be possible to set both the importer and the external
-    # value to None.        
+    # value to None.
     r = await client.patch(f'/2/series/{series_id}', json={
-        'importers':{
+        'importers': {
             'info': None,
         },
         'externals': {
@@ -245,7 +248,6 @@ async def test_series_create(client: AsyncClient):
     series = schemas.Series.parse_obj(r.json())
     assert series.alternative_titles == []
 
-
     r = await client.get(f'/2/series/{series_id}/episodes?season=1')
     assert r.status_code == 200, r.content
     episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
@@ -275,16 +277,16 @@ async def test_series_create(client: AsyncClient):
     assert r.status_code == 404, r.content
 
     config.data.api.storitch = 'http://storitch'
-    r = await client.post(f'/2/series/{series_id}/images', 
-        files={
-            'image': io.BytesIO(b"some initial text data"),
-        },
-        data={
-            'type': 'wronga',
-            'external_name': 'seplis',
-            'external_id': 'test',
-        }
-    )
+    r = await client.post(f'/2/series/{series_id}/images',
+                          files={
+                              'image': io.BytesIO(b"some initial text data"),
+                          },
+                          data={
+                              'type': 'wronga',
+                              'external_name': 'seplis',
+                              'external_id': 'test',
+                          }
+                          )
     assert r.status_code == 422, r.status_code
 
     respx.put("http://storitch/store/session").mock(return_value=httpx.Response(200, json={
@@ -293,16 +295,16 @@ async def test_series_create(client: AsyncClient):
         'height': 680,
         'hash': '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492',
     }))
-    r = await client.post(f'/2/series/{series_id}/images', 
-        files={
-            'image': io.BytesIO(b"some initial text data"),
-        },
-        data={
-            'type': 'poster',
-            'external_name': 'seplis',
-            'external_id': 'test',
-        }
-    )
+    r = await client.post(f'/2/series/{series_id}/images',
+                          files={
+                              'image': io.BytesIO(b"some initial text data"),
+                          },
+                          data={
+                              'type': 'poster',
+                              'external_name': 'seplis',
+                              'external_id': 'test',
+                          }
+                          )
     assert r.status_code == 201, r.content
     data = schemas.Image.parse_obj(r.json())
     assert data.id > 0
@@ -312,24 +314,23 @@ async def test_series_create(client: AsyncClient):
     assert data.type == 'poster'
 
     # Test duplicate
-    r = await client.post(f'/2/series/{series_id}/images', 
-        files={
-            'image': io.BytesIO(b"some initial text data"),
-        },
-        data={
-            'type': 'poster',
-            'external_name': 'seplis',
-            'external_id': 'test',
-        }
-    )
+    r = await client.post(f'/2/series/{series_id}/images',
+                          files={
+                              'image': io.BytesIO(b"some initial text data"),
+                          },
+                          data={
+                              'type': 'poster',
+                              'external_name': 'seplis',
+                              'external_id': 'test',
+                          }
+                          )
     assert r.status_code == 400, r.content
-    
+
     r = await client.get(f'/2/series/{series_id}/images')
     assert r.status_code == 200
     data = schemas.Page_cursor_total_result[schemas.Image].parse_obj(r.json())
     assert data.total == 1
     assert data.items[0].id > 0
-
 
     poster_image_id = data.items[0].id
     r = await client.put(f'/2/series/{series_id}', json={
@@ -350,7 +351,6 @@ async def test_series_create(client: AsyncClient):
     data = schemas.Series.parse_obj(r.json())
     assert data.poster_image == None
 
-
     r = await client.delete(f'/2/series/{series_id}')
     assert r.status_code == 204, r.content
 
@@ -361,14 +361,13 @@ async def test_series_create(client: AsyncClient):
     assert r.status_code == 404, r.content
 
 
-
 @pytest.mark.asyncio
 @respx.mock
 async def test_series_get(client: AsyncClient):
     r = await client.get(f'/2/series')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
-    assert data.items == [] 
+    assert data.items == []
 
     series1 = await models.Series.save(data=schemas.Series_create(
         title="Test 1",
@@ -384,7 +383,6 @@ async def test_series_get(client: AsyncClient):
         ],
     ))
 
-
     r = await client.get(f'/2/series?user_following=true')
     assert r.status_code == 401
 
@@ -397,7 +395,7 @@ async def test_series_get(client: AsyncClient):
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
-    
+
     r = await client.get(f'/2/series?user_following=false')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
@@ -416,22 +414,20 @@ async def test_series_get(client: AsyncClient):
     data.items[0].user_following.following == True
     data.items[1].user_following.following == False
 
-
     await models.Episode_watched.increment(series_id=series2.id, episode_number=1, user_id=user_id, data=schemas.Episode_watched_increment())
-    
+
     r = await client.get(f'/2/series?user_has_watched=true&expand=user_last_episode_watched')
-    assert r.status_code == 200
+    assert r.status_code == 200, r.content
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
     assert data.items[0].user_last_episode_watched.number == 1
 
-
     r = await client.get(f'/2/series?user_has_watched=false')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
-    assert data.items[0].id == series1.id    
+    assert data.items[0].id == series1.id
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 from .query_filter_schema import Series_query_filter
-from .. import models
+from ... import models
 
 
 def filter_genres(query, filter_query: Series_query_filter):

@@ -1,5 +1,5 @@
 from .query_filter_schema import Series_query_filter
-from .. import exceptions, models
+from ... import exceptions, models
 
 
 def filter_can_watch(query, filter_query: Series_query_filter):

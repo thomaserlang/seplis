@@ -7,8 +7,10 @@ from .models.user import Token
 from . import exceptions
 from .schemas.user import User
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/2/token")
 oauth2_scheme_no_raise = OAuth2PasswordBearer(tokenUrl="/2/token", auto_error=False)
+
 
 async def get_session() -> AsyncSession:
     async with database.session() as session:
@@ -35,7 +37,7 @@ async def authenticated(
             f'Required user level {security_scopes.scope_str}'
         )
     return user
-
+  
 
 async def get_expand(expand: str | None = None):
     if expand:
