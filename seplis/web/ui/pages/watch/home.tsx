@@ -77,36 +77,6 @@ export default function WatchHome() {
                 />
 
                 <Slider<ISeries>
-                    title="Series following"
-                    url="/2/series?user_following=true&user_can_watch=true&sort=user_followed_at_desc"
-                    parseItem={(series) => (
-                        {
-                            key: `series-${series.id}`,
-                            title: series.title,
-                            img: series.poster_image?.url,
-                        }
-                    )}
-                    onFocus={onRowFocus}
-                    onItemSelected={seriesSelected}
-                    hideIfEmpty={true}
-                />
-
-                <Slider<IMovie>
-                    title="Movies stared"
-                    url="/2/movies?user_stared=true&user_can_watch=true&sort=user_stared_at_desc"
-                    parseItem={(movie) => (
-                        {
-                            key: `movie-${movie.id}`,
-                            title: movie.title,
-                            img: movie.poster_image?.url,
-                        }
-                    )}
-                    onFocus={onRowFocus}
-                    onItemSelected={movieSelected}
-                    hideIfEmpty={true}
-                />
-
-                <Slider<ISeries>
                     title="Series recently added"
                     url="/2/series?user_can_watch=true&sort=user_play_server_series_added_desc"
                     parseItem={(series) => (
@@ -124,6 +94,36 @@ export default function WatchHome() {
                 <Slider<IMovie>
                     title="Movies recently added"
                     url="/2/movies?user_can_watch=true&sort=user_play_server_movie_added_desc"
+                    parseItem={(movie) => (
+                        {
+                            key: `movie-${movie.id}`,
+                            title: movie.title,
+                            img: movie.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={movieSelected}
+                    hideIfEmpty={true}
+                />
+
+                <Slider<ISeries>
+                    title="Series following"
+                    url="/2/series?user_following=true&user_can_watch=true&sort=user_followed_at_desc"
+                    parseItem={(series) => (
+                        {
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={seriesSelected}
+                    hideIfEmpty={true}
+                />
+
+                <Slider<IMovie>
+                    title="Movies stared"
+                    url="/2/movies?user_stared=true&user_can_watch=true&sort=user_stared_at_desc"
                     parseItem={(movie) => (
                         {
                             key: `movie-${movie.id}`,
