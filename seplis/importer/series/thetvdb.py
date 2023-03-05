@@ -48,8 +48,8 @@ class Thetvdb(Series_importer_base):
                 externals['imdb'] = data['imdbId']
 
             return schemas.Series_update(
-                title=data['seriesName'],
-                original_title=data['seriesName'],
+                title=data['seriesName'][:200],
+                original_title=data['seriesName'][:200],
                 plot=data['summary'][:2000] if data.get('summary') else None,
                 premiered=self.parse_date(data['firstAired']),
                 externals=externals,

@@ -34,8 +34,8 @@ class TheMovieDB(Series_importer_base):
             externals['imdb'] = series['external_ids']['imdb_id']
 
         return schemas.Series_update(
-            title=series['name'],
-            original_title=series['original_name'],
+            title=series['name'][:200],
+            original_title=series['original_name'][:200] if series['original_name'] else None,
             plot=series['overview'][:2000] if series['overview'] else None,
             externals=externals,
             status=statuses.get(series['status'], 0),
@@ -101,8 +101,8 @@ class TheMovieDB(Series_importer_base):
             i += 1
             episodes.append(schemas.Episode_update(
                 number=i,
-                title=episode['name'],
-                original_title=episode['name'],
+                title=episode['name'][:200],
+                original_title=episode['name'][:200],
                 season=episode['season_number'],
                 episode=episode['episode_number'],
                 air_date=episode['air_date'] if episode['air_date'] else None,

@@ -24,8 +24,8 @@ class Tvmaze(Series_importer_base):
         externals = {key: str(series['externals'][key]) for key in series['externals'] if series['externals'][key]}
         externals[self.external_name] = str(series['id'])
         return schemas.Series_update(
-            title=series['name'],
-            original_title=series['name'],
+            title=series['name'][:200],
+            original_title=series['name'][:200],
             plot=series['summary'][:2000].replace('<p>', '').replace('</p>', '').replace('<b>', '').replace('</b>', '') if series['summary'] else None,
             externals=externals,
             status=self.parse_status(series['status']),
@@ -76,8 +76,8 @@ class Tvmaze(Series_importer_base):
             i += 1
             episodes.append(schemas.Episode_update(
                 number=i,
-                title=episode['name'],
-                original_title=episode['name'],
+                title=episode['name'][:200],
+                original_title=episode['name'][:200],
                 season=episode['season'],
                 episode=episode['number'],
                 air_date=episode['airdate'] if episode['airdate'] else None,
