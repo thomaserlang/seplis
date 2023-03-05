@@ -137,6 +137,36 @@ export default function WatchHome() {
                 />
 
                 <Slider<ISeries>
+                    title="Popular series"
+                    url="/2/series?user_can_watch=true&sort=popularity_desc"
+                    parseItem={(series) => (
+                        {
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={seriesSelected}
+                    hideIfEmpty={true}
+                />
+
+                <Slider<IMovie>
+                    title="Popular movies"
+                    url="/2/movies?user_can_watch=true&sort=popularity_desc"
+                    parseItem={(movie) => (
+                        {
+                            key: `movie-${movie.id}`,
+                            title: movie.title,
+                            img: movie.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={movieSelected}
+                    hideIfEmpty={true}
+                />
+
+                <Slider<ISeries>
                     title="Series you haven't watched"
                     url="/2/series?user_has_watched=false&user_can_watch=true"
                     parseItem={(series) => (
@@ -150,7 +180,6 @@ export default function WatchHome() {
                     onItemSelected={seriesSelected}
                     hideIfEmpty={true}
                 />
-
 
                 <Slider<IMovie>
                     title="Movies you haven't watched"
