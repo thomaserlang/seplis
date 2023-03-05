@@ -78,7 +78,7 @@ export default function SeriesHome() {
 
                 <Slider<ISeriesAndEpisode>
                     title="Recently Aired"
-                    url="/2/users/me/series-recently-aired"
+                    url="/2/series-recently-aired?user_following=true"
                     parseItem={(item) => (
                         {
                             key: `series-${item.series.id}`,

@@ -8,3 +8,4 @@ from .user import *
 from .play_server import *
 from .error import *
 from .genre import *
+from .user_watched import *

@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from ... import models
-from seplis.api.filter.series.query_filter_schema import Series_query_filter
+from .query_filter_schema import Series_query_filter
 
 
 def order_query(query: any, filter_query: Series_query_filter):

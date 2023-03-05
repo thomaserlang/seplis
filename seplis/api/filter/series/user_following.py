@@ -10,17 +10,24 @@ def filter_user_following(query, filter_query: Series_query_filter):
         return query
     if not filter_query.user:
         raise exceptions.Not_signed_in_exception()
+    return filter_user_following_query(
+        query=query, 
+        user_following=filter_query.user_following or has_sort,
+        user_id=filter_query.user.id,
+    )
 
-    if filter_query.user_following == True or has_sort:
+
+def filter_user_following_query(query, user_following: bool, user_id: any):
+    if user_following == True:
         query = query.where(
-            models.Series_follower.user_id == filter_query.user.id,
+            models.Series_follower.user_id == user_id,
             models.Series_follower.series_id == models.Series.id,
         )
-    elif filter_query.user_following == False:
+    elif user_following == False:
         query = query.join(
             models.Series_follower,
             sa.and_(
-                models.Series_follower.user_id == filter_query.user.id,
+                models.Series_follower.user_id == user_id,
                 models.Series_follower.series_id == models.Series.id,
             ),
             isouter=True,

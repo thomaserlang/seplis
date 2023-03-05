@@ -5,7 +5,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .database import database
 from . import exceptions
-from .. import config, set_logger, logger, config_load
+from .. import config, set_logger, config_load
 
 config_load()
 set_logger(f'api-{config.data.api.port}.log')
@@ -13,15 +13,16 @@ set_logger(f'api-{config.data.api.port}.log')
 from .routes import (
     health,
     series_following,
+    series_recently_aired,
     token,
     reset_password,
     search,
     user,
     user_series_stats,
-    user_series_recently_aired,
     user_series_countdown,
     user_series_to_watch,
     user_play_server_invite_accept,
+    user_watched,
     movie,
     movie_watched,
     movie_watched_position,
@@ -51,10 +52,11 @@ app.include_router(token.router)
 app.include_router(search.router)
 app.include_router(user.router)
 app.include_router(user_series_stats.router)
-app.include_router(user_series_recently_aired.router)
+app.include_router(series_recently_aired.router)
 app.include_router(user_series_countdown.router)
 app.include_router(user_series_to_watch.router)
 app.include_router(user_play_server_invite_accept.router)
+app.include_router(user_watched.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)

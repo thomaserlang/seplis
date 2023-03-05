@@ -12,7 +12,7 @@ async def get_user_series_to_watch(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
     page_cursor: schemas.Page_cursor_query = Depends(),
-    can_watch: bool | None = Query(None)
+    user_can_watch: bool | None = Query(None)
 ):
     episodes_query = sa.select(
         models.Episode_watched.series_id,
@@ -34,7 +34,7 @@ async def get_user_series_to_watch(
         models.Episode.series_id,
     )
 
-    if can_watch:
+    if user_can_watch:
         query = query.where(
             models.Play_server_access.user_id == user.id,
             models.Play_server_episode.play_server_id == models.Play_server_access.play_server_id,

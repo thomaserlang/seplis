@@ -146,7 +146,7 @@ function ExternalLinks({ movie }: { movie: IMovie }) {
         return
     return <Wrap>
         {movie.externals.imdb && <WrapItem><Link href={`https://imdb.com/title/${movie.externals.imdb}`} isExternal>IMDb</Link></WrapItem>}
-        {movie.externals.themoviedb && <WrapItem><Link href={`https://www.themoviedb.org/movie/${movie.externals.themoviedb}`} isExternal>TheMovieDB</Link></WrapItem>}
+        {movie.externals.themoviedb && <WrapItem><Link href={`https://www.themoviedb.org/movie/${movie.externals.themoviedb}`} isExternal>TMDb</Link></WrapItem>}
     </Wrap>
 }
 
