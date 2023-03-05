@@ -2,6 +2,7 @@ from fastapi import APIRouter, Body, Depends, Query, Security
 import sqlalchemy as sa
 from datetime import datetime, timezone
 from ..dependencies import authenticated, get_session, AsyncSession
+from ..filter.series.user_can_watch import filter_user_can_watch_query
 from .. import models, schemas, constants
 from ... import utils
 
@@ -35,12 +36,7 @@ async def get_user_series_to_watch(
     )
 
     if user_can_watch:
-        query = query.where(
-            models.Play_server_access.user_id == user.id,
-            models.Play_server_episode.play_server_id == models.Play_server_access.play_server_id,
-            models.Play_server_episode.series_id == models.Episode.series_id,
-            models.Play_server_episode.episode_number == models.Episode.number,            
-        )
+        query = filter_user_can_watch_query(query=query, user_id=user.id, episode_number=models.Episode.number)
     
 
     p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_cursor)
