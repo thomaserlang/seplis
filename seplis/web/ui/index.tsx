@@ -126,7 +126,7 @@ function App() {
             <Route path="/series/watched" element={<SeriesWatched />} />
             <Route path="/series/:seriesId" element={<Series />} />
             <Route path="/series/:seriesId/episodes/:episodeNumber/play" element={<PlayEpisode />} />
-            <Route path="/watch/home" element={<WatchHome />} />
+            <Route path="/watch" element={<WatchHome />} />
         </Routes>
         {background && <Routes>
             <Route path="/series/:seriesId" element={<SeriesModalPage />} />

@@ -27,7 +27,6 @@ export default function MainMenu() {
             </Flex>
         </Link>
 
-
         <Flex display={['none', 'flex']}>
             <MenuItems />
         </Flex>
@@ -35,7 +34,6 @@ export default function MainMenu() {
         <Box display={['block', 'none']} marginRight="0.75rem">
             <MobileMenu />
         </Box>
-
 
         <Box marginRight="0.75rem">
             <SearchButtonDialog />
@@ -89,14 +87,11 @@ function MobileMenu() {
 
 function MenuItems() {
     return <>
-        <Menu>
-            <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>
-                Watch
-            </MenuButton>
-            <MenuList>
-                <Link to="/watch/home"><MenuItem>Home</MenuItem></Link>
-            </MenuList>
-        </Menu>
+
+        <Box marginRight={["0", "0.75rem"]}>
+            <Link to="/watch"><Button>Watch</Button></Link>
+        </Box>
+
 
         <Menu>
             <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>
