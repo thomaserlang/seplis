@@ -8,11 +8,9 @@ from .episode import Episode
 from .base import Base
 from ..database import auto_session, database
 from .. import schemas
-from ... import config, logger, utils, constants
-from .series_follower import Series_follower
-from .series_user_rating import Series_user_rating
-from .episode import Episode, Episode_watched, Episode_last_watched
+from ... import config, utils, constants
 from .genre import Genre
+
 
 class Series(Base):
     __tablename__ = 'series'
@@ -37,7 +35,7 @@ class Series(Base):
     poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
     poster_image = sa.orm.relationship('Image', lazy=False)
     episode_type = sa.Column(
-        sa.Integer, 
+        sa.Integer,
         default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
     )
     total_episodes = sa.Column(sa.Integer, default=0)
@@ -45,22 +43,27 @@ class Series(Base):
     popularity = sa.Column(sa.DECIMAL(precision=12, scale=4))
     rating = sa.Column(sa.DECIMAL(4, 2))
 
-
     @property
     def importers(self):
         return {
             'info': self.importer_info,
             'episodes': self.importer_episodes,
         }
- 
+
     @classmethod
     @auto_session
-    async def save(cls, data: schemas.Series_create | schemas.Series_update, series_id: int | None = None, patch=True, session=None) -> schemas.Series:
+    async def save(cls,
+        data: schemas.Series_create | schemas.Series_update,
+        series_id: int | None = None,
+        patch=True,
+        overwrite_genres=False,
+        session=None
+    ):
         _data = data.dict(exclude_unset=True)
         if not series_id:
             r = await session.execute(sa.insert(Series))
             series_id = r.lastrowid
-            _data['created_at'] = datetime.now(tz=timezone.utc)                    
+            _data['created_at'] = datetime.now(tz=timezone.utc)
             if not data.original_title:
                 _data['original_title'] = data.title
         else:
@@ -74,7 +77,7 @@ class Series(Base):
         if 'alternative_titles' in _data:
             _data['alternative_titles'] = await cls._save_alternative_titles(session, series_id, _data['alternative_titles'], patch)
         if 'genres' in _data:
-            _data['genres'] = await cls._save_genres(session, series_id, _data['genres'], patch)
+            _data['genres'] = await cls._save_genres(session, series_id, _data['genres'], overwrite_genres or patch)
         if 'importers' in _data:
             _data.update(utils.flatten(_data.pop('importers'), 'importer'))
 
@@ -87,14 +90,14 @@ class Series(Base):
         await cls._save_for_search(data)
         return schemas.Series.from_orm(data)
 
-
     @classmethod
-    async def delete(self, series_id: int):    
+    async def delete(self, series_id: int):
         from . import Image
         async with database.session() as session:
             async with session.begin():
                 await asyncio.gather(
-                    session.execute(sa.delete(Series).where(Series.id == series_id)),
+                    session.execute(sa.delete(Series).where(
+                        Series.id == series_id)),
                     session.execute(sa.delete(Image).where(
                         Image.relation_type == 'series',
                         Image.relation_id == series_id,
@@ -105,7 +108,7 @@ class Series(Base):
                     index=config.data.api.elasticsearch.index_prefix+'titles',
                     id=f'series-{series_id}',
                 )
-            
+
     @staticmethod
     async def _save_externals(session: AsyncSession, series_id: str | int, externals: dict[str, str | None], patch: bool):
         current_externals = {}
@@ -122,12 +125,13 @@ class Series(Base):
                     Series_external.series_id != series_id,
                 ))
                 if r:
-                    raise HTTPException(400, f'Series with {key}={externals[key]} already exists (Series id: {r}).')
-            
+                    raise HTTPException(
+                        400, f'Series with {key}={externals[key]} already exists (Series id: {r}).')
+
             if (key not in current_externals):
                 if externals[key]:
-                    await session.execute(sa.insert(Series_external)\
-                        .values(series_id=series_id, title=key, value=externals[key]))
+                    await session.execute(sa.insert(Series_external)
+                                          .values(series_id=series_id, title=key, value=externals[key]))
                     current_externals[key] = externals[key]
             elif (current_externals[key] != externals[key]):
                 if (externals[key]):
@@ -167,7 +171,6 @@ class Series(Base):
         rr = await session.scalars(sa.select(Genre).where(Series_genre.series_id == series_id, Genre.id == Series_genre.genre_id).order_by(Genre.name))
         return [schemas.Genre.from_orm(r) for r in rr]
 
-        
     @staticmethod
     async def _save_for_search(series: "Series"):
         doc = series.title_document()
@@ -179,7 +182,6 @@ class Series(Base):
             document=doc.dict(),
         )
 
-
     @classmethod
     async def _save_episodes(cls, session: AsyncSession, series_id: int, episodes: list[schemas.Episode_create | schemas.Episode_update]):
         async def _save_episode(episode_data: schemas.Episode_create | schemas.Episode_update):
@@ -189,7 +191,8 @@ class Series(Base):
             ))
             data = episode_data.dict(exclude_unset=True)
             if 'air_datetime' in data and not 'air_date' in data:
-                data['air_date'] = episode_data.air_datetime.date() if episode_data.air_datetime else None
+                data['air_date'] = episode_data.air_datetime.date(
+                ) if episode_data.air_datetime else None
             if episode_number != None:
                 await session.execute(sa.update(Episode).values(data).where(
                     Episode.series_id == series_id,
@@ -200,10 +203,9 @@ class Series(Base):
                     series_id=series_id,
                     **data,
                 ))
-        
+
         await asyncio.gather(*[_save_episode(episode) for episode in episodes])
         await cls.update_seasons(session, series_id)
-
 
     def title_document(self):
         if not self.title:
@@ -216,15 +218,15 @@ class Series(Base):
                 if t not in titles:
                     titles.append(t)
         return schemas.Search_title_document(
-            type = 'series',
-            id = self.id,
-            title = self.title,
-            titles = [{'title': title} for title in titles],
-            release_date = self.premiered,
-            imdb = self.externals.get('imdb'),
-            poster_image = schemas.Image.from_orm(self.poster_image) if self.poster_image else None,
+            type='series',
+            id=self.id,
+            title=self.title,
+            titles=[{'title': title} for title in titles],
+            release_date=self.premiered,
+            imdb=self.externals.get('imdb'),
+            poster_image=schemas.Image.from_orm(
+                self.poster_image) if self.poster_image else None,
         )
-
 
     @staticmethod
     async def update_seasons(session: AsyncSession, series_id: int):
@@ -246,7 +248,7 @@ class Series(Base):
             ]
         """
         rows = await session.execute(sa.select(
-            Episode.season.label('season'), 
+            Episode.season.label('season'),
             sa.func.min(Episode.number).label('from_'),
             sa.func.max(Episode.number).label('to'),
             sa.func.count(Episode.number).label('total'),
@@ -270,7 +272,6 @@ class Series(Base):
             total_episodes=total_episodes,
         ))
 
-
     @staticmethod
     async def get_by_external(session: AsyncSession, external_title: str, external_value: str) -> 'Series':
         r = await session.scalars(sa.select(Series).where(
@@ -285,7 +286,8 @@ class Series(Base):
 class Series_external(Base):
     __tablename__ = 'series_externals'
 
-    series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True)
+    series_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'series.id'), primary_key=True)
     title = sa.Column(sa.String(45), primary_key=True)
     value = sa.Column(sa.String(45))
 
@@ -293,8 +295,10 @@ class Series_external(Base):
 class Series_genre(Base):
     __tablename__ = 'series_genres'
 
-    series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True, autoincrement=False)
-    genre_id = sa.Column(sa.Integer, sa.ForeignKey('genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
+    series_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'series.id'), primary_key=True, autoincrement=False)
+    genre_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
 
 async def rebuild_series():

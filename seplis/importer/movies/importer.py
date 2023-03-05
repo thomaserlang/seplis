@@ -114,7 +114,7 @@ async def update_movie_metadata(movie: schemas.Movie):
             return
         themoviedb = r['movie_results'][0]['id']
     data = await get_movie_data(themoviedb)
-    await models.Movie.save(data=data, movie_id=movie.id, patch=True)
+    await models.Movie.save(data=data, movie_id=movie.id, patch=True, overwrite_genres=True)
 
 
 async def get_movie_data(themoviedb: int) -> schemas.Movie_update:

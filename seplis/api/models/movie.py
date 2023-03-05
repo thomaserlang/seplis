@@ -9,7 +9,8 @@ from .genre import Genre
 from .base import Base
 from ..database import auto_session, database
 from .. import schemas, exceptions
-from ... import config, logger
+from ... import config
+
 
 class Movie(Base):
     __tablename__ = 'movies'
@@ -35,42 +36,45 @@ class Movie(Base):
     popularity = sa.Column(sa.DECIMAL(precision=12, scale=4))
     rating = sa.Column(sa.DECIMAL(4, 2))
 
+    @classmethod
+    @auto_session
+    async def save(cls, 
+        data: schemas.Movie_create | schemas.Movie_update, 
+        movie_id: int | None = None, 
+        patch = True,
+        overwrite_genres = False,
+        session = None,
+    ):
+        _data = data.dict(exclude_unset=True)
+        if not movie_id:
+            r = await session.execute(sa.insert(Movie))
+            movie_id = r.lastrowid
+            _data['created_at'] = datetime.now(tz=timezone.utc)
+        else:
+            m = await session.scalar(sa.select(Movie.id).where(Movie.id == movie_id))
+            if not m:
+                raise HTTPException(404, f'Unknown movie id: {movie_id}')
+            _data['updated_at'] = datetime.now(tz=timezone.utc)
+        if 'genres' in _data:
+            _data['genres'] = await cls._save_genres(session, movie_id, _data['genres'], overwrite_genres or patch)
+        if 'externals' in _data:
+            _data['externals'] = await cls._save_externals(session, movie_id, _data['externals'], patch)
+        if 'alternative_titles' in _data:
+            _data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, _data['alternative_titles'], patch)
+        if _data:
+            await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**_data))
+        movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
+        await cls._save_for_search(movie)
+        return schemas.Movie.from_orm(movie)
 
     @classmethod
-    async def save(cls, data: schemas.Movie_create | schemas.Movie_update, movie_id: int | None = None, patch: bool = True) -> schemas.Movie:
-        async with database.session() as session:
-            async with session.begin():
-                _data = data.dict(exclude_unset=True)
-                if not movie_id:
-                    r = await session.execute(sa.insert(Movie))
-                    movie_id = r.lastrowid
-                    _data['created_at'] = datetime.now(tz=timezone.utc)
-                else:
-                    m = await session.scalar(sa.select(Movie.id).where(Movie.id == movie_id))
-                    if not m:
-                        raise HTTPException(404, f'Unknown movie id: {movie_id}')
-                    _data['updated_at'] = datetime.now(tz=timezone.utc)
-                if 'genres' in _data:
-                    _data['genres'] = await cls._save_genres(session, movie_id, _data['genres'], patch)
-                if 'externals' in _data:
-                    _data['externals'] = await cls._save_externals(session, movie_id, _data['externals'], patch)
-                if 'alternative_titles' in _data:
-                    _data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, _data['alternative_titles'], patch)
-                if _data:
-                    await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**_data))
-                movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
-                await session.commit()
-                await cls._save_for_search(movie)
-                return schemas.Movie.from_orm(movie)
-
-
-    @classmethod
-    async def delete(self, movie_id: int):    
+    async def delete(self, movie_id: int):
         from . import Image
         async with database.session() as session:
             async with session.begin():
                 await asyncio.gather(
-                    session.execute(sa.delete(Movie).where(Movie.id == movie_id)),
+                    session.execute(sa.delete(Movie).where(
+                        Movie.id == movie_id)),
                     session.execute(sa.delete(Image).where(
                         Image.relation_type == 'movie',
                         Image.relation_id == movie_id,
@@ -81,7 +85,6 @@ class Movie(Base):
                     index=config.data.api.elasticsearch.index_prefix+'titles',
                     id=f'movie-{movie_id}',
                 )
-
 
     @staticmethod
     async def _save_externals(session: AsyncSession, movie_id: str | int, externals: dict[str, str], patch: bool) -> dict[str, str]:
@@ -106,13 +109,14 @@ class Movie(Base):
                     raise exceptions.Movie_external_duplicated(
                         external_title=key,
                         external_value=externals[key],
-                        movie=utils.json_loads(utils.json_dumps(schemas.Movie.from_orm(dup_movie)))
+                        movie=utils.json_loads(utils.json_dumps(
+                            schemas.Movie.from_orm(dup_movie)))
                     )
-                    
+
             if (key not in current_externals):
                 if externals[key]:
-                    await session.execute(sa.insert(Movie_external)\
-                        .values(movie_id=movie_id, title=key, value=externals[key]))
+                    await session.execute(sa.insert(Movie_external)
+                                          .values(movie_id=movie_id, title=key, value=externals[key]))
                     current_externals[key] = externals[key]
             elif (current_externals[key] != externals[key]):
                 if (externals[key]):
@@ -135,7 +139,7 @@ class Movie(Base):
             return set(alternative_titles)
         current_alternative_titles = await session.scalar(sa.select(Movie.alternative_titles).where(Movie.id == movie_id))
         return set(current_alternative_titles + alternative_titles)
-    
+
     @staticmethod
     async def _save_genres(session: AsyncSession, movie_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
         genre_ids = await Genre.get_or_create_genres(session, genres)
@@ -152,7 +156,6 @@ class Movie(Base):
         rr = await session.scalars(sa.select(Genre).where(Movie_genre.movie_id == movie_id, Genre.id == Movie_genre.genre_id).order_by(Genre.name))
         return [schemas.Genre.from_orm(r) for r in rr]
 
-
     @staticmethod
     async def _save_for_search(movie: 'Movie'):
         doc = movie.title_document()
@@ -164,7 +167,7 @@ class Movie(Base):
             document=doc.dict(),
         )
 
-    def title_document(self) -> schemas.Search_title_document:        
+    def title_document(self) -> schemas.Search_title_document:
         if not self.title:
             return
         titles = [self.title, *self.alternative_titles]
@@ -175,20 +178,22 @@ class Movie(Base):
                 if t not in titles:
                     titles.append(t)
         return schemas.Search_title_document(
-            type = 'movie',
-            id = self.id,
-            title = self.title,
-            titles = [{'title': title} for title in titles],
-            release_date = self.release_date,
-            imdb = self.externals.get('imdb'),
-            poster_image = schemas.Image.from_orm(self.poster_image) if self.poster_image else None,
+            type='movie',
+            id=self.id,
+            title=self.title,
+            titles=[{'title': title} for title in titles],
+            release_date=self.release_date,
+            imdb=self.externals.get('imdb'),
+            poster_image=schemas.Image.from_orm(
+                self.poster_image) if self.poster_image else None,
         )
 
 
 class Movie_external(Base):
     __tablename__ = 'movie_externals'
 
-    movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False)
+    movie_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'movies.id'), primary_key=True, autoincrement=False)
     title = sa.Column(sa.String(45), primary_key=True)
     value = sa.Column(sa.String(45))
 
@@ -197,12 +202,13 @@ class Movie_watched(Base):
     __tablename__ = 'movies_watched'
     __serialize_ignore__ = ('movie_id', 'user_id',)
 
-    movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False)
-    user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
+    movie_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'movies.id'), primary_key=True, autoincrement=False)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'users.id'), primary_key=True, autoincrement=False)
     times = sa.Column(sa.SmallInteger)
     position = sa.Column(sa.SmallInteger)
     watched_at = sa.Column(UtcDateTime, nullable=False)
-
 
     @staticmethod
     async def increment(user_id: int | str, movie_id: int, data: schemas.Movie_watched_increment):
@@ -223,7 +229,7 @@ class Movie_watched(Base):
                 user_id=user_id,
                 watched_at=data.watched_at.astimezone(timezone.utc),
             )
-            
+
             await session.execute(watched)
             await session.execute(watched_history)
             w = await session.scalar(sa.select(Movie_watched).where(
@@ -232,7 +238,6 @@ class Movie_watched(Base):
             ))
             await session.commit()
             return schemas.Movie_watched.from_orm(w)
-
 
     @staticmethod
     async def decrement(user_id: int | str, movie_id: int):
@@ -295,14 +300,13 @@ class Movie_watched(Base):
                         position=0,
                         watched_at=watched_at,
                     ))
-                    
+
             w = await session.scalar(sa.select(Movie_watched).where(
                 Movie_watched.movie_id == movie_id,
                 Movie_watched.user_id == user_id,
             ))
             await session.commit()
             return schemas.Movie_watched.from_orm(w)
-
 
     @staticmethod
     async def set_position(user_id: int | str, movie_id: int, position: int):
@@ -322,7 +326,6 @@ class Movie_watched(Base):
             )
             await session.execute(sql)
             await session.commit()
-
 
     @staticmethod
     async def reset_position(user_id: int | str, movie_id: int):
@@ -368,7 +371,7 @@ class Movie_watched(Base):
 
 class Movie_watched_history(Base):
     __tablename__ = 'movies_watched_history'
-    
+
     id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
     movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'))
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
@@ -377,9 +380,11 @@ class Movie_watched_history(Base):
 
 class Movie_stared(Base):
     __tablename__ = 'movies_stared'
-    
-    movie_id = sa.Column(sa.Integer, sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False)
-    user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
+
+    movie_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'movies.id'), primary_key=True, autoincrement=False)
+    user_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'users.id'), primary_key=True, autoincrement=False)
     created_at = sa.Column(UtcDateTime, nullable=False)
 
     @staticmethod
@@ -406,7 +411,8 @@ class Movie_genre(Base):
     __tablename__ = 'movie_genres'
 
     movie_id = sa.Column(sa.Integer, primary_key=True, autoincrement=False)
-    genre_id = sa.Column(sa.Integer, sa.ForeignKey('genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
+    genre_id = sa.Column(sa.Integer, sa.ForeignKey(
+        'genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
 
 async def rebuild_movies():
