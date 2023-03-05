@@ -174,7 +174,7 @@ function ExternalLinks({ series }: { series: ISeries }) {
             {series.externals.imdb && <Link href={`https://imdb.com/title/${series.externals.imdb}`} isExternal>IMDb</Link>}
         </WrapItem>
         <WrapItem>
-            {series.externals.themoviedb && <Link href={`https://www.themoviedb.org/movie/${series.externals.themoviedb}`} isExternal>TMDb</Link>}
+            {series.externals.themoviedb && <Link href={`https://www.themoviedb.org/tv/${series.externals.themoviedb}`} isExternal>TMDb</Link>}
         </WrapItem>
     </Wrap>
 }
