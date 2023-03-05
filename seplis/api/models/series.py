@@ -77,7 +77,7 @@ class Series(Base):
         if 'alternative_titles' in _data:
             _data['alternative_titles'] = await cls._save_alternative_titles(session, series_id, _data['alternative_titles'], patch)
         if 'genres' in _data:
-            _data['genres'] = await cls._save_genres(session, series_id, _data['genres'], overwrite_genres or patch)
+            _data['genres'] = await cls._save_genres(session, series_id, _data['genres'], False if overwrite_genres else patch)
         if 'importers' in _data:
             _data.update(utils.flatten(_data.pop('importers'), 'importer'))
 
@@ -157,6 +157,8 @@ class Series(Base):
 
     @staticmethod
     async def _save_genres(session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
+        from seplis import logger
+        logger.info(patch)
         genre_ids = await Genre.get_or_create_genres(session, genres)
         current_genres: set[int] = set()
         if patch:

@@ -56,7 +56,7 @@ class Movie(Base):
                 raise HTTPException(404, f'Unknown movie id: {movie_id}')
             _data['updated_at'] = datetime.now(tz=timezone.utc)
         if 'genres' in _data:
-            _data['genres'] = await cls._save_genres(session, movie_id, _data['genres'], overwrite_genres or patch)
+            _data['genres'] = await cls._save_genres(session, movie_id, _data['genres'], False if overwrite_genres else patch)
         if 'externals' in _data:
             _data['externals'] = await cls._save_externals(session, movie_id, _data['externals'], patch)
         if 'alternative_titles' in _data:
