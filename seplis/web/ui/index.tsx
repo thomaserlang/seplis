@@ -110,7 +110,7 @@ function App() {
     const background = location.state?.background
     return <>
         <Routes location={background || location}>
-            <Route path="/" element={<SeriesHome />} />
+            <Route path="/" element={<WatchHome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/signup" element={<Signup />} />
