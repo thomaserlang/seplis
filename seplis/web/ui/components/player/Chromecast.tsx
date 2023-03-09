@@ -124,12 +124,13 @@ class Chromecast {
                 const session = guid()
                 if (!startTime)
                     startTime = result[3].data.user_watched?.position
-                
+
                 if (!audioLang)
                     audioLang = result[4].data?.audio_lang
-                if (!subtitleLang)
+
+                if (subtitleLang === undefined)
                     subtitleLang = result[4].data?.subtitle_lang
-                
+
                 // for some reason some episodes will not start playing if startTime is 0
                 if (!startTime || (startTime == 0))
                     startTime = 1
@@ -216,7 +217,7 @@ class Chromecast {
 
     requestCustomData() {
         Chromecast.session.sendMessage(
-            'urn:x-cast:net.seplis.cast.get_custom_data', 
+            'urn:x-cast:net.seplis.cast.get_custom_data',
             {}
         )
     }

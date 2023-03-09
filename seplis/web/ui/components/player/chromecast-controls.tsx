@@ -96,7 +96,7 @@ export default function ChromecastControls() {
         <Flex gap="1rem" alignItems="center">
             <PlayButton isLoading={loading} aria-label="Play or pause" icon={!playing ? <FaPlay /> : <FaPause />} onClick={() => cast.current.playOrPause()} />
 
-            <Box>{info.type == 'episode' ? `${info.series.title} ${episodeTitle(info.episode)}` : info.movie.title }</Box>
+            <Box>{info.type == 'episode' ? `${info.series.title} ${episodeTitle(info.episode)}` : info.movie.title}</Box>
 
             <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
 
@@ -122,11 +122,11 @@ export default function ChromecastControls() {
                     }}
                     onSubtitleSourceChange={(source) => {
                         if (info.type == 'episode')
-                            cast.current.playEpisode(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, `${source.language}:${source.index}`, info.subtitleOffset)
+                            cast.current.playEpisode(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, source ? `${source.language}:${source.index}` : null, info.subtitleOffset)
                         else if (info.type == 'movie')
-                            cast.current.playMovie(info.movie.id, time, info.selectedRequestSource, info.audioLang, `${source.language}:${source.index}`, info.subtitleOffset)
+                            cast.current.playMovie(info.movie.id, time, info.selectedRequestSource, info.audioLang, source ? `${source.language}:${source.index}` : null, info.subtitleOffset)
                     }}
-                    onSubtitleOffsetChange={(offset) => {                        
+                    onSubtitleOffsetChange={(offset) => {
                         if (info.type == 'episode')
                             cast.current.playEpisode(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, offset)
                         else if (info.type == 'movie')

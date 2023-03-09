@@ -14,7 +14,7 @@ export function PickSubtitleSource({ subtitleSources, selected, onChange }: IPro
             <Box                
                 textStyle={!selected ? 'selectedText' : null}
                 cursor="pointer"
-                onClick={() => onChange && onChange(undefined)}
+                onClick={() => onChange && onChange(null)}
             >
                 Off
             </Box>
