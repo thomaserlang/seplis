@@ -15,6 +15,7 @@ import sqlalchemy as sa
 
 
 def upgrade():
+    '''
     op.rename_table('shows', 'series')
     op.rename_table('show_externals', 'series_externals')
     op.alter_column('series_externals', 'show_id', existing_type=sa.Integer, new_column_name='series_id')
@@ -30,6 +31,8 @@ def upgrade():
     op.alter_column('user_series_settings', 'show_id', existing_type=sa.Integer, new_column_name='series_id')
     op.drop_column('series', 'fans')
     op.add_column('series', sa.Column('original_title', sa.String(200)))
+    '''
+    op.execute('update series set title=left(title, 200) where length(title)>200;')
     op.execute('update series set original_title=title, genres="[]"')
     op.drop_column('series', 'description_url')
     op.drop_column('series', 'description_title')
@@ -53,8 +56,8 @@ def upgrade():
     op.add_column('episodes', sa.Column('rating', sa.DECIMAL(4, 2)))
     op.drop_column('episodes', 'air_time')    
     op.add_column('episodes', sa.Column('original_title', sa.String(200)))
-    op.execute('update episodes set original_title=title')
     op.execute('update episodes set title=left(title, 200) where length(title)>200;')
+    op.execute('update episodes set original_title=title')
     op.alter_column('episodes', 'title', 
         existing_type=sa.String(300),
         type_=sa.String(200),
