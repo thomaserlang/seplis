@@ -25,7 +25,7 @@ export function WatchedButton({ onIncrement, onDecrement, times = 0, position = 
                 <BaseButton
                     times={times}
                     position={position}
-                    onClick={times == 0 ? onIncrement : onOpen}
+                    onClick={times == 0 && position == 0 ? onIncrement : onOpen}
                     isUpdating={isUpdating}
                 />
             </PopoverTrigger>
@@ -65,12 +65,12 @@ interface IButton {
 }
 
 const BaseButton = forwardRef<any, IButton>((props, ref) => {
-    return <ButtonGroup ref={ref} isAttached variant='outline'>
+    return <ButtonGroup ref={ref} isAttached>
         <Button
             colorScheme={props.times > 0 ? "green" : null}
-            variant={props.times > 0 ? "solid" : 'outline'}
             style={props.position > 0 ? {
-                background: "linear-gradient(90deg, #428bca 56%, var(--chakra-colors-green-300) 44%)"
+                background: "linear-gradient(90deg, #428bca 56%, var(--chakra-colors-green-200) 44%)",
+                color: '#000'                
             } : null}
             onClick={props.onClick}
             isLoading={props.isUpdating}

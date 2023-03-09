@@ -21,11 +21,11 @@ export default function FollowingButton({ seriesId }: { seriesId: number }) {
         if (following) {
             await api.delete(`/2/series/${seriesId}/following`)
         } else {
-            await api.put(`/2/series/${seriesId}/following`)            
+            await api.put(`/2/series/${seriesId}/following`)
         }
-        queryClient.setQueryData(['series', 'following-button', seriesId], { following: !following})
+        queryClient.setQueryData(['series', 'following-button', seriesId], { following: !following })
     }, {
-        onError: (e) => {            
+        onError: (e) => {
             toast({
                 title: ErrorMessageFromResponse(e),
                 status: 'error',
@@ -53,8 +53,7 @@ export default function FollowingButton({ seriesId }: { seriesId: number }) {
     return <Button
         ref={ref}
         isLoading={isInitialLoading || toggleFollowing.isLoading}
-        colorScheme={'green'}
-        variant={data?.following ? 'solid' : 'outline'}
+        colorScheme={data?.following ? 'green' : null}
         onClick={handleClick}
         leftIcon={<StarIcon />}
         style={focused ? focusedBorder : null}

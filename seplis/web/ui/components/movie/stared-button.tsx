@@ -54,8 +54,7 @@ export default function StaredButton({ movieId }: IProps) {
     return <Button
         ref={ref}
         isLoading={isInitialLoading || toggleStared.isLoading}
-        colorScheme={'green'}
-        variant={data?.stared ? 'solid' : 'outline'}
+        colorScheme={data?.stared ? 'green' : null}
         onClick={handleClick}
         leftIcon={<StarIcon />}
         style={focused ? focusedBorder : null}
