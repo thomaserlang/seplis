@@ -56,6 +56,7 @@ async def create_indices(es):
             'poster_image': {
                 'type': 'object',
                 'enabled': False,
-            }
+            },
+            'popularity': { 'type': 'float' },
         }
      })

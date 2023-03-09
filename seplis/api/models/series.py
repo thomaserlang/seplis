@@ -223,11 +223,13 @@ class Series(Base):
             type='series',
             id=self.id,
             title=self.title,
-            titles=[{'title': title} for title in titles],
+            titles=[schemas.Search_title_document_title(title=title) for title in titles],
             release_date=self.premiered,
             imdb=self.externals.get('imdb'),
             poster_image=schemas.Image.from_orm(
                 self.poster_image) if self.poster_image else None,
+            popularity=self.popularity,
+
         )
 
     @staticmethod
