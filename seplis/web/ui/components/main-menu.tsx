@@ -194,10 +194,11 @@ function ChangePasswordMenuItem() {
 
 
 function UserAvatar() {
-    const [user, setUser] = useState<IUser>()
-    useEffect(() => {
-        const user: IUser = JSON.parse(localStorage.getItem('activeUser'))
-        setUser(user)
-    }, [])
-    return <Avatar size="md" name={user?.username || 'user'} />
+    const [user, setUser] = useState<IUser>(() => {
+        const s = localStorage.getItem('activeUser')
+        return JSON.parse(s)
+    })
+    if (!user)
+        return null
+    return <Avatar size="md" name={user?.username} />
 }
