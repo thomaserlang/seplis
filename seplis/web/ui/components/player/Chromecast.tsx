@@ -51,7 +51,7 @@ class Chromecast {
                         obj.initCast(isAvailable)
                     }
                 })
-            }, 500)
+            }, 1000)
         }
         let script = document.createElement('script')
         script.src = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js'
