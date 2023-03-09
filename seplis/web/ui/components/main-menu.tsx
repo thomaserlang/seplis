@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, } from 'react-router-dom'
 import ChangePasswordForm from './change_password_form'
 import { MovieNew } from './movie/settings'
+import ChromecastIcon from './player/ChromecastIcon'
 import { SearchButtonDialog } from './search'
 import { SeriesNew } from './series/settings'
 
@@ -39,9 +40,11 @@ export default function MainMenu() {
             <SearchButtonDialog />
         </Box>
 
-        <Box
-            style={{ marginLeft: 'auto' }}
+        <Flex
+            marginLeft="auto"
+            alignItems="center"
         >
+            <ChromecastIcon />
             <Menu>
                 <MenuButton>
                     <UserAvatar />
@@ -51,7 +54,7 @@ export default function MainMenu() {
                     <Link to="/logout"><MenuItem>Logout</MenuItem></Link>
                 </MenuList>
             </Menu>
-        </Box>
+        </Flex>
 
     </Flex>
 }

@@ -2,7 +2,7 @@ import jwt
 from sqlalchemy import select
 from fastapi import HTTPException
 from seplis.play import database, models
-from seplis import logger, utils, config
+from seplis import config
 
 async def get_metadata(play_id) -> list[dict]:
     data = decode_play_id(play_id)
@@ -27,5 +27,5 @@ def decode_play_id(play_id: str) -> list[dict]:
             algorithms=['HS256'],
         )
         return data
-    except:
+    except Exception as e:
         raise HTTPException(400, 'Play id invalid')

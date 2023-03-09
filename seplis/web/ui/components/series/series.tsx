@@ -9,6 +9,7 @@ import { isAuthed, langCodeToLang, secondsToHourMin } from '@seplis/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import { FaCog } from 'react-icons/fa'
+import ChromecastControls from '../player/chromecast-controls'
 import { Poster } from '../poster'
 import EpisodeLastWatched from './episode-last-watched'
 import EpisodeNextToAir from './episode-next-to-air'
@@ -57,6 +58,8 @@ export default function Series({ series }: { series: ISeries }) {
                     <EpisodeNextToAir seriesId={series.id} />
                 </Stack>
             </Stack>
+
+            <ChromecastControls />
 
             <UserEpisodes series={series} />
 

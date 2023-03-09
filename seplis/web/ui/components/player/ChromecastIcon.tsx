@@ -1,7 +1,7 @@
+// @ts-nocheck
+import { Button } from '@chakra-ui/react';
 import React from 'react';
 import Chromecast from './Chromecast';
-
-import './ChromecastIcon.scss';
 
 class ChromecastIcon extends React.Component {
 
@@ -49,14 +49,16 @@ class ChromecastIcon extends React.Component {
         if (this.state.connected)
             icon = '/static/img/chromecast_connected.svg';
         return (
-            <i>
+            <Button 
+                mr="0.75rem"
+                onClick={this.iconClick}
+            >
                 <img 
-                    onClick={this.iconClick}
                     title="Chromecast"
                     className="castbutton"
                     src={icon}
                 />
-            </i>
+            </Button>
         );
     }
 }

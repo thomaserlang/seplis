@@ -7,10 +7,12 @@ import { isAuthed } from '@seplis/utils'
 import { useQuery } from '@tanstack/react-query'
 import { FaPlay } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
+import Chromecast from '../player/Chromecast'
 
 
 export default function PlayButton({ movieId }: { movieId: number }) {
     const navigate = useNavigate()
+    const cast = new Chromecast()
     const { isInitialLoading, data } = useQuery(['movie', 'play-button', movieId], async () => {
         const result = await api.get<IPlayRequest[]>(`/2/movies/${movieId}/play-servers`)
         return result.data.length > 0
@@ -18,7 +20,10 @@ export default function PlayButton({ movieId }: { movieId: number }) {
         enabled: isAuthed()
     })
     const handleClick = () => {
-        navigate(`/movies/${movieId}/play`)
+        if (cast.isConnected())
+            cast.playMovie(movieId)
+        else
+            navigate(`/movies/${movieId}/play`)
     }
     const { ref, focused } = useFocusable({
         focusKey: 'MOVIE_PLAY',

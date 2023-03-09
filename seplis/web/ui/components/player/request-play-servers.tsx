@@ -6,15 +6,19 @@ import axios from 'axios'
 
 export function useGetPlayServers(url: string) {
     return useQuery(['play-server', url], async () => {
-        const result = await api.get<IPlayRequest[]>(url)
-        const sourcePromises: Promise<IPlayServerRequestSources>[] = []
-        for (const request of result.data) {
-            sourcePromises.push(getPlayServerSources(request))
-        }
-        const sources = await Promise.all(sourcePromises)
-        return sources.filter(item => item !== null)
+        return await getPlayServers(url)
     })
 }
+
+
+export async function getPlayServers(url: string) {
+    const result = await api.get<IPlayRequest[]>(url)
+    const sourcePromises: Promise<IPlayServerRequestSources>[] = []
+    for (const request of result.data) 
+        sourcePromises.push(getPlayServerSources(request))
+    const requestSources = await Promise.all(sourcePromises)
+    return requestSources.filter(item => item !== null)
+} 
 
 
 async function getPlayServerSources(playRequest: IPlayRequest) {

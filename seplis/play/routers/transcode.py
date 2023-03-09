@@ -9,6 +9,7 @@ from ..transcoders import dash, pipe, hls
 router = APIRouter()
 
 @router.get('/transcode')
+@router.get('/files/{session}/transcode')
 async def start_transcode(
     source_index: int, 
     metadata = Depends(get_metadata), 

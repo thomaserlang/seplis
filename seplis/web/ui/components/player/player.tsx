@@ -278,7 +278,7 @@ function VolumeButton({ videoControls }: { videoControls: IVideoControls }) {
 }
 
 
-function SettingsButton(props: ISettingsProps) {
+export function SettingsButton(props: ISettingsProps) {
     const { isOpen, onOpen, onClose } = useDisclosure()
     return <>
         <PlayButton aria-label="Settings" onClick={onOpen} icon={<FaCog />} />
@@ -303,7 +303,7 @@ function PlayNext({ title, url }: IPlayNextProps) {
 }
 
 
-const PlayButton = forwardRef<IconButtonProps, 'button'>((props, ref) => {
+export const PlayButton = forwardRef<IconButtonProps, 'button'>((props, ref) => {
     return <IconButton
         ref={ref}
         {...props}

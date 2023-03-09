@@ -15,6 +15,7 @@ import { MovieWatchedButton } from './watched-button'
 import api from '@seplis/api'
 import { useQuery } from '@tanstack/react-query'
 import { MovieSkeleton } from './skeleton'
+import ChromecastControls from '../player/chromecast-controls'
 
 
 export function MovieLoad({ movieId, onLoaded }: { movieId: number, onLoaded?: (movie: IMovie) => void }) {
@@ -42,16 +43,19 @@ export default function Movie({ movie }: { movie: IMovie }) {
     }, [])
 
     return <FocusContext.Provider value={focusKey}>
-        <Stack direction="row" spacing="1rem">
-            <MoviePoster movie={movie} />
-            <Stack direction="column" spacing="0.35rem" maxWidth="800px" ref={ref}>
-                <Title movie={movie} />
-                <BaseInfo movie={movie} />
-                <Genres genres={movie.genres} />
-                <Buttons movie={movie} />
-                <Plot movie={movie} />
-                <ExternalLinks movie={movie} />
+        <Stack direction="column" spacing="1rem" maxWidth="1100px">
+            <Stack direction="row" spacing="1rem">
+                <MoviePoster movie={movie} />
+                <Stack direction="column" spacing="0.35rem" maxWidth="800px" ref={ref}>
+                    <Title movie={movie} />
+                    <BaseInfo movie={movie} />
+                    <Genres genres={movie.genres} />
+                    <Buttons movie={movie} />
+                    <Plot movie={movie} />
+                    <ExternalLinks movie={movie} />
+                </Stack>
             </Stack>
+            <ChromecastControls />
         </Stack>
     </FocusContext.Provider>
 }

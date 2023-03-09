@@ -5,7 +5,7 @@ from ..dependencies import get_metadata
 
 router = APIRouter()
 
-@router.get('/subtitle-file', status_code=204)
+@router.get('/subtitle-file')
 async def download_subtitle(
     source_index: int,
     lang: constr(min_length=1),

@@ -1,4 +1,5 @@
 <html>
+
 <head>
     <title>SEPLIS CAST</title>
 
@@ -13,143 +14,146 @@
     </style>
 
     <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js" integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"
+        integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
 </head>
+
 <body>
-<cast-media-player></cast-media-player>
-<script>
-    var customData = null
-    var lastSavedTime = 0
-    var watchedIncremented = false
-    var prevViewedId = null
-    var keepAliveTimer = null
+    <cast-media-player></cast-media-player>
+    <script>
+        var customData = null
+        var lastSavedTime = 0
+        var watchedIncremented = false
+        var prevViewedId = null
+        var keepAliveTimer = null
 
-    const context = cast.framework.CastReceiverContext.getInstance()
-    const playerManager = context.getPlayerManager()
+        const context = cast.framework.CastReceiverContext.getInstance()
+        const playerManager = context.getPlayerManager()
 
-    const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
+        const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
 
-    function setPingTimer() {
-        if (!keepAliveTimer)
-            keepAliveTimer = setInterval(() => {
-                $.get(`${customData['play']['play_url']}/keep-alive/${customData['session']}`)
-            }, 4000)
-    }
-
-    context.addCustomMessageListener(
-        GET_CUSTOM_DATA, 
-        event => {
-            context.sendCustomMessage(
-                GET_CUSTOM_DATA, 
-                event.senderId, 
-                customData
-            )
+        function setPingTimer() {
+            if (!keepAliveTimer)
+                keepAliveTimer = setInterval(() => {
+                    $.get(`${customData['selectedRequestSource']['request']['play_url']}/keep-alive/${customData['session']}`)
+                }, 4000)
         }
-    )
 
-    context.addEventListener(
-        cast.framework.system.EventType.SENDER_CONNECTED,
-        event => {
-            context.sendCustomMessage(
-                GET_CUSTOM_DATA, 
-                event.senderId, 
-                customData
-            )
-        }
-    )
-
-    playerManager.addEventListener(
-        cast.framework.events.EventType.REQUEST_LOAD,
-        event => {
-            customData = event.requestData.customData
-            lastSavedTime = customData.startTime
-            let id
-            if (customData['type'] == 'episode') {
-                id = 'episode' + customData['series']['id'].toString() +
-                    customData['episode']['number'].toString()
-            } else if (customData['type'] == 'movie') {
-                id = 'movie'+customData['movie']['id'].toString()
-            }
-            if (prevViewedId != id)
-                watchedIncremented = false
-            prevViewedId = id
-            var senders = context.getSenders()
-            for (var i in senders) {
+        context.addCustomMessageListener(
+            GET_CUSTOM_DATA,
+            event => {
                 context.sendCustomMessage(
-                    GET_CUSTOM_DATA, 
-                    senders[i].id, 
+                    GET_CUSTOM_DATA,
+                    event.senderId,
                     customData
                 )
             }
-            setPingTimer()
-        }
-    )
+        )
 
-    playerManager.addEventListener(
-        cast.framework.events.EventType.TIME_UPDATE,
-        event => {
-            if (!customData)
-                return
-            setPingTimer()
-            let time = Math.floor(event.currentMediaTime)
-
-            // TODO: Find a way to check if the media is being transcoded on the fly
-            // since if true the `event.currentMediaTime` will only
-            // hold the value since it started playing not the correct position
-            //console.log(playerManager.getLiveSeekableRange(e => {
-            //    console.log(e)
-            //}))
-            //if (playerManager.getLiveSeekableRange.length <= 1 || playerManager.getLiveSeekableRange.end(0) <= 1)
-            
-            time += customData['startTime']
-            if (customData['startTime'] == time)
-                return
-            if (lastSavedTime == time)
-                return
-            lastSavedTime = time                
-            if (time < 10)
-                return
-            if ((time % 10) != 0)
-                return
-
-            let duration = parseInt(customData['sources'][0]['duration'])
-            let watched = (((time / 100) * 10) > (duration-time))
-            
-            let url
-            if (customData['type'] == 'episode') {
-                url = customData['apiUrl'] +
-                    '/1/shows/'+customData['series']['id'].toString()+
-                    '/episodes/'+customData['episode']['number'].toString()
-            } else if (customData['type'] == 'movie') {
-                url = customData['apiUrl'] + '/1/movies/'+customData['movie']['id'].toString()
+        context.addEventListener(
+            cast.framework.system.EventType.SENDER_CONNECTED,
+            event => {
+                context.sendCustomMessage(
+                    GET_CUSTOM_DATA,
+                    event.senderId,
+                    customData
+                )
             }
-            let putData = {}
-            if (watched) {
-                if (!watchedIncremented) {
-                    watchedIncremented = true
-                    url += '/watched'
-                } else {
+        )
+
+        playerManager.addEventListener(
+            cast.framework.events.EventType.REQUEST_LOAD,
+            event => {
+                customData = event.requestData.customData
+                lastSavedTime = customData.startTime
+                let id
+                if (customData['type'] == 'episode') {
+                    id = 'episode' + customData['series']['id'].toString() +
+                        customData['episode']['number'].toString()
+                } else if (customData['type'] == 'movie') {
+                    id = 'movie' + customData['movie']['id'].toString()
+                }
+                if (prevViewedId != id)
+                    watchedIncremented = false
+                prevViewedId = id
+                var senders = context.getSenders()
+                for (var i in senders) {
+                    context.sendCustomMessage(
+                        GET_CUSTOM_DATA,
+                        senders[i].id,
+                        customData
+                    )
+                }
+                setPingTimer()
+            }
+        )
+
+        playerManager.addEventListener(
+            cast.framework.events.EventType.TIME_UPDATE,
+            event => {
+                if (!customData)
                     return
-                }
-            } else {
-                watchedIncremented = false
-                url += '/position'
-                putData['position'] = time
-            }
-            $.ajax({
-                url: url,
-                type: (watchedIncremented && customData['type'] == 'movie')?'POST':'PUT',
-                data: JSON.stringify(putData),
-                dataType: 'json',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer '+customData.token,
-                }
-            })
-        }
-    )
+                setPingTimer()
+                let time = Math.floor(event.currentMediaTime)
 
-    context.start()
-</script>        
+                // TODO: Find a way to check if the media is being transcoded on the fly
+                // since if true the `event.currentMediaTime` will only
+                // hold the value since it started playing not the correct position
+                //console.log(playerManager.getLiveSeekableRange(e => {
+                //    console.log(e)
+                //}))
+                //if (playerManager.getLiveSeekableRange.length <= 1 || playerManager.getLiveSeekableRange.end(0) <= 1)
+
+                time += customData['startTime']
+                if (customData['startTime'] == time)
+                    return
+                if (lastSavedTime == time)
+                    return
+                lastSavedTime = time
+                if (time < 10)
+                    return
+                if ((time % 10) != 0)
+                    return
+
+                let duration = parseInt(customData['selectedRequestSource']['source']['duration'])
+                let watched = (((time / 100) * 10) > (duration - time))
+
+                let url
+                if (customData['type'] == 'episode') {
+                    url = customData['apiUrl'] +
+                        '/2/series/' + customData['series']['id'].toString() +
+                        '/episodes/' + customData['episode']['number'].toString()
+                } else if (customData['type'] == 'movie') {
+                    url = customData['apiUrl'] + '/2/movies/' + customData['movie']['id'].toString()
+                }
+                let putData = {}
+                if (watched) {
+                    if (!watchedIncremented) {
+                        watchedIncremented = true
+                        url += '/watched'
+                    } else {
+                        return
+                    }
+                } else {
+                    watchedIncremented = false
+                    url += '/watched-position'
+                    putData['position'] = time
+                }
+                $.ajax({
+                    url: url,
+                    type: (watchedIncremented) ? 'POST' : 'PUT',
+                    data: JSON.stringify(putData),
+                    dataType: 'json',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + customData.token,
+                    }
+                })
+            }
+        )
+
+        context.start()
+    </script>
 </body>
+
 </html>

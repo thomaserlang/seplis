@@ -73,7 +73,7 @@ const theme = extendTheme({
             fontWeight: 'bolder',
         },
     },
-    
+
 })
 
 import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'
@@ -94,15 +94,15 @@ import WatchHome from './pages/watch/home'
 spatialInit({})
 
 createRoot(document.getElementById("root")).render(
-        <ChakraProvider theme={theme}>
-            <BrowserRouter >
-                <QueryParamProvider adapter={ReactRouter6Adapter}>
-                    <QueryClientProvider client={queryClient}>
-                        <App />
-                    </QueryClientProvider>
-                </QueryParamProvider>
-            </BrowserRouter>
-        </ChakraProvider>
+    <ChakraProvider theme={theme}>
+        <BrowserRouter >
+            <QueryParamProvider adapter={ReactRouter6Adapter}>
+                <QueryClientProvider client={queryClient}>
+                    <App />
+                </QueryClientProvider>
+            </QueryParamProvider>
+        </BrowserRouter>
+    </ChakraProvider>
 )
 
 function App() {

@@ -1,8 +1,7 @@
 from fastapi import Depends, Security, APIRouter
 import sqlalchemy as sa
-
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants, exceptions
+from .. import models, schemas, constants
 
 router = APIRouter(prefix='/2/series/{series_id}/user-settings')
 
