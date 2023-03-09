@@ -31,7 +31,6 @@ def upgrade():
     op.alter_column('user_series_settings', 'show_id', existing_type=sa.Integer, new_column_name='series_id')
     op.drop_column('series', 'fans')
     op.add_column('series', sa.Column('original_title', sa.String(200)))
-    '''
     op.execute('update series set title=left(title, 200) where length(title)>200;')
     op.execute('update series set original_title=title, genres="[]"')
     op.drop_column('series', 'description_url')
@@ -57,6 +56,7 @@ def upgrade():
     op.drop_column('episodes', 'air_time')    
     op.add_column('episodes', sa.Column('original_title', sa.String(200)))
     op.execute('update episodes set title=left(title, 200) where length(title)>200;')
+    '''
     op.execute('update episodes set original_title=title')
     op.alter_column('episodes', 'title', 
         existing_type=sa.String(300),
