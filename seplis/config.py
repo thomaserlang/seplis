@@ -64,7 +64,7 @@ class ConfigClientModel(BaseModel):
 
 class ConfigPlayScanModel(BaseModel):
     type: Literal['series', 'movies']
-    path: DirectoryPath
+    path: pathlib.Path
     make_thumbnails: bool = False
 
 class ConfigPlayModel(BaseModel):
