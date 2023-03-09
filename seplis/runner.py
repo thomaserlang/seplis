@@ -4,12 +4,12 @@ from seplis import config, logger, set_logger
 from seplis.api import exceptions
 import asyncio
 
-async def run_task(task):
+async def run_task(*task):
     from seplis.api.database import database
     await database.setup()
     try:
         try:
-            await task
+            await asyncio.gather(*task)
         finally:
             await database.close()
     except exceptions.API_exception as e:
@@ -110,14 +110,16 @@ def update_movies_bulk(from_id, do_async):
 def update_popularity(create, create_above_popularity):
     import seplis.importer
     set_logger('importer_update_popularity.log')
-    asyncio.run(run_task(seplis.importer.movies.update_popularity(
+    asyncio.run(run_task(
+        seplis.importer.movies.update_popularity(
         create_movies=create or create_above_popularity,
         create_above_popularity=float(create_above_popularity) if create_above_popularity else 1.0,
-    )))
-    asyncio.run(run_task(seplis.importer.series.update_popularity(
-        create_series=create or create_above_popularity,
-        create_above_popularity=float(create_above_popularity) if create_above_popularity else 1.0,
-    )))
+        ),
+        seplis.importer.series.update_popularity(
+            create_series=create or create_above_popularity,
+            create_above_popularity=float(create_above_popularity) if create_above_popularity else 1.0,
+        )
+    ))
 
 
 @cli.command()
