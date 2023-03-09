@@ -18,7 +18,8 @@ interface IProps {
 export default function Episodes({ series, defaultSeason = 1 }: IProps) {
     const [season, setSeason] = useState(defaultSeason)
     useEffect(() => {
-        setSeason(defaultSeason)
+        if (season != defaultSeason)
+            setSeason(defaultSeason)
     }, [series.id])
     return <Stack>
         <SeasonSelect seasons={series.seasons} season={season} onSelect={setSeason} />
@@ -28,7 +29,7 @@ export default function Episodes({ series, defaultSeason = 1 }: IProps) {
 
 
 export function RenderEpisodes({ seriesId, season }: { seriesId: number, season?: number }) {
-    const { data, isInitialLoading } = useQuery(['series', seriesId, 'episodes', season], async () => {
+    const { data, isFetching } = useQuery(['series', seriesId, 'episodes', season], async () => {
         const result = await GetAllCursor<IEpisode>(`/2/series/${seriesId}/episodes`, {
             params: {
                 'expand': isAuthed() ? 'user_watched,user_can_watch' : null,
@@ -38,8 +39,8 @@ export function RenderEpisodes({ seriesId, season }: { seriesId: number, season?
         })
         return result
     })
-
-    if (isInitialLoading)
+    
+    if (isFetching)
         return <LoadingEpisodes />
 
     return <Wrap>
