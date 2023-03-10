@@ -13,6 +13,7 @@ async def get_episodes(
     series_id: int,
     season: int | None = None,
     episode: int | None = None,
+    number: int | None = None,
     air_date: date | None = None,
     air_date_ge: date | None = None,
     air_date_le: date | None = None,
@@ -30,6 +31,8 @@ async def get_episodes(
         query = query.where(models.Episode.season == season)
     if episode:
         query = query.where(models.Episode.episode == episode)
+    if number:
+        query = query.where(models.Episode.number == number)
     if air_date:
         query = query.where(models.Episode.air_date == air_date)
     if air_date_ge:
