@@ -157,8 +157,6 @@ class Series(Base):
 
     @staticmethod
     async def _save_genres(session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
-        from seplis import logger
-        logger.info(patch)
         genre_ids = await Genre.get_or_create_genres(session, genres)
         current_genres: set[int] = set()
         if patch:

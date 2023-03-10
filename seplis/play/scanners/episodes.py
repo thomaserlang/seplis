@@ -1,7 +1,7 @@
 import asyncio
 import os.path, re
 import sqlalchemy as sa
-from datetime import datetime, timezone
+from datetime import datetime
 from seplis import config, utils, logger
 from seplis.play import constants, models
 from seplis.play.client import client
@@ -381,7 +381,6 @@ class Episode_number(object):
     async def db_lookup(self, episode):
         async with database.session() as session:
             value = self.get_lookup_value(episode)
-            logger.info(value)
             e = await session.scalar(sa.select(models.Episode_number_lookup.number).where(
                 models.Episode_number_lookup.series_id == episode.series_id,
                 models.Episode_number_lookup.lookup_type == episode.lookup_type,
