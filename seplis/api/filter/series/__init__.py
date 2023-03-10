@@ -17,7 +17,11 @@ async def filter_series(
     can_watch_episode_number: any = None,
 ):
     p = await utils.sqlalchemy.paginate_cursor(
-        query=filter_series_query(query, filter_query),
+        query=filter_series_query(
+            query, 
+            filter_query,
+            can_watch_episode_number=can_watch_episode_number,
+        ),
         page_query=page_cursor,
         session=session,
     )
@@ -27,7 +31,6 @@ async def filter_series(
         user=filter_query.user,
         expand=filter_query.expand,
         session=session,
-        can_watch_episode_number=can_watch_episode_number,
     )
     return p
 
