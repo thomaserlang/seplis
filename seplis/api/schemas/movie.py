@@ -9,7 +9,7 @@ from .genre import Genre
 class Movie_create(BaseModel, extra='forbid', validate_assignment=True):   
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
-    alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
+    alternative_titles: list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None
     status: conint(gt=-1, lt=5) | None
     plot: constr(min_length=0, max_length=2000, strip_whitespace=True) | None
     tagline: constr(min_length=0, max_length=500, strip_whitespace=True) | None

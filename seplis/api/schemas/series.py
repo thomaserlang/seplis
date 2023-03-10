@@ -22,7 +22,7 @@ class Series_user_rating(BaseModel, orm_mode=True):
 class Series_create(BaseModel):
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
-    alternative_titles: list[constr(min_length=1, max_length=100, strip_whitespace=True)] | None
+    alternative_titles: list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None
     externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True), constr(min_length=0, max_length=45, strip_whitespace=True) | None] | None = {}
     status: conint(gt=-1) | None
     plot: constr(min_length=1, max_length=2000, strip_whitespace=True) | None
