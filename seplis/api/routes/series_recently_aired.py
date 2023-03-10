@@ -28,6 +28,7 @@ async def get_series_recently_aired(
     episodes_query = filter_series_query(
         query=episodes_query,
         filter_query=filter_query,
+        can_watch_episode_number=models.Episode.number,
     )
     episodes_query = episodes_query.subquery()
 
