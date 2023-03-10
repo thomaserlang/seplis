@@ -1,5 +1,6 @@
 import { IGenre } from "./genre"
 import { IImage } from "./image"
+import { IMovieCollection } from "./movie-collection"
 import { TExternals } from "./types"
 
 export interface IMovie {
@@ -19,6 +20,7 @@ export interface IMovie {
     revenue: number | null
     popularity: number | null
     rating: number | null
+    collection: IMovieCollection | null
     genres: IGenre[]
 }
 

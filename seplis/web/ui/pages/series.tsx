@@ -2,7 +2,7 @@ import { Box, Modal, ModalBody, ModalCloseButton, ModalContent, ModalOverlay } f
 import MainMenu from '@seplis/components/main-menu'
 import { SeriesLoad } from '@seplis/components/series/series'
 import { setTitle } from '@seplis/utils'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 
 export default function SeriesPage() {
     const { seriesId } = useParams()
@@ -21,9 +21,12 @@ export default function SeriesPage() {
 export function SeriesModalPage() {
     const { seriesId } = useParams()
     const navigate = useNavigate()
+    const location = useLocation()
 
     return <>
-        <Modal isOpen={true} onClose={() => { navigate(-1) }}>
+        <Modal isOpen={true} onClose={() => {
+            navigate(location.state?.background?.pathname || '/')
+        }}>
             <ModalOverlay />
             <ModalContent layerStyle="baseModal">
                 <ModalCloseButton />

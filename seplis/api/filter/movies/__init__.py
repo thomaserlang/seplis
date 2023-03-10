@@ -1,5 +1,5 @@
 from ...expand.movie import expand_movies
-from ... import schemas
+from ... import schemas, models
 from .... import utils
 from .query_filter_schema import Movie_query_filter
 from .user_stared import filter_user_stared
@@ -31,4 +31,6 @@ def filter_movies_query(query: any, filter_query: Movie_query_filter):
     query = filter_genres(query, filter_query)
     query = filter_can_watch(query, filter_query)
     query = order_query(query, filter_query)
+    if filter_query.collection_id:
+        query = query.where(models.Movie.collection_id == filter_query.collection_id)
     return query

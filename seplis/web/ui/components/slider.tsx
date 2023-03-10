@@ -10,7 +10,7 @@ import { Poster } from './poster'
 import './slider.less'
 
 interface IProps<S = undefined> {
-    title: string,
+    title?: string,
     url: string,
     hideIfEmpty?: boolean,
     onFocus?: FocusHandler,
@@ -76,7 +76,7 @@ export default function Slider<S = undefined>({ title, url, hideIfEmpty = false,
 
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
-            <Heading className="row-header">{title}</Heading>
+            {title && <Heading className="row-header">{title}</Heading>}
             <HStack className="slider" alignItems="stretch">
                 {(!isInitialLoading && items) ? <>
                     <Cards<S>

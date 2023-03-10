@@ -26,6 +26,7 @@ async def test_movie(client: AsyncClient):
         ],
         'popularity': 4728.432,
         'rating': 7.25,
+        'collection': 'National Treasure',
     })
     assert r.status_code == 201, r.content
     data = schemas.Movie.parse_obj(r.json())
@@ -39,6 +40,16 @@ async def test_movie(client: AsyncClient):
     assert data.popularity == 4728.432
     assert data.rating == 7.25
     assert data.genres[0].name == 'Adventure'
+    assert data.collection.name == 'National Treasure'
+
+
+    r = await client.get('/2/movies', params={
+        'collection_id': data.collection.id,
+    })
+    assert r.status_code == 200
+    movies = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    assert movies.items[0].id == data.id
+
 
     r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200

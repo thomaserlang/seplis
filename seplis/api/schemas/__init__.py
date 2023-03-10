@@ -1,5 +1,6 @@
 from .page import *
 from .image import *
+from .movie_collection import *
 from .movie import *
 from .series import *
 from .episode import *

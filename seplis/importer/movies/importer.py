@@ -152,6 +152,9 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
                                for a in r['alternative_titles']['titles']]
     data.genres = [genre['name'] for genre in r['genres']]
     data.popularity = r['popularity']
+    data.revenue = r['revenue']
+    data.budget = r['budget']
+    data.collection = r['belongs_to_collection']['name'] if r['belongs_to_collection'] else None
     return data
 
 

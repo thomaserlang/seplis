@@ -4,6 +4,7 @@ from datetime import datetime, date
 from .image import Image
 from .helper import default_datetime
 from .genre import Genre
+from .movie_collection import Movie_collection
 
 
 class Movie_create(BaseModel, extra='forbid', validate_assignment=True):   
@@ -23,7 +24,8 @@ class Movie_create(BaseModel, extra='forbid', validate_assignment=True):
     revenue: conint(ge=0) | None
     popularity: confloat(ge=0.0) | None
     rating: confloat(ge=0.0, le=10.0) | None
-    genres: list[str | int] | None
+    genres: list[constr(max_length=100) | int] | None
+    collection: constr(max_length=200) | int | None
 
 
     @validator('externals')
@@ -71,6 +73,7 @@ class Movie(BaseModel, orm_mode=True):
     popularity: float | None
     rating: float | None    
     genres: list[Genre]
+    collection: Movie_collection | None
     user_watched: Movie_watched | None
     user_stared: Movie_stared | None
 
@@ -84,6 +87,8 @@ MOVIE_USER_SORT_TYPE = Literal[
     'rating_desc',
     'popularity_asc',
     'popularity_desc',
+    'release_date_asc',
+    'release_date_desc',
     'user_play_server_movie_added_asc',
     'user_play_server_movie_added_desc',
 ]

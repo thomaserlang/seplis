@@ -15,6 +15,8 @@ def order_query(query: any, filter_query: Movie_query_filter):
             order.append(direction(sa.func.coalesce(models.Movie.rating, -1)))
         elif sort.startswith('popularity'):
             order.append(direction(models.Movie.popularity))
+        elif sort.startswith('release_date'):
+            order.append(direction(models.Movie.release_date))
         elif sort.startswith('user_play_server_movie_added'):
             order.append(direction(models.Play_server_movie.created_at))
     return query.order_by(*order, sa.asc(models.Movie.id))

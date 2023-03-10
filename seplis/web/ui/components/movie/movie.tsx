@@ -16,6 +16,7 @@ import api from '@seplis/api'
 import { useQuery } from '@tanstack/react-query'
 import { MovieSkeleton } from './skeleton'
 import ChromecastControls from '../player/chromecast-controls'
+import MovieCollection from './collection'
 
 
 export function MovieLoad({ movieId, onLoaded }: { movieId: number, onLoaded?: (movie: IMovie) => void }) {
@@ -56,6 +57,7 @@ export default function Movie({ movie }: { movie: IMovie }) {
                 </Stack>
             </Stack>
             <ChromecastControls />
+            {movie.collection && <MovieCollection collection={movie.collection} />}
         </Stack>
     </FocusContext.Provider>
 }

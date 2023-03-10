@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from seplis import utils
 from seplis.utils.sqlalchemy import UtcDateTime
 from .genre import Genre
+from .movie_collection import Movie_collection
 from .base import Base
 from ..database import auto_session, database
 from .. import schemas, exceptions
@@ -35,6 +36,8 @@ class Movie(Base):
     genres = sa.Column(sa.JSON(), default=lambda: [])
     popularity = sa.Column(sa.DECIMAL(precision=12, scale=4))
     rating = sa.Column(sa.DECIMAL(4, 2))
+    collection_id = sa.Column(sa.Integer, sa.ForeignKey('movie_collections.id'), nullable=True)
+    collection = sa.orm.relationship('Movie_collection', lazy=False)
 
     @classmethod
     @auto_session
@@ -61,6 +64,12 @@ class Movie(Base):
             _data['externals'] = await cls._save_externals(session, movie_id, _data['externals'], patch)
         if 'alternative_titles' in _data:
             _data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, _data['alternative_titles'], patch)
+        if 'collection' in _data:
+            collection = _data['collection']
+            del _data['collection']
+            if isinstance(collection, str):
+                collection = await Movie_collection.get_or_create(name=collection, session=session)
+            _data['collection_id'] = collection
         if _data:
             await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**_data))
         movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
