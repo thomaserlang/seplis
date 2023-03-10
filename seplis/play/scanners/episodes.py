@@ -1,7 +1,7 @@
 import asyncio
 import os.path, re
 import sqlalchemy as sa
-from datetime import datetime
+from datetime import datetime, timezone
 from seplis import config, utils, logger
 from seplis.play import constants, models
 from seplis.play.client import client
@@ -122,7 +122,11 @@ class Episode_scan(Play_scan):
                 await session.merge(e)
                 await session.commit()
 
-                await self.add_to_index(series_id=item.series_id, episode_number=item.number)
+                await self.add_to_index(
+                    series_id=item.series_id, 
+                    episode_number=item.number,
+                    created_at=modified_time,
+                )
 
                 logger.info(f'[episode-{item.series_id}-{item.number}] Saved {path}')
             else:                
@@ -131,7 +135,7 @@ class Episode_scan(Play_scan):
                 asyncio.create_task(self.thumbnails(f'episode-{item.series_id}-{item.number}', path))
             return True
 
-    async def add_to_index(self, series_id: int, episode_number: int):
+    async def add_to_index(self, series_id: int, episode_number: int, created_at: datetime = None):
         if self.cleanup_mode:
             return
 
@@ -143,6 +147,7 @@ class Episode_scan(Play_scan):
                 schemas.Play_server_episode_create(
                     series_id=series_id,
                     episode_number=episode_number,
+                    created_at=created_at or datetime.now(tz=timezone.utc),
                 )
             ]), headers={
                 'Authorization': f'Secret {config.data.play.secret}',

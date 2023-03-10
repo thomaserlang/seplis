@@ -88,6 +88,7 @@ def update_movie(movie_id):
     set_logger('importer_update_movie.log')
     asyncio.run(run_task(seplis.importer.movies.update_movie(movie_id=movie_id)))
 
+
 @cli.command()
 def update_movies_incremental():
     import seplis.importer

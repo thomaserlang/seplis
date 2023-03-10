@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os, os.path
 import sqlalchemy as sa
 from seplis import config, utils, logger
@@ -50,6 +51,7 @@ async def cleanup_episodes():
                     episodes.append(schemas.Play_server_episode_create(
                         series_id=e.series_id,
                         episode_number=e.number,
+                        created_at=e.modified_time or datetime.now(tz=timezone.utc)
                     ))
                     continue
                 deleted_count += 1
@@ -87,6 +89,7 @@ async def cleanup_movies():
                 if os.path.exists(m.path):
                     movies.append(schemas.Play_server_movie_create(
                         movie_id=m.movie_id,
+                        created_at=m.modified_time or datetime.now(tz=timezone.utc)
                     ))
                     continue
                 deleted_count += 1

@@ -75,7 +75,7 @@ class Movie_scan(Play_scan):
                 await session.execute(sql)
                 await session.commit()
 
-                await self.add_to_index(movie_id=movie_id)
+                await self.add_to_index(movie_id=movie_id, created_at=modified_time)
 
                 logger.info(f'[movie-{movie_id}] Saved {path}')
             else:
@@ -84,7 +84,7 @@ class Movie_scan(Play_scan):
                 asyncio.create_task(self.thumbnails(f'movie-{movie_id}', path))
             return True
 
-    async def add_to_index(self, movie_id: int):
+    async def add_to_index(self, movie_id: int, created_at: datetime = None):
         if self.cleanup_mode:
             return
 
@@ -94,7 +94,7 @@ class Movie_scan(Play_scan):
         r = await client.patch(f'/2/play-servers/{config.data.play.server_id}/movies', data=utils.json_dumps([
             schemas.Play_server_movie_create(
                 movie_id=movie_id,
-                created_at=datetime.now(tz=timezone.utc)
+                created_at=created_at or datetime.now(tz=timezone.utc)
             )
         ]), headers={
             'Authorization': f'Secret {config.data.play.secret}',
