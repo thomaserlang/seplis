@@ -35,7 +35,7 @@ async def update_series_bulk(from_series_id=None, do_async=False):
                         break
                     except Exception as e:
                         logger.exception(e)
-    except sa.exc.OprationalError as e:
+    except sa.exc.OperationalError as e:
         logger.exception(e)
         if from_series_id:
             update_series_bulk(from_series_id=from_series_id)

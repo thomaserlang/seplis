@@ -55,7 +55,7 @@ async def update_movies_bulk(from_movie_id=None, do_async=False):
                         logger.error(e.message)
                     except Exception as e:
                         logger.exception(e)
-    except sa.exc.OprationalError as e:
+    except sa.exc.OperationalError as e:
         logger.exception(e)
         if from_movie_id:
             update_movies_bulk(from_movie_id=from_movie_id)
