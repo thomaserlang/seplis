@@ -25,23 +25,10 @@ templates.env.globals['config'] = config
 async def health():
     return 'OK'
 
-@app.get('/api/tvmaze-show-lookup')
-async def tvmaze_lookup(tvmaze: int = None, imdb: str = None, thetvdb: int = None):
-    if tvmaze:
-        url = f'https://api.tvmaze.com/shows/{tvmaze}'
-    else:
-        url = 'https://api.tvmaze.com/lookup/shows'
-    params = {}
-    if imdb:
-        params['imdb'] = imdb
-    if thetvdb:
-        params['thetvdb'] = thetvdb
-    async with http_client.get(url, params=params) as r:
-        return await r.json()
-
 
 @app.post('/api/token', response_model=schemas.Token)
 async def login(
+    request: Request,
     login: str = Body(embed=True),
     password: str = Body(embed=True),
 ):
@@ -50,22 +37,9 @@ async def login(
         'password': password,
         'grant_type': 'password',
         'client_id': config.data.client.id,
-    })
-    if r.status_code >= 400:
-        return JSONResponse(content=r.json(), status_code=r.status_code)
-    return r.json()
-
-
-@app.post('/api/token', response_model=schemas.Token)
-async def login(
-    login: str = Body(embed=True),
-    password: str = Body(embed=True),
-):
-    r = await client.post('/2/token', json={
-        'login': login,
-        'password': password,
-        'grant_type': 'password',
-        'client_id': config.data.client.id,
+    }, headers={
+        'X-Real-IP': request.headers.get('X-Real-IP'),
+        'X-Forwarded-For': request.headers.get('X-Forwarded-For'),
     })
     if r.status_code >= 400:
         return JSONResponse(content=r.json(), status_code=r.status_code)
@@ -73,7 +47,7 @@ async def login(
 
 
 @app.post('/api/signup', response_model=schemas.Token)
-async def login(
+async def signup(
     user_data: schemas.User_create
 ):
     r = await client.post('/2/users', json=user_data.dict())
@@ -92,20 +66,32 @@ async def login(
 
 
 @app.post('/api/send-reset-password', status_code=204)
-async def reset_password(
+async def send_reset_password(
+    request: Request,
     email: EmailStr = Body(..., embed=True),
 ):
-    r = await client.post('/2/send-reset-password', json={'email': email})
+    r = await client.post('/2/send-reset-password', json={'email': email}, 
+        headers={
+            'X-Real-IP': request.headers.get('X-Real-IP'),
+            'X-Forwarded-For': request.headers.get('X-Forwarded-For'),
+        }
+    )
     if r.status_code >= 400:
         return JSONResponse(content=r.json(), status_code=r.status_code)
 
 
 @app.post('/api/reset-password', status_code=204)
 async def reset_password(
+    request: Request,
     key: str = Body(..., embed=True, min_length=36),
     new_password: schemas.USER_PASSWORD_TYPE = Body(..., embed=True),
 ):
-    r = await client.post('/2/reset-password', json={'key': key, 'new_password': new_password})
+    r = await client.post('/2/reset-password', json={'key': key, 'new_password': new_password}, 
+        headers={
+            'X-Real-IP': request.headers.get('X-Real-IP'),
+            'X-Forwarded-For': request.headers.get('X-Forwarded-For'),
+        }
+    )
     if r.status_code >= 400:
         return JSONResponse(content=r.json(), status_code=r.status_code)
 
