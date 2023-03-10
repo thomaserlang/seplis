@@ -34,7 +34,10 @@ async def create_token(
     if not user:
         raise exceptions.Wrong_login_or_password()
 
-    matches = await run_in_threadpool(pbkdf2_sha256.verify, data.password, user.password if user else '')
+    try:
+        matches = await run_in_threadpool(pbkdf2_sha256.verify, data.password, user.password if user else '')
+    except:
+        matches = False
     if not matches:
         raise exceptions.Wrong_login_or_password()
 
