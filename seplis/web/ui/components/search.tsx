@@ -22,7 +22,7 @@ export function SearchButtonDialog() {
                     <ModalHeader>Search</ModalHeader>
                     <ModalCloseButton />
                     <ModalBody>
-                        <Search afterSelected={onClose} />
+                        <Search />
                     </ModalBody>
                 </ModalContent>
             </Modal>
