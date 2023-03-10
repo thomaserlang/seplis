@@ -100,6 +100,7 @@ async def test_search(client: AsyncClient):
         alternative_titles=[
             'DC’s kurt',
         ],
+        popularity=1,
     ), series_id=None)
 
     await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
