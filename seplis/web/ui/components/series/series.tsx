@@ -30,7 +30,7 @@ export function SeriesLoad({ seriesId, onLoaded }: { seriesId: number, onLoaded?
     if (isInitialLoading)
         return <SeriesSkeleton />
 
-    if (!data.title)
+    if (!data?.title)
         return <SeriesWaitingForData series={data} />
 
     return <Series series={data} />
