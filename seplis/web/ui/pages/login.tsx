@@ -114,7 +114,7 @@ export default function Login() {
                                 loadingText='Logging in'
                                 paddingLeft="2rem"
                                 paddingRight="2rem">
-                                Log in
+                                Login
                             </Button>
                         </Flex>
                     </Stack>
