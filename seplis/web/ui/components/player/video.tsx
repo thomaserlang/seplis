@@ -128,7 +128,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 if (onPlay) onPlay()
                 onLoadingState(false)
             }}
-            onStalled={() => onLoadingState && onLoadingState(true)}
             onWaiting={() => onLoadingState && onLoadingState(true)}
             onLoadStart={() => onLoadingState && onLoadingState(true)}
             onPlaying={() => onLoadingState && onLoadingState(false)}
