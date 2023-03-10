@@ -71,7 +71,8 @@ async def cleanup_episodes():
                 headers={
                     'Authorization': f'Secret {config.data.play.secret}',
                     'Content-Type': 'application/json',
-                }
+                },
+                timeout=900,
             )
             if r.status_code >= 400:
                 logger.error(f'Faild to update the episode play server index ({config.data.play.server_id}): {r.content}')
@@ -108,7 +109,8 @@ async def cleanup_movies():
                 headers={
                     'Authorization': f'Secret {config.data.play.secret}',
                     'Content-Type': 'application/json',
-                }
+                },
+                timeout=900,
             )
             if r.status_code >= 400:
                 logger.error(f'Faild to update the movie play server index ({config.data.play.server_id}): {r.content}')
