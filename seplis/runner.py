@@ -30,17 +30,17 @@ def cli(config, log_path, log_level):
 
 @cli.command()
 def web():
-    uvicorn.run('seplis.web.main:app', host='0.0.0.0', port=config.data.web.port, reload=config.data.debug)
+    uvicorn.run('seplis.web.main:app', host='0.0.0.0', port=config.data.web.port, reload=config.data.debug, proxy_headers=True)
 
 
 @cli.command()
 def api():
-    uvicorn.run('seplis.api.main:app', host='0.0.0.0', port=config.data.api.port, reload=config.data.debug)
+    uvicorn.run('seplis.api.main:app', host='0.0.0.0', port=config.data.api.port, reload=config.data.debug, proxy_headers=True)
 
 
 @cli.command()
 def play_server():
-    uvicorn.run('seplis.play.main:app', host='0.0.0.0', port=config.data.play.port, reload=config.data.debug)
+    uvicorn.run('seplis.play.main:app', host='0.0.0.0', port=config.data.play.port, reload=config.data.debug, proxy_headers=True)
 
 
 @cli.command()
