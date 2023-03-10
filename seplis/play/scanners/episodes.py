@@ -431,6 +431,6 @@ class Episode_number(object):
         r = await client.get(f'/2/series/{episode.series_id}/episodes', params=params)
         r.raise_for_status()
         episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
-        if not episodes:
+        if not episodes.items:
             return
         return episodes.items[0].number
