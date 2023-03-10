@@ -45,7 +45,7 @@ class Movie(Base):
         overwrite_genres = False,
         session = None,
     ):
-        _data = data.dict(exclude_unset=True)
+        _data = data.dict(exclude_unset=True) if data else {}
         if not movie_id:
             r = await session.execute(sa.insert(Movie))
             movie_id = r.lastrowid

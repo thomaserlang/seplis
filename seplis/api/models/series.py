@@ -59,7 +59,7 @@ class Series(Base):
         overwrite_genres=False,
         session=None
     ):
-        _data = data.dict(exclude_unset=True)
+        _data = data.dict(exclude_unset=True) if data else {}
         if not series_id:
             r = await session.execute(sa.insert(Series))
             series_id = r.lastrowid
