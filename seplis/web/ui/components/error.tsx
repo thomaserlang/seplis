@@ -22,8 +22,11 @@ export function ErrorMessageFromResponse(errorObj: any): JSX.Element {
                     </ul>
                 )}
             </>
-        } else if (data?.detail)
+        } 
+        else if (data?.detail)
             return data.detail
+        else if (data?.message)
+            return data.message
         return <>{e.message}</>
     }
     return <>{errorObj.message}</>
