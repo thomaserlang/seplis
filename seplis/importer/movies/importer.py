@@ -71,6 +71,8 @@ async def update_incremental():
         })
         r.raise_for_status()
         data = r.json()
+        if not data or not data['results']:
+            break
         async with database.session() as session:
             for r in data['results']:
                 logger.info(f'Checking: {r["id"]}')

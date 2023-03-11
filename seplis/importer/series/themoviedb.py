@@ -120,9 +120,10 @@ class TheMovieDB(Series_importer_base):
                 'api_key': config.data.client.themoviedb,
                 'page': page,
             })
-            if r.status_code != 200:
+            r.raise_for_status()
+            data = r.json()
+            if not data or not data['results']:
                 break
-            data = r.json()            
             ids.extend([str(r['id']) for r in data['results']])
             if data['page'] == data['total_pages']:
                 break

@@ -68,6 +68,7 @@ async def _importer_incremental(importer):
                 models.Series.id == models.Series_external.series_id,
             ))
             if not result:
+                logger.info(f'{importer.external_name} {external_id} not found')
                 continue
             series = schemas.Series.from_orm(result)
             try:
