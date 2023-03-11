@@ -8,7 +8,7 @@ export default function SeriesPage() {
     const { seriesId } = useParams()
 
     return <>
-        <MainMenu />
+        <MainMenu active="series" />
         <Box margin='1rem'>
             <SeriesLoad seriesId={parseInt(seriesId)} onLoaded={(series) => {
                 setTitle(series.title)

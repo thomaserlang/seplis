@@ -10,7 +10,7 @@ export default function SeriesFollowing() {
     }, [])
 
     return <>
-        <MainMenu />
+        <MainMenu active="series" />
         <Box margin="1rem">
             <SeriesUserList
                 title="Series Following"

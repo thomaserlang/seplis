@@ -10,7 +10,7 @@ export default function MoviesWatched() {
     }, [])
 
     return <>
-        <MainMenu />
+        <MainMenu active="movies" />
         <Box margin="1rem">
             <MovieUserList
                 title="Movies Watched"

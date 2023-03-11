@@ -50,7 +50,7 @@ export default function WatchHome() {
     }, [])
 
     return <>
-        <MainMenu />
+        <MainMenu active="watch" />
 
         <FocusContext.Provider value={focusKey}>
 

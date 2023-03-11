@@ -50,6 +50,7 @@ class ChromecastIcon extends React.Component {
             icon = '/static/img/chromecast_connected.svg';
         return (
             <Button 
+                variant='ghost'
                 mr="0.75rem"
                 onClick={this.iconClick}
             >

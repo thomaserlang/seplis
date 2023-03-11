@@ -9,7 +9,7 @@ export default function MoviePage() {
     const { movieId } = useParams()
 
     return <>
-        <MainMenu />
+        <MainMenu active="movies" />
         <Box margin="1rem">
             <MovieLoad movieId={parseInt(movieId)} onLoaded={(movie) => {
                 setTitle(movie.title)

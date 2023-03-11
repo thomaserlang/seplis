@@ -40,7 +40,7 @@ export default function SeriesHome() {
     }
 
     return <>
-        <MainMenu />
+        <MainMenu active="series" />
         
         <FocusContext.Provider value={focusKey}>
 

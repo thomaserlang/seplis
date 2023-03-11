@@ -14,7 +14,7 @@ export function SearchButtonDialog() {
     const { isOpen, onOpen, onClose } = useDisclosure()
     return (
         <>
-            <Button leftIcon={<SearchIcon />} onClick={onOpen}>Search</Button>
+            <Button variant='ghost' leftIcon={<SearchIcon />} onClick={onOpen}>Search</Button>
 
             <Modal isOpen={isOpen} onClose={onClose}>
                 <ModalOverlay />

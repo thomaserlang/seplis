@@ -1,7 +1,7 @@
 import { ChevronDownIcon, HamburgerIcon } from '@chakra-ui/icons'
 import { Avatar, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, IconButton, Menu, MenuButton, MenuDivider, MenuItem, MenuList, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure } from '@chakra-ui/react'
 import { IUser } from '@seplis/interfaces/user'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate, } from 'react-router-dom'
 import ChangePasswordForm from './change_password_form'
 import { MovieNew } from './movie/settings'
@@ -9,7 +9,7 @@ import ChromecastIcon from './player/ChromecastIcon'
 import { SearchButtonDialog } from './search'
 import { SeriesNew } from './series/settings'
 
-export default function MainMenu() {
+export default function MainMenu({ active }: { active?: string }) {
     return <Flex
         backgroundColor="blackAlpha.500"
         padding="0.6rem"
@@ -29,11 +29,11 @@ export default function MainMenu() {
         </Link>
 
         <Flex display={['none', 'flex']}>
-            <MenuItems />
+            <MenuItems active={active} />
         </Flex>
 
         <Box display={['block', 'none']} marginRight="0.75rem">
-            <MobileMenu />
+            <MobileMenu active={active} />
         </Box>
 
         <Box marginRight="0.75rem">
@@ -59,7 +59,7 @@ export default function MainMenu() {
     </Flex>
 }
 
-function MobileMenu() {
+function MobileMenu({ active }: { active?: string }) {
     const { isOpen, onOpen, onClose } = useDisclosure()
     return <>
         <IconButton
@@ -79,7 +79,7 @@ function MobileMenu() {
                 <DrawerBody>
                     {isOpen &&
                         <Flex direction="column" gap="1rem" justifyContent="center">
-                            <MenuItems />
+                            <MenuItems active={active} />
                         </Flex>}
                 </DrawerBody>
             </DrawerContent>
@@ -88,16 +88,19 @@ function MobileMenu() {
 }
 
 
-function MenuItems() {
+function MenuItems({ active }: { active?: string }) {
     return <>
-
         <Box marginRight={["0", "0.75rem"]}>
-            <Link to="/watch"><Button>Watch</Button></Link>
+            <Link to="/watch"><Button variant={active == 'watch' ? 'solid' : 'ghost'}>Watch</Button></Link>
         </Box>
 
-
         <Menu>
-            <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>
+            <MenuButton 
+                variant={active == 'series' ? 'solid' : 'ghost'} 
+                marginRight={["0", "0.75rem"]} 
+                as={Button} 
+                rightIcon={<ChevronDownIcon />}
+            >
                 Series
             </MenuButton>
             <MenuList>
@@ -112,7 +115,12 @@ function MenuItems() {
 
 
         <Menu>
-            <MenuButton marginRight={["0", "0.75rem"]} as={Button} rightIcon={<ChevronDownIcon />}>
+            <MenuButton 
+                variant={active == 'movies' ? 'solid' : 'ghost'} 
+                marginRight={["0", "0.75rem"]} 
+                as={Button} 
+                rightIcon={<ChevronDownIcon />}
+            >
                 Movies
             </MenuButton>
             <MenuList>

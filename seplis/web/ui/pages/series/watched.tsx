@@ -10,7 +10,7 @@ export default function SeriesWatched() {
     }, [])
 
     return <>
-        <MainMenu />
+        <MainMenu active="series" />
         <Box margin="1rem">
             <UserSeriesList
                 title="Series Watched"

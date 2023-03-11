@@ -35,7 +35,7 @@ export default function MoviesHome() {
     }
 
     return <>
-        <MainMenu />
+        <MainMenu active="movies" />
         
         <FocusContext.Provider value={focusKey}>
             <Stack ref={ref} marginTop="0.5rem">
