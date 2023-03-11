@@ -125,8 +125,9 @@ class TheMovieDB(Series_importer_base):
             if not data or not data['results']:
                 break
             ids.extend([str(r['id']) for r in data['results']])
-            if data['page'] == data['total_pages']:
+            if page == data['total_pages']:
                 break
+            page += 1
         return ids
     
 
