@@ -19,7 +19,6 @@ pydantic==1.10.4
 aiomysql==0.1.1
 pytest==7.2.0
 orjson==3.6.8
-guessit==3.4.3
 python-dateutil
 aiofile==3.7.4
 fastapi==0.92.0
@@ -33,6 +32,6 @@ email-validator==1.2.1
 freezegun==1.2.2
 uuid6==2022.10.25
 aiorun==2022.11.1
-watchfiles==0.18.1
 aiosqlite==0.18.0
 pyjwt==2.6.0
+respx==0.20.1

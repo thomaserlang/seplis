@@ -8,9 +8,7 @@ def main():
     start = [
         ('api', ['python', 'runner.py', 'api'], src_path),
         ('web', ['python', 'runner.py', 'web'], src_path),
-        ('play-server', ['python', 'runner.py', 'play-server'], src_path),
         ('worker', ['python', 'runner.py', 'worker'], src_path),
-        ('play-scan-watch', ['python', 'runner.py', 'play-scan-watch'], src_path),
     ]
 
     manager = Manager()

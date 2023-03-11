@@ -62,26 +62,6 @@ class ConfigClientModel(BaseModel):
     def default_public_api_url(cls, v, *, values, **kwargs):
         return v or values['api_url']
 
-class ConfigPlayScanModel(BaseModel):
-    type: Literal['series', 'movies']
-    path: pathlib.Path
-    make_thumbnails: bool = False
-
-class ConfigPlayModel(BaseModel):
-    database: Optional[str]
-    secret: Optional[str]
-    scan: Optional[List[ConfigPlayScanModel]]
-    media_types: List[str] = ['mp4', 'mkv', 'avi', 'mpg']
-    ffmpeg_folder: pathlib.Path = '/usr/src/ffmpeg'
-    ffmpeg_loglevel = '8'
-    ffmpeg_logfile: Optional[pathlib.Path]
-    ffmpeg_preset: Literal['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'] = 'veryfast' 
-    port = 8003
-    temp_folder: pathlib.Path = os.path.join(tempfile.gettempdir(), 'seplis_play')
-    thumbnails_path: Optional[pathlib.Path]
-    session_timeout = 10 # Timeout for HLS sessions
-    server_id: str | None = None
-
 class ConfigSMTPModel(BaseModel):
     server = '127.0.0.1'
     port = 25
@@ -100,7 +80,6 @@ class ConfigModel(BaseSettings):
     web = ConfigWebModel()
     logging = ConfigLoggingModel()
     client = ConfigClientModel()
-    play = ConfigPlayModel()
     smtp = ConfigSMTPModel()
 
     class Config:
@@ -141,9 +120,3 @@ def load(path=None):
         data = yaml.load(f, Loader=yaml.SafeLoader)
         if data:
             config.data = ConfigModel(**data)
-
-    if config.data.play.temp_folder:
-        try:
-            os.makedirs(config.data.play.temp_folder, exist_ok=True)
-        except:
-            pass
