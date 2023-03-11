@@ -18,11 +18,8 @@ async def update_imdb_ratings():
     async with database.session() as session:
         logger.info('Updating imdb ratings for movies')
         result = await session.stream(sa.select(models.Movie))
-        c = 1
-        async for movies in result.yield_per(500):
+        async for movies in result.yield_per(1000):
             for movie in movies:
-                logger.info(c)
-                c += 1
                 if movie.externals.get('imdb') not in ratings:
                     continue
                 if (ratings[movie.externals['imdb']].rating == movie.rating) and \
@@ -35,7 +32,7 @@ async def update_imdb_ratings():
 
         logger.info('Updating imdb ratings for series')
         result = await session.stream(sa.select(models.Series))
-        async for db_series in result.yield_per(500):
+        async for db_series in result.yield_per(1000):
             for s in db_series:
                 if s.externals.get('imdb') not in ratings:
                     continue
