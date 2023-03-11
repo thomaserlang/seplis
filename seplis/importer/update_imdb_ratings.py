@@ -17,9 +17,12 @@ async def update_imdb_ratings():
     ratings = await get_ratings()
     async with database.session() as session:
         logger.info('Updating imdb ratings for movies')
-        result = await session.stream(sa.select(models.Movie).options(sa.orm.noload("*")))
-        async for db_movies in result.yield_per(500):
-            for movie in db_movies:
+        result = await session.stream(sa.select(models.Movie))
+        c = 1
+        async for movies in result.yield_per(500):
+            for movie in movies:
+                logger.info(c)
+                c += 1
                 if movie.externals.get('imdb') not in ratings:
                     continue
                 if (ratings[movie.externals['imdb']].rating == movie.rating) and \
@@ -28,10 +31,10 @@ async def update_imdb_ratings():
                 await models.Movie.save(movie_id=movie.id, data=schemas.Movie_update(
                     rating = ratings[movie.externals['imdb']].rating,
                     rating_votes = ratings[movie.externals['imdb']].votes,
-                ), session=session)
+                ))
 
         logger.info('Updating imdb ratings for series')
-        result = await session.stream(sa.select(models.Series).options(sa.orm.noload("*")))
+        result = await session.stream(sa.select(models.Series))
         async for db_series in result.yield_per(500):
             for s in db_series:
                 if s.externals.get('imdb') not in ratings:
@@ -42,9 +45,7 @@ async def update_imdb_ratings():
                 await models.Series.save(series_id=s.id, data=schemas.Series_update(
                     rating = ratings[s.externals['imdb']].rating,
                     rating_votes = ratings[s.externals['imdb']].votes,
-                ), session=session)
-
-        await session.commit()
+                ))
 
 
 class Rating(BaseModel, allow_population_by_field_name=True):
