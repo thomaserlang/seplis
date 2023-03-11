@@ -21,27 +21,28 @@ class Series(Base):
     status = sa.Column(sa.Integer, default=0, nullable=False)
     title = sa.Column(sa.String(200))
     original_title = sa.Column(sa.String(200))
-    plot = sa.Column(sa.String(2000))
-    tagline = sa.Column(sa.String(500))
+    plot = sa.Column(sa.String(2000), nullable=True)
+    tagline = sa.Column(sa.String(500), nullable=True)
     premiered = sa.Column(sa.Date)
     ended = sa.Column(sa.Date)
     externals = sa.Column(sa.JSON(), default=lambda: {})
-    importer_info = sa.Column(sa.String(45))
-    importer_episodes = sa.Column(sa.String(45))
+    importer_info = sa.Column(sa.String(45), nullable=True)
+    importer_episodes = sa.Column(sa.String(45), nullable=True)
     seasons = sa.Column(sa.JSON(), default=lambda: [])
-    runtime = sa.Column(sa.Integer)
+    runtime = sa.Column(sa.Integer, nullable=True)
     genres = sa.Column(sa.JSON(), default=lambda: [])
     alternative_titles = sa.Column(sa.JSON(), default=lambda: [])
-    poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'))
+    poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'), nullable=True)
     poster_image = sa.orm.relationship('Image', lazy=False)
     episode_type = sa.Column(
         sa.Integer,
         default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
     )
     total_episodes = sa.Column(sa.Integer, default=0)
-    language = sa.Column(sa.String(100))
-    popularity = sa.Column(sa.DECIMAL(precision=12, scale=4))
-    rating = sa.Column(sa.DECIMAL(4, 2))
+    language = sa.Column(sa.String(100), nullable=True)
+    popularity = sa.Column(sa.DECIMAL(precision=12, scale=4), nullable=True)
+    rating = sa.Column(sa.DECIMAL(4, 2), nullable=True)
+    rating_votes = sa.Column(sa.Integer, nullable=True)
 
     @property
     def importers(self):

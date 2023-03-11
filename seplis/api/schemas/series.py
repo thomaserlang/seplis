@@ -19,7 +19,7 @@ class Series_user_rating(BaseModel, orm_mode=True):
     updated_at: datetime | None
 
 
-class Series_create(BaseModel):
+class Series_create(BaseModel, extra='forbid', validate_assignment=True):
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None
     alternative_titles: list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None
@@ -37,12 +37,10 @@ class Series_create(BaseModel):
     poster_image_id: conint(gt=0) | None
     popularity: confloat(ge=0.0) | None
     rating: confloat(ge=0.0, le=10.0) | None
+    rating_votes: conint(ge=0) | None
     episodes: list[Episode_create] | None
     
-    class Config:
-        extra = 'forbid'
-        validate_assignment = True
-
+    
     @validator('externals')
     def externals_none_value(cls, externals):
         for e in externals:

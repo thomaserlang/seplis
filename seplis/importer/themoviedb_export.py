@@ -8,17 +8,13 @@ from seplis import logger, utils
 from aiofile import async_open
 from pydantic import BaseModel, Field
 
-client = httpx.AsyncClient()
 
-class Id_data(BaseModel):
+class Id_data(BaseModel, allow_population_by_field_name=True):
     id: int
     original_title: str = Field(alias='original_name')
     popularity: float
     adult: bool = None
     video: bool = None
-    
-    class Config:
-        allow_population_by_field_name = True
 
 
 async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterator[Id_data]:
@@ -27,13 +23,14 @@ async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterato
         return
     tmp = os.path.join(tempfile.mkdtemp('seplis'), 'data.gz')
     try:
-        async with client.stream('GET', url) as r:
-            async with async_open(tmp, 'wb') as f:
-                async for chunk in r.aiter_bytes():
-                    await f.write(chunk)
-        with gzip.open(tmp) as f:
-            for line in f:
-                yield Id_data.parse_obj(utils.json_loads(line))
+        async with httpx.AsyncClient() as client:
+            async with client.stream('GET', url) as r:
+                async with async_open(tmp, 'wb') as f:
+                    async for chunk in r.aiter_bytes():
+                        await f.write(chunk)
+            with gzip.open(tmp) as f:
+                for line in f:
+                    yield Id_data.parse_obj(utils.json_loads(line))
     finally:
         os.remove(tmp)
 
@@ -45,6 +42,7 @@ async def _get_url(export):
     ]
     for dt in dts:
         url = f'http://files.tmdb.org/p/exports/{export}_{dt}.json.gz'
-        r = await client.head(url)
-        if r.status_code == 200:
-            return url
+        async with httpx.AsyncClient() as client:
+            r = await client.head(url)
+            if r.status_code == 200:
+                return url

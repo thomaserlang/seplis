@@ -143,6 +143,13 @@ def update_series_popularity(create, create_above_popularity):
 
 
 @cli.command()
+def update_imdb_ratings():
+    from seplis.importer.update_imdb_ratings import update_imdb_ratings
+    set_logger('importer_update_series_popularity.log')
+    asyncio.run(run_task(update_imdb_ratings()))
+
+
+@cli.command()
 def worker():
     import logging
     logging.basicConfig(level=config.data.logging.level.upper())

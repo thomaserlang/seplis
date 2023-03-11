@@ -24,6 +24,7 @@ class Movie_create(BaseModel, extra='forbid', validate_assignment=True):
     revenue: conint(ge=0) | None
     popularity: confloat(ge=0.0) | None
     rating: confloat(ge=0.0, le=10.0) | None
+    rating_votes: conint(ge=0) | None
     genres: list[constr(max_length=100) | int] | None
     collection: constr(max_length=200) | int | None
 
