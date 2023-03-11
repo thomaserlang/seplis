@@ -20,6 +20,7 @@ export interface IMovie {
     revenue: number | null
     popularity: number | null
     rating: number | null
+    rating_votes: number | null
     collection: IMovieCollection | null
     genres: IGenre[]
 }

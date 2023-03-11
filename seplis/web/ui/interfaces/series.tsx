@@ -38,6 +38,7 @@ export interface ISeriesCreate {
     poster_image_id: number | null
     popularity: number | null
     rating: number | null
+    rating_votes: number | null
     episodes: IEpisodeCreate[] | null
 }
 

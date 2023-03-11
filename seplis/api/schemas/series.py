@@ -40,7 +40,7 @@ class Series_create(BaseModel, extra='forbid', validate_assignment=True):
     rating_votes: conint(ge=0) | None
     episodes: list[Episode_create] | None
     
-    
+
     @validator('externals')
     def externals_none_value(cls, externals):
         for e in externals:
@@ -88,6 +88,7 @@ class Series(BaseModel, orm_mode=True):
     poster_image: Image | None
     popularity: float | None
     rating: float | None
+    rating_votes: int | None
     user_following: Series_user_following | None
     user_last_episode_watched: Episode | None
     user_rating: Series_user_rating | None

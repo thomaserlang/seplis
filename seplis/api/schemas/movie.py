@@ -73,6 +73,7 @@ class Movie(BaseModel, orm_mode=True):
     revenue: int | None
     popularity: float | None
     rating: float | None    
+    rating_votes: int | None
     genres: list[Genre]
     collection: Movie_collection | None
     user_watched: Movie_watched | None
