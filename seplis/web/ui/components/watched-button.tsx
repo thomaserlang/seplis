@@ -65,18 +65,22 @@ interface IButton {
 }
 
 const BaseButton = forwardRef<any, IButton>((props, ref) => {
+
     return <ButtonGroup ref={ref} isAttached>
         <Button
             colorScheme={props.times > 0 ? "green" : null}
-            style={props.position > 0 ? {
+            style={props.position > 0 ? props.times > 0 ? {
                 background: "linear-gradient(90deg, #428bca 56%, var(--chakra-colors-green-200) 44%)",
                 color: '#000'                
+            } : {
+                background: "linear-gradient(90deg, #428bca 56%, var(--chakra-colors-whiteAlpha-200) 44%)",
+                color: '#fff'                      
             } : null}
             onClick={props.onClick}
             isLoading={props.isUpdating}
         >
             Watched
         </Button>
-        <Button onClick={props.onClick} isLoading={props.isUpdating}>{props.times}</Button>
+        <Button variant="outline" onClick={props.onClick} isLoading={props.isUpdating}>{props.times}</Button>
     </ButtonGroup>
 })
