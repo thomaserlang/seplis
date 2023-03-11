@@ -93,8 +93,9 @@ async def update_incremental():
                         logger.error(e.message)
                     except Exception as e:
                         logger.exception(e)
-            if data['page'] == data['total_pages']:
+            if page == data['total_pages']:
                 break
+            page += 1
 
 
 async def update_movie_metadata(movie: schemas.Movie):
