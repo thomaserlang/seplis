@@ -33,6 +33,14 @@ async def test_user_series_settings(client: AsyncClient):
     assert data.subtitle_lang == 'eng'
     assert data.audio_lang == 'jpn'
 
+    r = await client.put(url, json={
+        'subtitle_lang': 'eng',
+    })
+    assert r.status_code == 200
+    data = schemas.User_series_settings.parse_obj(r.json())
+    assert data.subtitle_lang == 'eng'
+    assert data.audio_lang == 'jpn'
+
 
 if __name__ == '__main__':
     run_file(__file__)

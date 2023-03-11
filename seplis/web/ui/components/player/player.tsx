@@ -98,8 +98,8 @@ function VideoPlayer({
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
     const [resolutionWidth, setResolutionWidth] = useState<number>(getDefaultResolutionWidth())
-    const [audioSource, setAudioSource] = useState<IPlaySourceStream>(pickStartAudio(requestSource, defaultAudio))
-    const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(pickStartSubtitle(requestSource, defaultSubtitle))
+    const [audioSource, setAudioSource] = useState<IPlaySourceStream>(() => pickStartAudio(requestSource, defaultAudio))
+    const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(() => pickStartSubtitle(requestSource, defaultSubtitle))
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0)
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
