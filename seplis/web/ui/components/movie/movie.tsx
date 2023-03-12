@@ -108,9 +108,9 @@ function Genre({ genre }: { genre: IGenre }) {
 function BaseInfo({ movie }: { movie: IMovie }) {
     return <Wrap spacingX="0.75rem" lineHeight="1.3">
         {movie.release_date && <WrapItem><strong title={movie.release_date}>{movie.release_date.substring(0, 4)}</strong></WrapItem>}
-        {movie.runtime && <WrapItem>{secondsToHourMin(movie.runtime)}</WrapItem>}
         {movie.language && <WrapItem>{langCodeToLang(movie.language)}</WrapItem>}
-        {movie.rating && <WrapItem title="IMDb rating"><Flex alignItems="center">{movie.rating} <StarIcon marginLeft="0.2rem" boxSize={3} /></Flex></WrapItem>}
+        {movie.runtime && <WrapItem>{secondsToHourMin(movie.runtime)}</WrapItem>}
+        {movie.rating && <WrapItem title="IMDb rating"><StarIcon mr="0.2rem" boxSize={3} color="yellow.400" mt="4px" />{movie.rating} IMDb</WrapItem>}
     </Wrap>
 }
 

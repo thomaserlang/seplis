@@ -116,7 +116,7 @@ function BaseInfo({ series }: { series: ISeries }) {
         {series.runtime && <WrapItem>{secondsToHourMin(series.runtime)}</WrapItem>}
         <SeasonsText seasons={series.seasons} />
         <EpisodesText seasons={series.seasons} />
-        {series.rating && <WrapItem title="IMDb rating"><Flex alignItems="center">{series.rating} <StarIcon marginLeft="0.2rem" boxSize={3} /></Flex></WrapItem>}
+        {series.rating && <WrapItem title="IMDb rating"><StarIcon mr="0.2rem" boxSize={3} color="yellow.400" mt="4px" />{series.rating} IMDb</WrapItem>}
     </Wrap>
 }
 
