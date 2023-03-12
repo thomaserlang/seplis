@@ -35,30 +35,23 @@ async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
 
 async def update_movies_bulk(from_movie_id=None, do_async=False):
     logger.info('Updating movies')
-    while True:
-        try:
-            async with database.session() as session:
-                query = sa.select(models.Movie)
-                if from_movie_id:
-                    query = query.where(models.Movie.id >= from_movie_id)
-                result = await session.stream(query)
-                async for movies in result.yield_per(500):
-                    for movie in movies:
-                        try:
-                            if not do_async:
-                                await update_movie(movie=schemas.Movie.from_orm(movie))
-                                from_movie_id = movie.id
-                            else:
-                                await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
-                        except (KeyboardInterrupt, SystemExit):
-                            break
-                        except exceptions.API_exception as e:
-                            logger.error(e.message)
-                        except Exception as e:
-                            logger.exception(e)
-                return
-        except sa.exc.OperationalError as e:
-            logger.exception(e)
+    async with database.session() as session:
+        query = sa.select(models.Movie)
+        if from_movie_id:
+            query = query.where(models.Movie.id >= from_movie_id)
+        movies = await session.scalars(query)
+        for movie in movies:
+            try:
+                if not do_async:
+                    await update_movie(movie=schemas.Movie.from_orm(movie))
+                else:
+                    await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
+            except (KeyboardInterrupt, SystemExit):
+                break
+            except exceptions.API_exception as e:
+                logger.error(e.message)
+            except Exception as e:
+                logger.exception(e)
 
 
 async def update_incremental():

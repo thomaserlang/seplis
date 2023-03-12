@@ -11,7 +11,7 @@ async def update_popularity(create_series = True, create_above_popularity: float
     series: dict[str, schemas.Series] = {}
     async with database.session() as session:
         result = await session.stream(sa.select(models.Series))
-        async for db_series in result.yield_per(500):
+        async for db_series in result.yield_per(1000):
             for r in db_series:
                 try:
                     s = schemas.Series.from_orm(r)

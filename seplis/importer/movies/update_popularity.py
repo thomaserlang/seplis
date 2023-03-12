@@ -13,7 +13,7 @@ async def update_popularity(create_movies = True, create_above_popularity: float
     movies: dict[str, schemas.Movie] = {}
     async with database.session() as session:
         result = await session.stream(sa.select(models.Movie))
-        async for db_movies in result.yield_per(500):
+        async for db_movies in result.yield_per(1000):
             for movie in db_movies:
                 try:
                     s = schemas.Movie.from_orm(movie)
