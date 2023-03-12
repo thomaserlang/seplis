@@ -21,3 +21,5 @@ class Search_title_document(BaseModel, orm_mode=True):
     genres: list[Genre] | None
     seasons: int | None
     episodes: int | None
+    runtime: int | None
+    language: str | None

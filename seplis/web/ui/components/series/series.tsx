@@ -113,17 +113,17 @@ function BaseInfo({ series }: { series: ISeries }) {
     return <Wrap spacingX="0.75rem" lineHeight="1.3">
         {series.premiered && <WrapItem><strong title={series.premiered}>{series.premiered.substring(0, 4)}</strong></WrapItem>}
         {series.language && <WrapItem>{langCodeToLang(series.language)}</WrapItem>}
-        {series.runtime && <WrapItem>{secondsToHourMin(series.runtime)}</WrapItem>}
+        {series.runtime ? <WrapItem>{secondsToHourMin(series.runtime)}</WrapItem> : null}
         <SeasonsText seasons={series.seasons} />
         <EpisodesText seasons={series.seasons} />
-        {series.rating && <WrapItem title="IMDb rating"><StarIcon mr="0.2rem" boxSize={3} color="yellow.400" mt="4px" />{series.rating} IMDb</WrapItem>}
+        {series.rating ? <WrapItem title="IMDb rating"><StarIcon mr="0.2rem" boxSize={3} color="yellow.400" mt="4px" />{series.rating} IMDb</WrapItem> : null}
     </Wrap>
 }
 
 
 function SeasonsText({ seasons }: { seasons: ISeriesSeason[] }) {
     return <>
-        {seasons && <Text>{seasons.length} {seasons.length == 1 ? 'season' : 'seasons'}</Text>}
+        {seasons?.length > 0 && <Text>{seasons.length} {seasons.length == 1 ? 'season' : 'seasons'}</Text>}
     </>
 }
 

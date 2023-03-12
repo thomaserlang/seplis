@@ -73,6 +73,12 @@ async def create_indices(es):
             },
             'imdb_rating_votes': {
                 'enabled': False,
+            },
+            'runtime': {
+                'enabled': False,
+            },
+            'language': {
+                'enabled': False,
             }
         }
      })

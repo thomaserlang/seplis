@@ -200,6 +200,8 @@ class Movie(Base):
             genres=self.genres,
             rating=self.rating,
             rating_votes=self.rating_votes,
+            runtime=self.runtime,
+            language=self.language,
         )
 
 

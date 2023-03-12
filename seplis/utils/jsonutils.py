@@ -1,9 +1,7 @@
 import orjson, decimal
 from collections import OrderedDict
-from datetime import datetime
 from sqlalchemy.engine import Row
 from pydantic import BaseModel
-from seplis import logger
 
 def default(obj):
     if isinstance(obj, BaseModel):

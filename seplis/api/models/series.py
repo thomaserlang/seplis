@@ -233,6 +233,8 @@ class Series(Base):
             rating_votes=self.rating_votes,
             episodes=self.total_episodes,
             seasons=len(self.seasons),
+            runtime=self.runtime,
+            language=self.language,
         )
 
     @staticmethod
