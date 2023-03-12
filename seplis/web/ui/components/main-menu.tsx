@@ -91,14 +91,21 @@ function MobileMenu({ active }: { active?: string }) {
 function MenuItems({ active }: { active?: string }) {
     return <>
         <Box marginRight={["0", "0.75rem"]}>
-            <Link to="/watch"><Button variant={active == 'watch' ? 'solid' : 'ghost'}>Watch</Button></Link>
+            <Link to="/watch">
+                <Button
+                    variant={active == 'watch' ? 'solid' : 'ghost'}
+                    width={['100%', 'auto']}
+                >
+                    Watch
+                </Button>
+            </Link>
         </Box>
 
         <Menu>
-            <MenuButton 
-                variant={active == 'series' ? 'solid' : 'ghost'} 
-                marginRight={["0", "0.75rem"]} 
-                as={Button} 
+            <MenuButton
+                variant={active == 'series' ? 'solid' : 'ghost'}
+                marginRight={["0", "0.75rem"]}
+                as={Button}
                 rightIcon={<ChevronDownIcon />}
             >
                 Series
@@ -115,10 +122,10 @@ function MenuItems({ active }: { active?: string }) {
 
 
         <Menu>
-            <MenuButton 
-                variant={active == 'movies' ? 'solid' : 'ghost'} 
-                marginRight={["0", "0.75rem"]} 
-                as={Button} 
+            <MenuButton
+                variant={active == 'movies' ? 'solid' : 'ghost'}
+                marginRight={["0", "0.75rem"]}
+                as={Button}
                 rightIcon={<ChevronDownIcon />}
             >
                 Movies
