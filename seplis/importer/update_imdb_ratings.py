@@ -17,32 +17,32 @@ async def update_imdb_ratings():
     ratings = await get_ratings()
     async with database.session() as session:
         logger.info('Updating imdb ratings for movies')
-        result = await session.stream(sa.select(models.Movie))
-        async for movies in result.yield_per(1000):
-            for movie in movies:
-                if movie.externals.get('imdb') not in ratings:
-                    continue
-                if (ratings[movie.externals['imdb']].rating == movie.rating) and \
-                    (ratings[movie.externals['imdb']].votes == movie.rating_votes):
-                    continue
-                await models.Movie.save(movie_id=movie.id, data=schemas.Movie_update(
-                    rating = ratings[movie.externals['imdb']].rating,
-                    rating_votes = ratings[movie.externals['imdb']].votes,
-                ))
+        result = await session.execute(sa.select(models.Movie.id, models.Movie.externals, models.Movie.rating, models.Movie.rating_votes))
+        for movie in result:
+            if movie.externals.get('imdb') not in ratings:
+                continue
+            if (ratings[movie.externals['imdb']].rating == movie.rating) and \
+                (ratings[movie.externals['imdb']].votes == movie.rating_votes):
+                continue
+            await models.Movie.save(movie_id=movie.id, data=schemas.Movie_update(
+                rating = ratings[movie.externals['imdb']].rating,
+                rating_votes = ratings[movie.externals['imdb']].votes,
+            ), session=session)
 
         logger.info('Updating imdb ratings for series')
-        result = await session.stream(sa.select(models.Series))
-        async for db_series in result.yield_per(1000):
-            for s in db_series:
-                if s.externals.get('imdb') not in ratings:
-                    continue
-                if (ratings[s.externals['imdb']].rating == s.rating) and \
-                    (ratings[s.externals['imdb']].votes == s.rating_votes):
-                    continue
-                await models.Series.save(series_id=s.id, data=schemas.Series_update(
-                    rating = ratings[s.externals['imdb']].rating,
-                    rating_votes = ratings[s.externals['imdb']].votes,
-                ))
+        result = await session.execute(sa.select(models.Series.id, models.Series.externals, models.Series.rating, models.Series.rating_votes))
+        for s in result:
+            if s.externals.get('imdb') not in ratings:
+                continue
+            if (ratings[s.externals['imdb']].rating == s.rating) and \
+                (ratings[s.externals['imdb']].votes == s.rating_votes):
+                continue
+            await models.Series.save(series_id=s.id, data=schemas.Series_update(
+                rating = ratings[s.externals['imdb']].rating,
+                rating_votes = ratings[s.externals['imdb']].votes,
+            ), session=session)
+
+        await session.commit()
 
 
 class Rating(BaseModel, allow_population_by_field_name=True):
