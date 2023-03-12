@@ -12,16 +12,17 @@ import { isAuthed } from '@seplis/utils'
 export function MovieWatchedButtonData({ movieId, data }: { movieId: number, data: IMovieWatched }) {
     if (!data) data = IMovieWatchedDefault(0)
     const toast = useToast()
-    const [watched, setWatched] = useState<IMovieWatched>({ ...data })
+    const [watched, setWatched] = useState<IMovieWatched>(data)
     const [isUpdating, setUpdating] = useState(false)
-
+    
     useEventListener<IEventMovieWatched>(EVENT_MOVIE_WATCHED, ((data) => {
-        if ((data.movieId == movieId))
+        if (data.movieId == movieId)
             setWatched({ ...data.watched })
-    }), [])
+    }), [movieId])
 
     useEffect(() => {
-        setWatched({ ...data })
+        if (data != watched)
+            setWatched({ ...data })
     }, [data])
 
     const increment = async () => {

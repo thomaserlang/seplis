@@ -9,16 +9,17 @@ import { WatchedButton } from '../watched-button'
 export default function EpisodeWatchedButton({ seriesId, episodeNumber, data }: { seriesId: number, episodeNumber: number, data?: IEpisodeWatched }) {
     if (!data) data = IEpisodeWatchedDefault(0)
     const toast = useToast()
-    const [watched, setWatched] = useState<IEpisodeWatched>({ ...data })
+    const [watched, setWatched] = useState<IEpisodeWatched>(data)
     const [isUpdating, setUpdating] = useState(false)
 
     useEventListener<IEventEpisodeWatched>(EVENT_EPISODE_WATCHED, ((data) => {
         if ((data.seriesId == seriesId) && (data.episodeNumber == episodeNumber))
             setWatched({ ...data.watched })
-    }), [])
+    }), [seriesId, episodeNumber])
 
     useEffect(() => {
-        setWatched({ ...data })
+        if (data != watched)
+            setWatched({ ...data })
     }, [data])
 
     const increment = async () => {
