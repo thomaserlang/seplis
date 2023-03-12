@@ -1,5 +1,5 @@
 import { SearchIcon, StarIcon } from '@chakra-ui/icons'
-import { Text, Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, FormControl, FormLabel, Switch, Box, AspectRatio, Skeleton, Heading, Tag, Stack } from '@chakra-ui/react'
+import { Text, Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, FormControl, FormLabel, Switch, Box, AspectRatio, Skeleton, Heading, Tag, Stack, Flex } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { ITitleSearchResult as ISearchTitleResult } from '@seplis/interfaces/search'
 import { langCodeToLang, secondsToHourMin } from '@seplis/utils'
@@ -106,14 +106,12 @@ function RenderItem({ item, onSelected }: { item: ISearchTitleResult, onSelected
                 {item.release_date && <Text fontWeight="bolder" title={item.release_date}>{item.release_date.substring(0, 4)}</Text>}
                 {item?.language ? <Text>{langCodeToLang(item.language)}</Text> : null}
                 {item?.runtime ? <Text>{secondsToHourMin(item.runtime)}</Text> : null}
-                {item?.seasons ? <Text>{item.seasons} {item.seasons == 1 ? 'season' : 'seasons'}</Text> : null}
-                {item?.episodes ? <Text>{item.episodes} episodes</Text> : null}
                 {item?.rating ? <Text title="IMDb rating">{item.rating} IMDb</Text> : null}
             </Stack>
-            <Stack direction="row" pt="0.25rem">
+            <Flex direction="row" pt="0.25rem" gap="0.25rem" wrap="wrap">
                 <ShowType type={item.type} />
                 {item.genres?.map(genre => <Tag key={genre.id}>{genre.name}</Tag>)}
-            </Stack>
+            </Flex>
         </Stack>
     </Stack>
 }
