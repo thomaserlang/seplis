@@ -29,16 +29,25 @@ export default function MovieCollection({ collection }: { collection: IMovieColl
         return null
     return <Stack>
         <Heading fontSize="2xl" fontWeight="600">{collection.name}</Heading>
-        <Wrap>        
+        <Wrap>
             {data.items.map((r) => <Flex key={r.id} basis="120px"><WrapItem width="100%">
-                <PosterAspectRatio
-                    url={`${r.poster_image?.url}@SX320.webp`} 
-                    title={r.title}
-                    onClick={() => {
-                        selected(r)
-                    }}
-                /></WrapItem>
-            </Flex>)}
+                <Box
+                    width="100%"
+                    rounded="md"
+                    overflow="hidden"
+                >
+                    <PosterAspectRatio
+                        url={`${r.poster_image?.url}@SX320.webp`}
+                        title={r.title}
+                        onClick={() => {
+                            selected(r)
+                        }}
+                    />
+                    <Box backgroundColor="black" textAlign="center">
+                        {r.release_date ? r.release_date.substring(0, 4) : 'TBA'}
+                    </Box>
+                </Box>
+            </WrapItem></Flex>)}
         </Wrap>
     </Stack>
 }

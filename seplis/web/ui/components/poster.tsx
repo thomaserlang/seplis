@@ -24,8 +24,6 @@ export function PosterAspectRatio({ url, title, onClick }: IProps) {
         ratio={603 / 887} 
         onClick={onClick}
         cursor={onClick ? 'pointer' : 'auto'}
-        rounded="md"
-        overflow="hidden"
     >
         <Image
             src={url}
