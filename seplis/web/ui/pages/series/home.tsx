@@ -62,21 +62,6 @@ export default function SeriesHome() {
                 />
 
                 <Slider<ISeriesAndEpisode>
-                    title="Series to Watch"
-                    url="/2/users/me/series-to-watch"
-                    parseItem={(item) => (
-                        {
-                            key: `series-${item.series.id}`,
-                            title: item.series.title,
-                            img: item.series.poster_image?.url,
-                            bottomText: episodeNumber(item.episode),
-                        }
-                    )}
-                    onFocus={onRowFocus}
-                    onItemSelected={itemSelected}
-                />
-
-                <Slider<ISeriesAndEpisode>
                     title="Recently Aired"
                     url="/2/series-recently-aired?user_following=true"
                     parseItem={(item) => (
@@ -90,6 +75,7 @@ export default function SeriesHome() {
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
                 />
+
 
                 <Slider<ISeriesAndEpisode>
                     title="Countdown"
@@ -107,6 +93,21 @@ export default function SeriesHome() {
                     onItemSelected={itemSelected}
                 />
 
+                <Slider<ISeriesAndEpisode>
+                    title="Series to Watch"
+                    url="/2/users/me/series-to-watch"
+                    parseItem={(item) => (
+                        {
+                            key: `series-${item.series.id}`,
+                            title: item.series.title,
+                            img: item.series.poster_image?.url,
+                            bottomText: episodeNumber(item.episode),
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={itemSelected}
+                />
+                
             </Stack>
         </FocusContext.Provider>
     </>

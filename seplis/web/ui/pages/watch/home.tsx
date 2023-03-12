@@ -72,22 +72,6 @@ export default function WatchHome() {
                 />
 
                 <Slider<ISeriesAndEpisode>
-                    title="Series to Watch"
-                    url="/2/users/me/series-to-watch?user_can_watch=true"
-                    parseItem={(item) => (
-                        {
-                            key: `series-${item.series.id}`,
-                            title: item.series.title,
-                            img: item.series.poster_image?.url,
-                            bottomText: episodeNumber(item.episode),
-                        }
-                    )}
-                    onFocus={onRowFocus}
-                    onItemSelected={itemSelected}
-                    hideIfEmpty={true}
-                />
-
-                <Slider<ISeriesAndEpisode>
                     title="Episodes recently aired"
                     url="/2/series-recently-aired?user_can_watch=true"
                     parseItem={(item) => (
@@ -161,6 +145,22 @@ export default function WatchHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={movieSelected}
+                    hideIfEmpty={true}
+                />
+
+                <Slider<ISeriesAndEpisode>
+                    title="Series to Watch"
+                    url="/2/users/me/series-to-watch?user_can_watch=true"
+                    parseItem={(item) => (
+                        {
+                            key: `series-${item.series.id}`,
+                            title: item.series.title,
+                            img: item.series.poster_image?.url,
+                            bottomText: episodeNumber(item.episode),
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={itemSelected}
                     hideIfEmpty={true}
                 />
 
