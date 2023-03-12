@@ -1,5 +1,5 @@
 import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
-import { guid } from '@seplis/utils'
+import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 import Hls, { ErrorData } from 'hls.js'
 import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, useState } from 'react'
@@ -46,7 +46,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     onPlay,
     onLoadingState,
 }: IProps, ref) => {
-    const [sessionUUID, setSessionUUID] = useState<string>(guid())
+    const [sessionUUID, setSessionUUID] = useState<string>(uuidv4())
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
     const baseTime = useRef<number>(startTime)
@@ -68,7 +68,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             (prevResolutionWidth.current == resolutionWidth))
             return
         baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
-        setSessionUUID(guid())
+        setSessionUUID(uuidv4())
     }, [requestSource, audioSource, resolutionWidth])
 
     useEffect(() => {
@@ -173,7 +173,7 @@ function setCurrentTime(time: number, videoElement: HTMLVideoElement, setSession
             videoElement.pause()
             baseTime.current = time
             if (onTimeUpdate) onTimeUpdate(time)
-            setSessionUUID(guid())
+            setSessionUUID(uuidv4())
             videoElement.play()
         } else {
             videoElement.currentTime = time - baseTime.current

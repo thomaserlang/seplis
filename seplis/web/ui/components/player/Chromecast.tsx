@@ -1,8 +1,8 @@
 // @ts-nocheck
 import api from '../../api'
-import { guid } from '../../utils'
 import { getPlayServers } from './request-play-servers'
 import { pickStartSource } from './pick-source'
+import { v4 as uuidv4 } from 'uuid'
 
 
 var events = {
@@ -121,7 +121,7 @@ class Chromecast {
                 api.get(`/2/series/${seriesId}/episodes/${episodeNumber}?expand=user_watched`),
                 api.get(`/2/series/${seriesId}/user-settings`),
             ]).then(result => {
-                const session = guid()
+                const session = uuidv4()
                 if (!startTime)
                     startTime = result[3].data.user_watched?.position
 
@@ -241,7 +241,7 @@ class Chromecast {
                 // for some reason some movies will not start playing if startTime is 0
                 if (!startTime || (startTime == 0))
                     startTime = 10
-                const session = guid()
+                const session = uuidv4()
                 const customData = {
                     session: session,
                     selectedRequestSource: requestSource || pickStartSource(result[0]),
