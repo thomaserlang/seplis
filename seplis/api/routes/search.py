@@ -35,8 +35,8 @@ async def search(
         }
 
     r = await database.es.search(index=config.data.api.elasticsearch.index_prefix+'titles', query=q)
-    return [schemas.Search_title_document.parse_obj(a['_source']) \
-        for a in r['hits']['hits']]
+    return [schemas.Search_title_document.parse_obj(a['_source'])
+            for a in r['hits']['hits']]
 
 
 def get_by_query(query: str):
@@ -54,18 +54,16 @@ def get_by_query(query: str):
                                             {'multi_match': {
                                                 'boost': 4,
                                                 'query': query,
-                                                'operator': 'and',
+                                                'type': 'phrase_prefix',
                                                 'fields': [
                                                     'titles.title',
                                                     'titles.title._2gram',
                                                     'titles.title._3gram',
-                                                    
                                                 ]
                                             }},
                                             {'multi_match': {
                                                 'query': query,
                                                 'type': 'bool_prefix',
-                                                'minimum_should_match': '75%',
                                                 'fields': [
                                                     'titles.title',
                                                     'titles.title._2gram',
@@ -93,14 +91,24 @@ def get_by_query(query: str):
 
 def get_by_title(title: str):
     return {
-        'dis_max': {
-            'queries': [
-                {'nested': {
-                    'path': 'titles',
-                    'query':
-                        {'match_phrase': {'titles.title': title}},
-                }},
-                {'term': {'imdb': title}},
-            ]
+        'function_score': {
+            'query': {
+                'dis_max': {
+                    'queries': [
+                        {'nested': {
+                            'path': 'titles',
+                            'query':
+                            {'match_phrase': {'titles.title': title}},
+                        }},
+                        {'term': {'imdb': title}},
+                    ]
+                }
+            },
+            "field_value_factor": {
+                "field": "popularity",
+                "factor": 1.2,
+                "modifier": "sqrt",
+                "missing": 0,
+            }
         }
     }
