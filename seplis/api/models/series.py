@@ -228,7 +228,11 @@ class Series(Base):
             poster_image=schemas.Image.from_orm(
                 self.poster_image) if self.poster_image else None,
             popularity=self.popularity,
-
+            genres=self.genres,
+            rating=self.rating,
+            rating_votes=self.rating_votes,
+            episodes=self.total_episodes,
+            seasons=len(self.seasons),
         )
 
     @staticmethod

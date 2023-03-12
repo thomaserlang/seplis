@@ -58,5 +58,21 @@ async def create_indices(es):
                 'enabled': False,
             },
             'popularity': { 'type': 'float' },
+            'genres': {
+                'type': 'object',
+                'enabled': False,
+            },
+            'seasons': {
+                'enabled': False,
+            },
+            'episodes': {
+                'enabled': False,
+            },
+            'imdb_rating': {
+                'enabled': False,
+            },
+            'imdb_rating_votes': {
+                'enabled': False,
+            }
         }
      })
