@@ -41,7 +41,8 @@ async def get_user_series_to_watch(
         models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
         latest_aired_episode.c.series_id == models.Series.id,
     ).order_by(
-        sa.desc(latest_aired_episode.c.latest_aired_episode_datetime), 
+        sa.desc(latest_aired_episode.c.latest_aired_episode_datetime),
+        sa.desc(models.Series.popularity),
         models.Episode.series_id,
     )
 
