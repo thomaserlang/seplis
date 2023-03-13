@@ -71,9 +71,10 @@ export default function WatchHome() {
                     hideIfEmpty={true}
                 />
 
+
                 <Slider<ISeriesAndEpisode>
-                    title="Episodes recently aired"
-                    url="/2/series-recently-aired?user_can_watch=true"
+                    title="Series to Watch"
+                    url="/2/users/me/series-to-watch?user_can_watch=true"
                     parseItem={(item) => (
                         {
                             key: `series-${item.series.id}`,
@@ -103,6 +104,7 @@ export default function WatchHome() {
                     hideIfEmpty={true}
                 />
 
+
                 <Slider<ISeries>
                     title="Series recently added"
                     url="/2/series?user_can_watch=true&sort=user_play_server_series_added_desc"
@@ -117,7 +119,8 @@ export default function WatchHome() {
                     onItemSelected={seriesSelected}
                     hideIfEmpty={true}
                 />
-                
+
+
                 <Slider<ISeries>
                     title="Popular series"
                     url="/2/series?user_can_watch=true&sort=popularity_desc"
@@ -132,6 +135,7 @@ export default function WatchHome() {
                     onItemSelected={seriesSelected}
                     hideIfEmpty={true}
                 />
+
 
                 <Slider<IMovie>
                     title="Popular movies"
@@ -148,9 +152,10 @@ export default function WatchHome() {
                     hideIfEmpty={true}
                 />
 
+
                 <Slider<ISeriesAndEpisode>
-                    title="Series to Watch"
-                    url="/2/users/me/series-to-watch?user_can_watch=true"
+                    title="Episodes recently aired"
+                    url="/2/series-recently-aired?user_can_watch=true"
                     parseItem={(item) => (
                         {
                             key: `series-${item.series.id}`,
@@ -163,6 +168,7 @@ export default function WatchHome() {
                     onItemSelected={itemSelected}
                     hideIfEmpty={true}
                 />
+
 
                 <Slider<ISeries>
                     title="Series following"
@@ -178,6 +184,7 @@ export default function WatchHome() {
                     onItemSelected={seriesSelected}
                     hideIfEmpty={true}
                 />
+
 
                 <Slider<IMovie>
                     title="Movies stared"
@@ -209,6 +216,7 @@ export default function WatchHome() {
                     onItemSelected={seriesSelected}
                     hideIfEmpty={true}
                 />
+
 
                 <Slider<IMovie>
                     title="Movies you haven't watched"
