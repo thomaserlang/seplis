@@ -41,6 +41,7 @@ from .routes import (
     play_server,
     play_server_user_series_following,
     play_server_user_movies_stared,
+    play_server_user_series_following_missing_episodes,
     genres,
 )
 
@@ -73,8 +74,6 @@ app.include_router(episode_to_watch.router)
 app.include_router(episode_play_servers.router)
 app.include_router(episode_last_watched.router)
 app.include_router(play_server.router)
-app.include_router(play_server_user_series_following.router)
-app.include_router(play_server_user_movies_stared.router)
 app.include_router(genres.router)
 
 

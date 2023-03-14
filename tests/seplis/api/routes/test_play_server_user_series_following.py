@@ -4,7 +4,7 @@ from seplis.api import schemas, models, database
 
 
 @pytest.mark.asyncio
-async def test_play_server(client: AsyncClient):
+async def test_get_play_servers_user_series_following(client: AsyncClient):
     user_id = await user_signin(client)
     r = await client.post('/2/play-servers', json={
         'name': 'Thomas',

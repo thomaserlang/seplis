@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 import sqlalchemy as sa
 from ..dependencies import get_session, AsyncSession
 from .. import models, schemas
 from ... import utils
+from .play_server import router
 
-router = APIRouter(prefix='/2/play-servers/{play_server_id}/user-movies-stared')
 
-@router.get('', response_model=schemas.Page_cursor_result[schemas.Movie])
-async def get_play_servers(
+@router.get('/{play_server_id}/user-movies-stared', response_model=schemas.Page_cursor_result[schemas.Movie])
+async def get_play_server_user_movies_stared(
     play_server_id: str,
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),

@@ -1,13 +1,12 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import Depends
 import sqlalchemy as sa
 from ..dependencies import get_session, AsyncSession
 from .. import models, schemas
 from ... import utils
+from .play_server import router
 
-router = APIRouter(prefix='/2/play-servers/{play_server_id}/user-series-following')
-
-@router.get('', response_model=schemas.Page_cursor_result[schemas.Series])
-async def get_series_following(
+@router.get('/{play_server_id}/user-series-following', response_model=schemas.Page_cursor_result[schemas.Series])
+async def get_play_servers_user_series_following(
     play_server_id: str,
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
