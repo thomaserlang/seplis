@@ -28,7 +28,7 @@ async def get_play_server_series_following_missing_episodes(
         models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
         models.Series.id == models.Episode.series_id,
     ).group_by(
-        models.Episode.number,
+        models.Episode.series_id,
     ).order_by(models.Series.id)
 
     p = await utils.sqlalchemy.paginate_cursor(session=session, query=query, page_query=page_query)
