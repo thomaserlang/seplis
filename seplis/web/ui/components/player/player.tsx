@@ -206,8 +206,17 @@ function VideoPlayer({
 
             <Flex gap="0.5rem">
                 <PlayButton aria-label="Play or pause" icon={paused ? <FaPlay /> : <FaPause />} onClick={() => videoControls.current.togglePlay()} />
-                <PlayButton aria-label="Rewind 15 seconds" icon={<FaUndo />} onClick={() => videoControls.current.setCurrentTime(time - 15)} />
-                <PlayButton aria-label="Forward 15 seconds" icon={<FaRedo />} onClick={() => videoControls.current.setCurrentTime(time + 15)} />
+                <PlayButton aria-label="Rewind 15 seconds" icon={<FaUndo />} onClick={() => {
+                    let t = time - 15
+                    if (t < 0) t = 0
+                    videoControls.current.setCurrentTime(t)
+                }} />
+                <PlayButton aria-label="Forward 15 seconds" icon={<FaRedo />} onClick={() => {
+                    let t = time + 15
+                    if (t > requestSource.source.duration)
+                        t = requestSource.source.duration
+                    videoControls.current.setCurrentTime(t)
+                }} />
                 <VolumeButton videoControls={videoControls.current} />
 
                 <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
