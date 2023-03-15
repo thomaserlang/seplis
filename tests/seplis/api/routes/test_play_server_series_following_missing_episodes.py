@@ -62,6 +62,19 @@ async def test_get_play_server_series_following_missing_episodes(client: AsyncCl
     assert data.items[0].id == series2.id
     assert data.items[1].id == series3.id
 
+    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-following-missing-episodes?per_page=1')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert data.items[0].id == series2.id
+
+    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-following-missing-episodes', params={
+        'per_page': 1,
+        'cursor': data.cursor,
+    })
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert data.items[0].id == series3.id
+    
 
 if __name__ == '__main__':
     run_file(__file__)
