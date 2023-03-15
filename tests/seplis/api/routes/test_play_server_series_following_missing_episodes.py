@@ -40,6 +40,7 @@ async def test_get_play_server_series_following_missing_episodes(client: AsyncCl
 
     await models.Series_follower.follow(series_id=series1.id, user_id=user_id)
     await models.Series_follower.follow(series_id=series2.id, user_id=user_id)
+    await models.Series_follower.follow(series_id=series3.id, user_id=user_id)
     await models.Play_server_episode.save(play_server_id=play_server.id, play_server_secret='a'*20, data=[
         schemas.Play_server_episode_create(
             series_id=series1.id,

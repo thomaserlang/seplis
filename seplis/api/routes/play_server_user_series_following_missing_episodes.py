@@ -27,6 +27,9 @@ async def get_play_server_series_following_missing_episodes(
         models.Play_server_episode.episode_number == None,
         models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
         models.Series.id == models.Episode.series_id,
+        models.Play_server_access.play_server_id == play_server_id,
+        models.Series_follower.user_id == models.Play_server_access.user_id,
+        models.Series_follower.series_id == models.Series.id,
     ).group_by(
         models.Episode.series_id,
     ).order_by(models.Series.id)
