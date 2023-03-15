@@ -4,7 +4,7 @@ from seplis.api import constants, schemas, models
 
 
 @pytest.mark.asyncio
-async def test_user_series_following(client: AsyncClient):
+async def test_user_watched(client: AsyncClient):
     await user_signin(client, [str(constants.LEVEL_USER)])
 
     series1: schemas.Series = await models.Series.save(schemas.Series_create(

@@ -5,7 +5,7 @@ from seplis.api import schemas, models, database
 
 
 @pytest.mark.asyncio
-async def test_get_play_server_series_following_missing_episodes(client: AsyncClient):
+async def test_get_play_server_series_watchlist_missing_episodes(client: AsyncClient):
     user_id = await user_signin(client)
     r = await client.post('/2/play-servers', json={
         'name': 'Thomas',
@@ -38,9 +38,9 @@ async def test_get_play_server_series_following_missing_episodes(client: AsyncCl
         ]
     ), series_id=None)
 
-    await models.Series_follower.follow(series_id=series1.id, user_id=user_id)
-    await models.Series_follower.follow(series_id=series2.id, user_id=user_id)
-    await models.Series_follower.follow(series_id=series3.id, user_id=user_id)
+    await models.Series_watchlist.add(series_id=series1.id, user_id=user_id)
+    await models.Series_watchlist.add(series_id=series2.id, user_id=user_id)
+    await models.Series_watchlist.add(series_id=series3.id, user_id=user_id)
     await models.Play_server_episode.save(play_server_id=play_server.id, play_server_secret='a'*20, data=[
         schemas.Play_server_episode_create(
             series_id=series1.id,
@@ -56,19 +56,19 @@ async def test_get_play_server_series_following_missing_episodes(client: AsyncCl
         ),
     ])
 
-    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-following-missing-episodes')
+    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-watchlist-missing-episodes')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 2
     assert data.items[0].id == series2.id
     assert data.items[1].id == series3.id
 
-    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-following-missing-episodes?per_page=1')
+    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-watchlist-missing-episodes?per_page=1')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert data.items[0].id == series2.id
 
-    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-following-missing-episodes', params={
+    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-watchlist-missing-episodes', params={
         'per_page': 1,
         'cursor': data.cursor,
     })

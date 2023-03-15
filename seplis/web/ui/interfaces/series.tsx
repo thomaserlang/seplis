@@ -74,7 +74,8 @@ export interface ISeries {
     poster_image: IImage | null
     popularity: number | null
     rating: number | null
-    user_following: ISeriesUserFollowing | null
+    user_watchlist: ISeriesWatchlist | null
+    user_favorite: ISeriesFavorite | null
     user_last_episode_watched: IEpisode | null
     user_rating: ISeriesUserRating | null
     user_can_watch: IUserCanWatchEpisode | null
@@ -87,8 +88,14 @@ export interface ISeriesUserStats {
 }
 
 
-export interface ISeriesFollowing {
-    following: boolean
+export interface ISeriesWatchlist {
+    on_watchlist: boolean
+    created_at: string | null
+}
+
+
+export interface ISeriesFavorite {
+    favorite: boolean
     created_at: string | null
 }
 
@@ -116,7 +123,13 @@ export interface ISeriesAirDates {
 }
 
 
-export interface ISeriesUserFollowing {
-    following: boolean
+export interface ISeriesWatchlist {
+    on_watchlist: boolean
+    created_at: string
+}
+
+
+export interface ISeriesFavorite {
+    favorite: boolean
     created_at: string
 }

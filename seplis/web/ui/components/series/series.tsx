@@ -15,9 +15,10 @@ import EpisodeLastWatched from './episode-last-watched'
 import EpisodeNextToAir from './episode-next-to-air'
 import EpisodeToWatch from './episode-to-watch'
 import Episodes from './episodes'
-import FollowingButton from './following-button'
+import WatchlistButton from './watchlist-button'
 import { SeriesUpdate } from './settings'
 import SeriesSkeleton from './skeleton'
+import FavoriteButton from './favorite-button'
 
 
 export function SeriesLoad({ seriesId, onLoaded }: { seriesId: number, onLoaded?: (movie: ISeries) => void }) {
@@ -163,7 +164,8 @@ function Genre({ genre }: { genre: IGenre }) {
 
 function Buttons({ series }: { series: ISeries }) {
     return <Wrap padding="0.25rem 0">
-        <WrapItem><FollowingButton seriesId={series.id} /></WrapItem>
+        <WrapItem><WatchlistButton seriesId={series.id} /></WrapItem>
+        <WrapItem><FavoriteButton seriesId={series.id} /></WrapItem>
         <WrapItem><DisplaySettings series={series} /></WrapItem>
     </Wrap>
 }

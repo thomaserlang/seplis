@@ -14,8 +14,9 @@ from .routes import (
     health,
     movie_watchlist,
     movie_favorite,
-    series_following,
     series_recently_aired,
+    series_watchlist,
+    series_favorite,
     token,
     reset_password,
     search,
@@ -40,9 +41,9 @@ from .routes import (
     episode_play_servers,
     episode_last_watched,
     play_server,
-    play_server_user_series_following,
-    play_server_user_series_following_missing_episodes,
     play_server_user_movie_watchlist,
+    play_server_user_series_watchlist,
+    play_server_user_series_watchlist_missing_episodes,
     genres,
 )
 
@@ -69,7 +70,8 @@ app.include_router(series.router)
 app.include_router(series_user_stats.router)
 app.include_router(series_user_rating.router)
 app.include_router(series_user_settings.router)
-app.include_router(series_following.router)
+app.include_router(series_watchlist.router)
+app.include_router(series_favorite.router)
 app.include_router(episode_watched.router)
 app.include_router(episode_watched_position.router)
 app.include_router(episode_to_watch.router)

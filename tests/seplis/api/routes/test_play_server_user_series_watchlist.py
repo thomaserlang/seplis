@@ -4,7 +4,7 @@ from seplis.api import schemas, models, database
 
 
 @pytest.mark.asyncio
-async def test_get_play_servers_user_series_following(client: AsyncClient):
+async def test_get_play_servers_user_series_watchlist(client: AsyncClient):
     user_id = await user_signin(client)
     r = await client.post('/2/play-servers', json={
         'name': 'Thomas',
@@ -19,10 +19,10 @@ async def test_get_play_servers_user_series_following(client: AsyncClient):
     ), series_id=None)
 
     async with database.database.session() as session:
-        await models.Series_follower.follow(series_id=series.id, user_id=user_id, session=session)
+        await models.Series_watchlist.add(series_id=series.id, user_id=user_id, session=session)
         await session.commit()
 
-    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-following')
+    r = await client.get(f'/2/play-servers/{play_server.id}/user-series-watchlist')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert data.items[0].id == series.id

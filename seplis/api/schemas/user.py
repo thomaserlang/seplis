@@ -81,7 +81,7 @@ class User_series_settings(BaseModel):
 
 
 class User_series_stats(BaseModel):
-    series_following: int
+    series_watchlist: int
     series_watched: int
     series_finished: int
     episodes_watched: int

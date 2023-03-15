@@ -6,8 +6,8 @@ from .base import Base
 from ..dependencies import AsyncSession
 from .. import schemas
 
-class Series_follower(Base):
-    __tablename__ = 'series_followers'
+class Series_watchlist(Base):
+    __tablename__ = 'series_watchlist'
 
     series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True, autoincrement=False)
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'), primary_key=True, autoincrement=False)
@@ -15,8 +15,8 @@ class Series_follower(Base):
 
 
     @auto_session
-    async def follow(series_id: int, user_id: int | str, session: AsyncSession = None):
-        await session.execute(sa.insert(Series_follower).values(
+    async def add(series_id: int, user_id: int | str, session: AsyncSession = None):
+        await session.execute(sa.insert(Series_watchlist).values(
             series_id=series_id,
             user_id=user_id,
             created_at=datetime.now(tz=timezone.utc),
@@ -24,22 +24,22 @@ class Series_follower(Base):
 
 
     @auto_session
-    async def unfollow(series_id: int, user_id: int | str, session: AsyncSession = None):
-        await session.execute(sa.delete(Series_follower).where(
-            Series_follower.series_id == series_id,
-            Series_follower.user_id == user_id,
+    async def remove(series_id: int, user_id: int | str, session: AsyncSession = None):
+        await session.execute(sa.delete(Series_watchlist).where(
+            Series_watchlist.series_id == series_id,
+            Series_watchlist.user_id == user_id,
         ))
 
 
     @auto_session
     async def get(series_id: int, user_id: int | str, session: AsyncSession = None):
-        f = await session.scalar(sa.select(Series_follower.created_at).where(
-            Series_follower.series_id == series_id,
-            Series_follower.user_id == user_id,
+        f = await session.scalar(sa.select(Series_watchlist.created_at).where(
+            Series_watchlist.series_id == series_id,
+            Series_watchlist.user_id == user_id,
         ))
         if f:
-            return schemas.Series_user_following(
-                following=True,
+            return schemas.Series_watchlist(
+                on_watchlist=True,
                 created_at=f,
             )
-        return schemas.Series_user_following()
+        return schemas.Series_watchlist()

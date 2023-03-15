@@ -14,7 +14,7 @@ async def get_series(
     session: AsyncSession=Depends(get_session),
 ):
     result = await asyncio.gather(
-        series_following(session, user.id),
+        series_watchlist(session, user.id),
         series_watched(session, user.id),
         episodes_watched(session, user.id),
         series_finished(session, user.id)
@@ -24,11 +24,11 @@ async def get_series(
         data.update(r)
     return data
 
-async def series_following(session: AsyncSession, user_id: int | str) -> dict[str, int]:
-    count: int = await session.scalar(sa.select(sa.func.count(models.Series_follower.series_id)).where(
-        models.Series_follower.user_id == user_id
+async def series_watchlist(session: AsyncSession, user_id: int | str) -> dict[str, int]:
+    count: int = await session.scalar(sa.select(sa.func.count(models.Series_watchlist.series_id)).where(
+        models.Series_watchlist.user_id == user_id
     ))
-    return {'series_following': count}
+    return {'series_watchlist': count}
 
 
 async def series_watched(session: AsyncSession, user_id: int | str) -> dict[str, int]:

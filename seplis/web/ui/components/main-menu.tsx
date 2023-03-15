@@ -112,7 +112,8 @@ function MenuItems({ active }: { active?: string }) {
             </MenuButton>
             <MenuList>
                 <Link to="/series/home"><MenuItem>Home</MenuItem></Link>
-                <Link to="/series/following"><MenuItem>Following</MenuItem></Link>
+                <Link to="/series/watchlist"><MenuItem>Watchlist</MenuItem></Link>
+                <Link to="/series/favorites"><MenuItem>Favorites</MenuItem></Link>
                 <Link to="/series/watched"><MenuItem>Watched</MenuItem></Link>
                 <MenuItem>Stats</MenuItem>
                 <MenuDivider />

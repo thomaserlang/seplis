@@ -29,9 +29,9 @@ async def test_user_series_to_watch(client: AsyncClient):
     data = schemas.Page_cursor_result[schemas.Series_and_episode].parse_obj(r.json())
     assert len(data.items) == 0
 
-    r = await client.put(f'/2/series/{series1.id}/following')
+    r = await client.put(f'/2/series/{series1.id}/watchlist')
     assert r.status_code == 204, r.content
-    r = await client.put(f'/2/series/{series2.id}/following')
+    r = await client.put(f'/2/series/{series2.id}/watchlist')
     assert r.status_code == 204, r.content
 
     r = await client.post(f'/2/series/{series1.id}/episodes/1/watched')

@@ -53,8 +53,13 @@ class Series_update(Series_create):
     episodes: list[Episode_update] | None
 
 
-class Series_user_following(BaseModel, orm_mode=True):
-    following: bool = False
+class Series_watchlist(BaseModel, orm_mode=True):
+    on_watchlist: bool = False
+    created_at: datetime | None = None
+
+
+class Series_favorite(BaseModel, orm_mode=True):
+    favorite: bool = False
     created_at: datetime | None = None
 
 
@@ -89,7 +94,8 @@ class Series(BaseModel, orm_mode=True):
     popularity: float | None
     rating: float | None
     rating_votes: int | None
-    user_following: Series_user_following | None
+    user_watchlist: Series_watchlist | None
+    user_favorite: Series_favorite | None
     user_last_episode_watched: Episode | None
     user_rating: Series_user_rating | None
     user_can_watch: User_can_watch | None
@@ -101,8 +107,10 @@ class Series_user_stats(BaseModel, orm_mode=True):
 
 
 SERIES_USER_SORT_TYPE = Literal[
-    'user_followed_at_asc', 
-    'user_followed_at_desc', 
+    'user_watchlist_added_at_asc', 
+    'user_watchlist_added_at_desc', 
+    'user_favorite_added_at_asc', 
+    'user_favorite_added_at_desc', 
     'user_rating_asc', 
     'user_rating_desc',
     'user_last_episode_watched_at_asc',
@@ -117,7 +125,8 @@ SERIES_USER_SORT_TYPE = Literal[
 
 
 SERIES_EXPAND = Literal[
-    'user_following',
+    'user_watchlist',
+    'user_favorite',
     'user_can_watch',
     'user_last_episode_watched',
     'user_rating',

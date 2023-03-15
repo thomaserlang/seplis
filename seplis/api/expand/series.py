@@ -10,8 +10,14 @@ async def expand_series(expand: list[str], user: schemas.User, series: list[sche
     if not user:
         raise exceptions.Not_signed_in_exception()
     expand_tasks = []
-    if 'user_following' in expand:
-        expand_tasks.append(expand_user_following(
+    if 'user_watchlist' in expand:
+        expand_tasks.append(expand_user_watchlist(
+            user_id=user.id, 
+            series=series, 
+            session=session
+        ))
+    if 'user_favorite' in expand:
+        expand_tasks.append(expand_user_favorite(
             user_id=user.id, 
             series=series, 
             session=session
@@ -38,21 +44,37 @@ async def expand_series(expand: list[str], user: schemas.User, series: list[sche
         await asyncio.gather(*expand_tasks)
 
 
-async def expand_user_following(user_id: int, series: list[schemas.Series], session: AsyncSession):
+async def expand_user_watchlist(user_id: int, series: list[schemas.Series], session: AsyncSession):
     _series: dict[int, schemas.Series] = {}
     for s in series:
-        s.user_following = schemas.Series_user_following()
+        s.user_watchlist = schemas.Series_watchlist()
         _series[s.id] = s
-    result: list[models.Series_follower] = await session.scalars(sa.select(
-        models.Series_follower,
+    result: list[models.Series_watchlist] = await session.scalars(sa.select(
+        models.Series_watchlist,
     ).where(
-        models.Series_follower.user_id == user_id,
-        models.Series_follower.series_id.in_(set(_series.keys())),
+        models.Series_watchlist.user_id == user_id,
+        models.Series_watchlist.series_id.in_(set(_series.keys())),
     ))
     for s in result:
-        _series[s.series_id].user_following = \
-            schemas.Series_user_following.from_orm(s)
+        _series[s.series_id].user_watchlist = schemas.Series_watchlist.from_orm(s)
+        _series[s.series_id].user_watchlist.on_watchlist = True
 
+
+async def expand_user_favorite(user_id: int, series: list[schemas.Series], session: AsyncSession):
+    _series: dict[int, schemas.Series] = {}
+    for s in series:
+        s.user_favorite = schemas.Series_favorite()
+        _series[s.id] = s
+    result: list[models.Series_favorite] = await session.scalars(sa.select(
+        models.Series_favorite,
+    ).where(
+        models.Series_favorite.user_id == user_id,
+        models.Series_favorite.series_id.in_(set(_series.keys())),
+    ))
+    for s in result:
+        _series[s.series_id].user_favorite = schemas.Series_favorite.from_orm(s)
+        _series[s.series_id].user_favorite.favorite = True
+        
 
 async def expand_user_can_watch(user_id: int, series: list[schemas.Episode], session: AsyncSession):
     _series: dict[int, schemas.Episode] = {}

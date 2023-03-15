@@ -187,24 +187,8 @@ export default function WatchHome() {
 
 
                 <Slider<ISeries>
-                    title="Series following"
-                    url="/2/series?user_following=true&user_can_watch=true&sort=user_followed_at_desc"
-                    parseItem={(series) => (
-                        {
-                            key: `series-${series.id}`,
-                            title: series.title,
-                            img: series.poster_image?.url,
-                        }
-                    )}
-                    onFocus={onRowFocus}
-                    onItemSelected={seriesSelected}
-                    hideIfEmpty={true}
-                />
-
-
-                <Slider<ISeries>
-                    title="Movie favorites"
-                    url="/2/movies?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
+                    title="Series watchlist"
+                    url="/2/series?user_watchlist=true&user_can_watch=true&sort=user_watchlist_added_at_desc"
                     parseItem={(series) => (
                         {
                             key: `series-${series.id}`,
@@ -248,6 +232,39 @@ export default function WatchHome() {
                     onItemSelected={movieSelected}
                     hideIfEmpty={true}
                 />
+
+
+                <Slider<ISeries>
+                    title="Movie favorites"
+                    url="/2/movies?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
+                    parseItem={(series) => (
+                        {
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={seriesSelected}
+                    hideIfEmpty={true}
+                />
+
+
+                <Slider<ISeries>
+                    title="Series favorites"
+                    url="/2/series?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
+                    parseItem={(series) => (
+                        {
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={seriesSelected}
+                    hideIfEmpty={true}
+                />
+
 
             </Stack>
         </FocusContext.Provider>

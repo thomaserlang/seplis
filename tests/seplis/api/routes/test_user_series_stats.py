@@ -32,14 +32,14 @@ async def test_series_user_stats(client: AsyncClient):
     assert data.episodes_watched_minutes == 0
     assert data.series_finished == 0
     assert data.series_watched == 0
-    assert data.series_following == 0
+    assert data.series_watchlist == 0
     
 
-    await client.put(f'/2/series/{series1.id}/following')
+    await client.put(f'/2/series/{series1.id}/watchlist')
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
     data = schemas.User_series_stats.parse_obj(r.json())
-    assert data.series_following == 1
+    assert data.series_watchlist == 1
 
 
     await client.post(f'/2/series/{series1.id}/episodes/1/watched')

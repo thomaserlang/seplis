@@ -1,10 +1,10 @@
 import pytest
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 from seplis.api import constants, schemas, models
-from seplis import logger
+
 
 @pytest.mark.asyncio
-async def test_user_series_following(client: AsyncClient):
+async def test_user_series_watched(client: AsyncClient):
     await user_signin(client, [str(constants.LEVEL_USER)])
 
     series1: schemas.Series = await models.Series.save(schemas.Series_create(

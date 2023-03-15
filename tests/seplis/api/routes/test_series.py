@@ -383,20 +383,20 @@ async def test_series_get(client: AsyncClient):
         ],
     ))
 
-    r = await client.get(f'/2/series?user_following=true')
+    r = await client.get(f'/2/series?user_watchlist=true')
     assert r.status_code == 401
 
     user_id = await user_signin(client, [str(constants.LEVEL_USER)])
 
-    await models.Series_follower.follow(series_id=series1.id, user_id=user_id)
+    await models.Series_watchlist.add(series_id=series1.id, user_id=user_id)
 
-    r = await client.get(f'/2/series?user_following=true')
+    r = await client.get(f'/2/series?user_watchlist=true')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
-    r = await client.get(f'/2/series?user_following=false')
+    r = await client.get(f'/2/series?user_watchlist=false')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
@@ -407,12 +407,12 @@ async def test_series_get(client: AsyncClient):
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 0
 
-    r = await client.get(f'/2/series?expand=user_following')
+    r = await client.get(f'/2/series?expand=user_watchlist')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 2
-    data.items[0].user_following.following == True
-    data.items[1].user_following.following == False
+    data.items[0].user_watchlist.on_watchlist == True
+    data.items[1].user_watchlist.on_watchlist == False
 
     await models.Episode_watched.increment(series_id=series2.id, episode_number=1, user_id=user_id, data=schemas.Episode_watched_increment())
 
