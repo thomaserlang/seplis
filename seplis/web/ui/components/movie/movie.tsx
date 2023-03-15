@@ -3,7 +3,7 @@ import { Text, Box, Button, Heading, Link, Modal, ModalBody, ModalCloseButton, M
 import { IMovie } from '@seplis/interfaces/movie'
 import { Poster } from '../poster'
 import { langCodeToLang, secondsToHourMin } from '../../utils'
-import StaredButton from './stared-button'
+import WatchlistButton from './watchlist-button'
 import { IGenre } from '@seplis/interfaces/genre'
 import { FaCog } from 'react-icons/fa'
 import { MovieUpdate } from './settings'
@@ -17,6 +17,7 @@ import { useQuery } from '@tanstack/react-query'
 import { MovieSkeleton } from './skeleton'
 import ChromecastControls from '../player/chromecast-controls'
 import MovieCollection from './collection'
+import FavoriteButton from './favorite-button'
 
 
 export function MovieLoad({ movieId, onLoaded }: { movieId: number, onLoaded?: (movie: IMovie) => void }) {
@@ -76,7 +77,8 @@ function Buttons({ movie }: { movie: IMovie }) {
     return <Wrap padding="0.25rem 0">
         <WrapItem><PlayButton movieId={movie.id} /></WrapItem>
         <WrapItem><MovieWatchedButton movieId={movie.id} /></WrapItem>
-        <WrapItem><StaredButton movieId={movie.id} /></WrapItem>
+        <WrapItem><WatchlistButton movieId={movie.id} /></WrapItem>
+        <WrapItem><FavoriteButton movieId={movie.id} /></WrapItem>
         <WrapItem><DisplaySettings movie={movie} /></WrapItem>
     </Wrap>
 }

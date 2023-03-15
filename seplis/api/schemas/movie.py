@@ -51,9 +51,14 @@ class Movie_watched(BaseModel, orm_mode=True):
     watched_at: datetime | None = None
 
 
-class Movie_stared(BaseModel, orm_mode=True):
+class Movie_watchlist(BaseModel, orm_mode=True):
     created_at: datetime | None = None
-    stared = False
+    on_watchlist = False
+
+
+class Movie_favorite(BaseModel, orm_mode=True):
+    created_at: datetime | None = None
+    favorite = False
 
 
 class Movie(BaseModel, orm_mode=True):
@@ -77,12 +82,15 @@ class Movie(BaseModel, orm_mode=True):
     genres: list[Genre]
     collection: Movie_collection | None
     user_watched: Movie_watched | None
-    user_stared: Movie_stared | None
+    user_watchlist: Movie_watchlist | None
+    user_favorite: Movie_favorite | None
 
 
 MOVIE_USER_SORT_TYPE = Literal[
-    'user_stared_at_asc',
-    'user_stared_at_desc',
+    'user_watchlist_added_at_asc',
+    'user_watchlist_added_at_desc',
+    'user_favorite_added_at_asc',
+    'user_favorite_added_at_desc',
     'user_last_watched_at_asc',
     'user_last_watched_at_desc',
     'rating_asc',
@@ -97,7 +105,8 @@ MOVIE_USER_SORT_TYPE = Literal[
 
 
 MOVIE_EXPAND = Literal[
-    'user_stared',
+    'user_watchlist',
+    'user_favorite',
     'user_can_watch',
     'user_rating',
     'user_watched',

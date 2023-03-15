@@ -12,6 +12,8 @@ set_logger(f'api-{config.data.api.port}.log')
 
 from .routes import (
     health,
+    movie_watchlist,
+    movie_favorite,
     series_following,
     series_recently_aired,
     token,
@@ -26,7 +28,6 @@ from .routes import (
     movie,
     movie_watched,
     movie_watched_position,
-    movie_stared,
     movie_play_servers,
     series,
     series_user_settings,
@@ -40,8 +41,8 @@ from .routes import (
     episode_last_watched,
     play_server,
     play_server_user_series_following,
-    play_server_user_movies_stared,
     play_server_user_series_following_missing_episodes,
+    play_server_user_movie_watchlist,
     genres,
 )
 
@@ -61,7 +62,8 @@ app.include_router(user_watched.router)
 app.include_router(movie.router)
 app.include_router(movie_watched.router)
 app.include_router(movie_watched_position.router)
-app.include_router(movie_stared.router)
+app.include_router(movie_watchlist.router)
+app.include_router(movie_favorite.router)
 app.include_router(movie_play_servers.router)
 app.include_router(series.router)
 app.include_router(series_user_stats.router)

@@ -89,6 +89,22 @@ export default function WatchHome() {
                 />
 
 
+                <Slider<IMovie>
+                    title="Movie watchlist"
+                    url="/2/movies?user_watchlist=true&user_can_watch=true&sort=user_watchlist_added_at_desc"
+                    parseItem={(movie) => (
+                        {
+                            key: `movie-${movie.id}`,
+                            title: movie.title,
+                            img: movie.poster_image?.url,
+                        }
+                    )}
+                    onFocus={onRowFocus}
+                    onItemSelected={movieSelected}
+                    hideIfEmpty={true}
+                />
+
+
                 <Slider<ISeries>
                     title="Series recently added"
                     url="/2/series?user_can_watch=true&sort=user_play_server_series_added_desc"
@@ -186,18 +202,18 @@ export default function WatchHome() {
                 />
 
 
-                <Slider<IMovie>
-                    title="Movies stared"
-                    url="/2/movies?user_stared=true&user_can_watch=true&sort=user_stared_at_desc"
-                    parseItem={(movie) => (
+                <Slider<ISeries>
+                    title="Movie favorites"
+                    url="/2/movies?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
+                    parseItem={(series) => (
                         {
-                            key: `movie-${movie.id}`,
-                            title: movie.title,
-                            img: movie.poster_image?.url,
+                            key: `series-${series.id}`,
+                            title: series.title,
+                            img: series.poster_image?.url,
                         }
                     )}
                     onFocus={onRowFocus}
-                    onItemSelected={movieSelected}
+                    onItemSelected={seriesSelected}
                     hideIfEmpty={true}
                 />
 

@@ -1,7 +1,7 @@
 import { StarIcon } from '@chakra-ui/icons'
 import { Button, useToast } from '@chakra-ui/react'
 import api from '@seplis/api'
-import { IMovieStared } from '@seplis/interfaces/movie'
+import { IMovieFavorite, IMovieWatchlist } from '@seplis/interfaces/movie'
 import { isAuthed } from '@seplis/utils'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ErrorMessageFromResponse } from '../error'
@@ -12,19 +12,19 @@ interface IProps {
     movieId: number
 }
 
-export default function StaredButton({ movieId }: IProps) {
+export default function WatchlistButton({ movieId }: IProps) {
     const toast = useToast()
     const queryClient = useQueryClient()
 
-    const toggleStared = useMutation(async (stared: boolean) => {
-        await queryClient.cancelQueries(['movie', 'stared-button', movieId])
-        let data: IMovieStared
-        if (stared) {
-            data = await api.delete(`/2/movies/${movieId}/stared`)
+    const toggleWatchlist = useMutation(async (favorite: boolean) => {
+        await queryClient.cancelQueries(['movie', 'favorite-button', movieId])
+        let data: IMovieWatchlist
+        if (favorite) {
+            data = await api.delete(`/2/movies/${movieId}/favorite`)
         } else {
-            data = await api.put(`/2/movies/${movieId}/stared`)
+            data = await api.put(`/2/movies/${movieId}/favorite`)
         }
-        queryClient.setQueryData(['movie', 'stared-button', movieId], { stared: !stared })
+        queryClient.setQueryData(['movie', 'favorite-button', movieId], { favorite: !favorite })
     }, {
         onError: (e) => {
             toast({
@@ -36,16 +36,14 @@ export default function StaredButton({ movieId }: IProps) {
         }
     })
 
-    const { isInitialLoading, data } = useQuery(['movie', 'stared-button', movieId], async () => {
-        if (!isAuthed())
-            return
-        const result = await api.get<IMovieStared>(`/2/movies/${movieId}/stared`)
+    const { isInitialLoading, data } = useQuery(['movie', 'favorite-button', movieId], async () => {
+        const result = await api.get<IMovieFavorite>(`/2/movies/${movieId}/favorite`)
         return result.data
     }, {
         enabled: isAuthed(),
     })
     const handleClick = async () => {
-        toggleStared.mutate(data.stared)
+        toggleWatchlist.mutate(data.favorite)
     }
     const { ref, focused } = useFocusable({
         onEnterPress: () => handleClick()
@@ -53,12 +51,12 @@ export default function StaredButton({ movieId }: IProps) {
 
     return <Button
         ref={ref}
-        isLoading={isInitialLoading || toggleStared.isLoading}
-        colorScheme={data?.stared ? 'green' : null}
+        isLoading={isInitialLoading || toggleWatchlist.isLoading}
+        colorScheme={data?.favorite ? 'blue' : null}
         onClick={handleClick}
         leftIcon={<StarIcon />}
         style={focused ? focusedBorder : null}
     >
-        {data?.stared ? 'Stared' : 'Star'}
+        Favorite
     </Button>
 }

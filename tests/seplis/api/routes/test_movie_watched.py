@@ -7,11 +7,13 @@ from datetime import datetime, timezone
 @freeze_time(datetime(2022, 6, 5, 13, 0, tzinfo=timezone.utc))
 @pytest.mark.asyncio
 async def test_movie_watched(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_USER)])
+    user_id = await user_signin(client, [str(constants.LEVEL_USER)])
 
-    movie: schemas.Movie = await models.Movie.save(schemas.Movie_create(
+    movie = await models.Movie.save(schemas.Movie_create(
         title='Movie',
     ), movie_id=None)
+
+    await models.Movie_watchlist.add(user_id, movie.id)
 
     r = await client.get(f'/2/movies/{movie.id}/watched')
     data = schemas.Movie_watched.parse_obj(r.json())
@@ -39,6 +41,10 @@ async def test_movie_watched(client: AsyncClient):
     data = schemas.Movie_watched.parse_obj(r.json())
     assert data.times == 2
     assert data.watched_at == datetime(2022, 6, 5, 20, 0, tzinfo=timezone.utc), data.watched_at
+    
+    r = await client.get(f'/2/movies?user_watchlist=true')
+    assert r.status_code == 200
+    assert len(r.json()['items']) == 0
 
     r = await client.post(f'/2/movies/{movie.id}/watched', json={
         'watched_at': '2022-06-05T21:00:00Z',

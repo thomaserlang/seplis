@@ -40,16 +40,14 @@ export function IMovieWatchedDefault(EpisodeNumber: number): IMovieWatched {
 }
 
 
-export interface IMovieStared {
-    stared: boolean
+export interface IMovieWatchlist {
+    on_watchlist: boolean
     created_at: string
 }
 
-
-export interface IMovieUser {
-    movie: IMovie
-    stared: boolean
-    watched_data: IMovieWatched
+export interface IMovieFavorite {
+    favorite: boolean
+    created_at: string
 }
 
 

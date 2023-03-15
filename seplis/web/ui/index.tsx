@@ -81,7 +81,7 @@ import SeriesHome from './pages/series/home'
 import MoviesHome from './pages/movies/home'
 import SeriesFollowing from './pages/series/following'
 import SeriesWatched from './pages/series/watched'
-import MoviesStared from './pages/movies/stared'
+import MovieWatchlist from './pages/movies/watchlist'
 import MoviesWatched from './pages/movies/watched'
 import PlayEpisode from './pages/series/play-episode'
 import PlayMovie from './pages/movies/play'
@@ -90,6 +90,7 @@ import { Logout } from './pages/logout'
 import SendResetPassword from './pages/send-reset-password'
 import ResetPassword from './pages/reset-password'
 import WatchHome from './pages/watch/home'
+import MovieFavorites from './pages/movies/favorites'
 
 spatialInit({})
 
@@ -117,7 +118,8 @@ function App() {
             <Route path="/reset-password" element={<SendResetPassword />} />
             <Route path="/reset-password/:key" element={<ResetPassword />} />
             <Route path="/movies/home" element={<MoviesHome />} />
-            <Route path="/movies/stared" element={<MoviesStared />} />
+            <Route path="/movies/watchlist" element={<MovieWatchlist />} />
+            <Route path="/movies/favorites" element={<MovieFavorites />} />
             <Route path="/movies/watched" element={<MoviesWatched />} />
             <Route path="/movies/:movieId" element={<Movie />} />
             <Route path="/movies/:movieId/play" element={<PlayMovie />} />

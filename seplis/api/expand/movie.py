@@ -10,8 +10,14 @@ async def expand_movies(expand: list[str], user: schemas.User_authenticated, mov
     if not user:
         raise exceptions.Not_signed_in_exception()
     expand_tasks = []
-    if 'user_stared' in expand:
-        expand_tasks.append(expand_user_stared(
+    if 'user_watchlist' in expand:
+        expand_tasks.append(expand_user_watchlist(
+            user_id=user.id,
+            movies=movies,
+            session=session
+        ))
+    if 'user_favorite' in expand:
+        expand_tasks.append(expand_user_favorite(
             user_id=user.id,
             movies=movies,
             session=session
@@ -26,21 +32,37 @@ async def expand_movies(expand: list[str], user: schemas.User_authenticated, mov
         await asyncio.gather(*expand_tasks)
 
 
-async def expand_user_stared(user_id: int, movies: list[schemas.Movie], session: AsyncSession):
+async def expand_user_watchlist(user_id: int, movies: list[schemas.Movie], session: AsyncSession):
     _movies: dict[int, schemas.Movie] = {}
     for s in movies:
-        s.user_stared = schemas.Movie_stared()
+        s.user_watchlist = schemas.Movie_watchlist()
         _movies[s.id] = s
-    result: list[models.Movie_stared] = await session.scalars(sa.select(
-        models.Movie_stared,
+    result: list[models.Movie_watchlist] = await session.scalars(sa.select(
+        models.Movie_watchlist,
     ).where(
-        models.Movie_stared.user_id == user_id,
-        models.Movie_stared.movie_id.in_(set(_movies.keys())),
+        models.Movie_watchlist.user_id == user_id,
+        models.Movie_watchlist.movie_id.in_(set(_movies.keys())),
     ))
     for s in result:
-        _movies[s.movie_id].user_stared = \
-            schemas.Movie_stared.from_orm(s)
+        _movies[s.movie_id].user_watchlist = schemas.Movie_watchlist.from_orm(s)
+        _movies[s.movie_id].user_watchlist.on_watchlist = True
 
+
+async def expand_user_favorite(user_id: int, movies: list[schemas.Movie], session: AsyncSession):
+    _movies: dict[int, schemas.Movie] = {}
+    for s in movies:
+        s.user_favorite = schemas.Movie_favorite()
+        _movies[s.id] = s
+    result: list[models.Movie_favorite] = await session.scalars(sa.select(
+        models.Movie_favorite,
+    ).where(
+        models.Movie_favorite.user_id == user_id,
+        models.Movie_favorite.movie_id.in_(set(_movies.keys())),
+    ))
+    for s in result:
+        _movies[s.movie_id].user_favorite = schemas.Movie_favorite.from_orm(s)
+        _movies[s.movie_id].user_favorite.favorite = True
+        
 
 async def expand_user_watched(user_id: int, movies: list[schemas.Movie], session: AsyncSession):
     _movies: dict[int, schemas.Movie] = {}

@@ -132,7 +132,8 @@ function MenuItems({ active }: { active?: string }) {
             </MenuButton>
             <MenuList>
                 <Link to="/movies/home"><MenuItem>Home</MenuItem></Link>
-                <Link to="/movies/stared"><MenuItem>Stared</MenuItem></Link>
+                <Link to="/movies/watchlist"><MenuItem>Watchlist</MenuItem></Link>
+                <Link to="/movies/favorites"><MenuItem>Favorites</MenuItem></Link>
                 <Link to="/movies/watched"><MenuItem>Watched</MenuItem></Link>
                 <MenuDivider />
                 <MovieNewMenuItem />

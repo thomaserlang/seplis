@@ -7,6 +7,7 @@ from seplis import utils
 from seplis.utils.sqlalchemy import UtcDateTime
 from .genre import Genre
 from .movie_collection import Movie_collection
+from .movie_watchlist import Movie_watchlist
 from .base import Base
 from ..database import auto_session, database
 from .. import schemas, exceptions
@@ -227,162 +228,164 @@ class Movie_watched(Base):
     watched_at = sa.Column(UtcDateTime, nullable=False)
 
     @staticmethod
-    async def increment(user_id: int | str, movie_id: int, data: schemas.Movie_watched_increment):
-        async with database.session() as session:
-            watched = sa.dialects.mysql.insert(Movie_watched).values(
-                movie_id=movie_id,
-                user_id=user_id,
-                watched_at=data.watched_at.astimezone(timezone.utc),
-                times=1
-            )
-            watched = watched.on_duplicate_key_update(
-                watched_at=watched.inserted.watched_at,
-                times=Movie_watched.times + 1,
-                position=0,
-            )
-            watched_history = sa.insert(Movie_watched_history).values(
-                movie_id=movie_id,
-                user_id=user_id,
-                watched_at=data.watched_at.astimezone(timezone.utc),
-            )
+    @auto_session
+    async def increment(user_id: int | str, movie_id: int, data: schemas.Movie_watched_increment, session: AsyncSession = None):
+        watched = sa.dialects.mysql.insert(Movie_watched).values(
+            movie_id=movie_id,
+            user_id=user_id,
+            watched_at=data.watched_at.astimezone(timezone.utc),
+            times=1
+        )
+        watched = watched.on_duplicate_key_update(
+            watched_at=watched.inserted.watched_at,
+            times=Movie_watched.times + 1,
+            position=0,
+        )
+        watched_history = sa.insert(Movie_watched_history).values(
+            movie_id=movie_id,
+            user_id=user_id,
+            watched_at=data.watched_at.astimezone(timezone.utc),
+        )
 
-            await session.execute(watched)
-            await session.execute(watched_history)
-            w = await session.scalar(sa.select(Movie_watched).where(
-                Movie_watched.movie_id == movie_id,
-                Movie_watched.user_id == user_id,
-            ))
-            await session.commit()
-            return schemas.Movie_watched.from_orm(w)
+        await session.execute(watched)
+        await session.execute(watched_history)
+        await session.execute(sa.delete(Movie_watchlist).where(
+            Movie_watchlist.user_id == user_id,
+            Movie_watchlist.movie_id == movie_id,
+        ))
+        w = await session.scalar(sa.select(Movie_watched).where(
+            Movie_watched.movie_id == movie_id,
+            Movie_watched.user_id == user_id,
+        ))
+        return schemas.Movie_watched.from_orm(w)
+
 
     @staticmethod
-    async def decrement(user_id: int | str, movie_id: int):
-        async with database.session() as session:
-            w = await session.scalar(sa.select(Movie_watched).where(
-                Movie_watched.movie_id == movie_id,
-                Movie_watched.user_id == user_id,
-            ))
-            if not w:
-                return
-            if w.times <= 1:
-                await asyncio.gather(
-                    session.execute(sa.delete(Movie_watched).where(
-                        Movie_watched.movie_id == movie_id,
-                        Movie_watched.user_id == user_id,
-                    )),
-                    session.execute(sa.delete(Movie_watched_history).where(
-                        Movie_watched_history.movie_id == movie_id,
-                        Movie_watched_history.user_id == user_id,
-                    )),
-                )
-                await session.commit()
-                return
+    @auto_session
+    async def decrement(user_id: int | str, movie_id: int, session: AsyncSession = None):
+        w = await session.scalar(sa.select(Movie_watched).where(
+            Movie_watched.movie_id == movie_id,
+            Movie_watched.user_id == user_id,
+        ))
+        if not w:
+            return
+        if w.times <= 1:
+            await asyncio.gather(
+                session.execute(sa.delete(Movie_watched).where(
+                    Movie_watched.movie_id == movie_id,
+                    Movie_watched.user_id == user_id,
+                )),
+                session.execute(sa.delete(Movie_watched_history).where(
+                    Movie_watched_history.movie_id == movie_id,
+                    Movie_watched_history.user_id == user_id,
+                )),
+            )
+            await session.commit()
+            return
+        else:
+            if w.position > 0:
+                watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
+                    Movie_watched_history.movie_id == movie_id,
+                    Movie_watched_history.user_id == user_id,
+                ).order_by(
+                    Movie_watched_history.watched_at.desc()
+                ).limit(1))
+                await session.execute(sa.update(Movie_watched).where(
+                    Movie_watched.movie_id == movie_id,
+                    Movie_watched.user_id == user_id,
+                ).values(
+                    position=0,
+                    watched_at=watched_at,
+                ))
             else:
-                if w.position > 0:
-                    watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
-                        Movie_watched_history.movie_id == movie_id,
-                        Movie_watched_history.user_id == user_id,
-                    ).order_by(
-                        Movie_watched_history.watched_at.desc()
-                    ).limit(1))
-                    await session.execute(sa.update(Movie_watched).where(
-                        Movie_watched.movie_id == movie_id,
-                        Movie_watched.user_id == user_id,
-                    ).values(
-                        position=0,
-                        watched_at=watched_at,
-                    ))
-                else:
-                    id_ = await session.scalar(sa.select(Movie_watched_history.id).where(
-                        Movie_watched_history.movie_id == movie_id,
-                        Movie_watched_history.user_id == user_id,
-                    ).order_by(
-                        Movie_watched_history.watched_at.desc()
-                    ).limit(1))
-                    await session.execute(sa.delete(Movie_watched_history).where(
-                        Movie_watched_history.id == id_,
-                    ))
-                    watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
-                        Movie_watched_history.movie_id == movie_id,
-                        Movie_watched_history.user_id == user_id,
-                    ).order_by(
-                        Movie_watched_history.watched_at.desc()
-                    ).limit(1))
-                    await session.execute(sa.update(Movie_watched).where(
-                        Movie_watched.movie_id == movie_id,
-                        Movie_watched.user_id == user_id,
-                    ).values(
-                        times=Movie_watched.times - 1,
-                        position=0,
-                        watched_at=watched_at,
-                    ))
+                id_ = await session.scalar(sa.select(Movie_watched_history.id).where(
+                    Movie_watched_history.movie_id == movie_id,
+                    Movie_watched_history.user_id == user_id,
+                ).order_by(
+                    Movie_watched_history.watched_at.desc()
+                ).limit(1))
+                await session.execute(sa.delete(Movie_watched_history).where(
+                    Movie_watched_history.id == id_,
+                ))
+                watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
+                    Movie_watched_history.movie_id == movie_id,
+                    Movie_watched_history.user_id == user_id,
+                ).order_by(
+                    Movie_watched_history.watched_at.desc()
+                ).limit(1))
+                await session.execute(sa.update(Movie_watched).where(
+                    Movie_watched.movie_id == movie_id,
+                    Movie_watched.user_id == user_id,
+                ).values(
+                    times=Movie_watched.times - 1,
+                    position=0,
+                    watched_at=watched_at,
+                ))
 
-            w = await session.scalar(sa.select(Movie_watched).where(
-                Movie_watched.movie_id == movie_id,
-                Movie_watched.user_id == user_id,
-            ))
-            await session.commit()
-            return schemas.Movie_watched.from_orm(w)
+        w = await session.scalar(sa.select(Movie_watched).where(
+            Movie_watched.movie_id == movie_id,
+            Movie_watched.user_id == user_id,
+        ))
+        return schemas.Movie_watched.from_orm(w)
+
 
     @staticmethod
-    async def set_position(user_id: int | str, movie_id: int, position: int):
+    @auto_session
+    async def set_position(user_id: int | str, movie_id: int, position: int, session: AsyncSession = None):
         if position == 0:
             await Movie_watched.reset_position(user_id=user_id, movie_id=movie_id)
             return
-        async with database.session() as session:
-            sql = sa.dialects.mysql.insert(Movie_watched).values(
-                movie_id=movie_id,
-                user_id=user_id,
-                watched_at=datetime.now(tz=timezone.utc),
-                position=position,
-            )
-            sql = sql.on_duplicate_key_update(
-                watched_at=sql.inserted.watched_at,
-                position=sql.inserted.position,
-            )
-            await session.execute(sql)
-            await session.commit()
+        sql = sa.dialects.mysql.insert(Movie_watched).values(
+            movie_id=movie_id,
+            user_id=user_id,
+            watched_at=datetime.now(tz=timezone.utc),
+            position=position,
+        )
+        sql = sql.on_duplicate_key_update(
+            watched_at=sql.inserted.watched_at,
+            position=sql.inserted.position,
+        )
+        await session.execute(sql)
+
 
     @staticmethod
-    async def reset_position(user_id: int | str, movie_id: int):
-        async with database.session() as session:
-            w = await session.scalar(sa.select(Movie_watched).where(
-                Movie_watched.movie_id == movie_id,
-                Movie_watched.user_id == user_id,
-            ))
-            if not w:
-                return
-            if w.times < 1:
-                await asyncio.gather(
-                    session.execute(sa.delete(Movie_watched).where(
-                        Movie_watched.movie_id == movie_id,
-                        Movie_watched.user_id == user_id,
-                    )),
-                    session.execute(sa.delete(Movie_watched_history).where(
-                        Movie_watched_history.movie_id == movie_id,
-                        Movie_watched_history.user_id == user_id,
-                    )),
-                )
-                await session.commit()
-                return
+    @auto_session
+    async def reset_position(user_id: int | str, movie_id: int, session: AsyncSession = None):
+        w = await session.scalar(sa.select(Movie_watched).where(
+            Movie_watched.movie_id == movie_id,
+            Movie_watched.user_id == user_id,
+        ))
+        if not w:
+            return
+        if w.times < 1:
+            await asyncio.gather(
+                session.execute(sa.delete(Movie_watched).where(
+                    Movie_watched.movie_id == movie_id,
+                    Movie_watched.user_id == user_id,
+                )),
+                session.execute(sa.delete(Movie_watched_history).where(
+                    Movie_watched_history.movie_id == movie_id,
+                    Movie_watched_history.user_id == user_id,
+                )),
+            )
+            return
+        else:
+            if w.position > 0:
+                watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
+                    Movie_watched_history.movie_id == movie_id,
+                    Movie_watched_history.user_id == user_id,
+                ).order_by(
+                    Movie_watched_history.watched_at.desc()
+                ).limit(1))
+                await session.execute(sa.update(Movie_watched).where(
+                    Movie_watched.movie_id == movie_id,
+                    Movie_watched.user_id == user_id,
+                ).values(
+                    position=0,
+                    watched_at=watched_at,
+                ))
             else:
-                if w.position > 0:
-                    watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
-                        Movie_watched_history.movie_id == movie_id,
-                        Movie_watched_history.user_id == user_id,
-                    ).order_by(
-                        Movie_watched_history.watched_at.desc()
-                    ).limit(1))
-                    await session.execute(sa.update(Movie_watched).where(
-                        Movie_watched.movie_id == movie_id,
-                        Movie_watched.user_id == user_id,
-                    ).values(
-                        position=0,
-                        watched_at=watched_at,
-                    ))
-                    await session.commit()
-                else:
-                    return
+                return
 
 
 class Movie_watched_history(Base):
@@ -393,34 +396,6 @@ class Movie_watched_history(Base):
     user_id = sa.Column(sa.Integer, sa.ForeignKey('users.id'))
     watched_at = sa.Column(UtcDateTime)
 
-
-class Movie_stared(Base):
-    __tablename__ = 'movies_stared'
-
-    movie_id = sa.Column(sa.Integer, sa.ForeignKey(
-        'movies.id'), primary_key=True, autoincrement=False)
-    user_id = sa.Column(sa.Integer, sa.ForeignKey(
-        'users.id'), primary_key=True, autoincrement=False)
-    created_at = sa.Column(UtcDateTime, nullable=False)
-
-    @staticmethod
-    async def set_stared(user_id: int | str, movie_id: int):
-        async with database.session() as session:
-            await session.execute(sa.insert(Movie_stared).values(
-                movie_id=movie_id,
-                user_id=user_id,
-                created_at=datetime.now(tz=timezone.utc),
-            ).prefix_with('IGNORE'))
-            await session.commit()
-
-    @staticmethod
-    async def remove_stared(user_id: int | str, movie_id: int):
-        async with database.session() as session:
-            await session.execute(sa.delete(Movie_stared).where(
-                Movie_stared.movie_id == movie_id,
-                Movie_stared.user_id == user_id,
-            ))
-            await session.commit()
 
 
 class Movie_genre(Base):

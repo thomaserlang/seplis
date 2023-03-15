@@ -4,17 +4,17 @@ import MovieUserList from '@seplis/components/movie/user-list'
 import { setTitle } from '@seplis/utils'
 import { useEffect } from 'react'
 
-export default function MoviesStared() {
+export default function MovieFavorites() {
     useEffect(() => {
-        setTitle('Movies Stared')
+        setTitle('Movie Favorites')
     }, [])
 
     return <>
         <MainMenu active="movies" />
         <Box margin="1rem">
             <MovieUserList
-                title="Movies Stared"
-                url="/2/movies?user_stared=true&sort=user_stared_at_desc"
+                title="Movie favorites"
+                url="/2/movies?user_favorites=true&sort=user_favorite_added_at_desc"
             />
         </Box>
     </>

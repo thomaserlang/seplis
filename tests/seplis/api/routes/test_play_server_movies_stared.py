@@ -18,9 +18,9 @@ async def test_play_server(client: AsyncClient):
         title='Test',
     ), movie_id=None)
 
-    await models.Movie_stared.set_stared(user_id=user_id, movie_id=movie.id)
+    await models.Movie_watchlist.add(user_id=user_id, movie_id=movie.id)
 
-    r = await client.get(f'/2/play-servers/{play_server.id}/user-movies-stared')
+    r = await client.get(f'/2/play-servers/{play_server.id}/users-movie-watchlist')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
     assert data.items[0].id == movie.id

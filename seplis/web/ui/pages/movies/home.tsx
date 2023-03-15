@@ -54,8 +54,8 @@ export default function MoviesHome() {
                 />
 
                 <Slider<IMovie>
-                    title="Stared"
-                    url="/2/movies?user_stared=true&sort=user_stared_at_desc"
+                    title="Watchlist"
+                    url="/2/movies?user_watchlist=true&sort=user_watchlist_added_at_desc"
                     parseItem={(movie) => (
                         {
                             key: `movie-${movie.id}`,
