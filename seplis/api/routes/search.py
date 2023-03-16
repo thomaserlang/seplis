@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter
 from pydantic import constr
 from typing import Literal
@@ -39,7 +40,7 @@ async def search(
             for a in r['hits']['hits']]
 
 
-def get_by_query(query: str):
+def get_by_query(title: str):
     return {
         'function_score': {
             'query': {
@@ -49,41 +50,27 @@ def get_by_query(query: str):
                             'nested': {
                                 'path': 'titles',
                                 'query': {
-                                    'bool': {
-                                        'should': [
-                                            {'multi_match': {
-                                                'boost': 4,
-                                                'query': query,
-                                                'type': 'phrase_prefix',
-                                                'fields': [
-                                                    'titles.title',
-                                                    'titles.title._2gram',
-                                                    'titles.title._3gram',
-                                                ]
-                                            }},
-                                            {'multi_match': {
-                                                'query': query,
-                                                'type': 'bool_prefix',
-                                                'fields': [
-                                                    'titles.title',
-                                                    'titles.title._2gram',
-                                                    'titles.title._3gram',
-                                                ]
-                                            }},
-                                        ]
+                                    'multi_match': {
+                                        'query': title,
+                                        'type': 'bool_prefix',
+                                        'operator': 'and',
+                                        'fields': [
+                                            'titles.title',
+                                            'titles.title._2gram',
+                                            'titles.title._3gram',
+                                        ],
                                     }
-                                }
+                                },
                             }
                         },
-                        {'term': {'imdb': query}},
+                        {'term': {'imdb': title}},
                     ]
                 }
             },
-            "field_value_factor": {
-                "field": "popularity",
-                "factor": 1.2,
-                "modifier": "sqrt",
-                "missing": 0,
+            'field_value_factor': {
+                'field': 'popularity',
+                'modifier': 'log1p',
+                'factor': 2,
             }
         }
     }
@@ -91,24 +78,19 @@ def get_by_query(query: str):
 
 def get_by_title(title: str):
     return {
-        'function_score': {
-            'query': {
-                'dis_max': {
-                    'queries': [
-                        {'nested': {
-                            'path': 'titles',
-                            'query':
-                            {'match_phrase': {'titles.title': title}},
-                        }},
-                        {'term': {'imdb': title}},
-                    ]
-                }
-            },
-            "field_value_factor": {
-                "field": "popularity",
-                "factor": 1.2,
-                "modifier": "sqrt",
-                "missing": 0,
-            }
+        'dis_max': {
+            'queries': [
+                {'nested': {
+                    'path': 'titles',
+                    'query': {
+                        'match_phrase': {
+                            'titles.title': {
+                                'query': title,
+                            }
+                        }
+                    },
+                }},
+                {'term': {'imdb': title}},
+            ]
         }
     }
