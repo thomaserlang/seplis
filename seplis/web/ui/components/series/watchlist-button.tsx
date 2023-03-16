@@ -6,7 +6,7 @@ import { ErrorMessageFromResponse } from '../error'
 import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { focusedBorder } from '@seplis/styles'
 import { ISeriesWatchlist } from '@seplis/interfaces/series'
-import { FaClipboardList } from 'react-icons/fa'
+import { FaBookmark } from 'react-icons/fa'
 
 
 export default function WatchlistButton({ seriesId }: { seriesId: number }) {
@@ -52,7 +52,7 @@ export default function WatchlistButton({ seriesId }: { seriesId: number }) {
         isLoading={isInitialLoading || toggleWatchlist.isLoading}
         colorScheme={data?.on_watchlist ? 'yellow' : null}
         onClick={handleClick}
-        leftIcon={<FaClipboardList />}
+        leftIcon={<FaBookmark />}
         style={focused ? focusedBorder : null}
     >
         Watchlist

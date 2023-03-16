@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { ErrorMessageFromResponse } from '../error'
 import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { focusedBorder } from '@seplis/styles'
-import { FaClipboardList } from 'react-icons/fa'
+import { FaBookmark } from 'react-icons/fa'
 import { EVENT_MOVIE_WATCHED, useEventListener } from '@seplis/events'
 
 interface IProps {
@@ -60,7 +60,7 @@ export default function WatchlistButton({ movieId }: IProps) {
         isLoading={isInitialLoading || toggleWatchlist.isLoading}
         colorScheme={data?.on_watchlist ? 'yellow' : null}
         onClick={handleClick}
-        leftIcon={<FaClipboardList />}
+        leftIcon={<FaBookmark />}
         style={focused ? focusedBorder : null}
     >
         Watchlist
