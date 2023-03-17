@@ -116,6 +116,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                         console.log('hls.js fatal media error encountered, try to recover')
                         hls.current.swapAudioCodec()
                         hls.current.recoverMediaError()
+                        videoElement.current.play()
                         break
                 }
             })
