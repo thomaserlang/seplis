@@ -83,6 +83,15 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             startTime: Math.round(baseTime.current),
         })
 
+        const recover = () => {
+            baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
+            if (onPause) onPause()
+            if (videoElement.current.paused)
+                setSessionUUID(null)
+            else
+                setSessionUUID(uuidv4())
+        }
+
         if (!Hls.isSupported()) {
             videoElement.current.src = url
             videoElement.current.load()
@@ -102,13 +111,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             hls.current.on(Hls.Events.ERROR, (e, data) => {
                 switch (data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
-                        baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
-                        if (onPause) onPause()
-                        if (videoElement.current.paused)
-                            setSessionUUID(null)
-                        else
-                            setSessionUUID(uuidv4())
-                        break
+                        recover()
                     case Hls.ErrorTypes.MEDIA_ERROR:
                         console.log('hls.js fatal media error encountered, try to recover')
                         hls.current.swapAudioCodec()
@@ -120,8 +123,11 @@ export const Video = forwardRef<IVideoControls, IProps>(({
 
         let t = setInterval(() => {
             axios.get(`${requestSource.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
-                if (e.response.status == 404)
+                if (e.response.status == 404) {
                     clearInterval(t)
+                    if (!Hls.isSupported())
+                        recover()                    
+                }
             })
         }, 4000)
 
