@@ -197,7 +197,7 @@ class Movie(Base):
             imdb=self.externals.get('imdb'),
             poster_image=schemas.Image.from_orm(
                 self.poster_image) if self.poster_image else None,
-            popularity=self.popularity,
+            popularity=self.popularity or 0,
             genres=self.genres,
             rating=self.rating,
             rating_votes=self.rating_votes,
