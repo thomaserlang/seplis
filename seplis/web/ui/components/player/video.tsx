@@ -141,7 +141,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             style={{ position: 'fixed', height: '100%' }}
             controls={false}
             preload="none"
-            crossOrigin="annonymous"
+            crossOrigin="anonymous"
         >
             {children}
         </video>
