@@ -159,6 +159,7 @@ function VideoPlayer({
             subtitleLinePosition={(showControls || paused) ? -4 : undefined}
             subtitleOffset={subtitleOffset}
             onTimeUpdate={(time) => {
+                if (paused) return
                 if (onTimeUpdate) onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
                 if (showControls && !hideControlsTimer.current)
