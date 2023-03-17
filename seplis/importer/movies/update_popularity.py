@@ -51,7 +51,7 @@ async def update_popularity(create_movies = True, create_above_popularity: float
 
     for id_ in ids_to_create:
         try:
-            logger.info(f'Creating themoviedb id {id_}')
+            logger.info(f'Creating TMDb id {id_}')
             movie = await models.Movie.save(
                 data=await importer.get_movie_data(id_)
             )

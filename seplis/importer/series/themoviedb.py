@@ -45,7 +45,7 @@ class TheMovieDB(Series_importer_base):
             language=series['original_language'] if series['original_language'] else None,
             popularity=series['popularity'],
             tagline=series['tagline'] if series['tagline'] else None,
-            alternative_titles=[a['title'] for a in series['alternative_titles']['results']],
+            alternative_titles=[a['title'][:200] for a in series['alternative_titles']['results']],
         )
 
 

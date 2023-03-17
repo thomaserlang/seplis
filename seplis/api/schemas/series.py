@@ -30,7 +30,7 @@ class Series_create(BaseModel, extra='forbid', validate_assignment=True):
     premiered: date | None
     ended: date | None
     importers: Series_importers | None
-    runtime: conint(gt=0, lt=1440) | None
+    runtime: conint(gt=0, lt=2880) | None
     genres: list[str | int] | None
     episode_type: conint(gt=0, lt=4) | None
     language: constr(min_length=1, max_length=100, strip_whitespace=True) | None

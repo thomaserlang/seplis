@@ -50,6 +50,7 @@ async def update_popularity(create_series = True, create_above_popularity: float
 
     for id_ in ids_to_create:
         try:
+            logger.info(f'Creating TMDb series: {id_}')
             series_data = await TheMovieDB().info(id_)
             if not series_data:
                 continue
@@ -58,13 +59,12 @@ async def update_popularity(create_series = True, create_above_popularity: float
                 continue
 
             if series_data.externals['imdb'] in series:
-                logger.info(f'Adding themoviedb id {id_} to externals, popularity: {data.popularity}')
+                logger.info(f'Adding themoviedb id {id_} to externals')
                 await models.Series.save(series_id=series[series_data.externals['imdb']].id, data=schemas.Series_update(
                     externals={'themoviedb': id_},
-                    popularity=data.popularity,
                 ), patch=True)        
             else:
-                logger.info(f'Creating themoviedb id {id_}, popularity: {data.popularity}')
+                logger.info(f'Creating themoviedb id {id_}')
                 series_data.importers = schemas.Series_importers(
                     info='themoviedb',
                     episodes='themoviedb',
