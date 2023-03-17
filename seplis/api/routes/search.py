@@ -79,19 +79,28 @@ def get_by_query(title: str):
 
 def get_by_title(title: str):
     return {
-        'dis_max': {
-            'queries': [
-                {'nested': {
-                    'path': 'titles',
-                    'query': {
-                        'match_phrase': {
-                            'titles.title': {
-                                'query': title,
-                            }
-                        }
-                    },
-                }},
-                {'term': {'imdb': title}},
-            ]
+        'function_score': {
+            'query': {
+                'dis_max': {
+                    'queries': [
+                        {'nested': {
+                            'path': 'titles',
+                            'query': {
+                                'match_phrase': {
+                                    'titles.title': {
+                                        'query': title,
+                                    }
+                                }
+                            },
+                        }},
+                        {'term': {'imdb': title}},
+                    ]
+                }
+            },
+            'field_value_factor': {
+                'field': 'popularity',
+                'modifier': 'log1p',
+                'factor': 2,
+            }
         }
     }
