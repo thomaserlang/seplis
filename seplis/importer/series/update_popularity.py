@@ -63,8 +63,6 @@ async def update_popularity(create_series = True, create_above_popularity: float
                     externals={'themoviedb': id_},
                 ), patch=True)        
             else:
-                if not series_data.externals['imdb']:
-                    continue
                 logger.info(f'Creating TMDb id {id_}')
                 series_data.importers = schemas.Series_importers(
                     info='themoviedb',
