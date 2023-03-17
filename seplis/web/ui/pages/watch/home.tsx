@@ -235,8 +235,8 @@ export default function WatchHome() {
 
 
                 <Slider<ISeries>
-                    title="Movie favorites"
-                    url="/2/movies?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
+                    title="Series favorites"
+                    url="/2/series?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
                     parseItem={(series) => (
                         {
                             key: `series-${series.id}`,
@@ -250,9 +250,9 @@ export default function WatchHome() {
                 />
 
 
-                <Slider<ISeries>
-                    title="Series favorites"
-                    url="/2/series?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
+                <Slider<IMovie>
+                    title="Movie favorites"
+                    url="/2/movies?user_favorites=true&user_can_watch=true&sort=user_favorite_added_at_desc"
                     parseItem={(series) => (
                         {
                             key: `series-${series.id}`,
@@ -261,7 +261,7 @@ export default function WatchHome() {
                         }
                     )}
                     onFocus={onRowFocus}
-                    onItemSelected={seriesSelected}
+                    onItemSelected={movieSelected}
                     hideIfEmpty={true}
                 />
 
