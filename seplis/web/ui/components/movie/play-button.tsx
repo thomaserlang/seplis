@@ -32,12 +32,11 @@ export default function PlayButton({ movieId }: { movieId: number }) {
             handleClick()
         }
     })
-    return <Button
+    return data && <Button
         ref={ref}
         isLoading={isInitialLoading}
         leftIcon={<Icon as={FaPlay} />}
         style={focused ? focusedBorder : null}
-        disabled={!data}
         onClick={handleClick}
     >
         Play

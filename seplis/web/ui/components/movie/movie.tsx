@@ -52,9 +52,10 @@ export default function Movie({ movie }: { movie: IMovie }) {
                     <Title movie={movie} />
                     <BaseInfo movie={movie} />
                     <Genres genres={movie.genres} />
-                    <Buttons movie={movie} />
+                    <ListButtons movie={movie} />
                     <Plot movie={movie} />
                     <ExternalLinks movie={movie} />
+                    <WatchButtons movie={movie} />
                 </Stack>
             </Stack>
             <ChromecastControls />
@@ -73,14 +74,20 @@ function SeriesWaitingForData({ movie }: { movie: IMovie }) {
 }
 
 
-function Buttons({ movie }: { movie: IMovie }) {
-    return <Wrap padding="0.25rem 0">
-        <WrapItem><PlayButton movieId={movie.id} /></WrapItem>
-        <WrapItem><MovieWatchedButton movieId={movie.id} /></WrapItem>
-        <WrapItem><WatchlistButton movieId={movie.id} /></WrapItem>
-        <WrapItem><FavoriteButton movieId={movie.id} /></WrapItem>
-        <WrapItem><DisplaySettings movie={movie} /></WrapItem>
-    </Wrap>
+function ListButtons({ movie }: { movie: IMovie }) {
+    return <Flex gap="0.5rem">
+       <WatchlistButton movieId={movie.id} />
+       <FavoriteButton movieId={movie.id} />
+       <DisplaySettings movie={movie} />
+    </Flex>
+}
+
+
+function WatchButtons({ movie }: { movie: IMovie }) {
+    return <Flex gap="0.5rem">
+        <PlayButton movieId={movie.id} />
+        <MovieWatchedButton movieId={movie.id} />
+    </Flex>
 }
 
 
