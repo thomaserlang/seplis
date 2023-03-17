@@ -29,7 +29,7 @@ async def update_popularity(create_movies = True, create_above_popularity: float
                     'date': dt,
                 })
             elif create_movies and create_above_popularity != None and data.popularity >= create_above_popularity:
-                ids_to_create(id_)
+                ids_to_create.append(id_)
             if len(insert_data) == 10000:
                 await session.execute(
                     sa.insert(models.Movie_popularity_history.__table__).prefix_with('IGNORE').values(insert_data),
