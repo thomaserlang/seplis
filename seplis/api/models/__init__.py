@@ -2,6 +2,8 @@ from .base import *
 from .series import *
 from .series_watchlist import *
 from .series_favorite import *
+from .series_popularity_history import *
+from .series_rating_history import *
 from .image import *
 from .episode import *
 from .user import *
@@ -13,4 +15,6 @@ from .movie import *
 from .movie_collection import *
 from .movie_watchlist import *
 from .movie_favorite import *
+from .movie_popularity_history import *
+from .movie_rating_history import *
 from .genre import *

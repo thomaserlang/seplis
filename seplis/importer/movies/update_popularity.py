@@ -1,6 +1,5 @@
 import sqlalchemy as sa
-
-from seplis.api import exceptions
+from datetime import datetime
 from ..themoviedb_export import get_ids
 from . import importer
 from ...api.database import database
@@ -11,37 +10,52 @@ from ... import logger
 async def update_popularity(create_movies = True, create_above_popularity: float | None = 1.0):
     logger.info('Updating movie popularity')
     movies: dict[str, schemas.Movie] = {}
+    dt = datetime.now().date()
     async with database.session() as session:
-        result = await session.stream(sa.select(models.Movie))
+        result = await session.stream(sa.select(models.Movie).options(sa.orm.noload("*")))
         async for db_movies in result.yield_per(1000):
             for movie in db_movies:
-                try:
-                    s = schemas.Movie.from_orm(movie)
-                    if s.externals.get('themoviedb'):
-                        movies[s.externals['themoviedb']] = s
-                except Exception as e:
-                    logger.error(e)
+                if movie.externals.get('themoviedb'):
+                    movies[movie.externals['themoviedb']] = movie.id
 
-    async for data in get_ids('movie_ids'):
-        try:
+        ids_to_create = []
+        insert_data = []
+        async for data in get_ids('movie_ids'):
             id_ = str(data.id)
             if id_ in movies:
-                if movies[id_].popularity == data.popularity:
-                    continue
-                logger.info(f'Updating movie: {movies[id_].id}, popularity: {data.popularity}')
-                await models.Movie.save(movie_id=movies[id_].id, data=schemas.Movie_update(
-                    popularity=data.popularity
-                ))
-
+                insert_data.append({
+                    'movie_id': movies[id_], 
+                    'popularity': data.popularity or 0,
+                    'date': dt,
+                })
             elif create_movies and create_above_popularity != None and data.popularity >= create_above_popularity:
-                logger.info(f'Creating themoviedb id {id_}, popularity: {data.popularity}')
-                movie = await models.Movie.save(
-                    data=await importer.get_movie_data(id_)
+                ids_to_create(id_)
+            if len(insert_data) == 10000:
+                await session.execute(
+                    sa.insert(models.Movie_popularity_history.__table__).prefix_with('IGNORE').values(insert_data),
                 )
-                
+                insert_data = []
+        if insert_data:
+            await session.execute(
+                sa.insert(models.Movie_popularity_history.__table__).prefix_with('IGNORE').values(insert_data),
+            )
+        await session.execute(sa.update(models.Movie.__table__).values({
+                models.Movie.popularity: models.Movie_popularity_history.popularity
+            }).where(
+                models.Movie_popularity_history.date == dt,
+                models.Movie_popularity_history.movie_id == models.Movie.id,
+            ),
+        )
+        await session.commit()
+        await models.rebuild_movies()
+
+    for id_ in ids_to_create:
+        try:
+            logger.info(f'Creating themoviedb id {id_}')
+            movie = await models.Movie.save(
+                data=await importer.get_movie_data(id_)
+            )
         except (KeyboardInterrupt, SystemExit):
             raise
-        except exceptions.API_exception as e:
-            logger.error(e.message)
         except Exception as e:
-            logger.exception(e)
+            logger.error(str(e))
