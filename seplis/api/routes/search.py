@@ -54,6 +54,7 @@ def get_by_query(title: str):
                                         'query': title,
                                         'type': 'bool_prefix',
                                         'operator': 'and',
+                                        'fuzziness': 'auto',
                                         'fields': [
                                             'titles.title',
                                             'titles.title._2gram',

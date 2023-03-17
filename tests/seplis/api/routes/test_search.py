@@ -122,7 +122,8 @@ async def test_search(client: AsyncClient):
     r = await client.get('/2/search', params={'query': '"dcs kurt"'})
     assert r.status_code == 200, r.content
     data = parse_obj_as(list[schemas.Search_title_document], r.json())
-    assert len(data) == 2, data
+    assert len(data) == 1, data
+    assert data[0].id == series2.id
     r = await client.get('/2/search', params={'query': '"dc’s kurt"'})
     assert r.status_code == 200, r.content
     data = parse_obj_as(list[schemas.Search_title_document], r.json())
