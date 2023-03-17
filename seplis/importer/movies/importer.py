@@ -140,12 +140,11 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     data.original_title = r['original_title']
     data.status = statuses.get(r['status'], 0)
     data.runtime = r['runtime']
-    data.release_date = r['release_date']
+    data.release_date = r['release_date'] or None
     data.plot = r['overview'] or None
     data.tagline = r['tagline'] or None
     data.language = r['original_language']
-    data.alternative_titles = [a['title']
-                               for a in r['alternative_titles']['titles']]
+    data.alternative_titles = [a['title'][:200] for a in r['alternative_titles']['titles']]
     data.genres = [genre['name'] for genre in r['genres']]
     data.popularity = r['popularity']
     data.revenue = r['revenue']
