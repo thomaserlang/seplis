@@ -1,4 +1,4 @@
-import { SearchIcon, StarIcon } from '@chakra-ui/icons'
+import { SearchIcon } from '@chakra-ui/icons'
 import { Text, Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, FormControl, FormLabel, Switch, Box, AspectRatio, Skeleton, Heading, Tag, Stack, Flex } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { ITitleSearchResult as ISearchTitleResult } from '@seplis/interfaces/search'
