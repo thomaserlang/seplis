@@ -33,7 +33,7 @@ async def get_last_watched_episode(
     
     if not eps:
         return Response(status_code=204)
-        
+    
     e = eps[0]
     if len(eps) == 1:
         if eps[0].Episode_watched.position > 0:

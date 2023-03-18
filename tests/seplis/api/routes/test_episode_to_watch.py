@@ -54,6 +54,7 @@ async def test_episode_to_watch(client: AsyncClient):
 
     r = await client.post(f'/2/series/{series.id}/episodes/3/watched')
     assert r.status_code, 200
+
     r = await client.put(f'/2/series/{series.id}/episodes/3/watched-position', 
         json={'position': 200}
     )
@@ -61,21 +62,22 @@ async def test_episode_to_watch(client: AsyncClient):
     r = await client.get(next_to_watch_url)
     ntw = schemas.Episode.parse_obj(r.json())
     assert ntw.number == 3
+    assert ntw.user_watched.times == 1
     assert ntw.user_watched.position == 200
 
     r = await client.delete(f'/2/series/{series.id}/episodes/3/watched')
     assert r.status_code == 200
+    w = schemas.Episode_watched.parse_obj(r.json())
+    assert w.times == 1
+    assert w.position == 0
 
     r = await client.get(next_to_watch_url)
-    ntw = schemas.Episode.parse_obj(r.json())
-    assert ntw.number == 2
-    assert ntw.user_watched.times == 0
-    assert ntw.user_watched.position == 0
+    assert r.status_code == 204
 
     r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 200
     ntw = schemas.Episode.parse_obj(r.json())
-    assert ntw.number == 1
+    assert ntw.number == 3
 
     
     r = await client.post(f'/2/series/{series.id}/episodes/watched-range', json={
