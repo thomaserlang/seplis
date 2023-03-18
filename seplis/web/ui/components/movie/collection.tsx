@@ -12,7 +12,8 @@ export default function MovieCollection({ collection }: { collection: IMovieColl
     const navigate = useNavigate()
     const location = useLocation()
     const selected = useCallback((movie: IMovie) => {
-        navigate(`/movies/${movie.id}`, { state: { background: location.state?.background || location } })
+        navigate(`/movies/${movie.id}`, 
+        { state: { background: location.state?.background || null } })
     }, [])
 
     const { data, isLoading } = useQuery(['movie-collection', collection.id], async () => {
