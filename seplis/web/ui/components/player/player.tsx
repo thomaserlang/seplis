@@ -307,7 +307,7 @@ export function SettingsButton(props: ISettingsProps) {
 
 
 function PlayNext({ title, url }: IPlayNextProps) {
-    return <Link to={url} title={title}>
+    return <Link to={url} title={title} replace={true}>
         <PlayButton aria-label={`Play ${title}`} icon={<FaStepForward />} />
     </Link>
 }
