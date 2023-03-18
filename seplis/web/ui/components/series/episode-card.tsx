@@ -7,7 +7,7 @@ import EpisodeWatchedButton from './episode-watched-button'
 
 export default function EpisodeCard({ seriesId, episode }: { seriesId: number, episode: IEpisode }) {
     return <EpisodeCardWrapper>
-        <Text noOfLines={1} lineHeight="1.3">{episode.title}</Text>        
+        <Text noOfLines={1} lineHeight="1.3">{episode.title || 'TBA'}</Text>        
         <Text noOfLines={1} lineHeight="1.3">{episodeNumber(episode)} · {EpisodeAirdate(episode)}</Text>
         <Flex>
             <EpisodeWatchedButton seriesId={seriesId} episodeNumber={episode.number} data={episode.user_watched} />
