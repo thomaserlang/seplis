@@ -222,7 +222,7 @@ function UserEpisodes({ series }: { series: ISeries }) {
         return
     if (!isAuthed())
         return
-    return <Flex gap="0.5rem" align="stretch">
+    return <Flex gap="0.5rem" align="stretch" wrap="wrap">
         <EpisodeLastWatched seriesId={series.id} />
         <EpisodeToWatch seriesId={series.id} />
     </Flex>
