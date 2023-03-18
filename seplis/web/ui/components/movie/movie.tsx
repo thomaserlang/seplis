@@ -75,7 +75,7 @@ function SeriesWaitingForData({ movie }: { movie: IMovie }) {
 
 
 function ListButtons({ movie }: { movie: IMovie }) {
-    return <Flex gap="0.5rem" padding="0.25rem 0">
+    return <Flex gap="0.5rem" padding="0.25rem 0" wrap="wrap">
        <WatchlistButton movieId={movie.id} />
        <FavoriteButton movieId={movie.id} />
        <DisplaySettings movie={movie} />
@@ -84,7 +84,7 @@ function ListButtons({ movie }: { movie: IMovie }) {
 
 
 function WatchButtons({ movie }: { movie: IMovie }) {
-    return <Flex gap="0.5rem" padding="0.25rem 0">
+    return <Flex gap="0.5rem" padding="0.25rem 0" wrap="wrap">
         <PlayButton movieId={movie.id} />
         <MovieWatchedButton movieId={movie.id} />
     </Flex>
