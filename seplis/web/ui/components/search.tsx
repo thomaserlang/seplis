@@ -1,5 +1,5 @@
 import { SearchIcon } from '@chakra-ui/icons'
-import { Text, Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, useDisclosure, FormControl, FormLabel, Switch, Box, AspectRatio, Skeleton, Heading, Tag, Stack, Flex } from '@chakra-ui/react'
+import { Text, Button, Input, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, useDisclosure, FormControl, FormLabel, Switch, Box, AspectRatio, Skeleton, Heading, Tag, Stack, Flex } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { ITitleSearchResult as ISearchTitleResult } from '@seplis/interfaces/search'
 import { langCodeToLang, secondsToHourMin } from '@seplis/utils'
@@ -13,22 +13,20 @@ import { Poster } from './poster'
 
 export function SearchButtonDialog() {
     const { isOpen, onOpen, onClose } = useDisclosure()
-    return (
-        <>
-            <Button variant='ghost' leftIcon={<SearchIcon />} onClick={onOpen}>Search</Button>
+    return <>
+        <Button variant='ghost' leftIcon={<SearchIcon />} onClick={onOpen}>Search</Button>
 
-            <Modal isOpen={isOpen} onClose={onClose}>
-                <ModalOverlay />
-                <ModalContent backgroundColor="seplis.modalBackgroundColor" maxWidth="800px" paddingBottom="1rem">
-                    <ModalHeader>Search</ModalHeader>
-                    <ModalCloseButton />
-                    <ModalBody>
-                        <Search />
-                    </ModalBody>
-                </ModalContent>
-            </Modal>
-        </>
-    )
+        <Modal isOpen={isOpen} onClose={onClose}>
+            <ModalOverlay />
+            <ModalContent backgroundColor="seplis.modalBackgroundColor" maxWidth="800px" paddingBottom="1rem">
+                <ModalHeader>Search</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <Search afterSelected={onClose} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>
+    </>
 }
 
 export function Search({ afterSelected }: { afterSelected?: (item: ISearchTitleResult) => void }) {
@@ -85,6 +83,7 @@ function RenderItems({ items, onSelected }: { items: ISearchTitleResult[], onSel
         ))}
     </Stack>
 }
+
 
 function RenderItem({ item, onSelected }: { item: ISearchTitleResult, onSelected: (item: ISearchTitleResult) => void }) {
     return <Stack
