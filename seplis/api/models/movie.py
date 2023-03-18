@@ -269,7 +269,8 @@ class Movie_watched(Base):
         ))
         if not w:
             return
-        if w.times <= 1:
+      
+        if w.times == 0 or (w.times == 1 and w.position == 0):
             await asyncio.gather(
                 session.execute(sa.delete(Movie_watched).where(
                     Movie_watched.movie_id == movie_id,
@@ -280,53 +281,49 @@ class Movie_watched(Base):
                     Movie_watched_history.user_id == user_id,
                 )),
             )
-            await session.commit()
             return
+        elif w.position > 0:
+            watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
+                Movie_watched_history.movie_id == movie_id,
+                Movie_watched_history.user_id == user_id,
+            ).order_by(
+                Movie_watched_history.watched_at.desc()
+            ).limit(1))
+            await session.execute(sa.update(Movie_watched).where(
+                Movie_watched.movie_id == movie_id,
+                Movie_watched.user_id == user_id,
+            ).values(
+                position=0,
+                watched_at=watched_at,
+            ))
         else:
-            if w.position > 0:
-                watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
-                    Movie_watched_history.movie_id == movie_id,
-                    Movie_watched_history.user_id == user_id,
-                ).order_by(
-                    Movie_watched_history.watched_at.desc()
-                ).limit(1))
-                await session.execute(sa.update(Movie_watched).where(
-                    Movie_watched.movie_id == movie_id,
-                    Movie_watched.user_id == user_id,
-                ).values(
-                    position=0,
-                    watched_at=watched_at,
-                ))
-            else:
-                id_ = await session.scalar(sa.select(Movie_watched_history.id).where(
-                    Movie_watched_history.movie_id == movie_id,
-                    Movie_watched_history.user_id == user_id,
-                ).order_by(
-                    Movie_watched_history.watched_at.desc()
-                ).limit(1))
-                await session.execute(sa.delete(Movie_watched_history).where(
-                    Movie_watched_history.id == id_,
-                ))
-                watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
-                    Movie_watched_history.movie_id == movie_id,
-                    Movie_watched_history.user_id == user_id,
-                ).order_by(
-                    Movie_watched_history.watched_at.desc()
-                ).limit(1))
-                await session.execute(sa.update(Movie_watched).where(
+            e = await session.execute(sa.select(Movie_watched_history.id, Movie_watched_history.watched_at).where(
+                Movie_watched_history.movie_id == movie_id,
+                Movie_watched_history.user_id == user_id,
+            ).order_by(
+                Movie_watched_history.watched_at.desc()
+            ).limit(2))
+            e = e.all()
+            await asyncio.gather(
+                session.execute(sa.delete(Movie_watched_history).where(
+                    Movie_watched_history.id == e[0].id,
+                )),
+                session.execute(sa.update(Movie_watched).where(
                     Movie_watched.movie_id == movie_id,
                     Movie_watched.user_id == user_id,
                 ).values(
                     times=Movie_watched.times - 1,
                     position=0,
-                    watched_at=watched_at,
-                ))
+                    watched_at=e[1].watched_at,
+                )),
+            )
 
         w = await session.scalar(sa.select(Movie_watched).where(
             Movie_watched.movie_id == movie_id,
             Movie_watched.user_id == user_id,
         ))
-        return schemas.Movie_watched.from_orm(w)
+        if w:
+            return schemas.Movie_watched.from_orm(w)
 
 
     @staticmethod

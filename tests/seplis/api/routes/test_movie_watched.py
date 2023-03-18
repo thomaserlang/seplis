@@ -69,13 +69,26 @@ async def test_movie_watched(client: AsyncClient):
     assert data.position == 0
     assert data.watched_at == datetime(2022, 6, 5, 13, 0, tzinfo=timezone.utc)
 
+    r = await client.put(f'/2/movies/{movie.id}/watched-position', json={'position': 200})
+    assert r.status_code == 204, r.content
+
     r = await client.delete(f'/2/movies/{movie.id}/watched')
+    assert r.status_code == 200
+
+    r = await client.get(f'/2/movies/{movie.id}/watched')
+    w = schemas.Movie_watched.parse_obj(r.json())
+    assert w.times == 1
+    assert w.position == 0
+
+    r = await client.delete(f'/2/movies/{movie.id}/watched')
+    assert r.status_code == 200
     data = schemas.Movie_watched.parse_obj(r.json())
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at == None
 
     r = await client.get(f'/2/movies/{movie.id}/watched')
+    assert r.status_code == 200
     data = schemas.Movie_watched.parse_obj(r.json())
     assert data.times == 0
     assert data.position == 0

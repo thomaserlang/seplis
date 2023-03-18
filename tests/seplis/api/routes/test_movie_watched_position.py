@@ -4,7 +4,7 @@ from seplis.api import constants, schemas, models
 
 
 @pytest.mark.asyncio
-async def test_Movie_watched(client: AsyncClient):
+async def test_movie_watched_position(client: AsyncClient):
     await user_signin(client, [str(constants.LEVEL_EDIT_USER)])
 
     movie: schemas.Movie = await models.Movie.save(schemas.Movie_create(
@@ -18,6 +18,7 @@ async def test_Movie_watched(client: AsyncClient):
 
     r = await client.put(url, json={'position': 200})
     assert r.status_code == 204, r.content
+
     r = await client.get(url)
     assert r.status_code == 200
     w = schemas.Movie_watched.parse_obj(r.json())
@@ -27,6 +28,7 @@ async def test_Movie_watched(client: AsyncClient):
 
     r = await client.put(url, json={'position': 201})
     assert r.status_code == 204, r.content
+
     r = await client.get(url)
     assert r.status_code == 200
     w = schemas.Movie_watched.parse_obj(r.json())
@@ -39,9 +41,9 @@ async def test_Movie_watched(client: AsyncClient):
     r = await client.get(url)
     assert r.status_code == 204, r.content
 
-
     r = await client.put(url, json={'position': 200})
     assert r.status_code == 204, r.content
+
     r = await client.get(url)
     assert r.status_code == 200
     w = schemas.Movie_watched.parse_obj(r.json())
@@ -53,12 +55,12 @@ async def test_Movie_watched(client: AsyncClient):
     r = await client.get(url)
     assert r.status_code == 204, r.content
 
-
     r = await client.post(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200, r.content
 
     r = await client.put(url, json={'position': 200})
     assert r.status_code == 204, r.content
+
     r = await client.get(url)
     w = schemas.Movie_watched.parse_obj(r.json())
     assert w.times == 1
