@@ -21,7 +21,7 @@ export default function EpisodeToWatch({ seriesId }: { seriesId: number }) {
             refetch()
     }), [])
 
-    return <Flex width="100%" direction="column">
+    return <Flex direction="column" grow="1" minW="300px">
         <Heading fontWeight="600" fontSize="2xl" marginBottom="0.25rem">To watch</Heading>
         {isInitialLoading ? <EpisodeSkeleton /> : <>
             {data && <EpisodeCard seriesId={seriesId} episode={data} />}
