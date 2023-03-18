@@ -23,19 +23,21 @@ export function SeriesModalPage() {
     const navigate = useNavigate()
     const location = useLocation()
 
-    return <>
-        <Modal isOpen={true} onClose={() => {
+    return <Modal
+        isOpen={true}
+        onClose={() => {
             navigate(location.state?.background?.pathname || '/')
-        }}>
-            <ModalOverlay />
-            <ModalContent layerStyle="baseModal">
-                <ModalCloseButton />
-                <ModalBody>
-                    <SeriesLoad seriesId={parseInt(seriesId)} onLoaded={(series) => {
-                        setTitle(series.title)
-                    }} />
-                </ModalBody>
-            </ModalContent>
-        </Modal>
-    </>
+        }}
+        autoFocus={false}
+    >
+        <ModalOverlay />
+        <ModalContent layerStyle="baseModal">
+            <ModalCloseButton />
+            <ModalBody>
+                <SeriesLoad seriesId={parseInt(seriesId)} onLoaded={(series) => {
+                    setTitle(series.title)
+                }} />
+            </ModalBody>
+        </ModalContent>
+    </Modal>
 }

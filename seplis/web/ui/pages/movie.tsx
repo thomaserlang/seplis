@@ -23,20 +23,22 @@ export function MovieModalPage() {
     const { movieId } = useParams()
     const navigate = useNavigate()
     const location = useLocation()
-    
-    return <>
-        <Modal isOpen={true} onClose={() => {
-            navigate(location.state?.background?.pathname || '/')             
-        }}>
-            <ModalOverlay />
-            <ModalContent layerStyle="baseModal">
-                <ModalCloseButton />
-                <ModalBody>
-                    <MovieLoad movieId={parseInt(movieId)} onLoaded={(movie) => {
-                        setTitle(movie.title)
-                    }} />
-                </ModalBody>
-            </ModalContent>
-        </Modal>
-    </>
+
+    return <Modal
+        isOpen={true}
+        onClose={() => {
+            navigate(location.state?.background?.pathname || '/')
+        }}
+        autoFocus={true}
+    >
+        <ModalOverlay />
+        <ModalContent layerStyle="baseModal">
+            <ModalCloseButton />
+            <ModalBody>
+                <MovieLoad movieId={parseInt(movieId)} onLoaded={(movie) => {
+                    setTitle(movie.title)
+                }} />
+            </ModalBody>
+        </ModalContent>
+    </Modal>
 }
