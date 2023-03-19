@@ -4,6 +4,7 @@ import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import FullErrorPage from '../full-page-error'
 import { pickStartAudio } from './pick-audio-source'
 import { getDefaultResolutionWidth } from './pick-quality'
 import { pickStartSource } from './pick-source'
@@ -52,7 +53,7 @@ export default function Player({
         return <Loading />
 
     if (!playServers.data || (playServers.data.length === 0))
-        return <h1>No play server has this content available</h1>
+        return <FullErrorPage message="No play server has this content available." />
 
     return <VideoPlayer
         key={getPlayServersUrl}
