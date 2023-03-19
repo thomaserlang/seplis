@@ -176,6 +176,9 @@ async def update_images(movie: schemas.Movie):
             f'[Movie: {movie.id}] Failed to get movie images for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}')
         return
     m = r.json()
+    if 'images' not in m:
+        logger.info(f'[Movie: {movie.id}] Didn\'t find any images')
+        return
     logger.debug(
         f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
 
