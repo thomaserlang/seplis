@@ -1,7 +1,7 @@
 import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
-import Hls, { ErrorData } from 'hls.js'
+import Hls from 'hls.js'
 import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { parse as vttParse } from '../../utils/srt-vtt-parser'
 import { useQuery } from '@tanstack/react-query'
@@ -50,6 +50,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
     const baseTime = useRef<number>(startTime)
+    const recoverTime = useRef<number>(startTime)
     const prevRequestSource = useRef(requestSource)
     const prevAudioSource = useRef(audioSource)
     const prevResolutionWidth = useRef(resolutionWidth)
@@ -84,12 +85,15 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         })
 
         const recover = () => {
-            baseTime.current = getCurrentTime(videoElement.current, baseTime.current)
-            if (onPause) onPause()
-            if (videoElement.current.paused)
+            baseTime.current = recoverTime.current
+
+            if (videoElement.current.paused) {
+                if (onPause) onPause()
                 setSessionUUID(null)
-            else
+            } else {
+                if (onLoadingState) onLoadingState(true)
                 setSessionUUID(uuidv4())
+            }
         }
 
         if (!Hls.isSupported()) {
@@ -109,20 +113,33 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             hls.current.on(Hls.Events.MANIFEST_PARSED, () =>
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed()))
             hls.current.on(Hls.Events.ERROR, (e, data) => {
-                switch (data.type) {
+                console.warn(data)
+                switch(data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
+                        if (!data.fatal && ((data.response as any)?.code !== 404))
+                            return
+                        console.log('hls.js fatal network error encountered, try to recover')
                         recover()
+                        break
                     case Hls.ErrorTypes.MEDIA_ERROR:
+                        if (!data.fatal) return
                         console.log('hls.js fatal media error encountered, try to recover')
+                        if (onPause) onPause()
+                        if (onLoadingState) onLoadingState(true)
                         hls.current.swapAudioCodec()
                         hls.current.recoverMediaError()
-                        videoElement.current.play()
+                        videoElement.current.play().catch(() => {})
+                        break
+                    default:
+                        if (!data.fatal) return
+                        console.log('hls.js could not recover')
+                        recover()
                         break
                 }
             })
         }
 
-        let t = setInterval(() => {
+        const t = setInterval(() => {
             axios.get(`${requestSource.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
                 if (e.response.status == 404) {
                     clearInterval(t)
@@ -143,7 +160,12 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     return <>
         <video
             ref={videoElement}
-            onTimeUpdate={(e) => onTimeUpdate && onTimeUpdate(getCurrentTime(e.currentTarget, baseTime.current))}
+            onTimeUpdate={() => {
+                const t = getCurrentTime(videoElement.current, baseTime.current)
+                if (t !== baseTime.current)
+                    recoverTime.current = t
+                if (onTimeUpdate) onTimeUpdate(t)
+            }}
             onPause={() => onPause && onPause()}
             onPlay={() => {
                 if (!sessionUUID)
@@ -158,7 +180,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             onLoadedData={() => onLoadingState && onLoadingState(false)}
             onError={(event) => {
                 if (event.currentTarget.error.code == event.currentTarget.error.MEDIA_ERR_DECODE)
-                    handleMediaError(videoElement.current, hls.current)
+                    hls.current.recoverMediaError()
             }}
             width="100%"
             style={{ position: 'fixed', height: '100%' }}
@@ -240,11 +262,6 @@ function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
             codecs.push(types[key])
     }
     return codecs
-}
-
-
-function handleMediaError(videoElement: HTMLVideoElement, hls: Hls) {
-    if (hls) hls.recoverMediaError()
 }
 
 
