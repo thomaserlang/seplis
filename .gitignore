@@ -64,3 +64,5 @@ docs/_build/
 seplis.yaml
 .vscode
 workspace.code-workspace
+.venv/
+.python-version
