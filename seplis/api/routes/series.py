@@ -14,8 +14,8 @@ router = APIRouter(prefix='/2/series')
 
 @router.get('', response_model=schemas.Page_cursor_result[schemas.Series])
 async def get_series(
-    page_cursor: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
+    page_cursor: schemas.Page_cursor_query = Depends(),
     filter_query: Series_query_filter = Depends(),
 ):
     query = sa.select(models.Series)

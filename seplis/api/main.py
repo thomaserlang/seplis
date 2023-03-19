@@ -14,6 +14,8 @@ from .routes import (
     health,
     movie_watchlist,
     movie_favorite,
+    play_server_users_movie_watchlist,
+    play_server_users_series_watchlist,
     series_recently_aired,
     series_watchlist,
     series_favorite,
@@ -41,8 +43,6 @@ from .routes import (
     episode_play_servers,
     episode_last_watched,
     play_server,
-    play_server_user_movie_watchlist,
-    play_server_user_series_watchlist,
     genres,
 )
 

@@ -25,6 +25,16 @@ async def test_play_server(client: AsyncClient):
     data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
     assert data.items[0].id == movie.id
 
+    r = await client.get(f'/2/play-servers/{play_server.id}/users-movie-watchlist?added_at_ge=2023-03-19T00:00:00')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    assert data.items[0].id == movie.id
+
+    r = await client.get(f'/2/play-servers/{play_server.id}/users-movie-watchlist?added_at_le=2023-03-19T00:00:00')
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    assert len(data.items) == 0
+
 
 if __name__ == '__main__':
     run_file(__file__)
