@@ -85,6 +85,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         })
 
         const recover = () => {
+            console.log({'baseTime': baseTime.current, 'recoverTime': recoverTime.current, 'videoCurrentTime': videoElement.current.currentTime})
             baseTime.current = recoverTime.current
 
             if (videoElement.current.paused) {
@@ -166,7 +167,10 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                     recoverTime.current = t
                 if (onTimeUpdate) onTimeUpdate(t)
             }}
-            onPause={() => onPause && onPause()}
+            onPause={() => {
+                if (onPause) onPause()
+                recoverTime.current = getCurrentTime(videoElement.current, baseTime.current)
+            }}
             onPlay={() => {
                 if (!sessionUUID)
                     setSessionUUID(uuidv4())
