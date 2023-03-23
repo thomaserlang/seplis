@@ -31,6 +31,7 @@
         const playerManager = context.getPlayerManager()
 
         const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
+        const NEW_TRACK = 'urn:x-cast:net.seplis.cast.new_track'
 
         function setPingTimer() {
             if (!keepAliveTimer)
@@ -42,6 +43,31 @@
         context.addCustomMessageListener(
             GET_CUSTOM_DATA,
             event => {
+                context.sendCustomMessage(
+                    GET_CUSTOM_DATA,
+                    event.senderId,
+                    customData
+                )
+            }
+        )
+
+        context.addCustomMessageListener(
+            NEW_TRACK,
+            event => {
+                const textTracksManager = playerManager.getTextTracksManager();
+                if (event.data.lang) {
+                    const track = textTracksManager.createTrack();
+                    track.trackContentType = 'text/vtt';
+                    track.trackContentId = event.data.url;
+                    track.language = event.data.lang;
+                    textTracksManager.addTracks([track]);
+                    textTracksManager.setActiveByIds([track.trackId]);
+                } else {
+                    textTracksManager.setActiveByIds([]);
+                }
+                customData['subtitleLang'] = event.data.lang
+                if (event.data?.offset != undefined)
+                    customData['subtitleOffset'] = event.data.offset
                 context.sendCustomMessage(
                     GET_CUSTOM_DATA,
                     event.senderId,

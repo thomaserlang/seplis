@@ -32,7 +32,7 @@ export function PickSubtitleSource({ subtitleSources, selected, onChange }: IPro
 }
 
 
-export function pickStartSubtitle(requestSource: IPlayServerRequestSource, defaultSubtitle: string) {
+export function pickStartSubtitle(requestSource: IPlayServerRequestSource, defaultSubtitle?: string) {
     const s = stringToSourceStream(defaultSubtitle, requestSource.source.subtitles)
     if (s) return s
     for (const sub of requestSource.source.subtitles) {

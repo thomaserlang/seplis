@@ -10,6 +10,8 @@
     "watch": "webpack --watch --mode=development"
   },
   "devDependencies": {
+    "@types/chrome": "^0.0.224",
+    "@types/chromecast-caf-sender": "^1.0.5",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@types/uuid": "^9.0.1",
@@ -36,7 +38,6 @@
     "@tanstack/react-query": "^4.26.1",
     "axios": "^1.3.4",
     "dayjs": "^1.11.7",
-    "framer-motion": "^10.5.0",
     "hls.js": "^1.3.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

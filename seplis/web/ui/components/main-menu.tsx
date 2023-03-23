@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { Link, useNavigate, } from 'react-router-dom'
 import ChangePasswordForm from './change_password_form'
 import { MovieNew } from './movie/settings'
-import ChromecastIcon from './player/ChromecastIcon'
+import ChromecastIcon from './player/chromecast-icon'
 import { SearchButtonDialog } from './search'
 import { SeriesNew } from './series/settings'
 

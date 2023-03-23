@@ -26,7 +26,7 @@ export function PickAudioSource({ audioSources, selected, onChange }: IProps) {
 }
 
 
-export function pickStartAudio(requestSource: IPlayServerRequestSource, defaultAudio: string) {
+export function pickStartAudio(requestSource: IPlayServerRequestSource, defaultAudio?: string) {
     const s = stringToSourceStream(defaultAudio, requestSource.source.audio)
     if (s) return s
     for (const sub of requestSource.source.audio) {

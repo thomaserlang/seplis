@@ -92,6 +92,7 @@ import { Logout } from './pages/logout'
 import SendResetPassword from './pages/send-reset-password'
 import ResetPassword from './pages/reset-password'
 import WatchHome from './pages/watch/home'
+import { CastProvider } from './components/player/react-cast-sender'
 
 spatialInit({})
 
@@ -100,7 +101,9 @@ createRoot(document.getElementById("root")).render(
         <BrowserRouter >
             <QueryParamProvider adapter={ReactRouter6Adapter}>
                 <QueryClientProvider client={queryClient}>
-                    <App />
+                    <CastProvider receiverApplicationId={(window as any).seplisChromecastAppId}>
+                        <App />
+                    </CastProvider>
                 </QueryClientProvider>
             </QueryParamProvider>
         </BrowserRouter>

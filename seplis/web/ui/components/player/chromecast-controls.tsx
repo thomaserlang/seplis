@@ -1,68 +1,40 @@
 import { Box, Flex } from '@chakra-ui/react'
+import api from '@seplis/api'
 import { episodeTitle, secondsToTime } from '@seplis/utils'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { FaPause, FaPlay, FaRedo, FaUndo } from 'react-icons/fa'
-import Chromecast from './Chromecast'
+import { useEffect, useState } from 'react'
+import { FaPause, FaPlay } from 'react-icons/fa'
+import { castMovieRequest } from '../movie/play-button'
+import { castEpisodeRequest } from '../series/episode-play-button'
 import { pickStartAudio } from './pick-audio-source'
 import { pickStartSubtitle } from './pick-subtitle-source'
 import { PlayButton, SettingsButton } from './player'
+import { useCast, useCastPlayer } from './react-cast-sender'
 import Slider from './slider'
 
 
 export default function ChromecastControls() {
-    const cast = useRef<Chromecast>()
-    const [connected, setConnected] = useState(false)
+    const { connected } = useCast()
+    const { currentTime, togglePlay, isPaused, sendMessage, loadMedia } = useCastPlayer()
     const [info, setInfo] = useState<any>()
-    const [time, setTime] = useState(0)
-    const [playing, setPlaying] = useState(false)
-    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        if (cast) {
-            cast.current = new Chromecast()
-            cast.current.load()
-        }
-
-        const stateChange = (event: any) => {
-            switch (event.field) {
-                case 'playerState':
-                    setPlaying(event.value == 'PLAYING')
-                    setLoading(event.value !== 'PLAYING' && event.value !== 'PAUSED')
-                    setConnected(cast.current.isConnected())
-                    cast.current.requestCustomData()
-                    break
-                case 'isConnected':
-                    setConnected(cast.current.isConnected())
-                    break
-                case 'isAvailable':
-                    setConnected(cast.current.isConnected())
-                    break
-                case 'currentTime':
-                    setTime(cast.current.getMediaSession()?.liveSeekableRange && info ? event.value + (info?.startTime || 0) : event.value)
-                    setPlaying(true)
-                    setLoading(false)
-                    break
+        try {
+            const castSession = window.cast.framework.CastContext.getInstance().getCurrentSession()
+            if (castSession) {
+                castSession.addMessageListener(
+                    'urn:x-cast:net.seplis.cast.get_custom_data',
+                    infoReceived,
+                )
             }
-        }
-
-        cast.current.addEventListener('anyChanged', stateChange)
-
-        return () => {
-            cast.current.removeEventListener('anyChanged', stateChange)
-        }
-    }, [info])
-
-    useEffect(() => {
-        cast.current.getSession()?.addMessageListener(
-            'urn:x-cast:net.seplis.cast.get_custom_data',
-            infoReceived,
-        )
-        return () => {
-            cast.current.getSession()?.removeMessageListener(
-                'urn:x-cast:net.seplis.cast.get_custom_data',
-                infoReceived
-            )
-        }
+            return () => {
+                if (castSession) {
+                    castSession.removeMessageListener(
+                        'urn:x-cast:net.seplis.cast.get_custom_data',
+                        infoReceived
+                    )
+                }
+            }
+        } catch { }
     }, [connected])
 
     const infoReceived = (namespace: string, message: any) => {
@@ -73,28 +45,27 @@ export default function ChromecastControls() {
     if (!info)
         return
 
+
     return <Box background="blackAlpha.500" padding="0.5rem" rounded="md">
         <Flex gap="0.5rem" align="center">
-            <Box fontSize="14px">{secondsToTime(time)}</Box>
+            <Box fontSize="14px">{secondsToTime(currentTime + info.startTime)}</Box>
             <Flex grow="1">
                 <Slider
                     duration={info.selectedRequestSource.source.duration}
-                    currentTime={time}
+                    currentTime={currentTime + info.startTime}
                     playRequest={info.selectedRequestSource.request}
-                    onTimeChange={(time) => {
-                        cast.current.pause()
+                    onTimeChange={async (time) => {
                         if (info.type == 'episode')
-                            cast.current.playEpisode(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset)
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                         else if (info.type == 'movie')
-                            cast.current.playMovie(info.movie.id, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset)
-                        setTime(time)
+                            loadMedia(await castMovieRequest(info.movie.id, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                     }}
                 />
             </Flex>
             <Box fontSize="14px">{secondsToTime(info.selectedRequestSource.source.duration)}</Box>
         </Flex>
         <Flex gap="1rem" alignItems="center">
-            <PlayButton isLoading={loading} aria-label="Play or pause" icon={!playing ? <FaPlay /> : <FaPause />} onClick={() => cast.current.playOrPause()} />
+            <PlayButton aria-label="Play or pause" icon={isPaused ? <FaPlay /> : <FaPause />} onClick={() => togglePlay()} />
 
             <Box>{info.type == 'episode' ? `${info.series.title} ${episodeTitle(info.episode)}` : info.movie.title}</Box>
 
@@ -103,34 +74,78 @@ export default function ChromecastControls() {
                 <SettingsButton
                     playServers={info.requestSources}
                     requestSource={info.selectedRequestSource}
-                    //resolutionWidth={resolutionWidth}
+                    resolutionWidth={info.resolutionWidth}
                     audioSource={pickStartAudio(info.selectedRequestSource, info.audioLang)}
                     subtitleSource={pickStartSubtitle(info.selectedRequestSource, info.subtitleLang)}
                     subtitleOffset={info.subtitleOffset}
-                    onRequestSourceChange={(s) => {
+                    onRequestSourceChange={async (source) => {
                         if (info.type == 'episode')
-                            cast.current.playEpisode(info.series.id, info.episode.number, time, s, info.audioLang, info.subtitleLang, info.subtitleOffset)
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.startTime, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                         else if (info.type == 'movie')
-                            cast.current.playMovie(info.movie.id, time, s, info.audioLang, info.subtitleLang, info.subtitleOffset)
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.startTime, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                     }}
-                    //onResolutionWidthChange={setResolutionWidth}
-                    onAudioSourceChange={(source) => {
+                    onResolutionWidthChange={async (resolutionWidth) => {
                         if (info.type == 'episode')
-                            cast.current.playEpisode(info.series.id, info.episode.number, time, info.selectedRequestSource, `${source.language}:${source.index}`, info.subtitleLang, info.subtitleOffset)
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.startTime, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
                         else if (info.type == 'movie')
-                            cast.current.playMovie(info.movie.id, time, info.selectedRequestSource, `${source.language}:${source.index}`, info.subtitleLang, info.subtitleOffset)
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.startTime, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
+
+                    }}
+                    onAudioSourceChange={async (source) => {
+                        if (info.type == 'episode') {
+                            api.put(`/2/series/${info.series.id}/user-settings`, {
+                                'audio_lang': source ? `${source.language || source.title}:${source.index}` : null,
+                            })
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.startTime, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                        } else if (info.type == 'movie')
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.startTime, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                     }}
                     onSubtitleSourceChange={(source) => {
-                        if (info.type == 'episode')
-                            cast.current.playEpisode(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, source ? `${source.language}:${source.index}` : null, info.subtitleOffset)
-                        else if (info.type == 'movie')
-                            cast.current.playMovie(info.movie.id, time, info.selectedRequestSource, info.audioLang, source ? `${source.language}:${source.index}` : null, info.subtitleOffset)
+                        let url = ''
+                        let lang = ''
+                        if (info.type === 'episode')
+                            api.put(`/2/series/${info.series.id}/user-settings`, {
+                                'subtitle_lang': source ? `${source.language || source.title}:${source.index}` : null,
+                            })
+                        if (source) {
+                            lang = `${source.language}:${source.index}`
+                            url = `${info.selectedRequestSource.request.play_url}/subtitle-file` +
+                                `?play_id=${info.selectedRequestSource.request.play_id}` +
+                                `&start_time=${info.startTime}` +
+                                `&source_index=${info.selectedRequestSource.source.index}` +
+                                `&lang=${lang}`
+                            if (info.subtitleOffset)
+                                url = url + `&offset=${info.subtitleOffset}`
+                        }
+                        sendMessage('urn:x-cast:net.seplis.cast.new_track', {
+                            url: url,
+                            lang: lang,
+                            offset: info.subtitleOffset,
+                        })
+                        setInfo({
+                            ...info,
+                            subtitleLang: lang
+                        })
                     }}
                     onSubtitleOffsetChange={(offset) => {
-                        if (info.type == 'episode')
-                            cast.current.playEpisode(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, offset)
-                        else if (info.type == 'movie')
-                            cast.current.playMovie(info.movie.id, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, offset)
+                        if (info.subtitleLang) {
+                            let url = `${info.selectedRequestSource.request.play_url}/subtitle-file` +
+                                `?play_id=${info.selectedRequestSource.request.play_id}` +
+                                `&start_time=${info.startTime}` +
+                                `&source_index=${info.selectedRequestSource.source.index}` +
+                                `&lang=${info.subtitleLang}`
+                            if (offset)
+                                url = url + `&offset=${offset}`
+                            sendMessage('urn:x-cast:net.seplis.cast.new_track', {
+                                url: url,
+                                lang: info.subtitleLang,
+                                offset: offset,
+                            })
+                            setInfo({
+                                ...info,
+                                subtitleOffset: offset
+                            })
+                        }
                     }}
                 />
             </Flex>

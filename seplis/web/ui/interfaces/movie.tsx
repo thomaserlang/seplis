@@ -23,6 +23,7 @@ export interface IMovie {
     rating_votes: number | null
     collection: IMovieCollection | null
     genres: IGenre[]
+    user_watched: IMovieWatched
 }
 
 
