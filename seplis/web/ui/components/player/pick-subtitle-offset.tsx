@@ -4,8 +4,9 @@ export function PickSubtitleOffset({ selected = 0, onChange }: { selected: numbe
     return <Select value={selected} onChange={(event) => {
         onChange(parseFloat(event.currentTarget.value))
     }}>
-        {[...Array(21)].map((v, i) => (
-            <option key={`subOffset${i}`} value={(i/2-5)*-1}>{i/2-5} {(Math.abs(i/2-5) == 1)?'second':'seconds'}</option>
-        ))}
+        {[...Array(73)].map((v, i) => {
+            const a = i/2-18
+            return <option key={`subOffset${i}`} value={a*-1}>{a} {(Math.abs(a) == 1)?'second':'seconds'}</option>
+        })}
     </Select>
 }
