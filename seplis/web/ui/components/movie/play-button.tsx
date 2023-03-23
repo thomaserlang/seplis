@@ -21,7 +21,7 @@ import { getDefaultTrackStyling } from '../player/react-cast-sender/utils/utils'
 export default function PlayButton({ movieId }: { movieId: number }) {
     const navigate = useNavigate()
     const { connected } = useCast()
-    const { loadMedia, tracks } = useCastPlayer()
+    const { loadMedia } = useCastPlayer()
     const { isInitialLoading, data } = useQuery(['movie', 'play-button', movieId], async () => {
         const result = await api.get<IPlayRequest[]>(`/2/movies/${movieId}/play-servers`)
         return result.data.length > 0
