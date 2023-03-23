@@ -99,6 +99,8 @@ function hoverMove(event: any, duration: number, setHoverTime: (time: number) =>
     let time = Math.trunc(norm * x)
     if (time > duration)
         time = duration
+    if (time < 0)
+        time = 0
     setHoverTime(time)
 }
 
