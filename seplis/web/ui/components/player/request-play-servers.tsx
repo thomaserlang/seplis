@@ -27,7 +27,7 @@ async function getPlayServerSources(playRequest: IPlayRequest) {
             params: {
                 'play_id': playRequest.play_id,
             },
-            timeout: 2000,
+            timeout: 5000,
 
         })
         const data: IPlayServerRequestSources = {
