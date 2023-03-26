@@ -251,7 +251,8 @@ function getPlayUrl({ videoElement, requestSource, startTime, audio, resolutionW
         `&transcode_audio_codec=aac` +
         `&supported_pixel_formats=yuv420p` +
         `&transcode_pixel_format=yuv420p` +
-        `&format=hls`
+        `&format=hls`+
+        `&audio_channels=6`
 }
 
 
