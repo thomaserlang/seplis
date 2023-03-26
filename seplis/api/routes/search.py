@@ -72,6 +72,7 @@ def get_by_query(title: str):
                 'field': 'popularity',
                 'modifier': 'log1p',
                 'factor': 2,
+                'missing': 0,
             }
         }
     }
@@ -101,6 +102,7 @@ def get_by_title(title: str):
                 'field': 'popularity',
                 'modifier': 'log1p',
                 'factor': 2,
+                'missing': 0,
             }
         }
     }
