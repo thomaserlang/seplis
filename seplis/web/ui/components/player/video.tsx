@@ -26,6 +26,7 @@ export interface IVideoControls {
     sessionUUID: () => string
     setCurrentTime: (time: number) => void
     togglePlay: () => void
+    toggleFullscreen: () => void
     paused: () => boolean
     setVolume: (volume: number) => void
     getVolume: () => number
@@ -62,6 +63,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         paused: () => videoElement.current.paused,
         setVolume: (volume: number) => videoElement.current.volume = volume,
         getVolume: () => videoElement.current.volume,
+        toggleFullscreen: () => toggleFullscreen(videoElement.current)
     }), [videoElement.current])
 
     useEffect(() => {
@@ -85,7 +87,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         })
 
         const recover = () => {
-            console.log({'baseTime': baseTime.current, 'recoverTime': recoverTime.current, 'videoCurrentTime': videoElement.current.currentTime})
+            console.log({ 'baseTime': baseTime.current, 'recoverTime': recoverTime.current, 'videoCurrentTime': videoElement.current.currentTime })
             baseTime.current = recoverTime.current
 
             if (videoElement.current.paused) {
@@ -115,7 +117,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed()))
             hls.current.on(Hls.Events.ERROR, (e, data) => {
                 console.warn(data)
-                switch(data.type) {
+                switch (data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
                         if (!data.fatal && ((data.response as any)?.code !== 404))
                             return
@@ -129,7 +131,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                         if (onLoadingState) onLoadingState(true)
                         hls.current.swapAudioCodec()
                         hls.current.recoverMediaError()
-                        videoElement.current.play().catch(() => {})
+                        videoElement.current.play().catch(() => { })
                         break
                     default:
                         if (!data.fatal) return
@@ -145,7 +147,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 if (e.response.status == 404) {
                     clearInterval(t)
                     if (!Hls.isSupported())
-                        recover()                    
+                        recover()
                 }
             })
         }, 4000)
@@ -214,6 +216,23 @@ function togglePlay(video: HTMLVideoElement) {
 }
 
 
+function toggleFullscreen(video: HTMLVideoElement) {
+    if (!document.fullscreenElement) {
+        if (video.requestFullscreen) {
+            video.requestFullscreen();
+        } else if ((video as any).webkitEnterFullscreen) {
+            (video as any).webkitEnterFullscreen();
+        }
+    } else {
+        if ((document as any).cancelFullScreen) {
+            (document as any).cancelFullScreen()
+        } else if ((document as any).webkitCancelFullScreen) {
+            (document as any).webkitCancelFullScreen()
+        }
+    }
+}
+
+
 function setCurrentTime(time: number, videoElement: HTMLVideoElement, setSessionUUID: (id: string) => void, baseTime: MutableRefObject<number>, onTimeUpdate: (n: number) => void) {
     if (videoElement.seekable.length <= 1 || videoElement.seekable.end(0) <= 1) {
         // If we are transcoding, check if we have transcoded enough to not have to start a new session
@@ -251,7 +270,7 @@ function getPlayUrl({ videoElement, requestSource, startTime, audio, resolutionW
         `&transcode_audio_codec=aac` +
         `&supported_pixel_formats=yuv420p` +
         `&transcode_pixel_format=yuv420p` +
-        `&format=hls`+
+        `&format=hls` +
         `&audio_channels=6`
 }
 
@@ -295,7 +314,7 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
         for (const track of videoElement.textTracks) {
             track.mode = 'disabled'
         }
-        
+
         if (!data) return
 
         // Idk why but adding a new track too fast after disabling a previous one
@@ -305,8 +324,8 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
             textTrack.mode = 'showing'
             for (const cue of data.entries) {
                 const vtt = new VTTCue(
-                    ((cue.from / 1000) - startTime) + subtitleOffset, 
-                    ((cue.to / 1000) - startTime) + subtitleOffset, 
+                    ((cue.from / 1000) - startTime) + subtitleOffset,
+                    ((cue.to / 1000) - startTime) + subtitleOffset,
                     cue.text
                 )
                 vtt.line = subtitleLinePosition

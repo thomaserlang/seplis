@@ -111,7 +111,7 @@ function VideoPlayer({
     const videoControls = useRef<IVideoControls>()
 
     const startHideControlsTimer = () => {
-        if (!showControls) 
+        if (!showControls)
             setShowControls(true)
         clearTimeout(hideControlsTimer.current)
         hideControlsTimer.current = setTimeout(() => {
@@ -134,6 +134,7 @@ function VideoPlayer({
     }, [])
 
     return <Box
+        id="player"
         position="fixed"
         width="100%"
         height="100%"
@@ -185,7 +186,7 @@ function VideoPlayer({
         {showBigPlay && <BigPlay onClick={() => videoControls.current.togglePlay()} />}
 
         {(showControls || paused) && <ControlsTop>
-            <PlayButton aria-label="back" icon={<FaTimes />} onClick={() => {onClose && onClose()}} />
+            <PlayButton aria-label="back" icon={<FaTimes />} onClick={() => { onClose && onClose() }} />
         </ControlsTop>}
 
         {(showControls || paused) && <ControlsBottom>
@@ -242,7 +243,7 @@ function VideoPlayer({
                         }}
                         onSubtitleOffsetChange={setSubtitleOffset}
                     />
-                    <FullscreenButton />
+                    <FullscreenButton videoControls={videoControls.current} />
                 </Flex>
             </Flex>
         </ControlsBottom>}
@@ -250,11 +251,11 @@ function VideoPlayer({
 }
 
 
-function FullscreenButton() {
+function FullscreenButton({ videoControls }: { videoControls: IVideoControls }) {
     const [fullscreen, setFullscreen] = useState(false)
     return <>{fullscreen ?
-        <PlayButton aria-label="Open fullscreen" icon={<FaExpand />} onClick={() => fullscreenToggle(document.body, setFullscreen)} /> :
-        <PlayButton aria-label="Exit fullscreen" icon={<FaArrowsAlt />} onClick={() => fullscreenToggle(document.body, setFullscreen)} />
+        <PlayButton aria-label="Open fullscreen" icon={<FaExpand />} onClick={() => fullscreenToggle(document.getElementById('player'), videoControls, setFullscreen)} /> :
+        <PlayButton aria-label="Exit fullscreen" icon={<FaArrowsAlt />} onClick={() => fullscreenToggle(document.getElementById('player'), videoControls, setFullscreen)} />
     }</>
 }
 
@@ -384,7 +385,7 @@ function BigPlay({ onClick }: { onClick: () => void }) {
 }
 
 
-function fullscreenToggle(element: HTMLElement, setFullscreen: (fullscreen: boolean) => void) {
+function fullscreenToggle(element: HTMLElement, videoControls: IVideoControls, setFullscreen: (fullscreen: boolean) => void) {
     if (!document.fullscreenElement) {
         if ((element as any).enterFullscreen) {
             (element as any).enterFullscreen()
@@ -394,8 +395,8 @@ function fullscreenToggle(element: HTMLElement, setFullscreen: (fullscreen: bool
             (element as any).mozRequestFullScreen()
         } else if ((element as any).webkitRequestFullScreen) {
             (element as any).webkitRequestFullScreen((Element as any).ALLOW_KEYBOARD_INPUT)
-        } else if ((element as any).webkitEnterFullscreen) {
-            (element as any).webkitEnterFullscreen()
+        } else {
+            videoControls.toggleFullscreen()
         }
         setFullscreen(true)
     } else {
