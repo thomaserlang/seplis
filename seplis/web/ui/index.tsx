@@ -78,7 +78,6 @@ const theme = extendTheme({
 
 import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'
 import SeriesHome from './pages/series/home'
-import MoviesHome from './pages/movies/home'
 import SeriesWatchlist from './pages/series/watchlist'
 import SeriesFavorites from './pages/series/favorites'
 import SeriesWatched from './pages/series/watched'
@@ -121,7 +120,6 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<SendResetPassword />} />
             <Route path="/reset-password/:key" element={<ResetPassword />} />
-            <Route path="/movies/home" element={<MoviesHome />} />
             <Route path="/movies/watchlist" element={<MovieWatchlist />} />
             <Route path="/movies/favorites" element={<MovieFavorites />} />
             <Route path="/movies/watched" element={<MoviesWatched />} />
