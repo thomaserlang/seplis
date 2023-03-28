@@ -105,7 +105,7 @@ export default function ChromecastControls() {
                         let lang = ''
                         if (info.type === 'episode')
                             api.put(`/2/series/${info.series.id}/user-settings`, {
-                                'subtitle_lang': source ? `${source.language || source.title}:${source.index}` : null,
+                                'subtitle_lang': source ? `${source.language || source.title}:${source.index}` : 'off',
                             })
                         if (source) {
                             lang = `${source.language}:${source.index}`

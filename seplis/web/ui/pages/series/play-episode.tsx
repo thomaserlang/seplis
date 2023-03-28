@@ -75,7 +75,7 @@ export default function PlayEpisode() {
     }
     const onSubtitleChange = (source: IPlaySourceStream) => {
         api.put(`/2/series/${seriesId}/user-settings`, {
-            'subtitle_lang': source ? `${source.language || source.title}:${source.index}` : null,
+            'subtitle_lang': source ? `${source.language || source.title}:${source.index}` : 'off',
         })
     }
 

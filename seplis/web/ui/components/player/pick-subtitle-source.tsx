@@ -12,7 +12,7 @@ interface IProps {
 export function PickSubtitleSource({ subtitleSources, selected, onChange }: IProps) {
     return <Box>
             <Box                
-                textStyle={!selected ? 'selectedText' : null}
+                textStyle={!selected  ? 'selectedText' : null}
                 cursor="pointer"
                 onClick={() => onChange && onChange(null)}
             >
@@ -33,6 +33,8 @@ export function PickSubtitleSource({ subtitleSources, selected, onChange }: IPro
 
 
 export function pickStartSubtitle(requestSource: IPlayServerRequestSource, defaultSubtitle?: string) {
+    if (defaultSubtitle == 'off')
+        return
     const s = stringToSourceStream(defaultSubtitle, requestSource.source.subtitles)
     if (s) return s
     for (const sub of requestSource.source.subtitles) {
