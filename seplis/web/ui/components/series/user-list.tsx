@@ -2,13 +2,21 @@ import { Box } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import ImageList from '@seplis/components/list'
 import { ISeries } from '@seplis/interfaces/series'
+import { ISliderItem } from '@seplis/interfaces/slider'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { SeriesUserFilter } from '../../components/series/user-filter'
 
+interface IProps<S = ISeries>{
+    title: string
+    url: string
+    defaultSort?: string
+    onItemSelected?: (item: S) => void
+    parseItem?: (item: S) => ISliderItem
+}
 
-export default function UserSeriesList({ title, url, defaultSort }: { title: string, url: string, defaultSort: string }) {
+export default function UserSeriesList<S = ISeries>({ title, url, defaultSort, parseItem, onItemSelected }: IProps<S>) {
     const { ref, focusKey, focusSelf } = useFocusable()
     const navigate = useNavigate()
     const location = useLocation()
@@ -25,25 +33,25 @@ export default function UserSeriesList({ title, url, defaultSort }: { title: str
     return <>
         <FocusContext.Provider value={focusKey}>
             <Box ref={ref}>
-                <ImageList<ISeries>
+                <ImageList<S>
                     title={title}
                     url={url}
                     urlParams={{
                         ...query,
                         'per_page': 50,
                     }}
-                    parseItem={(series) => (
+                    parseItem={parseItem || ((series) => (
                         {
                             key: `series-${series.id}`,
                             title: series.title,
                             img: series.poster_image?.url,
                         }
-                    )}
-                    onItemSelected={(series: ISeries) => {
+                    ))}
+                    onItemSelected={onItemSelected || ((series: ISeries) => {
                         navigate(`/series/${series.id}`, {state: {
                             background: location
                         }})
-                    }}
+                    })}
                     renderFilter={(options) => {
                         return <SeriesUserFilter defaultValue={query} onSubmit={(data) => {
                             setQuery(data)

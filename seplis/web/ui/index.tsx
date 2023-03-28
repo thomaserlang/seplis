@@ -92,6 +92,9 @@ import SendResetPassword from './pages/send-reset-password'
 import ResetPassword from './pages/reset-password'
 import WatchHome from './pages/watch/home'
 import { CastProvider } from './components/player/react-cast-sender'
+import SeriesCountdown from './pages/series/countdown'
+import SeriesRecentlyAired from './pages/series/recently-aired'
+import SeriesToWatch from './pages/series/series-to-watch'
 
 spatialInit({})
 
@@ -129,6 +132,9 @@ function App() {
             <Route path="/series/watchlist" element={<SeriesWatchlist />} />
             <Route path="/series/favorites" element={<SeriesFavorites />} />
             <Route path="/series/watched" element={<SeriesWatched />} />
+            <Route path="/series/countdown" element={<SeriesCountdown />} />
+            <Route path="/series/recently-aired" element={<SeriesRecentlyAired />} />
+            <Route path="/series/to-watch" element={<SeriesToWatch />} />
             <Route path="/series/:seriesId" element={<Series />} />
             <Route path="/series/:seriesId/episodes/:episodeNumber/play" element={<PlayEpisode />} />
             <Route path="/watch" element={<WatchHome />} />

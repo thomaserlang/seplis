@@ -4,7 +4,7 @@ import api from '@seplis/api'
 import { IPageCursorResult } from '@seplis/interfaces/page'
 import { ISliderItem } from '@seplis/interfaces/slider'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { useFocusable, FocusContext, FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import { Poster } from './poster'
 import './slider.less'
@@ -130,12 +130,24 @@ export function Card<S = any>({ item, onFocus, onItemSelected, viewItemIndex }: 
             onItemSelected(item.data)
         }}
     >
-        {item.topText !== undefined && <Box backgroundColor="black" textAlign="center">{item.topText}</Box>}
+        {item.topText !== undefined && <TextBox>{item.topText}</TextBox>}
         <Box className="poster-container" borderRadius="0">
             <Poster url={`${item.img}@SX320.webp`} title={item.title} />
         </Box>
-        {item.bottomText !== undefined && <Box backgroundColor="black" textAlign="center">{item.bottomText}</Box>}
+        {item.bottomText !== undefined && <TextBox>{item.bottomText}</TextBox>}
     </Flex>
+}
+
+
+function TextBox({ children }: { children: ReactNode }) {
+    return <Box
+        backgroundColor="black"
+        textAlign="center"
+        padding="0.25rem"
+        fontSize={['0.7rem', '1rem']}
+    >
+        {children}
+    </Box>
 }
 
 

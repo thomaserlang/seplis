@@ -24,7 +24,7 @@ type TRenderFilter = (options?: {
     onClose: () => void
 }) => JSX.Element
 
-const SplitWidths = ['100px', '125px', null, '175px', null, '250px']
+const SplitWidths = ['100px', '125px', null, '175px', null, '200px']
 
 export default function List<S = any>({ title, url, urlParams, renderFilter, onFocus, onItemSelected, parseItem }: IProps) {
     const [items, setItems] = useState<ISliderItem[]>([])

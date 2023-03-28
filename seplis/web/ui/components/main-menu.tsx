@@ -115,7 +115,9 @@ function MenuItems({ active }: { active?: string }) {
                 <Link to="/series/watchlist"><MenuItem>Watchlist</MenuItem></Link>
                 <Link to="/series/favorites"><MenuItem>Favorites</MenuItem></Link>
                 <Link to="/series/watched"><MenuItem>Watched</MenuItem></Link>
-                <MenuItem>Stats</MenuItem>
+                <Link to="/series/countdown"><MenuItem>Countdown</MenuItem></Link>
+                <Link to="/series/recently-aired"><MenuItem>Recently aired</MenuItem></Link>
+                <Link to="/series/to-watch"><MenuItem>To watch</MenuItem></Link>
                 <MenuDivider />
                 <SeriesNewMenuItem />
             </MenuList>
