@@ -268,16 +268,21 @@ function getPlayUrl({ videoElement, requestSource, startTime, audio, resolutionW
         //`&client_width=${this.getScreenWidth()}`+
         `&supported_audio_codecs=aac` +
         `&transcode_audio_codec=aac` +
-        `&supported_pixel_formats=yuv420p` +
-        `&transcode_pixel_format=yuv420p` +
+        `&supported_video_bit_depth=${getSupportedBitDepth().toString()}` +
+        `&supports_hdr=false`+
         `&format=hls` +
         `&audio_channels=6`
 }
 
+function getSupportedBitDepth() {
+    if (screen.colorDepth > 24)
+        return 10
+    return 8
+}
 
 function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
     const types: { [key: string]: string } = {
-        //'video/mp4; codecs="hvc1"': 'hevc',
+        'video/mp4; codecs="hvc1"': 'hevc',
         'video/mp4; codecs="avc1.42E01E"': 'h264',
     }
     const codecs = []
