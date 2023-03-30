@@ -102,7 +102,7 @@ export function castEpisodeRequest(
                 apiUrl: (window as any).seplisAPI,
                 resolutionWidth: resolutionWidth,
             }
-            let playUrl = customData.selectedRequestSource.request.play_url + `/files/${session}/transcode` +
+            const playUrl = customData.selectedRequestSource.request.play_url + `/files/${session}/transcode` +
                 `?play_id=${customData.selectedRequestSource.request.play_id}` +
                 `&session=${session}` +
                 `&start_time=${Math.round(startTime)}` +
@@ -111,8 +111,8 @@ export function castEpisodeRequest(
                 `&transcode_video_codec=h264` +
                 `&supported_audio_codecs=aac` +
                 `&transcode_audio_codec=aac` +
-                `&supported_pixel_formats=yuv420p` +
-                `&transcode_pixel_format=yuv420p` +
+                `&supported_video_bit_depth=8` +
+                `&supports_hdr=false` +
                 `&audio_channels=2` +
                 `&format=hls`+
                 `&audio_lang=${audioLang || ''}`+

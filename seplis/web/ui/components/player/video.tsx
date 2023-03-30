@@ -269,7 +269,7 @@ function getPlayUrl({ videoElement, requestSource, startTime, audio, resolutionW
         `&supported_audio_codecs=aac` +
         `&transcode_audio_codec=aac` +
         `&supported_video_bit_depth=${getSupportedBitDepth().toString()}` +
-        `&supports_hdr=false`+
+        `&supports_hdr=false` +
         `&format=hls` +
         `&audio_channels=6`
 }
