@@ -52,6 +52,7 @@ const resolutionNames: { [key: string]: string } = {
 
 
 export function resolutionToText(width: number) {
+    if (!width) return 'Auto'
     if (width in resolutionNames)
         return resolutionNames[width]
     return `W: ${width}`
