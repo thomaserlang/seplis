@@ -1,4 +1,4 @@
-import { Box } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { langCodeToLang } from '@seplis/utils'
 
@@ -9,26 +9,33 @@ interface IProps {
     onChange: (subtitleSource: IPlaySourceStream) => void
 }
 
+
 export function PickSubtitleSource({ subtitleSources, selected, onChange }: IProps) {
-    return <Box>
-            <Box                
-                textStyle={!selected  ? 'selectedText' : null}
-                cursor="pointer"
-                onClick={() => onChange && onChange(null)}
-            >
-                Off
-            </Box>
+    return <Flex gap="0.25rem" direction="column">
+        <Box
+            textStyle={!selected ? 'selectedText' : null}
+            cursor="pointer"
+            onClick={() => onChange && onChange(null)}
+        >
+            Off
+        </Box>
         {subtitleSources.map(subtitle => (
-            <Box 
+            <Box
                 key={subtitle.index}
                 textStyle={selected?.index == subtitle.index ? 'selectedText' : null}
                 cursor="pointer"
                 onClick={() => onChange && onChange(subtitle)}
             >
-                {subtitle.title} [{langCodeToLang(subtitle.language)}]
+                {subtitleSourceToName(subtitle)}
             </Box>
         ))}
-    </Box>
+    </Flex>
+}
+
+
+export function subtitleSourceToName(source: IPlaySourceStream) {
+    if (!source) return 'Off'
+    return `${source.title} [${langCodeToLang(source.language)}]`
 }
 
 

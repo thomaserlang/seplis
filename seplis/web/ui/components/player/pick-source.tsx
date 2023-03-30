@@ -1,6 +1,6 @@
-import { Box } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 import { IPlayRequest, IPlayServerRequestSource, IPlayServerRequestSources, IPlaySource } from '@seplis/interfaces/play-server'
-import { getDefaultResolutionWidth, widthToText } from './pick-quality'
+import { getDefaultResolutionWidth, resolutionToText } from './pick-quality'
 
 interface IProps {
     playServers: IPlayServerRequestSources[],
@@ -9,7 +9,10 @@ interface IProps {
 }
 
 export function PickSource({ playServers, selected, onChange }: IProps) {
-    return <Box>
+    return <Flex
+        gap="0.25rem"
+        direction="column"
+    >
         {playServers.map(server => (
             server.sources.sort((a, b) => b.width - a.width).map(source => (
                 <Box
@@ -25,11 +28,16 @@ export function PickSource({ playServers, selected, onChange }: IProps) {
                         if (onChange) onChange(r)
                     }}
                 >
-                    {`${widthToText(source.width)} ${source.codec}`}
+                    {renderPlaySource(source)}
                 </Box>
             ))
         ))}
-    </Box>
+    </Flex>
+}
+
+
+export function renderPlaySource(source: IPlaySource) {
+    return `${resolutionToText(source.width)} ${source.codec}`
 }
 
 

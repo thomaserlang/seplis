@@ -1,4 +1,4 @@
-import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Menu, MenuButton, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useEffect, useRef, useState } from 'react'
@@ -10,7 +10,7 @@ import { getDefaultResolutionWidth } from './pick-quality'
 import { pickStartSource } from './pick-source'
 import { pickStartSubtitle } from './pick-subtitle-source'
 import { useGetPlayServers } from './request-play-servers'
-import { ISettingsProps, Settings } from './settings'
+import { SettingsMenu } from './settings'
 import Slider from './slider'
 import { IVideoControls, Video } from './video'
 import VolumeBar from './volume-bar'
@@ -224,7 +224,7 @@ function VideoPlayer({
 
                 <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
                     {playNext && <PlayNext {...playNext} />}
-                    <SettingsButton
+                    <SettingsMenu
                         playServers={playServers}
                         requestSource={requestSource}
                         resolutionWidth={resolutionWidth}
@@ -253,10 +253,9 @@ function VideoPlayer({
 
 function FullscreenButton({ videoControls }: { videoControls: IVideoControls }) {
     const [fullscreen, setFullscreen] = useState(false)
-    return <>{fullscreen ?
+    return fullscreen ?
         <PlayButton aria-label="Open fullscreen" icon={<FaExpand />} onClick={() => fullscreenToggle(document.getElementById('player'), videoControls, setFullscreen)} /> :
         <PlayButton aria-label="Exit fullscreen" icon={<FaArrowsAlt />} onClick={() => fullscreenToggle(document.getElementById('player'), videoControls, setFullscreen)} />
-    }</>
 }
 
 
@@ -287,24 +286,6 @@ function VolumeButton({ videoControls }: { videoControls: IVideoControls }) {
             </PopoverBody>
         </PopoverContent>
     </Popover>
-}
-
-
-export function SettingsButton(props: ISettingsProps) {
-    const { isOpen, onOpen, onClose } = useDisclosure()
-    return <>
-        <PlayButton aria-label="Settings" onClick={onOpen} icon={<FaCog />} />
-
-        <Modal isOpen={isOpen} onClose={onClose} isCentered scrollBehavior="inside">
-            <ModalOverlay />
-            <ModalContent layerStyle="baseModal">
-                <ModalCloseButton />
-                <ModalBody>
-                    <Settings {...props} />
-                </ModalBody>
-            </ModalContent>
-        </Modal>
-    </>
 }
 
 

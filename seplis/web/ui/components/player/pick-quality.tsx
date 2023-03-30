@@ -1,4 +1,4 @@
-import { Box } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 import { IPlaySource } from '@seplis/interfaces/play-server'
 
 
@@ -9,11 +9,14 @@ interface IProps {
 }
 
 export function PickQuality({ source, selectedWidth, onChange }: IProps) {
-    return <Box>
+    return <Flex
+        gap="0.25rem"
+        direction="column"
+    >
         {Object.entries(resolutionNames).sort((a, b) => parseInt(b[0]) - parseInt(a[0])).map(([width, value]) => {
             const w = parseInt(width)
             if (source.width >= w)
-                return <Box 
+                return <Box
                     key={width}
                     textStyle={(w == selectedWidth) || (!selectedWidth && (w == source.width)) ? 'selectedText' : null}
                     cursor="pointer"
@@ -25,7 +28,7 @@ export function PickQuality({ source, selectedWidth, onChange }: IProps) {
                     {value}
                 </Box>
         })}
-    </Box>
+    </Flex>
 }
 
 
@@ -48,7 +51,7 @@ const resolutionNames: { [key: string]: string } = {
 }
 
 
-export function widthToText(width: number) {
+export function resolutionToText(width: number) {
     if (width in resolutionNames)
         return resolutionNames[width]
     return `W: ${width}`

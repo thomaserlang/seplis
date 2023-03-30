@@ -1,4 +1,4 @@
-import { Box } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { langCodeToLang } from '@seplis/utils'
 import { stringToSourceStream } from './pick-subtitle-source'
@@ -11,18 +11,26 @@ interface IProps {
 }
 
 export function PickAudioSource({ audioSources, selected, onChange }: IProps) {
-    return <Box>
+    return <Flex
+        gap="0.25rem"
+        direction="column">
         {audioSources.map(audio => (
-            <Box 
+            <Box
                 key={audio.index}
                 textStyle={selected?.index == audio.index ? 'selectedText' : null}
                 cursor="pointer"
                 onClick={() => onChange && onChange(audio)}
             >
-                {audio.title} [{langCodeToLang(audio.language)}]
+                {audioSourceToName(audio)}
             </Box>
         ))}
-    </Box>
+    </Flex>
+}
+
+
+export function audioSourceToName(source: IPlaySourceStream) {
+    if (!source) return 'Off'
+    return `${source.title} [${langCodeToLang(source.language)}]`
 }
 
 
@@ -32,5 +40,5 @@ export function pickStartAudio(requestSource: IPlayServerRequestSource, defaultA
     for (const sub of requestSource.source.audio) {
         if (sub.default || sub.forced)
             return sub
-    } 
+    }
 }

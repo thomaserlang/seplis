@@ -1,10 +1,12 @@
-import { Flex, Box } from '@chakra-ui/react'
+import { Flex, Box, Menu, MenuButton, forwardRef, Portal, MenuList, MenuItem, useDisclosure, Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody, IconButton, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverCloseButton, PopoverBody, PopoverAnchor } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
-import { PickAudioSource } from './pick-audio-source'
-import { PickQuality } from './pick-quality'
-import { PickSource } from './pick-source'
-import { PickSubtitleOffset } from './pick-subtitle-offset'
-import { PickSubtitleSource } from './pick-subtitle-source'
+import { ReactNode, useState } from 'react'
+import { FaCog } from 'react-icons/fa'
+import { audioSourceToName, PickAudioSource } from './pick-audio-source'
+import { PickQuality, resolutionToText } from './pick-quality'
+import { PickSource, renderPlaySource } from './pick-source'
+import { PickSubtitleOffset, SubtitleOffsetToText } from './pick-subtitle-offset'
+import { PickSubtitleSource, subtitleSourceToName } from './pick-subtitle-source'
 
 export interface ISettingsProps {
     playServers: IPlayServerRequestSources[],
@@ -20,9 +22,9 @@ export interface ISettingsProps {
     onSubtitleOffsetChange?: (offset: number) => void,
 }
 
-export function Settings({ 
-    playServers, 
-    requestSource, 
+export function SettingsMenu({
+    playServers,
+    requestSource,
     resolutionWidth,
     audioSource,
     subtitleSource,
@@ -33,49 +35,97 @@ export function Settings({
     onSubtitleSourceChange,
     onSubtitleOffsetChange,
 }: ISettingsProps) {
-    return <Flex wrap="wrap" gap="1rem">
-        <Flex basis="150px" direction="column">
-            <Box textStyle="h2">Sources</Box>
-            <PickSource 
-                playServers={playServers} 
-                selected={requestSource} 
-                onChange={onRequestSourceChange}    
-            />
-        </Flex>
+    const [nested, setNested] = useState<string>(null)
+    return <>
+        <Popover isOpen={nested !== null} onClose={() => setNested(null)}>
+            <Menu autoSelect={false}>
+                <PopoverAnchor>
+                    <MenuButton
+                        as={IconButton}
+                        aria-label="Settings"
+                        icon={<FaCog />}
+                        size="lg"
+                        fontSize="28px"
+                    />
+                </PopoverAnchor>
+                <MenuList>
+                    <MenuItem command={renderPlaySource(requestSource.source)} onClick={() => setNested('sources')}>
+                        Source
+                    </MenuItem>
+                    <MenuItem command={resolutionToText(resolutionWidth)} onClick={() => setNested('quality')}>
+                        Quality
+                    </MenuItem>
+                    <MenuItem command={audioSourceToName(audioSource)} onClick={() => setNested('audio')}>
+                        Audio
+                    </MenuItem>
+                    <MenuItem command={subtitleSourceToName(subtitleSource)} onClick={() => setNested('subtitles')}>
+                        Subtitles ({requestSource.source?.subtitles?.length})
+                    </MenuItem>
+                    <MenuItem command={SubtitleOffsetToText(subtitleOffset)} onClick={() => setNested('subtitle_offset')}>
+                        Subtitle offset
+                    </MenuItem>
+                </MenuList>
+            </Menu>
 
-        <Flex basis="150px" direction="column">
-            <Box textStyle="h2">Quality</Box>
-            <PickQuality 
-                source={requestSource.source} 
-                selectedWidth={resolutionWidth} 
-                onChange={onResolutionWidthChange} 
-            />
-        </Flex>
+            <PopoverContent>
+                <PopoverCloseButton />
 
-        <Flex basis="250px" grow="1" direction="column">
-            <Box textStyle="h2">Audio</Box>
-            <PickAudioSource 
-                audioSources={requestSource.source.audio}
-                selected={audioSource}
-                onChange={onAudioSourceChange}
-            />
-        </Flex>
+                {nested == 'sources' && <>
+                    <PopoverHeader>Sources</PopoverHeader>
+                    <PopoverBody>
+                        <PickSource
+                            playServers={playServers}
+                            selected={requestSource}
+                            onChange={onRequestSourceChange}
+                        />
+                    </PopoverBody>
+                </>}
 
+                {nested == 'quality' && <>
+                    <PopoverHeader>Quality</PopoverHeader>
+                    <PopoverBody>
+                        <PickQuality
+                            source={requestSource.source}
+                            selectedWidth={resolutionWidth}
+                            onChange={onResolutionWidthChange}
+                        />
+                    </PopoverBody>
+                </>}
 
-        <Flex basis="250px" grow="1" direction="column">
-            <Box textStyle="h2">Subtitles</Box>
-            <PickSubtitleSource
-                subtitleSources={requestSource.source.subtitles}
-                selected={subtitleSource}
-                onChange={onSubtitleSourceChange}
-            />
-        </Flex>
+                {nested == 'audio' && <>
+                    <PopoverHeader>Audio</PopoverHeader>
+                    <PopoverBody>
+                        <Box maxHeight="35vh" overflow="auto">
+                            <PickAudioSource
+                                audioSources={requestSource.source.audio}
+                                selected={audioSource}
+                                onChange={onAudioSourceChange}
+                            />
+                        </Box>
+                    </PopoverBody>
+                </>}
 
+                {nested == 'subtitles' && <>
+                    <PopoverHeader>Subtitles</PopoverHeader>
+                    <PopoverBody>
+                        <Box maxHeight="35vh" overflow="auto">
+                            <PickSubtitleSource
+                                subtitleSources={requestSource.source.subtitles}
+                                selected={subtitleSource}
+                                onChange={onSubtitleSourceChange}
+                            />
+                        </Box>
+                    </PopoverBody>
+                </>}
 
-        <Flex basis="150px" grow="1" direction="column">
-            <Box textStyle="h2">Subtitle offset</Box>
-            <PickSubtitleOffset selected={subtitleOffset} onChange={onSubtitleOffsetChange} />
-        </Flex>
+                {nested == 'subtitle_offset' && <>
+                    <PopoverHeader>Subtitle offset</PopoverHeader>
+                    <PopoverBody>
+                        <PickSubtitleOffset selected={subtitleOffset} onChange={onSubtitleOffsetChange} />
+                    </PopoverBody>
+                </>}
 
-    </Flex>
+            </PopoverContent>
+        </Popover>
+    </>
 }

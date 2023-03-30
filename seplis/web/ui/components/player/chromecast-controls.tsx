@@ -7,8 +7,9 @@ import { castMovieRequest } from '../movie/play-button'
 import { castEpisodeRequest } from '../series/episode-play-button'
 import { pickStartAudio } from './pick-audio-source'
 import { pickStartSubtitle } from './pick-subtitle-source'
-import { PlayButton, SettingsButton } from './player'
+import { PlayButton } from './player'
 import { useCast, useCastPlayer } from './react-cast-sender'
+import { SettingsMenu } from './settings'
 import Slider from './slider'
 
 
@@ -71,7 +72,7 @@ export default function ChromecastControls() {
 
             <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
 
-                <SettingsButton
+                <SettingsMenu
                     playServers={info.requestSources}
                     requestSource={info.selectedRequestSource}
                     resolutionWidth={info.resolutionWidth}
