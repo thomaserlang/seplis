@@ -1,12 +1,12 @@
 import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Menu, MenuButton, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { secondsToTime } from '@seplis/utils'
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import FullErrorPage from '../full-page-error'
 import { pickStartAudio } from './pick-audio-source'
-import { getDefaultResolutionWidth } from './pick-quality'
+import { getDefaultResolutionWidth, getResolutionWidth } from './pick-quality'
 import { pickStartSource } from './pick-source'
 import { pickStartSubtitle } from './pick-subtitle-source'
 import { useGetPlayServers } from './request-play-servers'
@@ -98,7 +98,7 @@ function VideoPlayer({
 }: IVideoPlayerProps) {
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
-    const [resolutionWidth, setResolutionWidth] = useState<number>(getDefaultResolutionWidth())
+    const [resolutionWidth, setResolutionWidth] = useState<number>(getResolutionWidth(requestSource.source))
     const [audioSource, setAudioSource] = useState<IPlaySourceStream>(() => pickStartAudio(requestSource, defaultAudio))
     const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(() => pickStartSubtitle(requestSource, defaultSubtitle))
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0)
@@ -121,6 +121,13 @@ function VideoPlayer({
             clearTimeout(hideControlsTimer.current)
         }
     }
+
+    const requestSourceChange = useCallback((newRequestSource: IPlayServerRequestSource) => {
+        setRequestSource(newRequestSource)
+        setResolutionWidth(getResolutionWidth(newRequestSource.source))
+        setAudioSource(pickStartAudio(newRequestSource, defaultAudio))
+        setSubtitleSource(pickStartSubtitle(newRequestSource, defaultSubtitle))
+    }, [defaultAudio, defaultSubtitle])
 
     useEffect(() => {
         videoControls.current.setVolume(parseFloat(localStorage.getItem('volume')) || 0.5)
@@ -231,7 +238,7 @@ function VideoPlayer({
                         audioSource={audioSource}
                         subtitleSource={subtitleSource}
                         subtitleOffset={subtitleOffset}
-                        onRequestSourceChange={setRequestSource}
+                        onRequestSourceChange={requestSourceChange}
                         onResolutionWidthChange={setResolutionWidth}
                         onAudioSourceChange={(source) => {
                             setAudioSource(source)

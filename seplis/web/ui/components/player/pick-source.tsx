@@ -52,7 +52,7 @@ export function pickStartSource(playServers: IPlayServerRequestSources[], defaul
         request: playServers[0].request,
         source: playServers[0].sources[0],
     }
-    const w = defaultResolutionWidth || getDefaultResolutionWidth() || 1920
+    const w = defaultResolutionWidth || getDefaultResolutionWidth()
     for (const playServer of playServers.reverse())
         for (const source of playServer.sources)
             if (source.width <= w)

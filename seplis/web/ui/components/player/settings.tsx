@@ -58,8 +58,11 @@ export function SettingsMenu({
                     <MenuItem command={audioSourceToName(audioSource)} onClick={() => setNested('audio')}>
                         Audio
                     </MenuItem>
-                    <MenuItem command={subtitleSourceToName(subtitleSource)} onClick={() => setNested('subtitles')}>
-                        Subtitles ({requestSource.source?.subtitles?.length})
+                    <MenuItem 
+                        isDisabled={!requestSource.source?.subtitles?.length} 
+                        command={subtitleSourceToName(subtitleSource)} 
+                        onClick={() => setNested('subtitles')}>
+                        Subtitle
                     </MenuItem>
                     <MenuItem command={SubtitleOffsetToText(subtitleOffset)} onClick={() => setNested('subtitle_offset')}>
                         Subtitle offset
@@ -76,7 +79,10 @@ export function SettingsMenu({
                         <PickSource
                             playServers={playServers}
                             selected={requestSource}
-                            onChange={onRequestSourceChange}
+                            onChange={(s) => {
+                                onRequestSourceChange(s)
+                                setNested(null)
+                            }}
                         />
                     </PopoverBody>
                 </>}
@@ -87,7 +93,10 @@ export function SettingsMenu({
                         <PickQuality
                             source={requestSource.source}
                             selectedWidth={resolutionWidth}
-                            onChange={onResolutionWidthChange}
+                            onChange={(s) => {
+                                onResolutionWidthChange(s)
+                                setNested(null)
+                            }}
                         />
                     </PopoverBody>
                 </>}
@@ -99,7 +108,10 @@ export function SettingsMenu({
                             <PickAudioSource
                                 audioSources={requestSource.source.audio}
                                 selected={audioSource}
-                                onChange={onAudioSourceChange}
+                                onChange={(s) => {
+                                    onAudioSourceChange(s)
+                                    setNested(null)
+                                }}
                             />
                         </Box>
                     </PopoverBody>
@@ -112,7 +124,10 @@ export function SettingsMenu({
                             <PickSubtitleSource
                                 subtitleSources={requestSource.source.subtitles}
                                 selected={subtitleSource}
-                                onChange={onSubtitleSourceChange}
+                                onChange={(s) => {
+                                    onSubtitleSourceChange(s)
+                                    setNested(null)
+                                }}
                             />
                         </Box>
                     </PopoverBody>

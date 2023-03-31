@@ -36,6 +36,13 @@ export function getDefaultResolutionWidth() {
     const w = localStorage.getItem('resolutionWidth')
     if (w)
         return parseInt(w)
+    return 1920
+}
+
+
+export function getResolutionWidth(source: IPlaySource) {
+    const w = getDefaultResolutionWidth()
+    return (w > source.width) ? source.width : w 
 }
 
 
