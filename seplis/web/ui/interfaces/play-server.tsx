@@ -21,6 +21,8 @@ export interface IPlaySource {
     duration: number
     audio: IPlaySourceStream[]
     subtitles: IPlaySourceStream[]
+    video_bit_depth: number
+    hdr: boolean
     index: number
 }
 

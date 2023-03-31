@@ -37,7 +37,12 @@ export function PickSource({ playServers, selected, onChange }: IProps) {
 
 
 export function renderPlaySource(source: IPlaySource) {
-    return `${resolutionToText(source.width)} ${source.codec}`
+    let s = `${resolutionToText(source.width)} ${source.codec.toUpperCase()}`
+    if (source.video_bit_depth > 8)
+        s += ` ${source.video_bit_depth} bit`
+    if (source.hdr)
+        s += ` HDR`
+    return s
 }
 
 
