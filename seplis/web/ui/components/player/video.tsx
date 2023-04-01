@@ -303,6 +303,7 @@ function getCurrentTime(videoElement: HTMLVideoElement, baseTime: number) {
 
 
 function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, subtitleOffset = 0, subtitleLinePosition = 16 }: { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number, subtitleLinePosition?: number }) {
+    console.log('SetSubtitle')
     const { data } = useQuery(['subtitle', requestSource?.request.play_id, subtitleSource?.index], async () => {
         if (!subtitleSource)
             return null
@@ -311,7 +312,11 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
             `&source_index=${requestSource.source.index}` +
             `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}`)
         return vttParse(result.data)
+    }, {
+        refetchOnMount: false,
+        refetchOnReconnect: false,
     })
+
 
     useEffect(() => {
         if (!videoElement) return
@@ -319,7 +324,7 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
         for (const track of videoElement.textTracks) {
             track.mode = 'disabled'
         }
-
+        
         if (!data) return
 
         // Idk why but adding a new track too fast after disabling a previous one
@@ -337,7 +342,7 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
                 textTrack.addCue(vtt)
             }
         }, 100)
-    }, [data, startTime, subtitleOffset])
+    }, [videoElement, data, startTime, subtitleOffset])
 
     useEffect(() => {
         if (!videoElement) return
