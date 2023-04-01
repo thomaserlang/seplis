@@ -20,16 +20,16 @@ export default function Slider({ duration, currentTime, onTimeChange, playReques
         userSelect="none"
         height="42px"
         width="100%"
-        onMouseMove={(e) => hoverMove(e, duration, setHoverTime)}
-        onTouchMove={(e) => hoverMove(e, duration, setHoverTime)}
+        onMouseMove={(e) => setHoverTime(eventToTime(e, duration))}
+        onTouchMove={(e) => setHoverTime(eventToTime(e, duration))}
         onMouseLeave={() => setHoverTime(null)}
         onTouchCancel={() => setHoverTime(null)}
-        onTouchEnd={() => {
-            onTimeChange(hoverTime)
+        onTouchEnd={(e) => {
+            onTimeChange(eventToTime(e, duration))
             setHoverTime(null)
         }}
-        onClick={() => {
-            onTimeChange(hoverTime)
+        onClick={(e) => {
+            onTimeChange(eventToTime(e, duration))
             setHoverTime(null)
         }}
     >
@@ -64,9 +64,7 @@ function SliderTrackProgress({ progress }: { progress: number }) {
         backgroundColor="#428bca"
         userSelect="none"
         style={{ width: `${progress}%` }}
-    >
-
-    </Box>
+    />
 }
 
 
@@ -87,7 +85,7 @@ function SliderHoverTime({ time, position }: { time: number, position: number })
 }
 
 
-function hoverMove(event: any, duration: number, setHoverTime: (time: number) => void) {
+function eventToTime(event: any, duration: number) {
     if (event.type.match('^touch')) {
         if (event.originalEvent)
             event = event.originalEvent
@@ -101,7 +99,7 @@ function hoverMove(event: any, duration: number, setHoverTime: (time: number) =>
         time = duration
     if (time < 0)
         time = 0
-    setHoverTime(time)
+    return time
 }
 
 
