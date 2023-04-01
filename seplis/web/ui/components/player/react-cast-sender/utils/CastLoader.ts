@@ -11,7 +11,7 @@ class CastLoader {
         CastLoader.onGCastApiAvailable(isAvailable, resolve);
       CastLoader.loadCastSDK()
         .then(() => {
-          console.warn('Cast sender lib has been loaded successfully');
+          // Loaded
         })
         .catch(e => {
           console.warn('Cast sender lib loading failed', e);
@@ -31,7 +31,7 @@ class CastLoader {
     if (isAvailable) {
       resolve();
     } else {
-      console.warn(`Google cast API isn't available yet`);
+      console.log(`Google cast API isn't available yet`);
     }
   }
 }

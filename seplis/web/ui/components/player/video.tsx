@@ -87,7 +87,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         })
 
         const recover = () => {
-            console.log({ 'baseTime': baseTime.current, 'recoverTime': recoverTime.current, 'videoCurrentTime': videoElement.current.currentTime })
             baseTime.current = recoverTime.current
 
             if (videoElement.current.paused) {
@@ -303,7 +302,6 @@ function getCurrentTime(videoElement: HTMLVideoElement, baseTime: number) {
 
 
 function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, subtitleOffset = 0, subtitleLinePosition = 16 }: { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number, subtitleLinePosition?: number }) {
-    console.log('SetSubtitle')
     const { data } = useQuery(['subtitle', requestSource?.request.play_id, subtitleSource?.index], async () => {
         if (!subtitleSource)
             return null
@@ -324,7 +322,7 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
         for (const track of videoElement.textTracks) {
             track.mode = 'disabled'
         }
-        
+
         if (!data) return
 
         // Idk why but adding a new track too fast after disabling a previous one
