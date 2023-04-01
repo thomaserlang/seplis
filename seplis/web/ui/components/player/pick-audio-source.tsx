@@ -29,8 +29,15 @@ export function PickAudioSource({ audioSources, selected, onChange }: IProps) {
 
 
 export function audioSourceToName(source: IPlaySourceStream) {
-    if (!source) return 'Off'
-    return `${source.title} [${langCodeToLang(source.language)}]`
+    if (!source) return 'No audio'
+    if (!source.language && !source.title)
+        return 'Unknown language'
+    else if (source.title === source.language && source.language)
+        return `${langCodeToLang(source.language)}`
+    else if (!source.language)
+        return source.title
+    else
+        return `${langCodeToLang(source.language)} ${source.title}`
 }
 
 
