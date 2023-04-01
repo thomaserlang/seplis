@@ -1,4 +1,4 @@
-import { Flex, Box, Menu, MenuButton, forwardRef, Portal, MenuList, MenuItem, useDisclosure, Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody, IconButton, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverCloseButton, PopoverBody, PopoverAnchor } from '@chakra-ui/react'
+import { Flex, Box, Menu, MenuButton, forwardRef, Portal, MenuList, MenuItem, useDisclosure, Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody, IconButton, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverCloseButton, PopoverBody, PopoverAnchor, ModalHeader } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { ReactNode, useState } from 'react'
 import { FaCog } from 'react-icons/fa'
@@ -36,6 +36,7 @@ export function SettingsMenu({
     onSubtitleOffsetChange,
 }: ISettingsProps) {
     const [nested, setNested] = useState<string>(null)
+    const [showModal, setShowModal] = useState<string>(null)
     return <>
         <Popover isOpen={nested !== null} onClose={() => setNested(null)}>
             <Menu autoSelect={false}>
@@ -58,13 +59,13 @@ export function SettingsMenu({
                     <MenuItem command={audioSourceToName(audioSource)} onClick={() => setNested('audio')}>
                         Audio
                     </MenuItem>
-                    <MenuItem 
-                        isDisabled={!requestSource.source?.subtitles?.length} 
-                        command={subtitleSourceToName(subtitleSource)} 
+                    <MenuItem
+                        isDisabled={!requestSource.source?.subtitles?.length}
+                        command={subtitleSourceToName(subtitleSource)}
                         onClick={() => setNested('subtitles')}>
                         Subtitle
                     </MenuItem>
-                    <MenuItem command={SubtitleOffsetToText(subtitleOffset)} onClick={() => setNested('subtitle_offset')}>
+                    <MenuItem command={SubtitleOffsetToText(subtitleOffset)} onClick={() => setShowModal('subtitle_offset')}>
                         Subtitle offset
                     </MenuItem>
                 </MenuList>
@@ -133,14 +134,18 @@ export function SettingsMenu({
                     </PopoverBody>
                 </>}
 
-                {nested == 'subtitle_offset' && <>
-                    <PopoverHeader>Subtitle offset</PopoverHeader>
-                    <PopoverBody>
-                        <PickSubtitleOffset selected={subtitleOffset} onChange={onSubtitleOffsetChange} />
-                    </PopoverBody>
-                </>}
-
             </PopoverContent>
         </Popover>
+
+        {showModal == 'subtitle_offset' && <Modal isOpen={true} onClose={() => setShowModal(null)}>
+            <ModalOverlay />
+            <ModalContent backgroundColor="seplis.modalBackgroundColor" maxWidth="800px">
+                <ModalHeader>Subtitle offset</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <PickSubtitleOffset selected={subtitleOffset} onChange={onSubtitleOffsetChange} />
+                </ModalBody>
+            </ModalContent>
+        </Modal>}
     </>
 }
