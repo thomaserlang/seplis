@@ -32,7 +32,7 @@ export function audioSourceToName(source: IPlaySourceStream) {
     if (!source) return 'No audio'
     if (!source.language && !source.title)
         return 'Unknown language'
-    else if (source.title === source.language && source.language)
+    else if (source.language && (source.title === source.language) || (source.title === langCodeToLang(source.language)))
         return `${langCodeToLang(source.language)}`
     else if (!source.language)
         return source.title
