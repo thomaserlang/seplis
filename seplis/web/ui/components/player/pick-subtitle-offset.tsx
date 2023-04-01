@@ -1,4 +1,4 @@
-import { Box, Select, Slider, SliderMark, SliderThumb, SliderTrack, Text } from '@chakra-ui/react'
+import { Box, Button, Flex, Select, Slider, SliderMark, SliderThumb, SliderTrack, Text } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 
 export function PickSubtitleOffset({ selected = 0, onChange }: { selected: number, onChange: (offset: number) => void }) {
@@ -21,7 +21,7 @@ export function PickSubtitleOffset({ selected = 0, onChange }: { selected: numbe
         fontSize: 'sm',
     }
 
-    return <Box mb="2rem" mt="3rem">
+    return <Flex mb="2rem" mt="3rem" alignItems="center" direction="column">
         <Slider value={value} min={-30} max={30} step={0.5} onChange={setValue} onChangeEnd={(v) => onChange(v * -1)}>
             <SliderMark value={-30} {...labelStylesMinus}>
                 -30
@@ -56,7 +56,11 @@ export function PickSubtitleOffset({ selected = 0, onChange }: { selected: numbe
             </SliderTrack>
             <SliderThumb />
         </Slider>
-    </Box>
+
+        <Box mt="4rem">
+            <Button size="lg" onClick={() => onChange(null)}>Close</Button>
+        </Box>
+    </Flex>
 }
 
 export function SubtitleOffsetToText(offset: number) {

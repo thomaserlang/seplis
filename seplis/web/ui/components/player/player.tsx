@@ -109,6 +109,7 @@ function VideoPlayer({
     const [showControls, setShowControls] = useState(true)
     const hideControlsTimer = useRef<NodeJS.Timeout>()
     const videoControls = useRef<IVideoControls>()
+    const boxRef = useRef(null)
 
     const startHideControlsTimer = () => {
         if (!showControls)
@@ -148,6 +149,7 @@ function VideoPlayer({
         left="0"
         top="0"
         backgroundColor="#000"
+        ref={boxRef}
         onMouseMove={() => { startHideControlsTimer() }}
         onTouchMove={() => { startHideControlsTimer() }}
         onClick={() => {
@@ -249,6 +251,7 @@ function VideoPlayer({
                             if (onSubtitleChange) onSubtitleChange(source)
                         }}
                         onSubtitleOffsetChange={setSubtitleOffset}
+                        containerRef={boxRef}
                     />
                     <FullscreenButton videoControls={videoControls.current} />
                 </Flex>

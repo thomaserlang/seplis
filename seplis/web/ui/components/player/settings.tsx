@@ -1,6 +1,6 @@
 import { Flex, Box, Menu, MenuButton, forwardRef, Portal, MenuList, MenuItem, useDisclosure, Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody, IconButton, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverCloseButton, PopoverBody, PopoverAnchor, ModalHeader } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
-import { ReactNode, useState } from 'react'
+import { ReactNode, useRef, useState } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { audioSourceToName, PickAudioSource } from './pick-audio-source'
 import { PickQuality, resolutionToText } from './pick-quality'
@@ -20,6 +20,7 @@ export interface ISettingsProps {
     onAudioSourceChange?: (audioSource: IPlaySourceStream) => void,
     onSubtitleSourceChange?: (subtitleSource: IPlaySourceStream) => void,
     onSubtitleOffsetChange?: (offset: number) => void,
+    containerRef?: React.RefObject<HTMLElement | null>,
 }
 
 export function SettingsMenu({
@@ -34,6 +35,7 @@ export function SettingsMenu({
     onAudioSourceChange,
     onSubtitleSourceChange,
     onSubtitleOffsetChange,
+    containerRef,
 }: ISettingsProps) {
     const [nested, setNested] = useState<string>(null)
     const [showModal, setShowModal] = useState<string>(null)
@@ -137,15 +139,20 @@ export function SettingsMenu({
             </PopoverContent>
         </Popover>
 
-        {showModal == 'subtitle_offset' && <Modal isOpen={true} onClose={() => setShowModal(null)}>
-            <ModalOverlay />
-            <ModalContent backgroundColor="seplis.modalBackgroundColor" maxWidth="800px">
-                <ModalHeader>Subtitle offset</ModalHeader>
-                <ModalCloseButton />
-                <ModalBody>
-                    <PickSubtitleOffset selected={subtitleOffset} onChange={onSubtitleOffsetChange} />
-                </ModalBody>
-            </ModalContent>
-        </Modal>}
+        {showModal == 'subtitle_offset' &&
+            <Modal isOpen={true} onClose={() => setShowModal(null)} portalProps={{ containerRef: containerRef }}>
+                <ModalContent backgroundColor="seplis.modalBackgroundColor" maxWidth="800px">
+                    <ModalHeader>Subtitle offset</ModalHeader>
+                    <ModalCloseButton />
+                    <ModalBody>
+                        <PickSubtitleOffset selected={subtitleOffset} onChange={(v) => {
+                            if (v !== null)
+                                onSubtitleOffsetChange(v)
+                            else
+                                setShowModal(null)
+                        }} />
+                    </ModalBody>
+                </ModalContent>
+            </Modal>}
     </>
 }
