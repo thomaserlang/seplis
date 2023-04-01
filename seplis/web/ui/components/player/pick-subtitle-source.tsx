@@ -1,5 +1,5 @@
 import { Box, Flex } from '@chakra-ui/react'
-import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
+import { IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { langCodeToLang } from '@seplis/utils'
 
 
@@ -47,12 +47,12 @@ export function subtitleSourceToName(source: IPlaySourceStream) {
 }
 
 
-export function pickStartSubtitle(requestSource: IPlayServerRequestSource, defaultSubtitle?: string) {
+export function pickStartSubtitle(sourceStreams: IPlaySourceStream[], defaultSubtitle?: string) {
     if (defaultSubtitle == 'off')
         return
-    const s = stringToSourceStream(defaultSubtitle, requestSource.source.subtitles)
+    const s = stringToSourceStream(defaultSubtitle, sourceStreams)
     if (s) return s
-    for (const sub of requestSource.source.subtitles) {
+    for (const sub of sourceStreams) {
         if (sub.default || sub.forced)
             return sub
     }

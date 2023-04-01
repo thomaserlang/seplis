@@ -67,13 +67,13 @@ export function castEpisodeRequest(
                 requestSource = pickStartSource(result[0])
 
             if (!audioLang) {
-                const audio = pickStartAudio(requestSource, result[4].data?.audio_lang)
+                const audio = pickStartAudio(requestSource.source.audio, result[4].data?.audio_lang)
                 if (audio)
                     audioLang = `${audio.language}:${audio.index}`
             }
 
             if (!subtitleLang) {
-                const sub = pickStartSubtitle(requestSource, result[4].data?.subtitle_lang)
+                const sub = pickStartSubtitle(requestSource.source.subtitles, result[4].data?.subtitle_lang)
                 if (sub)
                     subtitleLang = `${sub.language}:${sub.index}`
             }

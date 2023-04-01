@@ -82,13 +82,13 @@ export function castMovieRequest(
                 requestSource = pickStartSource(result[0])
 
             if (!audioLang) {
-                const audio = pickStartAudio(requestSource)
+                const audio = pickStartAudio(requestSource.source.subtitles)
                 if (audio)
                     audioLang = `${audio.language}:${audio.index}`
             }
 
             if (!subtitleLang) {
-                const sub = pickStartSubtitle(requestSource)
+                const sub = pickStartSubtitle(requestSource.source.subtitles)
                 if (sub)
                     subtitleLang = `${sub.language}:${sub.index}`
             }

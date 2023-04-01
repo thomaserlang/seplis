@@ -41,11 +41,13 @@ export function audioSourceToName(source: IPlaySourceStream) {
 }
 
 
-export function pickStartAudio(requestSource: IPlayServerRequestSource, defaultAudio?: string) {
-    const s = stringToSourceStream(defaultAudio, requestSource.source.audio)
+export function pickStartAudio(sourceStreams: IPlaySourceStream[], defaultAudio?: string) {
+    const s = stringToSourceStream(defaultAudio, sourceStreams)
     if (s) return s
-    for (const sub of requestSource.source.audio) {
+    for (const sub of sourceStreams) {
         if (sub.default || sub.forced)
             return sub
     }
+    if (sourceStreams.length > 0)
+        return sourceStreams[0]
 }

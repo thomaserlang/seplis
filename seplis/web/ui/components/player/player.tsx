@@ -1,12 +1,12 @@
-import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Menu, MenuButton, Modal, ModalBody, ModalCloseButton, ModalContent, ModalFooter, ModalHeader, ModalOverlay, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner, Stack, useBoolean, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
-import { FaArrowsAlt, FaCog, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
+import { FaArrowsAlt, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
 import FullErrorPage from '../full-page-error'
 import { pickStartAudio } from './pick-audio-source'
-import { getDefaultResolutionWidth, getResolutionWidth } from './pick-quality'
+import { getResolutionWidth } from './pick-quality'
 import { pickStartSource } from './pick-source'
 import { pickStartSubtitle } from './pick-subtitle-source'
 import { useGetPlayServers } from './request-play-servers'
@@ -99,8 +99,8 @@ function VideoPlayer({
     const [requestSource, setRequestSource] = useState<IPlayServerRequestSource>(
         () => pickStartSource(playServers))
     const [resolutionWidth, setResolutionWidth] = useState<number>(getResolutionWidth(requestSource.source))
-    const [audioSource, setAudioSource] = useState<IPlaySourceStream>(() => pickStartAudio(requestSource, defaultAudio))
-    const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(() => pickStartSubtitle(requestSource, defaultSubtitle))
+    const [audioSource, setAudioSource] = useState<IPlaySourceStream>(() => pickStartAudio(requestSource.source.audio, defaultAudio))
+    const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(() => pickStartSubtitle(requestSource.source.subtitles, defaultSubtitle))
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0)
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
@@ -126,8 +126,8 @@ function VideoPlayer({
     const requestSourceChange = useCallback((newRequestSource: IPlayServerRequestSource) => {
         setRequestSource(newRequestSource)
         setResolutionWidth(getResolutionWidth(newRequestSource.source))
-        setAudioSource(pickStartAudio(newRequestSource, defaultAudio))
-        setSubtitleSource(pickStartSubtitle(newRequestSource, defaultSubtitle))
+        setAudioSource(pickStartAudio(newRequestSource.source.audio, defaultAudio))
+        setSubtitleSource(pickStartSubtitle(newRequestSource.source.audio, defaultSubtitle))
     }, [defaultAudio, defaultSubtitle])
 
     useEffect(() => {
