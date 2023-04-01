@@ -1,6 +1,6 @@
-import { Flex, Box, Menu, MenuButton, forwardRef, Portal, MenuList, MenuItem, useDisclosure, Modal, ModalOverlay, ModalContent, ModalCloseButton, ModalBody, IconButton, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverCloseButton, PopoverBody, PopoverAnchor, ModalHeader } from '@chakra-ui/react'
+import { Box, Menu, MenuButton, MenuList, MenuItem, Modal, ModalContent, ModalCloseButton, ModalBody, IconButton, Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverCloseButton, PopoverBody, PopoverAnchor, ModalHeader } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
-import { ReactNode, useRef, useState } from 'react'
+import { useState } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { audioSourceToName, PickAudioSource } from './pick-audio-source'
 import { PickQuality, resolutionToText } from './pick-quality'
