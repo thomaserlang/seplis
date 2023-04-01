@@ -192,6 +192,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             controls={false}
             preload="none"
             crossOrigin="anonymous"
+            playsInline
         >
             {children}
         </video>
