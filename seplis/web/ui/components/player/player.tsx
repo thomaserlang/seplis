@@ -127,7 +127,7 @@ function VideoPlayer({
         setRequestSource(newRequestSource)
         setResolutionWidth(getResolutionWidth(newRequestSource.source))
         setAudioSource(pickStartAudio(newRequestSource.source.audio, defaultAudio))
-        setSubtitleSource(pickStartSubtitle(newRequestSource.source.audio, defaultSubtitle))
+        setSubtitleSource(pickStartSubtitle(newRequestSource.source.subtitles, defaultSubtitle))
     }, [defaultAudio, defaultSubtitle])
 
     useEffect(() => {
