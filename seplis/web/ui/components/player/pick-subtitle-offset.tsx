@@ -10,21 +10,19 @@ export function PickSubtitleOffset({ selected = 0, onChange }: { selected: numbe
     }, [selected])
 
     const labelStyles = {
-        mt: '2',
+        mt: '20px',
         ml: '-1',
-        fontSize: 'sm',
     }
 
     const labelStylesMinus = {
-        mt: '2',
+        mt: '20px',
         ml: '-2',
-        fontSize: 'sm',
     }
 
     return <Flex mb="2rem" mt="3rem" alignItems="center" direction="column">
-        <Slider value={value} min={-30} max={30} step={0.5} onChange={setValue} onChangeEnd={(v) => onChange(v * -1)}>
-            <SliderMark value={-30} {...labelStylesMinus}>
-                -30
+        <Slider size="lg" value={value} min={-10} max={10} step={0.5} onChange={setValue} onChangeEnd={(v) => onChange(v * -1)}>
+            <SliderMark value={-10} {...labelStylesMinus}>
+                -10
             </SliderMark>
             <SliderMark value={-4} {...labelStylesMinus}>
                 -4
@@ -41,20 +39,19 @@ export function PickSubtitleOffset({ selected = 0, onChange }: { selected: numbe
             <SliderMark value={4} {...labelStyles}>
                 4
             </SliderMark>
-            <SliderMark value={30} {...labelStyles}>
-                30
+            <SliderMark value={10} {...labelStyles}>
+                10
             </SliderMark>
             <SliderMark
                 value={0}
                 color='white'
-                mt='-10'
-                ml='-5'
+                mt='-50px'
+                ml='-40px'
             >
-                {value} secs
+                {value} seconds
             </SliderMark>
-            <SliderTrack>
-            </SliderTrack>
-            <SliderThumb />
+            <SliderTrack boxSize={6} />
+            <SliderThumb boxSize={10} />
         </Slider>
 
         <Box mt="4rem">
