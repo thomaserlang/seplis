@@ -236,8 +236,8 @@ function toggleFullscreen(video: HTMLVideoElement) {
 function setCurrentTime(time: number, videoElement: HTMLVideoElement, setSessionUUID: (id: string) => void, baseTime: MutableRefObject<number>, onTimeUpdate: (n: number) => void) {
     if (videoElement.seekable.length <= 1 || videoElement.seekable.end(0) <= 1) {
         // If we are transcoding, check if we have transcoded enough to not have to start a new session
-        const transcodedDuration = baseTime.current + videoElement.duration
-        if ((time < baseTime.current) || (time > transcodedDuration)) {
+        if ((videoElement.duration === Infinity) || (time < baseTime.current) || 
+            (time > (baseTime.current + videoElement.duration))) {
             videoElement.pause()
             baseTime.current = time
             if (onTimeUpdate) onTimeUpdate(time)
