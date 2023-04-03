@@ -122,7 +122,7 @@ async def update_movie_metadata(movie: schemas.Movie):
 async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     r = await client.get(f'https://api.themoviedb.org/3/movie/{themoviedb}', params={
         'api_key': config.data.client.themoviedb,
-        'append_to_response': 'alternative_titles',
+        'append_to_response': 'alternative_titles,keywords',
     })
     if r.status_code >= 400:
         logger.error(
@@ -146,7 +146,11 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     data.language = r['original_language']
     if 'alternative_titles' in r:
         data.alternative_titles = [a['title'][:200] for a in r['alternative_titles']['titles']]
-    data.genres = [genre['name'] for genre in r['genres']]
+    genres = [genre['name'] for genre in r['genres']]
+    for keyword in r['keywords']['keywords']:
+        if keyword['name'].lower() == 'anime':
+            genres.append('Anime')
+    data.genres = genres
     data.popularity = r['popularity']
     data.revenue = r['revenue']
     data.budget = r['budget']

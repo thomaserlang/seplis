@@ -22,7 +22,7 @@ class TheMovieDB(Series_importer_base):
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
             'api_key': config.data.client.themoviedb,
             'language': 'en-US',
-            'append_to_response': 'external_ids,alternative_titles',
+            'append_to_response': 'external_ids,alternative_titles,keywords',
         })
         if r.status_code != 200:
             return
@@ -33,6 +33,11 @@ class TheMovieDB(Series_importer_base):
         if series['external_ids'].get('imdb_id'):
             externals['imdb'] = series['external_ids']['imdb_id']
 
+        genres = [genre['name'] for genre in series['genres']]
+        for keyword in series['keywords']['results']:
+            if keyword['name'].lower() == 'anime':
+                genres.append('Anime')
+
         return schemas.Series_update(
             title=series['name'][:200],
             original_title=series['original_name'][:200] if series['original_name'] else None,
@@ -40,7 +45,7 @@ class TheMovieDB(Series_importer_base):
             externals=externals,
             status=statuses.get(series['status'], 0),
             runtime=series['episode_run_time'][0] if series['episode_run_time'] else None,
-            genres=[genre['name'] for genre in series['genres']],
+            genres=genres,
             premiered=series['first_air_date'] if series['first_air_date'] else None,
             language=series['original_language'] if series['original_language'] else None,
             popularity=series['popularity'],
