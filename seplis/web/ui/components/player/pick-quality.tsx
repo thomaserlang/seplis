@@ -66,16 +66,8 @@ export function resolutionToText(width: number) {
         return '240p'
     else if (width <= 640)
         return '360p'
-    else if (width <= 682)
-        return '384p'
-    else if (width <= 720)
-        return '404p'
     else if (width <= 854)
         return '480p'
-    else if (width <= 960)
-        return '540p'
-    else if (width <= 1024)
-        return '576p'
     else if (width <= 1280)
         return '720p'
     else if (width <= 1920)
