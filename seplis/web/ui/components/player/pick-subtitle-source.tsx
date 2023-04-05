@@ -38,7 +38,8 @@ export function subtitleSourceToName(source: IPlaySourceStream) {
     
     if (!source.language && !source.title)
         return 'Unknown language'
-    else if (source.language && (source.title === source.language) || (source.title === langCodeToLang(source.language)))
+    else if (source.language && 
+        (source.title === source.language) || (source.title === langCodeToLang(source.language)) || !source.title)
         return `${langCodeToLang(source.language)}`
     else if (!source.language)
         return source.title

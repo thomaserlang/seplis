@@ -268,13 +268,12 @@ function getPlayUrl({ videoElement, requestSource, startTime, audio, resolutionW
         //`&client_width=${this.getScreenWidth()}`+
         `&supported_audio_codecs=aac` +
         `&transcode_audio_codec=aac` +
-        `&supported_video_bit_depth=${getSupportedBitDepth().toString()}` +
-        `&supports_hdr=false` +
+        `&supported_video_color_bit_depth=${getSupportedVideoColorBitDepth().toString()}` +
         `&format=hls` +
         `&audio_channels=6`
 }
 
-function getSupportedBitDepth() {
+function getSupportedVideoColorBitDepth() {
     if (screen.colorDepth > 24)
         return 10
     return 8

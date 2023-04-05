@@ -1,5 +1,5 @@
 import { Box, Flex } from '@chakra-ui/react'
-import { IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
+import { IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { langCodeToLang } from '@seplis/utils'
 import { stringToSourceStream } from './pick-subtitle-source'
 
@@ -29,10 +29,10 @@ export function PickAudioSource({ audioSources, selected, onChange }: IProps) {
 
 
 export function audioSourceToName(source: IPlaySourceStream) {
-    if (!source) return 'No audio'
-    if (!source.language && !source.title)
-        return 'Unknown language'
-    else if (source.language && (source.title === source.language) || (source.title === langCodeToLang(source.language)))
+    if (!source) 
+        return 'Unknown audio'
+    else if (source.language && 
+        (source.title === source.language) || (source.title === langCodeToLang(source.language) || !source.title))
         return `${langCodeToLang(source.language)}`
     else if (!source.language)
         return source.title

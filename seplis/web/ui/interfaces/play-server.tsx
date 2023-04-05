@@ -19,10 +19,12 @@ export interface IPlaySource {
     height: number
     codec: string
     duration: number
+    resolution: string
     audio: IPlaySourceStream[]
     subtitles: IPlaySourceStream[]
-    video_bit_depth: number
-    hdr: boolean
+    video_color_bit_depth: number
+    video_color_range: string
+    video_color_range_type: string
     index: number
 }
 

@@ -14,11 +14,11 @@ export function PickQuality({ source, selectedWidth, onChange }: IProps) {
         direction="column"
     >
         {Object.entries(resolutionNames).sort((a, b) => parseInt(b[0]) - parseInt(a[0])).map(([width, value]) => {
-            const w = parseInt(width)
+            const w = parseInt(width) - 200
             if (source.width >= w)
                 return <Box
                     key={width}
-                    textStyle={(w == selectedWidth) || (!selectedWidth && (w == source.width)) ? 'selectedText' : null}
+                    textStyle={(resolutionToText(w) == resolutionToText(selectedWidth)) || (!selectedWidth && (resolutionToText(w) == resolutionToText(source.width))) ? 'selectedText' : null}
                     cursor="pointer"
                     onClick={() => {
                         localStorage.setItem('resolutionWidth', w.toString())
@@ -42,7 +42,7 @@ export function getDefaultResolutionWidth() {
 
 export function getResolutionWidth(source: IPlaySource) {
     const w = getDefaultResolutionWidth()
-    return (w > source.width) ? source.width : w 
+    return (w > source.width) ? source.width : w
 }
 
 
@@ -52,16 +52,40 @@ const resolutionNames: { [key: string]: string } = {
     '2560': '1440p',
     '1920': '1080p',
     '1280': '720p',
-    '720': '480p',
-    '480': '360p',
-    '352': '144p',
+    '854': '480p',
+    '640': '360p',
+    '256': '144p',
 }
 
 
 export function resolutionToText(width: number) {
     if (!width) return 'Auto'
-    if (width in resolutionNames)
-        return resolutionNames[width]
+    if (width <= 256)
+        return '144p'
+    else if (width <= 426)
+        return '240p'
+    else if (width <= 640)
+        return '360p'
+    else if (width <= 682)
+        return '384p'
+    else if (width <= 720)
+        return '404p'
+    else if (width <= 854)
+        return '480p'
+    else if (width <= 960)
+        return '540p'
+    else if (width <= 1024)
+        return '576p'
+    else if (width <= 1280)
+        return '720p'
+    else if (width <= 1920)
+        return '1080p'
+    else if (width <= 2560)
+        return '1440p'
+    else if (width <= 4096)
+        return '4K'
+    else if (width <= 8192)
+        return '8K'
     return `W: ${width}`
 }
 

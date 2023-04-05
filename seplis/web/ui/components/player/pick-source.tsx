@@ -37,11 +37,12 @@ export function PickSource({ playServers, selected, onChange }: IProps) {
 
 
 export function renderPlaySource(source: IPlaySource) {
-    let s = `${resolutionToText(source.width)} ${source.codec.toUpperCase()}`
-    if (source.video_bit_depth > 8)
-        s += ` ${source.video_bit_depth} bit`
-    if (source.hdr)
-        s += ` HDR`
+    let s = `${source.resolution} ${source.codec.toUpperCase()}`
+    if (source.video_color_range == 'hdr')
+        if (source.video_color_range_type == 'dovi')
+            s += ' Dolby Vision'
+        else
+            s += ` HDR`
     return s
 }
 
