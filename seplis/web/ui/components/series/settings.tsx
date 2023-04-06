@@ -1,56 +1,51 @@
 import { Alert, Button, Flex, FormControl, FormLabel, Heading, Input, Select, useToast } from '@chakra-ui/react'
 import api from '@seplis/api'
-import { ISeries, ISeriesImporters } from '@seplis/interfaces/series'
-import { TExternals } from '@seplis/interfaces/types'
+import { ISeries, ISeriesRequest } from '@seplis/interfaces/series'
 import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, UseFormRegister } from 'react-hook-form'
 import { ErrorMessageFromResponse } from '../error'
 
 
-export function SeriesNew({onDone}: {onDone?: (seriesId: number) => void}) {
-    const onSave = async (data: IData) => {
+export function SeriesNew({ onDone }: { onDone?: (seriesId: number) => void }) {
+    const onSave = async (data: ISeriesRequest) => {
         const result = await api.post<ISeries>('/2/series', data)
         if (onDone)
             onDone(result.data.id)
         return result.data
     }
 
-    return <SettingsForm
-        externals={{}}
-        importers={{info: '', episodes: ''}}
+    return <SeriesForm
+        request={{
+            externals: {},
+            importers: { info: '', episodes: '' },
+            episode_type: 2,
+        }}
         onSave={onSave}
     />
 }
 
 
 export function SeriesUpdate({ series }: { series: ISeries }) {
-    const onSave = async (data: IData) => {
+    const onSave = async (data: ISeriesRequest) => {
         const result = await api.patch<ISeries>(`/2/series/${series.id}`, data)
         api.post(`/2/series/${series.id}/update`)
         return result.data
     }
 
-    return <SettingsForm
-        externals={series.externals}
-        importers={series.importers}
+    return <SeriesForm
+        request={{
+            externals: { ...series.externals },
+            importers: { ...series.importers },
+            episode_type: series.episode_type,
+        }}
         onSave={onSave}
     />
 }
 
-
-interface IData {
-    externals: TExternals
-    importers: ISeriesImporters
-    onSave: (data: IData) => Promise<ISeries>
-}
-
-export function SettingsForm({ externals, importers, onSave }: IData) {
-    const { handleSubmit, register, formState: { isSubmitting } } = useForm<IData>({
-        defaultValues: {
-            externals: { ...externals },
-            importers: { ...importers },
-        }
+export function SeriesForm({ request, onSave }: { request: ISeriesRequest, onSave: (request: ISeriesRequest) => Promise<ISeries> }) {
+    const { handleSubmit, register, formState: { isSubmitting } } = useForm<ISeriesRequest>({
+        defaultValues: { ...request }
     })
     const [error, setError] = useState<JSX.Element>(null)
     const toast = useToast()
@@ -78,53 +73,93 @@ export function SettingsForm({ externals, importers, onSave }: IData) {
                 {error}
             </Alert>}
 
-            <Flex direction="column" gap="0.5rem" basis="400px">
-                <Heading fontSize="1.25rem" fontWeight="600">Externals</Heading>
-                <FormControl>
-                    <FormLabel>IMDb</FormLabel>
-                    <Input {...register('externals.imdb', {required: true})} type='text' />
-                </FormControl>
+            <Flex wrap="wrap" gap="1rem">
+                <Flex direction="column" gap="1rem" grow="1">
+                    <Heading fontSize="1.25rem" fontWeight="600">Externals</Heading>
+                    <Externals register={register} />
+                </Flex>
 
-                <FormControl>
-                    <FormLabel>TMDb</FormLabel>
-                    <Input {...register('externals.themoviedb')} type='text' />
-                </FormControl>
+                <Flex direction="column" gap="0.5rem" grow="1">
+                    <Heading fontSize="1.25rem" fontWeight="600">Importers</Heading>
+                    <Importers register={register} />
+                </Flex>
 
-                <FormControl>
-                    <FormLabel>TVMaze</FormLabel>
-                    <Input {...register('externals.tvmaze')} type='text' />
-                </FormControl>
-
-                <FormControl>
-                    <FormLabel>TheTVDB</FormLabel>
-                    <Input {...register('externals.thetvdb', {})} type='text' />
-                </FormControl>
+                <Flex direction="column" gap="0.5rem" grow="1">
+                    <Heading fontSize="1.25rem" fontWeight="600">Extra</Heading>
+                    <EpisodeType register={register} />
+                </Flex>
             </Flex>
 
-            <Flex direction="column" gap="0.5rem" basis="400px">
-                <Heading fontSize="1.25rem" fontWeight="600">Importers</Heading>
-                <FormControl>
-                    <FormLabel>Info</FormLabel>
-                    <Select {...register('importers.info')}>
-                        <option value="themoviedb">TMDb</option>
-                        <option value="thetvdb">TheTVDB</option>
-                        <option value="tvmaze">TVMaze</option>
-                    </Select>
-                </FormControl>
-
-                <FormControl>
-                    <FormLabel>Episodes</FormLabel>
-                    <Select {...register('importers.episodes')}>
-                        <option value="themoviedb">TMDb</option>
-                        <option value="thetvdb">TheTVDB</option>
-                        <option value="tvmaze">TVMaze</option>
-                    </Select>
-                </FormControl>
-            </Flex>
 
             <Flex align="end" justifyContent="end" gap="1rem" basis="100%">
                 <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText='Saving'>Save</Button>
             </Flex>
         </Flex>
-    </form>
+    </form >
+}
+
+
+function Importers({ register }: { register: UseFormRegister<ISeriesRequest> }) {
+    return <Flex gap="0.5rem" wrap="wrap">
+        <Flex grow="1">
+            <FormControl>
+                <FormLabel>Info</FormLabel>
+                <Select {...register('importers.info')}>
+                    <option value="themoviedb">TMDb</option>
+                    <option value="thetvdb">TheTVDB</option>
+                    <option value="tvmaze">TVMaze</option>
+                </Select>
+            </FormControl>
+        </Flex>
+
+        <Flex grow="1">
+            <FormControl>
+                <FormLabel>Episodes</FormLabel>
+                <Select {...register('importers.episodes')}>
+                    <option value="themoviedb">TMDb</option>
+                    <option value="thetvdb">TheTVDB</option>
+                    <option value="tvmaze">TVMaze</option>
+                </Select>
+            </FormControl>
+        </Flex>
+    </Flex>
+}
+
+
+function Externals({ register }: { register: UseFormRegister<ISeriesRequest> }) {
+    return <Flex gap="0.5rem" grow="1" wrap="wrap">
+        <FormControl>
+            <FormLabel>IMDb</FormLabel>
+            <Input {...register('externals.imdb', { required: true })} type='text' />
+        </FormControl>
+
+        <FormControl>
+            <FormLabel>TMDb</FormLabel>
+            <Input {...register('externals.themoviedb')} type='text' />
+        </FormControl>
+
+        <FormControl>
+            <FormLabel>TVMaze</FormLabel>
+            <Input {...register('externals.tvmaze')} type='text' />
+        </FormControl>
+
+        <FormControl>
+            <FormLabel>TheTVDB</FormLabel>
+            <Input {...register('externals.thetvdb')} type='text' />
+        </FormControl>
+    </Flex>
+}
+
+
+function EpisodeType({ register }: { register: UseFormRegister<ISeriesRequest> }) {
+    return <Flex gap="0.5rem" grow="1" direction="column">
+        <FormControl>
+            <FormLabel>Episode type</FormLabel>
+            <Select {...register('episode_type')}>
+                <option value={1}>Absolute number</option>
+                <option value={2}>Season episode</option>
+                <option value={3}>Air date</option>
+            </Select>
+        </FormControl>
+    </Flex>
 }

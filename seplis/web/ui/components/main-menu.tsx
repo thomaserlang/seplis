@@ -45,7 +45,7 @@ export default function MainMenu({ active }: { active?: string }) {
             alignItems="center"
         >
             <ChromecastIcon />
-            <Menu>
+            <Menu autoSelect={false}>
                 <MenuButton>
                     <UserAvatar />
                 </MenuButton>
@@ -55,7 +55,6 @@ export default function MainMenu({ active }: { active?: string }) {
                 </MenuList>
             </Menu>
         </Flex>
-
     </Flex>
 }
 
@@ -101,7 +100,7 @@ function MenuItems({ active }: { active?: string }) {
             </Link>
         </Box>
 
-        <Menu>
+        <Menu autoSelect={false}>
             <MenuButton
                 variant={active == 'series' ? 'solid' : 'ghost'}
                 marginRight={["0", "0.75rem"]}
@@ -124,7 +123,7 @@ function MenuItems({ active }: { active?: string }) {
         </Menu>
 
 
-        <Menu>
+        <Menu autoSelect={false}>
             <MenuButton
                 variant={active == 'movies' ? 'solid' : 'ghost'}
                 marginRight={["0", "0.75rem"]}
@@ -156,7 +155,7 @@ function SeriesNewMenuItem() {
             <ModalContent>
                 <ModalHeader>New series</ModalHeader>
                 <ModalCloseButton />
-                <ModalBody>
+                <ModalBody paddingBottom="1.5rem">
                     <SeriesNew onDone={(seriesId) => {
                         onClose()
                         navigate(`/series/${seriesId}`)
@@ -177,9 +176,9 @@ function MovieNewMenuItem() {
         <Modal onClose={onClose} isOpen={isOpen}>
             <ModalOverlay />
             <ModalContent>
-                <ModalHeader>New series</ModalHeader>
+                <ModalHeader>New movie</ModalHeader>
                 <ModalCloseButton />
-                <ModalBody>
+                <ModalBody paddingBottom="1.5rem">
                     <MovieNew onDone={(movieId) => {
                         onClose()
                         navigate(`/movies/${movieId}`)

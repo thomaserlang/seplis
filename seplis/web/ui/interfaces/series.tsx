@@ -20,26 +20,26 @@ export interface ISeriesUserRating {
 }
 
 
-export interface ISeriesCreate {
-    title: string | null
-    original_title: string | null
-    alternative_titles: string[] | null
-    externals: TExternals | null
-    status: number | null
-    plot: string | null
-    tagline: string | null
-    premiered: string | null
-    ended: string | null
-    importers: ISeriesImporters | null
-    runtime: number | null
-    genres: (string | number)[] | null
-    episode_type: number | null
-    language: string | null
-    poster_image_id: number | null
-    popularity: number | null
-    rating: number | null
-    rating_votes: number | null
-    episodes: IEpisodeCreate[] | null
+export interface ISeriesRequest {
+    title?: string | null
+    original_title?: string | null
+    alternative_titles?: string[] | null
+    externals?: TExternals | null
+    status?: number | null
+    plot?: string | null
+    tagline?: string | null
+    premiered?: string | null
+    ended?: string | null
+    importers?: ISeriesImporters | null
+    runtime?: number | null
+    genres?: (string | number)[] | null
+    episode_type?: number | null
+    language?: string | null
+    poster_image_id?: number | null
+    popularity?: number | null
+    rating?: number | null
+    rating_votes?: number | null
+    episodes?: IEpisodeCreate[] | null
 }
 
 

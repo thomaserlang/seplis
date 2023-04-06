@@ -206,10 +206,8 @@ function DisplaySettings({ series }: { series: ISeries }) {
             <ModalContent>
                 <ModalHeader>Settings</ModalHeader>
                 <ModalCloseButton />
-                <ModalBody>
-                    <Box marginBottom="1rem">
-                        <SeriesUpdate series={series} />
-                    </Box>
+                <ModalBody paddingBottom="1.5rem">
+                    <SeriesUpdate series={series} />
                 </ModalBody>
             </ModalContent>
         </Modal>
