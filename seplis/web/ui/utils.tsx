@@ -38,8 +38,11 @@ export function episodeNumber(episode: IEpisode) {
         return null
     if (!episode.season || !episode.episode)
         return `Episode ${episode.number}`
-    else
-        return `S${pad(episode.season,2)}E${pad(episode.episode, 2)}`
+    
+    if (episode.episode != episode.number)
+        return `S${pad(episode.season,2)}E${pad(episode.episode, 2)} (${episode.number})`
+
+    return `S${pad(episode.season,2)}E${pad(episode.episode, 2)}`
 }
 
 
