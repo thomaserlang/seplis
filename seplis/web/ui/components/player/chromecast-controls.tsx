@@ -46,7 +46,6 @@ export default function ChromecastControls() {
     if (!info)
         return
 
-
     return <Box background="blackAlpha.500" padding="0.5rem" rounded="md">
         <Flex gap="0.5rem" align="center">
             <Box fontSize="14px">{secondsToTime(currentTime + info.startTime)}</Box>
@@ -76,8 +75,8 @@ export default function ChromecastControls() {
                     playServers={info.requestSources}
                     requestSource={info.selectedRequestSource}
                     resolutionWidth={info.resolutionWidth}
-                    audioSource={pickStartAudio(info.selectedRequestSource, info.audioLang)}
-                    subtitleSource={pickStartSubtitle(info.selectedRequestSource, info.subtitleLang)}
+                    audioSource={pickStartAudio(info.selectedRequestSource.source.audio, info.audioLang)}
+                    subtitleSource={pickStartSubtitle(info.selectedRequestSource.source.subtitles, info.subtitleLang)}
                     subtitleOffset={info.subtitleOffset}
                     onRequestSourceChange={async (source) => {
                         if (info.type == 'episode')
