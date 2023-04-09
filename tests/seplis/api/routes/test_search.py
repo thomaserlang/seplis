@@ -195,5 +195,33 @@ async def test_search(client: AsyncClient):
     assert len(data) == 1, data
 
 
+    await models.Series.save(schemas.Series_create(
+        title='The Devil\'s Hour',
+        alternative_titles=[
+            'kurt 1',
+        ],
+        popularity=64.918,
+    ), series_id=None)
+
+    await models.Series.save(schemas.Series_create(
+        title='Devils',
+        popularity=14.16,
+    ), series_id=None)
+
+    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+
+    r = await client.get('/2/search', params={'title': 'Devil\'s'})
+    assert r.status_code == 200, r.content
+    data = parse_obj_as(list[schemas.Search_title_document], r.json())
+    assert len(data) == 2, data
+    assert data[0].title == 'Devils'
+
+    r = await client.get('/2/search', params={'query': 'Devils'})
+    assert r.status_code == 200, r.content
+    data = parse_obj_as(list[schemas.Search_title_document], r.json())
+    assert len(data) == 2, data
+    assert data[0].title == 'Devils'
+
+
 if __name__ == '__main__':
     run_file(__file__)

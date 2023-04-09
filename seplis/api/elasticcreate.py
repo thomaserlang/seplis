@@ -19,6 +19,16 @@ async def create_indices(es):
                     ]
                 }
             },
+            'normalizer': {
+                'exact': {
+                    'type': 'custom',
+                    'char_filter': ['strip_stuff'],
+                    'filter': [
+                        'lowercase',
+                        'asciifolding',
+                    ]
+                }
+            },
             'analyzer': {
                 'title_search': {
                     'type' : 'custom',
@@ -47,7 +57,13 @@ async def create_indices(es):
                 'properties': {
                     'title': {
                         'type': 'search_as_you_type',
-                        'analyzer': 'title_search',
+                        'analyzer': 'title_search',          
+                        'fields': {
+                            'exact': {
+                                'type': 'keyword',
+                                'normalizer': 'exact',
+                            }
+                        }
                     }
                 }
             },

@@ -51,16 +51,30 @@ def get_by_query(title: str):
                                 'path': 'titles',
                                 'score_mode': 'max',
                                 'query': {
-                                    'multi_match': {
-                                        'query': title,
-                                        'type': 'bool_prefix',
-                                        'operator': 'and',
-                                        'fuzziness': 'auto',
-                                        'fields': [
-                                            'titles.title',
-                                            'titles.title._2gram',
-                                            'titles.title._3gram',
-                                        ],
+                                    'bool': {
+                                        'should': [
+                                            {
+                                                'multi_match': {
+                                                    'query': title,
+                                                    'type': 'bool_prefix',
+                                                    'operator': 'and',
+                                                    'fuzziness': 'auto',
+                                                    'fields': [
+                                                        'titles.title',
+                                                        'titles.title._2gram',
+                                                        'titles.title._3gram',
+                                                    ],
+                                                },
+                                            },
+                                            {        
+                                                'term': {
+                                                    'titles.title.exact': {
+                                                        'value': title,
+                                                        'boost': 2,
+                                                    }
+                                                }
+                                            },
+                                        ]
                                     }
                                 },
                             }
@@ -89,10 +103,24 @@ def get_by_title(title: str):
                             'path': 'titles',
                             'score_mode': 'max',
                             'query': {
-                                'match_phrase': {
-                                    'titles.title': {
-                                        'query': title,
-                                    }
+                                'bool': {
+                                    'should': [
+                                        {        
+                                            'match_phrase': {
+                                                'titles.title': {
+                                                    'query': title,
+                                                }
+                                            }
+                                        },
+                                        {        
+                                            'term': {
+                                                'titles.title.exact': {
+                                                    'value': title,
+                                                    'boost': 2,
+                                                }
+                                            }
+                                        }
+                                    ]
                                 }
                             },
                         }},
