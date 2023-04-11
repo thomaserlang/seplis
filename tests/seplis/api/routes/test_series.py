@@ -371,12 +371,14 @@ async def test_series_get(client: AsyncClient):
 
     series1 = await models.Series.save(data=schemas.Series_create(
         title="Test 1",
+        genres=['Test1'],
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1),
         ],
     ))
     series2 = await models.Series.save(data=schemas.Series_create(
         title="Test 2",
+        genres=['Test2'],
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1),
             schemas.Episode_create(title='Episode 2', number=2),
@@ -428,6 +430,15 @@ async def test_series_get(client: AsyncClient):
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
+    from seplis import logger
+    logger.info(series1.genres[0].id)
+    r = await client.get(f'/2/series', params={
+        'not_genre_id': series1.genres[0].id,
+    })
+    assert r.status_code == 200
+    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    assert len(data.items) == 1
+    assert data.items[0].id == series2.id
 
 
 if __name__ == '__main__':
