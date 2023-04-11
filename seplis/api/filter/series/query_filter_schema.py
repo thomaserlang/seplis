@@ -7,6 +7,7 @@ from ... import schemas
 @dataclass
 class Series_query_filter:
     genre_id: list[int] = Query(default=[])
+    not_genre_id: list[int] = Query(default=[])
     user_can_watch: bool = Query(default=None)
     user_watchlist: bool = Query(default=None)
     user_favorites: bool = Query(default=None)
