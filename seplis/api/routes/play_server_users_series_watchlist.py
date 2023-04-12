@@ -50,6 +50,6 @@ async def get_play_servers_user_series_watchlist(
     if response_format == 'sonarr':
         query = filter_series_query(query=query, filter_query=filter_query)
         rows = await session.scalars(query)
-        return [Sonarr_response(TvdbId=int(r.externals['themoviedb'])) 
-                   for r in rows if r.externals.get('themoviedb')]
+        return [Sonarr_response(TvdbId=int(r.externals['thetvdb'])) 
+                   for r in rows if r.externals.get('thetvdb')]
 

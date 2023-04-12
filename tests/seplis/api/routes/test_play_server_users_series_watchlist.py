@@ -14,7 +14,7 @@ async def test_get_play_servers_user_series_watchlist(client: AsyncClient):
     assert r.status_code == 201, r.content
     play_server = schemas.Play_server.parse_obj(r.json())
 
-    series = await models.Series.save(data=schemas.Series_create(title='Test', externals={'themoviedb': 1}))
+    series = await models.Series.save(data=schemas.Series_create(title='Test', externals={'thetvdb': 1}))
 
     await models.Series_watchlist.add(series_id=series.id, user_id=user_id)
 
