@@ -14,7 +14,7 @@ async def test_get_play_servers_user_series_watchlist(client: AsyncClient):
     assert r.status_code == 201, r.content
     play_server = schemas.Play_server.parse_obj(r.json())
 
-    series = await models.Series.save(data=schemas.Series_create(title='Test'))
+    series = await models.Series.save(data=schemas.Series_create(title='Test', externals={'themoviedb': 1}))
 
     await models.Series_watchlist.add(series_id=series.id, user_id=user_id)
 
@@ -32,6 +32,12 @@ async def test_get_play_servers_user_series_watchlist(client: AsyncClient):
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 0
+
+    
+    r = await client.get(f'/2/play-servers/{play_server.id}/users-series-watchlist?response_format=sonarr')
+    assert r.status_code == 200
+    data = r.json()
+    assert data[0]['TvdbId'] == 1
 
 
 if __name__ == '__main__':
