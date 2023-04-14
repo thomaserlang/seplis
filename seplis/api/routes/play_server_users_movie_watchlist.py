@@ -1,19 +1,29 @@
+from typing import Literal
 from fastapi import Depends
 from datetime import datetime
+from pydantic import BaseModel
 import sqlalchemy as sa
+
+from seplis.api.filter.movies import filter_movies, filter_movies_query
+from seplis.api.filter.movies.query_filter_schema import Movie_query_filter
 from ..dependencies import get_session, AsyncSession
 from .. import models, schemas
 from ... import utils
 from .play_server import router
 
+class Radarr_response(BaseModel):
+    tmdbid: int
 
-@router.get('/{play_server_id}/users-movie-watchlist', response_model=schemas.Page_cursor_result[schemas.Movie])
+@router.get('/{play_server_id}/users-movie-watchlist', 
+            response_model=schemas.Page_cursor_result[schemas.Movie] | list[Radarr_response])
 async def get_play_server_users_movie_watchlist(
     play_server_id: str,
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
+    filter_query: Movie_query_filter = Depends(),
     added_at_ge: datetime = None,
     added_at_le: datetime = None,
+    response_format: Literal['standard', 'radarr'] = 'standard',
 ):
     query = sa.select(models.Movie).where(
         models.Play_server_access.play_server_id == play_server_id,
@@ -31,6 +41,16 @@ async def get_play_server_users_movie_watchlist(
             models.Movie_watchlist.created_at <= added_at_le,
         )
 
-    p = await utils.sqlalchemy.paginate_cursor(session=session, query=query, page_query=page_query)
-    p.items = [r.Movie for r in p.items]
-    return p
+    if response_format == 'standard':
+        return await filter_movies(
+            query=query,
+            session=session,
+            filter_query=filter_query,
+            page_cursor=page_query,
+        )
+    
+    if response_format == 'radarr':
+        query = filter_movies_query(query=query, filter_query=filter_query)
+        rows = await session.scalars(query)
+        return [Radarr_response(tmdbid=int(r.externals['themoviedb'])) 
+                   for r in rows if r.externals.get('themoviedb')]
