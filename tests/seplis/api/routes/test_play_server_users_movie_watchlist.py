@@ -41,6 +41,7 @@ async def test_play_server(client: AsyncClient):
     assert r.status_code == 200, r.content
     data = r.json()
     assert data[0]['tmdbid'] == 1
+    assert data[0]['id'] == 1
 
 
 if __name__ == '__main__':
