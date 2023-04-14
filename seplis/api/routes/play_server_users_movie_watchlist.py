@@ -13,6 +13,7 @@ from .play_server import router
 
 class Radarr_response(BaseModel):
     tmdbid: int
+    id: int
 
 @router.get('/{play_server_id}/users-movie-watchlist', 
             response_model=schemas.Page_cursor_result[schemas.Movie] | list[Radarr_response])
@@ -52,5 +53,5 @@ async def get_play_server_users_movie_watchlist(
     if response_format == 'radarr':
         query = filter_movies_query(query=query, filter_query=filter_query)
         rows = await session.scalars(query)
-        return [Radarr_response(tmdbid=int(r.externals['themoviedb'])) 
+        return [Radarr_response(tmdbid=int(r.externals['themoviedb'], id=int(r.externals['themoviedb']))) 
                    for r in rows if r.externals.get('themoviedb')]
