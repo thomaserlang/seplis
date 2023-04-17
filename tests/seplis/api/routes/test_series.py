@@ -430,10 +430,10 @@ async def test_series_get(client: AsyncClient):
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
-    from seplis import logger
-    logger.info(series1.genres[0].id)
+
     r = await client.get(f'/2/series', params={
         'not_genre_id': series1.genres[0].id,
+        'genre_id': series2.genres[0].id,
     })
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
