@@ -32,6 +32,8 @@ class TheMovieDB(Series_importer_base):
         externals[self.external_name] = str(series['id'])
         if series['external_ids'].get('imdb_id'):
             externals['imdb'] = series['external_ids']['imdb_id']
+        if series['external_ids'].get('tvdb_id'):
+            externals['thetvdb'] = str(series['external_ids']['tvdb_id'])
 
         genres = [genre['name'] for genre in series['genres']]
         for keyword in series['keywords']['results']:
