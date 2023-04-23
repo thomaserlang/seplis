@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends
+from pydantic import conint
 import sqlalchemy as sa
 from datetime import datetime, timezone, timedelta
 from ..filter.series import filter_series_query
@@ -14,14 +15,16 @@ async def get_series_recently_aired(
     session: AsyncSession=Depends(get_session),
     page_cursor: schemas.Page_cursor_query = Depends(),
     filter_query: Series_query_filter = Depends(),
+    days_ahead: conint(ge=0, le=10) = 0,
+    days_behind: conint(ge=0, le=10) = 7,
 ):
     dt = datetime.now(tz=timezone.utc)
     episodes_query = sa.select(
         models.Episode.series_id,
         sa.func.min(models.Episode.number).label('episode_number'),
     ).where(
-        models.Episode.air_datetime > (dt-timedelta(days=7)),
-        models.Episode.air_datetime < dt,        
+        models.Episode.air_datetime > (dt-timedelta(days=days_behind)),
+        models.Episode.air_datetime < (dt+timedelta(days=days_ahead)),
         models.Series.id == models.Episode.series_id,
     ).group_by(models.Episode.series_id)
     
