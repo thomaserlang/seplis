@@ -111,7 +111,6 @@ export function castEpisodeRequest(
                 `&transcode_video_codec=h264` +
                 `&supported_audio_codecs=aac` +
                 `&transcode_audio_codec=aac` +
-                `&supported_video_color_bit_depth=8` +
                 `&audio_channels=2` +
                 `&format=hls`+
                 `&audio_lang=${audioLang || ''}`+

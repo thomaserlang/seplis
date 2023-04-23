@@ -268,7 +268,6 @@ function getPlayUrl({ videoElement, requestSource, startTime, audio, resolutionW
         //`&client_width=${this.getScreenWidth()}`+
         `&supported_audio_codecs=aac` +
         `&transcode_audio_codec=aac` +
-        `&supported_video_color_bit_depth=${getSupportedVideoColorBitDepth().toString()}` +
         `&format=hls` +
         `&audio_channels=6`
 }
