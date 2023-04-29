@@ -1,4 +1,4 @@
-from pydantic import BaseModel, AnyHttpUrl, conint
+from pydantic import BaseModel, conint
 from pydantic.generics import GenericModel
 from typing import TypeVar, Generic
 

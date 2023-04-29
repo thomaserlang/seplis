@@ -1,10 +1,8 @@
 import pytest_asyncio
 from httpx import AsyncClient
 from seplis import config, config_load
-from seplis.api import  constants, models
+from seplis.api import schemas, constants, models
 from seplis.api.main import app
-from seplis.api import schemas
-from seplis import logger
 
 
 @pytest_asyncio.fixture(scope='function')

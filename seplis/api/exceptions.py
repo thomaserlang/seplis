@@ -384,3 +384,19 @@ class Movie_external_duplicated(API_exception):
                 'external_value': external_value,
             }
         )
+
+
+class Person_external_duplicated(API_exception):
+
+    def __init__(self, external_title, external_value, person):
+        API_exception.__init__(
+            self,
+            status_code=400,
+            code=3005,
+            message=f'A person with external name: "{external_title}" and id: "{external_value}" does already exist',
+            extra={
+                'person': person,
+                'external_title': external_title,
+                'external_value': external_value,
+            }
+        )

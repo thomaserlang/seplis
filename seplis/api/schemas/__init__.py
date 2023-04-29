@@ -2,11 +2,15 @@ from .page import *
 from .image import *
 from .movie_collection import *
 from .movie import *
+from .movie_cast import *
 from .series import *
+from .series_cast import *
 from .episode import *
+from .episode_cast import *
 from .search import *
 from .user import *
 from .play_server import *
 from .error import *
 from .genre import *
 from .user_watched import *
+from .person import *

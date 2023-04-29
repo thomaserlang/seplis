@@ -19,6 +19,7 @@ from .routes import (
     series_recently_aired,
     series_watchlist,
     series_favorite,
+    series_cast,
     token,
     reset_password,
     search,
@@ -32,6 +33,7 @@ from .routes import (
     movie_watched,
     movie_watched_position,
     movie_play_servers,
+    movie_cast,
     series,
     series_user_settings,
     series_user_stats,
@@ -42,8 +44,10 @@ from .routes import (
     episode_to_watch,
     episode_play_servers,
     episode_last_watched,
+    episode_cast,
     play_server,
     genres,
+    person,
 )
 
 
@@ -65,19 +69,23 @@ app.include_router(movie_watched_position.router)
 app.include_router(movie_watchlist.router)
 app.include_router(movie_favorite.router)
 app.include_router(movie_play_servers.router)
+app.include_router(movie_cast.router)
 app.include_router(series.router)
 app.include_router(series_user_stats.router)
 app.include_router(series_user_rating.router)
 app.include_router(series_user_settings.router)
 app.include_router(series_watchlist.router)
 app.include_router(series_favorite.router)
+app.include_router(series_cast.router)
 app.include_router(episode_watched.router)
 app.include_router(episode_watched_position.router)
 app.include_router(episode_to_watch.router)
 app.include_router(episode_play_servers.router)
 app.include_router(episode_last_watched.router)
+app.include_router(episode_cast.router)
 app.include_router(play_server.router)
 app.include_router(genres.router)
+app.include_router(person.router)
 
 
 app.add_middleware(

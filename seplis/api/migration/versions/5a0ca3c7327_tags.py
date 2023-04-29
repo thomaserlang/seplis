@@ -11,7 +11,6 @@ revision = '5a0ca3c7327'
 down_revision = '5acfab2c2cd'
 
 from alembic import op
-from seplis.api import models
 import sqlalchemy as sa
 
 def upgrade():
