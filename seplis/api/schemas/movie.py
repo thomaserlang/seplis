@@ -25,9 +25,8 @@ class Movie_create(BaseModel, extra='forbid', validate_assignment=True):
     popularity: confloat(ge=0.0) | None
     rating: confloat(ge=0.0, le=10.0) | None
     rating_votes: conint(ge=0) | None
-    genres: list[constr(max_length=100) | int] | None
-    collection: constr(max_length=200) | int | None
-
+    genre_names: list[constr(max_length=100) | int] | None
+    collection_name: constr(max_length=200) | int | None
 
     @validator('externals')
     def externals_none_value(cls, externals):
@@ -37,7 +36,7 @@ class Movie_create(BaseModel, extra='forbid', validate_assignment=True):
         return externals
 
 
-class Movie_update(Movie_create):
+class Movie_update(Movie_create, orm_mode=True):
     pass
 
 
@@ -84,6 +83,13 @@ class Movie(BaseModel, orm_mode=True):
     user_watched: Movie_watched | None
     user_watchlist: Movie_watchlist | None
     user_favorite: Movie_favorite | None
+
+    def to_request(self):
+        data = Movie_update.from_orm(self)
+        data.poster_image_id = self.poster_image.id if self.poster_image else None
+        data.genre_names = [g.name for g in self.genres]
+        data.collection_name = self.collection.name if self.collection else None
+        return data
 
 
 MOVIE_USER_SORT_TYPE = Literal[

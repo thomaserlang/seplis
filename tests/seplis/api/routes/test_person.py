@@ -1,5 +1,5 @@
 import pytest
-from seplis.api import constants, schemas, models
+from seplis.api import constants, schemas
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 
 @pytest.mark.asyncio

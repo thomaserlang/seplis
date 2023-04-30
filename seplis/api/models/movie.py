@@ -60,15 +60,14 @@ class Movie(Base):
             if not m:
                 raise HTTPException(404, f'Unknown movie id: {movie_id}')
             _data['updated_at'] = datetime.now(tz=timezone.utc)
-        if 'genres' in _data:
-            _data['genres'] = await cls._save_genres(session, movie_id, _data['genres'], False if overwrite_genres else patch)
+        if 'genre_names' in _data:
+            _data['genres'] = await cls._save_genres(session, movie_id, _data.pop('genre_names'), False if overwrite_genres else patch)
         if 'externals' in _data:
             _data['externals'] = await cls._save_externals(session, movie_id, _data['externals'], patch)
         if 'alternative_titles' in _data:
             _data['alternative_titles'] = await cls._save_alternative_titles(session, movie_id, _data['alternative_titles'], patch)
-        if 'collection' in _data:
-            collection = _data['collection']
-            del _data['collection']
+        if 'collection_name' in _data:
+            collection = _data.pop('collection_name')
             if isinstance(collection, str):
                 collection = await Movie_collection.get_or_create(name=collection, session=session)
             _data['collection_id'] = collection
@@ -78,8 +77,8 @@ class Movie(Base):
         await cls._save_for_search(movie)
         return schemas.Movie.from_orm(movie)
 
-    @classmethod
-    async def delete(self, movie_id: int):
+    @staticmethod
+    async def delete(movie_id: int):
         from . import Image
         async with database.session() as session:
             async with session.begin():

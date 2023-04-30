@@ -4,6 +4,7 @@ import asyncio
 from seplis import config, logger
 from seplis.api.database import database
 from seplis.api import exceptions, models, schemas
+from seplis.utils.compare import compare
 
 statuses = {
     'Unknown': 0,
@@ -115,8 +116,17 @@ async def update_movie_metadata(movie: schemas.Movie):
                 f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"')
             return
         themoviedb = r['movie_results'][0]['id']
-    data = await get_movie_data(themoviedb)
-    await models.Movie.save(data=data, movie_id=movie.id, patch=True, overwrite_genres=True)
+    new_data = await get_movie_data(themoviedb)
+    old_data = movie.to_request()
+    data = compare(new_data, old_data, skip_keys=['alternative_titles'])
+    missing_alternative_titles = [x for x in new_data.alternative_titles if x not in old_data.alternative_titles]
+    if new_data.alternative_titles and missing_alternative_titles:
+        data['alternative_titles'] = new_data.alternative_titles
+    if data:
+        logger.debug(f'[Movie: {movie.id}] Updating: {data}')
+        await models.Movie.save(data=schemas.Movie_update.parse_obj(data), movie_id=movie.id, patch=True, overwrite_genres=True)
+    else:
+        logger.debug(f'[Movie: {movie.id}] No updates')
 
 
 async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
@@ -150,11 +160,11 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     for keyword in r['keywords']['keywords']:
         if keyword['name'].lower() == 'anime':
             genres.append('Anime')
-    data.genres = genres
+    data.genre_names = genres
     data.popularity = r['popularity']
     data.revenue = r['revenue']
     data.budget = r['budget']
-    data.collection = r['belongs_to_collection']['name'] if r['belongs_to_collection'] else None
+    data.collection_name = r['belongs_to_collection']['name'] if r['belongs_to_collection'] else None
     return data
 
 
