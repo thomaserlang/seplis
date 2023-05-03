@@ -29,38 +29,6 @@ class Image(Base):
 
     async def save(relation_type: str, relation_id: str, image_data: schemas.Image_import) -> schemas.Image:
         from ..dependencies import httpx_client
-        if not image_data.file and not image_data.source_url:
-            raise exceptions.File_upload_no_files()
-
-        if not image_data.file:
-            r = await httpx_client.get(image_data.source_url, follow_redirects=True)
-            if r.status_code != 200:
-                logger.error(f'File download of image failed: {r.content}')
-                raise exceptions.API_exception(500, 0, 'Unable to store the image')
-            image_data.file = UploadFile(io.BytesIO(r.content), filename=urllib.parse.urlparse(image_data.source_url).path)
-
-        async def upload_bytes():
-            while content := await image_data.file.read(128*1024):
-                yield content
-
-        r = await httpx_client.put(
-            urllib.parse.urljoin(config.data.api.storitch, '/store/session'),
-            headers={
-                'storitch-json': utils.json_dumps({
-                    'finished': True,
-                    'filename': image_data.file.filename,
-                }),
-                'content-type': 'application/octet-stream',
-            },
-            content=upload_bytes()
-        )
-        if r.status_code != 200:
-            logger.error(f'File upload failed: {r.content}')
-            raise exceptions.API_exception(500, 0, 'Unable to store the image')
-        
-        file = utils.json_loads(r.content)
-        if file['type'] != 'image':
-            raise exceptions.Image_no_data()
 
         async with database.session() as session:
             if image_data.external_name or image_data.external_id:
@@ -69,7 +37,42 @@ class Image(Base):
                     models.Image.external_id == image_data.external_id,
                 ))
                 if q:
-                    raise exceptions.Image_external_duplicate(f'An image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id} already exists')
+                    logger.info(f'Duplicate image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id}, returning stored image')
+                    return schemas.Image.from_orm(q)
+
+            if not image_data.file and not image_data.source_url:
+                raise exceptions.File_upload_no_files()
+
+            if not image_data.file:
+                r = await httpx_client.get(image_data.source_url, follow_redirects=True)
+                if r.status_code != 200:
+                    logger.error(f'File download of image failed: {r.content}')
+                    raise exceptions.API_exception(500, 0, 'Unable to store the image')
+                image_data.file = UploadFile(io.BytesIO(r.content), filename=urllib.parse.urlparse(image_data.source_url).path)
+
+            async def upload_bytes():
+                while content := await image_data.file.read(128*1024):
+                    yield content
+
+            r = await httpx_client.put(
+                urllib.parse.urljoin(config.data.api.storitch, '/store/session'),
+                headers={
+                    'storitch-json': utils.json_dumps({
+                        'finished': True,
+                        'filename': image_data.file.filename,
+                    }),
+                    'content-type': 'application/octet-stream',
+                },
+                content=upload_bytes()
+            )
+            if r.status_code != 200:
+                logger.error(f'File upload failed: {r.content}')
+                raise exceptions.API_exception(500, 0, 'Unable to store the image')
+            
+            file = utils.json_loads(r.content)
+            if file['type'] != 'image':
+                raise exceptions.Image_no_data()
+
 
             r = await session.execute(sa.insert(models.Image).values(
                 relation_type=relation_type,
