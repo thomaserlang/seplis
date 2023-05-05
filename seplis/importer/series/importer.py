@@ -189,36 +189,26 @@ async def update_series_images(series: schemas.Series):
             )
 
 
-def _importers_with_support(show_externals, support):
-    """
-    :returns: list of str
-    """
-    imp_names = []
-    for name in importers:
-        if name not in show_externals:
-            continue
-        if support in importers[name].supported:
-            imp_names.append(name)
-    return imp_names
-
-
-async def call_importer(external_name, method, *args, **kwargs):
+async def call_importer(external_name: str, method: str, *args, **kwargs):
     """Calls a method in a registered importer"""
     im = importers.get(external_name)
     if not im:
         logger.warn(
-            'Series "{}" has an unknown importer at {} '
-            'with external name "{}"'.format(
-                kwargs.get('external_id'),
-                method,
-                external_name,
-            )
+            f'Series "{kwargs.get("external_id")}" has an unknown importer at {method} '
+            f'with external name "{external_name}"'
         )
         return
     m = getattr(im, method, None)
     if not m:
-        raise Exception('Unknown method "{}" for importer "{}"'.format(
-            method,
-            external_name
-        ))
+        raise Exception(f'Unknown method "{method}" for importer "{external_name}"')
     return await m(*args, **kwargs)
+
+
+def _importers_with_support(externals: dict[str, str], support: str) -> list[str]:
+    imp_names = []
+    for name in importers:
+        if name not in externals:
+            continue
+        if support in importers[name].supported:
+            imp_names.append(name)
+    return imp_names

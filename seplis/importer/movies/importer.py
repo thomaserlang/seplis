@@ -1,10 +1,11 @@
 import sqlalchemy as sa
 import httpx
 import asyncio
-from seplis import config, logger
-from seplis.api.database import database
-from seplis.api import exceptions, models, schemas
-from seplis.utils.compare import compare
+from ... import config, logger
+from ...api.database import database
+from ...api import exceptions, models, schemas
+from ...utils.compare import compare
+from ..people.importer import create_person
 
 statuses = {
     'Unknown': 0,
@@ -32,6 +33,7 @@ async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
         return
     await update_movie_metadata(movie)
     await update_images(movie)
+    await update_cast(movie)
 
 
 async def update_movies_bulk(from_movie_id=None, do_async=False):
@@ -126,7 +128,7 @@ async def update_movie_metadata(movie: schemas.Movie):
         logger.debug(f'[Movie: {movie.id}] Updating: {data}')
         await models.Movie.save(data=schemas.Movie_update.parse_obj(data), movie_id=movie.id, patch=True, overwrite_genres=True)
     else:
-        logger.debug(f'[Movie: {movie.id}] No updates')
+        logger.debug(f'[Movie: {movie.id}] No metadata updates')
 
 
 async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
@@ -202,7 +204,7 @@ async def update_images(movie: schemas.Movie):
             key = f'themoviedb-{image["file_path"]}'
             if key not in image_external_ids:
                 source_url = f'https://image.tmdb.org/t/p/original{image["file_path"]}'
-                logger.info(f'[Movie: {movie.id}] Saving image: {source_url}')
+                logger.debug(f'[Movie: {movie.id}] Saving image: {source_url}')
                 saved_image = await models.Image.save(
                     relation_type='movie',
                     relation_id=movie.id,
@@ -233,3 +235,70 @@ async def update_images(movie: schemas.Movie):
         await models.Movie.save(data=schemas.Movie_update(
             poster_image_id=image_external_ids[key].id,
         ), movie_id=movie.id)
+
+
+async def update_cast(movie: schemas.Movie):
+    logger.info(f'[Movie: {movie.id}] Updating cast')
+    if not movie.externals.get('themoviedb'):
+        logger.error(f'Missing externals.themoviedb for movie: "{movie.id}"')
+        return
+
+    async with database.session() as session:
+        result = await session.scalars(sa.select(models.Movie_cast).where(
+            models.Movie_cast.movie_id == movie.id,
+        ))
+        cast: dict[str, schemas.Movie_cast_person] = {f'themoviedb-{cast.person.externals["themoviedb"]}': 
+                schemas.Movie_cast_person.from_orm(cast) for cast in result \
+                    if cast.person.externals.get("themoviedb")}
+
+    r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}/credits', params={
+        'api_key': config.data.client.themoviedb,
+        'language': 'en-US',
+    })
+    if r.status_code >= 400:
+        logger.error(
+            f'[Movie: {movie.id}] Failed to get movie credits for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}')
+        return
+    m = r.json()
+    if 'cast' not in m:
+        logger.info(f'[Movie: {movie.id}] Didn\'t find any cast')
+        return
+    logger.debug(f'[Movie: {movie.id}] Found {len(m["cast"])} cast members')
+
+    async def save_cast(member):
+        try:
+            key = f'themoviedb-{member["id"]}'
+            if key not in cast:
+                # Create the person if they don't "exist"
+                person = await models.Person.get_from_external('themoviedb', member['id'])
+                if not person:
+                    person = await create_person('themoviedb', member['id'])
+                cast[key] = schemas.Movie_cast_person(
+                    movie_id=movie.id,
+                    person=person,
+                    character=None,
+                )
+
+            if cast[key].character != member['character'] or \
+                cast[key].order != member['order']:
+                logger.debug(f'[Movie: {movie.id}] Saving cast: {member["name"]} ({member["id"]})')
+                await models.Movie_cast.save(
+                    data=schemas.Movie_cast_person_update(
+                        movie_id=movie.id,
+                        person_id=cast[key].person.id,
+                        order=member['order'],
+                        character=member['character'] or None,
+                    )
+                )
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            logger.exception(f'[Movie: {movie.id}] Failed saving cast: {member["name"]} ({member["id"]})')
+
+    await asyncio.gather(*[save_cast(member) for member in m['cast']])
+
+    # Delete any cast members that don't exist anymore
+    for key, member in cast.items():
+        if not any(member.person.externals.get('themoviedb') == str(m['id']) for m in m['cast']):
+            logger.debug(f'[Movie: {movie.id}] Deleting cast: {member.person.name}')
+            await models.Movie_cast.delete(movie_id=movie.id, person_id=member.person.id)

@@ -22,8 +22,8 @@ class Person(Base):
     place_of_birth = sa.Column(sa.String(100))
     popularity = sa.Column(sa.DECIMAL(precision=12, scale=4))
     externals = sa.Column(sa.JSON, nullable=False)
-    poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id', onupdate='cascade', ondelete='set null'))
-    poster_image = sa.orm.relationship('Image', lazy=False)
+    profile_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id', onupdate='cascade', ondelete='set null'))
+    profile_image = sa.orm.relationship('Image', lazy=False)
 
     @classmethod
     @auto_session
@@ -36,7 +36,7 @@ class Person(Base):
         _data = data.dict(exclude_unset=True)
         if not person_id:
             _data['created_at'] = datetime.now(tz=timezone.utc)
-            r = await session.execute(sa.insert(Person).values(_data))
+            r = await session.execute(sa.insert(Person))
             person_id = r.lastrowid
 
         if 'externals' in _data:
@@ -78,12 +78,10 @@ class Person(Base):
     @staticmethod
     async def _save_externals(session: AsyncSession, person_id: str | int, externals: dict[str, str | None], patch: bool):
         current_externals = {}
-
         if not patch:
             await session.execute(sa.delete(Person_external).where(Person_external.person_id == person_id))
         else:
             current_externals = await session.scalar(sa.select(Person.externals).where(Person.id == person_id))
-
         for key in externals:
             if externals[key]:
                 r = await session.scalar(sa.select(Person).where(

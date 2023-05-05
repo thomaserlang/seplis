@@ -3,7 +3,7 @@ from pydantic import BaseModel, AnyHttpUrl
 from datetime import datetime
 from fastapi import UploadFile
 
-IMAGE_TYPES = Literal['poster', 'backdrop']
+IMAGE_TYPES = Literal['poster', 'backdrop', 'profile']
 
 
 class Image_create(BaseModel):

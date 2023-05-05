@@ -18,9 +18,9 @@ def upgrade():
     op.create_table(
         'people', 
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
-        sa.Column('created_at', sa.DateTime, nullable=False),
+        sa.Column('created_at', sa.DateTime),
         sa.Column('updated_at', sa.DateTime),
-        sa.Column('name', sa.String(500), nullable=False),
+        sa.Column('name', sa.String(500)),
         sa.Column('also_known_as', sa.JSON, nullable=False, server_default='[]'),
         sa.Column('gender', sa.SMALLINT),
         sa.Column('birthday', sa.Date),
@@ -29,7 +29,7 @@ def upgrade():
         sa.Column('place_of_birth', sa.String(100)),
         sa.Column('popularity', sa.DECIMAL(precision=12, scale=4)),
         sa.Column('externals', sa.JSON, nullable=False, server_default='{}'),
-        sa.Column('poster_image_id', sa.Integer, sa.ForeignKey('images.id', onupdate='cascade', ondelete='set null'))
+        sa.Column('profile_image_id', sa.Integer, sa.ForeignKey('images.id', onupdate='cascade', ondelete='set null'))
     )
 
     op.create_table(
