@@ -38,6 +38,8 @@ class Person(Base):
             _data['created_at'] = datetime.now(tz=timezone.utc)
             r = await session.execute(sa.insert(Person))
             person_id = r.lastrowid
+        else:
+            _data['updated_at'] = datetime.now(tz=timezone.utc)
 
         if 'externals' in _data:
             _data['externals'] = await cls._save_externals(session, person_id, _data['externals'], patch)
