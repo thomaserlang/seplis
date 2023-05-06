@@ -37,7 +37,7 @@ class Image(Base):
                     models.Image.external_id == image_data.external_id,
                 ))
                 if q:
-                    logger.info(f'Duplicate image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id}, returning stored image')
+                    logger.debug(f'Duplicate image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id}, returning stored image')
                     return schemas.Image.from_orm(q)
 
             if not image_data.file and not image_data.source_url:

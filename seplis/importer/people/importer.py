@@ -21,13 +21,16 @@ async def update_person(person: schemas.Person):
         logger.warn(f'Person {person.id} has no externals')
         return
     logger.info(f'[Person: {person.id}] Updating')
-    await update_person_info(person)
+    p = await update_person_info(person)
+    if p:
+        person = p
     await update_person_images(person)
+    return person
 
 
 async def create_person(external_name: str, external_id: str):
     logger.info(f'Creating person: {external_name} {external_id}')
-    return await update_person_info(person=schemas.Person(id=None, externals={
+    return await update_person(person=schemas.Person(id=None, externals={
         external_name: external_id,
     }))
 
