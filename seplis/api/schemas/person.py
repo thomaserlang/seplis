@@ -23,7 +23,7 @@ class Person_create(BaseModel):
         return externals
     
 
-class Person_update(Person_create):    
+class Person_update(Person_create, orm_mode=True):    
     name: constr(min_length=1, max_length=500) | None
 
 
@@ -39,3 +39,8 @@ class Person(BaseModel, orm_mode=True):
     popularity: float | None
     externals: dict[str, str] = {}
     profile_image: Image | None
+
+    def to_request(self):
+        data = Person_update.from_orm(self)
+        data.profile_image_id = self.profile_image.id if self.profile_image else None
+        return data

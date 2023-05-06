@@ -194,7 +194,7 @@ async def update_images(movie: schemas.Movie):
         return
     m = r.json()
     if 'images' not in m:
-        logger.info(f'[Movie: {movie.id}] Didn\'t find any images')
+        logger.debug(f'[Movie: {movie.id}] Didn\'t find any images')
         return
     logger.debug(
         f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
@@ -231,7 +231,7 @@ async def update_images(movie: schemas.Movie):
                 logger.info('No image to set as new primary')
                 return
         logger.info(
-            f'[Movie: {movie.id}] Setting new primary image: "{image_external_ids[key].id}"')
+            f'[Movie: {movie.id}] Setting new primary image: {image_external_ids[key].id}')
         await models.Movie.save(data=schemas.Movie_update(
             poster_image_id=image_external_ids[key].id,
         ), movie_id=movie.id)
