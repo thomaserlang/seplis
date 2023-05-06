@@ -2,10 +2,27 @@ from pydantic import BaseModel, constr
 from .person import Person
 
 
+class Series_cast_role(BaseModel):
+    character: constr(min_length=1, max_length=200, strip_whitespace=True) | None
+    total_episodes: int | None
+
+
 class Series_cast_person_create(BaseModel):
     series_id: int | None
     person_id: int
-    character: constr(min_length=1, max_length=200, strip_whitespace=True)
+    roles: list[Series_cast_role] = []
+    order: int | None
+    total_episodes: int | None
+
+
+class Series_cast_person_update(Series_cast_person_create):
+    pass
+
+
+class Series_cast_person_import(BaseModel):
+    external_name: str
+    external_id: str
+    roles: list[Series_cast_role] = []
     order: int | None
     total_episodes: int | None
 
@@ -13,6 +30,6 @@ class Series_cast_person_create(BaseModel):
 class Series_cast_person(BaseModel, orm_mode=True):
     series_id: int
     person: Person
-    character: str
+    roles: list[Series_cast_role] = []
     order: int | None
-    total_episodes: int
+    total_episodes: int = 0

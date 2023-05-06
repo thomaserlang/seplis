@@ -8,7 +8,7 @@ class Series_cast(Base):
     series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True)
     person_id = sa.Column(sa.Integer, sa.ForeignKey('people.id'), primary_key=True)
     person = sa.orm.relationship('Person', lazy=False)
-    character = sa.Column(sa.String(200))
+    roles = sa.Column(sa.JSON, nullable=False, server_default='[]')
     order = sa.Column(sa.Integer)
     total_episodes = sa.Column(sa.Integer)
 

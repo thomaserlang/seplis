@@ -4,6 +4,7 @@ import asyncio
 from seplis import logger
 from seplis.api.database import database
 from seplis.api import exceptions, models, schemas
+from seplis.importer.people.importer import create_person
 from .base import importers
 
 
@@ -80,22 +81,26 @@ async def _importer_incremental(importer):
 
 async def update_series(series: schemas.Series):
     if not series.externals:
-        logger.warn(f'Series {series.id} has no externals')
+        logger.warn(f'[Series: {series.id}]: No externals')
         return
     if not series.importers:
-        logger.warn(f'Series {series.id} has no importers')
-        return
-    logger.info(f'Updating series: {series.id}')
+        logger.warn(f'[Series: {series.id}] No importers')
+        return    
+    logger.info(f'[Series: {series.id}] Updating')
     await check_external_ids(series)
     await update_series_info(series)
     await update_series_episodes(series)
     await update_series_images(series)
+    await update_series_cast(series)
 
 
 async def check_external_ids(series: schemas.Series):
+    '''If themoviedb id is missing, try and find it from imdb id'''
     if not series.externals.get('themoviedb') and series.externals.get('imdb'):
+        logger.debug(f'[Series: {series.id}] Missing themoviedb, trying to find it')
         id_ = await call_importer('themoviedb', 'lookup_from_imdb', series.externals['imdb'])
         if id_:
+            logger.debug(f'[Series: {series.id}] Found themoviedb id: {id_}')
             await models.Series.save(
                 data=schemas.Series_update(externals={
                     'themoviedb': id_,
@@ -106,7 +111,9 @@ async def check_external_ids(series: schemas.Series):
 
 
 async def update_series_info(series: schemas.Series):
+    logger.debug(f'[Series: {series.id}] Updating info')
     if not series.importers.info:
+        logger.debug(f'[Series: {series.id}] No info importer')
         return
     info: schemas.Series_update = await call_importer(
         external_name=series.importers.info,
@@ -118,7 +125,9 @@ async def update_series_info(series: schemas.Series):
 
 
 async def update_series_episodes(series: schemas.Series):
+    logger.debug(f'[Series: {series.id}] Updating episodes')
     if not series.importers.episodes:
+        logger.debug(f'[Series: {series.id}] No episodes importer')
         return
     episodes: list[schemas.Episode_create] = await call_importer(
         external_name=series.importers.episodes,
@@ -131,13 +140,7 @@ async def update_series_episodes(series: schemas.Series):
 
 
 async def update_series_images(series: schemas.Series):
-    if series.poster_image:
-        # Need a better way to only download images in the
-        # correct size from THETVDB.
-        # Right now a lot of time and bandwidth is spent redownloading
-        # the same images just to find out that they are not 680x1000...
-        # So for now only get the images if there is no poster set for the show.
-        return
+    logger.debug(f'[Series: {series.id}] Updating images')
     imp_names = _importers_with_support(series.externals, 'images')
     async with database.session() as session:
         result = await session.scalars(sa.select(models.Image).where(
@@ -187,6 +190,72 @@ async def update_series_images(series: schemas.Series):
                 ),
                 series_id=series.id
             )
+
+
+async def update_series_cast(series: schemas.Series):
+    logger.debug(f'[Series: {series.id}] Updating cast')
+    external_name = 'themoviedb' # TODO: Should be specified per series
+    if not series.externals.get(external_name):
+        logger.info(f'[Series: {series.id}] Missing externals.{external_name} to update cast')
+        return
+    imp_cast: list[schemas.Series_cast_person_import] = await call_importer(
+        external_name=external_name,
+        method='cast',
+        external_id=series.externals[external_name],
+    )
+    if not imp_cast:
+        logger.debug(f'[Series: {series.id}] Found no cast')
+        return    
+    
+    logger.debug(f'[Series: {series.id}] Found {len(imp_cast)} cast members')
+
+    # Get existing cast
+    async with database.session() as session:
+        result = await session.scalars(sa.select(models.Series_cast).where(
+            models.Series_cast.series_id == series.id,
+        ))
+        cast: dict[str, schemas.Series_cast_person] = {f'{external_name}-{cast.person.externals[external_name]}': 
+                schemas.Series_cast_person.from_orm(cast) for cast in result \
+                    if cast.person.externals.get(external_name)}
+    
+    async def save_cast(member: schemas.Series_cast_person_import):
+        try:
+            key = f'{external_name}-{member.external_id}'
+            if key not in cast:
+                # Create the person if they don't "exist"
+                person = await models.Person.get_from_external(external_name, member.external_id)
+                if not person:
+                    person = await create_person(external_name, member.external_id)
+                cast[key] = schemas.Series_cast_person(
+                    series_id=series.id,
+                    person=person,
+                    character=None,
+                )
+            if not all([r in cast[key].roles for r in member.roles]) or \
+                cast[key].order != member.order or \
+                cast[key].total_episodes != member.total_episodes:
+                logger.debug(f'[Series: {series.id}] Saving cast: {cast[key].person.name} ({cast[key].person.id})')
+                await models.Series_cast.save(
+                    data=schemas.Series_cast_person_update(
+                        series_id=series.id,
+                        person_id=cast[key].person.id,
+                        order=member.order,
+                        roles=member.roles,
+                        total_episodes=member.total_episodes,
+                    )
+                )
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            logger.exception(f'[Series: {series.id}] Failed saving cast: {member.external_id}')
+
+    await asyncio.gather(*[save_cast(person) for person in imp_cast])
+
+    # Delete any cast members that don't exist anymore
+    for key, member in cast.items():
+        if not any(member.person.externals.get(m.external_name) == m.external_id for m in imp_cast):
+            logger.debug(f'[Series: {series.id}] Deleting cast: {member.person.name} ({member.person.id}))')
+            await models.Series_cast.delete(series_id=series.id, person_id=member.person.id)
 
 
 async def call_importer(external_name: str, method: str, *args, **kwargs):

@@ -5,7 +5,7 @@ from .image import Image
 
 class Person_create(BaseModel):
     name: constr(min_length=1, max_length=500, strip_whitespace=True)
-    also_known_as: list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None
+    also_known_as: list[constr(min_length=1, max_length=500, strip_whitespace=True)] | None = []
     gender: int | None
     birthday: date | None
     deathday: date | None
@@ -29,7 +29,7 @@ class Person_update(Person_create, orm_mode=True):
 
 class Person(BaseModel, orm_mode=True):
     id: int | None
-    name: str = ''
+    name: str = None
     also_known_as: list[str] = []
     gender: int | None
     birthday: date | None

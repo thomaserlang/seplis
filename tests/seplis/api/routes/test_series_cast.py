@@ -21,14 +21,20 @@ async def test_series_cast(client: AsyncClient):
     # add cast member
     r = await client.put(f'/2/series/{series.id}/cast', json={
         'person_id': person.id,
-        'character': 'Test character',
+        'roles': [{
+            'character': 'Test character',
+            'total_episodes': 1,
+        }]
     })
-    assert r.status_code == 204
+    assert r.status_code == 204, r.content
 
     # add cast member again
     r = await client.put(f'/2/series/{series.id}/cast', json={
-        'person_id': person.id,
-        'character': 'Test character',
+        'person_id': person.id,        
+        'roles': [{
+            'character': 'Test character',
+            'total_episodes': 1,
+        }]
     })
     assert r.status_code == 204
 
@@ -38,7 +44,8 @@ async def test_series_cast(client: AsyncClient):
     cast = schemas.Page_cursor_result[schemas.Series_cast_person].parse_obj(r.json())
     assert len(cast.items) == 1
     assert cast.items[0].person.id == person.id
-    assert cast.items[0].character == 'Test character'
+    assert cast.items[0].roles[0].character == 'Test character'
+    assert cast.items[0].roles[0].total_episodes == 1
 
 
 if __name__ == '__main__':

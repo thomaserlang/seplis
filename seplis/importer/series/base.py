@@ -21,7 +21,7 @@ def register_importer(obj):
 class Series_importer_base(object):
     display_name: str
     external_name: str
-    supported: tuple[Literal['info', 'episodes', 'images']]
+    supported: tuple[Literal['info', 'episodes', 'images', 'cast']]
 
     async def info(self, external_id: str) -> schemas.Series_update:
         """Override this function and return a show.
@@ -39,6 +39,10 @@ class Series_importer_base(object):
         The return result must match [`schemas.Image_required`].
 
         The image will be downloaded from url in `source_url`.
+        """
+
+    async def cast(self, external_id: str) -> list[schemas.Series_cast_person_import]:
+        """Override this function and return a list of cast.
         """
 
     async def incremental_updates(self) -> list[str]:

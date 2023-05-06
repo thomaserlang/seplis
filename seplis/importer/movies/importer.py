@@ -31,6 +31,7 @@ async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
     if not movie:
         logger.error(f'Unknown movie')
         return
+    logger.info(f'[Movie: {movie.id}] Updating')
     await update_movie_metadata(movie)
     await update_images(movie)
     await update_cast(movie)
@@ -95,7 +96,7 @@ async def update_incremental():
 
 
 async def update_movie_metadata(movie: schemas.Movie):
-    logger.info(f'[Movie: {movie.id}] Updating metadata')
+    logger.debug(f'[Movie: {movie.id}] Updating metadata')
     themoviedb = movie.externals.get('themoviedb')
     if not themoviedb:
         if not movie.externals.get('imdb'):
@@ -171,7 +172,7 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
 
 
 async def update_images(movie: schemas.Movie):
-    logger.info(f'[Movie: {movie.id}] Updating images')
+    logger.debug(f'[Movie: {movie.id}] Updating images')
     if not movie.externals.get('themoviedb'):
         logger.error(f'Missing externals.themoviedb for movie: "{movie.id}"')
         return
@@ -238,11 +239,12 @@ async def update_images(movie: schemas.Movie):
 
 
 async def update_cast(movie: schemas.Movie):
-    logger.info(f'[Movie: {movie.id}] Updating cast')
+    logger.debug(f'[Movie: {movie.id}] Updating cast')
     if not movie.externals.get('themoviedb'):
         logger.error(f'Missing externals.themoviedb for movie: "{movie.id}"')
         return
 
+    # Get existing cast
     async with database.session() as session:
         result = await session.scalars(sa.select(models.Movie_cast).where(
             models.Movie_cast.movie_id == movie.id,

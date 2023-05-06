@@ -16,6 +16,7 @@ class TheMovieDB(Series_importer_base):
         'info',
         'episodes',
         'images',
+        'cast',
     )
 
     async def info(self, external_id: str) -> schemas.Series_update:
@@ -55,7 +56,6 @@ class TheMovieDB(Series_importer_base):
             alternative_titles=[a['title'][:200] for a in series['alternative_titles']['results']],
         )
 
-
     async def images(self, external_id: str) -> list[schemas.Image_import]:
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
             'api_key': config.data.client.themoviedb,
@@ -80,7 +80,6 @@ class TheMovieDB(Series_importer_base):
             source_url=f'https://image.tmdb.org/t/p/original{image["file_path"]}',
         ) for image in sorted(data['images']['posters'], reverse=True, key=lambda img: float(img['vote_average']))])
         return images
-
 
     async def episodes(self, external_id) -> list[schemas.Episode_update]:
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
@@ -117,7 +116,25 @@ class TheMovieDB(Series_importer_base):
                 plot=episode['overview'][:2000] if episode['overview'] else None
             ))
         return episodes
-
+    
+    async def cast(self, external_id: str):
+        r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}/aggregate_credits', params={
+            'api_key': config.data.client.themoviedb,
+            'language': 'en-US',
+        })
+        if r.status_code != 200:
+            return
+        data = r.json()
+        return [schemas.Series_cast_person_import(
+            external_name=self.external_name,
+            external_id=str(person['id']),
+            roles=[schemas.Series_cast_role(
+                character=role['character'][:200] if role['character'] else None,
+                total_episodes=role['episode_count'] if role['episode_count'] else None,
+            ) for role in person['roles']],
+            order=person['order'],
+            total_episodes=person['total_episode_count'] if person['total_episode_count'] else None,
+        ) for person in data['cast']]
 
     async def incremental_updates(self) -> list[str]:
         page = 1
@@ -135,8 +152,7 @@ class TheMovieDB(Series_importer_base):
             if page == data['total_pages']:
                 break
             page += 1
-        return ids
-    
+        return ids    
 
     async def lookup_from_imdb(self, imdb: str):
         r = await client.get(f'https://api.themoviedb.org/3/find/{imdb}', params={

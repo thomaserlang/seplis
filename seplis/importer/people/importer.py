@@ -33,18 +33,18 @@ async def create_person(external_name: str, external_id: str):
 
 async def update_person_info(person: schemas.Person):
     # TODO: Add support for option to specify other importers like for series
-    logger.info(f'[Person: {person.id}] Updating info')
+    logger.info(f'[Person: {person.id or "new"}] Updating info')
     info: schemas.Person_update = await call_importer(
         external_name='themoviedb',
         method='info',
         external_id=person.externals.get('themoviedb'),
     )
-    old_info = person.to_request()
+    old_info = person.to_request() if person.id else schemas.Person_update()
     data = compare(info, old_info, skip_keys=['also_known_as'])
     missing_also_known_as = [x for x in info.also_known_as if x not in old_info.also_known_as]
     if info.also_known_as and missing_also_known_as:
         data['also_known_as'] = info.also_known_as
-    if info:
+    if data:
         return await models.Person.save(data=schemas.Person_update.parse_obj(data), person_id=person.id, patch=True)
     else:
         logger.debug(f'[Person: {person.id}] No info updates')

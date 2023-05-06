@@ -44,7 +44,7 @@ def upgrade():
         'series_cast',
         sa.Column('series_id', sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
         sa.Column('person_id', sa.Integer, sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
-        sa.Column('character', sa.String(200)),
+        sa.Column('roles', sa.JSON, nullable=False, server_default='[]'),
         sa.Column('order', sa.Integer),
         sa.Column('total_episodes', sa.Integer, nullable=False, server_default='0'),
     )
