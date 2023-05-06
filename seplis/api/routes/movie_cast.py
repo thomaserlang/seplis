@@ -37,7 +37,7 @@ async def movie_cast_get(
     query = sa.select(models.Movie_cast).where(
         models.Movie_cast.movie_id == movie_id,
     ).order_by(
-        sa.desc(models.Movie_cast.order),
+        sa.asc(models.Movie_cast.order),
     )
     p = await utils.sqlalchemy.paginate_cursor(
         session=session,
