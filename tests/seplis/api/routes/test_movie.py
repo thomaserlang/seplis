@@ -21,12 +21,12 @@ async def test_movie(client: AsyncClient):
         'alternative_titles': [
             'National Treasure 2004',
         ],
-        'genres': [
+        'genre_names': [
             'Adventure',
         ],
         'popularity': 4728.432,
         'rating': 7.25,
-        'collection': 'National Treasure',
+        'collection_name': 'National Treasure',
     })
     assert r.status_code == 201, r.content
     data = schemas.Movie.parse_obj(r.json())
@@ -131,6 +131,7 @@ async def test_movie(client: AsyncClient):
     assert data.type == 'poster'
 
     # Test duplicate
+    # Should just return the duplicated image
     r = await client.post(f'/2/movies/{movie_id}/images', 
         files={
             'image': io.BytesIO(b"some initial text data"),
@@ -141,7 +142,9 @@ async def test_movie(client: AsyncClient):
             'external_id': 'test',
         }
     )
-    assert r.status_code == 400, r.content
+    assert r.status_code == 201, r.content
+    data = schemas.Image.parse_obj(r.json())
+    assert data.hash == '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492'
 
     r = await client.get(f'/2/movies/{movie_id}/images')
     assert r.status_code == 200, r.content

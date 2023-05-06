@@ -32,7 +32,7 @@ class Image(Base):
 
         async with database.session() as session:
             if image_data.external_name or image_data.external_id:
-                q = await session.scalar(sa.select(models.Image.id).where(
+                q = await session.scalar(sa.select(models.Image).where(
                     models.Image.external_name == image_data.external_name,
                     models.Image.external_id == image_data.external_id,
                 ))
