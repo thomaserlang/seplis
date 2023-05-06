@@ -20,6 +20,7 @@ async def update_person(person: schemas.Person):
     if not person.externals:
         logger.warn(f'Person {person.id} has no externals')
         return
+    logger.info(f'[Person: {person.id}] Updating')
     await update_person_info(person)
     await update_person_images(person)
 
@@ -33,7 +34,7 @@ async def create_person(external_name: str, external_id: str):
 
 async def update_person_info(person: schemas.Person):
     # TODO: Add support for option to specify other importers like for series
-    logger.info(f'[Person: {person.id or "new"}] Updating info')
+    logger.debug(f'[Person: {person.id or "new"}] Updating info')
     info: schemas.Person_update = await call_importer(
         external_name='themoviedb',
         method='info',
@@ -51,7 +52,7 @@ async def update_person_info(person: schemas.Person):
 
 
 async def update_person_images(person: schemas.Person):
-    logger.info(f'[Person: {person.id}] Updating images')
+    logger.debug(f'[Person: {person.id}] Updating images')
     imp_names = _importers_with_support(person.externals, 'images')
     async with database.session() as session:
         result = await session.scalars(sa.select(models.Image).where(
