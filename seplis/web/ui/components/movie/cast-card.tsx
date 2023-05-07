@@ -6,7 +6,7 @@ export default function CastCard({ castPerson }: { castPerson: IMovieCastPerson 
     return <Flex gap="0.5rem" layerStyle="episodeCard">
         <Box width="70px" rounded="md" overflow="hidden">
             <PosterAspectRatio
-                url={castPerson.person.profile_image?.url+'@SX70.webp'}
+                url={castPerson.person.profile_image?.url+'@SX140.webp'}
                 title={castPerson.person.name}
             />
         </Box>
@@ -20,7 +20,7 @@ export default function CastCard({ castPerson }: { castPerson: IMovieCastPerson 
 export function CastCardSkeleton() {
     return <Flex gap="0.5rem" layerStyle="episodeCard">
         <Box width="70px" rounded="md" overflow="hidden">            
-            <Skeleton aspectRatio={603/887} />
+            <Skeleton />
         </Box>
         <Flex direction="column" gap="0.25rem">
             <Skeleton height="20px" width="175px" />
