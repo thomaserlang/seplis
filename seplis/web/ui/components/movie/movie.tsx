@@ -18,6 +18,7 @@ import { MovieSkeleton } from './skeleton'
 import ChromecastControls from '../player/chromecast-controls'
 import MovieCollection from './collection'
 import FavoriteButton from './favorite-button'
+import CastFeatured from './cast-featured'
 
 
 export function MovieLoad({ movieId, onLoaded }: { movieId: number, onLoaded?: (movie: IMovie) => void }) {
@@ -59,6 +60,12 @@ export default function Movie({ movie }: { movie: IMovie }) {
                 </Stack>
             </Stack>
             <ChromecastControls />
+            
+            <Stack spacing="0.5rem">
+                <Heading as="h2" size="md" fontWeight="600">Top cast</Heading>
+                <CastFeatured movieId={movie.id} />
+            </Stack>
+
             {movie.collection && <MovieCollection collection={movie.collection} />}
         </Stack>
     </FocusContext.Provider>

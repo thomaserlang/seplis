@@ -1,4 +1,4 @@
-import { Skeleton, Stack } from '@chakra-ui/react'
+import { Skeleton } from '@chakra-ui/react'
 import { EpisodeCardWrapper } from './episode-card'
 
 
