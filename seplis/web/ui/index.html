@@ -13,8 +13,24 @@
             window.seplisAPI = "{{ config.data.client.public_api_url }}";
             window.seplisChromecastAppId = "{{ config.data.web.chromecast_appid }}";
         </script>
+        <style>
+            .unsupported-browser {
+                background-color: orange;
+                padding: 0.5rem;
+            }
+
+            @supports (aspect-ratio: 16/9) {
+                .unsupported-browser {
+                    display: none;
+                }
+            }
+
+        </style>
     </head>
     <body>
+        <div class="unsupported-browser">
+            <h2>SEPLIS Warning: Your browser is unsupported.</h2>
+        </div>
         <div id="root"></div>
     </body>
 </html>
