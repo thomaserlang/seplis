@@ -32,14 +32,22 @@ async def series_cast_delete(
 @router.get('', response_model=schemas.Page_cursor_result[schemas.Series_cast_person])
 async def series_cast_get(
     series_id: int,
+    order_le: int = None,
+    order_ge: int = None,
     page_query: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
     query = sa.select(models.Series_cast).where(
         models.Series_cast.series_id == series_id,
     ).order_by(
-        models.Series_cast.order,
+        sa.asc(models.Series_cast.order),
     )
+
+    if order_le is not None:
+        query = query.where(models.Series_cast.order <= order_le)
+    if order_ge is not None:
+        query = query.where(models.Series_cast.order >= order_ge)
+
     p = await utils.sqlalchemy.paginate_cursor(
         session=session,
         query=query,

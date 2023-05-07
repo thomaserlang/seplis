@@ -61,10 +61,7 @@ export default function Movie({ movie }: { movie: IMovie }) {
             </Stack>
             <ChromecastControls />
             
-            <Stack spacing="0.5rem">
-                <Heading as="h2" size="md" fontWeight="600">Top cast</Heading>
-                <CastFeatured movieId={movie.id} />
-            </Stack>
+            <CastFeatured movieId={movie.id} />
 
             {movie.collection && <MovieCollection collection={movie.collection} />}
         </Stack>

@@ -19,6 +19,7 @@ import WatchlistButton from './watchlist-button'
 import { SeriesUpdate } from './settings'
 import SeriesSkeleton from './skeleton'
 import FavoriteButton from './favorite-button'
+import CastFeatured from './cast-featured'
 
 
 export function SeriesLoad({ seriesId, onLoaded }: { seriesId: number, onLoaded?: (movie: ISeries) => void }) {
@@ -63,6 +64,8 @@ export default function Series({ series }: { series: ISeries }) {
             <ChromecastControls />
 
             <UserEpisodes series={series} />
+
+            <CastFeatured seriesId={series.id} />
 
             <SeasonEpisodes series={series} />
 

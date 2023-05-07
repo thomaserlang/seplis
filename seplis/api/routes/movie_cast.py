@@ -32,6 +32,8 @@ async def movie_cast_delete(
 async def movie_cast_get(
     movie_id: int,
     page_query: schemas.Page_cursor_query = Depends(),
+    order_le: int = None,
+    order_ge: int = None,
     session: AsyncSession = Depends(get_session),
 ):
     query = sa.select(models.Movie_cast).where(
@@ -39,6 +41,12 @@ async def movie_cast_get(
     ).order_by(
         sa.asc(models.Movie_cast.order),
     )
+    
+    if order_le is not None:
+        query = query.where(models.Movie_cast.order <= order_le)
+    if order_ge is not None:
+        query = query.where(models.Movie_cast.order >= order_ge)
+
     p = await utils.sqlalchemy.paginate_cursor(
         session=session,
         query=query,
