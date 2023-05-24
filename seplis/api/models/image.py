@@ -54,10 +54,10 @@ class Image(Base):
                 while content := await image_data.file.read(128*1024):
                     yield content
 
-            r = await httpx_client.put(
+            r = await httpx_client.post(
                 urllib.parse.urljoin(config.data.api.storitch, '/store/session'),
                 headers={
-                    'storitch-json': utils.json_dumps({
+                    'X-Storitch': utils.json_dumps({
                         'finished': True,
                         'filename': image_data.file.filename,
                     }),
