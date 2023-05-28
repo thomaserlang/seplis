@@ -236,7 +236,7 @@ async def update_images(movie: schemas.Movie):
     if not movie.poster_image and m['poster_path']:
         key = f'themoviedb-{m["poster_path"]}'
         if key not in image_external_ids:
-            key = f'themoviedb-{m["images"]["posters"][0]["file_path"]}'        
+            key = f'themoviedb-{m["poster_path"]}'
             if key not in image_external_ids:
                 logger.info('No image to set as new primary')
                 return
