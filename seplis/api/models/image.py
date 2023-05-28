@@ -65,7 +65,7 @@ class Image(Base):
                 },
                 content=upload_bytes()
             )
-            if r.status_code != 200:
+            if r.status_code >= 400:
                 logger.error(f'File upload failed: {r.content}')
                 raise exceptions.API_exception(500, 0, 'Unable to store the image')
             
