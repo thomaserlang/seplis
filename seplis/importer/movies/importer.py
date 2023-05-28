@@ -138,7 +138,7 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
         'append_to_response': 'alternative_titles,keywords',
     })
     if r.status_code >= 400:
-        logger.error(
+        logger.info(
             f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}')
         return
     r = r.json()

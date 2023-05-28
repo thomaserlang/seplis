@@ -116,11 +116,11 @@ def update_popularity(create, create_above_popularity):
     set_logger('importer_update_popularity.log')
     asyncio.run(run_task(
         seplis.importer.movies.update_popularity(
-        create_movies=create or create_above_popularity,
+        create_movies=create or not not create_above_popularity,
         create_above_popularity=float(create_above_popularity) if create_above_popularity else 1.0,
         ),
         seplis.importer.series.update_popularity(
-            create_series=create or create_above_popularity,
+            create_series=create or not not create_above_popularity,
             create_above_popularity=float(create_above_popularity) if create_above_popularity else 1.0,
         )
     ))
