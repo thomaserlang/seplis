@@ -120,6 +120,8 @@ async def update_movie_metadata(movie: schemas.Movie):
             return
         themoviedb = r['movie_results'][0]['id']
     new_data = await get_movie_data(themoviedb)
+    if not new_data:
+        return
     old_data = movie.to_request()
     data = compare(new_data, old_data, skip_keys=['alternative_titles'])
     missing_alternative_titles = [x for x in new_data.alternative_titles if x not in old_data.alternative_titles]
