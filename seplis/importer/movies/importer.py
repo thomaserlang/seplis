@@ -140,6 +140,13 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     if r.status_code >= 400:
         logger.info(
             f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}')
+        error = r.json()
+        if error['status_code'] == 34:
+            m = await models.Movie.get_from_external('themoviedb', themoviedb)
+            if m:
+                await models.Movie.delete(movie_id=m.id)
+                logger.info(f'Movie not found on TMDB, deleteing: TMDB {themoviedb} from the database')
+            return
         return
     r = r.json()
 
