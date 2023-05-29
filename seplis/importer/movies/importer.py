@@ -290,7 +290,7 @@ async def update_cast(movie: schemas.Movie):
                     character=None,
                 )
 
-            if cast[key].character != member['character'] or \
+            if cast[key].character != member['character'][:200] or \
                 cast[key].order != member['order']:
                 logger.debug(f'[Movie: {movie.id}] Saving cast: {member["name"]} ({member["id"]})')
                 await models.Movie_cast.save(
@@ -298,7 +298,7 @@ async def update_cast(movie: schemas.Movie):
                         movie_id=movie.id,
                         person_id=cast[key].person.id,
                         order=member['order'],
-                        character=member['character'] or None,
+                        character=member['character'][:200] or None,
                     )
                 )
         except (KeyboardInterrupt, SystemExit):
