@@ -7,7 +7,7 @@ from seplis.utils.sqlalchemy import UtcDateTime
 from .episode import Episode
 from .base import Base
 from ..database import auto_session, database
-from .. import schemas
+from .. import schemas, exceptions
 from ... import config, utils, constants
 from .genre import Genre
 
@@ -119,15 +119,20 @@ class Series(Base):
             current_externals = await session.scalar(sa.select(Series.externals).where(Series.id == series_id))
 
         for key in externals:
-            if externals[key]:
-                r = await session.scalar(sa.select(Series_external.series_id).where(
+            if externals[key]:                
+                dup_series = await session.scalar(sa.select(Series).where(
                     Series_external.title == key,
                     Series_external.value == externals[key],
                     Series_external.series_id != series_id,
+                    Series.id == Series_external.series_id,
                 ))
-                if r:
-                    raise HTTPException(
-                        400, f'Series with {key}={externals[key]} already exists (Series id: {r}).')
+                if dup_series:
+                    raise exceptions.Series_external_duplicated(
+                        external_title=key,
+                        external_value=externals[key],
+                        series=utils.json_loads(utils.json_dumps(
+                            schemas.Series.from_orm(dup_series)))
+                    )
 
             if (key not in current_externals):
                 if externals[key]:

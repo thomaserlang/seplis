@@ -159,52 +159,17 @@ class User_episode_not_watched(API_exception):
             message='You have not watched this episode',
         )
 
-class Show_unknown(API_exception):
 
-    def __init__(self):
-        API_exception.__init__(
-            self,
-            status_code=400,
-            code=1400,
-            message='Unknown show',
-        )
+class Series_external_duplicated(API_exception):
 
-class Show_external_field_missing(API_exception):
-
-    def __init__(self):
-        API_exception.__init__(
-            self,
-            status_code=400,
-            code=1401,
-            message='Missing externals',
-        )
-
-class Show_importer_not_in_external(API_exception):
-
-    def __init__(self, external_type):
-        API_exception.__init__(
-            self,
-            status_code=400,
-            code=1402,
-            message='Importer "{}" must have a registered id in externals'.format(external_type),
-            extra={
-                'external_type': external_type,
-            }
-        )
-
-class Show_external_duplicated(API_exception):
-
-    def __init__(self, external_title, external_value, show):
+    def __init__(self, external_title, external_value, series):
         API_exception.__init__(
             self,
             status_code=400,
             code=1403,
-            message='A show with external name: "{}" and id: "{}" does already exist'.format(
-                external_title, 
-                external_value,
-            ),
+            message=f'A series with external name: "{external_title}" and id: "{external_value}" does already exist',
             extra={
-                'show': show,
+                'series': series,
                 'external_title': external_title,
                 'external_value': external_value,
             }
