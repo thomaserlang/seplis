@@ -19,13 +19,13 @@ class Image(Base):
     external_id = sa.Column(sa.String(50))
     height = sa.Column(sa.Integer)
     width = sa.Column(sa.Integer)
-    hash = sa.Column(sa.String(64))
+    file_id = sa.Column(sa.String(64))
     created_at = sa.Column(UtcDateTime, default=datetime.utcnow)
     type = sa.Column(sa.String(50))
 
     @property
     def url(self):
-        return urllib.parse.urljoin(config.data.api.image_url, self.hash)
+        return urllib.parse.urljoin(config.data.api.image_url, self.file_id)
 
     async def save(relation_type: str, relation_id: str, image_data: schemas.Image_import) -> schemas.Image:
         from ..dependencies import httpx_client
@@ -73,7 +73,6 @@ class Image(Base):
             if file['type'] != 'image':
                 raise exceptions.Image_no_data()
 
-
             r = await session.execute(sa.insert(models.Image).values(
                 relation_type=relation_type,
                 relation_id=relation_id,
@@ -81,7 +80,7 @@ class Image(Base):
                 external_id=image_data.external_id,
                 height=file['height'],
                 width=file['width'],
-                hash=file['hash'],
+                file_id=file['file_id'],
                 type=image_data.type,
             ))
             image = await session.scalar(sa.select(models.Image).where(models.Image.id == r.lastrowid))

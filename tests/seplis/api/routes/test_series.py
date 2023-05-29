@@ -289,11 +289,12 @@ async def test_series_create(client: AsyncClient):
                           )
     assert r.status_code == 422, r.status_code
 
-    respx.put("http://storitch/store/session").mock(return_value=httpx.Response(200, json={
+    respx.post("http://storitch/store/session").mock(return_value=httpx.Response(200, json={
         'type': 'image',
         'width': 1000,
         'height': 680,
         'hash': '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492',
+        'file_id': '1a4dd776-f82f-4df7-893a-c03a168bc90d',
     }))
     r = await client.post(f'/2/series/{series_id}/images',
                           files={
@@ -310,7 +311,7 @@ async def test_series_create(client: AsyncClient):
     assert data.id > 0
     assert data.width == 1000
     assert data.height == 680
-    assert data.hash == '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492'
+    assert data.file_id == '1a4dd776-f82f-4df7-893a-c03a168bc90d'
     assert data.type == 'poster'
 
     # Test duplicate
@@ -327,7 +328,7 @@ async def test_series_create(client: AsyncClient):
                           )
     assert r.status_code == 201, r.content
     data = schemas.Image.parse_obj(r.json())
-    assert data.hash == '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492'
+    assert data.file_id == '1a4dd776-f82f-4df7-893a-c03a168bc90d'
 
     r = await client.get(f'/2/series/{series_id}/images')
     assert r.status_code == 200

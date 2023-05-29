@@ -19,14 +19,11 @@ class Image_import(BaseModel):
     file: UploadFile | None
 
 
-class Image(Image_create):
+class Image(Image_create, orm_mode=True):
     id: int
     height: int
     width: int
-    hash: str
+    file_id: str
     type: IMAGE_TYPES
     created_at: datetime
     url: AnyHttpUrl
-
-    class Config:
-        orm_mode = True

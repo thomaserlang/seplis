@@ -11,7 +11,7 @@ export interface IImage extends IImageCreate {
     id: number
     height: number
     width: number
-    hash: string
+    file_id: string
     type: ImageTypes
     created_at: Date
     url: string
