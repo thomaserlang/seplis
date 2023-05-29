@@ -15,7 +15,7 @@ class Movie_create(BaseModel, extra='forbid', validate_assignment=True):
     plot: constr(min_length=0, max_length=2000, strip_whitespace=True) | None
     tagline: constr(min_length=0, max_length=500, strip_whitespace=True) | None
     externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True), constr(min_length=0, max_length=45, strip_whitespace=True) | None] | None
-    status: conint(ge=0, le=5) | None # Status: 0: Unknown, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production, 6: Canceled,
+    status: conint(ge=0, le=6) | None # Status: 0: Unknown, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production, 6: Canceled,
     language: constr(min_length=1, max_length=20) | None
     runtime: conint(ge=0) | None
     release_date: date | None
