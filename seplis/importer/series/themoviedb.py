@@ -130,10 +130,10 @@ class TheMovieDB(Series_importer_base):
             external_id=str(person['id']),
             roles=[schemas.Series_cast_role(
                 character=role['character'][:200] if role['character'] else None,
-                total_episodes=role['episode_count'] if role['episode_count'] else None,
+                total_episodes=role['episode_count'] if role['episode_count'] else 0,
             ) for role in person['roles']],
             order=person['order'],
-            total_episodes=person['total_episode_count'] if person['total_episode_count'] else None,
+            total_episodes=person['total_episode_count'] if person['total_episode_count'] else 0,
         ) for person in data['cast']]
 
     async def incremental_updates(self) -> list[str]:

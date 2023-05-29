@@ -4,7 +4,7 @@ from .person import Person
 
 class Series_cast_role(BaseModel):
     character: constr(min_length=1, max_length=200, strip_whitespace=True) | None
-    total_episodes: int | None
+    total_episodes: int
 
 
 class Series_cast_person_create(BaseModel):
@@ -12,7 +12,6 @@ class Series_cast_person_create(BaseModel):
     person_id: int
     roles: list[Series_cast_role] = []
     order: int | None
-    total_episodes: int | None
 
 
 class Series_cast_person_update(Series_cast_person_create):
@@ -24,7 +23,7 @@ class Series_cast_person_import(BaseModel):
     external_id: str
     roles: list[Series_cast_role] = []
     order: int | None
-    total_episodes: int | None
+    total_episodes: int
 
 
 class Series_cast_person(BaseModel, orm_mode=True):
