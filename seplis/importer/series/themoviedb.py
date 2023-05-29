@@ -31,13 +31,14 @@ class TheMovieDB(Series_importer_base):
 
         externals = {}
         externals[self.external_name] = str(series['id'])
-        if series['external_ids'].get('imdb_id'):
-            externals['imdb'] = series['external_ids']['imdb_id']
-        if series['external_ids'].get('tvdb_id'):
-            externals['thetvdb'] = str(series['external_ids']['tvdb_id'])
+        if series.get('external_ids'):
+            if series['external_ids'].get('imdb_id'):
+                externals['imdb'] = series['external_ids']['imdb_id']
+            if series['external_ids'].get('tvdb_id'):
+                externals['thetvdb'] = str(series['external_ids']['tvdb_id'])
 
         genres = [genre['name'] for genre in series['genres']]
-        for keyword in series['keywords']['results']:
+        for keyword in series.get('keywords', {}).get('results', []):
             if keyword['name'].lower() == 'anime':
                 genres.append('Anime')
 
@@ -53,7 +54,7 @@ class TheMovieDB(Series_importer_base):
             language=series['original_language'] if series['original_language'] else None,
             popularity=series['popularity'],
             tagline=series['tagline'] if series['tagline'] else None,
-            alternative_titles=[a['title'][:200] for a in series['alternative_titles']['results']],
+            alternative_titles=[a['title'][:200] for a in series.get('alternative_titles', {}).get('results', [])],
         )
 
     async def images(self, external_id: str) -> list[schemas.Image_import]:

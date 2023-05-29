@@ -169,9 +169,10 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     if 'alternative_titles' in r:
         data.alternative_titles = [a['title'][:200] for a in r['alternative_titles']['titles']]
     genres = [genre['name'] for genre in r['genres']]
-    for keyword in r['keywords']['keywords']:
-        if keyword['name'].lower() == 'anime':
-            genres.append('Anime')
+    if r.get('keywords'):
+        for keyword in r['keywords'].get('keywords', []):
+            if keyword['name'].lower() == 'anime':
+                genres.append('Anime')
     data.genre_names = genres
     data.popularity = r['popularity']
     data.revenue = r['revenue']
