@@ -1,4 +1,4 @@
-import { Stack } from '@chakra-ui/react'
+import { Alert, AlertIcon, Stack, Text } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
 import Slider from '@seplis/components/slider'
@@ -68,7 +68,13 @@ export default function WatchHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={userWatchedSelected}
-                    hideIfEmpty={true}
+                    hideIfEmpty={false}
+                    emptyMessage={<Alert status='info'>
+                        <AlertIcon />        
+                        <Text>
+                            You haven't watched anything that's avaialable on a play server or you don't have access to a play server.
+                        </Text>
+                    </Alert>}
                 />
 
 

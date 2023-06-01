@@ -13,12 +13,21 @@ interface IProps<S = undefined> {
     title?: string,
     url: string,
     hideIfEmpty?: boolean,
+    emptyMessage?: ReactNode | null,
     onFocus?: FocusHandler,
     onItemSelected?: (item: S) => void
     parseItem: (item: S) => ISliderItem
 }
 
-export default function Slider<S = undefined>({ title, url, hideIfEmpty = false, parseItem, onFocus, onItemSelected }: IProps<S>) {
+export default function Slider<S = undefined>({ 
+    title, 
+    url, 
+    hideIfEmpty = false, 
+    emptyMessage,
+    parseItem, 
+    onFocus, 
+    onItemSelected,
+}: IProps<S>) {
     const [items, setItems] = useState<ISliderItem[]>([])
     const [index, setIndex] = useState(0)
     const [displayItemCount, setDisplayItemCount] = useState(() => (rowWidthItems()))
@@ -76,7 +85,8 @@ export default function Slider<S = undefined>({ title, url, hideIfEmpty = false,
 
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
-            {title && <Heading className="row-header">{title}</Heading>}
+            {title && <Heading className="row-header row-margin">{title}</Heading>}
+            {(!isInitialLoading && items.length === 0) && <div className="row-margin">{emptyMessage}</div>}
             <HStack className="slider" alignItems="stretch">
                 {(!isInitialLoading && items) ? <>
                     <Cards<S>
