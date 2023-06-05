@@ -72,7 +72,7 @@ export default function WatchHome() {
                     emptyMessage={<Alert status='info'>
                         <AlertIcon />        
                         <Text>
-                            You haven't watched anything that's avaialable on a play server or you don't have access to a play server.
+                            You haven't watched anything that's avaialable on a play server.
                         </Text>
                     </Alert>}
                 />
