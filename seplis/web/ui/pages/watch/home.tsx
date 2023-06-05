@@ -16,7 +16,7 @@ export default function WatchHome() {
     const location = useLocation()
 
     useEffect(() => {
-        setTitle('Watch Home')
+        setTitle('Watch')
     }, [])
 
     useEffect(() => {
