@@ -86,7 +86,7 @@ export default function Slider<S = undefined>({
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
             {title && <Heading className="row-header row-margin">{title}</Heading>}
-            {(!isInitialLoading && data.items.length === 0) && <div className="row-margin">{emptyMessage}</div>}
+            {(!isInitialLoading && data?.pages?.length === 0) && <div className="row-margin">{emptyMessage}</div>}
             <HStack className="slider" alignItems="stretch">
                 {(!isInitialLoading && items) ? <>
                     <Cards<S>
