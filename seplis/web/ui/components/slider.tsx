@@ -82,7 +82,7 @@ export default function Slider<S = undefined>({
 
     if (hideIfEmpty && !isInitialLoading && items.length === 0)
         return null
-    console.log(data)
+
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
             {title && <Heading className="row-header row-margin">{title}</Heading>}
