@@ -3,7 +3,7 @@ import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-naviga
 import ImageList from '@seplis/components/list'
 import { ISeries } from '@seplis/interfaces/series'
 import { ISliderItem } from '@seplis/interfaces/slider'
-import { useEffect } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { SeriesUserFilter } from '../../components/series/user-filter'
@@ -12,11 +12,19 @@ interface IProps<S = ISeries>{
     title: string
     url: string
     defaultSort?: string
+    emptyMessage?: string | null,
     onItemSelected?: (item: S) => void
     parseItem?: (item: S) => ISliderItem
 }
 
-export default function UserSeriesList<S = ISeries>({ title, url, defaultSort, parseItem, onItemSelected }: IProps<S>) {
+export default function UserSeriesList<S = ISeries>({ 
+    title, 
+    url, 
+    defaultSort, 
+    emptyMessage,
+    parseItem, 
+    onItemSelected
+}: IProps<S>) {
     const { ref, focusKey, focusSelf } = useFocusable()
     const navigate = useNavigate()
     const location = useLocation()
@@ -36,6 +44,7 @@ export default function UserSeriesList<S = ISeries>({ title, url, defaultSort, p
                 <ImageList<S>
                     title={title}
                     url={url}
+                    emptyMessage={emptyMessage}
                     urlParams={{
                         ...query,
                         'per_page': 50,

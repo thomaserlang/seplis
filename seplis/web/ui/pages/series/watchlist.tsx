@@ -16,6 +16,7 @@ export default function SeriesWatchlist() {
                 title="Series watchlist"
                 url="/2/series?user_watchlist=true"
                 defaultSort='user_watchlist_added_at_desc'
+                emptyMessage={`You have no series in your watchlist.`}
             />
         </Box>
     </>

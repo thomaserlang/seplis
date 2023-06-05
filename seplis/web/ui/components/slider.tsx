@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@chakra-ui/icons'
-import { Box, Flex, Heading, HStack, Image, Skeleton } from '@chakra-ui/react'
+import { Text, Alert, AlertIcon, Box, Flex, Heading, HStack, Image, Skeleton } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { IPageCursorResult } from '@seplis/interfaces/page'
 import { ISliderItem } from '@seplis/interfaces/slider'
@@ -13,7 +13,7 @@ interface IProps<S = undefined> {
     title?: string,
     url: string,
     hideIfEmpty?: boolean,
-    emptyMessage?: ReactNode | null,
+    emptyMessage?: string | null,
     onFocus?: FocusHandler,
     onItemSelected?: (item: S) => void
     parseItem: (item: S) => ISliderItem
@@ -86,7 +86,12 @@ export default function Slider<S = undefined>({
     return <FocusContext.Provider value={focusKey}>
         <Box ref={ref}>
             {title && <Heading className="row-header row-margin">{title}</Heading>}
-            {(!isInitialLoading && data?.pages[0].items?.length === 0) && <div className="row-margin">{emptyMessage}</div>}
+            {(!isInitialLoading && data?.pages[0].items?.length === 0) && emptyMessage && <div className="row-margin">
+                <Alert status='info'>
+                    <AlertIcon /> <Text>{emptyMessage}</Text>
+                </Alert>                
+            </div>}
+
             <HStack className="slider" alignItems="stretch">
                 {(!isInitialLoading && items) ? <>
                     <Cards<S>

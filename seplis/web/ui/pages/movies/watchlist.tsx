@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 
 export default function MovieWatchlist() {
     useEffect(() => {
-        setTitle('Movie Watchlist')
+        setTitle('Movie watchlist')
     }, [])
 
     return <>
@@ -15,6 +15,7 @@ export default function MovieWatchlist() {
             <MovieUserList
                 title="Movie watchlist"
                 url="/2/movies?user_watchlist=true&sort=user_watchlist_added_at_desc"
+                emptyMessage={`You have no movies in your watchlist.`}
             />
         </Box>
     </>

@@ -10,7 +10,7 @@ export default function SeriesCountdown() {
     const navigate = useNavigate()
     const location = useLocation()
     useEffect(() => {
-        setTitle('Series Countdown')
+        setTitle('Series countdown')
     }, [])
 
     return <>
@@ -33,6 +33,7 @@ export default function SeriesCountdown() {
                         background: location
                     }})
                 }}
+                emptyMessage={`No series on your watchlist has episodes airing in the future.`}
             />
         </Box>
     </>

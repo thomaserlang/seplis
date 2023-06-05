@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 
 export default function MovieFavorites() {
     useEffect(() => {
-        setTitle('Movie Favorites')
+        setTitle('Movie favorites')
     }, [])
 
     return <>
@@ -15,6 +15,7 @@ export default function MovieFavorites() {
             <MovieUserList
                 title="Movie favorites"
                 url="/2/movies?user_favorites=true&sort=user_favorite_added_at_desc"
+                emptyMessage={`You have no movies in your favorites.`}
             />
         </Box>
     </>

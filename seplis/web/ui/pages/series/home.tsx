@@ -59,12 +59,7 @@ export default function SeriesHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={seriesSelected}
-                    emptyMessage={<Alert status='info'>
-                        <AlertIcon />        
-                        <Text>
-                            You haven't watched anything.
-                        </Text>
-                    </Alert>}
+                    emptyMessage={`You haven't watched anything.`}
                 />
 
                 <Slider<ISeriesAndEpisode>
@@ -80,12 +75,7 @@ export default function SeriesHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
-                    emptyMessage={<Alert status='info'>
-                        <AlertIcon />        
-                        <Text>
-                            No series you follow has aired recently.
-                        </Text>
-                    </Alert>}
+                    emptyMessage={`No series you follow has aired recently.`}
                 />
 
 
@@ -119,12 +109,7 @@ export default function SeriesHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
-                    emptyMessage={<Alert status='info'>
-                        <AlertIcon />        
-                        <Text>
-                            You have no series to watch, go explore!
-                        </Text>
-                    </Alert>}
+                    emptyMessage={`You have no series to watch, go explore!`}
                 />
                 
             </Stack>

@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 
 export default function SeriesFavorites() {
     useEffect(() => {
-        setTitle('Series Favorites')
+        setTitle('Series favorites')
     }, [])
 
     return <>
@@ -16,6 +16,7 @@ export default function SeriesFavorites() {
                 title="Series favorites"
                 url="/2/series?user_favorites=true"
                 defaultSort='user_favorite_added_at_desc'
+                emptyMessage={`You have no series in your favorites.`}
             />
         </Box>
     </>

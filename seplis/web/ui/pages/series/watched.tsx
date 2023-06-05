@@ -6,16 +6,17 @@ import { useEffect } from 'react'
 
 export default function SeriesWatched() {
     useEffect(() => {
-        setTitle('Series Watched')
+        setTitle('Series watched')
     }, [])
 
     return <>
         <MainMenu active="series" />
         <Box margin="1rem">
             <UserSeriesList
-                title="Series Watched"
+                title="Series watched"
                 url="/2/series?user_has_watched=true"
                 defaultSort='user_last_episode_watched_at_desc'
+                emptyMessage={`You have not watched any series.`}
             />
         </Box>
     </>

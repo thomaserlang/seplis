@@ -10,7 +10,7 @@ export default function SeriesRecentlyAired() {
     const navigate = useNavigate()
     const location = useLocation()
     useEffect(() => {
-        setTitle('Series Countdown')
+        setTitle('Series recently aired')
     }, [])
 
     return <>
@@ -32,6 +32,7 @@ export default function SeriesRecentlyAired() {
                         background: location
                     }})
                 }}
+                emptyMessage={`No series on your watchlist has recently aired.`}
             />
         </Box>
     </>

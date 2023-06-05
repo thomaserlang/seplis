@@ -8,7 +8,7 @@ import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query
 import { MovieUserFilter } from './user-filter'
 
 
-export default function MovieUserList({ title, url }: { title: string, url: string }) {
+export default function MovieUserList({ title, url, emptyMessage }: { title: string, url: string, emptyMessage?: string | null }) {
     const { ref, focusKey, focusSelf } = useFocusable()
     const navigate = useNavigate()
     const location = useLocation()
@@ -28,6 +28,7 @@ export default function MovieUserList({ title, url }: { title: string, url: stri
                 <ImageList<IMovie>
                     title={title}
                     url={url}
+                    emptyMessage={emptyMessage}
                     urlParams={{
                         ...query,
                         'per_page': 50,

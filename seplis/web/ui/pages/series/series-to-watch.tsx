@@ -10,7 +10,7 @@ export default function SeriesToWatch() {
     const navigate = useNavigate()
     const location = useLocation()
     useEffect(() => {
-        setTitle('Series to Watch')
+        setTitle('Series to watch')
     }, [])
 
     return <>
@@ -32,6 +32,7 @@ export default function SeriesToWatch() {
                         background: location
                     }})
                 }}
+                emptyMessage={`You have no series to watch.`}
             />
         </Box>
     </>
