@@ -56,13 +56,13 @@ def upgrade():
     result = con.execute(text('''
         INSERT INTO users (name, email, password, created, level) 
         VALUES (:name, :email, :password, :created, :level) 
-    '''),
+    '''), dict(
         name='seplis',
         email='bot@seplis.net',
         password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',# 123456,
         created=datetime.utcnow(),
         level=6,
-    )
+    ))
 
     op.create_table(
         'apps',
@@ -80,7 +80,7 @@ def upgrade():
     con.execute(text('''
         INSERT INTO apps (user_id, name, redirect_uri, level, client_id, client_secret, created)
         VALUES (:user_id, :name, :redirect_uri, :level, :client_id, :client_secret, :created)
-    '''),
+    '''), dict(
         user_id=1,
         name='SEPLIS',
         redirect_uri=None,
@@ -88,7 +88,7 @@ def upgrade():
         client_id=utils.random_key(),
         client_secret=utils.random_key(),
         created=datetime.utcnow(),
-    )
+    ))
 
     op.create_table(
         'tokens',

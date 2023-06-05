@@ -32,14 +32,14 @@ def upgrade():
 
     ids = {}
     conn = op.get_bind()
-    rows = conn.execute('select id from play_servers')
+    rows = conn.execute(sa.text('select id from play_servers'))
     for r in rows.yield_per(10000):
         ids[r['id']] = uuid7_mariadb()
-        conn.execute(sa.sql.text('UPDATE play_servers SET id=:new_id WHERE id=:id'), {
+        conn.execute(sa.text('UPDATE play_servers SET id=:new_id WHERE id=:id'), {
             'id': r['id'], 
             'new_id': ids[r['id']],
         })
-        conn.execute(sa.sql.text('UPDATE play_access SET play_server_id=:new_id WHERE play_server_id=:id'), {
+        conn.execute(sa.text('UPDATE play_access SET play_server_id=:new_id WHERE play_server_id=:id'), {
             'id': r['id'], 
             'new_id': ids[r['id']],
         })
@@ -72,7 +72,7 @@ def upgrade():
 
     op.rename_table('play_access', 'play_server_access')
     op.add_column('play_server_access', sa.Column('created_at', sa.DateTime))
-    conn.execute('UPDATE play_server_access SET created_at=NOW();')
+    conn.execute(sa.text('UPDATE play_server_access SET created_at=NOW();'))
 
 
 def downgrade():

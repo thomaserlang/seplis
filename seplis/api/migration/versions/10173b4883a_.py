@@ -21,7 +21,7 @@ def upgrade():
         nullable=False,
         type_=sa.String(20),
     )
-    op.get_bind().execute('update images set relation_type="show";')
+    op.get_bind().execute(sa.text('update images set relation_type="show";'))
 
 def downgrade():
-    raise NotImplemented()
+    pass

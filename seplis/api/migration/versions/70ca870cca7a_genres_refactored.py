@@ -24,7 +24,7 @@ def upgrade():
     op.alter_column('series_genres', 'show_id', existing_type=sa.Integer, new_column_name='series_id')
     op.drop_constraint('PRIMARY', 'series_genres', type_='primary')
     conn = op.get_bind()
-    genres = conn.execute('select id, name from genres').all()
+    genres = conn.execute(sa.text('select id, name from genres')).all()
     for genre in genres:
         conn.execute(sa.text('update series_genres set genre_id=:genre_id where genre=:genre'), {
             'genre_id': genre['id'],

@@ -43,12 +43,12 @@ def upgrade():
     op.create_index('ix_episodes_watched_history_user_id_series_id_episode_number', 'episodes_watched_history', ['user_id', 'series_id', 'episode_number'])
 
     conn = op.get_bind()
-    episodes_watched = conn.execute('''
+    episodes_watched = conn.execute(sa.text('''
         SELECT show_id, user_id, episode_number, times, position, watched_at
         FROM episodes_watched 
         WHERE times>0
         ORDER BY user_id, show_id, episode_number;
-    ''').all()
+    ''')).all()
 
     history = []
     for ew in episodes_watched:

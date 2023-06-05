@@ -19,7 +19,7 @@ def upgrade():
         sa.Column('total_episodes', sa.Integer, server_default='0')
     )
     conn = op.get_bind()
-    conn.execute('''
+    conn.execute(sa.text('''
         UPDATE 
             shows s, 
             (select show_id, count(number) as total_episodes FROM episodes GROUP BY show_id) e
@@ -27,7 +27,7 @@ def upgrade():
             s.total_episodes=e.total_episodes
         WHERE
             e.show_id=s.id;
-    ''')
+    '''))
 
 def downgrade():
-    raise NotImplemented()
+    pass
