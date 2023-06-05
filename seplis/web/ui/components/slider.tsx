@@ -114,7 +114,8 @@ export function Cards<S = any>({ items, onFocus, onItemSelected }: { items: ISli
                 onItemSelected={onItemSelected}
                 viewItemIndex={index}
             />)}
-            {[...Array(rowWidthItems() - items.length).keys()].map(i => <EmptyCard key={`empty-${i}`} />)}
+            {items.length > 0 && [...Array(rowWidthItems() - items.length).keys()].map(
+                i => <EmptyCard key={`empty-${i}`} />)}
         </HStack>
     </FocusContext.Provider>
 }

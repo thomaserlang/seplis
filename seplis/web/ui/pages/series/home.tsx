@@ -1,4 +1,4 @@
-import { Stack } from '@chakra-ui/react'
+import { Alert, AlertIcon, Stack, Text } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import MainMenu from '@seplis/components/main-menu'
 import Slider from '@seplis/components/slider'
@@ -59,6 +59,12 @@ export default function SeriesHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={seriesSelected}
+                    emptyMessage={<Alert status='info'>
+                        <AlertIcon />        
+                        <Text>
+                            You haven't watched anything.
+                        </Text>
+                    </Alert>}
                 />
 
                 <Slider<ISeriesAndEpisode>
@@ -74,6 +80,12 @@ export default function SeriesHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
+                    emptyMessage={<Alert status='info'>
+                        <AlertIcon />        
+                        <Text>
+                            No series you follow has aired recently.
+                        </Text>
+                    </Alert>}
                 />
 
 
@@ -91,6 +103,7 @@ export default function SeriesHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
+                    hideIfEmpty={true}
                 />
 
                 <Slider<ISeriesAndEpisode>
@@ -106,6 +119,12 @@ export default function SeriesHome() {
                     )}
                     onFocus={onRowFocus}
                     onItemSelected={itemSelected}
+                    emptyMessage={<Alert status='info'>
+                        <AlertIcon />        
+                        <Text>
+                            You have no series to watch, go explore!
+                        </Text>
+                    </Alert>}
                 />
                 
             </Stack>
