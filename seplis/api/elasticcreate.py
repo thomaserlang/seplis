@@ -2,10 +2,8 @@ import asyncio
 from seplis import config
 
 async def create_indices(es):
-    await asyncio.gather(
-        es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'titles'),
-    )
-
+    await es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'titles')
+    
     settings = {
         'analysis': {
             'char_filter': {
