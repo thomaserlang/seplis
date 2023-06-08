@@ -35,7 +35,8 @@ class ConfigAPIModel(BaseModel):
     max_workers = 5
     image_url: Optional[AnyHttpUrl] = 'https://images.seplis.net'
     base_url: Optional[AnyHttpUrl] = 'https://api.seplis.net'
-    storitch: Optional[AnyHttpUrl]
+    storitch_host: Optional[AnyHttpUrl]
+    storitch_api_key: str = ''
 
 class ConfigWebModel(BaseModel):
     url: Optional[AnyHttpUrl]

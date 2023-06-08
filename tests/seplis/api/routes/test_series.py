@@ -276,7 +276,7 @@ async def test_series_create(client: AsyncClient):
     r = await client.get(f'/2/series/{series_id}/episodes/3')
     assert r.status_code == 404, r.content
 
-    config.data.api.storitch = 'http://storitch'
+    config.data.api.storitch_host = 'http://storitch'
     r = await client.post(f'/2/series/{series_id}/images',
                           files={
                               'image': io.BytesIO(b"some initial text data"),

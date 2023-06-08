@@ -55,13 +55,14 @@ class Image(Base):
                     yield content
 
             r = await httpx_client.post(
-                urllib.parse.urljoin(config.data.api.storitch, '/store/session'),
+                urllib.parse.urljoin(config.data.api.storitch_host, '/store/session'),
                 headers={
                     'X-Storitch': utils.json_dumps({
                         'finished': True,
                         'filename': image_data.file.filename,
                     }),
                     'content-type': 'application/octet-stream',
+                    'authorization': config.data.api.storitch_api_key,
                 },
                 content=upload_bytes()
             )

@@ -93,7 +93,7 @@ async def test_movie(client: AsyncClient):
     assert data.alternative_titles == []
 
 
-    config.data.api.storitch = 'http://storitch'
+    config.data.api.storitch_host = 'http://storitch'
     r = await client.post(f'/2/movies/{movie_id}/images', 
         files={
             'image': io.BytesIO(b"some initial text data"),
