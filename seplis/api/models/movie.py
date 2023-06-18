@@ -203,6 +203,22 @@ class Movie(Base):
             runtime=self.runtime,
             language=self.language,
         )
+    
+
+    @staticmethod
+    @auto_session
+    async def get_from_external(
+        title: str,
+        value: str,
+        session: AsyncSession = None,
+    ):
+        movie = await session.scalar(sa.select(Movie).where(
+            Movie.id == Movie_external.Movie_id,
+            Movie_external.title == title,
+            Movie_external.value == value,
+        ))
+        if movie:
+            return schemas.Movie.from_orm(movie)
 
 
 class Movie_external(Base):
