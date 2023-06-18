@@ -31,4 +31,4 @@ class Series_cast_person(BaseModel, orm_mode=True):
     person: Person
     roles: list[Series_cast_role] = []
     order: int | None
-    total_episodes: int = 0 | None
+    total_episodes: int | None = 0
