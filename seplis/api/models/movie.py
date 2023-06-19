@@ -213,7 +213,7 @@ class Movie(Base):
         session: AsyncSession = None,
     ):
         movie = await session.scalar(sa.select(Movie).where(
-            Movie.id == Movie_external.Movie_id,
+            Movie.id == Movie_external.movie_id,
             Movie_external.title == title,
             Movie_external.value == value,
         ))
