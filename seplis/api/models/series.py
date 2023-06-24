@@ -84,7 +84,7 @@ class Series(Base):
 
         if 'episodes' in _data:
             _data.pop('episodes')
-            await cls._save_episodes(session, series_id, data.episodes)
+            await cls._save_episodes(session, series_id, data.episodes, patch=patch)
         if _data:
             await session.execute(sa.update(Series).where(Series.id == series_id).values(**_data))
         data = await session.scalar(sa.select(Series).where(Series.id == series_id))
@@ -189,28 +189,24 @@ class Series(Base):
         )
 
     @classmethod
-    async def _save_episodes(cls, session: AsyncSession, series_id: int, episodes: list[schemas.Episode_create | schemas.Episode_update]):
-        async def _save_episode(episode_data: schemas.Episode_create | schemas.Episode_update):
-            episode_number: Episode = await session.scalar(sa.select(Episode.number).where(
+    async def _save_episodes(cls, session: AsyncSession, series_id: int, episodes: list[schemas.Episode_create | schemas.Episode_update], patch: bool):
+        if not patch:
+            await session.execute(sa.delete(Episode).where(Episode.series_id == series_id))
+        else:
+            await session.execute(sa.delete(Episode).where(
                 Episode.series_id == series_id,
-                Episode.number == episode_data.number,
+                Episode.number.notin_([e.number for e in episodes if e.number]),
             ))
-            data = episode_data.dict(exclude_unset=True)
+        if not episodes:
+            return
+        rows = []
+        for episode in episodes:
+            data = episode.dict(exclude_unset=True)
+            data['series_id'] = series_id
             if 'air_datetime' in data and not 'air_date' in data:
-                data['air_date'] = episode_data.air_datetime.date(
-                ) if episode_data.air_datetime else None
-            if episode_number != None:
-                await session.execute(sa.update(Episode).values(data).where(
-                    Episode.series_id == series_id,
-                    Episode.number == episode_data.number,
-                ))
-            else:
-                await session.execute(sa.insert(Episode).values(
-                    series_id=series_id,
-                    **data,
-                ))
-
-        await asyncio.gather(*[_save_episode(episode) for episode in episodes])
+                data['air_date'] = episode.air_datetime.date() if episode.air_datetime else None
+            rows.append(data)
+        await session.execute(sa.insert(Episode).prefix_with('IGNORE'), rows)
         await cls.update_seasons(session, series_id)
 
     def title_document(self):
