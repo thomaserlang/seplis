@@ -1,10 +1,12 @@
 import asyncio
 import sqlalchemy as sa
+
+from ..database import auto_session
 from ..dependencies import AsyncSession
 from .. import schemas, models, exceptions
 
 
-async def expand_series(expand: list[str], user: schemas.User, series: list[schemas.Series], session: AsyncSession):
+async def expand_series(expand: list[str], user: schemas.User, series: list[schemas.Series]):
     if not expand:
         return
     if not user:
@@ -13,37 +15,33 @@ async def expand_series(expand: list[str], user: schemas.User, series: list[sche
     if 'user_watchlist' in expand:
         expand_tasks.append(expand_user_watchlist(
             user_id=user.id, 
-            series=series, 
-            session=session
+            series=series,
         ))
     if 'user_favorite' in expand:
         expand_tasks.append(expand_user_favorite(
             user_id=user.id, 
-            series=series, 
-            session=session
+            series=series,
         ))
     if 'user_can_watch' in expand:
         expand_tasks.append(expand_user_can_watch(
             series=series, 
-            user_id=user.id, 
-            session=session
+            user_id=user.id,
         ))
     if 'user_last_episode_watched' in expand:
         expand_tasks.append(expand_user_last_episode_watched(
             series=series, 
-            user_id=user.id, 
-            session=session
+            user_id=user.id,
         ))
     if 'user_rating' in expand:
         expand_tasks.append(expand_user_rating(
             series=series, 
-            user_id=user.id, 
-            session=session
+            user_id=user.id,
         ))
     if expand_tasks:
         await asyncio.gather(*expand_tasks)
 
 
+@auto_session
 async def expand_user_watchlist(user_id: int, series: list[schemas.Series], session: AsyncSession):
     _series: dict[int, schemas.Series] = {}
     for s in series:
@@ -60,6 +58,7 @@ async def expand_user_watchlist(user_id: int, series: list[schemas.Series], sess
         _series[s.series_id].user_watchlist.on_watchlist = True
 
 
+@auto_session
 async def expand_user_favorite(user_id: int, series: list[schemas.Series], session: AsyncSession):
     _series: dict[int, schemas.Series] = {}
     for s in series:
@@ -76,6 +75,7 @@ async def expand_user_favorite(user_id: int, series: list[schemas.Series], sessi
         _series[s.series_id].user_favorite.favorite = True
         
 
+@auto_session
 async def expand_user_can_watch(user_id: int, series: list[schemas.Episode], session: AsyncSession):
     _series: dict[int, schemas.Episode] = {}
     for s in series:
@@ -93,6 +93,7 @@ async def expand_user_can_watch(user_id: int, series: list[schemas.Episode], ses
         _series[s.id].user_can_watch.on_play_server = True
 
 
+@auto_session
 async def expand_user_last_episode_watched(user_id: int, series: list[schemas.Series], session: AsyncSession):
     _series: dict[int, schemas.Series] = {s.id: s for s in series}
     result: list[models.Episode] = await session.scalars(sa.select(
@@ -108,6 +109,7 @@ async def expand_user_last_episode_watched(user_id: int, series: list[schemas.Se
             schemas.Episode.from_orm(episode)
     
 
+@auto_session
 async def expand_user_rating(user_id: int, series: list[schemas.Series], session: AsyncSession):
     _series: dict[int, schemas.Series] = {}
     for s in series:

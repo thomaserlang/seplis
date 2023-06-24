@@ -1,4 +1,3 @@
-import asyncio
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.types import DateTime, TypeDecorator
@@ -30,14 +29,12 @@ async def paginate_cursor(session: AsyncSession, query: Any, page_query: schemas
 
 async def paginate_cursor_total(session: AsyncSession, query: Any, page_query: schemas.Page_cursor_query, backwards=False):
     count_subquery = query.order_by(None).options(sa.orm.noload("*")).subquery()
-    result = await asyncio.gather(
-        paginate_cursor(session, query, page_query, backwards),
-        session.scalar(sa.select(sa.func.count(sa.literal_column("*"))).select_from(count_subquery))
-    )
+    p = await paginate_cursor(session, query, page_query, backwards)
+    total = await session.scalar(sa.select(sa.func.count(sa.literal_column("*"))).select_from(count_subquery))
     return schemas.Page_cursor_total_result(
-        items=result[0].items,
-        cursor=result[0].cursor,
-        total=result[1],
+        items=p.items,
+        cursor=p.cursor,
+        total=total,
     )
 
 

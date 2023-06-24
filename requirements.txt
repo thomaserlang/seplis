@@ -1,6 +1,6 @@
 PyMySQL==1.0.3
 PyYAML==6.0
-sqlalchemy[asyncio]==1.4.46
+sqlalchemy[asyncio]==2.0.17
 alembic==1.11.1
 elasticsearch[async]==8.8.0
 passlib==1.7.4

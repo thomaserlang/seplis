@@ -21,7 +21,6 @@ async def filter_movies(session, query: any, filter_query: Movie_query_filter, p
         movies=p.items,
         user=filter_query.user,
         expand=filter_query.expand,
-        session=session,
     )
     return p
 

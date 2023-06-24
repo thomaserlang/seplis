@@ -1,9 +1,11 @@
 import asyncio
 import sqlalchemy as sa
+
+from ..database import auto_session
 from ..dependencies import AsyncSession
 from .. import schemas, models, exceptions
 
-async def expand_episodes(expand: list[str], user: schemas.User, series_id: int, episodes: list[schemas.Episode], session: AsyncSession):
+async def expand_episodes(expand: list[str], user: schemas.User, series_id: int, episodes: list[schemas.Episode]):
     if not expand:
         return
     if not user:        
@@ -13,20 +15,19 @@ async def expand_episodes(expand: list[str], user: schemas.User, series_id: int,
         expand_tasks.append(expand_user_watched(
             series_id=series_id, 
             user_id=user.id, 
-            episodes=episodes, 
-            session=session
+            episodes=episodes,
         ))
     if 'user_can_watch' in expand:
         expand_tasks.append(expand_user_can_watch(
             series_id=series_id, 
             user_id=user.id, 
-            episodes=episodes, 
-            session=session
+            episodes=episodes,
         ))
     if expand_tasks:
         await asyncio.gather(*expand_tasks)
 
 
+@auto_session
 async def expand_user_watched(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):
     _episodes: dict[int, schemas.Episode] = {}
     for episode in episodes:
@@ -43,7 +44,7 @@ async def expand_user_watched(series_id: int, user_id: int, episodes: list[schem
         _episodes[episode_watched.episode_number].user_watched = \
             schemas.Episode_watched.from_orm(episode_watched)
 
-
+@auto_session
 async def expand_user_can_watch(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):
     _episodes: dict[int, schemas.Episode] = {}
     for episode in episodes:

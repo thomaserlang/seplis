@@ -80,10 +80,8 @@ class Episode_watched(Base):
         # Including this in the gather makes it not directly avaialble 
         # for a select query afterwards
         await session.execute(episode_watched) 
-        await asyncio.gather(
-            session.execute(watched_history),
-            session.execute(episode_last_watched),
-        )
+        await session.execute(watched_history)
+        await session.execute(episode_last_watched)
 
 
     @staticmethod
@@ -97,18 +95,16 @@ class Episode_watched(Base):
         if not w:
             return
         if w.times == 0 or (w.times == 1 and w.position == 0):
-            await asyncio.gather(
-                session.execute(sa.delete(Episode_watched).where(
-                    Episode_watched.series_id == series_id,
-                    Episode_watched.episode_number == episode_number,
-                    Episode_watched.user_id == user_id,
-                )),
-                session.execute(sa.delete(Episode_watched_history).where(
-                    Episode_watched_history.series_id == series_id,
-                    Episode_watched_history.episode_number == episode_number,
-                    Episode_watched_history.user_id == user_id,
-                )),
-            )
+            await session.execute(sa.delete(Episode_watched).where(
+                Episode_watched.series_id == series_id,
+                Episode_watched.episode_number == episode_number,
+                Episode_watched.user_id == user_id,
+            ))
+            await session.execute(sa.delete(Episode_watched_history).where(
+                Episode_watched_history.series_id == series_id,
+                Episode_watched_history.episode_number == episode_number,
+                Episode_watched_history.user_id == user_id,
+            ))
         elif w.position > 0:
             watched_at = await session.scalar(sa.select(Episode_watched_history.watched_at).where(
                 Episode_watched_history.series_id == series_id,
@@ -134,20 +130,18 @@ class Episode_watched(Base):
                 Episode_watched_history.watched_at.desc()
             ).limit(2))
             e = e.all()
-            await asyncio.gather(
-                session.execute(sa.delete(Episode_watched_history).where(
-                    Episode_watched_history.id == e[0].id,
-                )),
-                session.execute(sa.update(Episode_watched).where(
-                    Episode_watched.series_id == series_id,
-                    Episode_watched.episode_number == episode_number,
-                    Episode_watched.user_id == user_id,
-                ).values(
-                    times=Episode_watched.times - 1,
-                    position=0,
-                    watched_at=e[1].watched_at,
-                ))
-            )
+            await session.execute(sa.delete(Episode_watched_history).where(
+                Episode_watched_history.id == e[0].id,
+            ))
+            await session.execute(sa.update(Episode_watched).where(
+                Episode_watched.series_id == series_id,
+                Episode_watched.episode_number == episode_number,
+                Episode_watched.user_id == user_id,
+            ).values(
+                times=Episode_watched.times - 1,
+                position=0,
+                watched_at=e[1].watched_at,
+            ))
         await Episode_watched.set_prev_watched(session=session, user_id=user_id, series_id=series_id, episode_number=episode_number)
 
 
@@ -168,6 +162,8 @@ class Episode_watched(Base):
             watched_at=sql.inserted.watched_at,
             position=sql.inserted.position,
         )
+        await session.execute(sql)
+
         sql_watching = sa.dialects.mysql.insert(Episode_last_watched).values(
             series_id=series_id,
             episode_number=episode_number,
@@ -175,10 +171,7 @@ class Episode_watched(Base):
         ).on_duplicate_key_update(
             episode_number=episode_number,
         )
-        await asyncio.gather(
-            session.execute(sql),
-            session.execute(sql_watching),
-        )
+        await session.execute(sql_watching)
 
 
     @staticmethod

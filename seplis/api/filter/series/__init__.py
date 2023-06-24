@@ -31,7 +31,6 @@ async def filter_series(
         series=p.items,
         user=filter_query.user,
         expand=filter_query.expand,
-        session=session,
     )
     return p
 

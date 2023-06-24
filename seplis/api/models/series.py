@@ -96,14 +96,12 @@ class Series(Base):
         from . import Image
         async with database.session() as session:
             async with session.begin():
-                await asyncio.gather(
-                    session.execute(sa.delete(Series).where(
-                        Series.id == series_id)),
-                    session.execute(sa.delete(Image).where(
-                        Image.relation_type == 'series',
-                        Image.relation_id == series_id,
-                    )),
-                )
+                await session.execute(sa.delete(Series).where(
+                    Series.id == series_id))
+                await session.execute(sa.delete(Image).where(
+                    Image.relation_type == 'series',
+                    Image.relation_id == series_id,
+                ))
                 await session.commit()
                 await database.es.delete(
                     index=config.data.api.elasticsearch.index_prefix+'titles',
@@ -163,7 +161,7 @@ class Series(Base):
 
     @staticmethod
     async def _save_genres(session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
-        genre_ids = await Genre.get_or_create_genres(session, genres)
+        genre_ids = await Genre.get_or_create_genres(genres)
         current_genres: set[int] = set()
         if patch:
             current_genres = set(await session.scalars(sa.select(Series_genre.genre_id).where(Series_genre.series_id == series_id)))

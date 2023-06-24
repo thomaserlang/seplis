@@ -40,7 +40,7 @@ async def get_series_one(
     if not series:
         raise HTTPException(404, 'Unknown series')
     s = schemas.Series.from_orm(series)
-    await expand_series(series=[s], user=user, expand=expand, session=session)
+    await expand_series(series=[s], user=user, expand=expand)
     return s
 
 

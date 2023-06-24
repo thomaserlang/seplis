@@ -1,5 +1,7 @@
 import sqlalchemy as sa
 import asyncio
+
+from ..database import auto_session
 from .base import Base
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +12,8 @@ class Genre(Base):
     name = sa.Column(sa.String(100))
 
     @staticmethod
-    async def get_or_create_genre(session: AsyncSession, genre: str):
+    @auto_session
+    async def get_or_create_genre(genre: str, session: AsyncSession = None):
         r = await session.scalar(sa.select(Genre.id).where(Genre.name == genre))
         if not r:
             r = await session.execute(sa.insert(Genre).values(name=genre))
@@ -18,8 +21,8 @@ class Genre(Base):
         return r
 
     @staticmethod
-    async def get_or_create_genres(session: AsyncSession, genres: list[int | str]) -> set[int]:
+    async def get_or_create_genres(genres: list[int | str]) -> set[int]:
         genre_ids = [genre_id for genre_id in genres if isinstance(genre_id, int)]
-        genre_ids.extend(await asyncio.gather(*[Genre.get_or_create_genre(session, genre) \
+        genre_ids.extend(await asyncio.gather(*[Genre.get_or_create_genre(genre) \
             for genre in genres if isinstance(genre, str)]))
         return set(genre_ids)

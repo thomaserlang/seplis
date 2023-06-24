@@ -2,43 +2,47 @@ from fastapi import APIRouter, Depends, Security
 import sqlalchemy as sa
 import asyncio
 
+from ..database import auto_session
 from ..dependencies import authenticated, get_session, AsyncSession
 from .. import models, schemas, constants
-from ... import utils
+
 
 router = APIRouter(prefix='/2/users/me/series-stats')
 
 @router.get('', response_model=schemas.User_series_stats)
 async def get_series(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
-    session: AsyncSession=Depends(get_session),
 ):
     result = await asyncio.gather(
-        series_watchlist(session, user.id),
-        series_watched(session, user.id),
-        episodes_watched(session, user.id),
-        series_finished(session, user.id)
+        series_watchlist(user.id),
+        series_watched(user.id),
+        episodes_watched(user.id),
+        series_finished(user.id)
     )
     data: dict[str, int] = {}
     for r in result:
         data.update(r)
     return data
 
-async def series_watchlist(session: AsyncSession, user_id: int | str) -> dict[str, int]:
+
+@auto_session
+async def series_watchlist(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
     count: int = await session.scalar(sa.select(sa.func.count(models.Series_watchlist.series_id)).where(
         models.Series_watchlist.user_id == user_id
     ))
     return {'series_watchlist': count}
 
 
-async def series_watched(session: AsyncSession, user_id: int | str) -> dict[str, int]:
+@auto_session
+async def series_watched(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
     count: int = await session.scalar(sa.select(sa.func.count(models.Episode_last_watched.series_id)).where(
         models.Episode_last_watched.user_id == user_id,
     ))
     return {'series_watched': count}
 
 
-async def episodes_watched(session: AsyncSession, user_id: int | str) -> dict[str, int]:
+@auto_session
+async def episodes_watched(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
     r = await session.execute(sa.select(
         sa.func.sum(models.Episode_watched.times).label('episodes_watched'),
         sa.func.sum(
@@ -61,7 +65,8 @@ async def episodes_watched(session: AsyncSession, user_id: int | str) -> dict[st
     }
 
 
-async def series_finished(session: AsyncSession, user_id: int | str) -> dict[str, int]:
+@auto_session
+async def series_finished(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
     count: int = await session.scalar(sa.select(
         sa.func.count(models.Series.id)
     ).where(

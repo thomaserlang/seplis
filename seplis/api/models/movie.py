@@ -82,14 +82,13 @@ class Movie(Base):
         from . import Image
         async with database.session() as session:
             async with session.begin():
-                await asyncio.gather(
-                    session.execute(sa.delete(Movie).where(
-                        Movie.id == movie_id)),
-                    session.execute(sa.delete(Image).where(
-                        Image.relation_type == 'movie',
-                        Image.relation_id == movie_id,
-                    )),
+                await session.execute(sa.delete(Movie).where(
+                    Movie.id == movie_id)
                 )
+                await session.execute(sa.delete(Image).where(
+                    Image.relation_type == 'movie',
+                    Image.relation_id == movie_id,
+                ))
                 await session.commit()
                 await database.es.delete(
                     index=config.data.api.elasticsearch.index_prefix+'titles',
@@ -152,7 +151,7 @@ class Movie(Base):
 
     @staticmethod
     async def _save_genres(session: AsyncSession, movie_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
-        genre_ids = await Genre.get_or_create_genres(session, genres)
+        genre_ids = await Genre.get_or_create_genres(genres)
         current_genres: set[int] = set()
         if patch:
             current_genres = set(await session.scalars(sa.select(Movie_genre.genre_id).where(Movie_genre.movie_id == movie_id)))
@@ -286,16 +285,14 @@ class Movie_watched(Base):
             return
       
         if w.times == 0 or (w.times == 1 and w.position == 0):
-            await asyncio.gather(
-                session.execute(sa.delete(Movie_watched).where(
-                    Movie_watched.movie_id == movie_id,
-                    Movie_watched.user_id == user_id,
-                )),
-                session.execute(sa.delete(Movie_watched_history).where(
-                    Movie_watched_history.movie_id == movie_id,
-                    Movie_watched_history.user_id == user_id,
-                )),
-            )
+            await session.execute(sa.delete(Movie_watched).where(
+                Movie_watched.movie_id == movie_id,
+                Movie_watched.user_id == user_id,
+            ))
+            await session.execute(sa.delete(Movie_watched_history).where(
+                Movie_watched_history.movie_id == movie_id,
+                Movie_watched_history.user_id == user_id,
+            ))
             return
         elif w.position > 0:
             watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
@@ -319,19 +316,17 @@ class Movie_watched(Base):
                 Movie_watched_history.watched_at.desc()
             ).limit(2))
             e = e.all()
-            await asyncio.gather(
-                session.execute(sa.delete(Movie_watched_history).where(
-                    Movie_watched_history.id == e[0].id,
-                )),
-                session.execute(sa.update(Movie_watched).where(
-                    Movie_watched.movie_id == movie_id,
-                    Movie_watched.user_id == user_id,
-                ).values(
-                    times=Movie_watched.times - 1,
-                    position=0,
-                    watched_at=e[1].watched_at,
-                )),
-            )
+            await session.execute(sa.delete(Movie_watched_history).where(
+                Movie_watched_history.id == e[0].id,
+            ))
+            await session.execute(sa.update(Movie_watched).where(
+                Movie_watched.movie_id == movie_id,
+                Movie_watched.user_id == user_id,
+            ).values(
+                times=Movie_watched.times - 1,
+                position=0,
+                watched_at=e[1].watched_at,
+            ))
 
         w = await session.scalar(sa.select(Movie_watched).where(
             Movie_watched.movie_id == movie_id,
@@ -370,16 +365,14 @@ class Movie_watched(Base):
         if not w:
             return
         if w.times < 1:
-            await asyncio.gather(
-                session.execute(sa.delete(Movie_watched).where(
-                    Movie_watched.movie_id == movie_id,
-                    Movie_watched.user_id == user_id,
-                )),
-                session.execute(sa.delete(Movie_watched_history).where(
-                    Movie_watched_history.movie_id == movie_id,
-                    Movie_watched_history.user_id == user_id,
-                )),
-            )
+            await session.execute(sa.delete(Movie_watched).where(
+                Movie_watched.movie_id == movie_id,
+                Movie_watched.user_id == user_id,
+            ))
+            await session.execute(sa.delete(Movie_watched_history).where(
+                Movie_watched_history.movie_id == movie_id,
+                Movie_watched_history.user_id == user_id,
+            ))
             return
         else:
             if w.position > 0:
