@@ -37,14 +37,12 @@ async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
     await update_cast(movie)
 
 
-async def update_movies_bulk(from_movie_id=None, do_async=False):
+async def update_movies_bulk(from_movie_id=0, do_async=False):
     logger.info('Updating movies')
-    async with database.session() as session:
-        query = sa.select(models.Movie)
-        if from_movie_id:
-            query = query.where(models.Movie.id >= from_movie_id)
-        movies = await session.scalars(query)
+    movies = await _get_movies(from_movie_id)
+    while movies:
         for movie in movies:
+            from_movie_id = movie.id
             try:
                 if not do_async:
                     await update_movie(movie=schemas.Movie.from_orm(movie))
@@ -53,9 +51,18 @@ async def update_movies_bulk(from_movie_id=None, do_async=False):
             except (KeyboardInterrupt, SystemExit):
                 break
             except exceptions.API_exception as e:
-                logger.error(e.message)
+                logger.info(e.message)
             except Exception as e:
                 logger.exception(e)
+        else:
+            movies = await _get_movies(from_movie_id)
+
+
+async def _get_movies(from_movie_id: int):
+    async with database.session() as session:
+        query = sa.select(models.Movie)
+        query = query.where(models.Movie.id > from_movie_id).limit(100)
+        return await session.scalars(query)
 
 
 async def update_incremental():

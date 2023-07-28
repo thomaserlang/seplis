@@ -16,14 +16,14 @@ async def update_series_by_id(series_id):
         await update_series(schemas.Series.from_orm(result))
 
 
-async def update_series_bulk(from_series_id=None, do_async=False):
+async def update_series_bulk(from_series_id=0, do_async=False):
+
     logger.info('Updating series')
-    async with database.session() as session:
-        query = sa.select(models.Series)
-        if from_series_id:
-            query = query.where(models.Series.id >= from_series_id)
-        results = await session.scalars(query)
+    
+    results = await _get_series(from_series_id)
+    while results:
         for series in results:
+            from_series_id = series.id
             try:
                 if not do_async:
                     await update_series(schemas.Series.from_orm(series))
@@ -31,8 +31,20 @@ async def update_series_bulk(from_series_id=None, do_async=False):
                     await database.redis_queue.enqueue_job('update_series', series_id=series.id)
             except (KeyboardInterrupt, SystemExit):
                 break
+            except exceptions.API_exception as e:
+                logger.info(e.message)
             except Exception as e:
                 logger.exception(e)
+        else:
+            results = await _get_series(from_series_id)
+        
+
+async def _get_series(from_series_id: int):
+    async with database.session() as session:
+        query = sa.select(models.Series)
+        query = query.where(models.Series.id > from_series_id).limit(100)
+        results = await session.scalars(query)
+        return [schemas.Series.from_orm(series) for series in results]
 
 
 async def update_series_incremental():
