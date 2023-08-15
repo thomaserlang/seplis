@@ -106,6 +106,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             if (hls.current) hls.current.destroy()
             hls.current = new Hls({
                 startLevel: 0,
+                startPosition: 0,
                 manifestLoadingTimeOut: 30000,
                 maxMaxBufferLength: 30,
                 debug: false,
