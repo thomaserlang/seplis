@@ -1,33 +1,32 @@
-from pydantic import BaseModel, constr, EmailStr
+from pydantic import BaseModel, ConfigDict, constr, EmailStr
 from datetime import datetime
 from typing import Literal
 
 
 class Subtitle_language(BaseModel):
-    subtitle_lang: constr(min_length=1, max_length=20) | None
-    audio_lang: constr(min_length=1, max_length=20) | None
+    subtitle_lang: constr(min_length=1, max_length=20) | None = None
+    audio_lang: constr(min_length=1, max_length=20) | None = None
 
 
 class User_authenticated(BaseModel):
     id: int
     level: int
-    token: str | None
+    token: str | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 USER_PASSWORD_TYPE = constr(min_length=10)
 
 class User_create(BaseModel):
     email: EmailStr
-    username: constr(min_length=2, max_length=45, regex='^[A-Za-z0-9-_]+$', strip_whitespace=True)
+    username: constr(min_length=2, max_length=45, pattern='^[A-Za-z0-9-_]+$', strip_whitespace=True)
     password: USER_PASSWORD_TYPE
 
 
 class User_update(BaseModel):
     email: EmailStr | None
-    username: constr(min_length=2, max_length=45, regex='^[A-Za-z0-9-_]+$', strip_whitespace=True) | None
+    username: constr(min_length=2, max_length=45, pattern='^[A-Za-z0-9-_]+$', strip_whitespace=True) | None
 
 
 class User_basic(BaseModel):
@@ -36,8 +35,7 @@ class User_basic(BaseModel):
     created_at: datetime
     level: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class User(User_basic):
@@ -48,8 +46,7 @@ class User_public(BaseModel):
     id: int
     username: str
     
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class User_change_password(BaseModel):
@@ -69,15 +66,14 @@ class Token(BaseModel):
 
 
 class User_series_settings_update(BaseModel):
-    subtitle_lang: constr(min_length=1, max_length=20) | None
-    audio_lang: constr(min_length=1, max_length=20) | None
+    subtitle_lang: constr(min_length=1, max_length=20) | None = None
+    audio_lang: constr(min_length=1, max_length=20) | None = None
 
 class User_series_settings(BaseModel):
-    subtitle_lang: str | None
-    audio_lang: str | None
+    subtitle_lang: str | None = None
+    audio_lang: str | None = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class User_series_stats(BaseModel):
@@ -87,5 +83,4 @@ class User_series_stats(BaseModel):
     episodes_watched: int
     episodes_watched_minutes: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

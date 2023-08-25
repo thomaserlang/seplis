@@ -45,7 +45,7 @@ async def get_episodes(
         query=query,
         page_query=page_cursor,
     )
-    p.items = [schemas.Episode.from_orm(row[0]) for row in p.items]
+    p.items = [schemas.Episode.model_validate(row[0]) for row in p.items]
     await expand_episodes(episodes=p.items, series_id=series_id, user=user, expand=expand)
     return p
 
@@ -65,7 +65,7 @@ async def get_episode(
     if not episode:
         raise HTTPException(404, 'Unknown episode')
     
-    episode = schemas.Episode.from_orm(episode)
+    episode = schemas.Episode.model_validate(episode)
     await expand_episodes(episodes=[episode], series_id=series_id, user=user, expand=expand)
     return episode
 

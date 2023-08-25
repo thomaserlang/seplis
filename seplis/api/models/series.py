@@ -60,7 +60,7 @@ class Series(Base):
         overwrite_genres=False,
         session=None
     ):
-        _data = data.dict(exclude_unset=True) if data else {}
+        _data = data.model_dump(exclude_unset=True) if data else {}
         if not series_id:
             r = await session.execute(sa.insert(Series))
             series_id = r.lastrowid
@@ -89,7 +89,7 @@ class Series(Base):
             await session.execute(sa.update(Series).where(Series.id == series_id).values(**_data))
         data = await session.scalar(sa.select(Series).where(Series.id == series_id))
         await cls._save_for_search(data)
-        return schemas.Series.from_orm(data)
+        return schemas.Series.model_validate(data)
 
     @classmethod
     async def delete(self, series_id: int):
@@ -129,7 +129,7 @@ class Series(Base):
                         external_title=key,
                         external_value=externals[key],
                         series=utils.json_loads(utils.json_dumps(
-                            schemas.Series.from_orm(dup_series)))
+                            schemas.Series.model_validate(dup_series)))
                     )
 
             if (key not in current_externals):
@@ -173,7 +173,7 @@ class Series(Base):
                 {'series_id': series_id, 'genre_id': genre_id} for genre_id in new_genre_ids
             ])
         rr = await session.scalars(sa.select(Genre).where(Series_genre.series_id == series_id, Genre.id == Series_genre.genre_id).order_by(Genre.name))
-        return [schemas.Genre.from_orm(r) for r in rr]
+        return [schemas.Genre.model_validate(r) for r in rr]
 
     @staticmethod
     async def _save_for_search(series: "Series"):
@@ -183,7 +183,7 @@ class Series(Base):
         await database.es.index(
             index=config.data.api.elasticsearch.index_prefix+'titles',
             id=f'series-{series.id}',
-            document=doc.dict(),
+            document=doc.model_dump(),
         )
 
     @classmethod
@@ -199,7 +199,7 @@ class Series(Base):
             return
         rows = []
         for episode in episodes:
-            data = episode.dict(exclude_unset=True)
+            data = episode.model_dump(exclude_unset=True)
             data['series_id'] = series_id
             if 'air_datetime' in data and not 'air_date' in data:
                 data['air_date'] = episode.air_datetime.date() if episode.air_datetime else None
@@ -224,7 +224,7 @@ class Series(Base):
             titles=[schemas.Search_title_document_title(title=title) for title in titles],
             release_date=self.premiered,
             imdb=self.externals.get('imdb'),
-            poster_image=schemas.Image.from_orm(
+            poster_image=schemas.Image.model_validate(
                 self.poster_image) if self.poster_image else None,
             popularity=self.popularity or 0,
             genres=self.genres,
@@ -321,7 +321,7 @@ async def rebuild_series():
                     yield {
                         '_index': config.data.api.elasticsearch.index_prefix+'titles',
                         '_id': f'series-{s.id}',
-                        **d.dict()
+                        **d.model_dump()
                     }
     from elasticsearch import helpers
     await helpers.async_bulk(database.es, c())

@@ -49,13 +49,13 @@ async def test_user_watched(client: AsyncClient):
 
     r = await client.get(f'/2/users/me/watched')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.User_watched].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.User_watched].model_validate(r.json())
     assert len(data.items) == 4
 
 
     r = await client.get(f'/2/users/me/watched?user_can_watch=true')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.User_watched].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.User_watched].model_validate(r.json())
     assert len(data.items) == 0
 
 

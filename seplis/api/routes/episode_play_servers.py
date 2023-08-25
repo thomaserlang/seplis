@@ -27,7 +27,7 @@ async def get_episode_play_servers(
                 schemas.Play_id_info_episode(
                     series_id=series_id,
                     number=episode_number,
-                ).dict(),
+                ).model_dump(),
                 row.secret,
                 algorithm="HS256",
             ),

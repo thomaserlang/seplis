@@ -19,7 +19,7 @@ async def test_series_user_stats(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/user-stats')
     assert r.status_code == 200
-    data = schemas.Series_user_stats.parse_obj(r.json())
+    data = schemas.Series_user_stats.model_validate(r.json())
     assert data.episodes_watched == 0
     assert data.episodes_watched_minutes == 0
 
@@ -28,7 +28,7 @@ async def test_series_user_stats(client: AsyncClient):
     assert r.status_code == 200
     r = await client.get(f'/2/series/{series.id}/user-stats')
     assert r.status_code, 200
-    data = schemas.Series_user_stats.parse_obj(r.json())
+    data = schemas.Series_user_stats.model_validate(r.json())
     assert data.episodes_watched == 1, data
     assert data.episodes_watched_minutes == 30, data
 
@@ -36,7 +36,7 @@ async def test_series_user_stats(client: AsyncClient):
     assert r.status_code, 200
     r = await client.get(f'/2/series/{series.id}/user-stats')
     assert r.status_code, 200
-    data = schemas.Series_user_stats.parse_obj(r.json())
+    data = schemas.Series_user_stats.model_validate(r.json())
     assert data.episodes_watched == 2, data
     assert data.episodes_watched_minutes == 60, data
 
@@ -44,7 +44,7 @@ async def test_series_user_stats(client: AsyncClient):
     assert r.status_code, 200
     r = await client.get(f'/2/series/{series.id}/user-stats')
     assert r.status_code, 200
-    data = schemas.Series_user_stats.parse_obj(r.json())
+    data = schemas.Series_user_stats.model_validate(r.json())
     assert data.episodes_watched == 3, data
     assert data.episodes_watched_minutes == 90, data
 
@@ -52,7 +52,7 @@ async def test_series_user_stats(client: AsyncClient):
     assert r.status_code, 200
     r = await client.get(f'/2/series/{series.id}/user-stats')
     assert r.status_code, 200
-    data = schemas.Series_user_stats.parse_obj(r.json())
+    data = schemas.Series_user_stats.model_validate(r.json())
     assert data.episodes_watched == 4, data
     assert data.episodes_watched_minutes == 130, data
 

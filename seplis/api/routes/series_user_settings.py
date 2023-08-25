@@ -37,11 +37,11 @@ async def set_series_user_settings(
         await session.execute(sa.insert(models.User_series_settings).values(
             series_id=series_id,
             user_id=user.id,
-            **data.dict(exclude_unset=True)
+            **data.model_dump(exclude_unset=True)
         ))
     else:
         await session.execute(sa.update(models.User_series_settings).values(
-            **data.dict(exclude_unset=True)
+            **data.model_dump(exclude_unset=True)
         ).where(
             models.User_series_settings.user_id == user.id,
             models.User_series_settings.series_id == series_id,

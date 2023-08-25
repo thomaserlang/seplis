@@ -74,8 +74,8 @@ async def get_episode_to_watch(
     if not e:
         return Response(status_code=204)
 
-    episode = schemas.Episode.from_orm(e.Episode)
-    episode.user_watched = schemas.Episode_watched.from_orm(e.Episode_watched) if e.Episode_watched else \
+    episode = schemas.Episode.model_validate(e.Episode)
+    episode.user_watched = schemas.Episode_watched.model_validate(e.Episode_watched) if e.Episode_watched else \
         schemas.Episode_watched(episode_number=e.Episode.number)    
     await expand_user_can_watch(series_id=series_id, user_id=user.id, episodes=[episode], session=session)
     return episode

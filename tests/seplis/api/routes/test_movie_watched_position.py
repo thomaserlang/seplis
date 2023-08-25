@@ -21,7 +21,7 @@ async def test_movie_watched_position(client: AsyncClient):
 
     r = await client.get(url)
     assert r.status_code == 200
-    w = schemas.Movie_watched.parse_obj(r.json())
+    w = schemas.Movie_watched.model_validate(r.json())
     assert w.times == 0
     assert w.position == 200
     assert w.watched_at != None
@@ -31,7 +31,7 @@ async def test_movie_watched_position(client: AsyncClient):
 
     r = await client.get(url)
     assert r.status_code == 200
-    w = schemas.Movie_watched.parse_obj(r.json())
+    w = schemas.Movie_watched.model_validate(r.json())
     assert w.times == 0
     assert w.position == 201       
     assert w.watched_at != None
@@ -46,7 +46,7 @@ async def test_movie_watched_position(client: AsyncClient):
 
     r = await client.get(url)
     assert r.status_code == 200
-    w = schemas.Movie_watched.parse_obj(r.json())
+    w = schemas.Movie_watched.model_validate(r.json())
     assert w.position == 200
 
     r = await client.put(url, json={'position': 0})
@@ -62,7 +62,7 @@ async def test_movie_watched_position(client: AsyncClient):
     assert r.status_code == 204, r.content
 
     r = await client.get(url)
-    w = schemas.Movie_watched.parse_obj(r.json())
+    w = schemas.Movie_watched.model_validate(r.json())
     assert w.times == 1
     assert w.position == 200
 
@@ -70,7 +70,7 @@ async def test_movie_watched_position(client: AsyncClient):
     assert r.status_code == 204, r.content
     
     r = await client.get(url)
-    w = schemas.Movie_watched.parse_obj(r.json())
+    w = schemas.Movie_watched.model_validate(r.json())
     assert w.times == 1
     assert w.position == 0
 

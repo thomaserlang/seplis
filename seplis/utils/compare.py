@@ -7,8 +7,8 @@ def compare(new: BaseModel, old: BaseModel, skip_keys: list[str] = []):
     '''
     Returns what is different in a compared to b.
     '''
-    new_dict = new.dict(exclude_unset=True)
-    old_dict = old.dict()
+    new_dict = new.model_dump(exclude_unset=True)
+    old_dict = old.model_dump()
 
     keys = new_dict.keys() & old_dict.keys()
 

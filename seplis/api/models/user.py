@@ -25,7 +25,7 @@ class User(User_public):
     @classmethod
     async def save(cls, user_data: schemas.User_create | schemas.User_update, user_id: int = None) -> schemas.User:
         async with database.session() as session:
-            data = user_data.dict(exclude_unset=True)
+            data = user_data.model_dump(exclude_unset=True)
             if 'password' in data:
                 data['password'] = await run_in_threadpool(pbkdf2_sha256.hash, user_data.password)
 
@@ -50,7 +50,7 @@ class User(User_public):
                 await session.execute(sa.update(User).where(User.id==user_id).values(data))
             user = await session.scalar(sa.select(User).where(User.id == user_id))
             await session.commit()
-            return schemas.User.from_orm(user)
+            return schemas.User.model_validate(user)
 
 
     @classmethod
@@ -111,7 +111,7 @@ class Token(Base):
     async def get(cls, token: str) -> schemas.User_authenticated | None:
         r = await database.redis.hgetall(f'seplis:tokens:{token}:user')
         if r:
-            d = schemas.User_authenticated.parse_obj(r)
+            d = schemas.User_authenticated.model_validate(r)
             d.token = token
             return d
 

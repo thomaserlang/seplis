@@ -98,7 +98,7 @@ async def get_play_server_invites(
     p.items = [schemas.Play_server_invite(
         created_at=r.created_at,
         expires_at=r.expires_at,
-        user=schemas.User_public.from_orm(r.User_public)) for r in p.items]
+        user=schemas.User_public.model_validate(r.User_public)) for r in p.items]
     return p
 
 
@@ -119,7 +119,7 @@ async def get_play_server_access(
     p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
     p.items = [schemas.Play_server_access(
         created_at=r.created_at,
-        user=schemas.User_public.from_orm(r.User_public)) for r in p.items]
+        user=schemas.User_public.model_validate(r.User_public)) for r in p.items]
     return p
 
 

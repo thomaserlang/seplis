@@ -39,7 +39,7 @@ async def get_series_one(
     series = await session.scalar(sa.select(models.Series).where(models.Series.id == series_id))
     if not series:
         raise HTTPException(404, 'Unknown series')
-    s = schemas.Series.from_orm(series)
+    s = schemas.Series.model_validate(series)
     await expand_series(series=[s], user=user, expand=expand)
     return s
 
@@ -57,7 +57,7 @@ async def get_series_by_external(
     ))
     if not series:
         raise HTTPException(404, 'Unknown series')
-    return schemas.Series.from_orm(series)
+    return schemas.Series.model_validate(series)
 
 
 @router.post('', status_code=201, response_model=schemas.Series)
@@ -167,5 +167,5 @@ async def get_images(
     if type:
         query = query.where(models.Image.type == type)
     p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
-    p.items = [schemas.Image.from_orm(row.Image) for row in p.items]
+    p.items = [schemas.Image.model_validate(row.Image) for row in p.items]
     return p

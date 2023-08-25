@@ -19,7 +19,7 @@ async def test_user_series_favorites(client: AsyncClient):
 
     r = await client.get(f'/2/series?user_favorites=true')
     assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
@@ -28,7 +28,7 @@ async def test_user_series_favorites(client: AsyncClient):
 
     r = await client.get(f'/2/series?user_favorites=true&per_page=1&sort=user_favorite_added_at_asc')
     assert r.status_code == 200, r.content
-    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
@@ -38,7 +38,7 @@ async def test_user_series_favorites(client: AsyncClient):
         'sort': 'user_favorite_added_at_asc',
     })
     assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
 

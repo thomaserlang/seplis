@@ -15,7 +15,7 @@ async def test_series_create(client: AsyncClient):
 
     r = await client.post('/2/series', json={})
     assert r.status_code == 201, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert data.id > 0
 
     r = await client.post('/2/series', json={
@@ -42,20 +42,18 @@ async def test_series_create(client: AsyncClient):
         'runtime': 40,
     })
     assert r.status_code == 201, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     series_id = data.id
 
     r = await client.get(f'/2/series/{series_id}')
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY'
     assert data.plot == 'The cases of the Naval Criminal Investigative Service. \\_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ'
     assert data.premiered == date(2003, 1, 1)
     assert data.ended == None
-    assert data.importers == {
-        'info': 'imdb',
-        'episodes': 'imdb',
-    }
+    assert data.importers.info == 'imdb'
+    assert data.importers.episodes == 'imdb'
     assert data.externals == {
         'imdb': 'tt123456799',
     }
@@ -68,7 +66,7 @@ async def test_series_create(client: AsyncClient):
     assert data.seasons == []
 
     r = await client.get(f'/2/series/externals/imdb/tt123456799')
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY'
 
@@ -94,15 +92,13 @@ async def test_series_create(client: AsyncClient):
         }
     })
     assert r.status_code == 200, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert data.title == 'QWERTY2'
     assert data.plot == 'The cases of the Naval Criminal Investigative Service.'
     assert data.premiered == date(2003, 1, 1)
     assert data.ended == None
-    assert data.importers == {
-        'info': 'imdb',
-        'episodes': 'tvmaze',
-    }
+    assert data.importers.info == 'imdb'
+    assert data.importers.episodes == 'tvmaze'
     assert data.externals == {
         'imdb': 'tt123456799',
     }
@@ -127,7 +123,7 @@ async def test_series_create(client: AsyncClient):
         ],
     })
     assert r.status_code == 200, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert 'Action' == data.genres[0].name
     assert 'Comedy' == data.genres[1].name
     assert 'Thriller' == data.genres[2].name
@@ -148,21 +144,19 @@ async def test_series_create(client: AsyncClient):
         ],
     })
     assert r.status_code == 200, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert 'Action' == data.genres[0].name
     assert 'Comedy' == data.genres[1].name
     assert len(data.genres) == 2
-    assert data.importers == {
-        'info': 'tvmaze',
-        'episodes': 'tvmaze',
-    }
+    assert data.importers.info == 'tvmaze'
+    assert data.importers.episodes == 'tvmaze'
     assert data.externals == {
         'imdb': 'tt123456797',
     }
     assert data.premiered == date(2003, 1, 2)
 
     r = await client.get(f'/2/series/externals/imdb/tt123456797')
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY2'
 
@@ -177,12 +171,10 @@ async def test_series_create(client: AsyncClient):
         }
     })
     assert r.status_code == 200, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert data.externals == {}
-    assert data.importers == {
-        'info': None,
-        'episodes': 'tvmaze',
-    }
+    assert data.importers.info == None
+    assert data.importers.episodes == 'tvmaze'
 
     r = await client.get(f'/2/series/externals/imdb/tt123456797')
     assert r.status_code == 404, r.content
@@ -191,7 +183,7 @@ async def test_series_create(client: AsyncClient):
         'episode_type': constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER,
     })
     assert r.status_code == 200, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert data.episode_type == constants.SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER
 
     r = await client.put(f'/2/series/{series_id}', json={
@@ -221,7 +213,7 @@ async def test_series_create(client: AsyncClient):
         ]
     })
     assert r.status_code == 200, r.content
-    series = schemas.Series.parse_obj(r.json())
+    series = schemas.Series.model_validate(r.json())
     assert series.seasons == [
         schemas.Series_season(total=2, season=1, to=2, from_=1),
         schemas.Series_season(total=1, season=2, to=3, from_=3),
@@ -235,7 +227,7 @@ async def test_series_create(client: AsyncClient):
         ],
     })
     assert r.status_code == 200, r.content
-    series = schemas.Series.parse_obj(r.json())
+    series = schemas.Series.model_validate(r.json())
     assert series.alternative_titles.sort() == [
         'test',
         'test2'
@@ -245,25 +237,25 @@ async def test_series_create(client: AsyncClient):
         'alternative_titles': [],
     })
     assert r.status_code == 200, r.content
-    series = schemas.Series.parse_obj(r.json())
+    series = schemas.Series.model_validate(r.json())
     assert series.alternative_titles == []
 
     r = await client.get(f'/2/series/{series_id}/episodes?season=1')
     assert r.status_code == 200, r.content
-    episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    episodes = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     assert len(episodes.items) == 2, episodes
     assert episodes.items[0].number == 1
     assert episodes.items[1].number == 2
 
     r = await client.get(f'/2/series/{series_id}/episodes?season=2')
     assert r.status_code == 200, r.content
-    episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    episodes = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     assert len(episodes.items) == 1, episodes
     assert episodes.items[0].number == 3
 
     r = await client.get(f'/2/series/{series_id}/episodes?air_date=2014-01-01')
     assert r.status_code == 200, r.content
-    episodes = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    episodes = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     assert len(episodes.items) == 1, episodes
     assert episodes.items[0].number == 1
 
@@ -307,7 +299,7 @@ async def test_series_create(client: AsyncClient):
                           }
                           )
     assert r.status_code == 201, r.content
-    data = schemas.Image.parse_obj(r.json())
+    data = schemas.Image.model_validate(r.json())
     assert data.id > 0
     assert data.width == 1000
     assert data.height == 680
@@ -327,12 +319,12 @@ async def test_series_create(client: AsyncClient):
                           }
                           )
     assert r.status_code == 201, r.content
-    data = schemas.Image.parse_obj(r.json())
+    data = schemas.Image.model_validate(r.json())
     assert data.file_id == '1a4dd776-f82f-4df7-893a-c03a168bc90d'
 
     r = await client.get(f'/2/series/{series_id}/images')
     assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Image].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Image].model_validate(r.json())
     assert data.total == 1
     assert data.items[0].id > 0
 
@@ -344,7 +336,7 @@ async def test_series_create(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series_id}')
     assert r.status_code == 200, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert data.poster_image.id == poster_image_id
 
     r = await client.delete(f'/2/series/{series_id}/images/{poster_image_id}')
@@ -352,7 +344,7 @@ async def test_series_create(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series_id}')
     assert r.status_code == 200, r.content
-    data = schemas.Series.parse_obj(r.json())
+    data = schemas.Series.model_validate(r.json())
     assert data.poster_image == None
 
     r = await client.delete(f'/2/series/{series_id}')
@@ -370,7 +362,7 @@ async def test_series_create(client: AsyncClient):
 async def test_series_get(client: AsyncClient):
     r = await client.get(f'/2/series')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert data.items == []
 
     series1 = await models.Series.save(data=schemas.Series_create(
@@ -398,24 +390,24 @@ async def test_series_get(client: AsyncClient):
 
     r = await client.get(f'/2/series?user_watchlist=true')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
     r = await client.get(f'/2/series?user_watchlist=false')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
 
     r = await client.get(f'/2/series?sort=user_last_episode_watched_at_asc')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 0
 
     r = await client.get(f'/2/series?expand=user_watchlist')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 2
     data.items[0].user_watchlist.on_watchlist == True
     data.items[1].user_watchlist.on_watchlist == False
@@ -424,14 +416,14 @@ async def test_series_get(client: AsyncClient):
 
     r = await client.get(f'/2/series?user_has_watched=true&expand=user_last_episode_watched')
     assert r.status_code == 200, r.content
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
     assert data.items[0].user_last_episode_watched.number == 1
 
     r = await client.get(f'/2/series?user_has_watched=false')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
@@ -440,7 +432,7 @@ async def test_series_get(client: AsyncClient):
         'genre_id': series2.genres[0].id,
     })
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
 

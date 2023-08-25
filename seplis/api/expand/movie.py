@@ -43,7 +43,7 @@ async def expand_user_watchlist(user_id: int, movies: list[schemas.Movie], sessi
         models.Movie_watchlist.movie_id.in_(set(_movies.keys())),
     ))
     for s in result:
-        _movies[s.movie_id].user_watchlist = schemas.Movie_watchlist.from_orm(s)
+        _movies[s.movie_id].user_watchlist = schemas.Movie_watchlist.model_validate(s)
         _movies[s.movie_id].user_watchlist.on_watchlist = True
 
 
@@ -60,7 +60,7 @@ async def expand_user_favorite(user_id: int, movies: list[schemas.Movie], sessio
         models.Movie_favorite.movie_id.in_(set(_movies.keys())),
     ))
     for s in result:
-        _movies[s.movie_id].user_favorite = schemas.Movie_favorite.from_orm(s)
+        _movies[s.movie_id].user_favorite = schemas.Movie_favorite.model_validate(s)
         _movies[s.movie_id].user_favorite.favorite = True
         
 
@@ -78,4 +78,4 @@ async def expand_user_watched(user_id: int, movies: list[schemas.Movie], session
     ))
     for s in result:
         _movies[s.movie_id].user_watched = \
-            schemas.Movie_watched.from_orm(s)
+            schemas.Movie_watched.model_validate(s)

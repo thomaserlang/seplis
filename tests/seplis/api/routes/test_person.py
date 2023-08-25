@@ -15,12 +15,12 @@ async def test_person(client: AsyncClient):
         }
     })
     assert r.status_code == 201
-    person = schemas.Person.parse_obj(r.json())
+    person = schemas.Person.model_validate(r.json())
 
     # get person
     r = await client.get(f'/2/people/{person.id}')
     assert r.status_code == 200
-    person = schemas.Person.parse_obj(r.json())
+    person = schemas.Person.model_validate(r.json())
     assert person.name == 'Test person'
     assert person.externals['imdb'] == 'nm0000001'
 
@@ -28,15 +28,15 @@ async def test_person(client: AsyncClient):
     r = await client.put(f'/2/people/{person.id}', json={
         'name': 'Test person 2',
         'externals': {
-            'themoviedb': 123,
+            'themoviedb': '123',
         }
     })
-    assert r.status_code == 200
+    assert r.status_code == 200, r.content
 
     # get person
     r = await client.get(f'/2/people/{person.id}')
     assert r.status_code == 200
-    person = schemas.Person.parse_obj(r.json())
+    person = schemas.Person.model_validate(r.json())
     assert person.name == 'Test person 2'
     assert person.externals['themoviedb'] == '123'
     assert 'imdb' not in person.externals
@@ -48,7 +48,7 @@ async def test_person(client: AsyncClient):
         }
     })
     assert r.status_code == 200
-    person = schemas.Person.parse_obj(r.json())
+    person = schemas.Person.model_validate(r.json())
     assert person.name == 'Test person 2'
     assert person.externals['themoviedb'] == '123'
     assert person.externals['imdb'] == 'nm0000001'

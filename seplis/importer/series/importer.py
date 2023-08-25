@@ -13,7 +13,7 @@ async def update_series_by_id(series_id):
         result = await session.scalar(sa.select(models.Series).where(models.Series.id == series_id))
         if not result:
             logger.error(f'Unknown series: {series_id}')
-        await update_series(schemas.Series.from_orm(result))
+        await update_series(schemas.Series.model_validate(result))
 
 
 async def update_series_bulk(from_series_id=0, do_async=False):
@@ -26,7 +26,7 @@ async def update_series_bulk(from_series_id=0, do_async=False):
             from_series_id = series.id
             try:
                 if not do_async:
-                    await update_series(schemas.Series.from_orm(series))
+                    await update_series(schemas.Series.model_validate(series))
                 else:
                     await database.redis_queue.enqueue_job('update_series', series_id=series.id)
             except (KeyboardInterrupt, SystemExit):
@@ -44,7 +44,7 @@ async def _get_series(from_series_id: int):
         query = sa.select(models.Series)
         query = query.where(models.Series.id > from_series_id).limit(100)
         results = await session.scalars(query)
-        return [schemas.Series.from_orm(series) for series in results]
+        return [schemas.Series.model_validate(series) for series in results]
 
 
 async def update_series_incremental():
@@ -76,9 +76,9 @@ async def _importer_incremental(importer):
             if not result:
                 logger.info(f'{importer.external_name} {external_id} not found')
                 continue
-            series = schemas.Series.from_orm(result)
+            series = schemas.Series.model_validate(result)
             try:
-                if importer.external_name in series.importers.dict().values():
+                if importer.external_name in series.importers.model_dump().values():
                     await update_series(series)
                 else:
                     await update_series_images(series)
@@ -160,7 +160,7 @@ async def update_series_images(series: schemas.Series):
             models.Image.relation_type == 'series',
         ))
         current_images = {
-            f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
+            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
     images_added: list[schemas.Image] = []
 
     async def save_image(image):
@@ -227,7 +227,7 @@ async def update_series_cast(series: schemas.Series):
             models.Series_cast.series_id == series.id,
         ))
         cast: dict[str, schemas.Series_cast_person] = {f'{external_name}-{cast.person.externals[external_name]}': 
-                schemas.Series_cast_person.from_orm(cast) for cast in result \
+                schemas.Series_cast_person.model_validate(cast) for cast in result \
                     if cast.person.externals.get(external_name)}
     
     async def save_cast(member: schemas.Series_cast_person_import):

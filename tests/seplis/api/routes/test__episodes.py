@@ -17,7 +17,7 @@ async def test_episode_to_watch(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/episodes')
     assert r.status_code == 200, r.content
-    data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     for episode in data.items:
         assert episode.user_watched == None
 
@@ -33,7 +33,7 @@ async def test_episode_to_watch(client: AsyncClient):
         'expand': 'something, user_watched'
     })
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     for episode in data.items:
         assert episode.user_watched.times == 0
 
@@ -44,7 +44,7 @@ async def test_episode_to_watch(client: AsyncClient):
         'expand': 'user_watched'
     })
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     for episode in data.items:
         if episode.number == 1:
             assert episode.user_watched.times == 1
@@ -69,7 +69,7 @@ async def test_pagination(client: AsyncClient):
     r = await client.get(f'/2/series/{series.id}/episodes', params={
         'per_page': 1,
     })
-    data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].number == 1
     assert len(data.cursor) > 1
@@ -78,7 +78,7 @@ async def test_pagination(client: AsyncClient):
         'per_page': 1,
         'cursor': data.cursor,
     })
-    data = schemas.Page_cursor_result[schemas.Episode].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Episode].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].number == 2
 

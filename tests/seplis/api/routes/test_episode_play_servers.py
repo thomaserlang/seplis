@@ -1,7 +1,6 @@
 import pytest
-from seplis.api.testbase import client, run_file, AsyncClient, user_signin
+from seplis.api.testbase import client, run_file, AsyncClient, user_signin, parse_obj_as
 from seplis.api import constants, schemas, models
-from pydantic import parse_obj_as
 
 
 @pytest.mark.asyncio
@@ -41,7 +40,7 @@ async def test_episode_play_servers(client: AsyncClient):
     # with a play id, that we can use when contacting the server.
     r = await client.get(f'/2/series/{series.id}/episodes/1/play-servers')
     assert r.status_code, 200
-    servers = parse_obj_as(list[schemas.Play_request], r.json())
+    servers = parse_obj_as (list[schemas.Play_request], r.json())
     assert len(servers) == 1
     assert servers[0].play_url == 'http://example.net'
     assert type(servers[0].play_id) == str

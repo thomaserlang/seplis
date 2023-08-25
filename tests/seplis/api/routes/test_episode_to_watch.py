@@ -22,7 +22,7 @@ async def test_episode_to_watch(client: AsyncClient):
     next_to_watch_url = f'/2/series/{series.id}/episode-to-watch'
     r = await client.get(next_to_watch_url)
     assert r.status_code == 200, r.content
-    ntw = schemas.Episode.parse_obj(r.json())
+    ntw = schemas.Episode.model_validate(r.json())
     assert ntw.number == 1
     assert ntw.user_watched.times == 0
     assert ntw.user_watched.position == 0
@@ -36,7 +36,7 @@ async def test_episode_to_watch(client: AsyncClient):
 
     # next to watch should be episode 1 at position 200
     r = await client.get(next_to_watch_url)
-    ntw = schemas.Episode.parse_obj(r.json())
+    ntw = schemas.Episode.model_validate(r.json())
     assert ntw.number == 1
     assert ntw.user_watched.position == 200
 
@@ -46,7 +46,7 @@ async def test_episode_to_watch(client: AsyncClient):
 
     # next to watch should be episode 2
     r = await client.get(next_to_watch_url)
-    ntw = schemas.Episode.parse_obj(r.json())
+    ntw = schemas.Episode.model_validate(r.json())
     assert ntw.number == 2
     assert ntw.user_watched.times == 0
     assert ntw.user_watched.position == 0
@@ -60,14 +60,14 @@ async def test_episode_to_watch(client: AsyncClient):
     )
     assert r.status_code == 204
     r = await client.get(next_to_watch_url)
-    ntw = schemas.Episode.parse_obj(r.json())
+    ntw = schemas.Episode.model_validate(r.json())
     assert ntw.number == 3
     assert ntw.user_watched.times == 1
     assert ntw.user_watched.position == 200
 
     r = await client.delete(f'/2/series/{series.id}/episodes/3/watched')
     assert r.status_code == 200
-    w = schemas.Episode_watched.parse_obj(r.json())
+    w = schemas.Episode_watched.model_validate(r.json())
     assert w.times == 1
     assert w.position == 0
 
@@ -76,7 +76,7 @@ async def test_episode_to_watch(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/episode-last-watched')
     assert r.status_code == 200
-    ntw = schemas.Episode.parse_obj(r.json())
+    ntw = schemas.Episode.model_validate(r.json())
     assert ntw.number == 3
 
     

@@ -42,7 +42,7 @@ async def get_last_watched_episode(
         if eps[0].Episode_watched.position > 0:
             e = eps[1]
 
-    episode = schemas.Episode.from_orm(e.Episode)
-    episode.user_watched = schemas.Episode_watched.from_orm(e.Episode_watched)
+    episode = schemas.Episode.model_validate(e.Episode)
+    episode.user_watched = schemas.Episode_watched.model_validate(e.Episode_watched)
     await expand_user_can_watch(series_id=series_id, user_id=user.id, episodes=[episode], session=session)
     return episode

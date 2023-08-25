@@ -29,7 +29,7 @@ async def test_movie(client: AsyncClient):
         'collection_name': 'National Treasure',
     })
     assert r.status_code == 201, r.content
-    data = schemas.Movie.parse_obj(r.json())
+    data = schemas.Movie.model_validate(r.json())
     movie_id = data.id
     assert data.id > 0
     assert data.title == 'National Treasure'
@@ -47,13 +47,13 @@ async def test_movie(client: AsyncClient):
         'collection_id': data.collection.id,
     })
     assert r.status_code == 200
-    movies = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    movies = schemas.Page_cursor_result[schemas.Movie].model_validate(r.json())
     assert movies.items[0].id == data.id
 
 
     r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200
-    data = schemas.Movie.parse_obj(r.json())
+    data = schemas.Movie.model_validate(r.json())
     assert data.title == 'National Treasure'
     assert data.externals['imdb'] == 'tt0368891'
 
@@ -66,7 +66,7 @@ async def test_movie(client: AsyncClient):
         ]
     })
     assert r.status_code == 200
-    data = schemas.Movie.parse_obj(r.json())
+    data = schemas.Movie.model_validate(r.json())
     assert data.title == 'National Treasure'
     assert data.externals['imdb'] == 'tt0368891'
     assert data.externals['themoviedb'] == '12345'
@@ -81,7 +81,7 @@ async def test_movie(client: AsyncClient):
     })
     assert r.status_code == 200
     
-    data = schemas.Movie.parse_obj(r.json())
+    data = schemas.Movie.model_validate(r.json())
     assert data.title == 'National Treasure'
     assert 'imdb' not in data.externals
     assert data.externals['themoviedb'] == '12345'
@@ -89,7 +89,7 @@ async def test_movie(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200
-    data = schemas.Movie.parse_obj(r.json())
+    data = schemas.Movie.model_validate(r.json())
     assert data.alternative_titles == []
 
 
@@ -106,7 +106,7 @@ async def test_movie(client: AsyncClient):
     )
     assert r.status_code == 422, r.content
     
-    # file_id is an uuid
+    # file_id is a uuid
     respx.post("http://storitch/store/session").mock(return_value=httpx.Response(200, json={
         'type': 'image',
         'width': 1000,
@@ -125,7 +125,7 @@ async def test_movie(client: AsyncClient):
         }
     )
     assert r.status_code == 201, r.content
-    data = schemas.Image.parse_obj(r.json())
+    data = schemas.Image.model_validate(r.json())
     assert data.id > 0
     assert data.width == 1000
     assert data.height == 680
@@ -145,12 +145,12 @@ async def test_movie(client: AsyncClient):
         }
     )
     assert r.status_code == 201, r.content
-    data = schemas.Image.parse_obj(r.json())
+    data = schemas.Image.model_validate(r.json())
     assert data.file_id == '1a4dd776-f82f-4df7-893a-c03a168bc90d'
 
     r = await client.get(f'/2/movies/{movie_id}/images')
     assert r.status_code == 200, r.content
-    data = schemas.Page_cursor_total_result[schemas.Image].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Image].model_validate(r.json())
     assert data.total == 1
     assert data.items[0].id > 0
 
@@ -162,7 +162,7 @@ async def test_movie(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200, r.content
-    data = schemas.Movie.parse_obj(r.json())
+    data = schemas.Movie.model_validate(r.json())
     assert data.poster_image.id == poster_image_id
     
     r = await client.delete(f'/2/movies/{movie_id}/images/{poster_image_id}')
@@ -170,7 +170,7 @@ async def test_movie(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie_id}')
     assert r.status_code == 200, r.content
-    data = schemas.Movie.parse_obj(r.json())
+    data = schemas.Movie.model_validate(r.json())
     assert data.poster_image == None
 
 

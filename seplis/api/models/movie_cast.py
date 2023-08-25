@@ -15,7 +15,7 @@ class Movie_cast(Base):
     @staticmethod
     @auto_session
     async def save(data: schemas.Movie_cast_person_create, session: AsyncSession):
-        data_ = data.dict(exclude_unset=True)
+        data_ = data.model_dump(exclude_unset=True)
         await session.execute(sa.dialects.mysql.insert(Movie_cast).values(
             data_
         ).on_duplicate_key_update(data_))

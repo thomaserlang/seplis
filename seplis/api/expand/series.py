@@ -54,7 +54,7 @@ async def expand_user_watchlist(user_id: int, series: list[schemas.Series], sess
         models.Series_watchlist.series_id.in_(set(_series.keys())),
     ))
     for s in result:
-        _series[s.series_id].user_watchlist = schemas.Series_watchlist.from_orm(s)
+        _series[s.series_id].user_watchlist = schemas.Series_watchlist.model_validate(s)
         _series[s.series_id].user_watchlist.on_watchlist = True
 
 
@@ -71,7 +71,7 @@ async def expand_user_favorite(user_id: int, series: list[schemas.Series], sessi
         models.Series_favorite.series_id.in_(set(_series.keys())),
     ))
     for s in result:
-        _series[s.series_id].user_favorite = schemas.Series_favorite.from_orm(s)
+        _series[s.series_id].user_favorite = schemas.Series_favorite.model_validate(s)
         _series[s.series_id].user_favorite.favorite = True
         
 
@@ -106,7 +106,7 @@ async def expand_user_last_episode_watched(user_id: int, series: list[schemas.Se
     ))
     for episode in result:
         _series[episode.series_id].user_last_episode_watched = \
-            schemas.Episode.from_orm(episode)
+            schemas.Episode.model_validate(episode)
     
 
 @auto_session
@@ -122,4 +122,4 @@ async def expand_user_rating(user_id: int, series: list[schemas.Series], session
         models.Series_user_rating.series_id.in_(set(_series.keys())),
     ))
     for s in result:
-        _series[s.series_id].user_rating = schemas.Series_user_rating.from_orm(s)
+        _series[s.series_id].user_rating = schemas.Series_user_rating.model_validate(s)

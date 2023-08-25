@@ -144,5 +144,5 @@ async def get_images(
     if type:
         query = query.where(models.Image.type == type)
     p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
-    p.items = [schemas.Image.from_orm(row.Image) for row in p.items]
+    p.items = [schemas.Image.model_validate(row.Image) for row in p.items]
     return p

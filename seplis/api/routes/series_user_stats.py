@@ -27,4 +27,4 @@ async def get_user_stats(
         models.Episode.number == models.Episode_watched.episode_number,
         models.Series.id == models.Episode_watched.series_id,
     ))
-    return schemas.Series_user_stats.from_orm(q.first())
+    return schemas.Series_user_stats.model_validate(q.first())

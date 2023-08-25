@@ -1,6 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
-class Movie_collection(BaseModel, orm_mode=True):
+class Movie_collection(BaseModel):
     id: int
     name: str
+    
+    model_config = ConfigDict(from_attributes=True)

@@ -19,7 +19,7 @@ class Play_server(Base):
 
     @staticmethod
     async def save(data: schemas.Play_server_create | schemas.Play_server_update, user_id: int, play_server_id: int | None = None) -> schemas.Play_server_with_url:
-        _data = data.dict(exclude_unset=True)
+        _data = data.model_dump(exclude_unset=True)
         async with database.session() as session:
             async with session.begin():
                 if not play_server_id:
@@ -42,7 +42,7 @@ class Play_server(Base):
                     ))
                 play_server = await session.scalar(sa.select(Play_server).where(Play_server.id == play_server_id))
                 await session.commit()
-                return schemas.Play_server_with_url.from_orm(play_server)
+                return schemas.Play_server_with_url.model_validate(play_server)
 
 
     @staticmethod
@@ -125,7 +125,7 @@ class Play_server_invite(Base):
                 invite_id=invite_id,
                 created_at=datetime.now(tz=timezone.utc),
                 expires_at=datetime.now(tz=timezone.utc)+timedelta(hours=24),
-                **data.dict(exclude_unset=True)
+                **data.model_dump(exclude_unset=True)
             )
             ins = ins.on_duplicate_key_update(
                 invite_id=ins.inserted.invite_id,

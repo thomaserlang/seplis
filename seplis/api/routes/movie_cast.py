@@ -52,5 +52,5 @@ async def movie_cast_get(
         query=query,
         page_query=page_query,
     )
-    p.items = [schemas.Movie_cast_person.from_orm(row[0]) for row in p.items]
+    p.items = [schemas.Movie_cast_person.model_validate(row[0]) for row in p.items]
     return p

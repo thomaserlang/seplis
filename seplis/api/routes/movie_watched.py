@@ -15,7 +15,7 @@ async def get_watched(
         models.Movie_watched.user_id == user.id,
         models.Movie_watched.movie_id == movie_id,
     ))
-    return schemas.Movie_watched.from_orm(w) if w else schemas.Movie_watched()
+    return schemas.Movie_watched.model_validate(w) if w else schemas.Movie_watched()
 
 
 @router.post('', response_model=schemas.Movie_watched)
@@ -24,7 +24,7 @@ async def watched_increment(
     request: dict | None = None,
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):  
-    data = schemas.Movie_watched_increment.parse_obj(request) if request else schemas.Movie_watched_increment()
+    data = schemas.Movie_watched_increment.model_validate(request) if request else schemas.Movie_watched_increment()
     w = await models.Movie_watched.increment(
         user_id=user.id,
         movie_id=movie_id,

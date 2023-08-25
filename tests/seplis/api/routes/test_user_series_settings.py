@@ -14,7 +14,7 @@ async def test_user_series_settings(client: AsyncClient):
     url = f'/2/series/{series.id}/user-settings'
     r = await client.get(url)
     assert r.status_code == 200
-    data = schemas.User_series_settings.parse_obj(r.json())
+    data = schemas.User_series_settings.model_validate(r.json())
     assert data.subtitle_lang == None
     assert data.audio_lang == None
 
@@ -23,13 +23,13 @@ async def test_user_series_settings(client: AsyncClient):
         'audio_lang': 'jpn',
     })
     assert r.status_code == 200
-    data = schemas.User_series_settings.parse_obj(r.json())
+    data = schemas.User_series_settings.model_validate(r.json())
     assert data.subtitle_lang == 'eng'
     assert data.audio_lang == 'jpn'
 
     r = await client.get(url)
     assert r.status_code == 200
-    data = schemas.User_series_settings.parse_obj(r.json())
+    data = schemas.User_series_settings.model_validate(r.json())
     assert data.subtitle_lang == 'eng'
     assert data.audio_lang == 'jpn'
 
@@ -37,7 +37,7 @@ async def test_user_series_settings(client: AsyncClient):
         'subtitle_lang': 'eng',
     })
     assert r.status_code == 200
-    data = schemas.User_series_settings.parse_obj(r.json())
+    data = schemas.User_series_settings.model_validate(r.json())
     assert data.subtitle_lang == 'eng'
     assert data.audio_lang == 'jpn'
 

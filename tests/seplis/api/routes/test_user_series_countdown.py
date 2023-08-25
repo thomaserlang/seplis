@@ -26,7 +26,7 @@ async def test_user_series_watchlist(client: AsyncClient):
 
     r = await client.get('/2/users/me/series-countdown')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series_and_episode].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series_and_episode].model_validate(r.json())
     assert len(data.items) == 0
 
     r = await client.put(f'/2/series/{series1.id}/watchlist')
@@ -34,7 +34,7 @@ async def test_user_series_watchlist(client: AsyncClient):
     
     r = await client.get('/2/users/me/series-countdown')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Series_and_episode].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Series_and_episode].model_validate(r.json())
     assert data.items[0].series.title == 'Test series'
     assert data.items[0].episode.number == 3
 

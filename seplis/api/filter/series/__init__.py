@@ -26,7 +26,7 @@ async def filter_series(
         page_query=page_cursor,
         session=session,
     )
-    p.items = [schemas.Series.from_orm(row[0]) for row in p.items]
+    p.items = [schemas.Series.model_validate(row[0]) for row in p.items]
     await expand_series(
         series=p.items,
         user=filter_query.user,

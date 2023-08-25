@@ -25,7 +25,7 @@ class Image(Base):
 
     @property
     def url(self):
-        return urllib.parse.urljoin(config.data.api.image_url, self.file_id)
+        return urllib.parse.urljoin(str(config.data.api.image_url), self.file_id)
 
     async def save(relation_type: str, relation_id: str, image_data: schemas.Image_import) -> schemas.Image:
         from ..dependencies import httpx_client
@@ -38,7 +38,7 @@ class Image(Base):
                 ))
                 if q:
                     logger.debug(f'Duplicate image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id}, returning stored image')
-                    return schemas.Image.from_orm(q)
+                    return schemas.Image.model_validate(q)
 
             if not image_data.file and not image_data.source_url:
                 raise exceptions.File_upload_no_files()
@@ -86,4 +86,4 @@ class Image(Base):
             ))
             image = await session.scalar(sa.select(models.Image).where(models.Image.id == r.lastrowid))
             await session.commit()
-            return schemas.Image.from_orm(image)
+            return schemas.Image.model_validate(image, strict=False)

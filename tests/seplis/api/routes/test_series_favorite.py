@@ -13,7 +13,7 @@ async def test_series_favorite(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/favorite')
     assert r.status_code == 200
-    f = schemas.Series_favorite.parse_obj(r.json())
+    f = schemas.Series_favorite.model_validate(r.json())
     assert f.favorite == False
     assert f.created_at == None
 
@@ -28,7 +28,7 @@ async def test_series_favorite(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/favorite')
     assert r.status_code == 200
-    f = schemas.Series_favorite.parse_obj(r.json())
+    f = schemas.Series_favorite.model_validate(r.json())
     assert f.favorite == True
     assert f.created_at != None
 
@@ -38,7 +38,7 @@ async def test_series_favorite(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/favorite')
     assert r.status_code == 200
-    f = schemas.Series_favorite.parse_obj(r.json())
+    f = schemas.Series_favorite.model_validate(r.json())
     assert f.favorite == False
     assert f.created_at == None
 

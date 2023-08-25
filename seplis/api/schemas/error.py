@@ -1,11 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Any
 
 class Error(BaseModel):
     code: int
-    errors: list[Any] | None
+    errors: list[Any] | None = None
     message: str
     extra: Any
 
-    class Config:
-        from_orm = True
+    model_config = ConfigDict(from_attributes=True)

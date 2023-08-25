@@ -2,7 +2,7 @@ from seplis import utils, config, logger
 from httpx import AsyncClient
 
 client = AsyncClient(
-    base_url=config.data.client.api_url,
+    base_url=str(config.data.client.api_url),
 )
 '''
 

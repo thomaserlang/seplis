@@ -16,55 +16,55 @@ async def test_movie_watched(client: AsyncClient):
     await models.Movie_watchlist.add(user_id, movie.id)
 
     r = await client.get(f'/2/movies/{movie.id}/watched')
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at == None
 
     r = await client.post(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 1
     assert data.watched_at != None
     
     r = await client.get(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 1
     assert data.position == 0
     assert data.watched_at != None
 
     r = await client.post(f'/2/movies/{movie.id}/watched', json={
-        'watched_at': '2022-06-05T22:00:00+02',
+        'watched_at': '2022-06-05T22:00:00+02:00',
     })
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 2
     assert data.watched_at == datetime(2022, 6, 5, 20, 0, tzinfo=timezone.utc), data.watched_at
     
     r = await client.get(f'/2/movies?user_watchlist=true')
-    assert r.status_code == 200
+    assert r.status_code == 200, r.content
     assert len(r.json()['items']) == 0
 
     r = await client.post(f'/2/movies/{movie.id}/watched', json={
         'watched_at': '2022-06-05T21:00:00Z',
     })
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 3
     assert data.position == 0
     assert data.watched_at == datetime(2022, 6, 5, 21, 0, 0, tzinfo=timezone.utc)
 
     r = await client.delete(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 2
     assert data.position == 0
     assert data.watched_at == datetime(2022, 6, 5, 20, 0, 0, tzinfo=timezone.utc)
 
     r = await client.delete(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 1
     assert data.position == 0
     assert data.watched_at == datetime(2022, 6, 5, 13, 0, tzinfo=timezone.utc)
@@ -76,20 +76,20 @@ async def test_movie_watched(client: AsyncClient):
     assert r.status_code == 200
 
     r = await client.get(f'/2/movies/{movie.id}/watched')
-    w = schemas.Movie_watched.parse_obj(r.json())
+    w = schemas.Movie_watched.model_validate(r.json())
     assert w.times == 1
     assert w.position == 0
 
     r = await client.delete(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at == None
 
     r = await client.get(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200
-    data = schemas.Movie_watched.parse_obj(r.json())
+    data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at == None

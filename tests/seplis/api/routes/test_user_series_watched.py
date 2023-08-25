@@ -24,7 +24,7 @@ async def test_user_series_watched(client: AsyncClient):
 
     r = await client.get('/2/series?user_has_watched=true&expand=user_last_episode_watched')
     assert r.status_code == 200
-    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert data.items == []
 
     r = await client.post(f'/2/series/{series1.id}/episodes/1/watched')
@@ -32,7 +32,7 @@ async def test_user_series_watched(client: AsyncClient):
     
     r = await client.get('/2/series?user_has_watched=true&expand=user_last_episode_watched')
     assert r.status_code == 200, r.content
-    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert data.items[0].id == series1.id
     assert data.items[0].user_last_episode_watched.number == 1
 
@@ -42,7 +42,7 @@ async def test_user_series_watched(client: AsyncClient):
 
     r = await client.get('/2/series?user_has_watched=true&expand=user_last_episode_watched')
     assert r.status_code == 200, r.content
-    data = schemas.Page_cursor_total_result[schemas.Series].parse_obj(r.json())
+    data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 2
     assert data.items[0].id == series1.id
     assert data.items[0].user_last_episode_watched.number == 1

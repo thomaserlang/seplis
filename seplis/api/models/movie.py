@@ -50,7 +50,7 @@ class Movie(Base):
         overwrite_genres = False,
         session = None,
     ):
-        _data = data.dict(exclude_unset=True) if data else {}
+        _data = data.model_dump(exclude_unset=True) if data else {}
         if not movie_id:
             r = await session.execute(sa.insert(Movie))
             movie_id = r.lastrowid
@@ -75,7 +75,7 @@ class Movie(Base):
             await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**_data))
         movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))
         await cls._save_for_search(movie)
-        return schemas.Movie.from_orm(movie)
+        return schemas.Movie.model_validate(movie)
 
     @staticmethod
     async def delete(movie_id: int):
@@ -119,7 +119,7 @@ class Movie(Base):
                         external_title=key,
                         external_value=externals[key],
                         movie=utils.json_loads(utils.json_dumps(
-                            schemas.Movie.from_orm(dup_movie)))
+                            schemas.Movie.model_validate(dup_movie)))
                     )
 
             if (key not in current_externals):
@@ -163,7 +163,7 @@ class Movie(Base):
                 {'movie_id': movie_id, 'genre_id': genre_id} for genre_id in new_genre_ids
             ])
         rr = await session.scalars(sa.select(Genre).where(Movie_genre.movie_id == movie_id, Genre.id == Movie_genre.genre_id).order_by(Genre.name))
-        return [schemas.Genre.from_orm(r) for r in rr]
+        return [schemas.Genre.model_validate(r) for r in rr]
 
     @staticmethod
     async def _save_for_search(movie: 'Movie'):
@@ -173,7 +173,7 @@ class Movie(Base):
         await database.es.index(
             index=config.data.api.elasticsearch.index_prefix+'titles',
             id=f'movie-{movie.id}',
-            document=doc.dict(),
+            document=doc.model_dump(),
         )
 
     def title_document(self) -> schemas.Search_title_document:
@@ -193,7 +193,7 @@ class Movie(Base):
             titles=[schemas.Search_title_document_title(title=title) for title in titles],
             release_date=self.release_date,
             imdb=self.externals.get('imdb'),
-            poster_image=schemas.Image.from_orm(
+            poster_image=schemas.Image.model_validate(
                 self.poster_image) if self.poster_image else None,
             popularity=self.popularity or 0,
             genres=self.genres,
@@ -217,7 +217,7 @@ class Movie(Base):
             Movie_external.value == value,
         ))
         if movie:
-            return schemas.Movie.from_orm(movie)
+            return schemas.Movie.model_validate(movie)
 
 
 class Movie_external(Base):
@@ -271,7 +271,7 @@ class Movie_watched(Base):
             Movie_watched.movie_id == movie_id,
             Movie_watched.user_id == user_id,
         ))
-        return schemas.Movie_watched.from_orm(w)
+        return schemas.Movie_watched.model_validate(w)
 
 
     @staticmethod
@@ -333,7 +333,7 @@ class Movie_watched(Base):
             Movie_watched.user_id == user_id,
         ))
         if w:
-            return schemas.Movie_watched.from_orm(w)
+            return schemas.Movie_watched.model_validate(w)
 
 
     @staticmethod
@@ -423,7 +423,7 @@ async def rebuild_movies():
                     yield {
                         '_index': config.data.api.elasticsearch.index_prefix+'titles',
                         '_id': f'movie-{movie.id}',
-                        **d.dict()
+                        **d.model_dump()
                     }
     from elasticsearch import helpers
     await helpers.async_bulk(database.es, c())

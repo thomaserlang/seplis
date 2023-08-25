@@ -38,8 +38,8 @@ async def login(
         'grant_type': 'password',
         'client_id': config.data.client.id,
     }, headers={
-        'X-Real-IP': request.headers.get('X-Real-IP'),
-        'X-Forwarded-For': request.headers.get('X-Forwarded-For'),
+        'X-Real-IP': request.headers.get('X-Real-IP', ''),
+        'X-Forwarded-For': request.headers.get('X-Forwarded-For', ''),
     })
     if r.status_code >= 400:
         return JSONResponse(content=r.json(), status_code=r.status_code)
@@ -50,7 +50,7 @@ async def login(
 async def signup(
     user_data: schemas.User_create
 ):
-    r = await client.post('/2/users', json=user_data.dict())
+    r = await client.post('/2/users', json=user_data.model_dump())
     if r.status_code >= 400:
         return JSONResponse(content=r.json(), status_code=r.status_code)
     

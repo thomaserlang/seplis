@@ -1,3 +1,4 @@
+from typing import Any
 import pytest_asyncio
 from httpx import AsyncClient
 from seplis import config, config_load
@@ -26,6 +27,12 @@ async def user_signin(client: AsyncClient, scopes: list[str] = [str(constants.LE
     token = await models.Token.new_token(user_id=user.id, expires_days=1, user_level=int(scopes[0]))
     client.headers['Authorization'] = f'Bearer {token}'
     return user.id
+
+
+def parse_obj_as(type: Any, data: Any):
+    from pydantic import TypeAdapter
+    adapter = TypeAdapter(type)
+    return adapter.validate_python(data)
 
 
 def run_file(file_):

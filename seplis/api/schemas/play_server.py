@@ -1,4 +1,4 @@
-from pydantic import BaseModel, constr, conint
+from pydantic import BaseModel, ConfigDict, constr, conint
 from datetime import datetime
 from .user import User_public
 from .helper import default_datetime
@@ -10,17 +10,16 @@ class Play_server_create(BaseModel):
 
 
 class Play_server_update(BaseModel):
-    name: constr(min_length=1, max_length=45) | None
-    url: constr(min_length=1, max_length=200) | None
-    secret: constr(min_length=20, max_length=200) | None
+    name: constr(min_length=1, max_length=45) | None = None
+    url: constr(min_length=1, max_length=200) | None = None
+    secret: constr(min_length=20, max_length=200) | None = None
 
 
 class Play_server(BaseModel):
     id: str
     name: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Play_server_with_url(Play_server):
     url: str
@@ -51,8 +50,7 @@ class Play_server_invite_create(BaseModel):
 class Play_server_invite_id(BaseModel):
     invite_id: str
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Play_server_invite(BaseModel):
@@ -60,8 +58,7 @@ class Play_server_invite(BaseModel):
     created_at: datetime
     expires_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Play_server_access(BaseModel):

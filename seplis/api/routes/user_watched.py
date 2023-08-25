@@ -65,10 +65,10 @@ async def get_user_watched(
     data = {}
     series = await session.scalars(sa.select(models.Series).where(models.Series.id.in_(ids['series_ids'])))
     for s in series:
-        data[f'series-{s.id}'] = schemas.Series.from_orm(s)
+        data[f'series-{s.id}'] = schemas.Series.model_validate(s)
     movies = await session.scalars(sa.select(models.Movie).where(models.Movie.id.in_(ids['movie_ids'])))
     for m in movies:
-        data[f'movie-{m.id}'] = schemas.Movie.from_orm(m)
+        data[f'movie-{m.id}'] = schemas.Movie.model_validate(m)
 
     result = []
     for r in rows:

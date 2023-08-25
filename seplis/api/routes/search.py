@@ -36,7 +36,7 @@ async def search(
         }
 
     r = await database.es.search(index=config.data.api.elasticsearch.index_prefix+'titles', query=q)
-    return [schemas.Search_title_document.parse_obj(a['_source'])
+    return [schemas.Search_title_document.model_validate(a['_source'])
             for a in r['hits']['hits']]
 
 

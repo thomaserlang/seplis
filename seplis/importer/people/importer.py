@@ -13,7 +13,7 @@ async def update_person_by_id(person_id):
         if not result:
             logger.error(f'Unknown person: {person_id}')
             return
-        await update_person(schemas.Person.from_orm(result))
+        await update_person(schemas.Person.model_validate(result))
 
 
 async def update_person(person: schemas.Person):
@@ -49,7 +49,7 @@ async def update_person_info(person: schemas.Person):
     if info.also_known_as and missing_also_known_as:
         data['also_known_as'] = info.also_known_as
     if data:
-        return await models.Person.save(data=schemas.Person_update.parse_obj(data), person_id=person.id, patch=True)
+        return await models.Person.save(data=schemas.Person_update.model_validate(data), person_id=person.id, patch=True)
     else:
         logger.debug(f'[Person: {person.id}] No info updates')
 
@@ -63,7 +63,7 @@ async def update_person_images(person: schemas.Person):
             models.Image.relation_type == 'person',
         ))
         current_images = {
-            f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
+            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
     images_added: list[schemas.Image] = []
 
     async def save_image(image):

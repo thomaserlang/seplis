@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 def default(obj):
     if isinstance(obj, BaseModel):
-        return obj.dict()
+        return obj.model_dump()
     elif isinstance(obj, set):
         return list(obj)
     elif hasattr(obj, 'to_dict'):

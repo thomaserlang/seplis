@@ -6,15 +6,17 @@ from typing import Literal, AsyncIterator
 from datetime import datetime, timezone, timedelta
 from seplis import logger, utils
 from aiofile import async_open
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class Id_data(BaseModel, allow_population_by_field_name=True):
+class Id_data(BaseModel):
     id: int
     original_title: str = Field(alias='original_name')
     popularity: float
     adult: bool = None
     video: bool = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterator[Id_data]:
@@ -30,7 +32,7 @@ async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterato
                         await f.write(chunk)
             with gzip.open(tmp) as f:
                 for line in f:
-                    yield Id_data.parse_obj(utils.json_loads(line))
+                    yield Id_data.model_validate(utils.json_loads(line))
     finally:
         os.remove(tmp)
 

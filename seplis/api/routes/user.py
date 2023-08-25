@@ -22,7 +22,7 @@ async def get_user(
     u = await session.scalar(sa.select(models.User).where(models.User.id == user.id))
     if not u:
         raise exceptions.Not_found('User not found')
-    return schemas.User.from_orm(u)
+    return schemas.User.model_validate(u)
 
 
 @router.put('/me', response_model=schemas.User, status_code=200)
@@ -59,4 +59,4 @@ async def get_users(
     session: AsyncSession = Depends(get_session),
 ):
     users = await session.scalars(sa.select(models.User).where(models.User.username == username))
-    return [schemas.User_public.from_orm(u) for u in users]
+    return [schemas.User_public.model_validate(u) for u in users]

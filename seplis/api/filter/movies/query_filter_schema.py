@@ -1,3 +1,4 @@
+from typing_extensions import Annotated
 from pydantic.dataclasses import dataclass
 from fastapi import Depends, Query
 from ...dependencies import get_current_user_no_raise
@@ -6,13 +7,13 @@ from ... import schemas
 
 @dataclass
 class Movie_query_filter:
-    genre_id: list[int] = Query(default=None)
-    not_genre_id: list[int] = Query(default=None)
-    collection_id: list[int] = Query(default=None)
-    user_can_watch: bool = Query(default=None)
-    user_watchlist: bool = Query(default=None)
-    user_favorites: bool = Query(default=None)
-    user_has_watched: bool = Query(default=None)
-    sort: list[schemas.MOVIE_USER_SORT_TYPE] = Query(default=['popularity_desc'])
+    genre_id: Annotated[list[int] | None, Query()] = None
+    not_genre_id: Annotated[list[int] | None, Query()] = None
+    collection_id: Annotated[list[int] | None, Query()] = None
+    user_can_watch: Annotated[bool | None, Query()] = None
+    user_watchlist: Annotated[bool | None, Query()] = None
+    user_favorites: Annotated[bool | None, Query()] = None
+    user_has_watched: Annotated[bool | None, Query()] = None
+    sort: Annotated[list[schemas.MOVIE_USER_SORT_TYPE], Query()] = Query(default=['rating_desc'])
     user: schemas.User_authenticated | None = Depends(get_current_user_no_raise)
-    expand: list[schemas.MOVIE_EXPAND] = Query(default=[])
+    expand: Annotated[list[schemas.MOVIE_EXPAND] | None, Query()] = None

@@ -27,7 +27,7 @@ async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
             if not result:
                 logger.error(f'Unknown movie: {movie_id}')
                 return
-            movie = schemas.Movie.from_orm(result)
+            movie = schemas.Movie.model_validate(result)
     if not movie:
         logger.error(f'Unknown movie')
         return
@@ -45,7 +45,7 @@ async def update_movies_bulk(from_movie_id=0, do_async=False):
             from_movie_id = movie.id
             try:
                 if not do_async:
-                    await update_movie(movie=schemas.Movie.from_orm(movie))
+                    await update_movie(movie=schemas.Movie.model_validate(movie))
                 else:
                     await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
             except (KeyboardInterrupt, SystemExit):
@@ -87,7 +87,7 @@ async def update_incremental():
                 ))
                 if not result:
                     continue
-                movie = schemas.Movie.from_orm(result)
+                movie = schemas.Movie.model_validate(result)
                 if movie:
                     try:
                         await update_movie(movie=movie)
@@ -136,7 +136,7 @@ async def update_movie_metadata(movie: schemas.Movie):
         data['alternative_titles'] = new_data.alternative_titles
     if data:
         logger.debug(f'[Movie: {movie.id}] Updating: {data}')
-        await models.Movie.save(data=schemas.Movie_update.parse_obj(data), movie_id=movie.id, patch=True, overwrite_genres=True)
+        await models.Movie.save(data=schemas.Movie_update.model_validate(data), movie_id=movie.id, patch=True, overwrite_genres=True)
     else:
         logger.debug(f'[Movie: {movie.id}] No metadata updates')
 
@@ -200,7 +200,7 @@ async def update_images(movie: schemas.Movie):
             models.Image.relation_id == movie.id,
         ))
         image_external_ids = {
-            f'{image.external_name}-{image.external_id}': schemas.Image.from_orm(image) for image in result}
+            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
 
     r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}', params={
         'append_to_response': 'images',
@@ -267,7 +267,7 @@ async def update_cast(movie: schemas.Movie):
             models.Movie_cast.movie_id == movie.id,
         ))
         cast: dict[str, schemas.Movie_cast_person] = {f'themoviedb-{cast.person.externals["themoviedb"]}': 
-                schemas.Movie_cast_person.from_orm(cast) for cast in result \
+                schemas.Movie_cast_person.model_validate(cast) for cast in result \
                     if cast.person.externals.get("themoviedb")}
 
     r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}/credits', params={

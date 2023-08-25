@@ -27,7 +27,7 @@ async def test_series_user_stats(client: AsyncClient):
 
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
-    data = schemas.User_series_stats.parse_obj(r.json())
+    data = schemas.User_series_stats.model_validate(r.json())
     assert data.episodes_watched == 0
     assert data.episodes_watched_minutes == 0
     assert data.series_finished == 0
@@ -38,14 +38,14 @@ async def test_series_user_stats(client: AsyncClient):
     await client.put(f'/2/series/{series1.id}/watchlist')
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
-    data = schemas.User_series_stats.parse_obj(r.json())
+    data = schemas.User_series_stats.model_validate(r.json())
     assert data.series_watchlist == 1
 
 
     await client.post(f'/2/series/{series1.id}/episodes/1/watched')
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
-    data = schemas.User_series_stats.parse_obj(r.json())
+    data = schemas.User_series_stats.model_validate(r.json())
     assert data.episodes_watched == 1
     assert data.episodes_watched_minutes == 30
     assert data.series_watched == 1
@@ -54,7 +54,7 @@ async def test_series_user_stats(client: AsyncClient):
     await client.post(f'/2/series/{series1.id}/episodes/1/watched')
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
-    data = schemas.User_series_stats.parse_obj(r.json())
+    data = schemas.User_series_stats.model_validate(r.json())
     assert data.episodes_watched == 2
     assert data.episodes_watched_minutes == 60
     assert data.series_watched == 1
@@ -63,7 +63,7 @@ async def test_series_user_stats(client: AsyncClient):
     await client.post(f'/2/series/{series1.id}/episodes/2/watched')
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
-    data = schemas.User_series_stats.parse_obj(r.json())
+    data = schemas.User_series_stats.model_validate(r.json())
     assert data.episodes_watched == 3
     assert data.episodes_watched_minutes == 90
     assert data.series_watched == 1
@@ -72,7 +72,7 @@ async def test_series_user_stats(client: AsyncClient):
     await client.post(f'/2/series/{series1.id}/episodes/3/watched')
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
-    data = schemas.User_series_stats.parse_obj(r.json())
+    data = schemas.User_series_stats.model_validate(r.json())
     assert data.episodes_watched == 4
     assert data.episodes_watched_minutes == 130
     assert data.series_watched == 1
@@ -81,7 +81,7 @@ async def test_series_user_stats(client: AsyncClient):
     await client.post(f'/2/series/{series2.id}/episodes/1/watched')
     r = await client.get(f'/2/users/me/series-stats')
     assert r.status_code == 200
-    data = schemas.User_series_stats.parse_obj(r.json())
+    data = schemas.User_series_stats.model_validate(r.json())
     assert data.episodes_watched == 5
     assert data.episodes_watched_minutes == 160
     assert data.series_watched == 2

@@ -16,7 +16,7 @@ async def test_user_movies_watchlist(client: AsyncClient):
     
     r = await client.get(f'/2/movies?user_watchlist=true')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Movie].model_validate(r.json())
     assert len(data.items) == 0
 
     r = await client.put(f'/2/movies/{movie1.id}/watchlist')
@@ -27,7 +27,7 @@ async def test_user_movies_watchlist(client: AsyncClient):
     
     r = await client.get(f'/2/movies?user_watchlist=true')
     assert r.status_code == 200
-    data = schemas.Page_cursor_result[schemas.Movie].parse_obj(r.json())
+    data = schemas.Page_cursor_result[schemas.Movie].model_validate(r.json())
     assert len(data.items) == 2
     assert data.items[0].title == 'Movie 1'
     assert data.items[1].title == 'Movie 2'

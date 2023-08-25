@@ -33,7 +33,7 @@ class Person(Base):
         patch: bool = True,
         session: AsyncSession = None,
     ):
-        _data = data.dict(exclude_unset=True)
+        _data = data.model_dump(exclude_unset=True)
         if not person_id:
             _data['created_at'] = datetime.now(tz=timezone.utc)
             r = await session.execute(sa.insert(Person))
@@ -48,7 +48,7 @@ class Person(Base):
             await session.execute(sa.update(Person).where(Person.id == person_id).values(_data))
 
         person = await session.scalar(sa.select(Person).where(Person.id == person_id))
-        return schemas.Person.from_orm(person)
+        return schemas.Person.model_validate(person)
     
     @staticmethod
     @auto_session
@@ -68,14 +68,14 @@ class Person(Base):
             Person_external.value == value,
         ))
         if person:
-            return schemas.Person.from_orm(person)
+            return schemas.Person.model_validate(person)
         
     @staticmethod
     @auto_session
     async def get(person_id: int, session: AsyncSession = None):
         person = await session.scalar(sa.select(Person).where(Person.id == person_id))
         if person:
-            return schemas.Person.from_orm(person)
+            return schemas.Person.model_validate(person)
 
     @staticmethod
     async def _save_externals(session: AsyncSession, person_id: str | int, externals: dict[str, str | None], patch: bool):
@@ -97,7 +97,7 @@ class Person(Base):
                         external_title=key,
                         external_value=externals[key],
                         person=utils.json_loads(utils.json_dumps(
-                            schemas.Person.from_orm(r)))
+                            schemas.Person.model_validate(r)))
                     )
             
             if (key not in current_externals):

@@ -15,14 +15,14 @@ async def test_play_server(client: AsyncClient):
         'secret': 'a'*20,
     })
     assert r.status_code == 201, r.content
-    server = schemas.Play_server_with_url.parse_obj(r.json())
+    server = schemas.Play_server_with_url.model_validate(r.json())
     assert server.name == 'Thomas'
     assert server.url == 'http://example.net'    
 
 
     r = await client.get(f'/2/play-servers/{server.id}')
     assert r.status_code == 200, r.content
-    server = schemas.Play_server_with_url.parse_obj(r.json())
+    server = schemas.Play_server_with_url.model_validate(r.json())
     assert server.name == 'Thomas'
     assert server.url == 'http://example.net'
 
@@ -31,14 +31,14 @@ async def test_play_server(client: AsyncClient):
         'secret': '2'*20,
     })
     assert r.status_code == 200, r.content
-    server = schemas.Play_server_with_url.parse_obj(r.json())
+    server = schemas.Play_server_with_url.model_validate(r.json())
     assert server.name == 'Thomas'
     assert server.url == 'http://example2.net'
 
 
     r = await client.get(f'/2/play-servers/{server.id}')
     assert r.status_code == 200, r.content
-    server = schemas.Play_server_with_url.parse_obj(r.json())
+    server = schemas.Play_server_with_url.model_validate(r.json())
     
     r = await client.delete(f'/2/play-servers/{server.id}')
     assert r.status_code == 204, r.content
@@ -57,13 +57,13 @@ async def test_play_server_invite(client: AsyncClient):
         'secret': 'a'*20,
     })
     assert r.status_code == 201, r.content
-    server = schemas.Play_server_with_url.parse_obj(r.json())
+    server = schemas.Play_server_with_url.model_validate(r.json())
 
     r = await client.post(f'/2/play-servers/{server.id}/invites', json={
         'user_id': user_id,
     })
     assert r.status_code == 400, r.content
-    data = schemas.Error.parse_obj(r.json())
+    data = schemas.Error.model_validate(r.json())
     assert data.code == 2251, data.code
 
 
@@ -73,13 +73,13 @@ async def test_play_server_invite(client: AsyncClient):
         'user_id': user.id,
     })
     assert r.status_code == 201, r.content
-    data = schemas.Play_server_invite_id.parse_obj(r.json())
+    data = schemas.Play_server_invite_id.model_validate(r.json())
     assert data.invite_id != None
 
 
     r = await client.get(f'/2/play-servers/{server.id}/invites')
     assert r.status_code == 200, r.content
-    invites = schemas.Page_cursor_total_result[schemas.Play_server_invite].parse_obj(r.json())
+    invites = schemas.Page_cursor_total_result[schemas.Play_server_invite].model_validate(r.json())
     assert invites.items[0].user.id == user.id
     assert invites.items[0].created_at != None
     assert invites.items[0].expires_at != None
@@ -102,13 +102,13 @@ async def test_play_server_invite(client: AsyncClient):
 
     r = await client.get(f'/2/play-servers/{server.id}/invites')
     assert r.status_code == 200, r.content
-    invites = schemas.Page_cursor_total_result[schemas.Play_server_invite].parse_obj(r.json())
+    invites = schemas.Page_cursor_total_result[schemas.Play_server_invite].model_validate(r.json())
     assert invites.total == 0
 
 
     r = await client.get(f'/2/play-servers/{server.id}/access')
     assert r.status_code == 200, r.content
-    users = schemas.Page_cursor_total_result[schemas.Play_server_access].parse_obj(r.json())
+    users = schemas.Page_cursor_total_result[schemas.Play_server_access].model_validate(r.json())
     assert users.items[0].user.id == user.id
     assert users.items[1].user.id == user_id
 

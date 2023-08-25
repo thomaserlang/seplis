@@ -16,7 +16,7 @@ async def filter_movies(session, query: any, filter_query: Movie_query_filter, p
         page_query=page_cursor,
         session=session,
     )
-    p.items = [schemas.Movie.from_orm(row[0]) for row in p.items]
+    p.items = [schemas.Movie.model_validate(row[0]) for row in p.items]
     await expand_movies(
         movies=p.items,
         user=filter_query.user,

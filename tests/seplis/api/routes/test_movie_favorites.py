@@ -12,7 +12,7 @@ async def test_movie_(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie.id}/favorite')
     assert r.status_code == 200, r.content
-    data = schemas.Movie_favorite.parse_obj(r.json())
+    data = schemas.Movie_favorite.model_validate(r.json())
     assert data.favorite == False
     assert data.created_at == None
     
@@ -21,7 +21,7 @@ async def test_movie_(client: AsyncClient):
     
     r = await client.get(f'/2/movies/{movie.id}/favorite')
     assert r.status_code == 200
-    data = schemas.Movie_favorite.parse_obj(r.json())
+    data = schemas.Movie_favorite.model_validate(r.json())
     assert data.favorite == True
     assert data.created_at != None
     
@@ -30,7 +30,7 @@ async def test_movie_(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie.id}/favorite')
     assert r.status_code == 200
-    data = schemas.Movie_favorite.parse_obj(r.json())
+    data = schemas.Movie_favorite.model_validate(r.json())
     assert data.favorite == False
     assert data.created_at == None
 

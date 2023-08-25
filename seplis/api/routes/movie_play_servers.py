@@ -24,7 +24,7 @@ async def get_movie_play_servers(
             play_id=jwt.encode(
                 schemas.Play_id_info_movie(
                     movie_id=movie_id,
-                ).dict(),
+                ).model_dump(),
                 row.secret,
                 algorithm='HS256',
             ),

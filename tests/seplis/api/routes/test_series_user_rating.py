@@ -13,7 +13,7 @@ async def test_series_user_rating(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/user-rating')
     assert r.status_code == 200
-    data = schemas.Series_user_rating.parse_obj(r.json())
+    data = schemas.Series_user_rating.model_validate(r.json())
     assert data.rating == None
 
     r = await client.put(f'/2/series/{series.id}/user-rating', json={
@@ -23,7 +23,7 @@ async def test_series_user_rating(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/user-rating')
     assert r.status_code == 200
-    data = schemas.Series_user_rating.parse_obj(r.json())
+    data = schemas.Series_user_rating.model_validate(r.json())
     assert data.rating == 5
 
     r = await client.put(f'/2/series/{series.id}/user-rating', json={
@@ -33,7 +33,7 @@ async def test_series_user_rating(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/user-rating')
     assert r.status_code == 200
-    data = schemas.Series_user_rating.parse_obj(r.json())
+    data = schemas.Series_user_rating.model_validate(r.json())
     assert data.rating == 7
 
     r = await client.delete(f'/2/series/{series.id}/user-rating')
@@ -41,7 +41,7 @@ async def test_series_user_rating(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/user-rating')
     assert r.status_code == 200
-    data = schemas.Series_user_rating.parse_obj(r.json())
+    data = schemas.Series_user_rating.model_validate(r.json())
     assert data.rating == None
 
 

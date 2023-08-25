@@ -42,7 +42,7 @@ async def expand_user_watched(series_id: int, user_id: int, episodes: list[schem
     ))
     for episode_watched in result:
         _episodes[episode_watched.episode_number].user_watched = \
-            schemas.Episode_watched.from_orm(episode_watched)
+            schemas.Episode_watched.model_validate(episode_watched)
 
 @auto_session
 async def expand_user_can_watch(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):

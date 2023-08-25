@@ -5,7 +5,7 @@ import os
 import gzip
 import csv
 from aiofile import async_open
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from ..api.database import database
 from ..api import models
@@ -91,9 +91,11 @@ async def update_imdb_ratings():
         await models.rebuild_series()
 
 
-class Rating(BaseModel, allow_population_by_field_name=True):
+class Rating(BaseModel):
     rating: float
     votes: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 async def get_ratings():

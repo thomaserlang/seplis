@@ -31,7 +31,7 @@ async def test_movie_cast(client: AsyncClient):
     # get cast members
     r = await client.get(f'/2/movies/{movie.id}/cast')
     assert r.status_code == 200
-    cast = schemas.Page_cursor_result[schemas.Movie_cast_person].parse_obj(r.json())
+    cast = schemas.Page_cursor_result[schemas.Movie_cast_person].model_validate(r.json())
     assert len(cast.items) == 1
     assert cast.items[0].person.id == person.id
     assert cast.items[0].character == 'Test character'

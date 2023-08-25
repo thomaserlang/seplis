@@ -12,7 +12,7 @@ async def test_movie_watchlist(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie.id}/watchlist')
     assert r.status_code == 200, r.content
-    data = schemas.Movie_watchlist.parse_obj(r.json())
+    data = schemas.Movie_watchlist.model_validate(r.json())
     assert data.on_watchlist == False
     assert data.created_at == None
     
@@ -21,7 +21,7 @@ async def test_movie_watchlist(client: AsyncClient):
     
     r = await client.get(f'/2/movies/{movie.id}/watchlist')
     assert r.status_code == 200
-    data = schemas.Movie_watchlist.parse_obj(r.json())
+    data = schemas.Movie_watchlist.model_validate(r.json())
     assert data.on_watchlist == True
     assert data.created_at != None
     
@@ -30,7 +30,7 @@ async def test_movie_watchlist(client: AsyncClient):
 
     r = await client.get(f'/2/movies/{movie.id}/watchlist')
     assert r.status_code == 200
-    data = schemas.Movie_watchlist.parse_obj(r.json())
+    data = schemas.Movie_watchlist.model_validate(r.json())
     assert data.on_watchlist == False
     assert data.created_at == None
 

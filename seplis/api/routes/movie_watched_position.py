@@ -20,7 +20,7 @@ async def get_position(
     ))
     if not ew:        
         return Response(status_code=204)
-    return schemas.Movie_watched.from_orm(ew)
+    return schemas.Movie_watched.model_validate(ew)
     
 
 @router.put('', status_code=204)

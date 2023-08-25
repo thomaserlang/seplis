@@ -1,93 +1,107 @@
 import os, pathlib
-from typing import List, Literal, Optional, Tuple, Union
-from pydantic import AnyHttpUrl, BaseModel, BaseSettings, conint, validator, DirectoryPath
-import yaml, tempfile
+from typing import Literal
+from pydantic_core.core_schema import FieldValidationInfo
+from typing_extensions import Annotated
+from pydantic import AnyHttpUrl, BaseModel, Field, conint, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+import yaml
 
 class ConfigRedisModel(BaseModel):
     ip: str = '127.0.0.1'
-    host: str = None
+    host: Annotated[str | None, Field(validate_default=True)] = None
     port: int = 6379
     db: conint(ge=0, le=15) = 0
-    sentinel: Optional[List[Tuple[str, int]]]
-    master_name = 'mymaster'
-    password: Optional[str]
-    queue_name = 'seplis:queue'
-    job_completion_wait = 0
+    sentinel: list[tuple[str, int]] = None
+    master_name: str = 'mymaster'
+    password: str | None = None
+    queue_name: str = 'seplis:queue'
+    job_completion_wait: int = 0
     
-    @validator('host', pre=True, always=True)
-    def default_host(cls, v, *, values, **kwargs):
-        return v or values['ip']
+    @field_validator('host')
+    @classmethod
+    def default_host(cls, v: str | None, info: FieldValidationInfo):
+        return v or info.data['ip']
+    
 
 class ConfigElasticsearch(BaseModel):
-    host: Union[str, List[str]] = 'http://127.0.0.1:9200'
-    user: Optional[str]
-    password: Optional[str]
-    verify_certs = True
-    index_prefix = 'seplis_'
+    host: str | list[str] = 'http://127.0.0.1:9200'
+    user: str | None = None
+    password: str | None = None
+    verify_certs: bool = True
+    index_prefix: str = 'seplis_'
+
 
 class ConfigAPIModel(BaseModel):
-    database = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
-    database_test = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
-    database_read_timeout = 5
-    redis = ConfigRedisModel()
-    elasticsearch = ConfigElasticsearch()
-    port = 8002
-    max_workers = 5
-    image_url: Optional[AnyHttpUrl] = 'https://images.seplis.net'
-    base_url: Optional[AnyHttpUrl] = 'https://api.seplis.net'
-    storitch_host: Optional[AnyHttpUrl]
+    database: str = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
+    database_test: str = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
+    database_read_timeout: int = 5
+    redis: ConfigRedisModel = ConfigRedisModel()
+    elasticsearch: ConfigElasticsearch = ConfigElasticsearch()
+    port: int = 8002
+    max_workers: int = 5
+    image_url: AnyHttpUrl = 'https://images.seplis.net'
+    base_url: AnyHttpUrl = 'https://api.seplis.net'
+    storitch_host: AnyHttpUrl | None = None
     storitch_api_key: str = ''
 
+
 class ConfigWebModel(BaseModel):
-    url: Optional[AnyHttpUrl]
-    cookie_secret: Optional[str]
-    port = 8001
-    chromecast_appid = 'EA4A67C4'
+    url: AnyHttpUrl | None = None
+    cookie_secret: str | None = None
+    port: int = 8001
+    chromecast_appid: str = 'EA4A67C4'
+
 
 class ConfigLoggingModel(BaseModel):
     level: Literal['notset', 'debug', 'info', 'warn', 'error', 'critical'] = 'warn'
-    path: Optional[pathlib.Path]
+    path: pathlib.Path = None
     max_size: int = 100 * 1000 * 1000 # ~ 95 mb
-    num_backups = 10
+    num_backups: int = 10
+
 
 class ConfigClientModel(BaseModel):
-    access_token: Optional[str]
-    thetvdb: Optional[str]
-    themoviedb: Optional[str]
-    id: Optional[str]
-    validate_cert = True
+    access_token: str | None = None
+    thetvdb: str | None = None
+    themoviedb: str | None = None
+    id: str | None = None
+    validate_cert: bool = True
     api_url: AnyHttpUrl = 'https://api.seplis.net'
-    public_api_url: Optional[AnyHttpUrl]
+    public_api_url: Annotated[str | None, Field(validate_default=True)] = None
 
-    @validator('public_api_url', pre=True, always=True)
-    def default_public_api_url(cls, v, *, values, **kwargs):
-        return v or values['api_url']
+    @field_validator('public_api_url')
+    @classmethod
+    def default_public_api_url(cls, v: str | None, info: FieldValidationInfo):
+        return v or info.data['api_url']
+    
 
 class ConfigSMTPModel(BaseModel):
-    server = '127.0.0.1'
-    port = 25
-    user: Optional[str]
-    password: Optional[str]
-    use_tls: Optional[bool]
-    from_email: Optional[str]
+    server: str = '127.0.0.1'
+    port: int = 25
+    user: str | None = None
+    password: str | None = None
+    use_tls: bool = None
+    from_email: str | None = None
+    
     
 class ConfigModel(BaseSettings):
-    debug = False
-    test = False
-    ENVIRONMENT: Optional[str]
-    sentry_dsn: Optional[str]
-    data_dir = '~/.seplis'
-    api = ConfigAPIModel()
-    web = ConfigWebModel()
-    logging = ConfigLoggingModel()
-    client = ConfigClientModel()
-    smtp = ConfigSMTPModel()
+    debug: bool = False
+    test: bool = False
+    ENVIRONMENT: str | None = None
+    sentry_dsn: str | None = None
+    data_dir: str = '~/.seplis'
+    api: ConfigAPIModel = ConfigAPIModel()
+    web: ConfigWebModel = ConfigWebModel()
+    logging: ConfigLoggingModel = ConfigLoggingModel()
+    client: ConfigClientModel = ConfigClientModel()
+    smtp: ConfigSMTPModel = ConfigSMTPModel()
 
-    class Config:
-        env_prefix = 'seplis_'
-        env_nested_delimiter = '.'
-        validate_assignment = True
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_prefix='seplis_',
+        env_nested_delimiter='.',
+        validate_assignment=True,
+        case_sensitive=False,
+    )
+    
 
 class Config:
     def __init__(self):

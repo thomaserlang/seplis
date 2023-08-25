@@ -14,7 +14,7 @@ async def test_series_watchlist(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/watchlist')
     assert r.status_code == 200
-    f = schemas.Series_watchlist.parse_obj(r.json())
+    f = schemas.Series_watchlist.model_validate(r.json())
     assert f.on_watchlist == False
     assert f.created_at == None
 
@@ -29,7 +29,7 @@ async def test_series_watchlist(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/watchlist')
     assert r.status_code == 200
-    f = schemas.Series_watchlist.parse_obj(r.json())
+    f = schemas.Series_watchlist.model_validate(r.json())
     assert f.on_watchlist == True
     assert f.created_at != None
 
@@ -39,7 +39,7 @@ async def test_series_watchlist(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/watchlist')
     assert r.status_code == 200
-    f = schemas.Series_watchlist.parse_obj(r.json())
+    f = schemas.Series_watchlist.model_validate(r.json())
     assert f.on_watchlist == False
     assert f.created_at == None
 

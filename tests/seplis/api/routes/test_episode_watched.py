@@ -22,7 +22,7 @@ async def test_episode_watched(client: AsyncClient):
     assert r.status_code == 200, r.content
     r = await client.post(f'/2/series/{series.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 2
     assert data.position == 0
     assert data.watched_at != None
@@ -30,7 +30,7 @@ async def test_episode_watched(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 2
     assert data.position == 0
     assert data.watched_at != None
@@ -38,20 +38,20 @@ async def test_episode_watched(client: AsyncClient):
     
     r = await client.delete(f'/2/series/{series.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 1
     assert data.position == 0
     assert data.watched_at != None
 
     r = await client.delete(f'/2/series/{series.id}/episodes/1/watched')
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at == None
 
 
     r = await client.get(f'/2/series/{series.id}/episodes/1/watched')
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at == None
@@ -66,17 +66,17 @@ async def test_episode_watched(client: AsyncClient):
 
     r = await client.get(f'/2/series/{series.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 1
 
     r = await client.get(f'/2/series/{series.id}/episodes/2/watched')
     assert r.status_code == 200, r.content
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 1
 
     r = await client.get(f'/2/series/{series.id}/episodes/3/watched')
     assert r.status_code == 200, r.content
-    data = schemas.Episode_watched.parse_obj(r.json())
+    data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 1
 
 

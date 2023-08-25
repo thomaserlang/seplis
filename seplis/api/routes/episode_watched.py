@@ -21,7 +21,7 @@ async def get_watched(
         models.Episode_watched.episode_number == episode_number,
     ))
     if ew:
-        return schemas.Episode_watched.from_orm(ew)
+        return schemas.Episode_watched.model_validate(ew)
     else:
         return schemas.Episode_watched(episode_number=episode_number)
 
@@ -34,7 +34,7 @@ async def watched_increment(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):  
-    data = schemas.Episode_watched_increment.parse_obj(request) if request else schemas.Episode_watched_increment()
+    data = schemas.Episode_watched_increment.model_validate(request) if request else schemas.Episode_watched_increment()
     await models.Episode_watched.increment(
         session=session,
         user_id=user.id,
@@ -48,7 +48,7 @@ async def watched_increment(
         models.Episode_watched.episode_number == episode_number,
     ))
     await session.commit()
-    return schemas.Episode_watched.from_orm(ew)
+    return schemas.Episode_watched.model_validate(ew)
 
 
 @router.delete('/{series_id}/episodes/{episode_number}/watched', response_model=schemas.Episode_watched)
@@ -71,7 +71,7 @@ async def watched_decrement(
     ))
     await session.commit()
     if ew:
-        return schemas.Episode_watched.from_orm(ew)
+        return schemas.Episode_watched.model_validate(ew)
     else:
         return schemas.Episode_watched(episode_number=episode_number)
 
@@ -85,7 +85,7 @@ async def watched_increment_range(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
 ):  
-    data = schemas.Episode_watched_increment.parse_obj(request) if request else schemas.Episode_watched_increment()
+    data = schemas.Episode_watched_increment.model_validate(request) if request else schemas.Episode_watched_increment()
     if to_episode_number < from_episode_number:
         raise exceptions.API_exception(400, 0, 'to_episode_number must be bigger than from_episode_number')
     for n in range(from_episode_number, to_episode_number+1):
