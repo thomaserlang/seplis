@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from uuid6 import uuid7
 from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
 from seplis import logger, utils
@@ -23,7 +24,7 @@ class Play_server(Base):
         async with database.session() as session:
             async with session.begin():
                 if not play_server_id:
-                    play_server_id = utils.sqlalchemy.uuid7_mariadb()
+                    play_server_id = str(uuid7())
                     await session.execute(sa.insert(Play_server).values(
                         id=play_server_id,
                         created_at=datetime.now(tz=timezone.utc),
@@ -119,7 +120,7 @@ class Play_server_invite(Base):
             if p:
                 raise exceptions.Play_server_invite_already_has_access()
 
-            invite_id = utils.sqlalchemy.uuid7_mariadb()
+            invite_id = str(uuid7())
             ins = sa.dialects.mysql.insert(Play_server_invite).values(
                 play_server_id=play_server_id,
                 invite_id=invite_id,

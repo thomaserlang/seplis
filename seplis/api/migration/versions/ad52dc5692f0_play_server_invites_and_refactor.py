@@ -12,9 +12,13 @@ down_revision = '2252ca418e56'
 
 from alembic import op
 import sqlalchemy as sa
+from uuid6 import uuid7
 
-from seplis.utils.sqlalchemy import UUID, uuid7_mariadb
+from seplis.utils.sqlalchemy import UUID
 
+def uuid7_mariadb():
+    a = str(uuid7())
+    return f'{a[24:32]}-{a[32:36]}-{a[19:23]}-{a[14:18]}-{a[0:8]}{a[9:13]}'
 
 def upgrade():
     op.drop_constraint('play_access_ibfk_1', 'play_access', 'foreignkey')

@@ -4,7 +4,6 @@ from sqlalchemy.types import DateTime, TypeDecorator
 from datetime import datetime, timezone
 from typing import Any
 from ..api import schemas
-from uuid6 import uuid7
 from .sqlakeyset.paging import get_page
 from .sqlakeyset.results import unserialize_bookmark
 from .. import logger
@@ -59,17 +58,7 @@ class UUID(sa.types.UserDefinedType):
             return value
 
         return process
-
-
-def uuid7_mariadb():
-    '''
-    Since the MariaDB UUID data type reorderes the stored UUID to be more index friendly
-    for UUIDv1 (nnnnnnnnnnnn-vsss-Vhhh-mmmm-llllllll), we have to reorder the UUIDv7
-    https://mariadb.com/kb/en/uuid-data-type/
-    '''
-    a = str(uuid7())
-    return f'{a[24:32]}-{a[32:36]}-{a[19:23]}-{a[14:18]}-{a[0:8]}{a[9:13]}'
-
+    
 
 class UtcDateTime(TypeDecorator):
     impl = DateTime(timezone=True)
