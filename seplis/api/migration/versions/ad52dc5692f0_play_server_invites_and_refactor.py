@@ -36,16 +36,16 @@ def upgrade():
 
     ids = {}
     conn = op.get_bind()
-    rows = conn.execute(sa.text('select id from play_servers'))
-    for r in rows.yield_per(10000):
-        ids[r['id']] = uuid7_mariadb()
+    old_ids = conn.scalars(sa.text('select id from play_servers'))
+    for id_ in old_ids:
+        ids[id_] = uuid7_mariadb()
         conn.execute(sa.text('UPDATE play_servers SET id=:new_id WHERE id=:id'), {
-            'id': r['id'], 
-            'new_id': ids[r['id']],
+            'id': id_, 
+            'new_id': ids[id_],
         })
         conn.execute(sa.text('UPDATE play_access SET play_server_id=:new_id WHERE play_server_id=:id'), {
-            'id': r['id'], 
-            'new_id': ids[r['id']],
+            'id': id_, 
+            'new_id': ids[id_],
         })
 
     op.alter_column('play_servers', 'id', 
