@@ -52,7 +52,11 @@ export function SettingsMenu({
                     />
                 </PopoverAnchor>
                 <MenuList>
-                    <MenuItem command={renderPlaySource(requestSource.source)} onClick={() => setNested('sources')}>
+                    <MenuItem 
+                        isDisabled={!((playServers.length > 1) || (playServers[0]?.sources?.length > 1))}
+                        command={renderPlaySource(requestSource.source)} 
+                        onClick={() => setNested('sources')                        
+                    }>
                         Source
                     </MenuItem>
                     <MenuItem command={resolutionToText(resolutionWidth)} onClick={() => setNested('quality')}>
