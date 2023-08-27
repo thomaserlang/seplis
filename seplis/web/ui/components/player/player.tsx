@@ -106,17 +106,16 @@ function VideoPlayer({
     const [paused, setPaused] = useState(false)
     const [loading, setLoading] = useState(true)
     const [showBigPlay, setShowBigPlay] = useState(false)
-    const [showControls, setShowControls] = useState(true)
+    const [controlsVisible, setControlsVisible] = useState(true)
     const hideControlsTimer = useRef<NodeJS.Timeout>()
     const videoControls = useRef<IVideoControls>()
     const boxRef = useRef(null)
 
-    const startHideControlsTimer = () => {
-        if (!showControls)
-            setShowControls(true)
+    const showControls = () => {
+        setControlsVisible(true)
         clearTimeout(hideControlsTimer.current)
         hideControlsTimer.current = setTimeout(() => {
-            setShowControls(false)
+            setControlsVisible(false)
         }, 4000)
         return () => {
             clearTimeout(hideControlsTimer.current)
@@ -134,8 +133,14 @@ function VideoPlayer({
         videoControls.current.setVolume(parseFloat(localStorage.getItem('volume')) || 0.5)
 
         const keyDown = (e: globalThis.KeyboardEvent) => {
+            console.log('show controls')
+            showControls()
             if (e.code == 'Space')
                 videoControls.current.togglePlay()
+            if (e.code == 'ArrowLeft')
+                videoControls.current.skipSeconds(-15)
+            if (e.code == 'ArrowRight')
+                videoControls.current.skipSeconds(15)
         }
         document.addEventListener('keydown', keyDown)
         return () => document.removeEventListener('keydown', keyDown)
@@ -150,14 +155,14 @@ function VideoPlayer({
         top="0"
         backgroundColor="#000"
         ref={boxRef}
-        onMouseMove={() => { startHideControlsTimer() }}
-        onTouchMove={() => { startHideControlsTimer() }}
+        onMouseMove={() => { showControls() }}
+        onTouchMove={() => { showControls() }}
         onClick={() => {
             if (paused) return
-            if (showControls)
-                setShowControls(false)
+            if (controlsVisible)
+                setControlsVisible(false)
             else
-                startHideControlsTimer()
+                showControls()
         }}
     >
         <Video
@@ -167,13 +172,13 @@ function VideoPlayer({
             resolutionWidth={resolutionWidth}
             audioSource={audioSource}
             subtitleSource={subtitleSource}
-            subtitleLinePosition={(showControls || paused) ? -4 : undefined}
+            subtitleLinePosition={(controlsVisible || paused) ? -4 : undefined}
             subtitleOffset={subtitleOffset}
             onTimeUpdate={(time) => {
                 if (onTimeUpdate) onTimeUpdate(time, requestSource.source.duration)
                 setTime(time)
-                if (showControls && !hideControlsTimer.current)
-                    startHideControlsTimer()
+                if (controlsVisible && !hideControlsTimer.current)
+                    showControls()
                 if (loading)
                     setLoading(false)
             }}
@@ -193,11 +198,11 @@ function VideoPlayer({
         {!paused && loading && <Loading />}
         {showBigPlay && <BigPlay onClick={() => videoControls.current.togglePlay()} />}
 
-        {(showControls || paused) && <ControlsTop>
+        {(controlsVisible || paused) && <ControlsTop>
             <PlayButton aria-label="back" icon={<FaTimes />} onClick={() => { onClose && onClose() }} />
         </ControlsTop>}
 
-        {(showControls || paused) && <ControlsBottom>
+        {(controlsVisible || paused) && <ControlsBottom>
             <Heading fontSize="26px" fontWeight="400">{title}</Heading>
 
             <Flex gap="0.5rem" align="center">
@@ -218,15 +223,10 @@ function VideoPlayer({
             <Flex gap="0.5rem">
                 <PlayButton aria-label="Play or pause" icon={paused ? <FaPlay /> : <FaPause />} onClick={() => videoControls.current.togglePlay()} />
                 <PlayButton aria-label="Rewind 15 seconds" icon={<FaUndo />} onClick={() => {
-                    let t = time - 15
-                    if (t < 0) t = 0
-                    videoControls.current.setCurrentTime(t)
+                    videoControls.current.skipSeconds(-15)
                 }} />
                 <PlayButton aria-label="Forward 15 seconds" icon={<FaRedo />} onClick={() => {
-                    let t = time + 15
-                    if (t > requestSource.source.duration)
-                        t = requestSource.source.duration
-                    videoControls.current.setCurrentTime(t)
+                    videoControls.current.skipSeconds(15)
                 }} />
                 <VolumeButton videoControls={videoControls.current} />
 

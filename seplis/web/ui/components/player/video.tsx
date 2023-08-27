@@ -5,6 +5,7 @@ import Hls from 'hls.js'
 import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { parse as vttParse } from '../../utils/srt-vtt-parser'
 import { useQuery } from '@tanstack/react-query'
+import { node } from 'webpack'
 
 interface IProps {
     requestSource: IPlayServerRequestSource
@@ -25,6 +26,8 @@ interface IProps {
 export interface IVideoControls {
     sessionUUID: () => string
     setCurrentTime: (time: number) => void
+    getCurrentTime: () => number
+    skipSeconds: (seconds?: number) => void
     togglePlay: () => void
     toggleFullscreen: () => void
     paused: () => boolean
@@ -55,10 +58,19 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     const prevRequestSource = useRef(requestSource)
     const prevAudioSource = useRef(audioSource)
     const prevResolutionWidth = useRef(resolutionWidth)
+    const changeTimeDebounce = useRef<NodeJS.Timeout>(null)
 
     useImperativeHandle(ref, () => ({
         sessionUUID: () => sessionUUID,
-        setCurrentTime: (time: number) => setCurrentTime(time, videoElement.current, setSessionUUID, baseTime, onTimeUpdate, onLoadingState),
+        setCurrentTime: (time: number) => setCurrentTime(time, videoElement.current, setSessionUUID, baseTime, onTimeUpdate, onLoadingState, changeTimeDebounce),
+        getCurrentTime: () => getCurrentTime(videoElement.current, baseTime.current),
+        skipSeconds: (seconds: number = 15) => {            
+            let t = getCurrentTime(videoElement.current, baseTime.current) + seconds
+            if (t > requestSource.source.duration)
+                t = requestSource.source.duration
+            if (t < 0) t = 0
+            setCurrentTime(t, videoElement.current, setSessionUUID, baseTime, onTimeUpdate, onLoadingState, changeTimeDebounce)
+        },
         togglePlay: () => togglePlay(videoElement.current),
         paused: () => videoElement.current.paused,
         setVolume: (volume: number) => videoElement.current.volume = volume,
@@ -241,23 +253,27 @@ function setCurrentTime(
     baseTime: MutableRefObject<number>, 
     onTimeUpdate: (n: number) => void,
     setLoadingState: (loading: boolean) => void,
+    changeTimeDebounce: MutableRefObject<NodeJS.Timeout>,
 ) {
-    if (videoElement.seekable.length <= 1 || videoElement.seekable.end(0) <= 1) {
-        if (setLoadingState) setLoadingState(true)
-        if (onTimeUpdate) onTimeUpdate(time)
-        // If we are transcoding, check if we have transcoded enough to not have to start a new session
-        if ((videoElement.duration === Infinity) || (time < baseTime.current) || 
-            (time > (baseTime.current + videoElement.duration))) {
-            videoElement.pause()
-            baseTime.current = time
-            setSessionUUID(uuidv4())
-            videoElement.play()
+    clearTimeout(changeTimeDebounce.current)
+    changeTimeDebounce.current = setTimeout(() => {
+        if (videoElement.seekable.length <= 1 || videoElement.seekable.end(0) <= 1) {
+            if (setLoadingState) setLoadingState(true)
+            if (onTimeUpdate) onTimeUpdate(time)
+            // If we are transcoding, check if we have transcoded enough to not have to start a new session
+            if ((videoElement.duration === Infinity) || (time < baseTime.current) || 
+                (time > (baseTime.current + videoElement.duration))) {
+                videoElement.pause()
+                baseTime.current = time
+                setSessionUUID(uuidv4())
+                videoElement.play()
+            } else {
+                videoElement.currentTime = time - baseTime.current
+            }
         } else {
-            videoElement.currentTime = time - baseTime.current
+            videoElement.currentTime = time
         }
-    } else {
-        videoElement.currentTime = time
-    }
+    }, 50)
 }
 
 
