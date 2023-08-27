@@ -58,7 +58,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
 
     useImperativeHandle(ref, () => ({
         sessionUUID: () => sessionUUID,
-        setCurrentTime: (time: number) => setCurrentTime(time, videoElement.current, setSessionUUID, baseTime, onTimeUpdate),
+        setCurrentTime: (time: number) => setCurrentTime(time, videoElement.current, setSessionUUID, baseTime, onTimeUpdate, onLoadingState),
         togglePlay: () => togglePlay(videoElement.current),
         paused: () => videoElement.current.paused,
         setVolume: (volume: number) => videoElement.current.volume = volume,
@@ -177,7 +177,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 if (!sessionUUID)
                     setSessionUUID(uuidv4())
                 if (onPlay) onPlay()
-                onLoadingState(false)
+                if (onLoadingState) onLoadingState(false)
             }}
             onWaiting={() => onLoadingState && onLoadingState(true)}
             onLoadStart={() => onLoadingState && onLoadingState(true)}
@@ -234,14 +234,22 @@ function toggleFullscreen(video: HTMLVideoElement) {
 }
 
 
-function setCurrentTime(time: number, videoElement: HTMLVideoElement, setSessionUUID: (id: string) => void, baseTime: MutableRefObject<number>, onTimeUpdate: (n: number) => void) {
+function setCurrentTime(
+    time: number, 
+    videoElement: HTMLVideoElement, 
+    setSessionUUID: (id: string) => void, 
+    baseTime: MutableRefObject<number>, 
+    onTimeUpdate: (n: number) => void,
+    setLoadingState: (loading: boolean) => void,
+) {
     if (videoElement.seekable.length <= 1 || videoElement.seekable.end(0) <= 1) {
+        if (setLoadingState) setLoadingState(true)
+        if (onTimeUpdate) onTimeUpdate(time)
         // If we are transcoding, check if we have transcoded enough to not have to start a new session
         if ((videoElement.duration === Infinity) || (time < baseTime.current) || 
             (time > (baseTime.current + videoElement.duration))) {
             videoElement.pause()
             baseTime.current = time
-            if (onTimeUpdate) onTimeUpdate(time)
             setSessionUUID(uuidv4())
             videoElement.play()
         } else {
