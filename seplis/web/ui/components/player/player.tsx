@@ -133,7 +133,6 @@ function VideoPlayer({
         videoControls.current.setVolume(parseFloat(localStorage.getItem('volume')) || 0.5)
 
         const keyDown = (e: globalThis.KeyboardEvent) => {
-            console.log('show controls')
             showControls()
             if (e.code == 'Space')
                 videoControls.current.togglePlay()
