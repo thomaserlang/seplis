@@ -55,7 +55,7 @@ class Image(Base):
                     yield content
 
             r = await httpx_client.post(
-                urllib.parse.urljoin(config.data.api.storitch_host, '/store/session'),
+                urllib.parse.urljoin(str(config.data.api.storitch_host), '/store/session'),
                 headers={
                     'X-Storitch': utils.json_dumps({
                         'finished': True,
