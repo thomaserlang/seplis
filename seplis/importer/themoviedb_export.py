@@ -16,7 +16,7 @@ class Id_data(BaseModel):
     adult: bool = None
     video: bool = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
 async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterator[Id_data]:
