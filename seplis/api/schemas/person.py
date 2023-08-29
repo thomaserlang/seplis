@@ -34,7 +34,7 @@ class Person(BaseModel):
     id: int | None = None
     name: str = None
     also_known_as: list[str] = []
-    gender: int | None
+    gender: int | None = None
     birthday: date | None = None
     deathday: date | None = None
     biography: str | None = None
