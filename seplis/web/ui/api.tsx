@@ -3,7 +3,10 @@ import { IPageCursorResult } from './interfaces/page'
 
 
 const api = Axios.create({
-    baseURL: (window as any).seplisAPI
+    baseURL: (window as any).seplisAPI,
+    paramsSerializer: {
+        indexes: null,
+    }
 })
 
 export function setAuthorizationHeader() {

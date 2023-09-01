@@ -1,4 +1,4 @@
-import { Text, Alert, AlertIcon, AlertTitle, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, Heading, Skeleton, useDisclosure } from '@chakra-ui/react'
+import { Text, Alert, AlertIcon, AlertTitle, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, Heading, Skeleton, useDisclosure, AlertDescription } from '@chakra-ui/react'
 import { FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
 import { IPageCursorTotalResult } from '@seplis/interfaces/page'
@@ -15,6 +15,7 @@ interface IProps<S = any> {
     url: string
     urlParams?: Object
     emptyMessage?: string | null,
+    filtersActive?: boolean,
     onFocus?: FocusHandler,
     onItemSelected?: (item: S) => void
     parseItem: (item: S) => ISliderItem
@@ -32,13 +33,14 @@ export default function List<S = any>({
     url, 
     urlParams,
     emptyMessage,
+    filtersActive = false,
     renderFilter, 
     onFocus, 
     onItemSelected, 
     parseItem
 }: IProps) {
     const [items, setItems] = useState<ISliderItem[]>([])
-    const { isInitialLoading, data, error, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery(['list', title, url, urlParams], async ({ pageParam = null }) => {
+    const { isFetching, isInitialLoading, data, error, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteQuery(['list', title, url, urlParams], async ({ pageParam = null }) => {
         const r = await api.get<IPageCursorTotalResult<S>>(url, {
             params: {
                 ...removeEmpty(urlParams),
@@ -64,15 +66,19 @@ export default function List<S = any>({
             <AlertIcon />
             <AlertTitle>{ErrorMessageFromResponse(error)}</AlertTitle>
         </Alert>
-        
+
     return <>
         <Flex wrap="wrap">
             <Heading as="h1" marginBottom="1rem" fontSize={['1.5rem', '2rem']}>{title.replace('{total}', data?.pages?.[0]?.total?.toString() || '...')}</Heading>
             <Box marginLeft="auto"><FilterButton renderFilter={renderFilter} /></Box>
         </Flex>
         
-        {!isInitialLoading && items.length == 0 && emptyMessage && <Alert status='info'>
-            <AlertIcon /> <Text>{emptyMessage}</Text>
+        {!isInitialLoading && items.length == 0 && data?.pages[0]?.items?.length == 0 && emptyMessage && <Alert status='info' variant='top-accent'>
+            <AlertIcon /> 
+            <AlertTitle>{emptyMessage}</AlertTitle>
+            {filtersActive && <AlertDescription>
+                You have filters active!
+            </AlertDescription>}
         </Alert>}
 
         <Flex gap="0.75rem" wrap="wrap">
@@ -86,7 +92,7 @@ export default function List<S = any>({
                     />
                 </Flex>
             })}
-            {(isInitialLoading || isFetchingNextPage) && <SkeletonCards amount={24} />}
+            {(isInitialLoading || isFetchingNextPage || (isFetching && data?.pages?.length == 1)) && <SkeletonCards amount={24} />}
             <BlankCards amount={12} />
         </Flex>
 

@@ -4,7 +4,7 @@ import ImageList from '@seplis/components/list'
 import { IMovie } from '@seplis/interfaces/movie'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
+import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { MovieUserFilter } from './user-filter'
 
 
@@ -16,6 +16,7 @@ export default function MovieUserList({ title, url, emptyMessage }: { title: str
     const [query, setQuery] = useQueryParams({
         sort: withDefault(StringParam, ""),
         genre_id: withDefault(NumberParam, 0),
+        user_can_watch: withDefault(BooleanParam, localStorage.getItem('filter-user-can-watch') === 'true'),
     })
 
     useEffect(() => {
@@ -48,7 +49,10 @@ export default function MovieUserList({ title, url, emptyMessage }: { title: str
                     renderFilter={(options) => {
                         return <MovieUserFilter defaultValue={query} onSubmit={(data) => {
                             setQuery(data)
-                            options.onClose()
+                            if (data.user_can_watch === true) 
+                                localStorage.setItem('filter-user-can-watch', 'true')
+                            else
+                                localStorage.removeItem('filter-user-can-watch')
                         }} />
                     }}
                 />
