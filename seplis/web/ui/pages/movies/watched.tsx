@@ -14,7 +14,8 @@ export default function MoviesWatched() {
         <Box margin="1rem">
             <MovieUserList
                 title="Movies watched"
-                url="/2/movies?user_has_watched=true&sort=user_last_watched_at_desc"
+                url="/2/movies?user_has_watched=true"
+                defaultSort='user_last_watched_at_desc'
                 emptyMessage={`You have not watched any movies.`}
             />
         </Box>

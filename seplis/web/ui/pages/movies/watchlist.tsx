@@ -14,7 +14,8 @@ export default function MovieWatchlist() {
         <Box margin="1rem">
             <MovieUserList
                 title="Movie watchlist"
-                url="/2/movies?user_watchlist=true&sort=user_watchlist_added_at_desc"
+                url="/2/movies?user_watchlist=true"
+                defaultSort='user_watchlist_added_at_desc'
                 emptyMessage={`You have no movies in your watchlist.`}
             />
         </Box>

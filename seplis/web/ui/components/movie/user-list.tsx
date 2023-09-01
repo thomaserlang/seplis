@@ -6,15 +6,33 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { BooleanParam, NumberParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { MovieUserFilter } from './user-filter'
+import { ISliderItem } from '@seplis/interfaces/slider'
 
 
-export default function MovieUserList({ title, url, emptyMessage }: { title: string, url: string, emptyMessage?: string | null }) {
+interface IProps<S = IMovie>{
+    title: string
+    url: string
+    defaultSort?: string | null
+    emptyMessage?: string | null,
+    onItemSelected?: (item: S) => void
+    parseItem?: (item: S) => ISliderItem
+}
+
+
+export default function MovieUserList<S = IMovie>({ 
+    title, 
+    url, 
+    emptyMessage, 
+    defaultSort,
+    onItemSelected,
+    parseItem,
+}: IProps<S>) {
     const { ref, focusKey, focusSelf } = useFocusable()
     const navigate = useNavigate()
     const location = useLocation()
 
     const [query, setQuery] = useQueryParams({
-        sort: withDefault(StringParam, ""),
+        sort: withDefault(StringParam, defaultSort),
         genre_id: withDefault(NumberParam, 0),
         user_can_watch: withDefault(BooleanParam, localStorage.getItem('filter-user-can-watch') === 'true'),
     })
@@ -34,18 +52,18 @@ export default function MovieUserList({ title, url, emptyMessage }: { title: str
                         ...query,
                         'per_page': 50,
                     }}
-                    parseItem={(movie) => (
+                    parseItem={parseItem || ((movie) => (
                         {
                             key: `movie-${movie.id}`,
                             title: movie.title,
                             img: movie.poster_image?.url,
                         }
-                    )}
-                    onItemSelected={(movie: IMovie) => {
+                    ))}
+                    onItemSelected={onItemSelected || ((movie: IMovie) => {
                         navigate(`/movies/${movie.id}`, {state: {
                             background: location
                         }})
-                    }}
+                    })}
                     renderFilter={(options) => {
                         return <MovieUserFilter defaultValue={query} onSubmit={(data) => {
                             setQuery(data)

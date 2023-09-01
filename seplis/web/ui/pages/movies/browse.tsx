@@ -4,19 +4,19 @@ import MovieUserList from '@seplis/components/movie/user-list'
 import { setTitle } from '@seplis/utils'
 import { useEffect } from 'react'
 
-export default function MovieFavorites() {
+export default function MoviesBrowse() {
     useEffect(() => {
-        setTitle('Movie favorites')
+        setTitle('Movies')
     }, [])
 
     return <>
         <MainMenu active="movies" />
         <Box margin="1rem">
             <MovieUserList
-                title="Movie favorites"
-                url="/2/movies?user_favorites=true"
-                defaultSort='user_favorite_added_at_desc'
-                emptyMessage={`You have no movies in your favorites.`}
+                title="Movies"
+                url="/2/movies"
+                defaultSort='popularity_desc'
+                emptyMessage={`No movies to show.`}
             />
         </Box>
     </>

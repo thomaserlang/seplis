@@ -78,9 +78,11 @@ const theme = extendTheme({
 
 import { init as spatialInit } from '@noriginmedia/norigin-spatial-navigation'
 import SeriesHome from './pages/series/home'
+import SeriesBrowse from './pages/series/browse'
 import SeriesWatchlist from './pages/series/watchlist'
 import SeriesFavorites from './pages/series/favorites'
 import SeriesWatched from './pages/series/watched'
+import MoviesBrowse from './pages/movies/browse'
 import MovieWatchlist from './pages/movies/watchlist'
 import MovieFavorites from './pages/movies/favorites'
 import MoviesWatched from './pages/movies/watched'
@@ -123,11 +125,13 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/reset-password" element={<SendResetPassword />} />
             <Route path="/reset-password/:key" element={<ResetPassword />} />
+            <Route path="/movies" element={<MoviesBrowse />} />
             <Route path="/movies/watchlist" element={<MovieWatchlist />} />
             <Route path="/movies/favorites" element={<MovieFavorites />} />
             <Route path="/movies/watched" element={<MoviesWatched />} />
             <Route path="/movies/:movieId" element={<Movie />} />
             <Route path="/movies/:movieId/play" element={<PlayMovie />} />
+            <Route path="/series" element={<SeriesBrowse />} />
             <Route path="/series/home" element={<SeriesHome />} />
             <Route path="/series/watchlist" element={<SeriesWatchlist />} />
             <Route path="/series/favorites" element={<SeriesFavorites />} />
