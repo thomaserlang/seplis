@@ -27,7 +27,7 @@ export function MovieModalPage() {
     return <Modal
         isOpen={true}
         onClose={() => {
-            navigate(location.state?.background?.pathname || '/')
+            navigate(location.state?.background?.pathname + location.state?.background?.search || '/')
         }}
         autoFocus={true}
     >
