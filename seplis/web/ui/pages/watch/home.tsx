@@ -17,7 +17,7 @@ export default function WatchHome() {
 
     useEffect(() => {
         setTitle('Watch')
-    }, [])
+    }, [location.pathname])
 
     useEffect(() => {
         focusSelf()

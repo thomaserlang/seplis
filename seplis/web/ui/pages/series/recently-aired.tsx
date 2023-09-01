@@ -11,7 +11,7 @@ export default function SeriesRecentlyAired() {
     const location = useLocation()
     useEffect(() => {
         setTitle('Series recently aired')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="series" />

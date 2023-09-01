@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 export default function MoviesWatched() {
     useEffect(() => {
         setTitle('Movies watched')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="movies" />

@@ -11,7 +11,7 @@ export default function SeriesCountdown() {
     const location = useLocation()
     useEffect(() => {
         setTitle('Series countdown')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="series" />

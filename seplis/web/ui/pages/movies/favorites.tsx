@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 export default function MovieFavorites() {
     useEffect(() => {
         setTitle('Movie favorites')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="movies" />

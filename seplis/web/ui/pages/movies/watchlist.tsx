@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 export default function MovieWatchlist() {
     useEffect(() => {
         setTitle('Movie watchlist')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="movies" />

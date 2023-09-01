@@ -11,7 +11,7 @@ export default function SeriesToWatch() {
     const location = useLocation()
     useEffect(() => {
         setTitle('Series to watch')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="series" />

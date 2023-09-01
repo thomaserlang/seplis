@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 export default function MoviesBrowse() {
     useEffect(() => {
         setTitle('Movies')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="movies" />

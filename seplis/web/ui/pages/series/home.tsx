@@ -15,7 +15,7 @@ export default function SeriesHome() {
 
     useEffect(() => {
         setTitle('Series Home')
-    }, [])
+    }, [location.pathname])
 
     useEffect(() => {
         focusSelf()

@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 export default function SeriesFavorites() {
     useEffect(() => {
         setTitle('Series favorites')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="series" />

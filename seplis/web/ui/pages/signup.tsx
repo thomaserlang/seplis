@@ -25,7 +25,7 @@ export default function Login() {
     useEffect(() => {
         setTitle('Sign up')
         setFocus('username')
-    }, [])
+    }, [location.pathname])
 
     const submit = async (data: ISignUp) => {
         try {

@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 export default function Browse() {
     useEffect(() => {
         setTitle('Series')
-    }, [])
+    }, [location.pathname])
 
     return <>
         <MainMenu active="series" />

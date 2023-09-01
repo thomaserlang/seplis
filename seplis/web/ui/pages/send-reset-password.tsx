@@ -21,7 +21,7 @@ export default function SendResetPassword() {
     useEffect(() => {
         setTitle('Reset password')
         setFocus('email')
-    }, [])
+    }, [location.pathname])
 
     const submit = async (data: IResetPassword) => {
         try {

@@ -25,7 +25,7 @@ export default function ResetPassword() {
     useEffect(() => {
         setTitle('Reset password')
         setFocus('new_password')
-    }, [])
+    }, [location.pathname])
 
     const submit = async (data: INewPassword) => {
         try {
