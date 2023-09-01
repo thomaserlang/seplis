@@ -5,7 +5,7 @@ import { SelectMovieUserSort } from './user-sort-select'
 import { useEffect } from 'react'
 
 export interface IUserFilterData {
-    genre_id: number
+    genre_id: number[]
     sort: string
     user_can_watch: boolean
 }
