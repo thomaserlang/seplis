@@ -1,4 +1,4 @@
-"""Raiting weighted
+"""Rating weighted
 
 Revision ID: 46047fb08936
 Revises: 62b9b42489ce
