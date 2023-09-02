@@ -164,7 +164,7 @@ class Series(Base):
 
     @staticmethod
     async def _save_genres(session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
-        genre_ids = await Genre.get_or_create_genres(genres)
+        genre_ids: set[int] = await Genre.get_or_create_genres(genres, type_='series')
         current_genres: set[int] = set()
         if patch:
             current_genres = set(await session.scalars(sa.select(Series_genre.genre_id).where(Series_genre.series_id == series_id)))
@@ -175,6 +175,8 @@ class Series(Base):
             await session.execute(sa.insert(Series_genre).prefix_with('IGNORE'), [
                 {'series_id': series_id, 'genre_id': genre_id} for genre_id in new_genre_ids
             ])
+        if genre_ids != current_genres:
+            await session.execute(sa.text('update genres set number_of = (select count(genres.id) from series_genres where series_genres.genre_id = genres.id)' ))
         rr = await session.scalars(sa.select(Genre).where(Series_genre.series_id == series_id, Genre.id == Series_genre.genre_id).order_by(Genre.name))
         return [schemas.Genre.model_validate(r) for r in rr]
 

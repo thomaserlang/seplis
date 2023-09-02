@@ -37,7 +37,7 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
             
             <FormControl>
                 <FormLabel htmlFor='genre'>Genre</FormLabel>
-                <SelectGenre control={control} name="genre_id" />
+                <SelectGenre control={control} name='genre_id' type='movie' />
             </FormControl>
 
         </Stack>

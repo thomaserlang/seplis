@@ -1,10 +1,15 @@
 import sqlalchemy as sa
+
+from seplis import logger
 from ... import models
 from .query_filter_schema import Series_query_filter
 
 
 def order_query(query: any, filter_query: Series_query_filter):
     order = []
+    if filter_query.genre_id:
+        # When filtering by genre prioritise series with most genre hits
+        order.append(sa.desc(sa.func.count(models.Series_genre.genre_id)))
     for sort in filter_query.sort:
         direction = sa.asc if sort.endswith('_asc') else sa.desc
         if sort.startswith('user_rating'):

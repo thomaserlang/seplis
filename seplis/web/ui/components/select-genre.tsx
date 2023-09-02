@@ -5,9 +5,13 @@ import { useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
 import { useController, Control } from 'react-hook-form'
 
-export const SelectGenre = ({ control, name }: { control: Control<any, any>, name: string}) => {
+export const SelectGenre = ({ control, name, type }: { control: Control<any, any>, name: string, type: 'series' | 'movie'}) => {
     const { isInitialLoading, data } = useQuery(['genres'], async () => {
-        const result = await api.get<IGenre[]>('/2/genres')
+        const result = await api.get<IGenre[]>('/2/genres', {
+            params: {
+                type: type,
+            },
+        })
         return result.data
     })
     const { field } = useController({ control, name })

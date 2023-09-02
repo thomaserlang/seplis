@@ -154,7 +154,7 @@ class Movie(Base):
 
     @staticmethod
     async def _save_genres(session: AsyncSession, movie_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
-        genre_ids = await Genre.get_or_create_genres(genres)
+        genre_ids: set[int] = await Genre.get_or_create_genres(genres, type_='movie')
         current_genres: set[int] = set()
         if patch:
             current_genres = set(await session.scalars(sa.select(Movie_genre.genre_id).where(Movie_genre.movie_id == movie_id)))
@@ -165,6 +165,8 @@ class Movie(Base):
             await session.execute(sa.insert(Movie_genre).prefix_with('IGNORE'), [
                 {'movie_id': movie_id, 'genre_id': genre_id} for genre_id in new_genre_ids
             ])
+        if new_genre_ids != current_genres:            
+            await session.execute(sa.text('update genres set number_of = (select count(genres.id) from series_genres where series_genres.genre_id = genres.id)' ))
         rr = await session.scalars(sa.select(Genre).where(Movie_genre.movie_id == movie_id, Genre.id == Movie_genre.genre_id).order_by(Genre.name))
         return [schemas.Genre.model_validate(r) for r in rr]
 

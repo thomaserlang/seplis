@@ -5,6 +5,9 @@ from .query_filter_schema import Movie_query_filter
 
 def order_query(query: any, filter_query: Movie_query_filter):
     order = []
+    if filter_query.genre_id:
+        # When filtering by genre prioritise movies with most genre hits
+        order.append(sa.desc(sa.func.count(models.Movie_genre.genre_id)))
     for sort in filter_query.sort:
         direction = sa.asc if sort.endswith('_asc') else sa.desc
         if sort.startswith('user_watchlist_added_at') and filter_query.user_watchlist != False:

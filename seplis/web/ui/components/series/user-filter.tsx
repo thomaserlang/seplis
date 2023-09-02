@@ -37,7 +37,7 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
 
             <FormControl>
                 <FormLabel htmlFor='genre'>Genre</FormLabel>
-                <SelectGenre control={control} name="genre_id" />
+                <SelectGenre control={control} name='genre_id' type='series' />
             </FormControl>
 
         </Stack>
