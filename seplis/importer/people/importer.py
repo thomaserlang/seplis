@@ -31,7 +31,7 @@ async def update_person(person: schemas.Person):
 async def create_person(external_name: str, external_id: str):
     logger.info(f'Creating person: {external_name} {external_id}')
     return await update_person(person=schemas.Person(id=None, externals={
-        external_name: external_id,
+        external_name: str(external_id),
     }))
 
 
