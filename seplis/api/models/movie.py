@@ -166,7 +166,7 @@ class Movie(Base):
                 {'movie_id': movie_id, 'genre_id': genre_id} for genre_id in new_genre_ids
             ])
         if new_genre_ids != current_genres:            
-            await session.execute(sa.text('update genres set number_of = (select count(genres.id) from series_genres where series_genres.genre_id = genres.id)' ))
+            await session.execute(sa.text('update genres set number_of = (select count(genres.id) from movie_genres where movie_genres.genre_id = genres.id)' ))
         rr = await session.scalars(sa.select(Genre).where(Movie_genre.movie_id == movie_id, Genre.id == Movie_genre.genre_id).order_by(Genre.name))
         return [schemas.Genre.model_validate(r) for r in rr]
 
