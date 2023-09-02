@@ -26,4 +26,6 @@ def order_query(query: any, filter_query: Series_query_filter):
             order.append(direction(models.Series.popularity))
         elif sort.startswith('user_play_server_series_added'):
             order.append(direction(models.Play_server_episode.created_at))
+        elif sort.startswith('premiered'):
+            order.append(direction(sa.func.coalesce(models.Series.premiered, '1970-01-01')))
     return query.order_by(*order, sa.asc(models.Series.id))

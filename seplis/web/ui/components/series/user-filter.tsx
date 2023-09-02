@@ -31,6 +31,11 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
                 </FormLabel>
                 <Switch id='user-can-watch' {...register('user_can_watch')} size='lg' />
             </FormControl>
+
+            <FormControl>
+                <FormLabel htmlFor='sort'>Sort</FormLabel>
+                <SelectSeriesUserSort {...register('sort')} />
+            </FormControl>
             
             <Stack spacing="0.25rem">
                 <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>
@@ -53,11 +58,6 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
                     <input id='premiered_lt' type='date' {...register('premiered_lt')} />
                 </FormControl>
             </Stack>
-
-            <FormControl>
-                <FormLabel htmlFor='sort'>Sort</FormLabel>
-                <SelectSeriesUserSort {...register('sort')} />
-            </FormControl>
 
             <FormControl>
                 <FormLabel htmlFor='genres'>Genres</FormLabel>
