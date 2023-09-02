@@ -176,7 +176,7 @@ class Series(Base):
                 {'series_id': series_id, 'genre_id': genre_id} for genre_id in new_genre_ids
             ])
         if genre_ids != current_genres:
-            await session.execute(sa.text('update genres set number_of = (select count(genres.id) from series_genres where series_genres.genre_id = genres.id)' ))
+            await session.execute(sa.text('update genres set number_of = (select count(genres.id) from series_genres where series_genres.genre_id = genres.id) where type="series"' ))
         rr = await session.scalars(sa.select(Genre).where(Series_genre.series_id == series_id, Genre.id == Series_genre.genre_id).order_by(Genre.name))
         return [schemas.Genre.model_validate(r) for r in rr]
 
