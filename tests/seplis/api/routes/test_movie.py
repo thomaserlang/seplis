@@ -26,6 +26,7 @@ async def test_movie(client: AsyncClient):
         ],
         'popularity': 4728.432,
         'rating': 7.25,
+        'rating_votes': 3000,
         'collection_name': 'National Treasure',
     })
     assert r.status_code == 201, r.content

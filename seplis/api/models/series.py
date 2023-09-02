@@ -43,6 +43,7 @@ class Series(Base):
     popularity = sa.Column(sa.DECIMAL(precision=12, scale=4), nullable=True)
     rating = sa.Column(sa.DECIMAL(4, 2), nullable=True)
     rating_votes = sa.Column(sa.Integer, nullable=True)
+    rating_weighted = sa.Column(sa.Float(), nullable=False, server_default='0')
 
     @property
     def importers(self):
@@ -81,6 +82,8 @@ class Series(Base):
             _data['genres'] = await cls._save_genres(session, series_id, _data['genres'], False if overwrite_genres else patch)
         if 'importers' in _data:
             _data.update(utils.flatten(_data.pop('importers'), 'importer'))
+        if data.rating and data.rating_votes:
+            _data['rating_weighted'] = utils.calculate_weighted_rating(data.rating, data.rating_votes)
 
         if 'episodes' in _data:
             _data.pop('episodes')

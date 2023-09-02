@@ -38,6 +38,7 @@ class Movie(Base):
     popularity = sa.Column(sa.DECIMAL(precision=12, scale=4), nullable=True)
     rating = sa.Column(sa.DECIMAL(4, 2), nullable=True)
     rating_votes = sa.Column(sa.Integer, nullable=True)
+    rating_weighted = sa.Column(sa.Float(), nullable=False, server_default='0')
     collection_id = sa.Column(sa.Integer, sa.ForeignKey('movie_collections.id'), nullable=True)
     collection = sa.orm.relationship('Movie_collection', lazy=False)
 
@@ -71,6 +72,8 @@ class Movie(Base):
             if isinstance(collection, str):
                 collection = await Movie_collection.get_or_create(name=collection, session=session)
             _data['collection_id'] = collection
+        if data.rating and data.rating_votes:
+            _data['rating_weighted'] = utils.calculate_weighted_rating(data.rating, data.rating_votes)
         if _data:
             await session.execute(sa.update(Movie).where(Movie.id == movie_id).values(**_data))
         movie: Movie = await session.scalar(sa.select(Movie).where(Movie.id == movie_id))

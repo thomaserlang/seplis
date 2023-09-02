@@ -16,7 +16,7 @@ def order_query(query: any, filter_query: Series_query_filter):
         elif sort.startswith('user_last_episode_watched_at') and filter_query.user_has_watched != False:
             order.append(direction(models.Episode_watched.watched_at))
         elif sort.startswith('rating'):
-            order.append(direction(sa.func.coalesce(models.Series.rating, -1) * sa.func.coalesce(models.Series.rating_votes, 0)))
+            order.append(direction(models.Series.rating_weighted))
         elif sort.startswith('popularity'):
             order.append(direction(models.Series.popularity))
         elif sort.startswith('user_play_server_series_added'):

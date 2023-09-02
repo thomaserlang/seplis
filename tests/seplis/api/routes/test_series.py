@@ -40,6 +40,9 @@ async def test_series_create(client: AsyncClient):
             'QWERTY 3',
         ],
         'runtime': 40,
+        'popularity': 4728.432,
+        'rating': 7.5,
+        'rating_votes': 3000,
     })
     assert r.status_code == 201, r.content
     data = schemas.Series.model_validate(r.json())

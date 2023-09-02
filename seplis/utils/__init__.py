@@ -246,3 +246,8 @@ def redis_sa_model_dict(rd, cls):
         if t:
             rd[key] = t(rd[key])
     return rd
+
+
+def calculate_weighted_rating(rating: float, votes: int, min_votes: int=3000, mean_vote_global: float=6.9):
+    '''True Bayesian Estimate'''
+    return (votes / (votes + min_votes)) * rating + (min_votes / (votes + min_votes)) * mean_vote_global
