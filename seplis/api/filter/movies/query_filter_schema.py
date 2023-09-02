@@ -1,6 +1,7 @@
 from typing_extensions import Annotated
 from pydantic.dataclasses import dataclass
 from fastapi import Depends, Query
+from datetime import date
 from ...dependencies import get_current_user_no_raise
 from ... import schemas
 
@@ -17,3 +18,5 @@ class Movie_query_filter:
     sort: Annotated[list[schemas.MOVIE_USER_SORT_TYPE], Query()] = Query(default=['rating_desc'])
     user: schemas.User_authenticated | None = Depends(get_current_user_no_raise)
     expand: Annotated[list[schemas.MOVIE_EXPAND] | None, Query()] = None
+    release_date_gt: Annotated[date | None, Query()] = None
+    release_date_lt: Annotated[date | None, Query()] = None

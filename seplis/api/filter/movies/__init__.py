@@ -2,6 +2,7 @@ from ...expand.movie import expand_movies
 from ... import schemas, models
 from .... import utils
 from .query_filter_schema import Movie_query_filter
+from .release_date import filter_release_date
 from .user_watchlist import filter_user_watchlist
 from .user_has_watched import filter_user_has_watched
 from .order import order_query
@@ -26,6 +27,7 @@ async def filter_movies(session, query: any, filter_query: Movie_query_filter, p
 
 
 def filter_movies_query(query: any, filter_query: Movie_query_filter):
+    query = filter_release_date(query, filter_query)
     query = filter_user_watchlist(query, filter_query)
     query = filter_user_favorites(query, filter_query)
     query = filter_user_has_watched(query, filter_query)

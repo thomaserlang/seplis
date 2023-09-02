@@ -33,6 +33,8 @@ export default function UserSeriesList<S = ISeries>({
         sort: withDefault(StringParam, defaultSort),
         genre_id: withDefault(NumericArrayParam, []),
         user_can_watch: withDefault(BooleanParam, localStorage.getItem('filter-user-can-watch') === 'true'),
+        premiered_gt: StringParam,
+        premiered_lt: StringParam,
     })
 
     useEffect(() => {
@@ -80,5 +82,8 @@ export default function UserSeriesList<S = ISeries>({
 
 
 function isFilterActive(query: IUserFilterData) {
-    return query.genre_id?.length > 0 || query.user_can_watch === true
+    return query.genre_id?.length > 0
+           || query.user_can_watch === true 
+           || query.premiered_gt != null
+           || query.premiered_lt != null
 }

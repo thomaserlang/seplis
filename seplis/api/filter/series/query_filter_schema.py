@@ -1,6 +1,7 @@
 from typing import Annotated
 from pydantic.dataclasses import dataclass
 from fastapi import Depends, Query
+from datetime import date
 from ...dependencies import get_current_user_no_raise
 from ... import schemas
 
@@ -16,3 +17,5 @@ class Series_query_filter:
     sort: Annotated[list[schemas.SERIES_USER_SORT_TYPE], Query()] = Query(default=['popularity_desc'])
     user: schemas.User_authenticated | None = Depends(get_current_user_no_raise)
     expand: Annotated[list[schemas.SERIES_EXPAND] | None, Query()] = None
+    premiered_gt: Annotated[date | None, Query()] = None
+    premiered_lt: Annotated[date | None, Query()] = None

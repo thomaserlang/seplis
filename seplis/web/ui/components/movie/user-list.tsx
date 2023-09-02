@@ -5,7 +5,7 @@ import { IMovie } from '@seplis/interfaces/movie'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { BooleanParam, NumericArrayParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
-import { MovieUserFilter } from './user-filter'
+import { IUserFilterData, MovieUserFilter } from './user-filter'
 import { ISliderItem } from '@seplis/interfaces/slider'
 
 
@@ -35,6 +35,8 @@ export default function MovieUserList<S = IMovie>({
         sort: withDefault(StringParam, defaultSort),
         genre_id: withDefault(NumericArrayParam, []),
         user_can_watch: withDefault(BooleanParam, localStorage.getItem('filter-user-can-watch') === 'true'),
+        release_date_gt: StringParam,
+        release_date_lt: StringParam,
     })
 
     useEffect(() => {
@@ -48,6 +50,7 @@ export default function MovieUserList<S = IMovie>({
                     title={title}
                     url={url}
                     emptyMessage={emptyMessage}
+                    filtersActive={isFilterActive(query)}
                     urlParams={{
                         ...query,
                         'per_page': 50,
@@ -77,4 +80,12 @@ export default function MovieUserList<S = IMovie>({
             </Box>
         </FocusContext.Provider>
     </>
+}
+
+
+function isFilterActive(query: IUserFilterData) {
+    return query.genre_id?.length > 0
+           || query.user_can_watch === true 
+           || query.release_date_gt != null
+           || query.release_date_lt != null
 }

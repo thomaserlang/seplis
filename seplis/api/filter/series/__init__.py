@@ -2,6 +2,7 @@ from ... import schemas
 from .... import utils
 from ...expand.series import expand_series
 from .query_filter_schema import Series_query_filter
+from .premiered import filter_premiered
 from .user_watchlist import filter_user_watchlist
 from .user_favorites import filter_user_favorites
 from .user_can_watch import filter_user_can_watch
@@ -37,6 +38,7 @@ async def filter_series(
 
 
 def filter_series_query(query: any, filter_query: Series_query_filter, can_watch_episode_number: any = None):
+    query = filter_premiered(query, filter_query)
     query = filter_user_watchlist(query, filter_query)
     query = filter_user_favorites(query, filter_query)
     query = filter_user_can_watch(query, filter_query, episode_number=can_watch_episode_number)

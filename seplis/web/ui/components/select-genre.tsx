@@ -23,7 +23,7 @@ export const SelectGenre = ({ control, name, type }: { control: Control<any, any
     return <Box>
         {data && data.map(genre => (
             <FormControl key={`genre-${genre.id}`} display='flex' alignItems='center' justifyContent='space-between' mb='0.5rem'>
-                <FormLabel htmlFor={`genre-${genre.id}`} flexGrow={1} mb='0' cursor='pointer'>
+                <FormLabel htmlFor={`genre-${genre.id}`} flexGrow={1} mb='0' cursor='pointer' fontWeight='normal'>
                     {genre.name}
                 </FormLabel>
                 <Switch 
