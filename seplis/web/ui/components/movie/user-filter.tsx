@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { SelectMovieUserSort } from './user-sort-select'
 import { useEffect } from 'react'
 import { SelectLanguage } from '../select-language'
+import { SwitchRadioGroup } from '../switch-radio-group'
 
 export interface IUserFilterData {
     genre_id?: number[]
@@ -36,6 +37,11 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
                 </FormLabel>
                 <Switch id='user-can-watch' {...register('user_can_watch')} size='lg' />
             </FormControl>
+
+            <SwitchRadioGroup control={control} name='user_has_watched' options={[
+                { name: 'Have watched', value: 'true' },
+                { name: 'Have NOT watched', value: 'false' },
+            ]} />
             
             <FormControl>
                 <FormLabel htmlFor='sort'>Sort</FormLabel>
