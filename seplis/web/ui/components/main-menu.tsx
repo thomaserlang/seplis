@@ -110,7 +110,8 @@ function MenuItems({ active }: { active?: string }) {
                 Series
             </MenuButton>
             <MenuList>
-                <Link to="/series"><MenuItem>Browse</MenuItem></Link>
+                <Link to="/series?sort=popularity_desc"><MenuItem>Popular</MenuItem></Link>
+                <Link to="/series?sort=rating_desc"><MenuItem>Top Rated</MenuItem></Link>
                 <Link to="/series/home"><MenuItem>Home</MenuItem></Link>
                 <Link to="/series/watchlist"><MenuItem>Watchlist</MenuItem></Link>
                 <Link to="/series/favorites"><MenuItem>Favorites</MenuItem></Link>
@@ -134,7 +135,8 @@ function MenuItems({ active }: { active?: string }) {
                 Movies
             </MenuButton>
             <MenuList>
-                <Link to="/movies"><MenuItem>Browse</MenuItem></Link>
+                <Link to="/movies?sort=popularity_desc"><MenuItem>Popular</MenuItem></Link>
+                <Link to="/movies?sort=rating_desc"><MenuItem>Top Rated</MenuItem></Link>
                 <Link to="/movies/watchlist"><MenuItem>Watchlist</MenuItem></Link>
                 <Link to="/movies/favorites"><MenuItem>Favorites</MenuItem></Link>
                 <Link to="/movies/watched"><MenuItem>Watched</MenuItem></Link>
