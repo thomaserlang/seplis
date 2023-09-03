@@ -41,6 +41,7 @@ export default function MovieUserList<S = IMovie>({
         rating_lt: NumberParam,
         rating_votes_gt: NumberParam,
         language: StringParam,
+        user_has_watched: StringParam,
     })
 
     useEffect(() => {
@@ -92,4 +93,9 @@ function isFilterActive(query: IUserFilterData) {
            || query.user_can_watch === true 
            || query.release_date_gt != null
            || query.release_date_lt != null
+           || query.rating_gt != null
+           || query.rating_lt != null
+           || query.rating_votes_gt != null
+           || query.language != null
+           || query.user_has_watched != null
 }

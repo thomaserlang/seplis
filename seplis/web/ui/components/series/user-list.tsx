@@ -91,4 +91,9 @@ function isFilterActive(query: IUserFilterData) {
            || query.user_can_watch === true 
            || query.premiered_gt != null
            || query.premiered_lt != null
+           || query.rating_gt != null
+           || query.rating_lt != null
+           || query.rating_votes_gt != null
+           || query.language != null
+           || query.user_has_watched != null
 }

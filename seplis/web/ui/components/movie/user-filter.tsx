@@ -16,6 +16,7 @@ export interface IUserFilterData {
     rating_lt?: number | null
     rating_votes_gt?: number | null
     language?: string | null
+    user_has_watched?: string | null
 }
 
 export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUserFilterData, onSubmit?: (data: IUserFilterData) => void }) {
