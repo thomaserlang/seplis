@@ -5,6 +5,7 @@ import { SelectSeriesUserSort } from './user-sort-select'
 import { useEffect } from 'react'
 import { Form } from 'react-router-dom'
 import { SelectLanguage } from '../select-language'
+import { SwitchRadioGroup } from '../switch-radio-group'
 
 export interface IUserFilterData {
     genre_id?: number[]
@@ -16,6 +17,7 @@ export interface IUserFilterData {
     rating_lt?: number | null
     rating_votes_gt?: number | null
     language?: string | null
+    user_has_watched?: string | null
 }
 
 export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUserFilterData, onSubmit?: (data: IUserFilterData) => void }) {
@@ -31,12 +33,20 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
     return <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing="1rem">
 
+            // Use Chakra ui switch but in a radio setting with two options
             <FormControl display='flex' alignItems='center' justifyContent='space-between'>
                 <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0'>
                     Can watch
                 </FormLabel>
                 <Switch id='user-can-watch' {...register('user_can_watch')} size='lg' />
             </FormControl>
+
+            
+
+            <SwitchRadioGroup control={control} name='user_has_watched' options={[
+                { name: 'Have watched', value: 'true' },
+                { name: 'Have NOT watched', value: 'false' },
+            ]} />
 
             <FormControl>
                 <FormLabel htmlFor='sort'>Sort</FormLabel>
@@ -98,7 +108,7 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
                     </Select>
                 </FormControl>
             </Stack>
-            
+
             <FormControl>
                 <FormLabel htmlFor='Language'>Language</FormLabel>
                 <SelectLanguage name='language' {...register('language')} />

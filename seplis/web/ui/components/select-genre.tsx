@@ -1,4 +1,4 @@
-import { Box, FormControl, FormLabel, Switch } from '@chakra-ui/react'
+import { Box, FormControl, FormLabel, Stack, Switch } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { IGenre } from '@seplis/interfaces/genre'
 import { useQuery } from '@tanstack/react-query'
@@ -20,9 +20,9 @@ export const SelectGenre = ({ control, name, type }: { control: Control<any, any
 
     if (isInitialLoading) return <Box>Loading Genres</Box>
 
-    return <Box>
+    return <Stack spacing="0.25rem">
         {data && data.map(genre => (
-            <FormControl key={`genre-${genre.id}`} display='flex' alignItems='center' justifyContent='space-between' mb='0.5rem'>
+            <FormControl key={`genre-${genre.id}`} display='flex' alignItems='center' justifyContent='space-between'>
                 <FormLabel htmlFor={`genre-${genre.id}`} flexGrow={1} mb='0' cursor='pointer' fontWeight='normal'>
                     {genre.name}
                 </FormLabel>
@@ -44,6 +44,6 @@ export const SelectGenre = ({ control, name, type }: { control: Control<any, any
                 />
             </FormControl>
         ))}
-    </Box>
+    </Stack>
 
 }
