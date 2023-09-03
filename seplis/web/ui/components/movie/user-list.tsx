@@ -40,6 +40,7 @@ export default function MovieUserList<S = IMovie>({
         rating_gt: NumberParam,
         rating_lt: NumberParam,
         rating_votes_gt: NumberParam,
+        language: StringParam,
     })
 
     useEffect(() => {

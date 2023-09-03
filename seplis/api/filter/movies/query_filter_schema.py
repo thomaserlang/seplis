@@ -25,3 +25,4 @@ class Movie_query_filter:
     rating_lt: Annotated[conint(ge=0, le=10) | None, Query()] = None
     rating_votes_gt: Annotated[conint(ge=0) | None, Query()] = None
     rating_votes_lt: Annotated[conint(ge=0) | None, Query()] = None
+    language: Annotated[list[str] | None, Query()] = None

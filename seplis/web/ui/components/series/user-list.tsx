@@ -38,6 +38,7 @@ export default function UserSeriesList<S = ISeries>({
         rating_gt: NumberParam,
         rating_lt: withDefault(NumberParam, 10),
         rating_votes_gt: NumberParam,
+        language: StringParam,
     })
 
     useEffect(() => {

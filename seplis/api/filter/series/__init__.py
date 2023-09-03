@@ -2,14 +2,15 @@ from ... import schemas
 from .... import utils
 from ...expand.series import expand_series
 from .query_filter_schema import Series_query_filter
-from .premiered import filter_premiered
 from .user_watchlist import filter_user_watchlist
 from .user_favorites import filter_user_favorites
 from .user_can_watch import filter_user_can_watch
 from .user_has_watched import filter_has_watched
 from .user_rating import filter_user_rating
+from .premiered import filter_premiered
 from .rating import filter_rating
 from .genres import filter_genres
+from .language import filter_language
 from .order import order_query
 
 
@@ -47,5 +48,6 @@ def filter_series_query(query: any, filter_query: Series_query_filter, can_watch
     query = filter_genres(query, filter_query)
     query = filter_user_rating(query, filter_query)
     query = filter_rating(query, filter_query)
+    query = filter_language(query, filter_query)
     query = order_query(query, filter_query)
     return query

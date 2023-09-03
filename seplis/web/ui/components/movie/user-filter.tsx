@@ -3,16 +3,18 @@ import { SelectGenre } from '@seplis/components/select-genre'
 import { useForm } from 'react-hook-form'
 import { SelectMovieUserSort } from './user-sort-select'
 import { useEffect } from 'react'
+import { SelectLanguage } from '../select-language'
 
 export interface IUserFilterData {
     genre_id?: number[]
-    sort?: string
-    user_can_watch?: boolean
-    release_date_gt?: string
-    release_date_lt?: string
-    rating_gt?: number
-    rating_lt?: number
-    rating_votes_gt?: number
+    sort?: string | null
+    user_can_watch?: boolean | null
+    release_date_gt?: string | null
+    release_date_lt?: string | null
+    rating_gt?: number | null
+    rating_lt?: number | null
+    rating_votes_gt?: number | null
+    language?: string | null
 }
 
 export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUserFilterData, onSubmit?: (data: IUserFilterData) => void }) {
@@ -97,6 +99,11 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
                     </Select>
                 </FormControl>
             </Stack>
+            
+            <FormControl>
+                <FormLabel htmlFor='Language'>Language</FormLabel>
+                <SelectLanguage name='language' {...register('language')} />
+            </FormControl>
             
             <FormControl>
                 <FormLabel>Genres</FormLabel>

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { SelectSeriesUserSort } from './user-sort-select'
 import { useEffect } from 'react'
 import { Form } from 'react-router-dom'
+import { SelectLanguage } from '../select-language'
 
 export interface IUserFilterData {
     genre_id?: number[]
@@ -14,6 +15,7 @@ export interface IUserFilterData {
     rating_gt?: number | null
     rating_lt?: number | null
     rating_votes_gt?: number | null
+    language?: string | null
 }
 
 export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUserFilterData, onSubmit?: (data: IUserFilterData) => void }) {
@@ -96,6 +98,11 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
                     </Select>
                 </FormControl>
             </Stack>
+            
+            <FormControl>
+                <FormLabel htmlFor='Language'>Language</FormLabel>
+                <SelectLanguage name='language' {...register('language')} />
+            </FormControl>
 
             <FormControl>
                 <FormLabel htmlFor='genres'>Genres</FormLabel>
