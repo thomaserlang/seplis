@@ -7,6 +7,7 @@ import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { BooleanParam, NumberParam, NumericArrayParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { IUserFilterData, SeriesUserFilter } from '../../components/series/user-filter'
+import { searchStringToObject } from 'serialize-query-params'
 
 interface IProps<S = ISeries>{
     title: string
@@ -40,6 +41,12 @@ export default function UserSeriesList<S = ISeries>({
         rating_votes_gt: NumberParam,
         language: StringParam,
         user_has_watched: StringParam,
+    }, {
+        searchStringToObject: () => {
+            // Prevent using the the actual location.search string when the series modal is open
+            // so the background update when the actual location.search changes
+            return searchStringToObject(location.search)
+        }
     })
 
     useEffect(() => {

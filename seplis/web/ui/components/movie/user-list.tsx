@@ -4,7 +4,7 @@ import ImageList from '@seplis/components/list'
 import { IMovie } from '@seplis/interfaces/movie'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BooleanParam, NumberParam, NumericArrayParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
+import { BooleanParam, NumberParam, NumericArrayParam, StringParam, searchStringToObject, useQueryParams, withDefault } from 'use-query-params'
 import { IUserFilterData, MovieUserFilter } from './user-filter'
 import { ISliderItem } from '@seplis/interfaces/slider'
 
@@ -42,6 +42,12 @@ export default function MovieUserList<S = IMovie>({
         rating_votes_gt: NumberParam,
         language: StringParam,
         user_has_watched: StringParam,
+    }, {
+        searchStringToObject: () => {
+            // Prevent using the the actual location.search string when the movie modal is open
+            // so the background update when the actual location.search changes
+            return searchStringToObject(location.search)
+        }
     })
 
     useEffect(() => {
