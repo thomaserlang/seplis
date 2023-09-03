@@ -38,7 +38,7 @@ class Movie(Base):
     popularity = sa.Column(sa.DECIMAL(precision=12, scale=4), nullable=True)
     rating = sa.Column(sa.DECIMAL(4, 2), nullable=True)
     rating_votes = sa.Column(sa.Integer, nullable=True)
-    rating_weighted = sa.Column(sa.Float(), nullable=False, server_default='0')
+    rating_weighted = sa.Column(sa.DECIMAL(precision=12, scale=4), nullable=False, server_default='0')
     collection_id = sa.Column(sa.Integer, sa.ForeignKey('movie_collections.id'), nullable=True)
     collection = sa.orm.relationship('Movie_collection', lazy=False)
 
