@@ -5,7 +5,7 @@ import { ISeries } from '@seplis/interfaces/series'
 import { ISliderItem } from '@seplis/interfaces/slider'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BooleanParam, NumericArrayParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
+import { BooleanParam, NumberParam, NumericArrayParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { IUserFilterData, SeriesUserFilter } from '../../components/series/user-filter'
 
 interface IProps<S = ISeries>{
@@ -35,6 +35,9 @@ export default function UserSeriesList<S = ISeries>({
         user_can_watch: withDefault(BooleanParam, localStorage.getItem('filter-user-can-watch') === 'true'),
         premiered_gt: StringParam,
         premiered_lt: StringParam,
+        rating_gt: NumberParam,
+        rating_lt: withDefault(NumberParam, 10),
+        rating_votes_gt: NumberParam,
     })
 
     useEffect(() => {

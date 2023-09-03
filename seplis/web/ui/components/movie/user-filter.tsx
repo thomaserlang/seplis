@@ -1,15 +1,18 @@
-import { Box, FormControl, FormLabel, Heading, Stack, Switch } from '@chakra-ui/react'
+import { Box, FormControl, FormLabel, Heading, Input, Select, Stack, Switch } from '@chakra-ui/react'
 import { SelectGenre } from '@seplis/components/select-genre'
 import { useForm } from 'react-hook-form'
 import { SelectMovieUserSort } from './user-sort-select'
 import { useEffect } from 'react'
 
 export interface IUserFilterData {
-    genre_id: number[]
-    sort: string
-    user_can_watch: boolean
-    release_date_gt: string
-    release_date_lt: string
+    genre_id?: number[]
+    sort?: string
+    user_can_watch?: boolean
+    release_date_gt?: string
+    release_date_lt?: string
+    rating_gt?: number
+    rating_lt?: number
+    rating_votes_gt?: number
 }
 
 export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUserFilterData, onSubmit?: (data: IUserFilterData) => void }) {
@@ -48,14 +51,50 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
                     <FormLabel htmlFor='release_date_gt' alignItems='center' mb='0' fontWeight='normal'>
                         From:
                     </FormLabel>
-                    <input id='release_date_gt' type='date' {...register('release_date_gt')} />
+                    <Input id='release_date_gt' type='date' {...register('release_date_gt')} width='auto' />
                 </FormControl>
 
                 <FormControl display='flex' alignItems='center' justifyContent='space-between'>
                     <FormLabel htmlFor='release_date_lt' alignItems='center' mb='0' fontWeight='normal'>
                         To:
                     </FormLabel>
-                    <input id='release_date_lt' type='date' {...register('release_date_lt')} />
+                    <Input id='release_date_lt' type='date' {...register('release_date_lt')} width='auto' />
+                </FormControl>
+            </Stack>
+            
+            <Stack spacing="0.25rem">
+                <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>
+                    <FormLabel alignItems='center' mb='0'>
+                        Rating
+                    </FormLabel>
+                </FormControl>
+                <FormControl display='flex' alignItems='center' justifyContent='space-between'>
+                    <FormLabel htmlFor='rating_gt' alignItems='center' mb='0' fontWeight='normal'>
+                        From:
+                    </FormLabel>
+                    <Select id='rating_gt' {...register('rating_gt')} width='auto'>
+                        {[...Array(11).keys()].map((i) => (
+                            <option key={i} value={i}>{i}</option>
+                        ))}
+                    </Select>
+                    <FormLabel htmlFor='rating_lt' alignItems='center' mb='0' fontWeight='normal'>
+                        To:
+                    </FormLabel>
+                    <Select id='rating_lt' {...register('rating_lt')} width='auto' defaultValue={10}>
+                        {[...Array(10).keys()].map((i) => (
+                            <option key={i+1} value={i+1}>{i+1}</option>
+                        ))}
+                    </Select>
+                </FormControl>
+                <FormControl display='flex' alignItems='center' justifyContent='space-between'>
+                    <FormLabel htmlFor='rating_gt' alignItems='center' mb='0' fontWeight='normal'>
+                        Minumum votes:
+                    </FormLabel>
+                    <Select id='rating_lt' {...register('rating_votes_gt')} width='auto'>
+                        {[...Array(31).keys()].map((i) => (
+                            <option key={i} value={i*100}>{i*100}</option>
+                        ))}
+                    </Select>
                 </FormControl>
             </Stack>
             

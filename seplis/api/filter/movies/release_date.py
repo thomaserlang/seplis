@@ -1,5 +1,5 @@
 from .query_filter_schema import Movie_query_filter
-from ... import exceptions, models
+from ... import models
 
 
 def filter_release_date(query, filter_query: Movie_query_filter):

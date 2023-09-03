@@ -1,4 +1,5 @@
 from typing_extensions import Annotated
+from pydantic import conint
 from pydantic.dataclasses import dataclass
 from fastapi import Depends, Query
 from datetime import date
@@ -20,3 +21,7 @@ class Movie_query_filter:
     expand: Annotated[list[schemas.MOVIE_EXPAND] | None, Query()] = None
     release_date_gt: Annotated[date | None, Query()] = None
     release_date_lt: Annotated[date | None, Query()] = None
+    rating_gt: Annotated[conint(ge=0, le=10) | None, Query()] = None
+    rating_lt: Annotated[conint(ge=0, le=10) | None, Query()] = None
+    rating_votes_gt: Annotated[conint(ge=0) | None, Query()] = None
+    rating_votes_lt: Annotated[conint(ge=0) | None, Query()] = None

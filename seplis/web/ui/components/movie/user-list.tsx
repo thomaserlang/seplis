@@ -4,7 +4,7 @@ import ImageList from '@seplis/components/list'
 import { IMovie } from '@seplis/interfaces/movie'
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { BooleanParam, NumericArrayParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
+import { BooleanParam, NumberParam, NumericArrayParam, StringParam, useQueryParams, withDefault } from 'use-query-params'
 import { IUserFilterData, MovieUserFilter } from './user-filter'
 import { ISliderItem } from '@seplis/interfaces/slider'
 
@@ -37,6 +37,9 @@ export default function MovieUserList<S = IMovie>({
         user_can_watch: withDefault(BooleanParam, localStorage.getItem('filter-user-can-watch') === 'true'),
         release_date_gt: StringParam,
         release_date_lt: StringParam,
+        rating_gt: NumberParam,
+        rating_lt: NumberParam,
+        rating_votes_gt: NumberParam,
     })
 
     useEffect(() => {

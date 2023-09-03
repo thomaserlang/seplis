@@ -8,6 +8,7 @@ from .user_favorites import filter_user_favorites
 from .user_can_watch import filter_user_can_watch
 from .user_has_watched import filter_has_watched
 from .user_rating import filter_user_rating
+from .rating import filter_rating
 from .genres import filter_genres
 from .order import order_query
 
@@ -45,5 +46,6 @@ def filter_series_query(query: any, filter_query: Series_query_filter, can_watch
     query = filter_has_watched(query, filter_query)
     query = filter_genres(query, filter_query)
     query = filter_user_rating(query, filter_query)
+    query = filter_rating(query, filter_query)
     query = order_query(query, filter_query)
     return query

@@ -3,10 +3,11 @@ from ... import schemas, models
 from .... import utils
 from .query_filter_schema import Movie_query_filter
 from .release_date import filter_release_date
-from .user_watchlist import filter_user_watchlist
-from .user_has_watched import filter_user_has_watched
 from .order import order_query
 from .genres import filter_genres
+from .rating import filter_rating
+from .user_watchlist import filter_user_watchlist
+from .user_has_watched import filter_user_has_watched
 from .user_can_watch import filter_can_watch
 from .user_favorites import filter_user_favorites
 
@@ -33,6 +34,7 @@ def filter_movies_query(query: any, filter_query: Movie_query_filter):
     query = filter_user_has_watched(query, filter_query)
     query = filter_genres(query, filter_query)
     query = filter_can_watch(query, filter_query)
+    query = filter_rating(query, filter_query)
     query = order_query(query, filter_query)
     if filter_query.collection_id:
         query = query.where(models.Movie.collection_id.in_(filter_query.collection_id))
