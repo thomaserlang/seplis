@@ -32,26 +32,22 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
 
     return <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing="1rem">
+            <FormControl>
+                <FormLabel htmlFor='sort'>Sort</FormLabel>
+                <SelectSeriesUserSort {...register('sort')} />
+            </FormControl>
 
-            // Use Chakra ui switch but in a radio setting with two options
             <FormControl display='flex' alignItems='center' justifyContent='space-between'>
                 <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0'>
                     Can watch
                 </FormLabel>
                 <Switch id='user-can-watch' {...register('user_can_watch')} size='lg' />
-            </FormControl>
-
-            
+            </FormControl>            
 
             <SwitchRadioGroup control={control} name='user_has_watched' options={[
                 { name: 'Have watched', value: 'true' },
                 { name: 'Have NOT watched', value: 'false' },
             ]} />
-
-            <FormControl>
-                <FormLabel htmlFor='sort'>Sort</FormLabel>
-                <SelectSeriesUserSort {...register('sort')} />
-            </FormControl>
             
             <Stack spacing="0.25rem">
                 <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>

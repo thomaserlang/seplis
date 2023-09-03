@@ -31,6 +31,11 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
 
     return <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing="1rem">
+            
+            <FormControl>
+                <FormLabel htmlFor='sort'>Sort</FormLabel>
+                <SelectMovieUserSort {...register('sort')} />
+            </FormControl>
 
             <FormControl display='flex' alignItems='center' justifyContent='space-between'>
                 <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0'>
@@ -43,11 +48,6 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
                 { name: 'Have watched', value: 'true' },
                 { name: 'Have NOT watched', value: 'false' },
             ]} />
-            
-            <FormControl>
-                <FormLabel htmlFor='sort'>Sort</FormLabel>
-                <SelectMovieUserSort {...register('sort')} />
-            </FormControl>
             
             <Stack spacing="0.25rem">
                 <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>
