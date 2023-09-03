@@ -28,7 +28,6 @@ export const SwitchRadioGroup = ({ control, name, options }: { control: Control<
                         if (e.target.checked) {
                             v = option.value
                         }
-                        console.log(v)
                         setValue(v)
                         field.onChange(v)
                     }}
@@ -36,5 +35,4 @@ export const SwitchRadioGroup = ({ control, name, options }: { control: Control<
             </FormControl>
         ))}
     </Stack>
-
 }
