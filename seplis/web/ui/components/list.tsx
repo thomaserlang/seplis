@@ -66,14 +66,14 @@ export default function List<S = any>({
             <AlertIcon />
             <AlertTitle>{ErrorMessageFromResponse(error)}</AlertTitle>
         </Alert>
-
+    const loading = (isInitialLoading || isFetchingNextPage || (isFetching && data?.pages?.length == 1))
     return <>
         <Flex wrap="wrap">
             <Heading as="h1" marginBottom="1rem" fontSize={['1.5rem', '2rem']}>{title.replace('{total}', data?.pages?.[0]?.total?.toString() || '...')}</Heading>
             <Box marginLeft="auto"><FilterButton renderFilter={renderFilter} /></Box>
         </Flex>
         
-        {!isInitialLoading && items.length == 0 && data?.pages[0]?.items?.length == 0 && emptyMessage && <Alert status='info' variant='top-accent'>
+        {!loading && items.length == 0 && data?.pages[0]?.items?.length == 0 && emptyMessage && <Alert status='info' variant='top-accent'>
             <AlertIcon /> 
             <AlertTitle>{emptyMessage}</AlertTitle>
             {filtersActive && <AlertDescription>
@@ -82,7 +82,7 @@ export default function List<S = any>({
         </Alert>}
 
         <Flex gap="0.75rem" wrap="wrap">
-            {items && items.map((item, i) => {
+            {(isFetchingNextPage || !loading) && items && items.map((item, i) => {
                 return <Flex key={item.key} grow="1" basis={SplitWidths}>
                     <Card
                         item={item}
@@ -92,7 +92,7 @@ export default function List<S = any>({
                     />
                 </Flex>
             })}
-            {(isInitialLoading || isFetchingNextPage || (isFetching && data?.pages?.length == 1)) && <SkeletonCards amount={24} />}
+            {loading && <SkeletonCards amount={24} />}
             <BlankCards amount={12} />
         </Flex>
 
