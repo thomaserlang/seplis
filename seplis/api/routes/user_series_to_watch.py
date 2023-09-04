@@ -43,16 +43,16 @@ async def get_user_series_to_watch(
         models.Episode.number == episodes_query.c.episode_number+1,
         models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
         latest_aired_episode.c.series_id == models.Series.id,
-    ).order_by(
-        sa.desc(latest_aired_episode.c.latest_aired_episode_datetime),
-        sa.desc(models.Series.popularity),
-        models.Episode.series_id,
     )
 
     query = filter_series_query(
         query=query,
         filter_query=filter_query,
         can_watch_episode_number=models.Episode.number,
+    ).order_by(
+        sa.desc(latest_aired_episode.c.latest_aired_episode_datetime),
+        sa.desc(models.Series.popularity),
+        models.Episode.series_id,
     )
 
     p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_cursor)
