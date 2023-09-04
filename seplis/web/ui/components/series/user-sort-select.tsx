@@ -9,8 +9,8 @@ export const SelectSeriesUserSort = forwardRef<any, SelectProps>((props, ref) =>
         <option value="user_rating_desc">Your rating</option>
         <option value="premiered_desc">Premiered DESC</option>
         <option value="premiered_asc">Premiered ASC</option>
-        <option value="user_watchlist_added_at_desc">Followed at DESC</option>
-        <option value="user_watchlist_added_at_asc">Followed at ASC</option>
+        <option value="user_watchlist_added_at_desc">Added to watchlist at DESC</option>
+        <option value="user_watchlist_added_at_asc">Added to watchlist at ASC</option>
         <option value="user_favorite_added_at_desc">Added to favorites at DESC</option>
         <option value="user_favorite_added_at_asc">Added to favorites at ASC</option>
         <option value="user_last_episode_watched_at_desc">Watched at DESC</option>

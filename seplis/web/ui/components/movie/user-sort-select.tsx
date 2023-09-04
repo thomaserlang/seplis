@@ -8,8 +8,8 @@ export const SelectMovieUserSort = forwardRef<any, SelectProps>((props, ref) => 
         <option value="rating_desc">IMDb Rating</option>
         <option value="release_date_desc">Release Date DESC</option>
         <option value="release_date_asc">Release Date ASC</option>
-        <option value="user_watchlist_added_at_desc">Added to Watchlist at DESC</option>
-        <option value="user_watchlist_added_at_asc">Added to Watchlist at ASC</option>
+        <option value="user_watchlist_added_at_desc">Added to watchlist at DESC</option>
+        <option value="user_watchlist_added_at_asc">Added to watchlist at ASC</option>
         <option value="user_favorite_added_at_desc">Added to favorites at DESC</option>
         <option value="user_favorite_added_at_asc">Added to favorites at ASC</option>
         <option value="user_last_watched_at_desc">Watched at DESC</option>
