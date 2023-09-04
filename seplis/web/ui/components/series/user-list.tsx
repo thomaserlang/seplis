@@ -14,6 +14,7 @@ interface IProps<S = ISeries>{
     url: string
     defaultSort?: string | null
     emptyMessage?: string | null,
+    showFilterButton?: boolean,
     onItemSelected?: (item: S) => void
     parseItem?: (item: S) => ISliderItem
 }
@@ -23,6 +24,7 @@ export default function UserSeriesList<S = ISeries>({
     url, 
     defaultSort, 
     emptyMessage,
+    showFilterButton=true,
     parseItem, 
     onItemSelected
 }: IProps<S>) {
@@ -61,6 +63,7 @@ export default function UserSeriesList<S = ISeries>({
                     url={url}
                     emptyMessage={emptyMessage}
                     filtersActive={isFilterActive(query)}
+                    showFilterButton={showFilterButton}
                     urlParams={{
                         ...query,
                         'per_page': 50,
@@ -77,6 +80,7 @@ export default function UserSeriesList<S = ISeries>({
                             background: location
                         }})
                     })}
+                    
                     renderFilter={(options) => {
                         return <SeriesUserFilter defaultValue={query} onSubmit={(data) => {
                             setQuery(data)
@@ -98,8 +102,8 @@ function isFilterActive(query: IUserFilterData) {
            || query.user_can_watch === true 
            || query.premiered_gt != null
            || query.premiered_lt != null
-           || query.rating_gt != null
-           || query.rating_lt != null
+           || (query.rating_gt != null && query.rating_gt !== 0)
+           || (query.rating_lt != null && query.rating_lt !== 10)
            || query.rating_votes_gt != null
            || query.language != null
            || query.user_has_watched != null

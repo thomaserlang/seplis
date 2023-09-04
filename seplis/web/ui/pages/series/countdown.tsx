@@ -34,6 +34,7 @@ export default function SeriesCountdown() {
                     }})
                 }}
                 emptyMessage={`No series on your watchlist has episodes airing in the future.`}
+                showFilterButton={false}
             />
         </Box>
     </>

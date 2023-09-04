@@ -16,6 +16,7 @@ interface IProps<S = any> {
     urlParams?: Object
     emptyMessage?: string | null,
     filtersActive?: boolean,
+    showFilterButton?: boolean,
     onFocus?: FocusHandler,
     onItemSelected?: (item: S) => void
     parseItem: (item: S) => ISliderItem
@@ -34,6 +35,7 @@ export default function List<S = any>({
     urlParams,
     emptyMessage,
     filtersActive = false,
+    showFilterButton = true,
     renderFilter, 
     onFocus, 
     onItemSelected, 
@@ -70,7 +72,7 @@ export default function List<S = any>({
     return <>
         <Flex wrap="wrap">
             <Heading as="h1" marginBottom="1rem" fontSize={['1.5rem', '2rem']}>{title.replace('{total}', data?.pages?.[0]?.total?.toString() || '...')}</Heading>
-            <Box marginLeft="auto"><FilterButton renderFilter={renderFilter} /></Box>
+            {showFilterButton && <Box marginLeft="auto"><FilterButton renderFilter={renderFilter} /></Box>}
         </Flex>
         
         {!loading && items.length == 0 && data?.pages[0]?.items?.length == 0 && emptyMessage && <Alert status='info' variant='top-accent'>
