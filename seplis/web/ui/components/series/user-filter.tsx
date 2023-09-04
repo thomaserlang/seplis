@@ -39,7 +39,7 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
 
             <FormControl display='flex' alignItems='center' justifyContent='space-between'>
                 <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0'>
-                    Can watch
+                    On Play Servers
                 </FormLabel>
                 <Switch id='user-can-watch' {...register('user_can_watch')} size='lg' />
             </FormControl>            
