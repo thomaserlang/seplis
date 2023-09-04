@@ -15,7 +15,7 @@ export const SwitchRadioGroup = ({ control, name, options }: { control: Control<
     return <Stack spacing="0.25rem">
         {options && options.map(option => (
             <FormControl key={option.name} display='flex' alignItems='center' justifyContent='space-between'>
-                <FormLabel htmlFor={`${name}-${option.name}-${option.value}`} flexGrow={1} mb='0' cursor='pointer'>
+                <FormLabel htmlFor={`${name}-${option.name}-${option.value}`} flexGrow={1} mb='0' cursor='pointer' color='blue.300'>
                     {option.name}
                 </FormLabel>
                 <Switch 

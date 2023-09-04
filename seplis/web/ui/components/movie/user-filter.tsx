@@ -1,4 +1,4 @@
-import { Box, FormControl, FormLabel, Heading, Input, Select, Stack, Switch } from '@chakra-ui/react'
+import { FormControl, FormLabel, Heading, Input, Select, Stack, Switch } from '@chakra-ui/react'
 import { SelectGenre } from '@seplis/components/select-genre'
 import { useForm } from 'react-hook-form'
 import { SelectMovieUserSort } from './user-sort-select'
@@ -33,13 +33,13 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
         <Stack spacing="1rem">
             
             <FormControl>
-                <FormLabel htmlFor='sort'>Sort</FormLabel>
+                <FormLabel htmlFor='sort' color='blue.300'>Sort by</FormLabel>
                 <SelectMovieUserSort {...register('sort')} />
             </FormControl>
 
             <FormControl display='flex' alignItems='center' justifyContent='space-between'>
-                <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0'>
-                    On Play Servers
+                <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0' color='blue.300'>
+                    On play servers
                 </FormLabel>
                 <Switch id='user-can-watch' {...register('user_can_watch')} size='lg' />
             </FormControl>
@@ -51,18 +51,16 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
             
             <Stack spacing="0.25rem">
                 <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>
-                    <FormLabel alignItems='center' mb='0'>
+                    <FormLabel alignItems='center' mb='0' color='blue.300'>
                         Release date
                     </FormLabel>                
                 </FormControl>
-
                 <FormControl display='flex' alignItems='center' justifyContent='space-between'>
                     <FormLabel htmlFor='release_date_gt' alignItems='center' mb='0' fontWeight='normal'>
                         From:
                     </FormLabel>
                     <Input id='release_date_gt' type='date' {...register('release_date_gt')} width='auto' />
                 </FormControl>
-
                 <FormControl display='flex' alignItems='center' justifyContent='space-between'>
                     <FormLabel htmlFor='release_date_lt' alignItems='center' mb='0' fontWeight='normal'>
                         To:
@@ -73,7 +71,7 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
             
             <Stack spacing="0.25rem">
                 <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>
-                    <FormLabel alignItems='center' mb='0'>
+                    <FormLabel alignItems='center' mb='0' color='blue.300'>
                         Rating
                     </FormLabel>
                 </FormControl>
@@ -108,12 +106,12 @@ export function MovieUserFilter({ defaultValue, onSubmit }: { defaultValue?: IUs
             </Stack>
             
             <FormControl>
-                <FormLabel htmlFor='Language'>Language</FormLabel>
+                <FormLabel htmlFor='Language' color='blue.300'>Language</FormLabel>
                 <SelectLanguage name='language' {...register('language')} />
             </FormControl>
             
             <FormControl>
-                <FormLabel>Genres</FormLabel>
+                <FormLabel htmlFor='genres' color='blue.300'>Genres</FormLabel>
                 <SelectGenre control={control} name='genre_id' type='movie' />
             </FormControl>
 

@@ -3,7 +3,7 @@ import { forwardRef } from 'react'
 
 
 export const SelectSeriesUserSort = forwardRef<any, SelectProps>((props, ref) => {
-    return <Select ref={ref} {...props} placeholder="Sort">
+    return <Select ref={ref} {...props}>
         <option value="popularity_desc">Popularity</option>
         <option value="rating_desc">IMDb Rating</option>
         <option value="user_rating_desc">Your rating</option>

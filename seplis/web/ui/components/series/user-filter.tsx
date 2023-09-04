@@ -1,9 +1,8 @@
-import { FormControl, FormLabel, Input, RangeSlider, RangeSliderFilledTrack, RangeSliderThumb, RangeSliderTrack, Select, Stack, Switch } from '@chakra-ui/react'
+import { FormControl, FormLabel, Input, Select, Stack, Switch } from '@chakra-ui/react'
 import { SelectGenre } from '@seplis/components/select-genre'
 import { useForm } from 'react-hook-form'
 import { SelectSeriesUserSort } from './user-sort-select'
 import { useEffect } from 'react'
-import { Form } from 'react-router-dom'
 import { SelectLanguage } from '../select-language'
 import { SwitchRadioGroup } from '../switch-radio-group'
 
@@ -33,13 +32,13 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
     return <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing="1rem">
             <FormControl>
-                <FormLabel htmlFor='sort'>Sort</FormLabel>
+                <FormLabel htmlFor='sort' color='blue.300'>Sort by</FormLabel>
                 <SelectSeriesUserSort {...register('sort')} />
             </FormControl>
 
             <FormControl display='flex' alignItems='center' justifyContent='space-between'>
-                <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0'>
-                    On Play Servers
+                <FormLabel htmlFor='user-can-watch' alignItems='center' mb='0' color='blue.300'>
+                    On play servers
                 </FormLabel>
                 <Switch id='user-can-watch' {...register('user_can_watch')} size='lg' />
             </FormControl>            
@@ -51,7 +50,7 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
             
             <Stack spacing="0.25rem">
                 <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>
-                    <FormLabel alignItems='center' mb='0'>
+                    <FormLabel alignItems='center' mb='0' color='blue.300'>
                         Premiered
                     </FormLabel>
                 </FormControl>
@@ -71,7 +70,7 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
 
             <Stack spacing="0.25rem">
                 <FormControl display='flex' alignItems='center' justifyContent='space-between' mb='0'>
-                    <FormLabel alignItems='center' mb='0'>
+                    <FormLabel alignItems='center' mb='0' color='blue.300'>
                         Rating
                     </FormLabel>
                 </FormControl>
@@ -106,12 +105,12 @@ export function SeriesUserFilter({ defaultValue, onSubmit }: { defaultValue?: IU
             </Stack>
 
             <FormControl>
-                <FormLabel htmlFor='Language'>Language</FormLabel>
+                <FormLabel htmlFor='Language' color='blue.300'>Language</FormLabel>
                 <SelectLanguage name='language' {...register('language')} />
             </FormControl>
 
             <FormControl>
-                <FormLabel htmlFor='genres'>Genres</FormLabel>
+                <FormLabel htmlFor='genres' color='blue.300'>Genres</FormLabel>
                 <SelectGenre control={control} name='genre_id' type='series' />
             </FormControl>
 
