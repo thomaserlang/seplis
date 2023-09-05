@@ -1,11 +1,11 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, Query, Security
 import sqlalchemy as sa
 from datetime import datetime, timezone
-from seplis.api.filter.series import filter_series, filter_series_query
+from seplis.api.filter.series import filter_series_query
 
 from seplis.api.filter.series.query_filter_schema import Series_query_filter
 from ..dependencies import authenticated, get_session, AsyncSession
-from ..filter.series.user_can_watch import filter_user_can_watch_query
 from .. import models, schemas, constants
 from ... import utils
 
@@ -16,7 +16,7 @@ async def get_user_series_to_watch(
     user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
     session: AsyncSession=Depends(get_session),
     page_cursor: schemas.Page_cursor_query = Depends(),
-    filter_query: Series_query_filter = Depends(),
+    filter_query: Series_query_filter = Depends()
 ):
     episodes_query = sa.select(
         models.Episode_watched.series_id,
@@ -49,12 +49,11 @@ async def get_user_series_to_watch(
         query=query,
         filter_query=filter_query,
         can_watch_episode_number=models.Episode.number,
-    ).order_by(
+    ).order_by(None).order_by(
         sa.desc(latest_aired_episode.c.latest_aired_episode_datetime),
         sa.desc(models.Series.popularity),
         models.Episode.series_id,
     )
-
     p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_cursor)
     p.items = [schemas.Series_and_episode(series=item.Series, episode=item.Episode) for item in p.items]
     return p
