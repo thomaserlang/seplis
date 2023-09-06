@@ -87,7 +87,7 @@ async def _importer_incremental(importer):
             except exceptions.API_exception as e:
                 logger.error(e.message)
             except Exception as e:
-                logger.exception(e)
+                logger.exception('_importer_incremental')
     importer.save_timestamp(timestamp)
 
 

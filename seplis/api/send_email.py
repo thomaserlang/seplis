@@ -37,11 +37,11 @@ async def send_password_changed(to: str):
     try:
         await send_email('email/password_changed.html', 'Password changed', to)
     except Exception as e:
-        logger.exception(e)
+        logger.exception('send_password_changed')
 
 
 async def send_new_login(to: str, ip: str):
     try:
         await send_email('email/new_login.html', 'New login', to, ip=ip)
     except Exception as e:
-        logger.exception(e)
+        logger.exception('send_new_login')
