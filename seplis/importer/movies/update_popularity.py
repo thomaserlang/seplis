@@ -56,8 +56,11 @@ async def update_popularity(create_movies = True, create_above_popularity: float
     for id_ in ids_to_create:
         try:
             logger.info(f'Creating movie TMDb id {id_}')
+            movie_data = await importer.get_movie_data(id_)
+            if not movie_data:
+                continue
             movie = await models.Movie.save(
-                data=await importer.get_movie_data(id_)
+                data=movie_data,
             )
         except (KeyboardInterrupt, SystemExit):
             raise

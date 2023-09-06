@@ -155,7 +155,6 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
             if m:
                 await models.Movie.delete(movie_id=m.id)
                 logger.info(f'Movie not found on TMDB, deleteing: TMDB {themoviedb} from the database')
-            return
         return
     r = r.json()
 
