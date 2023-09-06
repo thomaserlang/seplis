@@ -39,8 +39,8 @@ async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterato
 
 async def _get_url(export):
     dts = [
-        datetime.now(tz=timezone.utc).strftime('%d_%m_%Y'),
-        (datetime.now(tz=timezone.utc)-timedelta(days=1)).strftime('%d_%m_%Y'),
+        datetime.now(tz=timezone.utc).strftime('%m_%d_%Y'),
+        (datetime.now(tz=timezone.utc)-timedelta(days=1)).strftime('%m_%d_%Y'),
     ]
     for dt in dts:
         url = f'http://files.tmdb.org/p/exports/{export}_{dt}.json.gz'
