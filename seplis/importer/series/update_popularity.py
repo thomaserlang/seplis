@@ -37,8 +37,12 @@ async def update_popularity(create_series = True, create_above_popularity: float
                 insert_data = []
         if insert_data:
             await session.execute(sa.insert(models.Series_popularity_history).prefix_with('IGNORE').values(insert_data))
-
-        await session.execute(sa.update(models.Series.__table__).values({
+        
+        await session.execute(sa.update(models.Series).values({
+                models.Series.popularity: 0
+            }),
+        )
+        await session.execute(sa.update(models.Series).values({
                 models.Series.popularity: models.Series_popularity_history.popularity
             }).where(
                 models.Series_popularity_history.date == dt,

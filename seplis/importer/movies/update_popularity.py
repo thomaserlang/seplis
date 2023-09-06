@@ -32,14 +32,18 @@ async def update_popularity(create_movies = True, create_above_popularity: float
                 ids_to_create.append(id_)
             if len(insert_data) == 10000:
                 await session.execute(
-                    sa.insert(models.Movie_popularity_history.__table__).prefix_with('IGNORE').values(insert_data),
+                    sa.insert(models.Movie_popularity_history).prefix_with('IGNORE').values(insert_data),
                 )
                 insert_data = []
         if insert_data:
             await session.execute(
-                sa.insert(models.Movie_popularity_history.__table__).prefix_with('IGNORE').values(insert_data),
+                sa.insert(models.Movie_popularity_history).prefix_with('IGNORE').values(insert_data),
             )
-        await session.execute(sa.update(models.Movie.__table__).values({
+        await session.execute(sa.update(models.Movie).values({
+                models.Movie.popularity: 0
+            }),
+        )
+        await session.execute(sa.update(models.Movie).values({
                 models.Movie.popularity: models.Movie_popularity_history.popularity
             }).where(
                 models.Movie_popularity_history.date == dt,
