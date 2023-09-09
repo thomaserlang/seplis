@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, Security
 import sqlalchemy as sa
 from datetime import date
 from ..dependencies import authenticated, get_current_user_no_raise, get_expand, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 from ... import utils
 from ..expand.episodes import expand_episodes
 from .series import router
@@ -75,7 +75,7 @@ async def delete_episode(
     series_id: int,
     number: int,
     session: AsyncSession=Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ):
     await session.execute(sa.delete(models.Episode).where(
         models.Episode.series_id == series_id,

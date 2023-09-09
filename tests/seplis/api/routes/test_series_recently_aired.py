@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 
 @pytest.mark.asyncio
 async def test_user_series_watchlist(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_USER)])
+    await user_signin(client)
     dt = datetime.now(tz=timezone.utc)
     series1: schemas.Series = await models.Series.save(schemas.Series_create(
         title='Test series',

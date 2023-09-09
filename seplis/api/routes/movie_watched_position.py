@@ -2,7 +2,7 @@ from fastapi import Depends, Security, APIRouter, Body, Response
 import sqlalchemy as sa
 
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 
 
 router = APIRouter(prefix='/2/movies/{movie_id}/watched-position')
@@ -12,7 +12,7 @@ router = APIRouter(prefix='/2/movies/{movie_id}/watched-position')
 async def get_position(
     movie_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
     ew = await session.scalar(sa.select(models.Movie_watched).where(
         models.Movie_watched.movie_id == movie_id,
@@ -27,7 +27,7 @@ async def get_position(
 async def set_position(
     movie_id: int, 
     position: int = Body(..., embed=True, ge=0, le=86400),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
     await models.Movie_watched.set_position(
         user_id=user.id,
@@ -39,7 +39,7 @@ async def set_position(
 @router.delete('', status_code=204)
 async def delete_position(
     movie_id: int, 
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
     await models.Movie_watched.reset_position(
         user_id=user.id,

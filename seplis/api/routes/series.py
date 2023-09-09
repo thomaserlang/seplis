@@ -64,7 +64,7 @@ async def get_series_by_external(
 async def create_series(
     data: schemas.Series_create,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['series:create']),
 ):
     series = await models.Series.save(data, series_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_series', int(series.id))
@@ -76,7 +76,7 @@ async def update_series(
     series_id: int,
     data: schemas.Series_update,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['series:edit']),
 ):
     return await models.Series.save(series_id=series_id, data=data, patch=False)
 
@@ -86,7 +86,7 @@ async def patch_series(
     series_id: int,
     data: schemas.Series_update,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['series:edit']),
 ):
     return await models.Series.save(series_id=series_id, data=data, patch=True)
 
@@ -95,7 +95,7 @@ async def patch_series(
 async def delete_series(
     series_id: int,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
+        authenticated, scopes=['series:delete']),
 ):
     await models.Series.delete(series_id)
 
@@ -104,7 +104,7 @@ async def delete_series(
 async def request_update(
     series_id: int,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['series:update']),
 ):
     await database.redis_queue.enqueue_job('update_series', series_id)
 
@@ -118,7 +118,7 @@ async def create_image(
     external_id: str | None = Form(default=None, min_length=1, max_length=50),
     type: schemas.IMAGE_TYPES = Form(),
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['series:manage_images']),
 ):
     image_data = schemas.Image_import(
         external_name=external_name,
@@ -139,7 +139,7 @@ async def delete_image(
     image_id: int,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['series:manage_images']),
 ):
     await session.execute(sa.update(models.Series).values(poster_image_id=None).where(
         models.Series.id == series_id,

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Security
 from ..dependencies import authenticated
-from .. import models, schemas, constants, exceptions
+from .. import models, schemas, exceptions
 
 
 router = APIRouter(prefix='/2/people')
@@ -9,7 +9,7 @@ router = APIRouter(prefix='/2/people')
 @router.post('', response_model=schemas.Person, status_code=201)
 async def person_create(
     data: schemas.Person_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['person:create']),
 ):
     return await models.Person.save(data=data)
 
@@ -18,7 +18,7 @@ async def person_create(
 async def person_update(
     person_id: int,
     data: schemas.Person_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['person:edit']),
 ):
     return await models.Person.save(
         person_id=person_id,
@@ -31,7 +31,7 @@ async def person_update(
 async def person_patch(
     person_id: int,
     data: schemas.Person_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['person:edit']),
 ):
     return await models.Person.save(
         person_id=person_id,
@@ -53,6 +53,6 @@ async def person_get(
 @router.delete('/{person_id}', status_code=204)
 async def person_delete(
     person_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['person:delete']),
 ):
     await models.Person.delete(person_id=person_id)

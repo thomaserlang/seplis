@@ -10,7 +10,7 @@ router = APIRouter(prefix='/2/movies/{movie_id}/cast')
 async def movie_cast_add(
     movie_id: int,
     data: schemas.Movie_cast_person_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
 ):
     data.movie_id = movie_id
     await models.Movie_cast.save(data=data)
@@ -20,7 +20,7 @@ async def movie_cast_add(
 async def movie_cast_delete(
     movie_id: int,
     person_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
 ):
     await models.Movie_cast.delete(
         movie_id=movie_id,

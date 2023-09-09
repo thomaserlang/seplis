@@ -11,7 +11,7 @@ router = APIRouter(prefix='/2/series/{series_id}/cast')
 async def series_cast_add(
     series_id: int,
     cast_member: schemas.Series_cast_person_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ):
     cast_member.series_id = series_id
     await models.Series_cast.save(data=cast_member)
@@ -21,7 +21,7 @@ async def series_cast_add(
 async def series_cast_delete(
     series_id: int,
     person_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ):
     await models.Series_cast.delete(
         series_id=series_id,

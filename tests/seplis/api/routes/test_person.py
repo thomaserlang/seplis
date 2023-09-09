@@ -1,10 +1,10 @@
 import pytest
-from seplis.api import constants, schemas
+from seplis.api import schemas
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 
 @pytest.mark.asyncio
 async def test_person(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_EDIT_SHOW)])
+    await user_signin(client, ['person:create', 'person:edit', 'person:delete', 'person:manage_images'])
 
     # create person
     r = await client.post('/2/people', json={

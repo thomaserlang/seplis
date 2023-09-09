@@ -42,7 +42,7 @@ async def get_movie(
 async def create_movie(
     data: schemas.Movie_create,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['movie:create']),
 ):
     movie = await models.Movie.save(data, movie_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_movie', int(movie.id))
@@ -54,7 +54,7 @@ async def update_movie(
     movie_id: int,
     data: schemas.Movie_update,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['movie:edit']),
 ):
     return await models.Movie.save(movie_id=movie_id, data=data, patch=False)
 
@@ -64,7 +64,7 @@ async def patch_movie(
     movie_id: int,
     data: schemas.Movie_update,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['movie:edit']),
 ):
     return await models.Movie.save(movie_id=movie_id, data=data, patch=True)
 
@@ -73,7 +73,7 @@ async def patch_movie(
 async def delete_movie(
     movie_id: int,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_DELETE_SHOW)]),
+        authenticated, scopes=['movie:delete']),
 ):
     await models.Movie.delete(movie_id=movie_id)
 
@@ -82,7 +82,7 @@ async def delete_movie(
 async def request_update(
     movie_id: int,
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['movie:update']),
 ):
     await database.redis_queue.enqueue_job('update_movie', movie_id)
 
@@ -95,7 +95,7 @@ async def create_image(
     external_name: str = Form(default=None, min_length=1, max_length=50),
     external_id: str = Form(default=None, min_length=1, max_length=50),
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['movie:manage_images']),
 ):
     image_data = schemas.Image_import(
         external_name=external_name,
@@ -116,7 +116,7 @@ async def delete_image(
     image_id: int,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(
-        authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+        authenticated, scopes=['movie:manage_images']),
 ):
     await session.execute(sa.update(models.Movie).values(poster_image_id=None).where(
         models.Movie.id == movie_id,

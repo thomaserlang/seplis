@@ -1,13 +1,13 @@
 import pytest
 from freezegun import freeze_time
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
-from seplis.api import constants, schemas, models
+from seplis.api import schemas, models
 from datetime import datetime, timezone
 
 @freeze_time(datetime(2022, 6, 5, 13, 0, tzinfo=timezone.utc))
 @pytest.mark.asyncio
 async def test_movie_watched(client: AsyncClient):
-    user_id = await user_signin(client, [str(constants.LEVEL_USER)])
+    user_id = await user_signin(client)
 
     movie = await models.Movie.save(schemas.Movie_create(
         title='Movie',

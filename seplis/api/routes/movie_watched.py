@@ -1,7 +1,7 @@
 from fastapi import Depends, Security, APIRouter
 import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 
 router = APIRouter(prefix='/2/movies/{movie_id}/watched')
 
@@ -9,7 +9,7 @@ router = APIRouter(prefix='/2/movies/{movie_id}/watched')
 async def get_watched(
     movie_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
     w = await session.scalar(sa.select(models.Movie_watched).where(
         models.Movie_watched.user_id == user.id,
@@ -22,7 +22,7 @@ async def get_watched(
 async def watched_increment(
     movie_id: int,
     request: dict | None = None,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):  
     data = schemas.Movie_watched_increment.model_validate(request) if request else schemas.Movie_watched_increment()
     w = await models.Movie_watched.increment(
@@ -36,7 +36,7 @@ async def watched_increment(
 @router.delete('', response_model=schemas.Movie_watched)
 async def watched_decrement(
     movie_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),    
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),    
 ):
     w = await models.Movie_watched.decrement(
         user_id=user.id,

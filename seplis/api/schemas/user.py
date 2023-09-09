@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, constr, EmailStr
+from pydantic import BaseModel, ConfigDict, constr, EmailStr, model_validator
 from datetime import datetime
 from typing import Literal
 
@@ -10,11 +10,10 @@ class Subtitle_language(BaseModel):
 
 class User_authenticated(BaseModel):
     id: int
-    level: int
     token: str | None = None
+    scopes: list[str] | None = None
 
     model_config = ConfigDict(from_attributes=True)
-
 
 USER_PASSWORD_TYPE = constr(min_length=10)
 
@@ -33,9 +32,15 @@ class User_basic(BaseModel):
     id: int
     username: str
     created_at: datetime
-    level: int
+    scopes: list[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode='before')
+    def scopes_check_str(self):
+        if isinstance(self.scopes, str):
+            self.scopes = self.scopes.split(' ')
+        return self
 
 
 class User(User_basic):

@@ -9,7 +9,7 @@ router = APIRouter(prefix='/2/users/me/series-countdown')
 
 @router.get('', response_model=schemas.Page_cursor_result[schemas.Series_and_episode])
 async def get_series_recently_aired(
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_lists']),
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):

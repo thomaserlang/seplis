@@ -11,7 +11,7 @@ router = APIRouter(prefix='/2/play-servers')
 
 @router.get('', response_model=schemas.Page_cursor_total_result[schemas.Play_server])
 async def get_play_servers(
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:list_play_servers']),
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):
@@ -27,7 +27,7 @@ async def get_play_servers(
 @router.post('', response_model=schemas.Play_server_with_url, status_code=201)
 async def create_play_server(
     data: schemas.Play_server_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
 ):
     p = await models.Play_server.save(data=data, play_server_id=None, user_id=user.id)
     return p
@@ -37,7 +37,7 @@ async def create_play_server(
 async def update_play_server(
     play_server_id: int | str,
     data: schemas.Play_server_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
 ):
     p = await models.Play_server.save(data=data, play_server_id=play_server_id, user_id=user.id)
     return p
@@ -46,7 +46,7 @@ async def update_play_server(
 @router.get('/{play_server_id}', response_model=schemas.Play_server_with_url)
 async def get_play_server(
     play_server_id: int | str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:list_play_servers']),
     session: AsyncSession=Depends(get_session),
 ):
     p = await session.scalar(sa.select(models.Play_server).where(
@@ -61,7 +61,7 @@ async def get_play_server(
 @router.delete('/{play_server_id}', status_code=204)
 async def delete_play_server(
     play_server_id: int | str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
 ):
     await models.Play_server.delete(id_=play_server_id, user_id=user.id)
 
@@ -70,7 +70,7 @@ async def delete_play_server(
 async def create_play_server_invite(
     play_server_id: str,
     data: schemas.Play_server_invite_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
 ):
     p = await models.Play_server_invite.invite(
         play_server_id=play_server_id,
@@ -83,7 +83,7 @@ async def create_play_server_invite(
 @router.get('/{play_server_id}/invites', response_model=schemas.Page_cursor_total_result[schemas.Play_server_invite])
 async def get_play_server_invites(
     play_server_id: str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):
@@ -105,7 +105,7 @@ async def get_play_server_invites(
 @router.get('/{play_server_id}/access', response_model=schemas.Page_cursor_total_result[schemas.Play_server_access])
 async def get_play_server_access(
     play_server_id: str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):
@@ -127,7 +127,7 @@ async def get_play_server_access(
 async def remove_play_server_access(
     play_server_id: str,
     user_id: str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
 ):
     await models.Play_server_access.remove_user(
         play_server_id=play_server_id,

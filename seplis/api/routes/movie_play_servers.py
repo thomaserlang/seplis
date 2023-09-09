@@ -10,7 +10,7 @@ router = APIRouter(prefix='/2/movies/{movie_id}/play-servers')
 async def get_movie_play_servers(
     movie_id: int,
     session: AsyncSession=Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:play']),
 ):
     query: list[models.Play_server] = await session.scalars(sa.select(models.Play_server).where(
         models.Play_server_access.user_id == user.id,

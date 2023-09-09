@@ -27,7 +27,7 @@ async def test_episode_to_watch(client: AsyncClient):
     })
     assert r.status_code == 401
 
-    await user_signin(client, [str(constants.LEVEL_USER)])
+    await user_signin(client)
     
     r = await client.get(f'/2/series/{series.id}/episodes', params={
         'expand': 'something, user_watched'

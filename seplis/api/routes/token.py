@@ -40,8 +40,8 @@ async def create_token(
         matches = False
     if not matches:
         raise exceptions.Wrong_login_or_password()
-
-    token = await models.Token.new_token(user_id=user.id, app_id=app.id, user_level=user.level)
+    
+    token = await models.Token.new_token(user_id=user.id, app_id=app.id, scopes=user.scopes)
     
     await send_new_login(to=user.email, ip=request.client.host)
     
@@ -50,7 +50,7 @@ async def create_token(
 
 @router.post('/progress-token', status_code=201, response_model=schemas.Token)
 async def create_progress_token(
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
-    token = await models.Token.new_token(user_id=user.id, user_level=constants.LEVEL_PROGRESS, expires_days=1)
+    token = await models.Token.new_token(user_id=user.id, scopes=['user:progress'], expires_days=1)
     return schemas.Token(access_token=token)

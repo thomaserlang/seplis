@@ -8,7 +8,6 @@ from seplis.api.filter.movies import filter_movies, filter_movies_query
 from seplis.api.filter.movies.query_filter_schema import Movie_query_filter
 from ..dependencies import get_session, AsyncSession
 from .. import models, schemas
-from ... import utils
 from .play_server import router
 
 class Radarr_response(BaseModel):

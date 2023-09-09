@@ -32,9 +32,12 @@ async def authenticated(
     security_scopes: SecurityScopes, 
     user: User = Depends(get_current_user),
 ):
-    if user.level < int(security_scopes.scope_str):
+    for scope in security_scopes.scopes:
+        if scope in user.scopes:
+            break
+    else:
         raise exceptions.Forbidden(
-            f'Required user level {security_scopes.scope_str}'
+            f'Required scope(s): {", ".join(security_scopes.scopes)}'
         )
     return user
   

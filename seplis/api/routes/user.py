@@ -16,7 +16,7 @@ async def create_user(user_data: schemas.User_create) -> schemas.User_basic:
 
 @router.get('/me', response_model=schemas.User)
 async def get_user(
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:read']),
     session: AsyncSession = Depends(get_session),
 ) -> schemas.User:
     u = await session.scalar(sa.select(models.User).where(models.User.id == user.id))
@@ -28,7 +28,7 @@ async def get_user(
 @router.put('/me', response_model=schemas.User, status_code=200)
 async def update_user(
     user_data: schemas.User_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:edit']),
 ) -> schemas.User:
     return await models.User.save(user_data, user_id=user.id)
 
@@ -36,7 +36,7 @@ async def update_user(
 @router.post('/me/change-password', status_code=204)
 async def change_password(
     data: schemas.User_change_password,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['me']),
     session: AsyncSession = Depends(get_session),
 ):
     password_hash = await session.scalar(sa.select(models.User.password).where(models.User.id == user.id))

@@ -9,7 +9,7 @@ router = APIRouter(prefix='/2/series')
 async def get_user_stats(
     series_id: int,    
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_stats']),
 ):
     q = await session.execute(sa.select(
         sa.func.ifnull(sa.func.sum(models.Episode_watched.times), 0).label('episodes_watched'),

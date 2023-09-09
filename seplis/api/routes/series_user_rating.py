@@ -13,7 +13,7 @@ router = APIRouter(prefix='/2/series/{series_id}/user-rating')
 async def get_rating(
     series_id: int, 
     session: AsyncSession=Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_ratings']),
 ):
     rating = await session.scalar(sa.select(models.Series_user_rating.rating).where(
         models.Series_user_rating.user_id == user.id,
@@ -27,7 +27,7 @@ async def update_rating(
     series_id: int,
     data: schemas.Series_user_rating_update,
     session: AsyncSession=Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_ratings']),
 ):
     sql = sa.dialects.mysql.insert(models.Series_user_rating).values(
         user_id=user.id,
@@ -46,7 +46,7 @@ async def update_rating(
 async def delete_rating(
     series_id: int,
     session: AsyncSession=Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_ratings']),
 ):
     await session.execute(sa.delete(models.Series_user_rating).where(        
         models.Series_user_rating.user_id == user.id,

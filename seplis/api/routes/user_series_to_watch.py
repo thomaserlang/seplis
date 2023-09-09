@@ -6,14 +6,14 @@ from seplis.api.filter.series import filter_series_query
 
 from seplis.api.filter.series.query_filter_schema import Series_query_filter
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 from ... import utils
 
 router = APIRouter(prefix='/2/users/me/series-to-watch')
 
 @router.get('', response_model=schemas.Page_cursor_total_result[schemas.Series_and_episode])
 async def get_user_series_to_watch(
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_lists']),
     session: AsyncSession=Depends(get_session),
     page_cursor: schemas.Page_cursor_query = Depends(),
     filter_query: Series_query_filter = Depends()

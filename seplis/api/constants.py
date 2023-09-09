@@ -1,76 +1,9 @@
-import re
-
-LEVEL_PROGRESS = -1
-
-LEVEL_USER = 0
-
-LEVEL_EDIT_SHOW = 2
-
-LEVEL_EDIT_USER = 3
-LEVEL_SHOW_USER_EMAIL = LEVEL_EDIT_USER
-LEVEL_DELETE_SHOW = 3
-
 LEVEL_GOD = 6
 
 PER_PAGE = 25
 
 USER_TOKEN_EXPIRE_DAYS = 365
 
-EXTERNAL_TYPES = (
-    'imdb',
-    'thetvdb',
-    'tvmaze'
-)
-EXTERNAL_TYPE_NAMES = {
-    'imdb': 'IMDb',
-    'thetvdb': 'TheTVDB',
-    'tvmaze': 'TVmaze',
-}
-EXTERNAL_TYPE_URLS = {
-    'imdb': 'http://www.imdb.com/title/{id}',
-    'thetvdb': 'http://thetvdb.com/?tab=series&id={id}',
-    'tvmaze': 'http://www.tvmaze.com/shows/{id}',
-}
-EXTERNAL_REQUIRED_TYPES = (
-    'imdb',
-)
-
-IMPORTER_TYPES = (
-    ('info', (
-        'thetvdb',
-        'tvmaze',
-    )),
-    ('episodes', (
-        'thetvdb',
-        'tvmaze',
-    )),
-    ('images', (
-        'thetvdb',
-        'tvmaze',
-    ))
-)
-
-IMPORTER_TYPE_NAMES = {
-    'info': 'Info',
-    'episodes': 'Episodes',
-    'images': 'Images',
-}
-
-IMAGE_TYPE_POSTER = 1
-IMAGE_TYPES = {
-    IMAGE_TYPE_POSTER: 'poster',
-}
-
-SHOW_SORT_FIELDS = (
-    ('title', 'Title'),
-    ('fans', 'Fans'),
-    ('premiered', 'Premiered'),
-)
-
-USER_STAT_FIELDS = (
-    'fan_of',
-    'episodes_watched',
-)
 
 SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER = 1
 SHOW_EPISODE_TYPE_SEASON_EPISODE = 2
@@ -81,4 +14,50 @@ SHOW_EPISODE_TYPE = {
     SHOW_EPISODE_TYPE_AIR_DATE: 'Air date',
 } 
 
-ASPECT_RATIO_POSTER = (0.67, 0.68)
+
+SCOPES = {
+    'me': 'Access to your own user info',
+    'user:progress': 'Manage user progress of content watched/watching',
+    'user:view_lists': 'View user lists like watchlist, favorites, etc',
+    'user:manage_lists': 'Manage user lists like watchlist, favorites, etc',
+    'user:manage_ratings': 'Manage user\'s ratings of movies, series, etc',
+    'user:view_ratings': 'View user\'s ratings of movies, series, etc',
+    'user:manage_ratings': 'Manage user\'s ratings of movies, series, etc',
+    'user:play': 'Access to generating a play URL for a movie or episode',
+    'user:list_play_servers': 'List play servers',
+    'user:manage_play_servers': 'Manage play servers',
+    'user:manage_play_settings': 'Manage play settings',
+    'user:view_stats': 'View user stats',
+    'user:read': 'Read user info',
+    'user:edit': 'Edit user info',
+    'series:create': 'Create series',
+    'series:edit': 'Edit series',
+    'series:delete': 'Delete series',
+    'series:update': 'Request series update',
+    'series:manage_images': 'Manage series images',
+    'movie:create': 'Create movie',
+    'movie:edit': 'Edit movie',
+    'movie:delete': 'Delete movie',
+    'movie:update': 'Request movie update',
+    'movie:manage_images': 'Manage movie images',
+    'person:create': 'Create person',
+    'person:edit': 'Edit person',
+    'person:delete': 'Delete person',
+    'person:manage_images': 'Manage person images',
+}
+
+SCOPES_ME = (
+    'user:progress',
+    'user:view_lists',
+    'user:manage_lists',
+    'user:manage_ratings',
+    'user:view_ratings',
+    'user:manage_ratings',
+    'user:play',
+    'user:list_play_servers',
+    'user:manage_play_servers',
+    'user:manage_play_settings',
+    'user:view_stats',
+    'user:read',
+    'user:edit',
+)

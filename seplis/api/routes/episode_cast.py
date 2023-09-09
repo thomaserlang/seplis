@@ -12,7 +12,7 @@ async def episode_cast_add(
     series_id: int,
     episode_number: int,
     data: schemas.Episode_cast_person_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ):
     data.series_id = series_id
     data.episode_number = episode_number
@@ -24,7 +24,7 @@ async def episode_cast_delete(
     series_id: int,
     episode_number: int,
     person_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_EDIT_SHOW)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ):
     await models.Episode_cast.delete(
         series_id=series_id,

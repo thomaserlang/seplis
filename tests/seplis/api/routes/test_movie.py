@@ -7,7 +7,7 @@ from seplis import config
 @pytest.mark.asyncio
 @respx.mock
 async def test_movie(client: AsyncClient):
-    await user_signin(client, scopes=[str(constants.LEVEL_DELETE_SHOW)])
+    await user_signin(client, scopes=['movie:create', 'movie:edit', 'movie:delete', 'movie:manage_images'])
     r = await client.get('/2/movies/1')
     assert r.status_code == 404, r.content
 

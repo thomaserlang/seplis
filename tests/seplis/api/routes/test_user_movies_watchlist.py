@@ -4,7 +4,7 @@ from seplis.api import constants, schemas, models
 
 @pytest.mark.asyncio
 async def test_user_movies_watchlist(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_USER)])
+    await user_signin(client)
 
     movie1: schemas.Movie = await models.Movie.save(schemas.Movie_create(
         title='Movie 1',

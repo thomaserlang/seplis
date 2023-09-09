@@ -4,7 +4,7 @@ from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 
 @pytest.mark.asyncio
 async def test_movie_cast(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_EDIT_SHOW)])
+    await user_signin(client, ['movie:edit'])
 
     movie = await models.Movie.save(schemas.Movie_create(
         title='Test movie',

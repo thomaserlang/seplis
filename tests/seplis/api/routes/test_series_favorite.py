@@ -1,11 +1,11 @@
 import pytest
 from seplis.api.testbase import client, run_file, AsyncClient, user_signin
-from seplis.api import constants, schemas, models
+from seplis.api import schemas, models
 
 @pytest.mark.asyncio
 @pytest.mark.filterwarnings("ignore:Duplicate")
 async def test_series_favorite(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_USER)])
+    await user_signin(client)
 
     series: schemas.Series = await models.Series.save(schemas.Series_create(
         title='Test series',

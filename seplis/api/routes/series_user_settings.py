@@ -10,7 +10,7 @@ router = APIRouter(prefix='/2/series/{series_id}/user-settings')
 async def get_series_user_settings(
     series_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
     settings = await session.scalar(sa.select(models.User_series_settings).where(
         models.User_series_settings.user_id == user.id,
@@ -27,7 +27,7 @@ async def set_series_user_settings(
     series_id: int,
     data: schemas.User_series_settings_update,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_settings']),
 ):
     settings = await session.scalar(sa.select(models.User_series_settings).where(
         models.User_series_settings.user_id == user.id,

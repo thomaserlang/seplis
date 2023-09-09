@@ -11,7 +11,7 @@ from datetime import date
 @pytest.mark.asyncio
 @respx.mock
 async def test_series_create(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_DELETE_SHOW)])
+    await user_signin(client, ['series:create', 'series:edit', 'series:delete', 'series:manage_images'])
 
     r = await client.post('/2/series', json={})
     assert r.status_code == 201, r.content
@@ -273,16 +273,16 @@ async def test_series_create(client: AsyncClient):
 
     config.data.api.storitch_host = 'http://storitch'
     r = await client.post(f'/2/series/{series_id}/images',
-                          files={
-                              'image': io.BytesIO(b"some initial text data"),
-                          },
-                          data={
-                              'type': 'wronga',
-                              'external_name': 'seplis',
-                              'external_id': 'test',
-                          }
-                          )
-    assert r.status_code == 422, r.status_code
+        files={
+            'image': io.BytesIO(b"some initial text data"),
+        },
+        data={
+            'type': 'wronga',
+            'external_name': 'seplis',
+            'external_id': 'test',
+        }
+    )
+    assert r.status_code == 422, r.content
 
     respx.post("http://storitch/store/session").mock(return_value=httpx.Response(200, json={
         'type': 'image',
@@ -387,7 +387,7 @@ async def test_series_get(client: AsyncClient):
     r = await client.get(f'/2/series?user_watchlist=true')
     assert r.status_code == 401
 
-    user_id = await user_signin(client, [str(constants.LEVEL_USER)])
+    user_id = await user_signin(client)
 
     await models.Series_watchlist.add(series_id=series1.id, user_id=user_id)
 

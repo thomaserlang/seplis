@@ -3,13 +3,13 @@ from fastapi import APIRouter, Depends, Query, Security
 
 from seplis.api.schemas.user_watched import User_watched
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 
 router = APIRouter(prefix='/2/users/me/watched')
 
 @router.get('', response_model=schemas.Page_cursor_result[schemas.User_watched])
 async def get_user_watched(
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_lists']),
     session: AsyncSession = Depends(get_session),
     user_can_watch: bool = Query(default=None),
 ):

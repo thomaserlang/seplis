@@ -4,7 +4,7 @@ from seplis.api.testbase import client, run_file, AsyncClient, user_signin
 
 @pytest.mark.asyncio
 async def test_series_cast(client: AsyncClient):
-    await user_signin(client, [str(constants.LEVEL_EDIT_SHOW)])
+    await user_signin(client, ['series:edit'])
 
     series = await models.Series.save(schemas.Series_create(
         title='Test series',

@@ -1,4 +1,3 @@
-import base64
 import os
 from datetime import datetime
 import codecs
@@ -7,13 +6,12 @@ import sys
 import uuid
 import io
 import sqlalchemy as sa
+import secrets
 from .jsonutils import *
 from . import sqlalchemy
 
-def random_key(length=30):
-    return base64.b64encode(
-        os.urandom(length)
-    ).decode('utf-8')
+def random_key(nbytes=16):
+    return secrets.token_hex(nbytes)
   
 
 def parse_link_header(link_header):

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Security
 import sqlalchemy as sa
 import jwt
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 
 router = APIRouter(prefix='/2/series/{series_id}/episodes/{episode_number}/play-servers')
 
@@ -11,7 +11,7 @@ async def get_episode_play_servers(
     series_id: int, 
     episode_number: int,
     session: AsyncSession=Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['me']),
 ):
     query: list[models.Play_server] = await session.scalars(sa.select(models.Play_server).where(
         models.Play_server_access.user_id == user.id,

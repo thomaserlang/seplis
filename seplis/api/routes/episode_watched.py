@@ -2,7 +2,7 @@ from fastapi import Depends, Security, APIRouter, Body
 from pydantic import conint
 import sqlalchemy as sa
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants, exceptions
+from .. import models, schemas, exceptions
 
 
 router = APIRouter(prefix='/2/series')
@@ -13,7 +13,7 @@ async def get_watched(
     series_id: conint(ge=1),
     episode_number: conint(ge=1),
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
     ew = await session.scalar(sa.select(models.Episode_watched).where(
         models.Episode_watched.user_id == user.id,
@@ -32,7 +32,7 @@ async def watched_increment(
     episode_number: conint(ge=1),
     request: dict | None = None,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):  
     data = schemas.Episode_watched_increment.model_validate(request) if request else schemas.Episode_watched_increment()
     await models.Episode_watched.increment(
@@ -56,7 +56,7 @@ async def watched_decrement(
     series_id: conint(ge=1),
     episode_number: conint(ge=1),
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),    
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),    
 ):
     await models.Episode_watched.decrement(
         session=session,
@@ -83,7 +83,7 @@ async def watched_increment_range(
     to_episode_number: int = Body(..., embed=True, ge=1),
     request: dict | None = None,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):  
     data = schemas.Episode_watched_increment.model_validate(request) if request else schemas.Episode_watched_increment()
     if to_episode_number < from_episode_number:

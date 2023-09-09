@@ -4,14 +4,14 @@ import asyncio
 
 from ..database import auto_session
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 
 
 router = APIRouter(prefix='/2/users/me/series-stats')
 
 @router.get('', response_model=schemas.User_series_stats)
 async def get_series(
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_USER)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_stats']),
 ):
     result = await asyncio.gather(
         series_watchlist(user.id),

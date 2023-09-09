@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from fastapi import APIRouter, Depends, Response, Security
 from ..dependencies import authenticated, get_session, AsyncSession
-from .. import models, schemas, constants
+from .. import models, schemas
 from ..expand.episodes import expand_user_can_watch
 
 router = APIRouter(prefix='/2/series/{series_id}/episode-to-watch')
@@ -18,22 +18,12 @@ Returns which episode to watch for a series.
 If the next episode does not exist or the series has no
 episodes the result will be empty 204`.
 
-:returns: episode dict with "user_watched" field.
-    {
-        "number": 1,
-        "title": "asd",
-        "user_watched": {
-            "times": 1,
-            "position": 100,
-        }
-    }
-
 """
 
 @router.get('', response_model=schemas.Episode, description=DESCRIPTION)
 async def get_episode_to_watch(
     series_id: int | str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=[str(constants.LEVEL_PROGRESS)]),
+    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
     session: AsyncSession=Depends(get_session),
 ):
     ew = await session.execute(sa.select(
