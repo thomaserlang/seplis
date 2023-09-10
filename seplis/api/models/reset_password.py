@@ -24,4 +24,4 @@ class Reset_password(Base):
                 expires=datetime.now(tz=timezone.utc) + timedelta(minutes=30),
             ))
             await session.commit()
-            return config.data.web.url + f'/reset-password/{key}'
+            return config.data.web.url + f'/users/reset-password/{key}'

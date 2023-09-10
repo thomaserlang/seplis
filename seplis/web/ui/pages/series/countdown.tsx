@@ -18,7 +18,7 @@ export default function SeriesCountdown() {
         <Box margin="1rem">
             <SeriesUserList<ISeriesAndEpisode>
                 title="Series countdown"
-                url="/2/users/me/series-countdown"
+                url="/2/series/countdown"
                 parseItem={(item) => (
                     {
                         key: `series-${item.series.id}`,

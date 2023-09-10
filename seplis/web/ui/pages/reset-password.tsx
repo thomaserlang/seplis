@@ -30,7 +30,7 @@ export default function ResetPassword() {
     const submit = async (data: INewPassword) => {
         try {
             setRootError(null)
-            await axios.post<IToken>('/api/reset-password', data)
+            await axios.post<IToken>('/api/users/reset-password', data)
             navigate('/login')
         } catch (e) {
             const data = e.response.data as IError<IValidationError>

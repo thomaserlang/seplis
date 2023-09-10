@@ -4,14 +4,14 @@ from fastapi import APIRouter, Response
 from pydantic import BaseModel
 from seplis.api.database import database
 
-router = APIRouter()
+router = APIRouter(prefix='/health', tags=['Health'])
 
 class Health_response(BaseModel):
     error: bool
     message: str
     service: str
 
-@router.get('/health', response_model=list[Health_response])
+@router.get('', response_model=list[Health_response])
 async def check_health(response: Response):
     result = await asyncio.gather(
         db_check(),

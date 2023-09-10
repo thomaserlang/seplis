@@ -6,7 +6,7 @@ from .. import schemas, exceptions
 from ..database import database
 from ... import config
 
-router = APIRouter(prefix='/2/search')
+router = APIRouter(prefix='/2/search', tags=['Search'])
 
 
 @router.get('', response_model=list[schemas.Search_title_document])

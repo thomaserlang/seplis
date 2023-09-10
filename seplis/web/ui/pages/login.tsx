@@ -99,7 +99,7 @@ export default function Login() {
                                 <Input {...register('password', { required: true })} type="password" placeholder="Password" />
                             </InputGroup>
                             <FormHelperText textAlign="right">
-                                <Link to="/reset-password">Reset password</Link>
+                                <Link to="/users/reset-password">Reset password</Link>
                             </FormHelperText>
                         </FormControl>
 

@@ -18,7 +18,7 @@ export default function SeriesRecentlyAired() {
         <Box margin="1rem">
             <SeriesUserList<ISeriesAndEpisode>
                 title="Series recently aired"
-                url="/2/series-recently-aired?user_watchlist=true"
+                url="/2/series/recently-aired?user_watchlist=true"
                 parseItem={(item) => (
                     {
                         key: `series-${item.series.id}`,

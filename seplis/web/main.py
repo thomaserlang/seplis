@@ -65,12 +65,12 @@ async def signup(
     return r.json()
 
 
-@app.post('/api/send-reset-password', status_code=204)
+@app.post('/api/users/send-reset-password', status_code=204)
 async def send_reset_password(
     request: Request,
     email: EmailStr = Body(..., embed=True),
 ):
-    r = await client.post('/2/send-reset-password', json={'email': email}, 
+    r = await client.post('/2/users/send-reset-password', json={'email': email}, 
         headers={
             'X-Real-IP': request.headers.get('X-Real-IP'),
             'X-Forwarded-For': request.headers.get('X-Forwarded-For'),
@@ -80,13 +80,13 @@ async def send_reset_password(
         return JSONResponse(content=r.json(), status_code=r.status_code)
 
 
-@app.post('/api/reset-password', status_code=204)
+@app.post('/api/users/reset-password', status_code=204)
 async def reset_password(
     request: Request,
     key: str = Body(..., embed=True, min_length=36),
     new_password: schemas.USER_PASSWORD_TYPE = Body(..., embed=True),
 ):
-    r = await client.post('/2/reset-password', json={'key': key, 'new_password': new_password}, 
+    r = await client.post('/2/users/reset-password', json={'key': key, 'new_password': new_password}, 
         headers={
             'X-Real-IP': request.headers.get('X-Real-IP'),
             'X-Forwarded-For': request.headers.get('X-Forwarded-For'),

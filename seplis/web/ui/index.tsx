@@ -90,8 +90,8 @@ import PlayEpisode from './pages/series/play-episode'
 import PlayMovie from './pages/movies/play'
 import Signup from './pages/signup'
 import { Logout } from './pages/logout'
-import SendResetPassword from './pages/send-reset-password'
-import ResetPassword from './pages/reset-password'
+import SendResetPassword from './pages/users/send-reset-password'
+import ResetPassword from './pages/users/reset-password'
 import WatchHome from './pages/watch/home'
 import { CastProvider } from './components/player/react-cast-sender'
 import SeriesCountdown from './pages/series/countdown'
@@ -123,8 +123,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/logout" element={<Logout />} />
             <Route path="/signup" element={<Signup />} />
-            <Route path="/reset-password" element={<SendResetPassword />} />
-            <Route path="/reset-password/:key" element={<ResetPassword />} />
+            <Route path="/users/reset-password" element={<SendResetPassword />} />
+            <Route path="/users/reset-password/:key" element={<ResetPassword />} />
             <Route path="/movies" element={<MoviesBrowse />} />
             <Route path="/movies/watchlist" element={<MovieWatchlist />} />
             <Route path="/movies/favorites" element={<MovieFavorites />} />

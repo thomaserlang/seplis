@@ -26,7 +26,7 @@ export default function SendResetPassword() {
     const submit = async (data: IResetPassword) => {
         try {
             setRootError(null)
-            await axios.post('/api/send-reset-password', data)
+            await axios.post('/api/users/send-reset-password', data)
             setSuccess('A password reset link has been sent to your email.')
         } catch (e) {
             const data = e.response.data as IError<IValidationError>

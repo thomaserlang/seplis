@@ -75,7 +75,7 @@ export default function WatchHome() {
 
                 <Slider<ISeriesAndEpisode>
                     title="Series to Watch"
-                    url="/2/users/me/series-to-watch?user_can_watch=true"
+                    url="/2/series/to-watch?user_can_watch=true"
                     parseItem={(item) => (
                         {
                             key: `series-${item.series.id}`,
@@ -172,7 +172,7 @@ export default function WatchHome() {
 
                 <Slider<ISeriesAndEpisode>
                     title="Episodes recently aired"
-                    url="/2/series-recently-aired?user_can_watch=true&days_ahead=7"
+                    url="/2/series/recently-aired?user_can_watch=true&days_ahead=7"
                     parseItem={(item) => (
                         {
                             key: `series-${item.series.id}`,

@@ -18,7 +18,7 @@ export default function SeriesToWatch() {
         <Box margin="1rem">
             <SeriesUserList<ISeriesAndEpisode>
                 title="Series to watch"
-                url="/2/users/me/series-to-watch"
+                url="/2/series/to-watch"
                 parseItem={(item) => (
                     {
                         key: `series-${item.series.id}`,

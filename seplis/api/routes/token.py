@@ -8,7 +8,7 @@ from seplis.api.send_email import send_new_login
 from ..dependencies import get_session, AsyncSession, authenticated
 from .. import models, schemas, constants, exceptions
 
-router = APIRouter(prefix='/2')
+router = APIRouter(prefix='/2', tags=['Login'])
 
 
 @router.post('/token', status_code=201, response_model=schemas.Token)

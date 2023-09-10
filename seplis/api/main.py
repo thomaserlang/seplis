@@ -3,6 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+
 from .database import database
 from . import exceptions
 from .. import config, set_logger, config_load
@@ -12,80 +13,27 @@ set_logger(f'api-{config.data.api.port}.log')
 
 from .routes import (
     health,
-    movie_watchlist,
-    movie_favorite,
-    play_server_users_movie_watchlist,
-    play_server_users_series_watchlist,
-    series_recently_aired,
-    series_watchlist,
-    series_favorite,
-    series_cast,
     token,
-    reset_password,
     search,
-    user,
-    user_series_stats,
-    user_series_countdown,
-    user_series_to_watch,
-    user_play_server_invite_accept,
-    user_watched,
-    movie,
-    movie_watched,
-    movie_watched_position,
-    movie_play_servers,
-    movie_cast,
-    series,
-    series_user_settings,
-    series_user_stats,
-    series_user_rating,
-    episodes,
-    episode_watched,
-    episode_watched_position,
-    episode_to_watch,
-    episode_play_servers,
-    episode_last_watched,
-    episode_cast,
-    play_server,
     genres,
-    person,
 )
+from .routes.series.router import router as series_router
+from .routes.movie.router import router as movie_router
+from .routes.play_server.router import router as play_server_router
+from .routes.person.router import router as person_router
+from .routes.user.router import router as user_router
 
 
-app = FastAPI()
-app.include_router(health.router)
-app.include_router(reset_password.router)
+app = FastAPI(title='SEPLIS API', version='2.0')
 app.include_router(token.router)
 app.include_router(search.router)
-app.include_router(user.router)
-app.include_router(user_series_stats.router)
-app.include_router(series_recently_aired.router)
-app.include_router(user_series_countdown.router)
-app.include_router(user_series_to_watch.router)
-app.include_router(user_play_server_invite_accept.router)
-app.include_router(user_watched.router)
-app.include_router(movie.router)
-app.include_router(movie_watched.router)
-app.include_router(movie_watched_position.router)
-app.include_router(movie_watchlist.router)
-app.include_router(movie_favorite.router)
-app.include_router(movie_play_servers.router)
-app.include_router(movie_cast.router)
-app.include_router(series.router)
-app.include_router(series_user_stats.router)
-app.include_router(series_user_rating.router)
-app.include_router(series_user_settings.router)
-app.include_router(series_watchlist.router)
-app.include_router(series_favorite.router)
-app.include_router(series_cast.router)
-app.include_router(episode_watched.router)
-app.include_router(episode_watched_position.router)
-app.include_router(episode_to_watch.router)
-app.include_router(episode_play_servers.router)
-app.include_router(episode_last_watched.router)
-app.include_router(episode_cast.router)
-app.include_router(play_server.router)
+app.include_router(series_router)
+app.include_router(movie_router)
+app.include_router(play_server_router)
+app.include_router(person_router)
+app.include_router(user_router)
 app.include_router(genres.router)
-app.include_router(person.router)
+app.include_router(health.router)
 
 
 app.add_middleware(

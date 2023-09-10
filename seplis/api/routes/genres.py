@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from ..dependencies import get_session, AsyncSession
 from .. import models, schemas
 
-router = APIRouter(prefix='/2/genres')
+router = APIRouter(prefix='/2/genres', tags=['Genres'])
 
 @router.get('', response_model=list[schemas.Genre])
 async def get_genres(
