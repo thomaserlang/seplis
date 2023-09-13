@@ -49,7 +49,7 @@ class TheMovieDB(Series_importer_base):
             externals=externals,
             status=statuses.get(series['status'], 0),
             runtime=series['episode_run_time'][0] if series['episode_run_time'] else None,
-            genres=genres,
+            genre_names=genres,
             premiered=series['first_air_date'] if series['first_air_date'] else None,
             language=series['original_language'] if series['original_language'] else None,
             popularity=series['popularity'],

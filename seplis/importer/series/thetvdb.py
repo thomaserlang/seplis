@@ -55,7 +55,7 @@ class Thetvdb(Series_importer_base):
                 externals=externals,
                 status=self.parse_status(data['status']),
                 runtime=int(data['runtime']) if data['runtime'] else None,
-                genres=data['genre'],
+                genre_names=data['genre'],
             )
 
 

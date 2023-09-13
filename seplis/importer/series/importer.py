@@ -139,7 +139,7 @@ async def update_series_info(series: schemas.Series):
 async def update_series_episodes(series: schemas.Series):
     logger.debug(f'[Series: {series.id}] Updating episodes')
     if not series.importers.episodes:
-        logger.debug(f'[Series: {series.id}] No episodes importer')
+        logger.debug(f'[Series: {series.id}] No episodes')
         return
     episodes: list[schemas.Episode_create] = await call_importer(
         external_name=series.importers.episodes,

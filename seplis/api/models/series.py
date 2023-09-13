@@ -78,8 +78,8 @@ class Series(Base):
             _data['externals'] = await cls._save_externals(session, series_id, _data['externals'], patch)
         if 'alternative_titles' in _data:
             _data['alternative_titles'] = await cls._save_alternative_titles(session, series_id, _data['alternative_titles'], patch)
-        if 'genres' in _data:
-            _data['genres'] = await cls._save_genres(session, series_id, _data['genres'], False if overwrite_genres else patch)
+        if 'genre_names' in _data:
+            _data['genres'] = await cls._save_genres(session, series_id, _data.pop('genre_names'), False if overwrite_genres else patch)
         if 'importers' in _data:
             _data.update(utils.flatten(_data.pop('importers'), 'importer'))
         if data.rating and data.rating_votes:

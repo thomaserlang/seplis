@@ -31,7 +31,7 @@ async def test_series_create(client: AsyncClient):
             'imdb': 'tt123456799',
             'no': None
         },
-        'genres': [
+        'genre_names': [
             'Action',
             'Thriller',
         ],
@@ -84,7 +84,7 @@ async def test_series_create(client: AsyncClient):
             'imdb': 'tt123456799',
         },
         'episode_type': constants.SHOW_EPISODE_TYPE_AIR_DATE,
-        'genres': [
+        'genre_names': [
             'Action',
         ],
     })
@@ -120,7 +120,7 @@ async def test_series_create(client: AsyncClient):
             'imdb': 'tt123456799',
         },
         'episode_type': constants.SHOW_EPISODE_TYPE_AIR_DATE,
-        'genres': [
+        'genre_names': [
             'Action',
             'Comedy'
         ],
@@ -141,7 +141,7 @@ async def test_series_create(client: AsyncClient):
         'externals': {
             'imdb': 'tt123456797',
         },
-        'genres': [
+        'genre_names': [
             'Action',
             'Comedy'
         ],
@@ -370,14 +370,14 @@ async def test_series_get(client: AsyncClient):
 
     series1 = await models.Series.save(data=schemas.Series_create(
         title="Test 1",
-        genres=['Test1'],
+        genre_names=['Test1'],
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1),
         ],
     ))
     series2 = await models.Series.save(data=schemas.Series_create(
         title="Test 2",
-        genres=['Test2'],
+        genre_names=['Test2'],
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1),
             schemas.Episode_create(title='Episode 2', number=2),

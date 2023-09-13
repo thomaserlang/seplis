@@ -33,7 +33,7 @@ class Series_create(BaseModel):
     ended: date | None = None
     importers: Series_importers | None = None
     runtime: conint(gt=0, lt=2880) | None = None
-    genres: list[str | int] | None = None
+    genre_names: list[constr(max_length=100) | int] | None = None
     episode_type: conint(gt=0, lt=4) | None = None
     language: constr(min_length=1, max_length=100, strip_whitespace=True) | None = None
     poster_image_id: conint(gt=0) | None = None
@@ -115,6 +115,10 @@ class Series(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
+    def to_request(self):
+        data = Series_update.model_validate(self)
+        data.poster_image_id = self.poster_image.id if self.poster_image else None
+        data.genre_names = [g.name for g in self.genres]
 
 class Series_user_stats(BaseModel):
     episodes_watched: int = 0

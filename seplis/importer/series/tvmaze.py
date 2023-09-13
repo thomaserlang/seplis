@@ -30,7 +30,7 @@ class Tvmaze(Series_importer_base):
             externals=externals,
             status=self.parse_status(series['status']),
             runtime=series['runtime'],
-            genres=series['genres'],
+            genre_names=series['genres'],
             premiered=series['premiered'],
             language=series['language'],
         )
