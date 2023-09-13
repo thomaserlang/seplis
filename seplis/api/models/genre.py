@@ -16,9 +16,12 @@ class Genre(Base):
     @staticmethod
     @auto_session
     async def get_or_create_genre(genre: str, type_: str, session: AsyncSession = None):
-        r = await session.scalar(sa.select(Genre.id).where(Genre.name == genre and Genre.type == type_))
+        r = await session.scalar(sa.select(Genre.id).where(
+            Genre.name == genre, 
+            Genre.type == type_,
+        ))
         if not r:
-            r = await session.execute(sa.insert(Genre).values(name=genre))
+            r = await session.execute(sa.insert(Genre).values(name=genre, type=type_))
             r = r.lastrowid
         return r
 
