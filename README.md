@@ -1,6 +1,6 @@
-seplis
+SEPLIS
 ======
 
 This project is in very early stages.
 
-If you're intrested in this please contact me.
+If you're interested in this please contact me.
