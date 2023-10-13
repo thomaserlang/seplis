@@ -140,7 +140,7 @@ class User_series_settings(Base):
 
 async def rebuild_tokens():
     async with database.session() as session:
-        result = await session.stream(sa.select(Token))
+        result = await session.stream(sa.select(Token).where(Token.expires >= datetime.now(tz=timezone.utc)))
         async for tokens in result.yield_per(10000):
             p = database.redis.pipeline()
             for token in tokens:
@@ -148,6 +148,6 @@ async def rebuild_tokens():
                     pipe=p, 
                     token=token.token, 
                     user_id=token.user_id,
-                    scopes=token.scopes,
+                    scopes=token.scopes.split(' '),
                 )
             await p.execute()
