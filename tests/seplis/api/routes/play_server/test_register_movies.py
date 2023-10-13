@@ -22,6 +22,14 @@ async def test_play_server_register_movies(client: AsyncClient):
         title='Test movie 1',
     ))
 
+    # Invalid movie
+    r = await client.put(f'/2/play-servers/{play_server.id}/movies', json=[
+        {'movie_id': 0},
+    ], headers={
+        'Authorization': f'Secret {"2"*20}',
+    })
+    assert r.status_code == 400, r.content
+    
     r = await client.put(f'/2/play-servers/{play_server.id}/movies', json=[
         {'movie_id': movie1.id},
     ], headers={

@@ -2,10 +2,12 @@ import sqlalchemy as sa
 from uuid6 import uuid7
 from seplis.utils.sqlalchemy import UtcDateTime
 from .base import Base
-from seplis import logger, utils
+from seplis import utils
 from datetime import datetime, timezone, timedelta
 from ..database import database, auto_session, AsyncSession
 from .. import schemas, exceptions
+from .movie import Movie
+from .series import Series
 
 class Play_server(Base):
     __tablename__ = 'play_servers'
@@ -215,7 +217,14 @@ class Play_server_movie(Base):
                 created_at=sql.inserted.created_at,
                 updated_at=sql.inserted.updated_at,
             )
-            await session.execute(sql)
+            try:
+                await session.execute(sql)
+            except sa.exc.IntegrityError:
+                for r in data:
+                    t = await session.scalar(sa.select(Movie.id).where(Movie.id == r.movie_id))
+                    if not t:
+                        raise exceptions.Movie_unknown(r.movie_id)
+                raise
         
     
     @staticmethod
@@ -271,8 +280,19 @@ class Play_server_episode(Base):
                 created_at=sql.inserted.created_at,
                 updated_at=sql.inserted.updated_at,
             )
-            await session.execute(sql)
-
+            try:
+                await session.execute(sql)
+            except sa.exc.IntegrityError:
+                series_ids = []
+                for r in data:
+                    if r.series_id in series_ids:
+                        continue
+                    t = await session.scalar(sa.select(Series.id).where(Series.id == r.series_id))
+                    if not t:
+                        raise exceptions.Series_unknown(r.series_id)
+                    series_ids.append(r.series_id)
+                raise
+        
 
     @staticmethod
     @auto_session

@@ -160,6 +160,17 @@ class User_episode_not_watched(API_exception):
         )
 
 
+class Series_unknown(API_exception):
+    
+        def __init__(self, series_id):
+            API_exception.__init__(
+                self,
+                status_code=400,
+                code=1400,
+                message=f'Unknown series ({series_id})',
+            )
+
+
 class Series_external_duplicated(API_exception):
 
     def __init__(self, external_title, external_value, series):
@@ -332,6 +343,17 @@ class Play_server_access_user_no_access(API_exception):
             status_code=400,
             code=2260,
             message='The user doesn\'t have access to this play server',
+        )
+
+
+class Movie_unknown(API_exception):
+
+    def __init__(self, movie_id):
+        API_exception.__init__(
+            self,
+            status_code=400,
+            code=2300,
+            message=f'Unknown movie ({movie_id})',
         )
 
 

@@ -24,6 +24,14 @@ async def test_play_server_register_episodes(client: AsyncClient):
         episodes=[schemas.Episode_create(title='EP2', number=1)]
     ))    
 
+    # Invalid series
+    r = await client.put(f'/2/play-servers/{play_server.id}/episodes', json=[
+        {'series_id': 0, 'episode_number': 1},
+    ], headers={
+        'Authorization': f'Secret {"2"*20}',
+    })
+    assert r.status_code == 400, r.content
+
     r = await client.put(f'/2/play-servers/{play_server.id}/episodes', json=[
         {'series_id': series1.id, 'episode_number': 1},
     ], headers={
