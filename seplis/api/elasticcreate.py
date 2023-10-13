@@ -14,6 +14,7 @@ async def create_indices(es):
                         '’=>', 
                         '\'=>',
                         '&=>and',
+                        '.=>',
                     ]
                 }
             },

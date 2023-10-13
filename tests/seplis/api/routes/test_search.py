@@ -132,13 +132,6 @@ async def test_search(client: AsyncClient):
     data = parse_obj_as (list[schemas.Search_title_document], r.json())
     assert len(data) == 1, data
 
-    # Test dotted search
-    r = await client.get('/2/search', params={'query': 'dcs.legend.of.something'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as (list[schemas.Search_title_document], r.json())
-    assert len(data) == 1, data
-    assert data[0].id == series2.id
-
     # Test score
     # Searching for "dcs legend of something" should not return
     # "Test DC's legend of something" as the first result
@@ -220,6 +213,24 @@ async def test_search(client: AsyncClient):
     data = parse_obj_as (list[schemas.Search_title_document], r.json())
     assert len(data) == 2, data
     assert data[0].title == 'Devils'
+
+    
+    await models.Series.save(schemas.Series_create(
+        title='Euphoria U.S',
+    ), series_id=None)
+    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    
+    r = await client.get('/2/search', params={'title': 'Euphoria US'})
+    assert r.status_code == 200, r.content
+    data = parse_obj_as (list[schemas.Search_title_document], r.json())
+    assert len(data) == 1, data
+    assert data[0].title == 'Euphoria U.S'
+
+    r = await client.get('/2/search', params={'query': 'Euphoria US'})
+    assert r.status_code == 200, r.content
+    data = parse_obj_as (list[schemas.Search_title_document], r.json())
+    assert len(data) == 1, data
+    assert data[0].title == 'Euphoria U.S'
 
 
 if __name__ == '__main__':
