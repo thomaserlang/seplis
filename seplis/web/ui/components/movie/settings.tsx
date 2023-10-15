@@ -1,14 +1,15 @@
-import { Alert, Box, Button, FormControl, FormLabel, Heading, Input, Stack, useToast } from '@chakra-ui/react'
+import { Alert, AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Box, Button, Flex, FormControl, FormLabel, Heading, Input, Stack, useDisclosure, useToast } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { IMovie } from '@seplis/interfaces/movie'
 import { TExternals } from '@seplis/interfaces/types'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { ErrorMessageFromResponse } from '../error'
+import { IError } from '@seplis/interfaces/error'
 
 
-export function MovieNew({onDone}: {onDone?: (seriesId: number) => void}) {
+export function MovieNew({ onDone }: { onDone?: (seriesId: number) => void }) {
     const onSave = async (data: IData) => {
         const result = await api.post<IMovie>('/2/movies', data)
         if (onDone)
@@ -30,6 +31,7 @@ export function MovieUpdate({ movie }: { movie: IMovie }) {
     }
 
     return <SettingsForm
+        movieId={movie.id}
         externals={movie.externals}
         onSave={onSave}
     />
@@ -39,15 +41,16 @@ export function MovieUpdate({ movie }: { movie: IMovie }) {
 interface IData {
     externals: TExternals
     onSave: (data: IData) => Promise<IMovie>
+    movieId?: number
 }
 
-export default function SettingsForm({ externals, onSave }: IData) {    
+export default function SettingsForm({ externals, onSave, movieId }: IData) {
     const { handleSubmit, register, formState: { isSubmitting } } = useForm<IData>({
         defaultValues: {
-            externals: {...externals}
+            externals: { ...externals }
         }
     })
-    const [ error, setError ] = useState<JSX.Element>(null)
+    const [error, setError] = useState<JSX.Element>(null)
     const toast = useToast()
     const queryClient = useQueryClient()
 
@@ -61,7 +64,7 @@ export default function SettingsForm({ externals, onSave }: IData) {
                 isClosable: true,
                 position: 'top',
             })
-            queryClient.setQueryData(['movies', movie.id], movie)
+            queryClient.setQueryData(['movie', movie.id], movie)
         } catch (e) {
             setError(ErrorMessageFromResponse(e))
         }
@@ -74,21 +77,87 @@ export default function SettingsForm({ externals, onSave }: IData) {
                     {error}
                 </Alert>}
 
-                <Heading fontSize="1.25rem">Externals</Heading>                        
+                <Heading fontSize="1.25rem">Externals</Heading>
                 <FormControl>
                     <FormLabel>IMDb</FormLabel>
-                    <Input {...register('externals.imdb')}  type='text' />
+                    <Input {...register('externals.imdb')} type='text' />
                 </FormControl>
 
                 <FormControl>
                     <FormLabel>TMDb</FormLabel>
-                    <Input {...register('externals.themoviedb')}  type='text' />
+                    <Input {...register('externals.themoviedb')} type='text' />
                 </FormControl>
 
-                <Stack align="end">
+                <Flex align="end" justifyContent="end" gap="1rem" basis="100%">
+                    {movieId && <DeleteConfirm movieId={movieId} />}
                     <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText='Saving'>Save</Button>
-                </Stack>
+                </Flex>
             </Stack>
         </form>
     </Box>
+}
+
+
+function DeleteConfirm({ movieId }: { movieId: number }) {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const cancelRef = useRef()
+    const toast = useToast()
+
+    const onDelete = async () => {
+        try {
+            await api.delete(`/2/movies/${movieId}`)
+            location.reload()
+            toast({
+                title: 'Movie deleted',
+                status: 'success',
+                duration: 5000,
+                isClosable: true,
+                position: 'top',
+            })
+        } catch (e) {
+            toast({
+                title: 'Failed to delete the movie',
+                description: (e.response.data as IError).message,
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: 'top',
+            })
+        }
+        onClose()
+    }
+
+    return <>
+        <Button colorScheme='red' onClick={onOpen}>
+            Delete
+        </Button>
+
+        <AlertDialog
+            isOpen={isOpen}
+            leastDestructiveRef={cancelRef}
+            onClose={onClose}
+            isCentered
+        >
+            <AlertDialogOverlay>
+                <AlertDialogContent>
+                    <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                        Delete Movie
+                    </AlertDialogHeader>
+
+                    <AlertDialogBody>
+                        Are you sure? You can't undo this action afterwards.
+                    </AlertDialogBody>
+
+                    <AlertDialogFooter>
+                        <Button ref={cancelRef} onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button colorScheme='red' onClick={onDelete} ml={3}>
+                            Delete
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialogOverlay>
+        </AlertDialog>
+    </>
 }

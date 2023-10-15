@@ -175,7 +175,7 @@ function DeleteConfirm({ seriesId }: { seriesId: number }) {
     const onDelete = async () => {
         try {
             await api.delete(`/2/series/${seriesId}`)
-            //location.href = '/'
+            location.reload()
         } catch (e) {
             toast({
                 title: 'Failed to delete series',

@@ -1,5 +1,5 @@
 import { StarIcon } from '@chakra-ui/icons'
-import { Text, Box, Button, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Tag, useDisclosure, Stack, Wrap, WrapItem, Flex } from '@chakra-ui/react'
+import { Text, Box, Button, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Tag, useDisclosure, Stack, Wrap, WrapItem, Flex, Alert } from '@chakra-ui/react'
 import { IMovie } from '@seplis/interfaces/movie'
 import { Poster } from '../poster'
 import { langCodeToLang, secondsToHourMin } from '../../utils'
@@ -30,6 +30,14 @@ export function MovieLoad({ movieId, onLoaded }: { movieId: number, onLoaded?: (
 
     if (isInitialLoading)
         return <MovieSkeleton />
+
+    if (!data)
+        return <>
+            <Heading as="h2" mb="1rem">Unknown movie</Heading>
+            <Alert status="error" rounded="md">
+                This movie doesn't exist.
+            </Alert>
+        </>
 
     if (!data?.title)
         return <SeriesWaitingForData movie={data} />
