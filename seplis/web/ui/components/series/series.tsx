@@ -1,5 +1,5 @@
 import { StarIcon } from '@chakra-ui/icons'
-import { Box, Button, Flex, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Stack, Tag, Text, useDisclosure, Wrap, WrapItem } from '@chakra-ui/react'
+import { Alert, AlertTitle, Box, Button, Flex, Heading, Link, Modal, ModalBody, ModalCloseButton, ModalContent, ModalHeader, ModalOverlay, Stack, Tag, Text, useDisclosure, Wrap, WrapItem } from '@chakra-ui/react'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
 import { IGenre } from '@seplis/interfaces/genre'
@@ -31,6 +31,14 @@ export function SeriesLoad({ seriesId, onLoaded }: { seriesId: number, onLoaded?
 
     if (isInitialLoading)
         return <SeriesSkeleton />
+
+    if (!data)
+        return <>
+            <Heading as="h2" mb="1rem">Unknown series</Heading>
+            <Alert status="error" rounded="md">
+                This series doesn't exist.
+            </Alert>
+        </>
 
     if (!data?.title)
         return <SeriesWaitingForData series={data} />

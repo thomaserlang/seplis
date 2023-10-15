@@ -1,10 +1,11 @@
-import { Alert, Button, Flex, FormControl, FormLabel, Heading, Input, Select, useToast } from '@chakra-ui/react'
+import { Alert, AlertDialog, AlertDialogBody, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogOverlay, Button, Flex, FormControl, FormLabel, Heading, Input, Select, useDisclosure, useToast } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { ISeries, ISeriesRequest } from '@seplis/interfaces/series'
 import { useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm, UseFormRegister } from 'react-hook-form'
 import { ErrorMessageFromResponse } from '../error'
+import { IError } from '@seplis/interfaces/error'
 
 
 export function SeriesNew({ onDone }: { onDone?: (seriesId: number) => void }) {
@@ -34,6 +35,7 @@ export function SeriesUpdate({ series }: { series: ISeries }) {
     }
 
     return <SeriesForm
+        seriesId={series.id}
         request={{
             externals: { ...series.externals },
             importers: { ...series.importers },
@@ -43,7 +45,7 @@ export function SeriesUpdate({ series }: { series: ISeries }) {
     />
 }
 
-export function SeriesForm({ request, onSave }: { request: ISeriesRequest, onSave: (request: ISeriesRequest) => Promise<ISeries> }) {
+export function SeriesForm({ request, onSave, onDelete, seriesId }: { request: ISeriesRequest, onSave: (request: ISeriesRequest) => Promise<ISeries>, onDelete?: () => void, seriesId?: number }) {
     const { handleSubmit, register, formState: { isSubmitting } } = useForm<ISeriesRequest>({
         defaultValues: { ...request }
     })
@@ -92,6 +94,7 @@ export function SeriesForm({ request, onSave }: { request: ISeriesRequest, onSav
 
 
             <Flex align="end" justifyContent="end" gap="1rem" basis="100%">
+                {seriesId && <DeleteConfirm seriesId={seriesId} />}
                 <Button type="submit" colorScheme="blue" isLoading={isSubmitting} loadingText='Saving'>Save</Button>
             </Flex>
         </Flex>
@@ -162,4 +165,61 @@ function EpisodeType({ register }: { register: UseFormRegister<ISeriesRequest> }
             </Select>
         </FormControl>
     </Flex>
+}
+
+function DeleteConfirm({ seriesId }: { seriesId: number }) {
+    const { isOpen, onOpen, onClose } = useDisclosure()
+    const cancelRef = useRef()
+    const toast = useToast()
+
+    const onDelete = async () => {
+        try {
+            await api.delete(`/2/series/${seriesId}`)
+            //location.href = '/'
+        } catch (e) {
+            toast({
+                title: 'Failed to delete series',
+                description: (e.response.data as IError).message,
+                status: 'error',
+                duration: 9000,
+                isClosable: true,
+                position: 'top',
+            })
+        }
+        onClose()
+    }
+
+    return <>
+        <Button colorScheme='red' onClick={onOpen}>
+            Delete
+        </Button>
+
+        <AlertDialog
+            isOpen={isOpen}
+            leastDestructiveRef={cancelRef}
+            onClose={onClose}
+            isCentered
+        >
+            <AlertDialogOverlay>
+                <AlertDialogContent>
+                    <AlertDialogHeader fontSize='lg' fontWeight='bold'>
+                        Delete Series
+                    </AlertDialogHeader>
+
+                    <AlertDialogBody>
+                        Are you sure? You can't undo this action afterwards.
+                    </AlertDialogBody>
+
+                    <AlertDialogFooter>
+                        <Button ref={cancelRef} onClick={onClose}>
+                            Cancel
+                        </Button>
+                        <Button colorScheme='red' onClick={onDelete} ml={3}>
+                            Delete
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialogOverlay>
+        </AlertDialog>
+    </>
 }
