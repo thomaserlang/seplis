@@ -12,10 +12,9 @@ export default function CastCard({ castPerson }: { castPerson: ISeriesCastPerson
         </Box>
         <Flex direction="column" gap="0.25rem">
             <Text fontWeight="600" lineHeight="0.7rem">{castPerson.person.name}</Text>
-            {castPerson.roles.map(role => (
+            {castPerson.roles.slice(0, 1).map(role => (
                 <Text key={role.character}>{role.character}</Text>
             ))}
-            <Text>{castPerson.total_episodes} {castPerson.total_episodes == 1 ? 'episode' : 'episodes'}</Text>
         </Flex>
     </Flex>
 }
