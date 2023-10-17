@@ -76,8 +76,8 @@ async def update_person_images(person: schemas.Person):
                 ))
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception:
-            logger.exception('save_image')
+        except Exception as e:
+            logger.exception(e)
 
     for name in imp_names:
         try:

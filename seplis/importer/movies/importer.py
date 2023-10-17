@@ -53,7 +53,7 @@ async def update_movies_bulk(from_movie_id=0, do_async=False):
             except exceptions.API_exception as e:
                 logger.info(e.message)
             except Exception as e:
-                logger.exception('update_movies_bulk')
+                logger.exception(e)
         else:
             movies = await _get_movies(from_movie_id)
 
@@ -96,7 +96,7 @@ async def update_incremental():
                     except exceptions.API_exception as e:
                         logger.error(e.message)
                     except Exception as e:
-                        logger.exception('update_incremental')
+                        logger.exception(e)
             if page == data['total_pages']:
                 break
             page += 1

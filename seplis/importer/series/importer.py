@@ -87,7 +87,7 @@ async def _importer_incremental(importer):
             except exceptions.API_exception as e:
                 logger.error(e.message)
             except Exception as e:
-                logger.exception('_importer_incremental')
+                logger.exception(e)
     importer.save_timestamp(timestamp)
 
 
@@ -173,8 +173,8 @@ async def update_series_images(series: schemas.Series):
                 ))
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception:
-            logger.exception('save_image')
+        except Exception as e:
+            logger.exception(e)
 
     for name in imp_names:
         try:
@@ -188,8 +188,8 @@ async def update_series_images(series: schemas.Series):
             await asyncio.gather(*[save_image(image) for image in imp_images])
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception:
-            logger.exception('update_show_images')
+        except Exception as e:
+            logger.exception(e)
 
     if not series.poster_image:
         all_images: list[schemas.Image] = []
@@ -258,7 +258,7 @@ async def update_series_cast(series: schemas.Series):
                 )
         except (KeyboardInterrupt, SystemExit):
             raise
-        except Exception:
+        except Exception as e:
             logger.exception(f'[Series: {series.id}] Failed saving cast: {member.external_id}')
 
     await asyncio.gather(*[save_cast(person) for person in imp_cast])
