@@ -1,5 +1,7 @@
 import sqlalchemy as sa
 from datetime import datetime
+
+from seplis.api import exceptions
 from ..themoviedb_export import get_ids
 from . import importer
 from ...api.database import database
@@ -62,6 +64,12 @@ async def update_popularity(create_movies = True, create_above_popularity: float
             movie = await models.Movie.save(
                 data=movie_data,
             )
+        except exceptions.Movie_external_duplicated as e:
+            await models.Movie.save(data=schemas.Movie_update(
+                externals={
+                    'themoviedb': ['movie']['id'],
+                },
+            ), movie_id=e.extra, patch=True)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
