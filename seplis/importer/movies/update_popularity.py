@@ -67,9 +67,9 @@ async def update_popularity(create_movies = True, create_above_popularity: float
         except exceptions.Movie_external_duplicated as e:
             await models.Movie.save(data=schemas.Movie_update(
                 externals={
-                    'themoviedb': str(e.extra['movie']['id']),
+                    'themoviedb': str(id_),
                 },
-            ), movie_id=e.extra, patch=True)
+            ), movie_id=e.extra['movie']['id'], patch=True)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
