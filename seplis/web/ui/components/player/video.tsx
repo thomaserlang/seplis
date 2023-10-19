@@ -305,7 +305,7 @@ function getSupportedVideoColorBitDepth() {
 
 function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
     const types: { [key: string]: string } = {
-        'video/mp4; codecs="hvc1"': 'hevc',
+        //'video/mp4; codecs="hvc1"': 'hevc',
         'video/mp4; codecs="avc1.42E01E"': 'h264',
     }
     const codecs = []
