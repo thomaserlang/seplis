@@ -14,7 +14,7 @@ export function PickQuality({ source, selectedWidth, onChange }: IProps) {
         direction="column"
     >
         {Object.entries(resolutionNames).sort((a, b) => parseInt(b[0]) - parseInt(a[0])).map(([width, value]) => {
-            const w = parseInt(width) - 200
+            const w = parseInt(width)
             if (source.width >= w)
                 return <Box
                     key={width}
@@ -34,6 +34,9 @@ export function PickQuality({ source, selectedWidth, onChange }: IProps) {
 
 export function getDefaultResolutionWidth() {
     const w = localStorage.getItem('resolutionWidth')
+    // Fix for old error that would set the requested resolution to requestedResolution - 200
+    if (w && parseInt(w) == 1720)
+        return 1920
     if (w)
         return parseInt(w)
     return 1920
