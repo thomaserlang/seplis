@@ -13,7 +13,7 @@ export function PlayButtonMenu({ playServersUrl }: IProps) {
     return <Menu isLazy>
         {({ isOpen }) => (
             <>
-                <MenuButton as={IconButton} icon={<ChevronDownIcon />} />
+                <MenuButton as={IconButton} icon={<ChevronDownIcon />} variant="outline" />
                 <MenuList>
                     <PlayButtonMenuItems playServersUrl={playServersUrl} isOpen={isOpen} />
                 </MenuList>

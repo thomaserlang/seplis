@@ -1,7 +1,6 @@
 import { Button, ButtonGroup } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { IPlayServerRequestSource } from '@seplis/interfaces/play-server'
-import { FaPlay } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { useCast, useCastPlayer } from '../player/react-cast-sender'
 import { getPlayServers } from '../player/request-play-servers'
@@ -13,10 +12,9 @@ import { pickStartSource } from '../player/pick-source'
 import { pickStartAudio } from '../player/pick-audio-source'
 import { pickStartSubtitle } from '../player/pick-subtitle-source'
 import { getDefaultTrackStyling } from '../player/react-cast-sender/utils/utils'
-import { PlayButtonMenu } from '../play-button-menu'
+import { PlayButton } from '../play-button'
 
-
-export function PlayButton({ seriesId, episodeNumber, canPlay }: { seriesId: number, episodeNumber: number, canPlay: boolean }) {
+export function EpisodePlayButton({ seriesId, episodeNumber, canPlay }: { seriesId: number, episodeNumber: number, canPlay: boolean }) {
     const navigate = useNavigate()
     const { connected } = useCast()
     const { loadMedia } = useCastPlayer()
@@ -24,23 +22,16 @@ export function PlayButton({ seriesId, episodeNumber, canPlay }: { seriesId: num
     if (!canPlay)
         return null
 
-    return <ButtonGroup isAttached variant='outline'>
-        <Button
-            leftIcon={<FaPlay />}
-            onClick={async () => {
-                if (connected) {
-                    const r = await castEpisodeRequest(seriesId, episodeNumber)
-                    await loadMedia(r)
-                } else
-                    navigate(`/series/${seriesId}/episodes/${episodeNumber}/play`)
-            }}
-        >
-            Play
-        </Button>
-        <PlayButtonMenu 
-            playServersUrl={`/2/series/${seriesId}/episodes/${episodeNumber}/play-servers`} 
-        />
-    </ButtonGroup>
+    return <PlayButton
+        playServersUrl={`/2/series/${seriesId}/episodes/${episodeNumber}/play-servers`}
+        onPlayClick={async () => {
+            if (connected) {
+                const r = await castEpisodeRequest(seriesId, episodeNumber)
+                await loadMedia(r)
+            } else
+                navigate(`/series/${seriesId}/episodes/${episodeNumber}/play`)
+        }}
+    />
 }
 
 

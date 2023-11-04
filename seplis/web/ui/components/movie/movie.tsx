@@ -10,7 +10,7 @@ import { MovieUpdate } from './settings'
 import { FocusContext, useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import { useEffect, useState } from 'react'
 import { focusedBorder } from '@seplis/styles'
-import PlayButton from './play-button'
+import MoviePlayButton from './play-button'
 import { MovieWatchedButton } from './watched-button'
 import api from '@seplis/api'
 import { useQuery } from '@tanstack/react-query'
@@ -97,7 +97,7 @@ function ListButtons({ movie }: { movie: IMovie }) {
 
 function WatchButtons({ movie }: { movie: IMovie }) {
     return <Flex gap="0.5rem" padding="0.25rem 0" wrap="wrap">
-        <PlayButton movieId={movie.id} />
+        <MoviePlayButton movieId={movie.id} />
         <MovieWatchedButton movieId={movie.id} />
     </Flex>
 }

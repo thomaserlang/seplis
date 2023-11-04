@@ -1,14 +1,8 @@
-import { Button, ButtonGroup, Icon } from '@chakra-ui/react'
-import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
 import { v4 as uuidv4 } from 'uuid'
 import { IMovie } from '@seplis/interfaces/movie'
-import { IPlayRequest, IPlayServerRequestSource } from '@seplis/interfaces/play-server'
+import { IPlayServerRequestSource } from '@seplis/interfaces/play-server'
 import { IToken } from '@seplis/interfaces/token'
-import { focusedBorder } from '@seplis/styles'
-import { isAuthed } from '@seplis/utils'
-import { useQuery } from '@tanstack/react-query'
-import { FaPlay } from 'react-icons/fa'
 import { useNavigate } from 'react-router-dom'
 import { getPlayServers } from '../player/request-play-servers'
 import { pickStartSource } from '../player/pick-source'
@@ -16,30 +10,24 @@ import { useCast, useCastPlayer } from '../player/react-cast-sender'
 import { pickStartSubtitle } from '../player/pick-subtitle-source'
 import { pickStartAudio } from '../player/pick-audio-source'
 import { getDefaultTrackStyling } from '../player/react-cast-sender/utils/utils'
-import { PlayButtonMenu } from '../play-button-menu'
+import { PlayButton } from '../play-button'
 
 
-export default function PlayButton({ movieId }: { movieId: number }) {
+export default function MoviePlayButton({ movieId }: { movieId: number }) {
     const navigate = useNavigate()
     const { connected } = useCast()
     const { loadMedia } = useCastPlayer()
 
-    const handleClick = async () => {
-        if (connected) {
-            const r = await castMovieRequest(movieId)
-            await loadMedia(r)            
-        } else
-            navigate(`/movies/${movieId}/play`)
-    }
-    return <ButtonGroup isAttached variant='outline'>
-        <Button
-            leftIcon={<Icon as={FaPlay} />}
-            onClick={handleClick}
-        >
-            Play
-        </Button>
-        <PlayButtonMenu playServersUrl={`/2/movies/${movieId}/play-servers`} />
-    </ButtonGroup>
+    return <PlayButton
+        playServersUrl={`/2/movies/${movieId}/play-servers`}
+        onPlayClick={async () => {
+            if (connected) {
+                const r = await castMovieRequest(movieId)
+                await loadMedia(r)            
+            } else
+                navigate(`/movies/${movieId}/play`)
+        }}
+    />
 }
 
 
