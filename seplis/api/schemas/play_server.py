@@ -1,5 +1,6 @@
-from pydantic import BaseModel, ConfigDict, constr, conint
-from datetime import datetime
+from typing import Annotated
+from pydantic import BaseModel, ConfigDict, Field, constr, conint
+from datetime import datetime, timedelta
 from .user import User_public
 from .helper import default_datetime
 
@@ -33,12 +34,15 @@ class Play_request(BaseModel):
     play_url: str
 
 
-class Play_id_info_episode(BaseModel):
+class Play_id_info_base(BaseModel):
+    exp: Annotated[datetime, Field(default_factory=lambda: datetime.utcnow() + timedelta(hours=8))]
+
+class Play_id_info_episode(Play_id_info_base):
     type: str = 'series'
     series_id: int
     number: int
 
-class Play_id_info_movie(BaseModel):
+class Play_id_info_movie(Play_id_info_base):
     type: str = 'movie'
     movie_id: int
 
