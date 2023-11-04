@@ -1,4 +1,4 @@
-import { Box, Button } from '@chakra-ui/react'
+import { Button, ButtonGroup } from '@chakra-ui/react'
 import api from '@seplis/api'
 import { IPlayServerRequestSource } from '@seplis/interfaces/play-server'
 import { FaPlay } from 'react-icons/fa'
@@ -13,15 +13,18 @@ import { pickStartSource } from '../player/pick-source'
 import { pickStartAudio } from '../player/pick-audio-source'
 import { pickStartSubtitle } from '../player/pick-subtitle-source'
 import { getDefaultTrackStyling } from '../player/react-cast-sender/utils/utils'
+import { PlayButtonMenu } from '../play-button-menu'
 
 
 export function PlayButton({ seriesId, episodeNumber, canPlay }: { seriesId: number, episodeNumber: number, canPlay: boolean }) {
     const navigate = useNavigate()
     const { connected } = useCast()
     const { loadMedia } = useCastPlayer()
+
     if (!canPlay)
         return null
-    return <Box>
+
+    return <ButtonGroup isAttached variant='outline'>
         <Button
             leftIcon={<FaPlay />}
             onClick={async () => {
@@ -34,8 +37,12 @@ export function PlayButton({ seriesId, episodeNumber, canPlay }: { seriesId: num
         >
             Play
         </Button>
-    </Box>
+        <PlayButtonMenu 
+            playServersUrl={`/2/series/${seriesId}/episodes/${episodeNumber}/play-servers`} 
+        />
+    </ButtonGroup>
 }
+
 
 export function castEpisodeRequest(
     seriesId: number, 

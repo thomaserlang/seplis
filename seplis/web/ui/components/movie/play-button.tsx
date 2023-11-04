@@ -1,4 +1,4 @@
-import { Button, Icon } from '@chakra-ui/react'
+import { Button, ButtonGroup, Icon } from '@chakra-ui/react'
 import { useFocusable } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
 import { v4 as uuidv4 } from 'uuid'
@@ -16,18 +16,14 @@ import { useCast, useCastPlayer } from '../player/react-cast-sender'
 import { pickStartSubtitle } from '../player/pick-subtitle-source'
 import { pickStartAudio } from '../player/pick-audio-source'
 import { getDefaultTrackStyling } from '../player/react-cast-sender/utils/utils'
+import { PlayButtonMenu } from '../play-button-menu'
 
 
 export default function PlayButton({ movieId }: { movieId: number }) {
     const navigate = useNavigate()
     const { connected } = useCast()
     const { loadMedia } = useCastPlayer()
-    const { isInitialLoading, data } = useQuery(['movie', 'play-button', movieId], async () => {
-        const result = await api.get<IPlayRequest[]>(`/2/movies/${movieId}/play-servers`)
-        return result.data.length > 0
-    }, {
-        enabled: isAuthed()
-    })
+
     const handleClick = async () => {
         if (connected) {
             const r = await castMovieRequest(movieId)
@@ -35,22 +31,15 @@ export default function PlayButton({ movieId }: { movieId: number }) {
         } else
             navigate(`/movies/${movieId}/play`)
     }
-    const { ref, focused } = useFocusable({
-        focusKey: 'MOVIE_PLAY',
-        focusable: data,
-        onEnterPress: () => {
-            handleClick()
-        }
-    })
-    return data && <Button
-        ref={ref}
-        isLoading={isInitialLoading}
-        leftIcon={<Icon as={FaPlay} />}
-        style={focused ? focusedBorder : null}
-        onClick={handleClick}
-    >
-        Play
-    </Button>
+    return <ButtonGroup isAttached variant='outline'>
+        <Button
+            leftIcon={<Icon as={FaPlay} />}
+            onClick={handleClick}
+        >
+            Play
+        </Button>
+        <PlayButtonMenu playServersUrl={`/2/movies/${movieId}/play-servers`} />
+    </ButtonGroup>
 }
 
 

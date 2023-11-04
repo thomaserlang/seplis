@@ -1,6 +1,6 @@
 import { Box, Flex } from '@chakra-ui/react'
 import { IPlayRequest, IPlayServerRequestSource, IPlayServerRequestSources, IPlaySource } from '@seplis/interfaces/play-server'
-import { getDefaultResolutionWidth, resolutionToText } from './pick-quality'
+import { getDefaultResolutionWidth } from './pick-quality'
 
 interface IProps {
     playServers: IPlayServerRequestSources[],
