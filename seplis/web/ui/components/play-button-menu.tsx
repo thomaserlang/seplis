@@ -11,15 +11,19 @@ interface IProps {
 export function PlayButtonMenu({ playServersUrl }: IProps) {
 
     return <Menu isLazy>
-        <MenuButton as={IconButton} icon={<ChevronDownIcon />} />
-        <MenuList>
-            {PlayButtonMenuItems({ playServersUrl })}
-        </MenuList>
+        {({ isOpen }) => (
+            <>
+                <MenuButton as={IconButton} icon={<ChevronDownIcon />} />
+                <MenuList>
+                    <PlayButtonMenuItems playServersUrl={playServersUrl} isOpen={isOpen} />
+                </MenuList>
+            </>
+        )}
     </Menu>
 }
 
-function PlayButtonMenuItems({ playServersUrl }: { playServersUrl: string }) {   
-    const playServers = useGetPlayServers(playServersUrl)
+function PlayButtonMenuItems({ playServersUrl, isOpen }: { playServersUrl: string, isOpen: boolean }) {   
+    const playServers = useGetPlayServers(playServersUrl, isOpen)
 
     if (playServers.isLoading || playServers.isFetching)
         return <MenuItem>Loading...</MenuItem>

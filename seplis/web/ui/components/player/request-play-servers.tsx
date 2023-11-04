@@ -4,9 +4,11 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 
 
-export function useGetPlayServers(url: string) {
+export function useGetPlayServers(url: string, enabled: boolean = true) {
     return useQuery(['play-server', url], async () => {
         return await getPlayServers(url)
+    }, {
+        enabled: enabled,
     })
 }
 
