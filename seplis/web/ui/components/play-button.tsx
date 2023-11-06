@@ -4,14 +4,16 @@ import { PlayButtonMenu } from './play-button-menu'
 
 interface IProps {
     playServersUrl: string,
+    isLoading?: boolean,
     onPlayClick: () => void,
 }
 
-export function PlayButton({ onPlayClick, playServersUrl }: IProps) {
+export function PlayButton({ onPlayClick, playServersUrl, isLoading }: IProps) {
     return <ButtonGroup isAttached>
         <Button
             leftIcon={<FaPlay />}
             onClick={onPlayClick}
+            isLoading={isLoading}
         >
             Play
         </Button>

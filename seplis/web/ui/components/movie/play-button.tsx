@@ -1,7 +1,7 @@
 import api from '@seplis/api'
 import { v4 as uuidv4 } from 'uuid'
 import { IMovie } from '@seplis/interfaces/movie'
-import { IPlayServerRequestSource } from '@seplis/interfaces/play-server'
+import { IPlayRequest, IPlayServerRequestSource } from '@seplis/interfaces/play-server'
 import { IToken } from '@seplis/interfaces/token'
 import { useNavigate } from 'react-router-dom'
 import { getPlayServers } from '../player/request-play-servers'
@@ -11,14 +11,23 @@ import { pickStartSubtitle } from '../player/pick-subtitle-source'
 import { pickStartAudio } from '../player/pick-audio-source'
 import { getDefaultTrackStyling } from '../player/react-cast-sender/utils/utils'
 import { PlayButton } from '../play-button'
+import { isAuthed } from '@seplis/utils'
+import { useQuery } from '@tanstack/react-query'
 
 
-export default function MoviePlayButton({ movieId }: { movieId: number }) {
+export default function MoviePlayButton({ movieId }: { movieId: number }) {    
+    const { isInitialLoading, data } = useQuery(['movie', 'play-button', movieId], async () => {
+    const result = await api.get<IPlayRequest[]>(`/2/movies/${movieId}/play-servers`)
+        return result.data.length > 0
+    }, {
+        enabled: isAuthed()
+    })
     const navigate = useNavigate()
     const { connected } = useCast()
     const { loadMedia } = useCastPlayer()
 
-    return <PlayButton
+    return data && <PlayButton        
+        isLoading={isInitialLoading}
         playServersUrl={`/2/movies/${movieId}/play-servers`}
         onPlayClick={async () => {
             if (connected) {
