@@ -73,7 +73,7 @@ async def get_user_watched(
     result = []
     for r in rows:
         if r.type == 'series':
-            result.append(schemas.User_watched(type=r.type, data=data[f'series-{r.id}']))
+            result.append(schemas.User_watched(type=r.type, data=data[f'series-{r.id}'], series=data[f'series-{r.id}']))
         elif r.type == 'movie':
-            result.append(schemas.User_watched(type=r.type, data=data[f'movie-{r.id}']))
+            result.append(schemas.User_watched(type=r.type, data=data[f'movie-{r.id}'], movie=data[f'movie-{r.id}']))
     return schemas.Page_cursor_result(items=result)
