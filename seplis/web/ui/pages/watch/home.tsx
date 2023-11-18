@@ -69,7 +69,7 @@ export default function WatchHome() {
                     onFocus={onRowFocus}
                     onItemSelected={userWatchedSelected}
                     hideIfEmpty={false}
-                    emptyMessage={`You haven't watched anything that's avaialable on a play server.`}
+                    emptyMessage={`You haven't watched anything that's available on a play server.`}
                 />
 
 
