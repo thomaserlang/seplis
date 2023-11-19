@@ -8,7 +8,7 @@ export interface IPlaySourceStream {
     title: string
     language: string
     index: number
-    codec: number | null
+    codec: string | null
     forced: boolean
     default: boolean
 }
