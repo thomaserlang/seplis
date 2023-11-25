@@ -5,7 +5,6 @@ import Hls from 'hls.js'
 import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { parse as vttParse } from '../../utils/srt-vtt-parser'
 import { useQuery } from '@tanstack/react-query'
-import { node } from 'webpack'
 
 interface IProps {
     requestSource: IPlayServerRequestSource
