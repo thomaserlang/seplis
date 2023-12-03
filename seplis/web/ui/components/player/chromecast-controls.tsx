@@ -48,11 +48,11 @@ export default function ChromecastControls() {
 
     return <Box background="blackAlpha.500" padding="0.5rem" rounded="md">
         <Flex gap="0.5rem" align="center">
-            <Box fontSize="14px">{secondsToTime(currentTime + info.startTime)}</Box>
+            <Box fontSize="14px">{secondsToTime(currentTime + info.requestMedia.transcode_start_time)}</Box>
             <Flex grow="1">
                 <Slider
                     duration={info.selectedRequestSource.source.duration}
-                    currentTime={currentTime + info.startTime}
+                    currentTime={currentTime + info.requestMedia.transcode_start_time}
                     playRequest={info.selectedRequestSource.request}
                     onTimeChange={async (time) => {
                         if (info.type == 'episode')
@@ -80,15 +80,15 @@ export default function ChromecastControls() {
                     subtitleOffset={info.subtitleOffset}
                     onRequestSourceChange={async (source) => {
                         if (info.type == 'episode')
-                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.startTime, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.requestMedia.transcode_start_time, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                         else if (info.type == 'movie')
-                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.startTime, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.requestMedia.transcode_start_time, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                     }}
                     onResolutionWidthChange={async (resolutionWidth) => {
                         if (info.type == 'episode')
-                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.startTime, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
                         else if (info.type == 'movie')
-                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.startTime, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
 
                     }}
                     onAudioSourceChange={async (source) => {
@@ -96,9 +96,9 @@ export default function ChromecastControls() {
                             api.put(`/2/series/${info.series.id}/user-settings`, {
                                 'audio_lang': source ? `${source.language || source.title}:${source.index}` : null,
                             })
-                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.startTime, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                         } else if (info.type == 'movie')
-                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.startTime, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                     }}
                     onSubtitleSourceChange={(source) => {
                         let url = ''
@@ -111,7 +111,7 @@ export default function ChromecastControls() {
                             lang = `${source.language}:${source.index}`
                             url = `${info.selectedRequestSource.request.play_url}/subtitle-file` +
                                 `?play_id=${info.selectedRequestSource.request.play_id}` +
-                                `&start_time=${info.startTime}` +
+                                `&start_time=${info.requestMedia.transcode_start_time}` +
                                 `&source_index=${info.selectedRequestSource.source.index}` +
                                 `&lang=${lang}`
                             if (info.subtitleOffset)
@@ -131,7 +131,7 @@ export default function ChromecastControls() {
                         if (info.subtitleLang) {
                             let url = `${info.selectedRequestSource.request.play_url}/subtitle-file` +
                                 `?play_id=${info.selectedRequestSource.request.play_id}` +
-                                `&start_time=${info.startTime}` +
+                                `&start_time=${info.requestMedia.transcode_start_time}` +
                                 `&source_index=${info.selectedRequestSource.source.index}` +
                                 `&lang=${info.subtitleLang}`
                             if (offset)

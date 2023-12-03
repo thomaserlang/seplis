@@ -1,7 +1,7 @@
 import api from '@seplis/api'
 import { v4 as uuidv4 } from 'uuid'
 import { IMovie } from '@seplis/interfaces/movie'
-import { IPlayRequest, IPlayServerRequestSource } from '@seplis/interfaces/play-server'
+import { IPlayRequest, IPlayServerRequestMedia, IPlayServerRequestSource } from '@seplis/interfaces/play-server'
 import { IToken } from '@seplis/interfaces/token'
 import { useNavigate } from 'react-router-dom'
 import { getPlayServers } from '../player/request-play-servers'
@@ -13,11 +13,12 @@ import { getDefaultTrackStyling } from '../player/react-cast-sender/utils/utils'
 import { PlayButton } from '../play-button'
 import { isAuthed } from '@seplis/utils'
 import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 
 
-export default function MoviePlayButton({ movieId }: { movieId: number }) {    
+export default function MoviePlayButton({ movieId }: { movieId: number }) {
     const { isInitialLoading, data } = useQuery(['movie', 'play-button', movieId], async () => {
-    const result = await api.get<IPlayRequest[]>(`/2/movies/${movieId}/play-servers`)
+        const result = await api.get<IPlayRequest[]>(`/2/movies/${movieId}/play-servers`)
         return result.data.length > 0
     }, {
         enabled: isAuthed()
@@ -26,13 +27,13 @@ export default function MoviePlayButton({ movieId }: { movieId: number }) {
     const { connected } = useCast()
     const { loadMedia } = useCastPlayer()
 
-    return data && <PlayButton        
+    return data && <PlayButton
         isLoading={isInitialLoading}
         playServersUrl={`/2/movies/${movieId}/play-servers`}
         onPlayClick={async () => {
             if (connected) {
                 const r = await castMovieRequest(movieId)
-                await loadMedia(r)            
+                await loadMedia(r)
             } else
                 navigate(`/movies/${movieId}/play`)
         }}
@@ -41,11 +42,11 @@ export default function MoviePlayButton({ movieId }: { movieId: number }) {
 
 
 export function castMovieRequest(
-    movieId: number, 
-    startTime?: number, 
-    requestSource?: IPlayServerRequestSource, 
-    audioLang?: string, 
-    subtitleLang?: string, 
+    movieId: number,
+    startTime?: number,
+    requestSource?: IPlayServerRequestSource,
+    audioLang?: string,
+    subtitleLang?: string,
     subtitleOffset?: number,
     resolutionWidth?: number) {
     return new Promise<chrome.cast.media.LoadRequest>((resolve, reject) => {
@@ -53,17 +54,16 @@ export function castMovieRequest(
             getPlayServers(`/2/movies/${movieId}/play-servers`),
             api.post<IToken>('/2/progress-token'),
             api.get<IMovie>(`/2/movies/${movieId}?expand=user_watched`),
-        ]).then(result => {
+        ]).then(async (result) => {
             const session = uuidv4()
             if (!startTime) {
                 if (result[2].data)
                     startTime = result[2].data.user_watched?.position
             }
 
-            // for some reason some movies will not start playing if startTime is 0
-            if (!startTime || (startTime == 0))
-                startTime = 20
-                
+            if (!startTime)
+                startTime = 0
+
             if (!requestSource)
                 requestSource = pickStartSource(result[0])
 
@@ -79,41 +79,31 @@ export function castMovieRequest(
                     subtitleLang = `${sub.language}:${sub.index}`
             }
 
-            const customData = {
-                session: session,
-                selectedRequestSource: requestSource,
-                requestSources: result[0],
-                token: result[1].data['access_token'],
-                type: 'movie',
-                movie: {
-                    id: result[2].data['id'],
-                    title: result[2].data['title'],
-                },
-                startTime: startTime,
-                audioLang: audioLang || '',
-                subtitleLang: subtitleLang || '',
-                subtitleOffset: subtitleOffset || 0,
-                apiUrl: (window as any).seplisAPI,
-                resolutionWidth: resolutionWidth,
-            }
-            const playUrl = customData.selectedRequestSource.request.play_url + `/files/${session}/transcode` +
-                `?play_id=${customData.selectedRequestSource.request.play_id}` +
+
+            const r = await axios.get<IPlayServerRequestMedia>(`${requestSource.request.play_url}/request-media` +
+                `?play_id=${requestSource.request.play_id}` +
+                `&source_index=${requestSource.source.index}` +
                 `&session=${session}` +
                 `&start_time=${startTime}` +
-                `&source_index=${customData.selectedRequestSource.source.index}` +
                 `&supported_video_codecs=h264` +
                 `&transcode_video_codec=h264` +
                 `&supported_audio_codecs=aac` +
                 `&transcode_audio_codec=aac` +
                 `&audio_channels=2` +
                 `&format=hls` +
-                `&audio_lang=${audioLang || ''}`+
-                `&width=${resolutionWidth || ''}`
+                `&audio_lang=${audioLang || ''}` +
+                `&width=${resolutionWidth || ''}` +
+                `&supported_video_containers=mp4`
+            )
+            const requestMedia = r.data
+            requestMedia.transcode_url = requestSource.request.play_url + `/files/${session}` + r.data.transcode_url
+            requestMedia.direct_play_url = requestSource.request.play_url + r.data.direct_play_url
 
-            const mediaInfo = new chrome.cast.media.MediaInfo(playUrl, 'application/x-mpegURL')            
+            const mediaInfo = new chrome.cast.media.MediaInfo(requestMedia.transcode_url, 'application/x-mpegURL')
             // @ts-ignore
             mediaInfo.hlsVideoSegmentFormat = chrome.cast.media.HlsSegmentFormat.FMP4
             mediaInfo.streamType = chrome.cast.media.StreamType.OTHER
+
             mediaInfo.metadata = new chrome.cast.media.MovieMediaMetadata()
             mediaInfo.metadata.title = result[2].data.title
             mediaInfo.metadata.releaseDate = result[2].data.release_date
@@ -121,6 +111,26 @@ export function castMovieRequest(
                 { url: result[2].data.poster_image != null ? result[2].data.poster_image.url + '@SX180.jpg' : '' },
             ]
             mediaInfo.textTrackStyle = getDefaultTrackStyling()
+
+            const customData = {
+                session: session,
+                selectedRequestSource: requestSource,
+                requestSources: result[0],
+                requestMedia: requestMedia,
+                token: result[1].data['access_token'],
+                type: 'movie',
+                movie: {
+                    id: result[2].data['id'],
+                    title: result[2].data['title'],
+                },
+                startTime: requestMedia.transcode_start_time,
+                audioLang: audioLang || '',
+                subtitleLang: subtitleLang || '',
+                subtitleOffset: subtitleOffset || 0,
+                apiUrl: (window as any).seplisAPI,
+                resolutionWidth: resolutionWidth,
+            }
+
             if (subtitleLang) {
                 const track = new chrome.cast.media.Track(1, chrome.cast.media.TrackType.TEXT)
                 track.language = subtitleLang
@@ -129,7 +139,7 @@ export function castMovieRequest(
                 track.trackContentType = 'text/vtt'
                 track.trackContentId = `${customData.selectedRequestSource.request.play_url}/subtitle-file` +
                     `?play_id=${customData.selectedRequestSource.request.play_id}` +
-                    `&start_time=${startTime - (subtitleOffset || 0)}` +
+                    `&start_time=${requestMedia.transcode_start_time - (subtitleOffset || 0)}`+
                     `&source_index=${customData.selectedRequestSource.source.index}` +
                     `&lang=${subtitleLang}`
                 mediaInfo.tracks = [track]
@@ -138,6 +148,7 @@ export function castMovieRequest(
             if (subtitleLang)
                 request.activeTrackIds = [1]
             request.customData = customData
+            request.currentTime = 0
             resolve(request)
         }).catch(e => {
             reject(e)

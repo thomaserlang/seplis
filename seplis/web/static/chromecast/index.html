@@ -130,7 +130,7 @@
                 //}))
                 //if (playerManager.getLiveSeekableRange.length <= 1 || playerManager.getLiveSeekableRange.end(0) <= 1)
 
-                time += customData['startTime']
+                time += Math.round(customData['startTime'])
                 if (customData['startTime'] == time)
                     return
                 if (lastSavedTime == time)

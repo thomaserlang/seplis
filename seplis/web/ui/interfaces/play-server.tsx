@@ -27,6 +27,8 @@ export interface IPlaySource {
     video_color_range_type: string
     index: number
     size: number
+    bit_rate: number
+    format: string
 }
 
 
