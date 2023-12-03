@@ -3,8 +3,6 @@ import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 import Hls from 'hls.js'
 import { forwardRef, MutableRefObject, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { parse as vttParse } from '../../utils/srt-vtt-parser'
-import { useQuery } from '@tanstack/react-query'
 import { detect } from 'detect-browser'
 
 interface IProps {
@@ -364,18 +362,6 @@ function getCurrentTime(videoElement: HTMLVideoElement, requestMedia: IPlayServe
 
 function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, subtitleOffset = 0, subtitleLinePosition = 16 }:
     { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number, subtitleLinePosition?: number }) {
-    const { data } = useQuery(['subtitle', requestSource?.request.play_id, subtitleSource?.index], async () => {
-        if (!subtitleSource)
-            return null
-        const result = await axios.get<string>(`${requestSource.request.play_url}/subtitle-file` +
-            `?play_id=${requestSource.request.play_id}` +
-            `&source_index=${requestSource.source.index}` +
-            `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}`)
-        return vttParse(result.data)
-    }, {
-        refetchOnMount: false,
-        refetchOnReconnect: false,
-    })
 
     useEffect(() => {
         if (!videoElement) return
@@ -383,26 +369,27 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
         for (const track of videoElement.textTracks)
             track.mode = 'disabled'
 
-        if (!data) return
-
         // Idk why but adding a new track too fast after disabling a previous one
         // makes the new one not show up
-        setTimeout(() => {
+        setTimeout(() => {            
             for (const track of videoElement.textTracks)
                 track.mode = 'disabled'
-            const textTrack = videoElement.addTextTrack('subtitles', subtitleSource.title, subtitleSource.language)
-            textTrack.mode = 'showing'
-            for (const cue of data.entries) {
-                const vtt = new VTTCue(
-                    ((cue.from / 1000) - startTime) + subtitleOffset,
-                    ((cue.to / 1000) - startTime) + subtitleOffset,
-                    cue.text
-                )
-                vtt.line = subtitleLinePosition
-                textTrack.addCue(vtt)
-            }
+
+            const track = document.createElement("track")
+            track.kind = "subtitles"
+            track.label = subtitleSource.title
+            track.srclang = subtitleSource.language
+            track.src = `${requestSource.request.play_url}/subtitle-file` +
+                `?play_id=${requestSource.request.play_id}` +
+                `&source_index=${requestSource.source.index}` +
+                `&start_time=${startTime + subtitleOffset}` +
+                `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}`
+            track.default = true
+            //@ts-ignore
+            track.mode = 'showing'
+            videoElement.appendChild(track)
         }, 100)
-    }, [videoElement, data, startTime, subtitleOffset])
+    }, [videoElement, requestSource?.request.play_id, subtitleSource?.index, startTime, subtitleOffset])
 
     useEffect(() => {
         if (!videoElement) return
