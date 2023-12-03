@@ -49,6 +49,7 @@ export default function PlayEpisode() {
     const markedAsWatched = useRef(false)
     const prevSavedPosition = useRef(0)
     const onTimeUpdate = (time: number, duration: number) => {
+        time = Math.round(time)
         if ((time === episode.data.startTime) || (time === prevSavedPosition.current) || (time < 10) || ((time % 10) != 0))
             return
         const watched = (((time / 100) * 10) > (duration - time))

@@ -99,7 +99,7 @@ export function castMovieRequest(
             const playUrl = customData.selectedRequestSource.request.play_url + `/files/${session}/transcode` +
                 `?play_id=${customData.selectedRequestSource.request.play_id}` +
                 `&session=${session}` +
-                `&start_time=${Math.round(startTime)}` +
+                `&start_time=${startTime}` +
                 `&source_index=${customData.selectedRequestSource.source.index}` +
                 `&supported_video_codecs=h264` +
                 `&transcode_video_codec=h264` +
