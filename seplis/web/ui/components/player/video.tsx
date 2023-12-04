@@ -362,6 +362,8 @@ function getCurrentTime(videoElement: HTMLVideoElement, requestMedia: IPlayServe
 
 function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, subtitleOffset = 0, subtitleLinePosition = 16 }:
     { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number, subtitleLinePosition?: number }) {
+    const changeSubtitleDebounce = useRef<NodeJS.Timeout>(null)
+
     useEffect(() => {
         if (!videoElement)
             return
@@ -374,10 +376,8 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
 
         // Idk why but adding a new track too fast after disabling a previous one
         // makes the new one not show up
-        setTimeout(() => {
-            for (const track of videoElement.textTracks)
-                track.mode = 'disabled'
-
+        clearTimeout(changeSubtitleDebounce.current)
+        changeSubtitleDebounce.current = setTimeout(() => {
             const track = document.createElement("track")
             track.kind = "subtitles"
             track.label = subtitleSource.title
@@ -385,20 +385,11 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
             track.src = `${requestSource.request.play_url}/subtitle-file` +
                 `?play_id=${requestSource.request.play_id}` +
                 `&source_index=${requestSource.source.index}` +
+                `&start_time=${startTime+subtitleOffset}` +
                 `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}`
             track.default = true
             //@ts-ignore
             track.mode = 'showing'
-            track.onload = () => {
-                for (const track of videoElement.textTracks) {
-                    if (track.mode == 'showing') {
-                        for (const cue of track.cues) {
-                            (cue as VTTCue).startTime -= startTime + subtitleOffset;
-                            (cue as VTTCue).endTime -= startTime + subtitleOffset;
-                        }
-                    }
-                }
-            }
             videoElement.appendChild(track)
         }, 100)
     }, [videoElement, requestSource?.request.play_id, subtitleSource?.index, startTime, subtitleOffset])
