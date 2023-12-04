@@ -364,10 +364,14 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, startTime, s
     { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, startTime: number, subtitleOffset?: number, subtitleLinePosition?: number }) {
 
     useEffect(() => {
-        if (!videoElement) return
+        if (!videoElement)
+            return
 
         for (const track of videoElement.textTracks)
             track.mode = 'disabled'
+
+        if (!subtitleSource)
+            return
 
         // Idk why but adding a new track too fast after disabling a previous one
         // makes the new one not show up
