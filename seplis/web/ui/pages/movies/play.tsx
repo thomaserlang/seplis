@@ -45,8 +45,10 @@ export default function PlayMovie() {
         }
     }
 
+    const playServerUrl = `/2/movies/${movieId}/play-servers`
     return <Player
-        getPlayServersUrl={`/2/movies/${movieId}/play-servers`}
+        key={playServerUrl}
+        getPlayServersUrl={playServerUrl}
         title={movie.data?.title}
         startTime={movie.data?.startTime}
         onTimeUpdate={onTimeUpdate}

@@ -55,14 +55,21 @@ export function SettingsMenu({
                     <MenuItem 
                         isDisabled={!((playServers.length > 1) || (playServers[0]?.sources?.length > 1))}
                         command={renderPlaySource(requestSource.source)} 
-                        onClick={() => setNested('sources')                        
-                    }>
+                        onClick={() => setNested('sources')}
+                    >
                         Source
                     </MenuItem>
-                    <MenuItem command={resolutionToText(resolutionWidth)} onClick={() => setNested('quality')}>
+                    <MenuItem 
+                        command={resolutionToText(resolutionWidth)} 
+                        onClick={() => setNested('quality')}
+                    >
                         Quality
                     </MenuItem>
-                    <MenuItem command={audioSourceToName(audioSource)} onClick={() => setNested('audio')}>
+                    <MenuItem 
+                        command={audioSourceToName(audioSource)} 
+                        onClick={() => setNested('audio')}
+                        isDisabled={!(requestSource.source?.audio?.length > 1)}
+                    >
                         Audio
                     </MenuItem>
                     <MenuItem
@@ -71,7 +78,10 @@ export function SettingsMenu({
                         onClick={() => setNested('subtitles')}>
                         Subtitle
                     </MenuItem>
-                    <MenuItem command={SubtitleOffsetToText(subtitleOffset)} onClick={() => setShowModal('subtitle_offset')}>
+                    <MenuItem 
+                        command={SubtitleOffsetToText(subtitleOffset)} 
+                        onClick={() => setShowModal('subtitle_offset')}
+                    >
                         Subtitle offset
                     </MenuItem>
                 </MenuList>
@@ -100,8 +110,8 @@ export function SettingsMenu({
                         <PickQuality
                             source={requestSource.source}
                             selectedWidth={resolutionWidth}
-                            onChange={(s) => {
-                                onResolutionWidthChange(s)
+                            onChange={width => {
+                                onResolutionWidthChange(width)
                                 setNested(null)
                             }}
                         />

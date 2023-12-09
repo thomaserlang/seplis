@@ -80,8 +80,10 @@ export default function PlayEpisode() {
         })
     }
 
+    const playServerUrl = `/2/series/${seriesId}/episodes/${episodeNumber}/play-servers`
     return <Player
-        getPlayServersUrl={`/2/series/${seriesId}/episodes/${episodeNumber}/play-servers`}
+        key={playServerUrl}
+        getPlayServersUrl={playServerUrl}
         title={episode.data?.title}
         startTime={episode.data?.startTime}
         playNext={playNext?.data}

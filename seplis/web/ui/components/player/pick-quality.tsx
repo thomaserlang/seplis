@@ -22,7 +22,7 @@ export function PickQuality({ source, selectedWidth, onChange }: IProps) {
                     cursor="pointer"
                     onClick={() => {
                         localStorage.setItem('resolutionWidth', w.toString())
-                        if (onChange) onChange(w)
+                        onChange?.(w)
                     }}
                 >
                     {value}
