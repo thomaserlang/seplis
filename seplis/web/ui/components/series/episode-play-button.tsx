@@ -91,7 +91,7 @@ export function castEpisodeRequest(
                 `&supported_video_containers=mp4`
             )
             const requestMedia = r.data
-            requestMedia.transcode_url = requestSource.request.play_url + `/files/${session}` + r.data.transcode_url
+            requestMedia.transcode_url = requestSource.request.play_url + r.data.transcode_url
             requestMedia.direct_play_url = requestSource.request.play_url + r.data.direct_play_url
 
             const mediaInfo = new chrome.cast.media.MediaInfo(requestMedia.transcode_url, 'application/x-mpegURL')
@@ -128,7 +128,7 @@ export function castEpisodeRequest(
                     season: result[3].data['season'],
                     episode: result[3].data['episode'],
                 },
-                startTime: requestMedia.transcode_start_time,
+                startTime: startTime,
                 audioLang: audioLang,
                 subtitleLang: subtitleLang || '',
                 subtitleOffset: subtitleOffset || 0,
@@ -144,16 +144,17 @@ export function castEpisodeRequest(
                 track.trackContentType = 'text/vtt'
                 track.trackContentId = `${customData.selectedRequestSource.request.play_url}/subtitle-file` +
                     `?play_id=${customData.selectedRequestSource.request.play_id}` +
-                    `&start_time=${requestMedia.transcode_start_time - (subtitleOffset || 0)}`+
                     `&source_index=${customData.selectedRequestSource.source.index}` +
                     `&lang=${subtitleLang}`
+                if (subtitleOffset)
+                    track.trackContentId = track.trackContentId + `&offset=${subtitleOffset}`
                 mediaInfo.tracks = [track]
             }
             const request = new chrome.cast.media.LoadRequest(mediaInfo)
             if (subtitleLang)
                 request.activeTrackIds = [1]
             request.customData = customData
-            request.currentTime = 0
+            request.currentTime = startTime
             resolve(request)
         }).catch(e => {
             reject(e)

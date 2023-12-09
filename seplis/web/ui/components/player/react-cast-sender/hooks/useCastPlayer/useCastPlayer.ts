@@ -209,6 +209,7 @@ const useCastPlayer = () => {
       if (player && playerController) {
         player.currentTime = time;
         playerController.seek();
+        setCurrentTime(time);
       }
     },
     [player, playerController]

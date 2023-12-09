@@ -51,24 +51,21 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     const [sessionUUID, setSessionUUID] = useState<string>(uuidv4())
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
-    const baseTime = useRef<number>(startTime)
-    const recoverTime = useRef<number>(startTime)
     const prevRequestSource = useRef(requestSource)
     const prevAudioSource = useRef(audioSource)
     const prevResolutionWidth = useRef(resolutionWidth)
-    const changeTimeDebounce = useRef<NodeJS.Timeout>(null)
     const requestMedia = useRef<IPlayServerRequestMedia>(null)
 
     useImperativeHandle(ref, () => ({
         sessionUUID: () => sessionUUID,
-        setCurrentTime: (time: number) => setCurrentTime(time, videoElement.current, setSessionUUID, baseTime, onTimeUpdate, onLoadingState, changeTimeDebounce, requestMedia.current),
-        getCurrentTime: () => getCurrentTime(videoElement.current, requestMedia.current, baseTime.current),
+        setCurrentTime: (time: number) => {
+            videoElement.current.currentTime = time
+            onTimeUpdate && onTimeUpdate(time)
+        },
+        getCurrentTime: () => videoElement.current.currentTime,
         skipSeconds: (seconds: number = 15) => {
-            let t = getCurrentTime(videoElement.current, requestMedia.current, baseTime.current) + seconds
-            if (t > requestSource.source.duration)
-                t = requestSource.source.duration
-            if (t < 0) t = 0
-            setCurrentTime(t, videoElement.current, setSessionUUID, baseTime, onTimeUpdate, onLoadingState, changeTimeDebounce, requestMedia.current)
+            videoElement.current.currentTime = videoElement.current.currentTime + seconds
+            onTimeUpdate && onTimeUpdate(videoElement.current.currentTime)
         },
         togglePlay: () => togglePlay(videoElement.current),
         paused: () => videoElement.current.paused,
@@ -81,8 +78,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         if ((prevRequestSource.current == requestSource) && (prevAudioSource.current == audioSource) &&
             (prevResolutionWidth.current == resolutionWidth))
             return
-        baseTime.current = getCurrentTime(videoElement.current, requestMedia.current, baseTime.current)
-        setSessionUUID(uuidv4())
     }, [requestSource, audioSource, resolutionWidth])
 
     useEffect(() => {
@@ -90,15 +85,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             return
 
         const recover = () => {
-            baseTime.current = recoverTime.current
-
-            if (videoElement.current.paused) {
-                if (onPause) onPause()
-                setSessionUUID(null)
-            } else {
-                if (onLoadingState) onLoadingState(true)
-                setSessionUUID(uuidv4())
-            }
+            videoElement.current.play().catch(() => { })
         }
 
         const start = async () => {
@@ -108,27 +95,25 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 sessionUUID: sessionUUID,
                 audio: audioSource && `${audioSource.language}:${audioSource.index}`,
                 requestSource: requestSource,
-                startTime: baseTime.current,
+                startTime: startTime,
             })
-            baseTime.current = requestMedia.current.transcode_start_time
-
             if (!Hls.isSupported() || requestMedia.current.can_direct_play) {
                 if (requestMedia.current.can_direct_play) {
                     videoElement.current.src = requestMedia.current.direct_play_url
-                    videoElement.current.currentTime = baseTime.current
                 } else {
                     videoElement.current.src = requestMedia.current.transcode_url
                 }
+                videoElement.current.currentTime = startTime
                 videoElement.current.load()
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             } else {
                 if (hls.current) hls.current.destroy()
                 hls.current = new Hls({
-                    startLevel: 0,
-                    startPosition: 0,
+                    startPosition: startTime,
                     manifestLoadingTimeOut: 30000,
-                    maxMaxBufferLength: 30,
-                    debug: false,
+                    enableWorker: true,
+                    lowLatencyMode: true,
+                    backBufferLength: 90,
                 })
                 hls.current.loadSource(requestMedia.current.transcode_url)
                 hls.current.attachMedia(videoElement.current)
@@ -138,8 +123,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                     console.warn(data)
                     switch (data.type) {
                         case Hls.ErrorTypes.NETWORK_ERROR:
-                            if (!data.fatal && ((data.response as any)?.code !== 404))
-                                return
+                            if (!data.fatal) return
                             console.log('hls.js fatal network error encountered, try to recover')
                             recover()
                             break
@@ -169,13 +153,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         const t = setInterval(() => {
             if (requestMedia.current.can_direct_play)
                 return
-            axios.get(`${requestSource.request.play_url}/keep-alive/${sessionUUID}`).catch(e => {
-                if (e.response.status == 404) {
-                    clearInterval(t)
-                    if (!Hls.isSupported())
-                        recover()
-                }
-            })
+            axios.get(`${requestSource.request.play_url}/keep-alive/${sessionUUID}`).catch(() => {})
         }, 4000)
 
         return () => {
@@ -190,14 +168,10 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         <video
             ref={videoElement}
             onTimeUpdate={() => {
-                const t = getCurrentTime(videoElement.current, requestMedia.current, baseTime.current)
-                if (t !== baseTime.current)
-                    recoverTime.current = t
-                if (onTimeUpdate) onTimeUpdate(t)
+                if (onTimeUpdate) onTimeUpdate(videoElement.current.currentTime)
             }}
             onPause={() => {
                 if (onPause) onPause()
-                recoverTime.current = getCurrentTime(videoElement.current, requestMedia.current, baseTime.current)
             }}
             onPlay={() => {
                 if (!sessionUUID)
@@ -227,7 +201,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             <SetSubtitle
                 videoElement={videoElement.current}
                 requestSource={requestSource}
-                startTime={requestMedia.current.can_direct_play ? 0 : baseTime.current}
+                startTime={0}
                 subtitleSource={subtitleSource}
                 subtitleOffset={subtitleOffset}
                 subtitleLinePosition={subtitleLinePosition}
@@ -258,38 +232,6 @@ function toggleFullscreen(video: HTMLVideoElement) {
             (document as any).webkitCancelFullScreen()
         }
     }
-}
-
-
-function setCurrentTime(
-    time: number,
-    videoElement: HTMLVideoElement,
-    setSessionUUID: (id: string) => void,
-    baseTime: MutableRefObject<number>,
-    onTimeUpdate: (n: number) => void,
-    setLoadingState: (loading: boolean) => void,
-    changeTimeDebounce: MutableRefObject<NodeJS.Timeout>,
-    requestMedia: IPlayServerRequestMedia,
-) {
-    clearTimeout(changeTimeDebounce.current)
-    changeTimeDebounce.current = setTimeout(() => {
-        if (!requestMedia.can_direct_play) {
-            if (setLoadingState) setLoadingState(true)
-            if (onTimeUpdate) onTimeUpdate(time)
-            // If we are still transcoding, check if we have transcoded enough to not have to start a new session
-            if ((videoElement.duration === Infinity) || (time < baseTime.current) ||
-                (time > (baseTime.current + videoElement.duration))) {
-                videoElement.pause()
-                baseTime.current = time
-                setSessionUUID(uuidv4())
-                videoElement.play()
-            } else {
-                videoElement.currentTime = time - baseTime.current
-            }
-        } else {
-            videoElement.currentTime = time
-        }
-    }, 50)
 }
 
 
@@ -350,13 +292,6 @@ function getSupportedVideoContainers() {
             return ['webm', 'mp4']
     }
     return ['mp4']
-}
-
-
-function getCurrentTime(videoElement: HTMLVideoElement, requestMedia: IPlayServerRequestMedia, baseTime: number) {
-    if (requestMedia.can_direct_play)
-        return videoElement.currentTime
-    return videoElement.currentTime + baseTime
 }
 
 

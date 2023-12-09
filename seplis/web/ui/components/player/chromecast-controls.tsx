@@ -15,7 +15,7 @@ import Slider from './slider'
 
 export default function ChromecastControls() {
     const { connected } = useCast()
-    const { currentTime, togglePlay, isPaused, sendMessage, loadMedia } = useCastPlayer()
+    const { currentTime, togglePlay, isPaused, sendMessage, loadMedia, seek } = useCastPlayer()
     const [info, setInfo] = useState<any>()
 
     useEffect(() => {
@@ -48,17 +48,14 @@ export default function ChromecastControls() {
 
     return <Box background="blackAlpha.500" padding="0.5rem" rounded="md">
         <Flex gap="0.5rem" align="center">
-            <Box fontSize="14px">{secondsToTime(currentTime + info.requestMedia.transcode_start_time)}</Box>
+            <Box fontSize="14px">{secondsToTime(currentTime)}</Box>
             <Flex grow="1">
                 <Slider
                     duration={info.selectedRequestSource.source.duration}
-                    currentTime={currentTime + info.requestMedia.transcode_start_time}
+                    currentTime={currentTime}
                     playRequest={info.selectedRequestSource.request}
                     onTimeChange={async (time) => {
-                        if (info.type == 'episode')
-                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
-                        else if (info.type == 'movie')
-                            loadMedia(await castMovieRequest(info.movie.id, time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                        seek(time)
                     }}
                 />
             </Flex>
@@ -80,15 +77,15 @@ export default function ChromecastControls() {
                     subtitleOffset={info.subtitleOffset}
                     onRequestSourceChange={async (source) => {
                         if (info.type == 'episode')
-                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.requestMedia.transcode_start_time, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                         else if (info.type == 'movie')
-                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.requestMedia.transcode_start_time, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime, source, info.audioLang, info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                     }}
                     onResolutionWidthChange={async (resolutionWidth) => {
                         if (info.type == 'episode')
-                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
                         else if (info.type == 'movie')
-                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime, info.selectedRequestSource, info.audioLang, info.subtitleLang, info.subtitleOffset, resolutionWidth))
 
                     }}
                     onAudioSourceChange={async (source) => {
@@ -96,9 +93,9 @@ export default function ChromecastControls() {
                             api.put(`/2/series/${info.series.id}/user-settings`, {
                                 'audio_lang': source ? `${source.language || source.title}:${source.index}` : null,
                             })
-                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castEpisodeRequest(info.series.id, info.episode.number, currentTime, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                         } else if (info.type == 'movie')
-                            loadMedia(await castMovieRequest(info.movie.id, currentTime + info.requestMedia.transcode_start_time, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
+                            loadMedia(await castMovieRequest(info.movie.id, currentTime, info.selectedRequestSource, source ? `${source.language}:${source.index}` : '', info.subtitleLang, info.subtitleOffset, info.resolutionWidth))
                     }}
                     onSubtitleSourceChange={(source) => {
                         let url = ''
@@ -111,7 +108,6 @@ export default function ChromecastControls() {
                             lang = `${source.language}:${source.index}`
                             url = `${info.selectedRequestSource.request.play_url}/subtitle-file` +
                                 `?play_id=${info.selectedRequestSource.request.play_id}` +
-                                `&start_time=${info.requestMedia.transcode_start_time}` +
                                 `&source_index=${info.selectedRequestSource.source.index}` +
                                 `&lang=${lang}`
                             if (info.subtitleOffset)
@@ -131,7 +127,6 @@ export default function ChromecastControls() {
                         if (info.subtitleLang) {
                             let url = `${info.selectedRequestSource.request.play_url}/subtitle-file` +
                                 `?play_id=${info.selectedRequestSource.request.play_id}` +
-                                `&start_time=${info.requestMedia.transcode_start_time}` +
                                 `&source_index=${info.selectedRequestSource.source.index}` +
                                 `&lang=${info.subtitleLang}`
                             if (offset)
