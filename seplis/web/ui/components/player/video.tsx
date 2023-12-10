@@ -287,6 +287,7 @@ function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
 function getSupportedVideoContainers() {
     switch (browser.name) {
         case 'chrome':
+        case 'edge-chromium':
             return ['webm', 'mp4']
     }
     return ['mp4']
