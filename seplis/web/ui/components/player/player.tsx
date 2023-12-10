@@ -1,6 +1,5 @@
 import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Popover, PopoverArrow, PopoverBody, PopoverContent, PopoverTrigger, Spinner } from '@chakra-ui/react'
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
-import { secondsToTime } from '@seplis/utils'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
@@ -14,6 +13,7 @@ import { SettingsMenu } from './settings'
 import Slider from './slider'
 import { IVideoControls, Video } from './video'
 import VolumeBar from './volume-bar'
+import { secondsToTime } from '@seplis/utils'
 
 export interface IPlayNextProps {
     title: string

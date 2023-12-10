@@ -1,4 +1,4 @@
-import { Text, Alert, AlertIcon, AlertTitle, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, Heading, Skeleton, useDisclosure, AlertDescription } from '@chakra-ui/react'
+import { Alert, AlertIcon, AlertTitle, Box, Button, Drawer, DrawerBody, DrawerCloseButton, DrawerContent, DrawerHeader, DrawerOverlay, Flex, Heading, Skeleton, useDisclosure, AlertDescription } from '@chakra-ui/react'
 import { FocusHandler } from '@noriginmedia/norigin-spatial-navigation'
 import api from '@seplis/api'
 import { IPageCursorTotalResult } from '@seplis/interfaces/page'
@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { FaFilter } from 'react-icons/fa'
 import { ErrorMessageFromResponse } from './error'
 import { Card } from './slider'
-import { removeEmpty } from '../utils'
+import { removeEmpty } from '@seplis/utils'
 
 interface IProps<S = any> {
     title: string

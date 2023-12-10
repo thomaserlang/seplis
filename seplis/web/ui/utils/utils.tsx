@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { IEpisode } from './interfaces/episode'
+import { IEpisode } from '../interfaces/episode'
 
 
 export function isAuthed() {

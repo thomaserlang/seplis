@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 import Hls from 'hls.js'
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { detect } from 'detect-browser'
+import { browser } from '@seplis/utils'
 
 interface IProps {
     requestSource: IPlayServerRequestSource
@@ -102,7 +102,8 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 requestSource: requestSource,
                 startTime: startTimeRef.current,
             })
-            if (!Hls.isSupported() || requestMedia.current.can_direct_play) {
+            if (!Hls.isSupported() || 
+                    (requestMedia.current.can_direct_play && audioSource?.group_index == 0)) {
                 if (requestMedia.current.can_direct_play) {
                     videoElement.current.src = requestMedia.current.direct_play_url
                 } else {
@@ -256,7 +257,7 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
         `&supported_video_codecs=${String(videoCodecs)}` +
         `&transcode_video_codec=${videoCodecs[0]}` +
         //`&client_width=${this.getScreenWidth()}`+
-        `&supported_audio_codecs=aac` +
+        `&supported_audio_codecs=${String(getSupportedAudioCodecs(videoElement))}` +
         `&transcode_audio_codec=aac` +
         `&format=hls` +
         `&audio_channels=6` +
@@ -268,21 +269,14 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
 }
 
 
-function getSupportedVideoColorBitDepth() {
-    if (screen.colorDepth > 24)
-        return 10
-    return 8
-}
-
-
 function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
     const types: { [key: string]: string } = {
-        'video/mp4; codecs="avc1.42E01E"': 'h264',
         'video/mp4; codecs="hvc1"': 'hevc',
         'video/mp4; codecs="hev1.1.6.L93.90"': 'hevc',
+        'video/mp4; codecs="avc1.42E01E"': 'h264',
         'video/mp4; codecs="av01.0.08M.08"': 'av1',
     }
-    const codecs = []
+    const codecs: string[] = []
     for (const key in types)
         if (videoElement.canPlayType(key))
             codecs.push(types[key])
@@ -291,12 +285,36 @@ function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
 
 
 function getSupportedVideoContainers() {
-    const browser = detect()
-    switch (browser && browser.name) {
+    switch (browser.name) {
         case 'chrome':
             return ['webm', 'mp4']
     }
     return ['mp4']
+}
+
+
+function getSupportedAudioCodecs(videoElement: HTMLVideoElement) {
+    const types: { [key: string]: string } = {
+        'audio/aac': 'aac',
+        'audio/mp4; codecs="ec-3"': 'eac3',
+        'audio/mp4; codecs="ac-3"': 'ac3',
+        'audio/mp4; codecs="ac-4"': 'ac4',
+        'audio/mp4; codecs="opus"': 'opus',
+        'audio/mp4; codecs="flac"': 'flac',
+        'audio/mp4; codecs="dtsc"': 'dtsc',
+        'audio/mp4; codecs="dtse"': 'dtse',
+        'audio/mp4; codecs="dtsx"': 'dtsx',        
+    }
+    const codecs: string[] = []
+    for (const key in types)
+        if (videoElement.canPlayType(key))
+            codecs.push(types[key])
+    return [...new Set(codecs)]
+}
+
+
+function getSupportedHdrFormats(videoElement: HTMLVideoElement) {
+
 }
 
 
