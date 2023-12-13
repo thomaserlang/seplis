@@ -121,15 +121,7 @@
                     return
                 setPingTimer()
                 let time = Math.floor(event.currentMediaTime)
-
-                // TODO: Find a way to check if the media is being transcoded on the fly
-                // since if true the `event.currentMediaTime` will only
-                // hold the value since it started playing not the correct position
-                //console.log(playerManager.getLiveSeekableRange(e => {
-                //    console.log(e)
-                //}))
-                //if (playerManager.getLiveSeekableRange.length <= 1 || playerManager.getLiveSeekableRange.end(0) <= 1)
-
+                
                 time += Math.round(customData['startTime'])
                 if (customData['startTime'] == time)
                     return
