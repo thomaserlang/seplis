@@ -102,6 +102,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 requestSource: requestSource,
                 startTime: startTimeRef.current,
             })
+            requestMedia.current.can_direct_play = false
             if (!Hls.isSupported() || 
                     (requestMedia.current.can_direct_play && audioSource?.group_index == 0)) {
                 if (requestMedia.current.can_direct_play) {
@@ -113,7 +114,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 videoElement.current.load()
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             } else {
-                if (hls.current) hls.current.destroy()
                 hls.current = new Hls({
                     startPosition: startTimeRef.current,
                     manifestLoadingTimeOut: 30000,
@@ -163,6 +163,10 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         }, 4000)
 
         return () => {
+            if (hls.current) {
+                hls.current.destroy()
+                hls.current = null
+            }
             startTimeRef.current = videoElement.current?.currentTime
             clearInterval(t)
             if (sessionUUID && !requestMedia.current.can_direct_play)
@@ -200,7 +204,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             controls={false}
             preload="none"
             crossOrigin="anonymous"
-            playsInline
         >
             {children}
         </video>
@@ -292,7 +295,6 @@ function getSupportedVideoContainers() {
     }
     return ['mp4']
 }
-
 
 function getSupportedAudioCodecs(videoElement: HTMLVideoElement) {
     const types: { [key: string]: string } = {
