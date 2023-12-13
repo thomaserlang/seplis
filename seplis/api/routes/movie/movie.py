@@ -2,9 +2,10 @@ from fastapi import Depends, HTTPException, Security
 import sqlalchemy as sa
 from ....api.filter.movies.query_filter_schema import Movie_query_filter
 from ... import models, schemas
-from ...dependencies import authenticated, get_session, AsyncSession
+from ...dependencies import authenticated, get_current_user_no_raise, get_expand, get_session, AsyncSession
 from ...database import database
 from ...filter.movies import filter_movies
+from ...expand.movie import expand_movies
 from .router import router
 
 
@@ -28,10 +29,14 @@ async def get_movies(
 async def get_movie(
     movie_id: int,
     session: AsyncSession = Depends(get_session),
+    expand: list[str] | None = Depends(get_expand),
+    user: schemas.User_authenticated | None = Depends(
+        get_current_user_no_raise),
 ):
     movie = await session.scalar(sa.select(models.Movie).where(models.Movie.id == movie_id))
     if not movie:
         raise HTTPException(404, 'Unknown movie')
+    await expand_movies(movies=[movie], user=user, expand=expand)
     return movie
 
 
