@@ -114,7 +114,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 videoElement.current.load()
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             } else {
-                console.log(startTimeRef.current)
                 hls.current = new Hls({
                     startPosition: startTimeRef.current,
                     manifestLoadingTimeOut: 30000,
