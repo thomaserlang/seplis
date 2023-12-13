@@ -15,7 +15,7 @@ import Slider from './slider'
 
 export default function ChromecastControls() {
     const { connected } = useCast()
-    const { currentTime, togglePlay, isPaused, sendMessage, loadMedia, seek } = useCastPlayer()
+    const { currentTime, togglePlay, isPaused, sendMessage, loadMedia, seek, isMediaLoaded } = useCastPlayer()
     const [info, setInfo] = useState<any>()
 
     useEffect(() => {
@@ -47,7 +47,7 @@ export default function ChromecastControls() {
         return
 
     return <Box background="blackAlpha.500" padding="0.5rem" rounded="md">
-        <Flex gap="0.5rem" align="center">
+        {isMediaLoaded && (currentTime > 0) && <Flex gap="0.5rem" align="center">
             <Box fontSize="14px">{secondsToTime(currentTime)}</Box>
             <Flex grow="1">
                 <Slider
@@ -60,7 +60,7 @@ export default function ChromecastControls() {
                 />
             </Flex>
             <Box fontSize="14px">{secondsToTime(info.selectedRequestSource.source.duration)}</Box>
-        </Flex>
+        </Flex>}
         <Flex gap="1rem" alignItems="center">
             <PlayButton aria-label="Play or pause" icon={isPaused ? <FaPlay /> : <FaPause />} onClick={() => togglePlay()} />
 
