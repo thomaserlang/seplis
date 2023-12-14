@@ -102,7 +102,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 requestSource: requestSource,
                 startTime: startTimeRef.current,
             })
-            requestMedia.current.can_direct_play = false
             if (!Hls.isSupported() || 
                     (requestMedia.current.can_direct_play && audioSource?.group_index == 0)) {
                 if (requestMedia.current.can_direct_play) {
