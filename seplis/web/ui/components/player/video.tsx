@@ -263,7 +263,7 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
         //`&client_width=${this.getScreenWidth()}`+
         `&supported_audio_codecs=${String(getSupportedAudioCodecs(videoElement))}` +
         `&transcode_audio_codec=aac` +
-        `&format=hls` +
+        `&format=${Hls.isSupported() ? 'hls.js' : 'hls'}` +
         `&audio_channels=6` +
         `&supported_video_containers=${String(getSupportedVideoContainers())}`
     )
