@@ -221,7 +221,6 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
         `&max_width=${resolutionWidth || ''}` +
         `&supported_video_codecs=${String(videoCodecs)}` +
         `&transcode_video_codec=${videoCodecs[0]}` +
-        //`&client_width=${this.getScreenWidth()}`+
         `&supported_audio_codecs=${String(getSupportedAudioCodecs(videoElement))}` +
         `&transcode_audio_codec=aac` +
         `&format=${Hls.isSupported() ? 'hls.js' : 'hls'}` +
