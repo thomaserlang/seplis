@@ -317,43 +317,30 @@ function SetSubtitle({
 
     useEffect(() => {
         if (!track.current) return
+        firstTrackLoad.current = true
+    }, [track])
+
+    useEffect(() => {
+        if (!track.current) return
         if (firstTrackLoad.current) {
             firstTrackLoad.current = false
             return
         }
-        if (!toast.isActive('loading-subtitles'))
-            toast({
-                id: 'loading-subtitles',
-                title: 'Loading subtitle',
-                status: 'loading',
-                duration: null,
-                isClosable: true,
-                position: 'top-right',
-                variant: 'subtle',
-            })
-        track.current.onerror = () => {
-            toast.close('loading-subtitles')
-            toast({
-                title: 'Failed to load subtitle',
-                status: 'error',
-                duration: 3000,
-                isClosable: true,
-                position: 'top-right',
-                variant: 'subtle',
-            })
-        }
+        const id = toast({
+            title: 'Loading subtitle',
+            status: 'loading',
+            duration: null,
+            isClosable: true,
+            position: 'top-right',
+            variant: 'subtle',
+        })
         track.current.onload = () => {
-            toast.close('loading-subtitles')
+            toast.close(id)
         }
         return () => {
-            toast.close('loading-subtitles')
+            toast.close(id)
         }
     }, [track, subtitleSource, requestSource, subtitleOffset])
-
-    useEffect(() => {
-        firstTrackLoad.current = true
-    }, [track])
-
     return <>
         {subtitleSource && <track
             ref={track}
