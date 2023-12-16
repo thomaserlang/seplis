@@ -171,14 +171,13 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             playsInline
         >
             {children}
-            {requestMedia.current &&
-                <SetSubtitle
-                    videoElement={videoElement.current}
-                    requestSource={requestSource}
-                    subtitleSource={subtitleSource}
-                    subtitleOffset={subtitleOffset}
-                    subtitleLinePosition={subtitleLinePosition}
-                />}
+            <SetSubtitle
+                videoElement={videoElement.current}
+                requestSource={requestSource}
+                subtitleSource={subtitleSource}
+                subtitleOffset={subtitleOffset}
+                subtitleLinePosition={subtitleLinePosition}
+            />
         </video>
     </>
 })
@@ -316,16 +315,15 @@ function SetSubtitle({
     }, [subtitleLinePosition])
 
     useEffect(() => {
-        if (!track.current) return
         firstTrackLoad.current = true
     }, [track])
 
     useEffect(() => {
-        if (!track.current) return
         if (firstTrackLoad.current) {
             firstTrackLoad.current = false
             return
         }
+        if (!track.current) return
         const id = toast({
             title: 'Loading subtitle',
             status: 'loading',
@@ -341,6 +339,7 @@ function SetSubtitle({
             toast.close(id)
         }
     }, [track, subtitleSource, requestSource, subtitleOffset])
+
     return <>
         {subtitleSource && <track
             ref={track}
