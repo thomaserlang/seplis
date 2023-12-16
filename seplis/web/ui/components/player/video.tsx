@@ -134,17 +134,11 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                         case Hls.ErrorTypes.MEDIA_ERROR:
                             if (!data.fatal)
                                 return
-                            console.log('hls.js fatal media error encountered, try to recover')
-                            onPause?.()
-                            onLoadingState?.(true)
-                            hls.current.swapAudioCodec()
-                            hls.current.recoverMediaError()
-                            videoElement.current.play().catch(() => { })
+                            console.log('hls.js fatal media error encountered')
                             break
                         default:
                             if (!data.fatal) return
                             console.log('hls.js could not recover')
-                            recover()
                             break
                     }
                 })
