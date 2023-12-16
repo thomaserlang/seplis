@@ -48,5 +48,5 @@ export interface IPlayServerRequestSources {
 export interface IPlayServerRequestMedia {
     direct_play_url: string
     can_direct_play: boolean
-    transcode_url: string
+    hls_url: string
 }

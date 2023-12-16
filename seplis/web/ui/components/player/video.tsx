@@ -102,12 +102,11 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 requestSource: requestSource,
                 startTime: startTimeRef.current,
             })
-            if (!Hls.isSupported() || 
-                    (requestMedia.current.can_direct_play && audioSource?.group_index == 0)) {
+            if (!Hls.isSupported() || requestMedia.current.can_direct_play) {
                 if (requestMedia.current.can_direct_play) {
                     videoElement.current.src = requestMedia.current.direct_play_url
                 } else {
-                    videoElement.current.src = requestMedia.current.transcode_url
+                    videoElement.current.src = requestMedia.current.hls_url
                 }
                 videoElement.current.currentTime = startTimeRef.current
                 videoElement.current.load()
@@ -120,7 +119,7 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                     lowLatencyMode: true,
                     backBufferLength: 90,
                 })
-                hls.current.loadSource(requestMedia.current.transcode_url)
+                hls.current.loadSource(requestMedia.current.hls_url)
                 hls.current.attachMedia(videoElement.current)
                 hls.current.on(Hls.Events.MANIFEST_PARSED, () =>
                     videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed()))
@@ -266,7 +265,7 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
         `&audio_channels=6` +
         `&supported_video_containers=${String(getSupportedVideoContainers())}`
     )
-    r.data.transcode_url = requestSource.request.play_url + r.data.transcode_url
+    r.data.hls_url = requestSource.request.play_url + r.data.hls_url
     r.data.direct_play_url = requestSource.request.play_url + r.data.direct_play_url
     return r.data
 }

@@ -96,10 +96,10 @@ export function castMovieRequest(
                 `&supported_video_containers=mp4`
             )
             const requestMedia = r.data
-            requestMedia.transcode_url = requestSource.request.play_url + r.data.transcode_url
+            requestMedia.hls_url = requestSource.request.play_url + r.data.hls_url
             requestMedia.direct_play_url = requestSource.request.play_url + r.data.direct_play_url
 
-            const mediaInfo = new chrome.cast.media.MediaInfo(requestMedia.transcode_url, 'application/x-mpegURL')
+            const mediaInfo = new chrome.cast.media.MediaInfo(requestMedia.hls_url, 'application/x-mpegURL')
             // @ts-ignore
             mediaInfo.hlsVideoSegmentFormat = chrome.cast.media.HlsSegmentFormat.FMP4
             mediaInfo.streamType = chrome.cast.media.StreamType.OTHER
