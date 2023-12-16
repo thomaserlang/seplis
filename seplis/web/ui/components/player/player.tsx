@@ -2,6 +2,7 @@ import { Box, Flex, forwardRef, Heading, IconButton, IconButtonProps, Popover, P
 import { IPlayServerRequestSource, IPlayServerRequestSources, IPlaySourceStream } from '@seplis/interfaces/play-server'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { FaArrowsAlt, FaExpand, FaPause, FaPlay, FaRedo, FaStepForward, FaTimes, FaUndo, FaVolumeDown, FaVolumeOff, FaVolumeUp } from 'react-icons/fa'
+import { browser, isMobile } from '@seplis/utils'
 import { Link } from 'react-router-dom'
 import FullErrorPage from '../full-page-error'
 import { pickStartAudio } from './pick-audio-source'
@@ -134,12 +135,18 @@ function VideoPlayer({
 
         const keyDown = (e: globalThis.KeyboardEvent) => {
             showControls()
-            if (e.code == 'Space')
+            if (e.code == 'Space') {
                 videoControls.current.togglePlay()
-            if (e.code == 'ArrowLeft')
+                e.preventDefault()
+            }
+            if (e.code == 'ArrowLeft') {
                 videoControls.current.skipSeconds(-15)
-            if (e.code == 'ArrowRight')
+                e.preventDefault()
+            }
+            if (e.code == 'ArrowRight') {
                 videoControls.current.skipSeconds(15)
+                e.preventDefault()
+            }
         }
         document.addEventListener('keydown', keyDown)
         return () => document.removeEventListener('keydown', keyDown)
@@ -148,8 +155,8 @@ function VideoPlayer({
     return <Box
         id="player"
         position="fixed"
-        width="100%"
-        height="100%"
+        width="100vw"
+        height="100vh"
         left="0"
         top="0"
         backgroundColor="#000"
@@ -167,14 +174,14 @@ function VideoPlayer({
         <Video
             ref={videoControls}
             requestSource={requestSource}
-            startTime={startTime}
+            startTime={time}
             resolutionWidth={resolutionWidth}
             audioSource={audioSource}
             subtitleSource={subtitleSource}
             subtitleLinePosition={(controlsVisible || paused) ? -4 : undefined}
             subtitleOffset={subtitleOffset}
             onTimeUpdate={(time) => {
-                if (onTimeUpdate) onTimeUpdate(time, requestSource.source.duration)
+                onTimeUpdate?.(time, requestSource.source.duration)
                 setTime(time)
                 if (controlsVisible && !hideControlsTimer.current)
                     showControls()
@@ -227,7 +234,7 @@ function VideoPlayer({
                 <PlayButton aria-label="Forward 15 seconds" icon={<FaRedo />} onClick={() => {
                     videoControls.current.skipSeconds(15)
                 }} />
-                <VolumeButton videoControls={videoControls.current} />
+                {!isMobile && <VolumeButton videoControls={videoControls.current} />}
 
                 <Flex style={{ marginLeft: 'auto' }} gap="0.5rem">
                     {playNext && <PlayNext {...playNext} />}

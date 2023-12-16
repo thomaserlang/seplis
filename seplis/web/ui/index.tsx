@@ -97,21 +97,24 @@ import { CastProvider } from './components/player/react-cast-sender'
 import SeriesCountdown from './pages/series/countdown'
 import SeriesRecentlyAired from './pages/series/recently-aired'
 import SeriesToWatch from './pages/series/series-to-watch'
+import { StrictMode } from 'react'
 
 spatialInit({})
 
 createRoot(document.getElementById("root")).render(
-    <ChakraProvider theme={theme}>
-        <BrowserRouter >
-            <QueryParamProvider adapter={ReactRouter6Adapter}>
-                <QueryClientProvider client={queryClient}>
-                    <CastProvider receiverApplicationId={(window as any).seplisChromecastAppId}>
-                        <App />
-                    </CastProvider>
-                </QueryClientProvider>
-            </QueryParamProvider>
-        </BrowserRouter>
-    </ChakraProvider>
+    <StrictMode>
+        <ChakraProvider theme={theme}>
+            <BrowserRouter >
+                <QueryParamProvider adapter={ReactRouter6Adapter}>
+                    <QueryClientProvider client={queryClient}>
+                        <CastProvider receiverApplicationId={(window as any).seplisChromecastAppId}>
+                            <App />
+                        </CastProvider>
+                    </QueryClientProvider>
+                </QueryParamProvider>
+            </BrowserRouter>
+        </ChakraProvider>
+    </StrictMode>
 )
 
 function App() {

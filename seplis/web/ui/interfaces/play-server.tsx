@@ -49,4 +49,6 @@ export interface IPlayServerRequestMedia {
     direct_play_url: string
     can_direct_play: boolean
     hls_url: string
+    keep_alive_url: string
+    close_session_url: string
 }

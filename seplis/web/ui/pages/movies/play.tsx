@@ -3,12 +3,13 @@ import Player from '@seplis/components/player/player'
 import { IMovie, IMovieWatched } from '@seplis/interfaces/movie'
 import { useQuery } from '@tanstack/react-query'
 import { useRef } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 
 export default function PlayMovie() {
     const { movieId } = useParams()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
     const location = useLocation()
 
     const movie = useQuery(['movie-title-watched', movieId], async () => {
@@ -45,12 +46,17 @@ export default function PlayMovie() {
         }
     }
 
+    let startTime = 0
+    if (searchParams.has('start_time'))
+        startTime = parseInt(searchParams.get('start_time'))
+    else if (movie.data)
+        startTime = movie.data.startTime
     const playServerUrl = `/2/movies/${movieId}/play-servers`
     return <Player
         key={playServerUrl}
         getPlayServersUrl={playServerUrl}
         title={movie.data?.title}
-        startTime={movie.data?.startTime}
+        startTime={startTime}
         onTimeUpdate={onTimeUpdate}
         loading={movie.isLoading}
         onClose={() => {

@@ -6,12 +6,13 @@ import { ISeries, ISeriesUserSettings } from '@seplis/interfaces/series'
 import { episodeTitle } from '@seplis/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useRef } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 
 export default function PlayEpisode() {
     const { seriesId, episodeNumber } = useParams()
     const navigate = useNavigate()
+    const [searchParams] = useSearchParams()
     const location = useLocation()
 
     const episode = useQuery(['episode-title-watched', seriesId, episodeNumber], async () => {
@@ -41,7 +42,7 @@ export default function PlayEpisode() {
         if (result.data && result.data.user_can_watch.on_play_server)
             return {
                 title: episodeTitle(result.data),
-                url: `/series/${seriesId}/episodes/${result.data.number}/play`
+                url: `/series/${seriesId}/episodes/${result.data.number}/play?start_time=0`
             }
         return null
     })
@@ -79,13 +80,18 @@ export default function PlayEpisode() {
             'subtitle_lang': source ? `${source.language || source.title}:${source.index}` : 'off',
         })
     }
-
+    
+    let startTime = 0
+    if (searchParams.has('start_time'))
+        startTime = parseInt(searchParams.get('start_time'))
+    else if (episode.data)
+        startTime = episode.data.startTime
     const playServerUrl = `/2/series/${seriesId}/episodes/${episodeNumber}/play-servers`
     return <Player
         key={playServerUrl}
         getPlayServersUrl={playServerUrl}
         title={episode.data?.title}
-        startTime={episode.data?.startTime}
+        startTime={startTime}
         playNext={playNext?.data}
         onTimeUpdate={onTimeUpdate}
         loading={episode.isLoading}

@@ -1,9 +1,9 @@
 import { IPlayServerRequestMedia, IPlayServerRequestSource, IPlaySourceStream } from '@seplis/interfaces/play-server'
-import { v4 as uuidv4 } from 'uuid'
 import axios from 'axios'
 import Hls from 'hls.js'
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 import { browser } from '@seplis/utils'
+import { useToast } from '@chakra-ui/react'
 
 interface IProps {
     requestSource: IPlayServerRequestSource
@@ -22,7 +22,6 @@ interface IProps {
 }
 
 export interface IVideoControls {
-    sessionUUID: () => string
     setCurrentTime: (time: number) => void
     getCurrentTime: () => number
     skipSeconds: (seconds?: number) => void
@@ -48,24 +47,20 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     onPlay,
     onLoadingState,
 }: IProps, ref) => {
-    const [sessionUUID, setSessionUUID] = useState<string>(uuidv4())
     const videoElement = useRef<HTMLVideoElement>(null)
     const hls = useRef<Hls>(null)
-    const prevRequestSource = useRef(requestSource)
-    const prevAudioSource = useRef(audioSource)
-    const prevResolutionWidth = useRef(resolutionWidth)
     const requestMedia = useRef<IPlayServerRequestMedia>(null)
-    const startTimeRef = useRef(startTime)
 
     useImperativeHandle(ref, () => ({
-        sessionUUID: () => sessionUUID,
         setCurrentTime: (time: number) => {
             videoElement.current.currentTime = time
+            videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             onTimeUpdate?.(time)
         },
         getCurrentTime: () => videoElement.current.currentTime,
         skipSeconds: (seconds: number = 15) => {
             videoElement.current.currentTime = videoElement.current.currentTime + seconds
+            videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             onTimeUpdate?.(videoElement.current.currentTime)
         },
         togglePlay: () => togglePlay(videoElement.current),
@@ -76,31 +71,13 @@ export const Video = forwardRef<IVideoControls, IProps>(({
     }), [videoElement.current])
 
     useEffect(() => {
-        if ((prevRequestSource.current == requestSource) && (prevAudioSource.current == audioSource) &&
-            (prevResolutionWidth.current == resolutionWidth))
-            return
-        prevRequestSource.current = requestSource
-        prevAudioSource.current = audioSource
-        prevResolutionWidth.current = resolutionWidth
-        setSessionUUID(uuidv4())
-    }, [requestSource, audioSource, resolutionWidth])
-
-    useEffect(() => {
-        if (!sessionUUID)
-            return
-
-        const recover = () => {
-            videoElement.current.play().catch(() => { })
-        }
-
         const start = async () => {
             requestMedia.current = await getPlayRequestMedia({
                 videoElement: videoElement.current,
                 resolutionWidth: resolutionWidth,
-                sessionUUID: sessionUUID,
                 audio: audioSource && `${audioSource.language}:${audioSource.index}`,
                 requestSource: requestSource,
-                startTime: startTimeRef.current,
+                startTime: startTime,
             })
             if (!Hls.isSupported() || requestMedia.current.can_direct_play) {
                 if (requestMedia.current.can_direct_play) {
@@ -108,12 +85,12 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 } else {
                     videoElement.current.src = requestMedia.current.hls_url
                 }
-                videoElement.current.currentTime = startTimeRef.current
+                videoElement.current.currentTime = startTime
                 videoElement.current.load()
                 videoElement.current.play().catch(() => onAutoPlayFailed && onAutoPlayFailed())
             } else {
                 hls.current = new Hls({
-                    startPosition: startTimeRef.current,
+                    startPosition: startTime,
                     manifestLoadingTimeOut: 30000,
                     enableWorker: true,
                     lowLatencyMode: true,
@@ -129,7 +106,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                         case Hls.ErrorTypes.NETWORK_ERROR:
                             if (!data.fatal) return
                             console.log('hls.js fatal network error encountered, try to recover')
-                            recover()
                             break
                         case Hls.ErrorTypes.MEDIA_ERROR:
                             if (!data.fatal)
@@ -149,22 +125,20 @@ export const Video = forwardRef<IVideoControls, IProps>(({
         })
 
         const t = setInterval(() => {
-            if (requestMedia.current.can_direct_play)
-                return
-            axios.get(`${requestSource.request.play_url}/keep-alive/${sessionUUID}`).catch(() => { })
+            if ((requestMedia.current) && (!requestMedia.current?.can_direct_play))
+                axios.get(requestMedia.current.keep_alive_url).catch(() => { })
         }, 4000)
 
         return () => {
-            startTimeRef.current = videoElement.current?.currentTime
             if (hls.current) {
                 hls.current.destroy()
                 hls.current = null
             }
             clearInterval(t)
-            if (sessionUUID && !requestMedia.current.can_direct_play)
-                axios.get(`${requestSource.request.play_url}/close-session/${sessionUUID}`).catch(() => { })
+            if ((requestMedia.current) && (!requestMedia.current.can_direct_play))
+                axios.get(requestMedia.current.close_session_url).catch(() => { })
         }
-    }, [sessionUUID])
+    }, [requestSource, audioSource, resolutionWidth])
 
     return <>
         <video
@@ -177,8 +151,6 @@ export const Video = forwardRef<IVideoControls, IProps>(({
                 onPause?.()
             }}
             onPlay={() => {
-                if (!sessionUUID)
-                    setSessionUUID(uuidv4())
                 onPlay?.()
                 onLoadingState?.(false)
             }}
@@ -199,18 +171,17 @@ export const Video = forwardRef<IVideoControls, IProps>(({
             playsInline
         >
             {children}
+            {requestMedia.current &&
+                <SetSubtitle
+                    videoElement={videoElement.current}
+                    requestSource={requestSource}
+                    subtitleSource={subtitleSource}
+                    subtitleOffset={subtitleOffset}
+                    subtitleLinePosition={subtitleLinePosition}
+                />}
         </video>
-        {requestMedia.current &&
-            <SetSubtitle
-                videoElement={videoElement.current}
-                requestSource={requestSource}
-                subtitleSource={subtitleSource}
-                subtitleOffset={subtitleOffset}
-                subtitleLinePosition={subtitleLinePosition}
-            />}
     </>
 })
-
 
 function togglePlay(video: HTMLVideoElement) {
     if (video.paused)
@@ -237,8 +208,8 @@ function toggleFullscreen(video: HTMLVideoElement) {
 }
 
 
-async function getPlayRequestMedia({ videoElement, requestSource, startTime, audio, resolutionWidth, sessionUUID }:
-    { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, startTime: number, audio: string, resolutionWidth: number, sessionUUID: string }) {
+async function getPlayRequestMedia({ videoElement, requestSource, startTime, audio, resolutionWidth }:
+    { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, startTime: number, audio: string, resolutionWidth: number }) {
     const videoCodecs = getSupportedVideoCodecs(videoElement)
     if (videoCodecs.length == 0)
         throw new Error('No supported codecs')
@@ -246,7 +217,6 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
     const r = await axios.get<IPlayServerRequestMedia>(`${requestSource.request.play_url}/request-media` +
         `?play_id=${requestSource.request.play_id}` +
         `&source_index=${requestSource.source.index}` +
-        `&session=${sessionUUID}` +
         `&start_time=${startTime || 0}` +
         `&audio_lang=${audio || ''}` +
         `&width=${resolutionWidth || ''}` +
@@ -259,8 +229,12 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
         `&audio_channels=6` +
         `&supported_video_containers=${String(getSupportedVideoContainers())}`
     )
-    r.data.hls_url = requestSource.request.play_url + r.data.hls_url
-    r.data.direct_play_url = requestSource.request.play_url + r.data.direct_play_url
+    if (r.data.hls_url.startsWith('/')) {
+        r.data.hls_url = requestSource.request.play_url + r.data.hls_url
+        r.data.direct_play_url = requestSource.request.play_url + r.data.direct_play_url
+        r.data.keep_alive_url = requestSource.request.play_url + r.data.keep_alive_url
+        r.data.close_session_url = requestSource.request.play_url + r.data.close_session_url
+    }
     return r.data
 }
 
@@ -313,41 +287,24 @@ function getSupportedHdrFormats(videoElement: HTMLVideoElement) {
 
 }
 
+interface IPropsSubtitle {
+    videoElement: HTMLVideoElement
+    requestSource: IPlayServerRequestSource
+    subtitleSource?: IPlaySourceStream
+    subtitleOffset?: number
+    subtitleLinePosition?: number
+}
 
-function SetSubtitle({ videoElement, requestSource, subtitleSource, subtitleOffset = 0, subtitleLinePosition = 16 }:
-    { videoElement: HTMLVideoElement, requestSource: IPlayServerRequestSource, subtitleSource?: IPlaySourceStream, 
-        subtitleOffset?: number, subtitleLinePosition?: number }) {
-    const changeSubtitleDebounce = useRef<NodeJS.Timeout>(null)
-
-    useEffect(() => {
-        if (!videoElement)
-            return
-
-        for (const track of videoElement.textTracks)
-            track.mode = 'disabled'
-
-        if (!subtitleSource)
-            return
-
-        // Idk why but adding a new track too fast after disabling a previous one
-        // makes the new one not show up
-        clearTimeout(changeSubtitleDebounce.current)
-        changeSubtitleDebounce.current = setTimeout(() => {
-            const track = document.createElement("track")
-            track.kind = "subtitles"
-            track.label = subtitleSource.title
-            track.srclang = subtitleSource.language
-            track.src = `${requestSource.request.play_url}/subtitle-file` +
-                `?play_id=${requestSource.request.play_id}` +
-                `&source_index=${requestSource.source.index}` +
-                `&offset=${subtitleOffset}` +
-                `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}`
-            track.default = true
-            //@ts-ignore
-            track.mode = 'showing'
-            videoElement.appendChild(track)
-        }, 100)
-    }, [videoElement, requestSource?.request.play_id, subtitleSource?.index, subtitleOffset])
+function SetSubtitle({ 
+    videoElement, 
+    requestSource, 
+    subtitleSource, 
+    subtitleOffset = 0, 
+    subtitleLinePosition = 16 
+}: IPropsSubtitle) {
+    const toast = useToast()
+    const track = useRef<HTMLTrackElement>(null)
+    const firstTrackLoad = useRef(true)
 
     useEffect(() => {
         if (!videoElement) return
@@ -358,5 +315,57 @@ function SetSubtitle({ videoElement, requestSource, subtitleSource, subtitleOffs
         }
     }, [subtitleLinePosition])
 
-    return <></>
+    useEffect(() => {
+        if (!track.current) return
+        if (firstTrackLoad.current) {
+            firstTrackLoad.current = false
+            return
+        }
+        if (!toast.isActive('loading-subtitles'))
+            toast({
+                id: 'loading-subtitles',
+                title: 'Loading subtitle',
+                status: 'loading',
+                duration: null,
+                isClosable: true,
+                position: 'top-right',
+                variant: 'subtle',
+            })
+        track.current.onerror = () => {
+            toast.close('loading-subtitles')
+            toast({
+                title: 'Failed to load subtitle',
+                status: 'error',
+                duration: 3000,
+                isClosable: true,
+                position: 'top-right',
+                variant: 'subtle',
+            })
+        }
+        track.current.onload = () => {
+            toast.close('loading-subtitles')
+        }
+        return () => {
+            toast.close('loading-subtitles')
+        }
+    }, [track, subtitleSource, requestSource, subtitleOffset])
+
+    useEffect(() => {
+        firstTrackLoad.current = true
+    }, [track])
+
+    return <>
+        {subtitleSource && <track
+            ref={track}
+            kind="subtitles"
+            label={subtitleSource?.title || 'Unknown'}
+            srcLang={subtitleSource?.language}
+            src={`${requestSource.request.play_url}/subtitle-file` +
+                `?play_id=${requestSource.request.play_id}` +
+                `&source_index=${requestSource.source.index}` +
+                `&offset=${subtitleOffset}` +
+                `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}`}
+            default={true}
+        />}
+    </>
 }
