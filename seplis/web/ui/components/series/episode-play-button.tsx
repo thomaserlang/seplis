@@ -84,10 +84,10 @@ export function castEpisodeRequest(
                 `&transcode_video_codec=h264` +
                 `&supported_audio_codecs=aac` +
                 `&transcode_audio_codec=aac` +
-                `&audio_channels=2` +
+                `&max_audio_channels=2` +
                 `&format=hls` +
                 `&audio_lang=${audioLang || ''}` +
-                `&width=${resolutionWidth || ''}` +
+                `&max_width=${resolutionWidth || ''}` +
                 `&supported_video_containers=mp4`
             )
             const requestMedia = r.data

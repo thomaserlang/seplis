@@ -219,14 +219,14 @@ async function getPlayRequestMedia({ videoElement, requestSource, startTime, aud
         `&source_index=${requestSource.source.index}` +
         `&start_time=${startTime || 0}` +
         `&audio_lang=${audio || ''}` +
-        `&width=${resolutionWidth || ''}` +
+        `&max_width=${resolutionWidth || ''}` +
         `&supported_video_codecs=${String(videoCodecs)}` +
         `&transcode_video_codec=${videoCodecs[0]}` +
         //`&client_width=${this.getScreenWidth()}`+
         `&supported_audio_codecs=${String(getSupportedAudioCodecs(videoElement))}` +
         `&transcode_audio_codec=aac` +
         `&format=${Hls.isSupported() ? 'hls.js' : 'hls'}` +
-        `&audio_channels=6` +
+        `&max_audio_channels=6` +
         `&supported_video_containers=${String(getSupportedVideoContainers())}`
     )
     if (r.data.hls_url.startsWith('/')) {
