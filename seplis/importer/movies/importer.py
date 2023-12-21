@@ -240,18 +240,17 @@ async def update_images(movie: schemas.Movie):
 
     await asyncio.gather(*[save_image(image) for image in m['images']['posters']])
 
-    if not movie.poster_image and m['poster_path']:
+    if m['poster_path']:
         key = f'themoviedb-{m["poster_path"]}'
         if key not in image_external_ids:
-            key = f'themoviedb-{m["poster_path"]}'
-            if key not in image_external_ids:
-                logger.info('No image to set as new primary')
-                return
-        logger.info(
-            f'[Movie: {movie.id}] Setting new primary image: {image_external_ids[key].id}')
-        await models.Movie.save(data=schemas.Movie_update(
-            poster_image_id=image_external_ids[key].id,
-        ), movie_id=movie.id)
+            logger.info('No image to set as primary')
+            return
+        if not movie.poster_image or movie.poster_image.id != image_external_ids[key].id:
+            logger.info(
+                f'[Movie: {movie.id}] Setting primary image: {image_external_ids[key].id}')
+            await models.Movie.save(data=schemas.Movie_update(
+                poster_image_id=image_external_ids[key].id,
+            ), movie_id=movie.id)
 
 
 async def update_cast(movie: schemas.Movie):
@@ -316,7 +315,7 @@ async def update_cast(movie: schemas.Movie):
     await asyncio.gather(*[save_cast(member) for member in m['cast']])
 
     # Delete any cast members that don't exist anymore
-    for key, member in cast.items():
+    for _, member in cast.items():
         if not any(member.person.externals.get('themoviedb') == str(m['id']) for m in m['cast']):
             logger.debug(f'[Movie: {movie.id}] Deleting cast: {member.person.name}')
             await models.Movie_cast.delete(movie_id=movie.id, person_id=member.person.id)

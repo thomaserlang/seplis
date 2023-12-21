@@ -45,6 +45,13 @@ class Series_importer_base(object):
         """Override this function and return a list of cast.
         """
 
+    async def poster(self, external_id: str) -> schemas.Image_import:
+        """Override this function and return a poster image.
+        The return result must match [`schemas.Image_required`].
+
+        The image will be downloaded from url in `source_url`.
+        """
+
     async def incremental_updates(self) -> list[str]:
         """Override this function and return a list of ids that has changed
         since last check.

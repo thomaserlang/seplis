@@ -160,17 +160,17 @@ async def update_series_images(series: schemas.Series):
             models.Image.relation_type == 'series',
         ))
         current_images = {
-            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
-    images_added: list[schemas.Image] = []
+            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result
+        }
 
     async def save_image(image):
         try:
             if f'{image.external_name}-{image.external_id}' not in current_images:
-                images_added.append(await models.Image.save(
+                current_images[f'{image.external_name}-{image.external_id}'] = await models.Image.save(
                     relation_type='series',
                     relation_id=series.id,
                     image_data=image,
-                ))
+                )
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
@@ -191,14 +191,23 @@ async def update_series_images(series: schemas.Series):
         except Exception as e:
             logger.exception(e)
 
-    if not series.poster_image:
-        all_images: list[schemas.Image] = []
-        all_images.extend(images_added)
-        all_images.extend(current_images.values())
-        if all_images:
+    poster: schemas.Image_import = await call_importer(
+        external_name=series.importers.info,
+        method='poster',
+        external_id=series.externals[series.importers.info],
+    )
+    image: schemas.Image = None
+    if poster and f'{poster.external_name}-{poster.external_id}' in current_images:
+        image = current_images[f'{poster.external_name}-{poster.external_id}']
+    elif not series.poster_image:
+        all_images: list[schemas.Image] = list(current_images.values())
+        image = all_images[0] if all_images else None
+
+    if image:
+        if not series.poster_image or series.poster_image.id != image.id:
             await models.Series.save(
                 data=schemas.Series_update(
-                    poster_image_id=all_images[0].id
+                    poster_image_id=image.id
                 ),
                 series_id=series.id
             )
@@ -264,7 +273,7 @@ async def update_series_cast(series: schemas.Series):
     await asyncio.gather(*[save_cast(person) for person in imp_cast])
 
     # Delete any cast members that don't exist anymore
-    for key, member in cast.items():
+    for _, member in cast.items():
         if not any(member.person.externals.get(m.external_name) == m.external_id for m in imp_cast):
             logger.debug(f'[Series: {series.id}] Deleting cast: {member.person.name} ({member.person.id}))')
             await models.Series_cast.delete(series_id=series.id, person_id=member.person.id)

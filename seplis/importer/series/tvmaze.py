@@ -41,7 +41,6 @@ class Tvmaze(Series_importer_base):
             return 2
         return 1
 
-
     async def images(self, external_id: str) -> list[schemas.Image_import]:
         r = requests.get(self._url.format(external_id=external_id))
         if r.status_code != 200:
@@ -59,7 +58,6 @@ class Tvmaze(Series_importer_base):
             source_url=data['image']['original'],
             type='poster',
         )]
-
 
     async def episodes(self, external_id) -> list[schemas.Episode_update]:
         r = requests.get(self._url_episodes.format(external_id=external_id))

@@ -58,7 +58,6 @@ class Thetvdb(Series_importer_base):
                 genre_names=data['genre'],
             )
 
-
     async def episodes(self, external_id: int) -> list[schemas.Episode_update]:
         headers = self.login_headers()
         episodes: list[schemas.Episode_update] = []
@@ -78,7 +77,6 @@ class Thetvdb(Series_importer_base):
         for i, episode in enumerate(episodes):
             episode.number = i + 1
         return episodes
-
 
     async def images(self, external_id: int) -> list[schemas.Image_import]:
         r = requests.get(
@@ -102,7 +100,6 @@ class Thetvdb(Series_importer_base):
                     type='poster',
                 ))
         return images
-
 
     async def incremental_updates(self) -> list[str]:
         timestamp = self.last_update_timestamp()

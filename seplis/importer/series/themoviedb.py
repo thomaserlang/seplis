@@ -17,6 +17,7 @@ class TheMovieDB(Series_importer_base):
         'episodes',
         'images',
         'cast',
+        'poster',
     )
 
     async def info(self, external_id: str) -> schemas.Series_update:
@@ -136,6 +137,22 @@ class TheMovieDB(Series_importer_base):
             order=person['order'],
             total_episodes=person['total_episode_count'] if person['total_episode_count'] else 0,
         ) for person in data['cast']]
+    
+    async def poster(self, external_id):
+        r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
+            'api_key': config.data.client.themoviedb,
+            'language': 'en-US',
+        })
+        if r.status_code != 200:
+            return
+        data = r.json()
+        if data['poster_path']:
+            return schemas.Image_import(
+                external_name='themoviedb',
+                external_id=data['poster_path'],
+                type='poster',
+                source_url=f'https://image.tmdb.org/t/p/original{data["poster_path"]}',
+            )
 
     async def incremental_updates(self) -> list[str]:
         page = 1
