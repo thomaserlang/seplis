@@ -1,4 +1,4 @@
-PyMySQL==1.1.0
+PyMySQL==1.1.1
 PyYAML==6.0.1
 sqlalchemy[asyncio]==2.0.20
 alembic==1.11.3
