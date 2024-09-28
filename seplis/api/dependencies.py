@@ -16,8 +16,10 @@ oauth2_scheme_no_raise = OAuth2PasswordBearer(tokenUrl="/2/token", auto_error=Fa
 
 async def get_session() -> AsyncSession:
     async with database.session() as session:
-        yield session
-
+        try:
+            yield session
+        finally:
+            await session.close()
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     user = await Token.get(token)
