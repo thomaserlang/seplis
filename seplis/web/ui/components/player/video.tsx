@@ -393,8 +393,6 @@ function SetSubtitle({
     const track = useRef<HTMLTrackElement>(null)
     const firstTrackLoad = useRef(true)
 
-    // check if the browser is safari
-    const isSafari = browser.name === 'safari' || browser.name === 'ios'
     const useJASSUB =
         ['chrome', 'edge', 'firefox'].includes(browser.name) &&
         subtitleSource.codec == 'ass'
