@@ -1,7 +1,7 @@
-const webpack = require("webpack")
+const webpack = require('webpack')
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const MiniCssExtractPlugin = require("mini-css-extract-plugin")
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 module.exports = (env, argv) => {
     return {
@@ -10,31 +10,31 @@ module.exports = (env, argv) => {
                 import: './seplis/web/ui/index.tsx',
             },
         },
-        devtool: "source-map",
+        devtool: 'source-map',
         resolve: {
-            extensions: [ '.tsx', '.ts', '.js' ],
+            extensions: ['.tsx', '.ts', '.js'],
             alias: {
                 '@seplis': path.resolve(__dirname, 'seplis/web/ui/'),
-            }
-        },    
+            },
+        },
         module: {
             rules: [
                 {
                     test: /\.tsx?$/,
                     use: 'ts-loader',
                     exclude: /node_modules/,
-                }, 
+                },
                 {
                     test: /\.css$/i,
-                    use: [MiniCssExtractPlugin.loader, "css-loader"],
+                    use: [MiniCssExtractPlugin.loader, 'css-loader'],
                 },
                 {
                     test: /\.less$/i,
                     use: [
-                        "style-loader",
-                        "css-loader",
+                        'style-loader',
+                        'css-loader',
                         {
-                            loader: "less-loader",
+                            loader: 'less-loader',
                             options: {
                                 lessOptions: {
                                     javascriptEnabled: true,
@@ -43,22 +43,25 @@ module.exports = (env, argv) => {
                         },
                     ],
                 },
-            ]
+            ],
         },
 
         plugins: [
             new webpack.DefinePlugin({
-                'buildMode': JSON.stringify(argv.mode),
+                buildMode: JSON.stringify(argv.mode),
             }),
             new MiniCssExtractPlugin({
-            filename: "[name].[contenthash].css",
-            chunkFilename: "[id].[contenthash].css",
+                filename: '[name].[contenthash].css',
+                chunkFilename: '[id].[contenthash].css',
             }),
             new HtmlWebpackPlugin({
-            'filename': path.resolve(__dirname, 'seplis/web/templates/ui/react.html'),
-            'template': './seplis/web/ui/index.html',
-            'chunks': ['main'],
-            'publicPath': '/static/ui',
+                filename: path.resolve(
+                    __dirname,
+                    'seplis/web/templates/ui/react.html'
+                ),
+                template: './seplis/web/ui/index.html',
+                chunks: ['main'],
+                publicPath: '/static/ui',
             }),
         ],
         optimization: {

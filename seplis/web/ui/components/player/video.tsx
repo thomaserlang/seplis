@@ -7,7 +7,15 @@ import {
 import { browser } from '@seplis/utils'
 import axios from 'axios'
 import Hls from 'hls.js'
+import JASSUB from 'jassub'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+
+const jassubWorkerUrl = new URL('jassub/dist/jassub-worker.js', import.meta.url)
+const jassubWorkerWasmUrl = new URL(
+    'jassub/dist/jassub-worker.wasm',
+    import.meta.url
+)
+const jassubWoff2Url = new URL('jassub/dist/default.woff2', import.meta.url)
 
 interface IProps {
     requestSource: IPlayServerRequestSource
@@ -246,6 +254,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
                     playsInline
                 >
                     {children}
+
                     <SetSubtitle
                         videoElement={videoElement.current}
                         requestSource={requestSource}
@@ -426,9 +435,33 @@ function SetSubtitle({
         }
     }, [track, subtitleSource, requestSource, subtitleOffset])
 
+    useEffect(() => {
+        if (!videoElement) return
+        if (subtitleSource.codec != 'ass') return
+
+        const sub = new JASSUB({
+            video: videoElement,
+            subUrl:
+                `${requestSource.request.play_url}/subtitle-file` +
+                `?play_id=${requestSource.request.play_id}` +
+                `&source_index=${requestSource.source.index}` +
+                `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}` +
+                `&output_format=ass`,
+            workerUrl: jassubWorkerUrl.href,
+            wasmUrl: jassubWorkerWasmUrl.href,
+            availableFonts: {
+                'liberation sans': jassubWoff2Url.href,
+            },
+            timeOffset: subtitleOffset,
+        })
+        return () => {
+            sub.destroy()
+        }
+    }, [videoElement, requestSource, subtitleSource, subtitleOffset])
+
     return (
         <>
-            {subtitleSource && (
+            {subtitleSource && subtitleSource.codec != 'ass' && (
                 <track
                     ref={track}
                     kind="subtitles"
