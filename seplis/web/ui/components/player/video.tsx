@@ -395,7 +395,7 @@ function SetSubtitle({
 
     const useJASSUB =
         ['chrome', 'edge', 'firefox'].includes(browser.name) &&
-        subtitleSource.codec == 'ass'
+        subtitleSource?.codec == 'ass'
 
     useEffect(() => {
         if (!videoElement) return
@@ -434,7 +434,7 @@ function SetSubtitle({
 
     useEffect(() => {
         if (!videoElement) return
-        if (subtitleSource.codec != 'ass') return
+        if (!useJASSUB) return
 
         const sub = new JASSUB({
             video: videoElement,
