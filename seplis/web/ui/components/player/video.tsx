@@ -10,13 +10,6 @@ import Hls from 'hls.js'
 import JASSUB from 'jassub'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
-const jassubWorkerUrl = new URL('jassub/dist/jassub-worker.js', import.meta.url)
-const jassubWorkerWasmUrl = new URL(
-    'jassub/dist/jassub-worker.wasm',
-    import.meta.url
-)
-const jassubWoff2Url = new URL('jassub/dist/default.woff2', import.meta.url)
-
 interface IProps {
     requestSource: IPlayServerRequestSource
     startTime?: number
@@ -400,6 +393,12 @@ function SetSubtitle({
     const track = useRef<HTMLTrackElement>(null)
     const firstTrackLoad = useRef(true)
 
+    // check if the browser is safari
+    const isSafari = browser.name === 'safari' || browser.name === 'ios'
+    const useJASSUB =
+        ['chrome', 'edge', 'firefox'].includes(browser.name) &&
+        subtitleSource.codec == 'ass'
+
     useEffect(() => {
         if (!videoElement) return
         for (const track of videoElement.textTracks) {
@@ -447,10 +446,19 @@ function SetSubtitle({
                 `&source_index=${requestSource.source.index}` +
                 `&lang=${`${subtitleSource.language}:${subtitleSource.index}`}` +
                 `&output_format=ass`,
-            workerUrl: jassubWorkerUrl.href,
-            wasmUrl: jassubWorkerWasmUrl.href,
+            workerUrl: new URL('jassub/dist/jassub-worker.js', import.meta.url)
+                .href,
+            wasmUrl: new URL('jassub/dist/jassub-worker.wasm', import.meta.url)
+                .href,
+            legacyWasmUrl: new URL(
+                'jassub/dist/jassub-worker.wasm.js',
+                import.meta.url
+            ).href,
             availableFonts: {
-                'liberation sans': jassubWoff2Url.href,
+                'liberation sans': new URL(
+                    'jassub/dist/default.woff2',
+                    import.meta.url
+                ).href,
             },
             timeOffset: subtitleOffset,
         })
@@ -461,7 +469,7 @@ function SetSubtitle({
 
     return (
         <>
-            {subtitleSource && subtitleSource.codec != 'ass' && (
+            {subtitleSource && !useJASSUB && (
                 <track
                     ref={track}
                     kind="subtitles"
