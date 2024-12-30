@@ -392,9 +392,8 @@ function SetSubtitle({
     const toast = useToast()
     const track = useRef<HTMLTrackElement>(null)
     const firstTrackLoad = useRef(true)
-
     const useJASSUB =
-        ['chrome', 'edge', 'firefox'].includes(browser.name) &&
+        ['chrome', 'edge-chromium', 'firefox'].includes(browser.name) &&
         subtitleSource?.codec == 'ass'
 
     useEffect(() => {
@@ -459,6 +458,8 @@ function SetSubtitle({
                 ).href,
             },
             timeOffset: subtitleOffset,
+            // https://github.com/ThaUnknown/jassub/issues/50
+            offscreenRender: browser.os != 'Android OS',
         })
         return () => {
             sub.destroy()
