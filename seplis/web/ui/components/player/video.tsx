@@ -18,6 +18,7 @@ interface IProps {
     children?: React.ReactNode
     subtitleOffset?: number
     subtitleLinePosition?: number
+    forceTranscode?: boolean
     onAutoPlayFailed?: () => void
     onTimeUpdate?: (time: number) => void
     onPause?: () => void
@@ -62,6 +63,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
             children,
             subtitleOffset,
             subtitleLinePosition,
+            forceTranscode,
             onAutoPlayFailed,
             onTimeUpdate,
             onPause,
@@ -124,6 +126,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
                         `${audioSource.language}:${audioSource.index}`,
                     requestSource: requestSource,
                     startTime: startTime,
+                    forceTranscode: forceTranscode,
                 })
                 if (
                     !Hls.isSupported() ||
@@ -206,7 +209,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
                         .get(requestMedia.current.close_session_url)
                         .catch(() => {})
             }
-        }, [requestSource, audioSource, resolutionWidth])
+        }, [requestSource, audioSource, resolutionWidth, forceTranscode])
 
         return (
             <>
@@ -283,12 +286,14 @@ async function getPlayRequestMedia({
     startTime,
     audio,
     resolutionWidth,
+    forceTranscode,
 }: {
     videoElement: HTMLVideoElement
     requestSource: IPlayServerRequestSource
     startTime: number
     audio: string
     resolutionWidth: number
+    forceTranscode: boolean
 }) {
     const videoCodecs = getSupportedVideoCodecs(videoElement)
     if (videoCodecs.length == 0) throw new Error('No supported codecs')
@@ -310,7 +315,8 @@ async function getPlayRequestMedia({
             `&max_audio_channels=6` +
             `&supported_video_containers=${String(
                 getSupportedVideoContainers()
-            )}`
+            )}` +
+            `&force_transcode=${forceTranscode ? 'true' : 'false'}`
     )
     if (r.data.hls_url.startsWith('/')) {
         r.data.hls_url = requestSource.request.play_url + r.data.hls_url

@@ -141,6 +141,9 @@ function VideoPlayer({
     const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(
         () => pickStartSubtitle(requestSource.source.subtitles, defaultSubtitle)
     )
+    const [forceTranscode, setForceTranscode] = useState<boolean>(
+        getDefaultForceTranscode()
+    )
     const [subtitleOffset, setSubtitleOffset] = useState<number>(0)
     const [time, setTime] = useState(startTime)
     const [paused, setPaused] = useState(false)
@@ -237,6 +240,7 @@ function VideoPlayer({
                     controlsVisible || paused ? -4 : undefined
                 }
                 subtitleOffset={subtitleOffset}
+                forceTranscode={forceTranscode}
                 onTimeUpdate={(time) => {
                     onTimeUpdate?.(time, requestSource.source.duration)
                     setTime(time)
@@ -348,6 +352,7 @@ function VideoPlayer({
                                 audioSource={audioSource}
                                 subtitleSource={subtitleSource}
                                 subtitleOffset={subtitleOffset}
+                                forceTranscode={forceTranscode}
                                 onRequestSourceChange={requestSourceChange}
                                 onResolutionWidthChange={setResolutionWidth}
                                 onAudioSourceChange={(source) => {
@@ -360,6 +365,7 @@ function VideoPlayer({
                                         onSubtitleChange(source)
                                 }}
                                 onSubtitleOffsetChange={setSubtitleOffset}
+                                onForceTranscodeChange={setForceTranscode}
                                 containerRef={boxRef}
                             />
                             <FullscreenButton
@@ -552,4 +558,10 @@ function fullscreenToggle(
         }
         setFullscreen(false)
     }
+}
+
+function getDefaultForceTranscode() {
+    // Currently there is an issue where Firefox won't start the video
+    // if start time is above 0 and the video is not transcoded.
+    return navigator.userAgent.includes('Firefox')
 }
