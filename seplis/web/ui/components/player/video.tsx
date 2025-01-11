@@ -154,6 +154,14 @@ export const Video = forwardRef<IVideoControls, IProps>(
                     })
                     hls.current.loadSource(requestMedia.current.hls_url)
                     hls.current.attachMedia(videoElement.current)
+
+                    // AirPlay fix - https://github.com/video-dev/hls.js/issues/5989#issuecomment-1825916766
+                    const airPlayHlsSource = document.createElement('source')
+                    airPlayHlsSource.src = requestMedia.current.hls_url
+                    videoElement.current.appendChild(airPlayHlsSource)
+                    videoElement.current.disableRemotePlayback = false
+                    videoElement.current.currentTime = startTime
+
                     hls.current.on(Hls.Events.MANIFEST_PARSED, () =>
                         videoElement.current
                             .play()
@@ -200,6 +208,12 @@ export const Video = forwardRef<IVideoControls, IProps>(
                 if (hls.current) {
                     hls.current.destroy()
                     hls.current = null
+                }
+                if (videoElement.current) {
+                    videoElement.current.pause()
+                    videoElement.current.removeAttribute('src')
+                    for (const source of videoElement.current.childNodes)
+                        videoElement.current.removeChild(source)
                 }
                 clearInterval(t)
                 if (
