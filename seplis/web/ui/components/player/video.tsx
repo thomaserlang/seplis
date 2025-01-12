@@ -213,7 +213,8 @@ export const Video = forwardRef<IVideoControls, IProps>(
                     videoElement.current.pause()
                     videoElement.current.removeAttribute('src')
                     for (const source of videoElement.current.childNodes)
-                        videoElement.current.removeChild(source)
+                        if (source instanceof HTMLSourceElement)
+                            videoElement.current.removeChild(source)
                 }
                 clearInterval(t)
                 if (
