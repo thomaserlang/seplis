@@ -35,27 +35,16 @@ async def get_user_series_to_watch(
     ).where(
         models.Series_watchlist.user_id == user.id,
         models.Episode.series_id == models.Series_watchlist.series_id,
-    ).group_by(models.Episode.series_id)
-    
-    if not filter_query.user_can_watch:
-        latest_aired_episode = latest_aired_episode.where(
-            models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
-        )
-
-    latest_aired_episode = latest_aired_episode.subquery()
-    
+        models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
+    ).group_by(models.Episode.series_id).subquery()
 
     query = sa.select(models.Series, models.Episode).where(
         models.Series.id == episodes_query.c.series_id,
         models.Episode.series_id == models.Series.id,
         models.Episode.number == episodes_query.c.episode_number+1,
+        models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
         latest_aired_episode.c.series_id == models.Series.id,
     )
-
-    if not filter_query.user_can_watch:
-        query = query.where(
-            models.Episode.air_datetime <= datetime.now(tz=timezone.utc),
-        )
 
     query = filter_series_query(
         query=query,
