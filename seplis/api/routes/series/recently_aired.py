@@ -26,7 +26,10 @@ async def get_series_recently_aired(
         models.Episode.air_datetime > (dt-timedelta(days=days_behind)),
         models.Episode.air_datetime < (dt+timedelta(days=days_ahead)),
         models.Series.id == models.Episode.series_id,
-    ).group_by(models.Episode.series_id)
+    ).order_by(
+        sa.desc(models.Episode.air_datetime), 
+        models.Episode.series_id,
+    )
     
     episodes_query = filter_series_query(
         query=episodes_query,
@@ -39,10 +42,7 @@ async def get_series_recently_aired(
         models.Series.id == episodes_query.c.series_id,
         models.Episode.series_id == models.Series.id,
         models.Episode.number == episodes_query.c.episode_number,
-    ).order_by(
-        sa.desc(models.Episode.air_datetime), 
-        models.Episode.series_id,
-    )
+    ).group_by(models.Episode.series_id)
 
     p = await utils.sqlalchemy.paginate_cursor(session=session, query=query, page_query=page_cursor)
     p.items = [schemas.Series_and_episode(series=item.Series, episode=item.Episode) for item in p.items]
