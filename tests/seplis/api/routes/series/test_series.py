@@ -3,7 +3,7 @@ import pytest
 import respx
 import httpx
 from seplis.api import constants, schemas, models
-from seplis.api.testbase import client, run_file, AsyncClient, user_signin
+from seplis.api.testbase import client, run_file, AsyncClient, user_signin # noqa
 from seplis import config
 from datetime import date
 
@@ -68,7 +68,7 @@ async def test_series_create(client: AsyncClient):
     assert data.episode_type == constants.SHOW_EPISODE_TYPE_SEASON_EPISODE
     assert data.seasons == []
 
-    r = await client.get(f'/2/series/externals/imdb/tt123456799')
+    r = await client.get('/2/series/externals/imdb/tt123456799')
     data = schemas.Series.model_validate(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY'
@@ -158,7 +158,7 @@ async def test_series_create(client: AsyncClient):
     }
     assert data.premiered == date(2003, 1, 2)
 
-    r = await client.get(f'/2/series/externals/imdb/tt123456797')
+    r = await client.get('/2/series/externals/imdb/tt123456797')
     data = schemas.Series.model_validate(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY2'
@@ -179,7 +179,7 @@ async def test_series_create(client: AsyncClient):
     assert data.importers.info == None
     assert data.importers.episodes == 'tvmaze'
 
-    r = await client.get(f'/2/series/externals/imdb/tt123456797')
+    r = await client.get('/2/series/externals/imdb/tt123456797')
     assert r.status_code == 404, r.content
 
     r = await client.put(f'/2/series/{series_id}', json={
@@ -363,7 +363,7 @@ async def test_series_create(client: AsyncClient):
 @pytest.mark.asyncio
 @respx.mock
 async def test_series_get(client: AsyncClient):
-    r = await client.get(f'/2/series')
+    r = await client.get('/2/series')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert data.items == []
@@ -384,31 +384,31 @@ async def test_series_get(client: AsyncClient):
         ],
     ))
 
-    r = await client.get(f'/2/series?user_watchlist=true')
+    r = await client.get('/2/series?user_watchlist=true')
     assert r.status_code == 401
 
     user_id = await user_signin(client)
 
     await models.Series_watchlist.add(series_id=series1.id, user_id=user_id)
 
-    r = await client.get(f'/2/series?user_watchlist=true')
+    r = await client.get('/2/series?user_watchlist=true')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
-    r = await client.get(f'/2/series?user_watchlist=false')
+    r = await client.get('/2/series?user_watchlist=false')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
 
-    r = await client.get(f'/2/series?sort=user_last_episode_watched_at_asc')
+    r = await client.get('/2/series?sort=user_last_episode_watched_at_asc')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 0
 
-    r = await client.get(f'/2/series?expand=user_watchlist')
+    r = await client.get('/2/series?expand=user_watchlist')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 2
@@ -417,20 +417,20 @@ async def test_series_get(client: AsyncClient):
 
     await models.Episode_watched.increment(series_id=series2.id, episode_number=1, user_id=user_id, data=schemas.Episode_watched_increment())
 
-    r = await client.get(f'/2/series?user_has_watched=true&expand=user_last_episode_watched')
+    r = await client.get('/2/series?user_has_watched=true&expand=user_last_episode_watched')
     assert r.status_code == 200, r.content
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
     assert data.items[0].user_last_episode_watched.number == 1
 
-    r = await client.get(f'/2/series?user_has_watched=false')
+    r = await client.get('/2/series?user_has_watched=false')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
-    r = await client.get(f'/2/series', params={
+    r = await client.get('/2/series', params={
         'not_genre_id': series1.genres[0].id,
         'genre_id': series2.genres[0].id,
     })
