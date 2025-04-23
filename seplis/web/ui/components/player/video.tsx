@@ -14,7 +14,7 @@ interface IProps {
     requestSource: IPlayServerRequestSource
     startTime?: number
     audioSource?: IPlaySourceStream
-    resolutionWidth?: number
+    maxBitrate?: number
     subtitleSource?: IPlaySourceStream
     children?: React.ReactNode
     subtitleOffset?: number
@@ -59,7 +59,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
             requestSource,
             startTime = 0,
             audioSource,
-            resolutionWidth,
+            maxBitrate,
             subtitleSource,
             children,
             subtitleOffset,
@@ -121,7 +121,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
             const start = async () => {
                 requestMedia.current = await getPlayRequestMedia({
                     videoElement: videoElement.current,
-                    resolutionWidth: resolutionWidth,
+                    maxBitrate: maxBitrate,
                     audio:
                         audioSource &&
                         `${audioSource.language}:${audioSource.index}`,
@@ -225,7 +225,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
                         .get(requestMedia.current.close_session_url)
                         .catch(() => {})
             }
-        }, [requestSource, audioSource, resolutionWidth, forceTranscode])
+        }, [requestSource, audioSource, maxBitrate, forceTranscode])
 
         return (
             <>
@@ -302,14 +302,14 @@ async function getPlayRequestMedia({
     requestSource,
     startTime,
     audio,
-    resolutionWidth,
+    maxBitrate,
     forceTranscode,
 }: {
     videoElement: HTMLVideoElement
     requestSource: IPlayServerRequestSource
     startTime: number
     audio: string
-    resolutionWidth: number
+    maxBitrate: number
     forceTranscode: boolean
 }) {
     const videoCodecs = getSupportedVideoCodecs(videoElement)
@@ -321,7 +321,7 @@ async function getPlayRequestMedia({
             `&source_index=${requestSource.source.index}` +
             `&start_time=${startTime || 0}` +
             `&audio_lang=${audio || ''}` +
-            `&max_width=${resolutionWidth || ''}` +
+            `&max_video_bitrate=${maxBitrate || ''}` +
             `&supported_video_codecs=${String(videoCodecs)}` +
             `&transcode_video_codec=${videoCodecs[0]}` +
             `&supported_audio_codecs=${String(

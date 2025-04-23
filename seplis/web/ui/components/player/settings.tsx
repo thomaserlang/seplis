@@ -25,7 +25,7 @@ import {
 import { useState } from 'react'
 import { FaCog } from 'react-icons/fa'
 import { audioSourceToName, PickAudioSource } from './pick-audio-source'
-import { PickQuality, resolutionToText } from './pick-quality'
+import { bitrateDisplay, PickQuality } from './pick-quality'
 import { PickSource, renderPlaySource } from './pick-source'
 import {
     PickSubtitleOffset,
@@ -39,13 +39,13 @@ import {
 export interface ISettingsProps {
     playServers: IPlayServerRequestSources[]
     requestSource: IPlayServerRequestSource
-    resolutionWidth?: number
+    maxBitrate?: number
     audioSource?: IPlaySourceStream
     subtitleSource?: IPlaySourceStream
     subtitleOffset?: number
     forceTranscode?: boolean
     onRequestSourceChange?: (requestSource: IPlayServerRequestSource) => void
-    onResolutionWidthChange?: (width: number) => void
+    onMaxBitrateChange?: (width: number) => void
     onAudioSourceChange?: (audioSource: IPlaySourceStream) => void
     onSubtitleSourceChange?: (subtitleSource: IPlaySourceStream) => void
     onSubtitleOffsetChange?: (offset: number) => void
@@ -56,13 +56,13 @@ export interface ISettingsProps {
 export function SettingsMenu({
     playServers,
     requestSource,
-    resolutionWidth,
+    maxBitrate,
     audioSource,
     subtitleSource,
     subtitleOffset,
     forceTranscode,
     onRequestSourceChange,
-    onResolutionWidthChange,
+    onMaxBitrateChange: onBitrateChange,
     onAudioSourceChange,
     onSubtitleSourceChange,
     onSubtitleOffsetChange,
@@ -98,7 +98,10 @@ export function SettingsMenu({
                             Source
                         </MenuItem>
                         <MenuItem
-                            command={resolutionToText(resolutionWidth)}
+                            command={bitrateDisplay(
+                                maxBitrate,
+                                requestSource.source
+                            )}
                             onClick={() => setNested('quality')}
                         >
                             Quality
@@ -163,9 +166,9 @@ export function SettingsMenu({
                             <PopoverBody>
                                 <PickQuality
                                     source={requestSource.source}
-                                    selectedWidth={resolutionWidth}
-                                    onChange={(width) => {
-                                        onResolutionWidthChange(width)
+                                    maxBitrate={maxBitrate}
+                                    onChange={(bitrate) => {
+                                        onBitrateChange(bitrate)
                                         setNested(null)
                                     }}
                                 />

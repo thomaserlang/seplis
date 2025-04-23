@@ -35,9 +35,10 @@ import { TbShareplay } from 'react-icons/tb'
 
 import { isMobile, secondsToTime } from '@seplis/utils'
 import { Link } from 'react-router-dom'
+import { useLocalStorage } from 'usehooks-ts'
 import FullErrorPage from '../full-page-error'
 import { pickStartAudio } from './pick-audio-source'
-import { getResolutionWidth } from './pick-quality'
+import { MAX_BITRATE } from './pick-quality'
 import { pickStartSource } from './pick-source'
 import { pickStartSubtitle } from './pick-subtitle-source'
 import { useGetPlayServers } from './request-play-servers'
@@ -132,8 +133,9 @@ function VideoPlayer({
 }: IVideoPlayerProps) {
     const [requestSource, setRequestSource] =
         useState<IPlayServerRequestSource>(() => pickStartSource(playServers))
-    const [resolutionWidth, setResolutionWidth] = useState<number>(
-        getResolutionWidth(requestSource.source)
+    const [maxBitrate, setMaxBitrate] = useLocalStorage(
+        'seplis:player:maxBitrate',
+        MAX_BITRATE
     )
     const [audioSource, setAudioSource] = useState<IPlaySourceStream>(() =>
         pickStartAudio(requestSource.source.audio, defaultAudio)
@@ -169,7 +171,6 @@ function VideoPlayer({
     const requestSourceChange = useCallback(
         (newRequestSource: IPlayServerRequestSource) => {
             setRequestSource(newRequestSource)
-            setResolutionWidth(getResolutionWidth(newRequestSource.source))
             setAudioSource(
                 pickStartAudio(newRequestSource.source.audio, defaultAudio)
             )
@@ -233,7 +234,7 @@ function VideoPlayer({
                 ref={videoControls}
                 requestSource={requestSource}
                 startTime={time}
-                resolutionWidth={resolutionWidth}
+                maxBitrate={maxBitrate}
                 audioSource={audioSource}
                 subtitleSource={subtitleSource}
                 subtitleLinePosition={
@@ -348,13 +349,13 @@ function VideoPlayer({
                             <SettingsMenu
                                 playServers={playServers}
                                 requestSource={requestSource}
-                                resolutionWidth={resolutionWidth}
+                                maxBitrate={maxBitrate}
                                 audioSource={audioSource}
                                 subtitleSource={subtitleSource}
                                 subtitleOffset={subtitleOffset}
                                 forceTranscode={forceTranscode}
                                 onRequestSourceChange={requestSourceChange}
-                                onResolutionWidthChange={setResolutionWidth}
+                                onMaxBitrateChange={setMaxBitrate}
                                 onAudioSourceChange={(source) => {
                                     setAudioSource(source)
                                     if (onAudioChange) onAudioChange(source)
