@@ -6,7 +6,7 @@ elasticsearch[async]==8.9.0
 passlib==1.7.4
 sentry-sdk==1.29.2
 redis==5.0.0
-requests==2.31.0
+requests==2.32.0
 click==8.1.7
 honcho==1.1.0
 aiosmtplib==2.0.2
