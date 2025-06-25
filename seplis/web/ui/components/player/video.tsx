@@ -149,8 +149,6 @@ export const Video = forwardRef<IVideoControls, IProps>(
                         startPosition: startTime,
                         manifestLoadingTimeOut: 30000,
                         enableWorker: true,
-                        lowLatencyMode: true,
-                        backBufferLength: 90,
                     })
                     hls.current.loadSource(requestMedia.current.hls_url)
                     hls.current.attachMedia(videoElement.current)
