@@ -7,23 +7,6 @@ from .query_filter_schema import Series_query_filter
 def order_query(query: any, filter_query: Series_query_filter):
     order = []
 
-    if filter_query.genre_id:
-        # When filtering by genre prioritise series with most genre hits
-        genres_subquery = (
-            sa.select(
-                models.Series_genre.series_id,
-                sa.func.count(models.Series_genre.genre_id).label("genre_count"),
-            )
-            .where(
-                models.Series_genre.genre_id.in_(filter_query.genre_id),
-            )
-            .subquery()
-        )
-        query = query.where(
-            models.Series.id == genres_subquery.c.series_id,
-        )
-        order.append(sa.desc(genres_subquery.c.genre_count))
-
     for sort in filter_query.sort:
         direction = sa.asc if sort.endswith("_asc") else sa.desc
         if sort.startswith("user_rating"):
