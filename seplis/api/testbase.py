@@ -1,8 +1,10 @@
 from typing import Any
+
 import pytest_asyncio
 from httpx import AsyncClient
+
 from seplis import config, config_load
-from seplis.api import schemas, constants, models
+from seplis.api import models, schemas
 from seplis.api.main import app
 
 
@@ -10,7 +12,7 @@ from seplis.api.main import app
 async def client():
     from seplis.api.database import database
     config_load()
-    config.data.test = True
+    config.test = True
     await database.setup_test()
     async with AsyncClient(app=app, base_url="http://test") as ac:
         yield ac

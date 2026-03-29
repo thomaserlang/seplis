@@ -1,8 +1,8 @@
 [project]
-name = "synchra"
+name = "seplis"
 version = "2.0"
-requires-python = ">=3.13"
-description = "Twitch, Discord and YouTube bot"
+requires-python = ">=3.14"
+description = ""
 dependencies = [
     "PyMySQL>=1.1.1",
     "PyYAML>=6.0.1",
@@ -33,6 +33,7 @@ dependencies = [
     "aiosqlite>=0.19.0",
     "pyjwt>=2.8.0",
     "respx>=0.20.2",
+    "loguru>=0.7.3",
 ]
 
 [dependency-groups]
@@ -49,7 +50,6 @@ requires = ["flit_core>=3.12,<4"]
 
 [tool.ruff]
 line-length = 90
-extend-exclude = ["synchra/provider_youtube/proto"]
 
 [tool.ruff.format]
 quote-style = "single"

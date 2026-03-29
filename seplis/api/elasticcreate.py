@@ -1,8 +1,8 @@
-import asyncio
 from seplis import config
 
+
 async def create_indices(es):
-    await es.options(ignore_status=[400,404]).indices.delete(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await es.options(ignore_status=[400,404]).indices.delete(index=config.api.elasticsearch.index_prefix+'titles')
     
     settings = {
         'analysis': {
@@ -43,7 +43,7 @@ async def create_indices(es):
         }
     }
 
-    await es.indices.create(index=config.data.api.elasticsearch.index_prefix+'titles', settings=settings, mappings={
+    await es.indices.create(index=config.api.elasticsearch.index_prefix+'titles', settings=settings, mappings={
         'properties': {
             'id': { 'type': 'integer' },
             'type': { 'type': 'keyword' },

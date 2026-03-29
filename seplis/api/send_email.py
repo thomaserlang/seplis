@@ -1,9 +1,11 @@
-from email.header import Header
-from email.utils import formataddr, parseaddr
 import os
+from email.header import Header
+from email.mime.text import MIMEText
+from email.utils import formataddr, parseaddr
+
 import aiosmtplib
 import jinja2
-from email.mime.text import MIMEText
+
 from .. import config, logger
 
 template_loader = jinja2.FileSystemLoader(
@@ -15,22 +17,22 @@ templateEnv = jinja2.Environment(
 
 
 async def send_email(template_name: str, subject: str, to: str, **kwargs):
-    if not config.data.smtp.from_email:
+    if not config.smtp.from_email:
         logger.warning("No smtp server has been configured")
         return
     template = templateEnv.get_template(template_name)
     message = MIMEText(template.render(kwargs), "html")
-    display_name, address = parseaddr(config.data.smtp.from_email)
+    display_name, address = parseaddr(config.smtp.from_email)
     message["From"] = formataddr((str(Header(display_name, "utf-8")), address))
     message["To"] = formataddr(("", to), "utf-8")
     message["Subject"] = str(Header(subject, "utf-8"))
     await aiosmtplib.send(
         message,
-        hostname=config.data.smtp.server,
-        username=config.data.smtp.user,
-        password=config.data.smtp.password,
-        port=int(config.data.smtp.port),
-        use_tls=config.data.smtp.use_tls,
+        hostname=config.smtp.server,
+        username=config.smtp.user,
+        password=config.smtp.password,
+        port=int(config.smtp.port),
+        use_tls=config.smtp.use_tls,
     )
 
 

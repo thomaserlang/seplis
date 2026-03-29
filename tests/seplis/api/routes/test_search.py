@@ -1,8 +1,10 @@
 import pytest
-from seplis.api.testbase import client, run_file, AsyncClient, parse_obj_as
-from seplis.api import schemas, models, elasticcreate
-from seplis.api.database import database
+
 from seplis import config
+from seplis.api import elasticcreate, models, schemas
+from seplis.api.database import database
+from seplis.api.testbase import AsyncClient, parse_obj_as, run_file
+
 
 @pytest.mark.asyncio
 async def test_search(client: AsyncClient):
@@ -20,7 +22,7 @@ async def test_search(client: AsyncClient):
         ],
     ), movie_id=None)
     
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
 
     r = await client.get('/2/search', params={ 'query': 'National Treasure'})
     assert r.status_code == 200, r.content
@@ -72,7 +74,7 @@ async def test_search(client: AsyncClient):
         ],
     ), series_id=None)
 
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
 
     # Test that lowercase does not matter
     r = await client.get('/2/search', params={'query': 'this'})
@@ -102,7 +104,7 @@ async def test_search(client: AsyncClient):
         popularity=1,
     ), series_id=None)
 
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
 
     r = await client.get('/2/search', params={'query': 'dc\'s'})
     assert r.status_code == 200, r.content
@@ -144,7 +146,7 @@ async def test_search(client: AsyncClient):
         title='legend',
     ), series_id=None)
 
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
 
     r = await client.get('/2/search', params={'title': 'dc\'s legend of something'})
     assert r.status_code == 200, r.content
@@ -164,7 +166,7 @@ async def test_search(client: AsyncClient):
         premiered='2015-08-23',
     ), series_id=None)
 
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
 
     r = await client.get('/2/search', params={'title': 'The Walking Dead'})
     assert r.status_code == 200, r.content
@@ -179,7 +181,7 @@ async def test_search(client: AsyncClient):
         release_date='2010-10-31',
     ), movie_id=None)
     
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
 
     r = await client.get('/2/search', params={'title': 'Test and Test'})
     assert r.status_code == 200, r.content
@@ -200,7 +202,7 @@ async def test_search(client: AsyncClient):
         popularity=14.16,
     ), series_id=None)
 
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
 
     r = await client.get('/2/search', params={'title': 'Devil\'s'})
     assert r.status_code == 200, r.content
@@ -218,7 +220,7 @@ async def test_search(client: AsyncClient):
     await models.Series.save(schemas.Series_create(
         title='Euphoria U.S',
     ), series_id=None)
-    await database.es.indices.refresh(index=config.data.api.elasticsearch.index_prefix+'titles')
+    await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')
     
     r = await client.get('/2/search', params={'title': 'Euphoria US'})
     assert r.status_code == 200, r.content

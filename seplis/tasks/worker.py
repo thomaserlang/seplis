@@ -1,31 +1,36 @@
 from arq import Worker
 from arq.connections import RedisSettings
+
+from seplis import config
+from seplis.api.database import database
+
 from .update_movie import update_movie
 from .update_series import update_series
-from seplis.api.database import database
-from seplis import config
 
-async def startup(ctx):
+
+async def startup(ctx) -> None:
     await database.setup()
 
-async def shutdown(ctx):
+
+async def shutdown(ctx) -> None:
     await database.close()
 
-def main():
-    if config.data.api.redis.sentinel:
+
+def main() -> None:
+    if config.api.redis.sentinel:
         settings = RedisSettings(
-            host=config.data.api.redis.sentinel,
+            host=config.api.redis.sentinel,
             sentinel=True,
-            sentinel_master=config.data.api.redis.master_name,
-            password=config.data.api.redis.password,
-            database=config.data.api.redis.db,
+            sentinel_master=config.api.redis.master_name,
+            password=config.api.redis.password,
+            database=config.api.redis.db,
         )
     else:
         settings = RedisSettings(
-            host=config.data.api.redis.host,
-            port=config.data.api.redis.port,
-            password=config.data.api.redis.password,
-            database=config.data.api.redis.db,
+            host=config.api.redis.host,
+            port=config.api.redis.port,
+            password=config.api.redis.password,
+            database=config.api.redis.db,
         )
     worker = Worker(
         functions=[
@@ -34,8 +39,8 @@ def main():
         ],
         on_shutdown=shutdown,
         on_startup=startup,
-        queue_name=config.data.api.redis.queue_name,
-        job_completion_wait=config.data.api.redis.job_completion_wait,
+        queue_name=config.api.redis.queue_name,
+        job_completion_wait=config.api.redis.job_completion_wait,
         redis_settings=settings,
     )
     worker.run()

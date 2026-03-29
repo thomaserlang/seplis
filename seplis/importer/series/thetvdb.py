@@ -1,8 +1,13 @@
-import requests, json
+import json
+
+import requests
+from dateutil import parser
+
 from seplis import config, logger
 from seplis.api import schemas
-from dateutil import parser
+
 from .base import Series_importer_base, register_importer
+
 
 class Thetvdb(Series_importer_base):
     display_name = 'TheTVDB'
@@ -18,7 +23,7 @@ class Thetvdb(Series_importer_base):
         super().__init__()
         self.apikey = apikey
         if not apikey:
-            self.apikey = config.data.client.thetvdb
+            self.apikey = config.client.thetvdb
 
     def login_headers(self):
         headers = {
@@ -32,11 +37,11 @@ class Thetvdb(Series_importer_base):
         if r.status_code == 200:
             headers['Authorization'] = 'Bearer {}'.format(r.json()['token'])
             return headers
-        raise Exception('Unknown status code from thetvdb: {} {}'.format(r.status_code, r.content))
+        raise Exception(f'Unknown status code from thetvdb: {r.status_code} {r.content}')
 
     async def info(self, external_id: int) -> schemas.Series_update:
         r = requests.get(
-            self._url+'/series/{}'.format(external_id),
+            self._url+f'/series/{external_id}',
             headers=self.login_headers(),
         )
         if r.status_code == 200:
@@ -80,7 +85,7 @@ class Thetvdb(Series_importer_base):
 
     async def images(self, external_id: int) -> list[schemas.Image_import]:
         r = requests.get(
-            self._url+'/series/{}/images/query'.format(external_id),
+            self._url+f'/series/{external_id}/images/query',
             params={
                 'keyType': 'poster',
                 'resolution': '680x1000',
@@ -109,17 +114,17 @@ class Thetvdb(Series_importer_base):
             headers=self.login_headers(),
         )
         if r.status_code != 200:
-            return
+            return None
         data = r.json()['data']
         if not data:
-            return
+            return None
         return [str(s['id']) for s in data]
 
 
     def parse_status(self, status_str):
         if status_str == 'Ended':
             return 2
-        elif status_str == 'Continuing':
+        if status_str == 'Continuing':
             return 1
         return 1
 
@@ -156,8 +161,8 @@ class Thetvdb(Series_importer_base):
             return None
         try:
             return parser.parse(date).date().isoformat()
-        except ValueError as e:
-            logger.exception('Parsing date "{}"'.format(date))
+        except ValueError:
+            logger.exception(f'Parsing date "{date}"')
         return None
         
 register_importer(Thetvdb())

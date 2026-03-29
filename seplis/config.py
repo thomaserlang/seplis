@@ -1,28 +1,32 @@
 import os
-import pathlib
-from typing import Literal
-from pydantic_core.core_schema import FieldValidationInfo
-from typing_extensions import Annotated
-from pydantic import AnyHttpUrl, BaseModel, Field, conint, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
-import yaml
+import sys
+from pathlib import Path
+from typing import Annotated, Literal
+
+from loguru import logger
+from pydantic import AnyHttpUrl, BaseModel, Field, ValidationInfo, field_validator
+from pydantic_settings import (
+    BaseSettings,
+    SettingsConfigDict,
+)
+
 
 class ConfigRedisModel(BaseModel):
     ip: str = '127.0.0.1'
-    host: Annotated[str | None, Field(validate_default=True)] = None
+    host: Annotated[str, Field(validate_default=True)] = ''
     port: int = 6379
-    db: conint(ge=0, le=15) = 0
-    sentinel: list[tuple[str, int]] = None
+    db: Annotated[int, Field(ge=0, le=15)] = 0
+    sentinel: list[tuple[str, int]] | None = None
     master_name: str = 'mymaster'
     password: str | None = None
     queue_name: str = 'seplis:queue'
     job_completion_wait: int = 0
-    
+
     @field_validator('host')
     @classmethod
-    def default_host(cls, v: str | None, info: FieldValidationInfo):
+    def default_host(cls, v: str | None, info: ValidationInfo) -> str | None:
         return v or info.data['ip']
-    
+
 
 class ConfigElasticsearch(BaseModel):
     host: str | list[str] = 'http://127.0.0.1:9200'
@@ -40,8 +44,8 @@ class ConfigAPIModel(BaseModel):
     elasticsearch: ConfigElasticsearch = ConfigElasticsearch()
     port: int = 8002
     max_workers: int = 5
-    image_url: AnyHttpUrl = 'https://images.seplis.net'
-    base_url: AnyHttpUrl = 'https://api.seplis.net'
+    image_url: AnyHttpUrl = AnyHttpUrl('https://images.seplis.net')
+    base_url: AnyHttpUrl = AnyHttpUrl('https://api.seplis.net')
     storitch_host: AnyHttpUrl | None = None
     storitch_api_key: str = ''
 
@@ -55,8 +59,8 @@ class ConfigWebModel(BaseModel):
 
 class ConfigLoggingModel(BaseModel):
     level: Literal['notset', 'debug', 'info', 'warn', 'error', 'critical'] = 'warn'
-    path: pathlib.Path = None
-    max_size: int = 100 * 1000 * 1000 # ~ 95 mb
+    path: Path | None = None
+    max_size: int = 100 * 1000 * 1000  # ~ 95 mb
     num_backups: int = 10
 
 
@@ -66,32 +70,67 @@ class ConfigClientModel(BaseModel):
     themoviedb: str | None = None
     id: str | None = None
     validate_cert: bool = True
-    api_url: AnyHttpUrl = 'https://api.seplis.net'
+    api_url: AnyHttpUrl = AnyHttpUrl('https://api.seplis.net')
     public_api_url: Annotated[str | None, Field(validate_default=True)] = None
 
     @field_validator('public_api_url')
     @classmethod
-    def default_public_api_url(cls, v: str | None, info: FieldValidationInfo):
+    def default_public_api_url(cls, v: str | None, info: ValidationInfo) -> str | None:
         return v or info.data['api_url']
-    
+
 
 class ConfigSMTPModel(BaseModel):
     server: str = '127.0.0.1'
     port: int = 25
     user: str | None = None
     password: str | None = None
-    use_tls: bool = None
+    use_tls: bool | None = None
     from_email: str | None = None
-    
-    
+
+
+def get_config_path() -> Path | None:
+    path: Path | None = None
+    if os.environ.get('SEPLIS__CONFIG', None):
+        path = Path(os.environ['SEPLIS__CONFIG'])
+    if os.environ.get('SEPLIS_CONFIG', None):
+        path = Path(os.environ['SEPLIS_CONFIG'])
+
+    if not path:
+        default_paths = (Path(__file__).parent / '../seplis.yaml',)
+
+        if 'pytest' in sys.modules:
+            default_paths = (Path(__file__).parent / '../seplis-test.yml',)
+
+        for p in default_paths:
+            if p.exists():
+                path = p
+                break
+    if not path:
+        return None
+
+    path = path.expanduser()
+    if not path.exists():
+        raise Exception(f'Config file does not exist: {path}')
+
+    logger.remove()
+    logger.add(
+        sys.stdout,
+        colorize=True,
+        format='<blue>{message}</blue>',
+    )
+    logger.info(f'Config: {path}')
+    return path
+
+
 class ConfigModel(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix='seplis__',
-        env_nested_delimiter='_',
+        env_nested_delimiter='__',
         validate_assignment=True,
         case_sensitive=False,
+        extra='forbid',
+        yaml_file=get_config_path(),
     )
-    
 
     debug: bool = False
     test: bool = False
@@ -104,35 +143,5 @@ class ConfigModel(BaseSettings):
     client: ConfigClientModel = ConfigClientModel()
     smtp: ConfigSMTPModel = ConfigSMTPModel()
 
-class Config:
-    def __init__(self):
-        self.data = None
-config = Config()
 
-def load(path=None):
-    default_paths = [
-        '~/seplis.yaml',
-        './seplis.yaml',
-        '../seplis.yaml',
-        '../../seplis.yaml',
-        '../../../seplis.yaml',
-        '/etc/seplis/seplis.yaml',
-        '/etc/seplis.yaml',
-    ]
-    if not path:
-        path = os.environ.get('SEPLIS_CONFIG', None)
-        if not path:
-            for p in default_paths:
-                p = os.path.expanduser(p)
-                if os.path.isfile(p):
-                    path = p
-                    break
-    if not path:
-        raise Exception('No config file specified.')
-    
-    if not os.path.isfile(path):
-        raise Exception(f'Config: "{path}" could not be found.')
-    with open(path) as f:
-        data = yaml.load(f, Loader=yaml.SafeLoader)
-        if data:
-            config.data = ConfigModel(**data)
+config = ConfigModel()

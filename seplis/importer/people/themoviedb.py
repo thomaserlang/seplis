@@ -1,6 +1,7 @@
-from seplis.api import schemas
-from .base import Importer_base, register_importer, client
 from seplis import config
+from seplis.api import schemas
+
+from .base import Importer_base, client, register_importer
 
 
 class TheMovieDB(Importer_base):
@@ -13,11 +14,11 @@ class TheMovieDB(Importer_base):
 
     async def info(self, external_id: str) -> schemas.Person_update:
         r = await client.get(f'https://api.themoviedb.org/3/person/{external_id}', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'language': 'en-US',
         })
         if r.status_code != 200:
-            return
+            return None
         person = r.json()
 
         externals = {}
@@ -39,11 +40,11 @@ class TheMovieDB(Importer_base):
 
     async def images(self, external_id: str) -> list[schemas.Image_import]:
         r = await client.get(f'https://api.themoviedb.org/3/person/{external_id}', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'language': 'en-US',
         })
         if r.status_code != 200:
-            return
+            return None
         person = r.json()
         images: list[schemas.Image_import] = []
         if person['profile_path']:
@@ -60,7 +61,7 @@ class TheMovieDB(Importer_base):
         ids: list[str] = []
         while True:
             r = await client.get('https://api.themoviedb.org/3/person/changes', params={
-                'api_key': config.data.client.themoviedb,
+                'api_key': config.client.themoviedb,
                 'page': page,
             })
             r.raise_for_status()

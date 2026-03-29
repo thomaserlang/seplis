@@ -1,11 +1,13 @@
 import io
+from datetime import date
+
+import httpx
 import pytest
 import respx
-import httpx
-from seplis.api import constants, schemas, models
-from seplis.api.testbase import client, run_file, AsyncClient, user_signin # noqa
+
 from seplis import config
-from datetime import date
+from seplis.api import constants, models, schemas
+from seplis.api.testbase import AsyncClient, client, run_file, user_signin  # noqa
 
 
 @pytest.mark.asyncio
@@ -271,7 +273,7 @@ async def test_series_create(client: AsyncClient):
     r = await client.get(f'/2/series/{series_id}/episodes/3')
     assert r.status_code == 404, r.content
 
-    config.data.api.storitch_host = 'http://storitch'
+    config.api.storitch_host = 'http://storitch'
     r = await client.post(f'/2/series/{series_id}/images',
         files={
             'image': io.BytesIO(b"some initial text data"),

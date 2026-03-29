@@ -1,14 +1,16 @@
-import asyncio
+from datetime import UTC, datetime
+
 import sqlalchemy as sa
 from fastapi import HTTPException
-from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from seplis.utils.sqlalchemy import UtcDateTime
-from .episode import Episode
-from .base import Base
+
+from ... import config, constants, utils
+from .. import exceptions, schemas
 from ..database import auto_session, database
-from .. import schemas, exceptions
-from ... import config, utils, constants
+from .base import Base
+from .episode import Episode
 from .genre import Genre
 
 
@@ -65,14 +67,14 @@ class Series(Base):
         if not series_id:
             r = await session.execute(sa.insert(Series))
             series_id = r.lastrowid
-            _data['created_at'] = datetime.now(tz=timezone.utc)
+            _data['created_at'] = datetime.now(tz=UTC)
             if not data.original_title:
                 _data['original_title'] = data.title
         else:
             m = await session.scalar(sa.select(Series.id).where(Series.id == series_id))
             if not m:
                 raise HTTPException(404, f'Unknown series id: {series_id}')
-            _data['updated_at'] = datetime.now(tz=timezone.utc)
+            _data['updated_at'] = datetime.now(tz=UTC)
 
         if 'externals' in _data:
             _data['externals'] = await cls._save_externals(session, series_id, _data['externals'], patch)
@@ -107,7 +109,7 @@ class Series(Base):
                 ))
                 await session.commit()
                 await database.es.delete(
-                    index=config.data.api.elasticsearch.index_prefix+'titles',
+                    index=config.api.elasticsearch.index_prefix+'titles',
                     id=f'series-{series_id}',
                 )
 
@@ -181,12 +183,12 @@ class Series(Base):
         return [schemas.Genre.model_validate(r) for r in rr]
 
     @staticmethod
-    async def _save_for_search(series: "Series"):
+    async def _save_for_search(series: Series):
         doc = series.title_document()
         if not doc:
             return
         await database.es.index(
-            index=config.data.api.elasticsearch.index_prefix+'titles',
+            index=config.api.elasticsearch.index_prefix+'titles',
             id=f'series-{series.id}',
             document=doc.model_dump(),
         )
@@ -206,7 +208,7 @@ class Series(Base):
         for episode in episodes:
             data = episode.model_dump(exclude_unset=True)
             data['series_id'] = series_id
-            if 'air_datetime' in data and not 'air_date' in data:
+            if 'air_datetime' in data and 'air_date' not in data:
                 data['air_date'] = episode.air_datetime.date() if episode.air_datetime else None
             rows.append(data)
         await session.execute(sa.insert(Episode).prefix_with('IGNORE'), rows)
@@ -214,7 +216,7 @@ class Series(Base):
 
     def title_document(self):
         if not self.title:
-            return
+            return None
         titles = [self.title, *self.alternative_titles]
         year = str(self.premiered.year) if self.premiered else ''
         for title in titles[:]:
@@ -286,7 +288,7 @@ class Series(Base):
         ))
 
     @staticmethod
-    async def get_by_external(session: AsyncSession, external_title: str, external_value: str) -> 'Series':
+    async def get_by_external(session: AsyncSession, external_title: str, external_value: str) -> Series:
         r = await session.scalars(sa.select(Series).where(
             Series_external.title == external_title,
             Series_external.value == external_value,
@@ -324,7 +326,7 @@ async def rebuild_series():
                     if not d:
                         continue
                     yield {
-                        '_index': config.data.api.elasticsearch.index_prefix+'titles',
+                        '_index': config.api.elasticsearch.index_prefix+'titles',
                         '_id': f'series-{s.id}',
                         **d.model_dump()
                     }

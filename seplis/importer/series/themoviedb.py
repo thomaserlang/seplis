@@ -1,6 +1,7 @@
-from seplis.api import schemas
-from .base import Series_importer_base, register_importer, client
 from seplis import config
+from seplis.api import schemas
+
+from .base import Series_importer_base, client, register_importer
 
 statuses = {
     'Unknown': 0,
@@ -22,12 +23,12 @@ class TheMovieDB(Series_importer_base):
 
     async def info(self, external_id: str) -> schemas.Series_update:
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'language': 'en-US',
             'append_to_response': 'external_ids,alternative_titles,keywords',
         })
         if r.status_code != 200:
-            return
+            return None
         series = r.json()
 
         externals = {}
@@ -60,12 +61,12 @@ class TheMovieDB(Series_importer_base):
 
     async def images(self, external_id: str) -> list[schemas.Image_import]:
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'language': 'en-US',
             'append_to_response': 'images',
         })
         if r.status_code != 200:
-            return
+            return None
         data = r.json()
         images: list[schemas.Image_import] = []
         if data['poster_path']:
@@ -85,16 +86,16 @@ class TheMovieDB(Series_importer_base):
 
     async def episodes(self, external_id) -> list[schemas.Episode_update]:
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'language': 'en-US',
         })
         if r.status_code != 200:
-            return
+            return None
         series = r.json()
         episodes_data = []
         for i in range(1, series['number_of_seasons']+1):
             r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}/season/{i}', params={
-                'api_key': config.data.client.themoviedb,
+                'api_key': config.client.themoviedb,
                 'language': 'en-US',
             })
             if r.status_code == 200:
@@ -121,11 +122,11 @@ class TheMovieDB(Series_importer_base):
     
     async def cast(self, external_id: str):
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}/aggregate_credits', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'language': 'en-US',
         })
         if r.status_code != 200:
-            return
+            return None
         data = r.json()
         return [schemas.Series_cast_person_import(
             external_name=self.external_name,
@@ -140,11 +141,11 @@ class TheMovieDB(Series_importer_base):
     
     async def poster(self, external_id):
         r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'language': 'en-US',
         })
         if r.status_code != 200:
-            return
+            return None
         data = r.json()
         if data['poster_path']:
             return schemas.Image_import(
@@ -159,7 +160,7 @@ class TheMovieDB(Series_importer_base):
         ids: list[str] = []
         while True:
             r = await client.get('https://api.themoviedb.org/3/tv/changes', params={
-                'api_key': config.data.client.themoviedb,
+                'api_key': config.client.themoviedb,
                 'page': page,
             })
             r.raise_for_status()
@@ -174,13 +175,13 @@ class TheMovieDB(Series_importer_base):
 
     async def lookup_from_imdb(self, imdb: str):
         r = await client.get(f'https://api.themoviedb.org/3/find/{imdb}', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'external_source': 'imdb_id',
         })
         if r.status_code == 200:
             data = r.json()
             if not data['tv_results']:
-                return
+                return None
             return data['tv_results'][0]['id']
 
 

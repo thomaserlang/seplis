@@ -1,12 +1,14 @@
-from urllib.parse import urljoin
 import uuid
+from datetime import UTC, datetime, timedelta
+from urllib.parse import urljoin
+
 import sqlalchemy as sa
 
 from seplis.utils.sqlalchemy import UtcDateTime
-from .base import Base
-from ..database import database
+
 from ... import config
-from datetime import datetime, timedelta, timezone
+from ..database import database
+from .base import Base
 
 
 class Reset_password(Base):
@@ -24,8 +26,8 @@ class Reset_password(Base):
                 sa.insert(Reset_password).values(
                     user_id=user_id,
                     key=key,
-                    expires=datetime.now(tz=timezone.utc) + timedelta(minutes=30),
+                    expires=datetime.now(tz=UTC) + timedelta(minutes=30),
                 )
             )
             await session.commit()
-            return urljoin(str(config.data.web.url), f"/users/reset-password/{key}")
+            return urljoin(str(config.web.url), f"/users/reset-password/{key}")

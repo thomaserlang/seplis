@@ -1,13 +1,17 @@
-import sqlalchemy as sa
 import io
 import urllib.parse
-from fastapi import UploadFile
-from seplis.utils.sqlalchemy import UtcDateTime
-from .base import Base
-from ... import config, utils, logger
-from .. import schemas, exceptions, models
-from ..database import database
 from datetime import datetime
+
+import sqlalchemy as sa
+from fastapi import UploadFile
+
+from seplis.utils.sqlalchemy import UtcDateTime
+
+from ... import config, logger, utils
+from .. import exceptions, models, schemas
+from ..database import database
+from .base import Base
+
 
 class Image(Base):
     __tablename__ = 'images'
@@ -25,7 +29,7 @@ class Image(Base):
 
     @property
     def url(self):
-        return urllib.parse.urljoin(str(config.data.api.image_url), self.file_id)
+        return urllib.parse.urljoin(str(config.api.image_url), self.file_id)
 
     async def save(relation_type: str, relation_id: str, image_data: schemas.Image_import) -> schemas.Image:
         from ..dependencies import httpx_client
@@ -55,14 +59,14 @@ class Image(Base):
                     yield content
 
             r = await httpx_client.post(
-                urllib.parse.urljoin(str(config.data.api.storitch_host), '/store/session'),
+                urllib.parse.urljoin(str(config.api.storitch_host), '/store/session'),
                 headers={
                     'X-Storitch': utils.json_dumps({
                         'finished': True,
                         'filename': image_data.file.filename,
                     }),
                     'content-type': 'application/octet-stream',
-                    'authorization': config.data.api.storitch_api_key,
+                    'authorization': config.api.storitch_api_key,
                 },
                 content=upload_bytes()
             )

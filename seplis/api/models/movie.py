@@ -1,17 +1,19 @@
-import asyncio
+from datetime import UTC, datetime
+
 import sqlalchemy as sa
 from fastapi import HTTPException
-from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from seplis import utils
 from seplis.utils.sqlalchemy import UtcDateTime
+
+from ... import config
+from .. import exceptions, schemas
+from ..database import auto_session, database
+from .base import Base
 from .genre import Genre
 from .movie_collection import Movie_collection
 from .movie_watchlist import Movie_watchlist
-from .base import Base
-from ..database import auto_session, database
-from .. import schemas, exceptions
-from ... import config
 
 
 class Movie(Base):
@@ -55,12 +57,12 @@ class Movie(Base):
         if not movie_id:
             r = await session.execute(sa.insert(Movie))
             movie_id = r.lastrowid
-            _data['created_at'] = datetime.now(tz=timezone.utc)
+            _data['created_at'] = datetime.now(tz=UTC)
         else:
             m = await session.scalar(sa.select(Movie.id).where(Movie.id == movie_id))
             if not m:
                 raise HTTPException(404, f'Unknown movie id: {movie_id}')
-            _data['updated_at'] = datetime.now(tz=timezone.utc)
+            _data['updated_at'] = datetime.now(tz=UTC)
         if 'genre_names' in _data:
             _data['genres'] = await cls._save_genres(session, movie_id, _data.pop('genre_names'), False if overwrite_genres else patch)
         if 'externals' in _data:
@@ -94,7 +96,7 @@ class Movie(Base):
                 ))
                 await session.commit()
                 await database.es.delete(
-                    index=config.data.api.elasticsearch.index_prefix+'titles',
+                    index=config.api.elasticsearch.index_prefix+'titles',
                     id=f'movie-{movie_id}',
                 )
 
@@ -171,19 +173,19 @@ class Movie(Base):
         return [schemas.Genre.model_validate(r) for r in rr]
 
     @staticmethod
-    async def _save_for_search(movie: 'Movie'):
+    async def _save_for_search(movie: Movie):
         doc = movie.title_document()
         if not doc:
             return
         await database.es.index(
-            index=config.data.api.elasticsearch.index_prefix+'titles',
+            index=config.api.elasticsearch.index_prefix+'titles',
             id=f'movie-{movie.id}',
             document=doc.model_dump(),
         )
 
     def title_document(self) -> schemas.Search_title_document:
         if not self.title:
-            return
+            return None
         titles = [self.title, *self.alternative_titles]
         year = str(self.release_date.year) if self.release_date else ''
         for title in titles[:]:
@@ -252,7 +254,7 @@ class Movie_watched(Base):
         watched = sa.dialects.mysql.insert(Movie_watched).values(
             movie_id=movie_id,
             user_id=user_id,
-            watched_at=data.watched_at.astimezone(timezone.utc),
+            watched_at=data.watched_at.astimezone(UTC),
             times=1
         )
         watched = watched.on_duplicate_key_update(
@@ -263,7 +265,7 @@ class Movie_watched(Base):
         watched_history = sa.insert(Movie_watched_history).values(
             movie_id=movie_id,
             user_id=user_id,
-            watched_at=data.watched_at.astimezone(timezone.utc),
+            watched_at=data.watched_at.astimezone(UTC),
         )
 
         await session.execute(watched)
@@ -287,7 +289,7 @@ class Movie_watched(Base):
             Movie_watched.user_id == user_id,
         ))
         if not w:
-            return
+            return None
       
         if w.times == 0 or (w.times == 1 and w.position == 0):
             await session.execute(sa.delete(Movie_watched).where(
@@ -298,8 +300,8 @@ class Movie_watched(Base):
                 Movie_watched_history.movie_id == movie_id,
                 Movie_watched_history.user_id == user_id,
             ))
-            return
-        elif w.position > 0:
+            return None
+        if w.position > 0:
             watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
                 Movie_watched_history.movie_id == movie_id,
                 Movie_watched_history.user_id == user_id,
@@ -350,7 +352,7 @@ class Movie_watched(Base):
         sql = sa.dialects.mysql.insert(Movie_watched).values(
             movie_id=movie_id,
             user_id=user_id,
-            watched_at=datetime.now(tz=timezone.utc),
+            watched_at=datetime.now(tz=UTC),
             position=position,
         )
         sql = sql.on_duplicate_key_update(
@@ -379,23 +381,22 @@ class Movie_watched(Base):
                 Movie_watched_history.user_id == user_id,
             ))
             return
+        if w.position > 0:
+            watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
+                Movie_watched_history.movie_id == movie_id,
+                Movie_watched_history.user_id == user_id,
+            ).order_by(
+                Movie_watched_history.watched_at.desc()
+            ).limit(1))
+            await session.execute(sa.update(Movie_watched).where(
+                Movie_watched.movie_id == movie_id,
+                Movie_watched.user_id == user_id,
+            ).values(
+                position=0,
+                watched_at=watched_at,
+            ))
         else:
-            if w.position > 0:
-                watched_at = await session.scalar(sa.select(Movie_watched_history.watched_at).where(
-                    Movie_watched_history.movie_id == movie_id,
-                    Movie_watched_history.user_id == user_id,
-                ).order_by(
-                    Movie_watched_history.watched_at.desc()
-                ).limit(1))
-                await session.execute(sa.update(Movie_watched).where(
-                    Movie_watched.movie_id == movie_id,
-                    Movie_watched.user_id == user_id,
-                ).values(
-                    position=0,
-                    watched_at=watched_at,
-                ))
-            else:
-                return
+            return
 
 
 class Movie_watched_history(Base):
@@ -426,7 +427,7 @@ async def rebuild_movies():
                     if not d:
                         continue
                     yield {
-                        '_index': config.data.api.elasticsearch.index_prefix+'titles',
+                        '_index': config.api.elasticsearch.index_prefix+'titles',
                         '_id': f'movie-{movie.id}',
                         **d.model_dump()
                     }

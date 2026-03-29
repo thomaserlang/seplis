@@ -1,30 +1,45 @@
+from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from .database import database
+from seplis.logger import set_logger
+
+from .. import config
 from . import exceptions
-from .. import config, set_logger, config_load
-
-config_load()
-set_logger(f'api-{config.data.api.port}.log')
-
+from .database import database
 from .routes import (
-    health,
-    token,
-    search,
     genres,
+    health,
+    search,
+    token,
 )
-from .routes.series.router import router as series_router
 from .routes.movie.router import router as movie_router
-from .routes.play_server.router import router as play_server_router
 from .routes.person.router import router as person_router
+from .routes.play_server.router import router as play_server_router
+from .routes.series.router import router as series_router
 from .routes.user.router import router as user_router
 
+set_logger(f'api-{config.api.port}.log')
 
-app = FastAPI(title='SEPLIS API', version='2.0')
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    if not config.test:
+        await database.setup()
+    else:
+        await database.setup_test()
+    yield
+    if not config.test:
+        await database.close()
+    else:
+        await database.close_test()
+
+
+app = FastAPI(title='SEPLIS API', version='2.0', lifespan=lifespan)
 app.include_router(token.router)
 app.include_router(search.router)
 app.include_router(series_router)
@@ -38,31 +53,17 @@ app.include_router(health.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=['*'],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=['*'],
+    allow_headers=['*'],
 )
 
 
-@app.on_event('startup')
-async def startup():
-    if not config.data.test:
-        await database.setup()
-    else:
-        await database.setup_test()
-
-
-@app.on_event('shutdown')
-async def shutdown():
-    if not config.data.test:
-        await database.close()
-    else:
-        await database.close_test()
-
-
 @app.exception_handler(exceptions.API_exception)
-async def api_exception_handler(request: Request, exc: exceptions.API_exception):
+async def api_exception_handler(
+    request: Request, exc: exceptions.API_exception
+) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content={
@@ -78,7 +79,7 @@ async def api_exception_handler(request: Request, exc: exceptions.API_exception)
 
 
 @app.exception_handler(Exception)
-async def exception_handler(request: Request, exc: Exception):
+async def exception_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(
         status_code=500,
         content={
@@ -92,16 +93,21 @@ async def exception_handler(request: Request, exc: Exception):
 
 
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request, exc):
+async def validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     return JSONResponse(
         status_code=422,
         content={
             'code': 1001,
             'message': 'One or more fields failed validation',
-            'errors': [{
-                'field': e['loc'], 
-                'message': e['msg'],
-            } for e in exc.errors()],
+            'errors': [
+                {
+                    'field': e['loc'],
+                    'message': e['msg'],
+                }
+                for e in exc.errors()
+            ],
             'extra': None,
         },
         headers={

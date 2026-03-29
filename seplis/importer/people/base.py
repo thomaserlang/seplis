@@ -1,9 +1,12 @@
-import os, os.path
+import os
+import os.path
 import time
+from typing import Literal
+
 import httpx
+
 from seplis import config
 from seplis.api import schemas
-from typing import Literal
 
 importers = {}
 
@@ -18,7 +21,7 @@ def register_importer(obj):
         raise Exception(f'{obj.external_name} is already registered as an indexer')
     importers[obj.external_name] = obj
 
-class Importer_base(object):
+class Importer_base:
     display_name: str
     external_name: str
     supported: tuple[Literal['info', 'images']]
@@ -52,13 +55,13 @@ class Importer_base(object):
         :returns: int
         """
         path = os.path.expanduser(os.path.join(
-            config.data.data_dir,
+            config.data_dir,
             'importer',
             self.external_name+'.timestamp',
         ))
         if not os.path.isfile(path):
             return int(time.time()) - 86400
-        with open(path, 'r') as f:
+        with open(path) as f:
             return int(f.readline())
 
     def save_timestamp(self, timestamp) -> int:
@@ -75,7 +78,7 @@ class Importer_base(object):
         ```
         """
         path = os.path.expanduser(os.path.join(
-            config.data.data_dir,
+            config.data_dir,
             'importer',
         ))
         if not os.path.exists(path):

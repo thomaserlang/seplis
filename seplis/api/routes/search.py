@@ -1,10 +1,11 @@
-import re
+from typing import Literal
+
 from fastapi import APIRouter
 from pydantic import constr
-from typing import Literal
-from .. import schemas, exceptions
-from ..database import database
+
 from ... import config
+from .. import exceptions, schemas
+from ..database import database
 
 router = APIRouter(prefix='/2/search', tags=['Search'])
 
@@ -35,7 +36,7 @@ async def search(
             }
         }
 
-    r = await database.es.search(index=config.data.api.elasticsearch.index_prefix+'titles', query=q)
+    r = await database.es.search(index=config.api.elasticsearch.index_prefix+'titles', query=q)
     return [schemas.Search_title_document.model_validate(a['_source'])
             for a in r['hits']['hits']]
 

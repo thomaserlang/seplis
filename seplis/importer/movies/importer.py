@@ -1,9 +1,11 @@
-import sqlalchemy as sa
-import httpx
 import asyncio
+
+import httpx
+import sqlalchemy as sa
+
 from ... import config, logger
-from ...api.database import database
 from ...api import exceptions, models, schemas
+from ...api.database import database
 from ...utils.compare import compare
 from ..people.importer import create_person
 
@@ -29,7 +31,7 @@ async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
                 return
             movie = schemas.Movie.model_validate(result)
     if not movie:
-        logger.error(f'Unknown movie')
+        logger.error('Unknown movie')
         return
     logger.info(f'[Movie: {movie.id}] Updating')
     await update_movie_metadata(movie)
@@ -70,7 +72,7 @@ async def update_incremental():
     logger.info('Incremental update running')
     while True:
         r = await client.get('https://api.themoviedb.org/3/movie/changes', params={
-            'api_key': config.data.client.themoviedb,
+            'api_key': config.client.themoviedb,
             'page': page,
         })
         r.raise_for_status()
@@ -112,7 +114,7 @@ async def update_movie_metadata(movie: schemas.Movie):
         r = await client.get(
             f'https://api.themoviedb.org/3/find/{movie.externals["imdb"]}',
             params={
-                'api_key': config.data.client.themoviedb,
+                'api_key': config.client.themoviedb,
                 'external_source': 'imdb_id',
             }
         )
@@ -143,7 +145,7 @@ async def update_movie_metadata(movie: schemas.Movie):
 
 async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     r = await client.get(f'https://api.themoviedb.org/3/movie/{themoviedb}', params={
-        'api_key': config.data.client.themoviedb,
+        'api_key': config.client.themoviedb,
         'append_to_response': 'alternative_titles,keywords',
     })
     if r.status_code >= 400:
@@ -155,7 +157,7 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
             if m:
                 await models.Movie.delete(movie_id=m.id)
                 logger.info(f'Movie not found on TMDB, deleteing: TMDB {themoviedb} from the database')
-        return
+        return None
     r = r.json()
 
     data = schemas.Movie_update()
@@ -203,7 +205,7 @@ async def update_images(movie: schemas.Movie):
 
     r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}', params={
         'append_to_response': 'images',
-        'api_key': config.data.client.themoviedb,
+        'api_key': config.client.themoviedb,
     })
     if r.status_code >= 400:
         logger.error(
@@ -269,7 +271,7 @@ async def update_cast(movie: schemas.Movie):
                     if cast.person.externals.get("themoviedb")}
 
     r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}/credits', params={
-        'api_key': config.data.client.themoviedb,
+        'api_key': config.client.themoviedb,
         'language': 'en-US',
     })
     if r.status_code >= 400:

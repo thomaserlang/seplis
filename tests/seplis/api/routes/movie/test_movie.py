@@ -1,8 +1,13 @@
 import io
-import pytest, respx, httpx
-from seplis.api import constants, schemas
-from seplis.api.testbase import client, run_file, AsyncClient, user_signin
+
+import httpx
+import pytest
+import respx
+
 from seplis import config
+from seplis.api import schemas
+from seplis.api.testbase import AsyncClient, run_file, user_signin
+
 
 @pytest.mark.asyncio
 @respx.mock
@@ -94,7 +99,7 @@ async def test_movie(client: AsyncClient):
     assert data.alternative_titles == []
 
 
-    config.data.api.storitch_host = 'http://storitch'
+    config.api.storitch_host = 'http://storitch'
     r = await client.post(f'/2/movies/{movie_id}/images', 
         files={
             'image': io.BytesIO(b"some initial text data"),

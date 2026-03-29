@@ -1,11 +1,8 @@
 import Axios, { AxiosError, AxiosRequestConfig } from 'axios'
 import { IPageCursorResult } from './interfaces/page'
 
-export const apiBaseUrl =
-    import.meta.env.VITE_API_URL || 'https://api.seplis.net'
-
 const api = Axios.create({
-    baseURL: apiBaseUrl,
+    baseURL: '/api',
     paramsSerializer: {
         indexes: null,
     },
