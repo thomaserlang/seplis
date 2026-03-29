@@ -1,4 +1,5 @@
-import os, pathlib
+import os
+import pathlib
 from typing import Literal
 from pydantic_core.core_schema import FieldValidationInfo
 from typing_extensions import Annotated
@@ -84,6 +85,14 @@ class ConfigSMTPModel(BaseModel):
     
     
 class ConfigModel(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_prefix='seplis__',
+        env_nested_delimiter='_',
+        validate_assignment=True,
+        case_sensitive=False,
+    )
+    
+
     debug: bool = False
     test: bool = False
     ENVIRONMENT: str | None = None
@@ -94,14 +103,6 @@ class ConfigModel(BaseSettings):
     logging: ConfigLoggingModel = ConfigLoggingModel()
     client: ConfigClientModel = ConfigClientModel()
     smtp: ConfigSMTPModel = ConfigSMTPModel()
-
-    model_config = SettingsConfigDict(
-        env_prefix='seplis_',
-        env_nested_delimiter='.',
-        validate_assignment=True,
-        case_sensitive=False,
-    )
-    
 
 class Config:
     def __init__(self):

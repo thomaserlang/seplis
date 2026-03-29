@@ -4,7 +4,6 @@ from honcho.manager import Manager
 def main():
     start = [
         ('api', ['python', 'seplis/runner.py', 'api']),
-        ('web', ['python', 'seplis/runner.py', 'web']),
         ('worker', ['python', 'seplis/runner.py', 'worker']),
     ]
 

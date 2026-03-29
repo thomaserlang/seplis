@@ -1,0 +1,181 @@
+.row-header {
+    font-size: 1.5rem !important;
+    font-weight: 600 !important;
+}
+
+.row-margin {
+    margin: 0 2.785vw 0.3rem 2.785vw !important;
+
+    @media screen and (max-width: 1099px) {
+        font-size: 1rem !important;
+    }
+
+    @media screen and (min-width: 1100px) and (max-width: 1599px) {
+        margin: 5px 4.5vw !important;
+    }
+
+    @media screen and (min-width: 600px) and (max-width: 1099px) {
+        margin: 5px 5vw !important;
+    }
+
+    @media screen and (max-width: 599px) {
+        margin: 5px 40px !important;
+    }
+}
+
+
+.slider {
+    position: relative;
+    padding: 0 2.785vw;
+    user-select: none;
+    overflow: hidden;
+    width: 100%;
+
+    .slider-item {
+        overflow: hidden;
+        flex-grow: 1;
+
+        &.focused {            
+            border: 7px solid #fff;
+        }
+
+        @media screen and (min-width: 1600px) {
+            width: 8.3%;
+        }
+
+        @media screen and (min-width: 1100px) and (max-width: 1599px) {
+            width: 14.285%;
+        }
+
+        @media screen and (min-width: 600px) and (max-width: 1099px) {
+            width: 16.6667%;
+        }
+
+        @media screen and (max-width: 599px) {
+            width: 33.333%;
+        }
+    }
+
+    @media screen and (min-width: 1100px) and (max-width: 1599px) {
+        padding: 0 4.5vw;
+    }
+
+    @media screen and (min-width: 600px) and (max-width: 1099px) {
+        padding: 0 5vw;
+    }
+
+    @media screen and (max-width: 599px) {
+        padding: 0 40px;
+    }
+
+    .slider-peek {
+        position: absolute;
+        width: 2.5vw;
+        height: 100%;
+        cursor: pointer;
+        overflow: hidden;
+
+        @media screen and (min-width: 1100px) and (max-width: 1599px) {
+            width: 3.9vw;
+        }
+
+        @media screen and (min-width: 600px) and (max-width: 1099px) {
+            width: 4.5vw;
+        }
+
+        @media screen and (max-width: 599px) {
+            width: 35px;
+        }
+
+        .image {
+            position: absolute;
+            display: flex;
+            width: 100%;
+            height: 100%;
+            aspect-ratio: auto 603 / 887;
+            img {
+                object-fit: cover;
+            }
+        }
+
+        .background {
+            position: absolute;
+            background: hsla(0,0%,8%,.5);
+            height: 100%;
+            width: 100%;
+        }
+
+        .button {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.4vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            visibility: hidden;
+
+            @media (pointer:coarse) {
+                visibility: visible;
+            }
+
+            &:hover, &:focus {
+                visibility: visible;
+                font-size: 2.4vw;
+            }
+
+            @media screen and (min-width: 1100px) and (max-width: 1599px) {
+                font-size: 2.4vw;            
+                
+                &:hover, &:focus {
+                    visibility: visible;
+                    font-size: 3.4vw;
+                }
+            }
+    
+            @media screen and (min-width: 600px) and (max-width: 1099px) {
+                font-size: 3.4vw;            
+                &:hover, &:focus {
+                    visibility: visible;
+                    font-size: 4.4vw;
+                }
+            }
+    
+            @media screen and (max-width: 599px) {
+                font-size: 35px;            
+                
+                &:hover, &:focus {
+                    visibility: visible;
+                    font-size: 40px;
+                }
+            }
+        }
+
+
+    }        
+    
+    &:hover .slider-peek .button {
+        visibility: visible;
+    }
+
+    .prev {
+        left: -0.5rem;
+    }
+    
+    .next {
+        right: 0px;
+    }
+
+    .slider-peek.prev {        
+        border-top-right-radius: var(--chakra-radii-md);
+        border-bottom-right-radius: var(--chakra-radii-md);
+    }
+
+    .slider-peek.next {        
+        border-top-left-radius: var(--chakra-radii-md);
+        border-bottom-left-radius: var(--chakra-radii-md);
+    }
+      
+}
