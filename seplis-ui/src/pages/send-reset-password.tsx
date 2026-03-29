@@ -15,11 +15,11 @@ import {
     InputLeftElement,
     Stack,
 } from '@chakra-ui/react'
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { FaEnvelope } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
+import api from '../api'
 
 interface IResetPassword {
     [key: string]: string
@@ -45,7 +45,7 @@ export default function SendResetPassword() {
     const submit = async (data: IResetPassword) => {
         try {
             setRootError(null)
-            await axios.post('/api/users/send-reset-password', data)
+            await api.post('/2/users/send-reset-password', data)
             setSuccess('A password reset link has been sent to your email.')
         } catch (e) {
             const data = e.response.data as IError<IValidationError>

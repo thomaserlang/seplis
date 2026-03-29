@@ -17,11 +17,11 @@ import {
     InputLeftElement,
     Stack,
 } from '@chakra-ui/react'
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { FaLock } from 'react-icons/fa'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import api from '../api'
 
 interface INewPassword {
     [key: string]: string
@@ -49,7 +49,7 @@ export default function ResetPassword() {
     const submit = async (data: INewPassword) => {
         try {
             setRootError(null)
-            await axios.post<IToken>('/api/users/reset-password', data)
+            await api.post<IToken>('/2/users/reset-password', data)
             navigate('/login')
         } catch (e) {
             const data = e.response.data as IError<IValidationError>

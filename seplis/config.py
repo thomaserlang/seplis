@@ -7,7 +7,9 @@ from loguru import logger
 from pydantic import AnyHttpUrl, BaseModel, Field, ValidationInfo, field_validator
 from pydantic_settings import (
     BaseSettings,
+    PydanticBaseSettingsSource,
     SettingsConfigDict,
+    YamlConfigSettingsSource,
 )
 
 
@@ -131,6 +133,23 @@ class ConfigModel(BaseSettings):
         extra='forbid',
         yaml_file=get_config_path(),
     )
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+            YamlConfigSettingsSource(settings_cls),
+        )
 
     debug: bool = False
     test: bool = False

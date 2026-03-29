@@ -17,7 +17,6 @@ import {
     InputLeftElement,
     Stack,
 } from '@chakra-ui/react'
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { FaLock, FaUserAlt } from 'react-icons/fa'
@@ -52,7 +51,7 @@ export default function Login() {
     const submit = async (data: ILogin) => {
         try {
             setError(null)
-            const r = await axios.post<IToken>('/api/token', {
+            const r = await api.post<IToken>('/2/token', {
                 login: data.login,
                 password: data.password,
             })

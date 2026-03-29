@@ -17,11 +17,11 @@ import {
     InputLeftElement,
     Stack,
 } from '@chakra-ui/react'
-import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { FaEnvelope, FaLock, FaUserAlt } from 'react-icons/fa'
 import { Link, useNavigate } from 'react-router-dom'
+import api from '../api'
 
 interface ISignUp {
     [key: string]: string
@@ -49,7 +49,7 @@ export default function Login() {
     const submit = async (data: ISignUp) => {
         try {
             setRootError(null)
-            const r = await axios.post<IToken>('/api/signup', data)
+            const r = await api.post<IToken>('/2/signup', data)
             localStorage.setItem('accessToken', r.data.access_token)
             setAuthorizationHeader()
             navigate('/')
