@@ -1,4 +1,5 @@
 import asyncio
+
 from seplis import logger
 from seplis.api import elasticcreate
 from seplis.api.database import database
@@ -7,7 +8,7 @@ from seplis.api.models.series import rebuild_series
 from seplis.api.models.user import rebuild_tokens
 
 
-async def rebuild():
+async def rebuild() -> None:
     logger.info('Rebuilding cache/search data')
     await database.redis.flushdb()
     await elasticcreate.create_indices(database.es)

@@ -11,7 +11,7 @@ from loguru import logger
 
 from seplis import config
 from seplis.api import exceptions
-from seplis.logger import set_logger
+from seplis.logger_utils import set_logger
 
 
 async def run_task(*task: Coroutine[Any, Any, Any]) -> None:

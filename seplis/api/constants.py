@@ -12,7 +12,7 @@ SHOW_EPISODE_TYPE = {
     SHOW_EPISODE_TYPE_ABSOLUTE_NUMBER: 'Absolute number',
     SHOW_EPISODE_TYPE_SEASON_EPISODE: 'Season episode',
     SHOW_EPISODE_TYPE_AIR_DATE: 'Air date',
-} 
+}
 
 
 SCOPES = {
@@ -20,9 +20,8 @@ SCOPES = {
     'user:progress': 'Manage user progress of content watched/watching',
     'user:view_lists': 'View user lists like watchlist, favorites, etc',
     'user:manage_lists': 'Manage user lists like watchlist, favorites, etc',
-    'user:manage_ratings': 'Manage user\'s ratings of movies, series, etc',
-    'user:view_ratings': 'View user\'s ratings of movies, series, etc',
-    'user:manage_ratings': 'Manage user\'s ratings of movies, series, etc',
+    'user:manage_ratings': "Manage user's ratings of movies, series, etc",
+    'user:view_ratings': "View user's ratings of movies, series, etc",
     'user:play': 'Access to generating a play URL for a movie or episode',
     'user:list_play_servers': 'List play servers',
     'user:manage_play_servers': 'Manage play servers',
@@ -52,7 +51,6 @@ SCOPES_ME = (
     'user:manage_lists',
     'user:manage_ratings',
     'user:view_ratings',
-    'user:manage_ratings',
     'user:play',
     'user:list_play_servers',
     'user:manage_play_servers',
@@ -60,4 +58,21 @@ SCOPES_ME = (
     'user:view_stats',
     'user:read',
     'user:edit',
+)
+
+SCOPES_ADMIN = (
+    'series:create',
+    'series:edit',
+    'series:delete',
+    'series:update',
+    'series:manage_images',
+    'movie:create',
+    'movie:edit',
+    'movie:delete',
+    'movie:update',
+    'movie:manage_images',
+    'person:create',
+    'person:edit',
+    'person:delete',
+    'person:manage_images',
 )

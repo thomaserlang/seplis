@@ -1,9 +1,12 @@
-import sqlalchemy as sa
 import asyncio
+
+import sqlalchemy as sa
+
 from seplis import logger
-from seplis.api.database import database
 from seplis.api import models, schemas
+from seplis.api.database import database
 from seplis.utils.compare import compare
+
 from .base import importers
 
 
@@ -18,8 +21,8 @@ async def update_person_by_id(person_id):
 
 async def update_person(person: schemas.Person):
     if not person.externals:
-        logger.warn(f'Person {person.id} has no externals')
-        return
+        logger.warning(f'Person {person.id} has no externals')
+        return None
     logger.info(f'[Person: {person.id}] Updating')
     p = await update_person_info(person)
     if p:
@@ -50,8 +53,7 @@ async def update_person_info(person: schemas.Person):
         data['also_known_as'] = info.also_known_as
     if data:
         return await models.Person.save(data=schemas.Person_update.model_validate(data), person_id=person.id, patch=True)
-    else:
-        logger.debug(f'[Person: {person.id}] No info updates')
+    logger.debug(f'[Person: {person.id}] No info updates')
 
 
 async def update_person_images(person: schemas.Person):
@@ -117,11 +119,11 @@ async def call_importer(external_name: str, method: str, *args, **kwargs):
     """Calls a method in a registered importer"""
     im = importers.get(external_name)
     if not im:
-        logger.warn(
+        logger.warning(
             f'Person "{kwargs.get("external_id")}" has an unknown importer at {method} '
             f'with external name "{external_name}"'
         )
-        return
+        return None
     m = getattr(im, method, None)
     if not m:
         raise Exception(f'Unknown method "{method}" for importer "{external_name}"')

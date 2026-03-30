@@ -6,7 +6,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from seplis.logger import set_logger
+from seplis.logger_utils import set_logger
 
 from .. import config
 from . import exceptions

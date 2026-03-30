@@ -162,6 +162,8 @@ class Token(Base):
             r['scopes'] = r['scopes'].split(' ') if r.get('scopes') else ['me']
             if 'me' in r['scopes']:
                 r['scopes'].extend(constants.SCOPES_ME)
+            if 'admin' in r['scopes']:
+                r['scopes'].extend(constants.SCOPES_ADMIN)
             d = schemas.User_authenticated.model_validate(r)
             d.token = token
             return d

@@ -17,22 +17,24 @@ services:
     command: 
       - "--character-set-server=utf8mb4"
       - "--collation-server=utf8mb4_unicode_ci"
+      - "--innodb-snapshot-isolation=false"
     environment:
       - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=seplis
     ports:
       - "3306:3306"
     volumes:
-      - /var/seplisdb:/var/lib/mysql
+      - seplisdb:/var/lib/mysql
   storitch:
     image: "thomaserlang/storitch:latest"
+    command: api
     user: 1000:1000
     ports:
       - "3000:3000"
     environment:
-        - storitch_api_keys=["test-key"]
+        - storitch__api_keys=["test-key"]
     volumes:
-      - /var/storitch:/var/storitch
+      - storitch:/var/storitch
   caddy:
     image: caddy:2
     ports:
@@ -40,3 +42,7 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
+
+volumes:
+  seplisdb:
+  storitch:

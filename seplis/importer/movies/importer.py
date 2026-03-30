@@ -124,7 +124,7 @@ async def update_movie_metadata(movie: schemas.Movie):
             return
         r = r.json()
         if not r['movie_results']:
-            logger.warning(
+            logger.warninging(
                 f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"')
             return
         themoviedb = r['movie_results'][0]['id']

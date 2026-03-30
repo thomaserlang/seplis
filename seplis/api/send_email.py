@@ -19,7 +19,7 @@ templateEnv = jinja2.Environment(
 
 async def send_email(template_name: str, subject: str, to: str, **kwargs):
     if not config.smtp.from_email:
-        logger.warning('No smtp server has been configured')
+        logger.warninging('No smtp server has been configured')
         return
     template = templateEnv.get_template(template_name)
     message = MIMEText(template.render(kwargs), 'html')
