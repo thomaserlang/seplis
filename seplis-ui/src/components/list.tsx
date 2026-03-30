@@ -70,7 +70,7 @@ export default function List<S = any>({
         async ({ pageParam = null }) => {
             const r = await api.get<IPageCursorTotalResult<S>>(url, {
                 params: {
-                    ...removeEmpty(urlParams),
+                    ...removeEmpty(urlParams!),
                     cursor: pageParam,
                 },
             })
@@ -117,7 +117,7 @@ export default function List<S = any>({
                         data?.pages?.[0]?.total?.toString() || '...',
                     )}
                 </Heading>
-                {showFilterButton && (
+                {showFilterButton && renderFilter && (
                     <Box marginLeft="auto">
                         <FilterButton renderFilter={renderFilter} />
                     </Box>
@@ -147,8 +147,8 @@ export default function List<S = any>({
                             <Flex key={item.key} grow="1" basis={SplitWidths}>
                                 <Card
                                     item={item}
-                                    onFocus={onFocus}
-                                    onItemSelected={onItemSelected}
+                                    onFocus={onFocus!}
+                                    onItemSelected={onItemSelected!}
                                     viewItemIndex={i}
                                 />
                             </Flex>
@@ -205,7 +205,7 @@ function BlankCards({ amount }: { amount: number }) {
     )
 }
 
-function FilterButton({ renderFilter }: { renderFilter: TRenderFilter }) {
+function FilterButton({ renderFilter }: { renderFilter?: TRenderFilter }) {
     const { isOpen, onOpen, onClose } = useDisclosure()
     return (
         <>
@@ -223,7 +223,7 @@ function FilterButton({ renderFilter }: { renderFilter: TRenderFilter }) {
                     <DrawerHeader>Filter</DrawerHeader>
 
                     <DrawerBody>
-                        {renderFilter({
+                        {renderFilter?.({
                             onClose: onClose,
                         })}
                     </DrawerBody>

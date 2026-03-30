@@ -1,6 +1,6 @@
 /* global chrome */
 
-import React, {
+import {
   ReactNode,
   useEffect,
   useState,

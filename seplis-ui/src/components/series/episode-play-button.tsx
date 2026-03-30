@@ -183,7 +183,7 @@ export function castEpisodeRequest({
                     audioLang: audioLang,
                     subtitleLang: subtitleLang || '',
                     subtitleOffset: subtitleOffset || 0,
-                    apiUrl: (window as any).seplisAPI,
+                    apiUrl: window.location.origin + '/api',
                     maxBitrate: maxBitrate,
                 }
 

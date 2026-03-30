@@ -92,7 +92,7 @@ export default function SeriesHome() {
                             title: item.series.title,
                             img: item.series.poster_image?.url,
                             bottomText: episodeNumber(item.episode),
-                            topText: dateCountdown(item.episode.air_datetime),
+                            topText: dateCountdown(item.episode.air_datetime || ''),
                         })}
                         onFocus={onRowFocus}
                         onItemSelected={itemSelected}

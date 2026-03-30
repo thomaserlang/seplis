@@ -48,13 +48,13 @@ export default function Login() {
 
     const submit = async (data: ISignUp) => {
         try {
-            setRootError(null)
+            setRootError(undefined)
             const r = await api.post<IToken>('/2/signup', data)
             localStorage.setItem('accessToken', r.data.access_token)
             setAuthorizationHeader()
             navigate('/')
         } catch (e) {
-            const data = e.response.data as IError<IValidationError>
+            const data = (e as any).response.data as IError<IValidationError>
 
             if (data?.errors) {
                 for (const e of data?.errors) {
@@ -84,7 +84,7 @@ export default function Login() {
                 alignItems="center"
                 spacing="1rem"
             >
-                <Avatar src="/static/img/apple-touch-icon.png" />
+                <Avatar src="/img/apple-touch-icon.png" />
                 <Box
                     minW={{ base: '90%', md: '468px' }}
                     p="2rem"

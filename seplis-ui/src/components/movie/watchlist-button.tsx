@@ -24,11 +24,10 @@ export default function WatchlistButton({ movieId }: IProps) {
                 'watchlist-button',
                 movieId,
             ])
-            let data: IMovieWatchlist
             if (onWatchlist) {
-                data = await api.delete(`/2/movies/${movieId}/watchlist`)
+                await api.delete(`/2/movies/${movieId}/watchlist`)
             } else {
-                data = await api.put(`/2/movies/${movieId}/watchlist`)
+                await api.put(`/2/movies/${movieId}/watchlist`)
             }
             queryClient.setQueryData(['movie', 'watchlist-button', movieId], {
                 on_watchlist: !onWatchlist,
@@ -71,7 +70,7 @@ export default function WatchlistButton({ movieId }: IProps) {
         },
     )
     const handleClick = async () => {
-        toggleWatchlist.mutate(data.on_watchlist)
+        toggleWatchlist.mutate(data?.on_watchlist ?? false)
     }
     const { ref, focused } = useFocusable({
         onEnterPress: () => handleClick(),
@@ -81,10 +80,10 @@ export default function WatchlistButton({ movieId }: IProps) {
         <Button
             ref={ref}
             isLoading={isInitialLoading || toggleWatchlist.isLoading}
-            colorScheme={data?.on_watchlist ? 'yellow' : null}
+            colorScheme={data?.on_watchlist ? 'yellow' : undefined}
             onClick={handleClick}
             leftIcon={<FaBookmark />}
-            style={focused ? focusedBorder : null}
+            style={focused ? focusedBorder : undefined}
         >
             Watchlist
         </Button>

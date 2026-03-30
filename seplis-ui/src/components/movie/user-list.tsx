@@ -77,7 +77,7 @@ export default function MovieUserList<S = IMovie>({
                         title={title}
                         url={url}
                         emptyMessage={emptyMessage}
-                        filtersActive={isFilterActive(query)}
+                        filtersActive={isFilterActive(query as IUserFilterData)}
                         urlParams={{
                             ...query,
                             per_page: 50,
@@ -100,12 +100,12 @@ export default function MovieUserList<S = IMovie>({
                                 })
                             })
                         }
-                        renderFilter={(options) => {
+                        renderFilter={(_options) => {
                             return (
                                 <MovieUserFilter
-                                    defaultValue={query}
+                                    defaultValue={query as IUserFilterData}
                                     onSubmit={(data) => {
-                                        setQuery(data)
+                                        setQuery(data as any)
                                         if (data.user_can_watch === true)
                                             localStorage.setItem(
                                                 'filter-user-can-watch',
@@ -128,7 +128,7 @@ export default function MovieUserList<S = IMovie>({
 
 function isFilterActive(query: IUserFilterData) {
     return (
-        query.genre_id?.length > 0 ||
+        (query.genre_id?.length ?? 0) > 0 ||
         query.user_can_watch === true ||
         query.release_date_gt != null ||
         query.release_date_lt != null ||

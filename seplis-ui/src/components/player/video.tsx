@@ -74,22 +74,24 @@ export const Video = forwardRef<IVideoControls, IProps>(
         }: IProps,
         ref,
     ) => {
-        const videoElement = useRef<HTMLVideoElement>(null)
-        const hls = useRef<Hls>(null)
-        const requestMedia = useRef<IPlayServerRequestMedia>(null)
+        const videoElement = useRef<HTMLVideoElement | null>(null)
+        const hls = useRef<Hls | null>(null)
+        const requestMedia = useRef<IPlayServerRequestMedia | null>(null)
 
         useImperativeHandle(
             ref,
             () => ({
                 setCurrentTime: (time: number) => {
+                    if (!videoElement.current) return
                     videoElement.current.currentTime = time
                     videoElement.current
                         .play()
                         .catch(() => onAutoPlayFailed && onAutoPlayFailed())
                     onTimeUpdate?.(time)
                 },
-                getCurrentTime: () => videoElement.current.currentTime,
+                getCurrentTime: () => videoElement.current?.currentTime ?? 0,
                 skipSeconds: (seconds: number = 15) => {
+                    if (!videoElement.current) return
                     videoElement.current.currentTime =
                         videoElement.current.currentTime + seconds
                     videoElement.current
@@ -97,20 +99,21 @@ export const Video = forwardRef<IVideoControls, IProps>(
                         .catch(() => onAutoPlayFailed && onAutoPlayFailed())
                     onTimeUpdate?.(videoElement.current.currentTime)
                 },
-                togglePlay: () => togglePlay(videoElement.current),
-                paused: () => videoElement.current.paused,
-                setVolume: (volume: number) =>
-                    (videoElement.current.volume = volume),
-                getVolume: () => videoElement.current.volume,
-                toggleFullscreen: () => toggleFullscreen(videoElement.current),
+                togglePlay: () => videoElement.current && togglePlay(videoElement.current),
+                paused: () => videoElement.current?.paused ?? true,
+                setVolume: (volume: number) => {
+                    if (videoElement.current) videoElement.current.volume = volume
+                },
+                getVolume: () => videoElement.current?.volume ?? 1,
+                toggleFullscreen: () => videoElement.current && toggleFullscreen(videoElement.current),
                 showAirplayPicker: () =>
-                    videoElement.current.webkitShowPlaybackTargetPicker(),
+                    videoElement.current?.webkitShowPlaybackTargetPicker?.(),
             }),
             [videoElement.current],
         )
 
         useEffect(() => {
-            if (videoElement.current.webkitShowPlaybackTargetPicker) {
+            if (videoElement.current?.webkitShowPlaybackTargetPicker) {
                 // The webkitplaybacktargetavailabilitychanged event seems inconsistent
                 // just say it's available if the method exists
                 onAirplayAvailabilityChange?.(true)
@@ -119,6 +122,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
 
         useEffect(() => {
             const start = async () => {
+                if (!videoElement.current) return
                 requestMedia.current = await getPlayRequestMedia({
                     videoElement: videoElement.current,
                     maxBitrate: maxBitrate,
@@ -162,12 +166,12 @@ export const Video = forwardRef<IVideoControls, IProps>(
 
                     hls.current.on(Hls.Events.MANIFEST_PARSED, () =>
                         videoElement.current
-                            .play()
+                            ?.play()
                             .catch(
                                 () => onAutoPlayFailed && onAutoPlayFailed(),
                             ),
                     )
-                    hls.current.on(Hls.Events.ERROR, (e, data) => {
+                    hls.current.on(Hls.Events.ERROR, (_e, data) => {
                         console.warn(data)
                         switch (data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
@@ -232,7 +236,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
                 <video
                     ref={videoElement}
                     onTimeUpdate={() => {
-                        if (videoElement.current.readyState === 4)
+                        if (videoElement.current && videoElement.current.readyState === 4)
                             onTimeUpdate?.(videoElement.current.currentTime)
                     }}
                     onPause={() => {
@@ -249,10 +253,10 @@ export const Video = forwardRef<IVideoControls, IProps>(
                     onLoadedData={() => onLoadingState?.(false)}
                     onError={(event) => {
                         if (
-                            event.currentTarget.error.code ==
-                            event.currentTarget.error.MEDIA_ERR_DECODE
+                            event.currentTarget.error?.code ==
+                            event.currentTarget.error?.MEDIA_ERR_DECODE
                         )
-                            hls.current.recoverMediaError()
+                            hls.current?.recoverMediaError()
                     }}
                     width="100%"
                     style={{ position: 'fixed', height: '100%' }}
@@ -264,7 +268,7 @@ export const Video = forwardRef<IVideoControls, IProps>(
                     {children}
 
                     <SetSubtitle
-                        videoElement={videoElement.current}
+                        videoElement={videoElement.current ?? undefined}
                         requestSource={requestSource}
                         subtitleSource={subtitleSource}
                         subtitleOffset={subtitleOffset}
@@ -307,10 +311,10 @@ async function getPlayRequestMedia({
 }: {
     videoElement: HTMLVideoElement
     requestSource: IPlayServerRequestSource
-    startTime: number
-    audio: string
-    maxBitrate: number
-    forceTranscode: boolean
+    startTime?: number
+    audio?: string | false
+    maxBitrate?: number
+    forceTranscode?: boolean
 }) {
     const videoCodecs = getSupportedVideoCodecs(videoElement)
     if (videoCodecs.length == 0) throw new Error('No supported codecs')
@@ -361,7 +365,7 @@ function getSupportedVideoCodecs(videoElement: HTMLVideoElement) {
 }
 
 function getSupportedVideoContainers() {
-    switch (browser.name) {
+    switch (browser?.name) {
         case 'chrome':
         case 'edge-chromium':
             return ['webm', 'mp4']
@@ -387,10 +391,9 @@ function getSupportedAudioCodecs(videoElement: HTMLVideoElement) {
     return [...new Set(codecs)]
 }
 
-function getSupportedHdrFormats(videoElement: HTMLVideoElement) {}
 
 interface IPropsSubtitle {
-    videoElement: HTMLVideoElement
+    videoElement: HTMLVideoElement | undefined
     requestSource: IPlayServerRequestSource
     subtitleSource?: IPlaySourceStream
     subtitleOffset?: number
@@ -408,13 +411,13 @@ function SetSubtitle({
     const track = useRef<HTMLTrackElement>(null)
     const firstTrackLoad = useRef(true)
     const useJASSUB =
-        ['chrome', 'edge-chromium', 'firefox'].includes(browser.name) &&
+        ['chrome', 'edge-chromium', 'firefox'].includes(browser?.name ?? '') &&
         subtitleSource?.codec == 'ass'
 
     useEffect(() => {
         if (!videoElement) return
         for (const track of videoElement.textTracks) {
-            if (track.mode == 'showing')
+            if (track.mode == 'showing' && track.cues)
                 for (const cue of track.cues)
                     (cue as VTTCue).line = subtitleLinePosition
         }
@@ -474,7 +477,7 @@ function SetSubtitle({
             },
             timeOffset: subtitleOffset,
             // https://github.com/ThaUnknown/jassub/issues/50
-            offscreenRender: browser.os != 'Android OS',
+            offscreenRender: browser?.os != 'Android OS',
         })
         return () => {
             sub.destroy()

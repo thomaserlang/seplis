@@ -66,7 +66,7 @@ export function SeriesUpdate({ series }: { series: ISeries }) {
 export function SeriesForm({
     request,
     onSave,
-    onDelete,
+    onDelete: _onDelete,
     seriesId,
 }: {
     request: ISeriesRequest
@@ -81,13 +81,13 @@ export function SeriesForm({
     } = useForm<ISeriesRequest>({
         defaultValues: { ...request },
     })
-    const [error, setError] = useState<JSX.Element>(null)
+    const [error, setError] = useState<JSX.Element | undefined>(undefined)
     const toast = useToast()
     const queryClient = useQueryClient()
 
     const onSubmit = handleSubmit(async (data) => {
         try {
-            setError(null)
+            setError(undefined)
             const series = await onSave(data)
             toast({
                 title: 'Series saved',
@@ -235,7 +235,7 @@ function EpisodeType({
 
 function DeleteConfirm({ seriesId }: { seriesId: number }) {
     const { isOpen, onOpen, onClose } = useDisclosure()
-    const cancelRef = useRef()
+    const cancelRef = useRef<HTMLButtonElement>(null)
     const toast = useToast()
 
     const onDelete = async () => {
@@ -245,7 +245,7 @@ function DeleteConfirm({ seriesId }: { seriesId: number }) {
         } catch (e) {
             toast({
                 title: 'Failed to delete series',
-                description: (e.response.data as IError).message,
+                description: ((e as any).response.data as IError).message,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,

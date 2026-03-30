@@ -1,5 +1,5 @@
 import api from '@/api'
-import { IMovieFavorite, IMovieWatchlist } from '@/interfaces/movie'
+import { IMovieFavorite } from '@/interfaces/movie'
 import { focusedBorder } from '@/styles'
 import { isAuthed } from '@/utils'
 import { StarIcon } from '@chakra-ui/icons'
@@ -23,11 +23,10 @@ export default function WatchlistButton({ movieId }: IProps) {
                 'favorite-button',
                 movieId,
             ])
-            let data: IMovieWatchlist
             if (favorite) {
-                data = await api.delete(`/2/movies/${movieId}/favorite`)
+                await api.delete(`/2/movies/${movieId}/favorite`)
             } else {
-                data = await api.put(`/2/movies/${movieId}/favorite`)
+                await api.put(`/2/movies/${movieId}/favorite`)
             }
             queryClient.setQueryData(['movie', 'favorite-button', movieId], {
                 favorite: !favorite,
@@ -58,7 +57,7 @@ export default function WatchlistButton({ movieId }: IProps) {
         },
     )
     const handleClick = async () => {
-        toggleWatchlist.mutate(data.favorite)
+        toggleWatchlist.mutate(data?.favorite ?? false)
     }
     const { ref, focused } = useFocusable({
         onEnterPress: () => handleClick(),
@@ -68,10 +67,10 @@ export default function WatchlistButton({ movieId }: IProps) {
         <Button
             ref={ref}
             isLoading={isInitialLoading || toggleWatchlist.isLoading}
-            colorScheme={data?.favorite ? 'blue' : null}
+            colorScheme={data?.favorite ? 'blue' : undefined}
             onClick={handleClick}
             leftIcon={<StarIcon />}
-            style={focused ? focusedBorder : null}
+            style={focused ? focusedBorder : undefined}
         >
             Favorite
         </Button>

@@ -87,7 +87,7 @@ export function Search({
 
             {!isFetching && (
                 <RenderItems
-                    items={data}
+                    items={data || []}
                     onSelected={(item) => {
                         if (item.type == 'movie')
                             navigate(`/${item.type}s/${item.id}`, {
@@ -162,7 +162,7 @@ function RenderItem({
             >
                 <Poster
                     url={`${item.poster_image?.url}@SX320.webp`}
-                    title={item.title}
+                    title={item.title || ''}
                 />
             </AspectRatio>
             <Stack direction="column" lineHeight="1.3" spacing="0.25rem">

@@ -52,7 +52,7 @@ export default function ChromecastControls() {
         } catch {}
     }, [connected])
 
-    const infoReceived = (namespace: string, message: any) => {
+    const infoReceived = (_namespace: string, message: any) => {
         if (message) setInfo(JSON.parse(message))
     }
 
@@ -188,7 +188,7 @@ export default function ChromecastControls() {
                                             info.selectedRequestSource,
                                         audioLang: source
                                             ? `${source.language}:${source.index}`
-                                            : null,
+                                            : undefined,
                                         subtitleLang: info.subtitleLang,
                                         subtitleOffset: info.subtitleOffset,
                                         maxBitrate: info.maxBitrate,
@@ -203,7 +203,7 @@ export default function ChromecastControls() {
                                             info.selectedRequestSource,
                                         audioLang: source
                                             ? `${source.language}:${source.index}`
-                                            : null,
+                                            : undefined,
                                         subtitleLang: info.subtitleLang,
                                         subtitleOffset: info.subtitleOffset,
                                         maxBitrate: info.maxBitrate,

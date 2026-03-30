@@ -34,7 +34,7 @@ export default function MovieCollection({
             return r.data
         },
     )
-    if (isLoading) return null
+    if (isLoading || !data) return null
     return (
         <Stack>
             <Heading fontSize="2xl" fontWeight="600">
@@ -47,7 +47,7 @@ export default function MovieCollection({
                             <Box width="100%" rounded="md" overflow="hidden">
                                 <PosterAspectRatio
                                     url={`${r.poster_image?.url}@SX320.webp`}
-                                    title={r.title}
+                                    title={r.title || ''}
                                     onClick={() => {
                                         selected(r)
                                     }}

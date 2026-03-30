@@ -37,10 +37,10 @@ export default function ChangePasswordForm() {
 
     const submit = async (data: IChangePassword) => {
         try {
-            setRootError(null)
+            setRootError(undefined)
             await api.post<IChangePassword>('/2/users/me/change-password', data)
         } catch (e) {
-            const data = e.response.data as IError<IValidationError>
+            const data = (e as any).response.data as IError<IValidationError>
             if (data?.errors) {
                 for (const e of data?.errors) {
                     setError(e.field[1], { message: e.message })

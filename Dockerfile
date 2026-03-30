@@ -1,34 +1,28 @@
-FROM node:16-alpine as jsbuilder
-COPY . .
-RUN npm install -g npm; npm ci; npm run build
+FROM ghcr.io/astral-sh/uv:python3.14-trixie AS pybuilder
+ENV UV_PYTHON_DOWNLOADS=0
+
+WORKDIR /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --frozen --no-install-project --no-dev
+ADD . /app
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev
 
 
-FROM python:3.11-bookworm as pybuilder
-COPY . .
-RUN pip wheel -r requirements.txt --wheel-dir=/wheels
-RUN pip wheel mysqlclient==2.1.0 --wheel-dir=/wheels
+FROM python:3.14-slim-trixie
+
+COPY --from=pybuilder --chown=app:app /app /app
+
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="."
 
 
-FROM python:3.11-slim-bookworm
-RUN apt-get update; apt-get upgrade -y; apt-get install curl fontconfig -y
-ENV \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PYTHONPATH="${PYTHONPATH}:." \
-    UID=10000 \
+ENV UID=10000 \ 
     GID=10001
-
-COPY . .
-
-COPY --from=pybuilder /wheels /wheels
-RUN pip install --no-index --find-links=/wheels -r requirements.txt
-
-COPY --from=jsbuilder seplis/web/static/ui seplis/web/static/ui
-COPY --from=jsbuilder seplis/web/templates/ui seplis/web/templates/ui
 
 RUN addgroup --gid $GID --system seplis; adduser --uid $UID --system --gid $GID seplis
 USER $UID:$GID
+WORKDIR /app
 ENTRYPOINT ["python", "seplis/runner.py"]
-
-# docker build -t seplis/seplis --rm . 
-# docker push seplis/seplis:latest 

@@ -69,8 +69,8 @@ export function SettingsMenu({
     onForceTranscodeChange,
     containerRef,
 }: ISettingsProps) {
-    const [nested, setNested] = useState<string>(null)
-    const [showModal, setShowModal] = useState<string>(null)
+    const [nested, setNested] = useState<string | null>(null)
+    const [showModal, setShowModal] = useState<string | null>(null)
     return (
         <>
             <Popover isOpen={nested !== null} onClose={() => setNested(null)}>
@@ -99,7 +99,7 @@ export function SettingsMenu({
                         </MenuItem>
                         <MenuItem
                             command={bitrateDisplay(
-                                maxBitrate,
+                                maxBitrate ?? 0,
                                 requestSource.source,
                             )}
                             onClick={() => setNested('quality')}
@@ -107,7 +107,7 @@ export function SettingsMenu({
                             Quality
                         </MenuItem>
                         <MenuItem
-                            command={audioSourceToName(audioSource)}
+                            command={audioSourceToName(audioSource!)}
                             onClick={() => setNested('audio')}
                             isDisabled={
                                 !(requestSource.source?.audio?.length > 1)
@@ -119,13 +119,13 @@ export function SettingsMenu({
                             isDisabled={
                                 !requestSource.source?.subtitles?.length
                             }
-                            command={subtitleSourceToName(subtitleSource)}
+                            command={subtitleSourceToName(subtitleSource!)}
                             onClick={() => setNested('subtitles')}
                         >
                             Subtitle
                         </MenuItem>
                         <MenuItem
-                            command={SubtitleOffsetToText(subtitleOffset)}
+                            command={SubtitleOffsetToText(subtitleOffset ?? 0)}
                             onClick={() => setShowModal('subtitle_offset')}
                         >
                             Subtitle offset
@@ -152,7 +152,7 @@ export function SettingsMenu({
                                     playServers={playServers}
                                     selected={requestSource}
                                     onChange={(s) => {
-                                        onRequestSourceChange(s)
+                                        onRequestSourceChange?.(s)
                                         setNested(null)
                                     }}
                                 />
@@ -166,9 +166,9 @@ export function SettingsMenu({
                             <PopoverBody>
                                 <PickQuality
                                     source={requestSource.source}
-                                    maxBitrate={maxBitrate}
+                                    maxBitrate={maxBitrate ?? 0}
                                     onChange={(bitrate) => {
-                                        onBitrateChange(bitrate)
+                                        onBitrateChange?.(bitrate)
                                         setNested(null)
                                     }}
                                 />
@@ -187,7 +187,7 @@ export function SettingsMenu({
                                         }
                                         selected={audioSource}
                                         onChange={(s) => {
-                                            onAudioSourceChange(s)
+                                            onAudioSourceChange?.(s)
                                             setNested(null)
                                         }}
                                     />
@@ -207,7 +207,7 @@ export function SettingsMenu({
                                         }
                                         selected={subtitleSource}
                                         onChange={(s) => {
-                                            onSubtitleSourceChange(s)
+                                            onSubtitleSourceChange?.(s)
                                             setNested(null)
                                         }}
                                     />
@@ -232,9 +232,9 @@ export function SettingsMenu({
                         <ModalCloseButton />
                         <ModalBody>
                             <PickSubtitleOffset
-                                selected={subtitleOffset}
+                                selected={subtitleOffset ?? 0}
                                 onChange={(v) => {
-                                    if (v !== null) onSubtitleOffsetChange(v)
+                                    if (v !== 0) onSubtitleOffsetChange?.(v)
                                     else setShowModal(null)
                                 }}
                             />

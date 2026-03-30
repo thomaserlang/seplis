@@ -54,7 +54,7 @@ export default function WatchlistButton({ seriesId }: { seriesId: number }) {
     )
 
     const handleClick = () => {
-        toggleWatchlist.mutate(data.on_watchlist)
+        toggleWatchlist.mutate(data?.on_watchlist ?? false)
     }
 
     const { ref, focused } = useFocusable({
@@ -65,10 +65,10 @@ export default function WatchlistButton({ seriesId }: { seriesId: number }) {
         <Button
             ref={ref}
             isLoading={isInitialLoading || toggleWatchlist.isLoading}
-            colorScheme={data?.on_watchlist ? 'yellow' : null}
+            colorScheme={data?.on_watchlist ? 'yellow' : undefined}
             onClick={handleClick}
             leftIcon={<FaBookmark />}
-            style={focused ? focusedBorder : null}
+            style={focused ? focusedBorder : undefined}
         >
             Watchlist
         </Button>

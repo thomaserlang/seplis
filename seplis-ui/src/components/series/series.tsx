@@ -134,7 +134,7 @@ function SeriesPoster({ series: series }: { series: ISeries }) {
             <div className="poster-container" style={{ flexShrink: '0' }}>
                 <Poster
                     url={`${series.poster_image?.url}@SX320.webp`}
-                    title={series.title}
+                    title={series.title || ''}
                 />
             </div>
         </div>
@@ -170,7 +170,7 @@ function Plot({ series }: { series: ISeries }) {
     return (
         <Text
             cursor="pointer"
-            noOfLines={expand ? null : 3}
+            noOfLines={expand ? undefined : 3}
             onClick={() => {
                 setExpand(!expand)
             }}
@@ -319,7 +319,7 @@ function DisplaySettings({ series }: { series: ISeries }) {
                 ref={ref}
                 onClick={onOpen}
                 leftIcon={<FaCog />}
-                style={focused ? focusedBorder : null}
+                style={focused ? focusedBorder : undefined}
             >
                 Settings
             </Button>

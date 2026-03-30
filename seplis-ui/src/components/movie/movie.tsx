@@ -205,7 +205,7 @@ function Plot({ movie }: { movie: IMovie }) {
     return (
         <Text
             cursor="pointer"
-            noOfLines={expand ? null : 3}
+            noOfLines={expand ? undefined : 3}
             onClick={() => {
                 setExpand(!expand)
             }}
@@ -244,7 +244,7 @@ function MoviePoster({ movie }: { movie: IMovie }) {
             <div className="poster-container" style={{ flexShrink: '0' }}>
                 <Poster
                     url={`${movie.poster_image?.url}@SX320.webp`}
-                    title={movie.title}
+                    title={movie.title || ''}
                 />
             </div>
         </div>
@@ -291,7 +291,7 @@ function DisplaySettings({ movie }: { movie: IMovie }) {
                 ref={ref}
                 onClick={onOpen}
                 leftIcon={<FaCog />}
-                style={focused ? focusedBorder : null}
+                style={focused ? focusedBorder : undefined}
             >
                 Settings
             </Button>

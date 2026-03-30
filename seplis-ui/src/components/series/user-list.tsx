@@ -82,7 +82,7 @@ export default function UserSeriesList<S = ISeries>({
                         title={title}
                         url={url}
                         emptyMessage={emptyMessage}
-                        filtersActive={isFilterActive(query)}
+                        filtersActive={isFilterActive(query as IUserFilterData)}
                         showFilterButton={showFilterButton}
                         urlParams={{
                             ...query,
@@ -106,12 +106,12 @@ export default function UserSeriesList<S = ISeries>({
                                 })
                             })
                         }
-                        renderFilter={(options) => {
+                        renderFilter={(_options) => {
                             return (
                                 <SeriesUserFilter
-                                    defaultValue={query}
+                                    defaultValue={query as IUserFilterData}
                                     onSubmit={(data) => {
-                                        setQuery(data)
+                                        setQuery(data as any)
                                         if (data.user_can_watch === true)
                                             localStorage.setItem(
                                                 'filter-user-can-watch',
@@ -134,7 +134,7 @@ export default function UserSeriesList<S = ISeries>({
 
 function isFilterActive(query: IUserFilterData) {
     return (
-        query.genre_id?.length > 0 ||
+        (query.genre_id?.length ?? 0) > 0 ||
         query.user_can_watch === true ||
         query.premiered_gt != null ||
         query.premiered_lt != null ||

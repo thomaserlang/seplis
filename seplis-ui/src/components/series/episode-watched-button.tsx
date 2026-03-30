@@ -41,7 +41,7 @@ export default function EpisodeWatchedButton({
     )
 
     useEffect(() => {
-        if (data != watched) setWatched({ ...data })
+        if (data != watched) setWatched({ ...data! })
     }, [data])
 
     const increment = async () => {

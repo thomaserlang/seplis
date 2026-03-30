@@ -40,12 +40,12 @@ export function SeriesUserFilter({
     )
 
     useEffect(() => {
-        const sub = watch(() => handleSubmit(onSubmit)())
+        const sub = watch(() => handleSubmit(onSubmit!)())
         return () => sub.unsubscribe()
     }, [onSubmit, watch])
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit!)}>
             <Stack spacing="1rem">
                 <FormControl>
                     <FormLabel htmlFor="sort" color="blue.300">
@@ -223,7 +223,7 @@ export function SeriesUserFilter({
                     <FormLabel htmlFor="Language" color="blue.300">
                         Language
                     </FormLabel>
-                    <SelectLanguage name="language" {...register('language')} />
+                    <SelectLanguage {...register('language')} />
                 </FormControl>
 
                 <FormControl>

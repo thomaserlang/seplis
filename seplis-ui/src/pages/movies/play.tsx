@@ -32,7 +32,7 @@ export default function PlayMovie() {
     const onTimeUpdate = (time: number, duration: number) => {
         time = Math.round(time)
         if (
-            time === movie.data.startTime ||
+            time === movie.data?.startTime ||
             time === prevSavedPosition.current ||
             time < 10 ||
             time % 10 != 0
@@ -57,7 +57,7 @@ export default function PlayMovie() {
 
     let startTime = 0
     if (searchParams.has('start_time'))
-        startTime = parseInt(searchParams.get('start_time'))
+        startTime = parseInt(searchParams.get('start_time') || '0')
     else if (movie.data) startTime = movie.data.startTime
     const playServerUrl = `/2/movies/${movieId}/play-servers`
     return (

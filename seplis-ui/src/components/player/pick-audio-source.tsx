@@ -16,7 +16,7 @@ export function PickAudioSource({ audioSources, selected, onChange }: IProps) {
                 <Box
                     key={audio.index}
                     textStyle={
-                        selected?.index == audio.index ? 'selectedText' : null
+                        selected?.index == audio.index ? 'selectedText' : undefined
                     }
                     cursor="pointer"
                     onClick={() => onChange && onChange(audio)}
@@ -42,9 +42,9 @@ export function audioSourceToName(source: IPlaySourceStream) {
 
 export function pickStartAudio(
     sourceStreams: IPlaySourceStream[],
-    defaultAudio?: string,
+    defaultAudio?: string | null,
 ) {
-    const s = stringToSourceStream(defaultAudio, sourceStreams)
+    const s = stringToSourceStream(defaultAudio ?? undefined, sourceStreams)
     if (s) return s
     for (const sub of sourceStreams) {
         if (sub.default || sub.forced) return sub

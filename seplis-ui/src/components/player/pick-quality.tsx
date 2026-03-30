@@ -14,7 +14,7 @@ export function PickQuality({ source, maxBitrate, onChange }: IProps) {
         <Flex gap="0.25rem" direction="column">
             <Box
                 cursor="pointer"
-                textStyle={maxBitrate === MAX_BITRATE ? 'selectedText' : null}
+                textStyle={maxBitrate === MAX_BITRATE ? 'selectedText' : undefined}
                 onClick={() => {
                     onChange?.(MAX_BITRATE)
                 }}
@@ -28,7 +28,7 @@ export function PickQuality({ source, maxBitrate, onChange }: IProps) {
                             key={bitrate}
                             cursor="pointer"
                             textStyle={
-                                maxBitrate === bitrate ? 'selectedText' : null
+                                maxBitrate === bitrate ? 'selectedText' : undefined
                             }
                             onClick={() => {
                                 onChange?.(bitrate)

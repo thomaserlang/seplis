@@ -24,13 +24,13 @@ export default function EpisodeCard({
                 <EpisodeWatchedButton
                     seriesId={seriesId}
                     episodeNumber={episode.number}
-                    data={episode.user_watched}
+                    data={episode.user_watched || undefined}
                 />
                 <Box marginLeft="auto">
                     <EpisodePlayButton
                         seriesId={seriesId}
                         episodeNumber={episode.number}
-                        canPlay={episode.user_can_watch?.on_play_server}
+                        canPlay={episode.user_can_watch?.on_play_server ?? false}
                     />
                 </Box>
             </Flex>

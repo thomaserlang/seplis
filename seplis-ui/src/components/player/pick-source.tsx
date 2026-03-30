@@ -25,7 +25,7 @@ export function PickSource({ playServers, selected, onChange }: IProps) {
                             textStyle={
                                 isSelected(selected, server.request, source)
                                     ? 'selectedText'
-                                    : null
+                                    : undefined
                             }
                             cursor="pointer"
                             onClick={() => {

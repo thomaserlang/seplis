@@ -32,11 +32,11 @@ export interface IMovieWatched {
     position: number
     watched_at: string
 }
-export function IMovieWatchedDefault(EpisodeNumber: number): IMovieWatched {
+export function IMovieWatchedDefault(_episodeNumber: number): IMovieWatched {
     return {
         times: 0,
         position: 0,
-        watched_at: null,
+        watched_at: '',
     }
 }
 

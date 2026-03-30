@@ -1,5 +1,5 @@
 export interface IEpisodeCreate {
-    title: string
+    title: string | null
     original_title: string | null
     number: number
     season: number | null

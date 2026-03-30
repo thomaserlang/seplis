@@ -107,7 +107,7 @@ export function MovieWatchedButton({ movieId }: { movieId: number }) {
             {isInitialLoading ? (
                 <WatchedButton isUpdating={true} />
             ) : (
-                <MovieWatchedButtonData movieId={movieId} data={data} />
+                <MovieWatchedButtonData movieId={movieId} data={data!} />
             )}
         </>
     )

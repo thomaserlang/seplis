@@ -19,9 +19,9 @@ export default function MoviePage() {
             <MainMenu active="movies" />
             <Box margin="1rem">
                 <MovieLoad
-                    movieId={parseInt(movieId)}
+                    movieId={parseInt(movieId!)}
                     onLoaded={(movie) => {
-                        setTitle(movie.title)
+                        setTitle(movie.title || '')
                     }}
                 />
             </Box>
@@ -50,9 +50,9 @@ export function MovieModalPage() {
                 <ModalCloseButton />
                 <ModalBody>
                     <MovieLoad
-                        movieId={parseInt(movieId)}
+                        movieId={parseInt(movieId!)}
                         onLoaded={(movie) => {
-                            setTitle(movie.title)
+                            setTitle(movie.title || '')
                         }}
                     />
                 </ModalBody>

@@ -1,7 +1,7 @@
 import { IImage } from './image'
 import { IGenre } from './genre'
 import { TExternals } from './types'
-import { IEpisode, IEpisodeCreate, IEpisodeWatched, IUserCanWatchEpisode } from './episode'
+import { IEpisode, IEpisodeCreate, IUserCanWatchEpisode } from './episode'
 
 
 export interface ISeriesImporters {
@@ -120,16 +120,4 @@ export interface ISeriesAndEpisode {
 export interface ISeriesAirDates {
     air_date: Date
     series: ISeriesWithEpisodes[]
-}
-
-
-export interface ISeriesWatchlist {
-    on_watchlist: boolean
-    created_at: string
-}
-
-
-export interface ISeriesFavorite {
-    favorite: boolean
-    created_at: string
 }

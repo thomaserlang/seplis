@@ -108,13 +108,13 @@ export default function Player({
 
 interface IVideoPlayerProps {
     playServers: IPlayServerRequestSources[]
-    title: string
+    title?: string
     startTime: number
-    playNext: IPlayNextProps
+    playNext?: IPlayNextProps
     defaultAudio?: string
     defaultSubtitle?: string
     onClose?: () => void
-    onTimeUpdate: (time: number, duration: number) => void
+    onTimeUpdate?: (time: number, duration: number) => void
     onAudioChange?: (source: IPlaySourceStream) => void
     onSubtitleChange?: (source: IPlaySourceStream) => void
 }
@@ -137,10 +137,10 @@ function VideoPlayer({
         'seplis:player:maxBitrate',
         MAX_BITRATE,
     )
-    const [audioSource, setAudioSource] = useState<IPlaySourceStream>(() =>
+    const [audioSource, setAudioSource] = useState<IPlaySourceStream | undefined>(() =>
         pickStartAudio(requestSource.source.audio, defaultAudio),
     )
-    const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream>(
+    const [subtitleSource, setSubtitleSource] = useState<IPlaySourceStream | undefined>(
         () =>
             pickStartSubtitle(requestSource.source.subtitles, defaultSubtitle),
     )
@@ -153,8 +153,8 @@ function VideoPlayer({
     const [loading, setLoading] = useState(true)
     const [showBigPlay, setShowBigPlay] = useState(false)
     const [controlsVisible, setControlsVisible] = useState(true)
-    const hideControlsTimer = useRef<NodeJS.Timeout>()
-    const videoControls = useRef<IVideoControls>()
+    const hideControlsTimer = useRef<ReturnType<typeof setTimeout>>()
+    const videoControls = useRef<IVideoControls | null>(null)
     const boxRef = useRef(null)
     const [airplayAvailable, setAirplayAvailable] = useState<boolean>(false)
 
@@ -186,22 +186,22 @@ function VideoPlayer({
     )
 
     useEffect(() => {
-        videoControls.current.setVolume(
-            parseFloat(localStorage.getItem('volume')) || 0.5,
+        videoControls.current?.setVolume(
+            parseFloat(localStorage.getItem('volume') || '0') || 0.5,
         )
 
         const keyDown = (e: globalThis.KeyboardEvent) => {
             showControls()
             if (e.code == 'Space') {
-                videoControls.current.togglePlay()
+                videoControls.current?.togglePlay()
                 e.preventDefault()
             }
             if (e.code == 'ArrowLeft') {
-                videoControls.current.skipSeconds(-15)
+                videoControls.current?.skipSeconds(-15)
                 e.preventDefault()
             }
             if (e.code == 'ArrowRight') {
-                videoControls.current.skipSeconds(15)
+                videoControls.current?.skipSeconds(15)
                 e.preventDefault()
             }
         }
@@ -267,7 +267,7 @@ function VideoPlayer({
 
             {!paused && loading && <Loading />}
             {showBigPlay && (
-                <BigPlay onClick={() => videoControls.current.togglePlay()} />
+                <BigPlay onClick={() => videoControls.current?.togglePlay()} />
             )}
 
             {(controlsVisible || paused) && (
@@ -287,7 +287,7 @@ function VideoPlayer({
                                     aria-label="Airplay"
                                     icon={<TbShareplay />}
                                     onClick={() => {
-                                        videoControls.current.showAirplayPicker()
+                                        videoControls.current?.showAirplayPicker()
                                     }}
                                 />
                             </div>
@@ -310,7 +310,7 @@ function VideoPlayer({
                                 currentTime={time}
                                 playRequest={requestSource.request}
                                 onTimeChange={(time) => {
-                                    videoControls.current.setCurrentTime(time)
+                                    videoControls.current?.setCurrentTime(time)
                                 }}
                             />
                         </Flex>
@@ -323,23 +323,23 @@ function VideoPlayer({
                         <PlayButton
                             aria-label="Play or pause"
                             icon={paused ? <FaPlay /> : <FaPause />}
-                            onClick={() => videoControls.current.togglePlay()}
+                            onClick={() => videoControls.current?.togglePlay()}
                         />
                         <PlayButton
                             aria-label="Rewind 15 seconds"
                             icon={<FaUndo />}
                             onClick={() => {
-                                videoControls.current.skipSeconds(-15)
+                                videoControls.current?.skipSeconds(-15)
                             }}
                         />
                         <PlayButton
                             aria-label="Forward 15 seconds"
                             icon={<FaRedo />}
                             onClick={() => {
-                                videoControls.current.skipSeconds(15)
+                                videoControls.current?.skipSeconds(15)
                             }}
                         />
-                        {!isMobile && (
+                        {!isMobile && videoControls.current && (
                             <VolumeButton
                                 videoControls={videoControls.current}
                             />
@@ -370,9 +370,9 @@ function VideoPlayer({
                                 onForceTranscodeChange={setForceTranscode}
                                 containerRef={boxRef}
                             />
-                            <FullscreenButton
+                            {videoControls.current && <FullscreenButton
                                 videoControls={videoControls.current}
-                            />
+                            />}
                         </Flex>
                     </Flex>
                 </ControlsBottom>
@@ -416,7 +416,7 @@ function FullscreenButton({
 
 function VolumeButton({ videoControls }: { videoControls: IVideoControls }) {
     const [volume, setVolume] = useState(
-        parseFloat(localStorage.getItem('volume')) || 0.5,
+        parseFloat(localStorage.getItem('volume') || '0') || 0.5,
     )
 
     function volumeIcon() {
@@ -531,10 +531,11 @@ function BigPlay({ onClick }: { onClick: () => void }) {
 }
 
 function fullscreenToggle(
-    element: HTMLElement,
+    element: HTMLElement | null,
     videoControls: IVideoControls,
     setFullscreen: (fullscreen: boolean) => void,
 ) {
+    if (!element) return
     if (!document.fullscreenElement) {
         if ((element as any).enterFullscreen) {
             ;(element as any).enterFullscreen()

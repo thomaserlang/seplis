@@ -21,7 +21,7 @@ import {
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { ReactNode, useEffect, useState } from 'react'
 import { Poster } from './poster'
-import './slider.less'
+import './slider.css'
 
 interface IProps<S = undefined> {
     title?: string
@@ -80,7 +80,7 @@ export default function Slider<S = undefined>({
         setItems(items)
     }, [data])
 
-    const onCardFocus = (layout: any, props: any, details: any) => {
+    const onCardFocus = (layout: any, _props: any, details: any) => {
         const event = details.event as KeyboardEvent
         if (event?.code == 'ArrowRight') {
             if (items.length - index >= displayItemCount) {
@@ -130,7 +130,7 @@ export default function Slider<S = undefined>({
                                     index + displayItemCount,
                                 )}
                                 onFocus={onCardFocus}
-                                onItemSelected={onItemSelected}
+                                onItemSelected={onItemSelected!}
                             />
                             <PeekCard
                                 index={index}

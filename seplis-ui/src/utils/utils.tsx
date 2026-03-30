@@ -33,7 +33,7 @@ export function pad(str: string | number, max: number): string {
 }
 
 
-export function episodeNumber(episode: IEpisode) {
+export function episodeNumber(episode: IEpisode | null | undefined) {
     if (!episode)
         return null
     if (!episode.season || !episode.episode)

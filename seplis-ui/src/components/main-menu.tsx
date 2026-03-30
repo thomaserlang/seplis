@@ -278,9 +278,9 @@ function ChangePasswordMenuItem() {
 }
 
 function UserAvatar() {
-    const [user, setUser] = useState<IUser>(() => {
+    const [user] = useState<IUser>(() => {
         const s = localStorage.getItem('activeUser')
-        return JSON.parse(s)
+        return JSON.parse(s || 'null')
     })
     if (!user) return null
     return <Avatar size="md" name={user?.username} />

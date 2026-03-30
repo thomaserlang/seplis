@@ -68,13 +68,13 @@ export default function SettingsForm({ externals, onSave, movieId }: IData) {
             externals: { ...externals },
         },
     })
-    const [error, setError] = useState<JSX.Element>(null)
+    const [error, setError] = useState<JSX.Element | undefined>(undefined)
     const toast = useToast()
     const queryClient = useQueryClient()
 
     const onSubmit = handleSubmit(async (data) => {
         try {
-            setError(null)
+            setError(undefined)
             const movie = await onSave(data)
             toast({
                 title: 'Movie saved',
@@ -136,7 +136,7 @@ export default function SettingsForm({ externals, onSave, movieId }: IData) {
 
 function DeleteConfirm({ movieId }: { movieId: number }) {
     const { isOpen, onOpen, onClose } = useDisclosure()
-    const cancelRef = useRef()
+    const cancelRef = useRef<HTMLButtonElement>(null)
     const toast = useToast()
 
     const onDelete = async () => {
@@ -153,7 +153,7 @@ function DeleteConfirm({ movieId }: { movieId: number }) {
         } catch (e) {
             toast({
                 title: 'Failed to delete the movie',
-                description: (e.response.data as IError).message,
+                description: ((e as any).response.data as IError).message,
                 status: 'error',
                 duration: 9000,
                 isClosable: true,

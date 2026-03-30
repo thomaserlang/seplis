@@ -19,9 +19,9 @@ export default function SeriesPage() {
             <MainMenu active="series" />
             <Box margin="1rem">
                 <SeriesLoad
-                    seriesId={parseInt(seriesId)}
+                    seriesId={parseInt(seriesId!)}
                     onLoaded={(series) => {
-                        setTitle(series.title)
+                        setTitle(series.title || '')
                     }}
                 />
             </Box>
@@ -50,9 +50,9 @@ export function SeriesModalPage() {
                 <ModalCloseButton />
                 <ModalBody>
                     <SeriesLoad
-                        seriesId={parseInt(seriesId)}
+                        seriesId={parseInt(seriesId!)}
                         onLoaded={(series) => {
-                            setTitle(series.title)
+                            setTitle(series.title || '')
                         }}
                     />
                 </ModalBody>

@@ -61,7 +61,7 @@ export function RenderEpisodes({
 
     return (
         <Wrap>
-            {data.map((episode) => (
+            {(data ?? []).map((episode) => (
                 <Flex key={`episode-${episode.number}`} grow="1" basis="300px">
                     <WrapItem width="100%">
                         <EpisodeCard seriesId={seriesId} episode={episode} />

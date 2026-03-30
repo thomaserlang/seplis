@@ -1,9 +1,5 @@
 *
 
 !/seplis
-!/requirements.txt
-!/package-lock.json
-!/package.json
-!/webpack.config.js
-!/tsconfig.json
-!/.babelrc
+!uv.lock
+!pyproject.toml

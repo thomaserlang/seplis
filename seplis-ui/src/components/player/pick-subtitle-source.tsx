@@ -16,9 +16,9 @@ export function PickSubtitleSource({
     return (
         <Flex gap="0.25rem" direction="column">
             <Box
-                textStyle={!selected ? 'selectedText' : null}
+                textStyle={!selected ? 'selectedText' : undefined}
                 cursor="pointer"
-                onClick={() => onChange && onChange(null)}
+                onClick={() => onChange && onChange(undefined as any)}
             >
                 Off
             </Box>
@@ -28,7 +28,7 @@ export function PickSubtitleSource({
                     textStyle={
                         selected?.index == subtitle.index
                             ? 'selectedText'
-                            : null
+                            : undefined
                     }
                     cursor="pointer"
                     onClick={() => onChange && onChange(subtitle)}
@@ -56,17 +56,17 @@ export function subtitleSourceToName(source: IPlaySourceStream) {
 
 export function pickStartSubtitle(
     sourceStreams: IPlaySourceStream[],
-    defaultSubtitle?: string,
+    defaultSubtitle?: string | null,
 ) {
     if (defaultSubtitle == 'off') return
-    const s = stringToSourceStream(defaultSubtitle, sourceStreams)
+    const s = stringToSourceStream(defaultSubtitle ?? undefined, sourceStreams)
     if (s) return s
     for (const sub of sourceStreams) {
         if (sub.default || sub.forced) return sub
     }
 }
 
-export function stringToSourceStream(s: string, streams: IPlaySourceStream[]) {
+export function stringToSourceStream(s: string | undefined, streams: IPlaySourceStream[]) {
     if (!s) return null
     const [lang, index] = s.toLowerCase().split(':')
     if (index !== undefined) {

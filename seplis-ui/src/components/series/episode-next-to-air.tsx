@@ -6,7 +6,7 @@ import { Text } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 
 export default function EpisodeNextToAir({ seriesId }: { seriesId: number }) {
-    const { data } = useQuery<IEpisode>(
+    const { data } = useQuery<IEpisode | undefined>(
         ['series', seriesId, 'episode-next-to-air'],
         async () => {
             const r = await api.get<IPageCursorResult<IEpisode>>(
@@ -19,14 +19,14 @@ export default function EpisodeNextToAir({ seriesId }: { seriesId: number }) {
                 },
             )
             if (r.data.items.length >= 1) return r.data.items[0]
-            else return null
+            return undefined
         },
     )
     if (!data) return
     return (
         <Text>
             Next episode: {episodeNumber(data)} - {data.title}
-            {countdown(data.air_datetime)}
+            {countdown(data.air_datetime ?? '')}
         </Text>
     )
 }

@@ -45,18 +45,18 @@ export default function PlayEpisode() {
         },
     )
 
-    const playNext = useQuery<IPlayNextProps>(
+    const playNext = useQuery<IPlayNextProps | null>(
         ['episode-play-next', seriesId, episodeNumber],
         async () => {
             const result = await api.get<IEpisode>(
-                `/2/series/${seriesId}/episodes/${parseInt(episodeNumber) + 1}`,
+                `/2/series/${seriesId}/episodes/${parseInt(episodeNumber!) + 1}`,
                 {
                     params: {
                         expand: 'user_can_watch',
                     },
                 },
             )
-            if (result.data && result.data.user_can_watch.on_play_server)
+            if (result.data && result.data.user_can_watch?.on_play_server)
                 return {
                     title: episodeTitle(result.data),
                     url: `/series/${seriesId}/episodes/${result.data.number}/play?start_time=0`,
@@ -70,7 +70,7 @@ export default function PlayEpisode() {
     const onTimeUpdate = (time: number, duration: number) => {
         time = Math.round(time)
         if (
-            time === episode.data.startTime ||
+            time === episode.data?.startTime ||
             time === prevSavedPosition.current ||
             time < 10 ||
             time % 10 != 0
@@ -115,7 +115,7 @@ export default function PlayEpisode() {
 
     let startTime = 0
     if (searchParams.has('start_time'))
-        startTime = parseInt(searchParams.get('start_time'))
+        startTime = parseInt(searchParams.get('start_time') || '0')
     else if (episode.data) startTime = episode.data.startTime
     const playServerUrl = `/2/series/${seriesId}/episodes/${episodeNumber}/play-servers`
     return (
@@ -124,11 +124,11 @@ export default function PlayEpisode() {
             getPlayServersUrl={playServerUrl}
             title={episode.data?.title}
             startTime={startTime}
-            playNext={playNext?.data}
+            playNext={playNext?.data ?? undefined}
             onTimeUpdate={onTimeUpdate}
             loading={episode.isLoading}
-            defaultAudio={episode.data?.audioLang}
-            defaultSubtitle={episode.data?.subtitleLang}
+            defaultAudio={episode.data?.audioLang ?? undefined}
+            defaultSubtitle={episode.data?.subtitleLang ?? undefined}
             onAudioChange={onAudioChange}
             onSubtitleChange={onSubtitleChange}
             onClose={() => {

@@ -48,11 +48,11 @@ export default function ResetPassword() {
 
     const submit = async (data: INewPassword) => {
         try {
-            setRootError(null)
+            setRootError(undefined)
             await api.post<IToken>('/2/users/reset-password', data)
             navigate('/login')
         } catch (e) {
-            const data = e.response.data as IError<IValidationError>
+            const data = (e as any).response.data as IError<IValidationError>
             if (data?.errors) {
                 for (const e of data?.errors) {
                     setError(e.field[1], { message: e.message })
@@ -77,7 +77,7 @@ export default function ResetPassword() {
                 alignItems="center"
                 spacing="1rem"
             >
-                <Avatar src="/static/img/apple-touch-icon.png" />
+                <Avatar src="/img/apple-touch-icon.png" />
                 <Box
                     minW={{ base: '90%', md: '468px' }}
                     p="2rem"

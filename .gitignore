@@ -45,8 +45,7 @@ coverage.xml
 *.sublime-workspace
 *.db
 node_modules/
-seplis/web/static/ui
-seplis/web/templates/ui
+
 
 # Rope
 .ropeproject
@@ -66,3 +65,4 @@ seplis.yaml
 workspace.code-workspace
 .venv/
 .python-version
+dist/

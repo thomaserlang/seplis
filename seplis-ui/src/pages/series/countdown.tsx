@@ -22,10 +22,10 @@ export default function SeriesCountdown() {
                     url="/2/series/countdown"
                     parseItem={(item) => ({
                         key: `series-${item.series.id}`,
-                        title: item.series.title,
+                        title: item.series.title || '',
                         img: item.series.poster_image?.url,
                         bottomText: episodeNumber(item.episode),
-                        topText: dateCountdown(item.episode.air_datetime),
+                        topText: dateCountdown(item.episode.air_datetime || ''),
                     })}
                     onItemSelected={(item: ISeriesAndEpisode) => {
                         navigate(`/series/${item.series.id}`, {

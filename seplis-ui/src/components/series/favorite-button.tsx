@@ -54,7 +54,7 @@ export default function FavoriteButton({ seriesId }: { seriesId: number }) {
     )
 
     const handleClick = () => {
-        toggleFavorite.mutate(data.favorite)
+        toggleFavorite.mutate(data?.favorite ?? false)
     }
 
     const { ref, focused } = useFocusable({
@@ -65,10 +65,10 @@ export default function FavoriteButton({ seriesId }: { seriesId: number }) {
         <Button
             ref={ref}
             isLoading={isInitialLoading || toggleFavorite.isLoading}
-            colorScheme={data?.favorite ? 'blue' : null}
+            colorScheme={data?.favorite ? 'blue' : undefined}
             onClick={handleClick}
             leftIcon={<StarIcon />}
-            style={focused ? focusedBorder : null}
+            style={focused ? focusedBorder : undefined}
         >
             Favorite
         </Button>

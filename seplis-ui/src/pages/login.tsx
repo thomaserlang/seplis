@@ -38,19 +38,19 @@ export default function Login() {
         setFocus,
         setValue,
     } = useForm<ILogin>()
-    const [error, setError] = useState<JSX.Element>(null)
+    const [error, setError] = useState<JSX.Element | undefined>(undefined)
     const [next] = useQueryParam('next', StringParam)
     const navigate = useNavigate()
 
     useEffect(() => {
         document.title = 'Log in | SEPLIS'
-        setValue('next', next)
+        setValue('next', next || '')
         setFocus('login')
     }, [])
 
     const submit = async (data: ILogin) => {
         try {
-            setError(null)
+            setError(undefined)
             const r = await api.post<IToken>('/2/token', {
                 login: data.login,
                 password: data.password,
@@ -59,7 +59,7 @@ export default function Login() {
             setAuthorizationHeader()
             const user = await api.get<IUser>('/2/users/me')
             const users: IUsersLoggedIn =
-                JSON.parse(localStorage.getItem('users')) || {}
+                JSON.parse(localStorage.getItem('users') || 'null') || {}
             users[user.data.id] = {
                 ...user.data,
                 token: r.data.access_token,
@@ -90,7 +90,7 @@ export default function Login() {
                 alignItems="center"
                 spacing="1rem"
             >
-                <Avatar src="/static/img/apple-touch-icon.png" />
+                <Avatar src="/img/apple-touch-icon.png" />
                 <Box
                     minW={{ base: '90%', md: '468px' }}
                     p="2rem"

@@ -37,7 +37,7 @@ export function WatchedButton({ onIncrement, onDecrement, times = 0, position = 
                         icon={<MinusIcon />}
                         onClick={() => {
                             onClose()
-                            onDecrement()
+                            onDecrement?.()
                         }}
                         isLoading={isUpdating}
                     />
@@ -46,7 +46,7 @@ export function WatchedButton({ onIncrement, onDecrement, times = 0, position = 
                         aria-label="Increment watched"
                         icon={<AddIcon />}
                         onClick={() => {
-                            onIncrement()
+                            onIncrement?.()
                             onClose()
                         }}
                         isLoading={isUpdating}
@@ -68,14 +68,14 @@ const BaseButton = forwardRef<any, IButton>((props, ref) => {
 
     return <ButtonGroup ref={ref} isAttached>
         <Button
-            colorScheme={props.times > 0 ? "green" : null}
+            colorScheme={props.times > 0 ? "green" : undefined}
             style={props.position > 0 ? props.times > 0 ? {
                 background: "linear-gradient(90deg, #428bca 56%, var(--chakra-colors-green-200) 44%)",
-                color: '#000'                
+                color: '#000'
             } : {
                 background: "linear-gradient(90deg, #428bca 56%, var(--chakra-colors-whiteAlpha-200) 44%)",
-                color: '#fff'                      
-            } : null}
+                color: '#fff'
+            } : undefined}
             onClick={props.onClick}
             isLoading={props.isUpdating}
         >

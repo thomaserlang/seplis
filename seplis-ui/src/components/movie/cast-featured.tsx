@@ -30,7 +30,7 @@ export default function CastFeatured({ movieId }: { movieId: number }) {
             <SimpleGrid minChildWidth={'300px'} spacing="0.5rem">
                 {isInitialLoading ? (
                     [...Array(3)].map((_, i) => <CastCardSkeleton key={i} />)
-                ) : data?.items.length > 0 ? (
+                ) : (data?.items?.length ?? 0) > 0 ? (
                     data?.items.map((member) => (
                         <CastCard key={member.person.id} castPerson={member} />
                     ))

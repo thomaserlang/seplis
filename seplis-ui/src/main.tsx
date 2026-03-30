@@ -100,7 +100,7 @@ import WatchHome from './pages/watch/home'
 
 spatialInit({})
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <ChakraProvider theme={theme}>
             <BrowserRouter>

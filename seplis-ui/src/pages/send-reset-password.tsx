@@ -44,11 +44,11 @@ export default function SendResetPassword() {
 
     const submit = async (data: IResetPassword) => {
         try {
-            setRootError(null)
+            setRootError(undefined)
             await api.post('/2/users/send-reset-password', data)
             setSuccess('A password reset link has been sent to your email.')
         } catch (e) {
-            const data = e.response.data as IError<IValidationError>
+            const data = (e as any).response.data as IError<IValidationError>
 
             if (data?.errors) {
                 for (const e of data?.errors) {
@@ -76,7 +76,7 @@ export default function SendResetPassword() {
                 alignItems="center"
                 spacing="1rem"
             >
-                <Avatar src="/static/img/apple-touch-icon.png" />
+                <Avatar src="/img/apple-touch-icon.png" />
                 <Box
                     minW={{ base: '90%', md: '468px' }}
                     p="2rem"

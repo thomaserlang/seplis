@@ -14,9 +14,9 @@ export default function Slider({
     duration,
     currentTime,
     onTimeChange,
-    playRequest,
+    playRequest: _playRequest,
 }: IProps) {
-    const [hoverTime, setHoverTime] = useState<number>(null)
+    const [hoverTime, setHoverTime] = useState<number | null>(null)
 
     return (
         <Flex

@@ -21,11 +21,11 @@ export function useGetPlayServers(url: string, enabled: boolean = true) {
 
 export async function getPlayServers(url: string) {
     const result = await api.get<IPlayRequest[]>(url)
-    const sourcePromises: Promise<IPlayServerRequestSources>[] = []
+    const sourcePromises: Promise<IPlayServerRequestSources | null>[] = []
     for (const request of result.data)
         sourcePromises.push(getPlayServerSources(request))
     const requestSources = await Promise.all(sourcePromises)
-    return requestSources.filter((item) => item !== null)
+    return requestSources.filter((item): item is IPlayServerRequestSources => item !== null)
 }
 
 async function getPlayServerSources(playRequest: IPlayRequest) {
