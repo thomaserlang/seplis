@@ -1,7 +1,9 @@
 from sqlalchemy import MetaData, orm
+
 from seplis.utils import row_to_dict
 
-class Base_model(object):
+
+class Base_model:
 
     def to_dict(self):
         return row_to_dict(self)

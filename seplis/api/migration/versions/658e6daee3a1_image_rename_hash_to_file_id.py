@@ -10,11 +10,11 @@ Create Date: 2023-05-29 20:38:36.787330
 revision = '658e6daee3a1'
 down_revision = '92b92ef5b119'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.alter_column(
         'images', 
         'hash', 
@@ -23,5 +23,5 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     pass

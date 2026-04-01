@@ -17,9 +17,9 @@ templateEnv = jinja2.Environment(
 )
 
 
-async def send_email(template_name: str, subject: str, to: str, **kwargs):
+async def send_email(template_name: str, subject: str, to: str, **kwargs) -> None:
     if not config.smtp.from_email:
-        logger.warninging('No smtp server has been configured')
+        logger.warning('No smtp server has been configured')
         return
     template = templateEnv.get_template(template_name)
     message = MIMEText(template.render(kwargs), 'html')
@@ -37,7 +37,7 @@ async def send_email(template_name: str, subject: str, to: str, **kwargs):
     )
 
 
-async def send_reset_password(to: str, url: str):
+async def send_reset_password(to: str, url: str) -> None:
     try:
         await send_email('email/reset_password.html', 'Reset password', to, url=url)
     except Exception as e:
@@ -45,14 +45,14 @@ async def send_reset_password(to: str, url: str):
         raise
 
 
-async def send_password_changed(to: str):
+async def send_password_changed(to: str) -> None:
     try:
         await send_email('email/password_changed.html', 'Password changed', to)
     except Exception as e:
         logger.exception(e)
 
 
-async def send_new_login(to: str, ip: str):
+async def send_new_login(to: str, ip: str) -> None:
     try:
         await send_email('email/new_login.html', 'New login', to, ip=ip)
     except Exception as e:

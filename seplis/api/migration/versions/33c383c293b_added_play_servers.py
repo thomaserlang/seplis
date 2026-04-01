@@ -10,11 +10,11 @@ Create Date: 2014-11-02 18:36:12.656356
 revision = '33c383c293b'
 down_revision = '24deabc7426'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         'play_servers',
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
@@ -60,6 +60,6 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('play_access')
     op.drop_table('play_servers')

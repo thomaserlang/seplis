@@ -23,9 +23,7 @@ class User_public(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(sa.String(45), unique=True)
-    created_at: Mapped[datetime] = mapped_column(
-        UtcDateTime, server_default=sa.func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utils.datetime_now)
 
 
 class User(User_public):

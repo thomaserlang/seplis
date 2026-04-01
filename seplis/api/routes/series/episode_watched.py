@@ -1,8 +1,9 @@
-from fastapi import Depends, Security, Body
-from pydantic import conint
 import sqlalchemy as sa
-from ...dependencies import authenticated, get_session, AsyncSession
-from ... import models, schemas, exceptions
+from fastapi import Body, Depends, Security
+from pydantic import conint
+
+from ... import exceptions, models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -23,8 +24,7 @@ async def get_watched(
     ))
     if ew:
         return schemas.Episode_watched.model_validate(ew)
-    else:
-        return schemas.Episode_watched(episode_number=episode_number)
+    return schemas.Episode_watched(episode_number=episode_number)
 
 
 @router.post('/{series_id}/episodes/{episode_number}/watched', response_model=schemas.Episode_watched,
@@ -79,8 +79,7 @@ async def watched_decrement(
     await session.commit()
     if ew:
         return schemas.Episode_watched.model_validate(ew)
-    else:
-        return schemas.Episode_watched(episode_number=episode_number)
+    return schemas.Episode_watched(episode_number=episode_number)
 
 
 @router.post('/{series_id}/episodes/watched-range', status_code=204,
@@ -94,7 +93,7 @@ async def watched_increment_range(
     request: dict | None = None,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
-):  
+) -> None:  
     data = schemas.Episode_watched_increment.model_validate(request) if request else schemas.Episode_watched_increment()
     if to_episode_number < from_episode_number:
         raise exceptions.API_exception(400, 0, 'to_episode_number must be bigger than from_episode_number')

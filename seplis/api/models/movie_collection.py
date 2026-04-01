@@ -1,6 +1,8 @@
 import sqlalchemy as sa
-from ...api.database import auto_session, AsyncSession
+
+from ...api.database import AsyncSession, auto_session
 from .base import Base
+
 
 class Movie_collection(Base):
     __tablename__ = 'movie_collections'

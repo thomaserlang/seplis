@@ -10,11 +10,11 @@ Create Date: 2022-12-17 17:48:27.217374
 revision = '11d0e1d994f9'
 down_revision = 'f689fc38a115'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.rename_table('shows', 'series')
     op.rename_table('show_externals', 'series_externals')
     op.alter_column('series_externals', 'show_id', existing_type=sa.Integer, new_column_name='series_id')
@@ -62,5 +62,5 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     pass

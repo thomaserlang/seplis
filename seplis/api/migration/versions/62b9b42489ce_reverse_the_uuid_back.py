@@ -10,13 +10,14 @@ Create Date: 2023-08-26 08:27:18.031157
 revision = '62b9b42489ce'
 down_revision = 'fb4ff7dc2ba0'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
-def reverse_uuid7_mariadb(s):
+
+def reverse_uuid7_mariadb(s) -> str:
     return f'{s[24:32]}-{s[32:36]}-{s[19:23]}-{s[14:18]}-{s[0:8]}{s[9:13]}'
 
-def upgrade():
+def upgrade() -> None:
     ids = {}
     conn = op.get_bind()
     old_ids = conn.scalars(sa.text('select id from play_servers'))
@@ -28,5 +29,5 @@ def upgrade():
         })
 
 
-def downgrade():
+def downgrade() -> None:
     pass

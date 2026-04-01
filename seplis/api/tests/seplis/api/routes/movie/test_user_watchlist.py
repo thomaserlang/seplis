@@ -1,0 +1,41 @@
+import pytest
+
+from seplis.api import models, schemas
+from seplis.api.testbase import AsyncClient, run_file, user_signin
+
+
+@pytest.mark.asyncio
+async def test_movie_watchlist(client: AsyncClient) -> None:
+    await user_signin(client)
+
+    movie: schemas.Movie = await models.Movie.save(schemas.Movie_create(
+        title='Movie',
+    ), movie_id=None)
+
+    r = await client.get(f'/2/movies/{movie.id}/watchlist')
+    assert r.status_code == 200, r.content
+    data = schemas.Movie_watchlist.model_validate(r.json())
+    assert not data.on_watchlist
+    assert data.created_at is None
+    
+    r = await client.put(f'/2/movies/{movie.id}/watchlist')
+    assert r.status_code == 204, r.content
+    
+    r = await client.get(f'/2/movies/{movie.id}/watchlist')
+    assert r.status_code == 200
+    data = schemas.Movie_watchlist.model_validate(r.json())
+    assert data.on_watchlist
+    assert data.created_at is not None
+    
+    r = await client.delete(f'/2/movies/{movie.id}/watchlist')
+    assert r.status_code == 204
+
+    r = await client.get(f'/2/movies/{movie.id}/watchlist')
+    assert r.status_code == 200
+    data = schemas.Movie_watchlist.model_validate(r.json())
+    assert not data.on_watchlist
+    assert data.created_at is None
+
+
+if __name__ == '__main__':
+    run_file(__file__)

@@ -19,7 +19,7 @@ class Thetvdb(Series_importer_base):
     )
     _url = 'https://api.thetvdb.com'
 
-    def __init__(self, apikey=None):
+    def __init__(self, apikey=None) -> None:
         super().__init__()
         self.apikey = apikey
         if not apikey:
@@ -62,6 +62,7 @@ class Thetvdb(Series_importer_base):
                 runtime=int(data['runtime']) if data['runtime'] else None,
                 genre_names=data['genre'],
             )
+        return None
 
     async def episodes(self, external_id: int) -> list[schemas.Episode_update]:
         headers = self.login_headers()
@@ -121,7 +122,7 @@ class Thetvdb(Series_importer_base):
         return [str(s['id']) for s in data]
 
 
-    def parse_status(self, status_str):
+    def parse_status(self, status_str) -> int:
         if status_str == 'Ended':
             return 2
         if status_str == 'Continuing':

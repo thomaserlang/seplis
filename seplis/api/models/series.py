@@ -97,7 +97,7 @@ class Series(Base):
         return schemas.Series.model_validate(data)
 
     @classmethod
-    async def delete(self, series_id: int):
+    async def delete(self, series_id: int) -> None:
         from . import Image
         async with database.session() as session:
             async with session.begin():
@@ -183,7 +183,7 @@ class Series(Base):
         return [schemas.Genre.model_validate(r) for r in rr]
 
     @staticmethod
-    async def _save_for_search(series: Series):
+    async def _save_for_search(series: Series) -> None:
         doc = series.title_document()
         if not doc:
             return
@@ -194,7 +194,7 @@ class Series(Base):
         )
 
     @classmethod
-    async def _save_episodes(cls, session: AsyncSession, series_id: int, episodes: list[schemas.Episode_create | schemas.Episode_update], patch: bool):
+    async def _save_episodes(cls, session: AsyncSession, series_id: int, episodes: list[schemas.Episode_create | schemas.Episode_update], patch: bool) -> None:
         if not patch:
             await session.execute(sa.delete(Episode).where(Episode.series_id == series_id))
         else:
@@ -244,7 +244,7 @@ class Series(Base):
         )
 
     @staticmethod
-    async def update_seasons(session: AsyncSession, series_id: int):
+    async def update_seasons(session: AsyncSession, series_id: int) -> None:
         """Counts the number of episodes per season.
 
             [
@@ -296,6 +296,7 @@ class Series(Base):
         ))
         if r:
             return r.first()
+        return None
 
 
 class Series_external(Base):
@@ -316,7 +317,7 @@ class Series_genre(Base):
         'genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
 
-async def rebuild_series():
+async def rebuild_series() -> None:
     async def c():
         async with database.session() as session:
             result = await session.stream(sa.select(Series))

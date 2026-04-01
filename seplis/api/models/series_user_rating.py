@@ -1,8 +1,11 @@
+from datetime import datetime
+
 import sqlalchemy as sa
 
 from seplis.utils.sqlalchemy import UtcDateTime
+
 from .base import Base
-from datetime import datetime
+
 
 class Series_user_rating(Base):
     __tablename__ = 'user_series_ratings'

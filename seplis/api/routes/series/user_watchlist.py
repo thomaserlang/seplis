@@ -1,6 +1,7 @@
 from fastapi import Security
-from ...dependencies import authenticated
+
 from ... import models, schemas
+from ...dependencies import authenticated
 from .router import router
 
 
@@ -22,7 +23,7 @@ async def series_watchlist(
 async def series_add_to_watchlist(
     series_id: int,    
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
-):
+) -> None:
     await models.Series_watchlist.add(series_id=series_id, user_id=user.id)
 
 
@@ -33,5 +34,5 @@ async def series_add_to_watchlist(
 async def series_remove_from_watchlist(
     series_id: int,    
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
-):
+) -> None:
     await models.Series_watchlist.remove(series_id=series_id, user_id=user.id)

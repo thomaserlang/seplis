@@ -1,18 +1,20 @@
-import sqlalchemy as sa
-import httpx
-import tempfile
-import os
-import gzip
 import csv
+import gzip
+import os
+import tempfile
+from datetime import datetime
+
+import httpx
+import sqlalchemy as sa
 from aiofile import async_open
 from pydantic import BaseModel, ConfigDict
-from datetime import datetime
-from ..api.database import database
-from ..api import models
+
 from .. import logger
+from ..api import models
+from ..api.database import database
 
 
-async def update_imdb_ratings():
+async def update_imdb_ratings() -> None:
     logger.info('Downloading imdb ratings')
     ratings = await get_ratings()
     dt = datetime.now().date()

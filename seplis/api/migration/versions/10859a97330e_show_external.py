@@ -10,11 +10,11 @@ Create Date: 2013-09-29 13:17:59.337000
 revision = '10859a97330e'
 down_revision = '31cb87f640df'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         'show_externals',
         sa.Column('show_id', sa.Integer, sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
@@ -24,5 +24,5 @@ def upgrade():
 
     op.create_unique_constraint('uq_title_value', 'show_externals', ['title', 'value'])
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('show_externals')

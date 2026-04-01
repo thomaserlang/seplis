@@ -11,10 +11,11 @@ Create Date: 2015-01-28 21:58:34.866417
 revision = '10173b4883a'
 down_revision = '280d3ba16a8'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
-def upgrade():
+
+def upgrade() -> None:
     op.alter_column(
         'images', 
         'relation_type',
@@ -23,5 +24,5 @@ def upgrade():
     )
     op.get_bind().execute(sa.text('update images set relation_type="show";'))
 
-def downgrade():
+def downgrade() -> None:
     pass

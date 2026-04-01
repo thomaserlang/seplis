@@ -1,7 +1,9 @@
 import asyncio
+
 import sqlalchemy as sa
 from fastapi import APIRouter, Response
 from pydantic import BaseModel
+
 from seplis.api.database import database
 
 router = APIRouter(prefix='/health', tags=['Health'])

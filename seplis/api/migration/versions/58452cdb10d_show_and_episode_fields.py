@@ -10,11 +10,11 @@ Create Date: 2014-09-08 22:32:33.261703
 revision = '58452cdb10d'
 down_revision = '4ea430899ae'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('shows',
         sa.Column('runtime', sa.Integer),
     )
@@ -31,4 +31,4 @@ def upgrade():
 
 
 def downgrade():
-    raise NotImplemented()
+    raise NotImplementedError()

@@ -1,7 +1,8 @@
 import sqlalchemy as sa
-from .base import Base
-from ..database import auto_session, AsyncSession
+
 from .. import schemas
+from ..database import AsyncSession, auto_session
+from .base import Base
 
 
 class Movie_cast(Base):
@@ -14,7 +15,7 @@ class Movie_cast(Base):
 
     @staticmethod
     @auto_session
-    async def save(data: schemas.Movie_cast_person_create, session: AsyncSession):
+    async def save(data: schemas.Movie_cast_person_create, session: AsyncSession) -> None:
         data_ = data.model_dump(exclude_unset=True)
         await session.execute(sa.dialects.mysql.insert(Movie_cast).values(
             data_
@@ -22,7 +23,7 @@ class Movie_cast(Base):
 
     @staticmethod
     @auto_session
-    async def delete(movie_id: int, person_id: int, session: AsyncSession):
+    async def delete(movie_id: int, person_id: int, session: AsyncSession) -> None:
         await session.execute(sa.delete(Movie_cast).where(
             Movie_cast.movie_id == movie_id,
             Movie_cast.person_id == person_id,

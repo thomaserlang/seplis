@@ -22,6 +22,7 @@ async def send_reset_link(
         return Response(status_code=204)
     url = await models.Reset_password.create_reset_link(user_id)
     await send_reset_password(to=email, url=url)
+    return None
 
 
 @router.post('/reset-password', status_code=204)
@@ -29,7 +30,7 @@ async def reset_password(
     key: str = Body(..., embed=True, min_length=36),
     new_password: schemas.PasswordStr = Body(..., embed=True),
     session: AsyncSession = Depends(get_session),
-):
+) -> None:
     user_id = await session.scalar(
         sa.select(models.Reset_password.user_id).where(
             models.Reset_password.key == key,

@@ -1,5 +1,7 @@
-from pydantic import BaseModel, ConfigDict, constr, field_validator
 from datetime import date
+
+from pydantic import BaseModel, ConfigDict, constr, field_validator
+
 from .image import Image
 
 

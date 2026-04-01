@@ -10,11 +10,11 @@ Create Date: 2023-03-17 10:29:57.584088
 revision = '7072ccfb43ee'
 down_revision = '014aa789c9e2'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table('series_rating_history', 
         sa.Column('series_id', sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
         sa.Column('date', sa.Date, primary_key=True),
@@ -42,5 +42,5 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     pass

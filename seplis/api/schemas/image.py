@@ -1,7 +1,8 @@
-from typing import Literal
-from pydantic import BaseModel, AnyHttpUrl, ConfigDict
 from datetime import datetime
+from typing import Literal
+
 from fastapi import UploadFile
+from pydantic import BaseModel, ConfigDict
 
 IMAGE_TYPES = Literal['poster', 'backdrop', 'profile']
 

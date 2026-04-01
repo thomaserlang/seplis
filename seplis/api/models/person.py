@@ -1,10 +1,11 @@
-import sqlalchemy as sa
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from ..database import auto_session, AsyncSession
-from .base import Base
-from .. import schemas, exceptions
+import sqlalchemy as sa
+
 from ... import utils
+from .. import exceptions, schemas
+from ..database import AsyncSession, auto_session
+from .base import Base
 
 
 class Person(Base):
@@ -35,11 +36,11 @@ class Person(Base):
     ):
         _data = data.model_dump(exclude_unset=True)
         if not person_id:
-            _data['created_at'] = datetime.now(tz=timezone.utc)
+            _data['created_at'] = datetime.now(tz=UTC)
             r = await session.execute(sa.insert(Person))
             person_id = r.lastrowid
         else:
-            _data['updated_at'] = datetime.now(tz=timezone.utc)
+            _data['updated_at'] = datetime.now(tz=UTC)
 
         if 'externals' in _data:
             _data['externals'] = await cls._save_externals(session, person_id, _data['externals'], patch)
@@ -52,7 +53,7 @@ class Person(Base):
     
     @staticmethod
     @auto_session
-    async def delete(person_id: int, session: AsyncSession = None):
+    async def delete(person_id: int, session: AsyncSession = None) -> None:
         await session.execute(sa.delete(Person).where(Person.id == person_id))
     
     @staticmethod
@@ -69,6 +70,7 @@ class Person(Base):
         ))
         if person:
             return schemas.Person.model_validate(person)
+        return None
         
     @staticmethod
     @auto_session
@@ -76,6 +78,7 @@ class Person(Base):
         person = await session.scalar(sa.select(Person).where(Person.id == person_id))
         if person:
             return schemas.Person.model_validate(person)
+        return None
 
     @staticmethod
     async def _save_externals(session: AsyncSession, person_id: str | int, externals: dict[str, str | None], patch: bool):

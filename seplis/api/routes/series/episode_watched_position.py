@@ -1,7 +1,8 @@
-from fastapi import Depends, Security, Body, Response
 import sqlalchemy as sa
-from ...dependencies import authenticated, get_session, AsyncSession
+from fastapi import Body, Depends, Response, Security
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -35,7 +36,7 @@ async def set_position(
     position: int = Body(..., embed=True, ge=0, le=86400),
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
-):
+) -> None:
     await models.Episode_watched.set_position(
         session=session,
         user_id=user.id,
@@ -55,7 +56,7 @@ async def delete_position(
     episode_number: int,
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
-):
+) -> None:
     await models.Episode_watched.reset_position(
         session=session,
         user_id=user.id,

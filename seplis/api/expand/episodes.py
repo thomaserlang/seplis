@@ -1,11 +1,13 @@
 import asyncio
+
 import sqlalchemy as sa
 
+from .. import exceptions, models, schemas
 from ..database import auto_session
 from ..dependencies import AsyncSession
-from .. import schemas, models, exceptions
 
-async def expand_episodes(expand: list[str], user: schemas.User, series_id: int, episodes: list[schemas.Episode]):
+
+async def expand_episodes(expand: list[str], user: schemas.User, series_id: int, episodes: list[schemas.Episode]) -> None:
     if not expand:
         return
     if not user:        
@@ -28,7 +30,7 @@ async def expand_episodes(expand: list[str], user: schemas.User, series_id: int,
 
 
 @auto_session
-async def expand_user_watched(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):
+async def expand_user_watched(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession) -> None:
     _episodes: dict[int, schemas.Episode] = {}
     for episode in episodes:
         episode.user_watched = schemas.Episode_watched(episode_number=episode.number)
@@ -45,7 +47,7 @@ async def expand_user_watched(series_id: int, user_id: int, episodes: list[schem
             schemas.Episode_watched.model_validate(episode_watched)
 
 @auto_session
-async def expand_user_can_watch(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession):
+async def expand_user_can_watch(series_id: int, user_id: int, episodes: list[schemas.Episode], session: AsyncSession) -> None:
     _episodes: dict[int, schemas.Episode] = {}
     for episode in episodes:
         episode.user_can_watch = schemas.User_can_watch()

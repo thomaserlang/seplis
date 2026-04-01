@@ -1,15 +1,17 @@
-import sqlalchemy as sa
 from datetime import datetime
 
+import sqlalchemy as sa
+
 from seplis.api import exceptions
+
+from ... import logger
+from ...api import models, schemas
+from ...api.database import database
 from ..themoviedb_export import get_ids
 from . import importer
-from ...api.database import database
-from ...api import models, schemas
-from ... import logger
 
 
-async def update_popularity(create_movies = True, create_above_popularity: float | None = 1.0):
+async def update_popularity(create_movies = True, create_above_popularity: float | None = 1.0) -> None:
     logger.info('Updating movie popularity')
     movies: dict[str, schemas.Movie] = {}
     dt = datetime.now().date()
@@ -30,7 +32,7 @@ async def update_popularity(create_movies = True, create_above_popularity: float
                     'popularity': data.popularity or 0,
                     'date': dt,
                 })
-            elif create_movies and create_above_popularity != None and data.popularity >= create_above_popularity:
+            elif create_movies and create_above_popularity is not None and data.popularity >= create_above_popularity:
                 ids_to_create.append(id_)
             if len(insert_data) == 10000:
                 await session.execute(

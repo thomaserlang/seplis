@@ -6,7 +6,6 @@ from .query_filter_schema import Series_query_filter
 
 def order_query(query: any, filter_query: Series_query_filter):
     order = []
-
     for sort in filter_query.sort:
         direction = sa.asc if sort.endswith("_asc") else sa.desc
         if sort.startswith("user_rating"):
@@ -15,17 +14,17 @@ def order_query(query: any, filter_query: Series_query_filter):
             )
         elif (
             sort.startswith("user_watchlist_added_at")
-            and filter_query.user_watchlist != False
+            and filter_query.user_watchlist
         ):
             order.append(direction(models.Series_watchlist.created_at))
         elif (
             sort.startswith("user_favorites_added_at")
-            and filter_query.user_favorites != False
+            and filter_query.user_favorites
         ):
             order.append(direction(models.Series_favorite.created_at))
         elif (
             sort.startswith("user_last_episode_watched_at")
-            and filter_query.user_has_watched != False
+            and filter_query.user_has_watched
         ):
             order.append(direction(models.Episode_watched.watched_at))
         elif sort.startswith("rating"):

@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Security
-from ...dependencies import authenticated
+from fastapi import Security
+
 from ... import models, schemas
+from ...dependencies import authenticated
 from .router import router
+
 
 @router.get('/{series_id}/favorite', response_model=schemas.Series_favorite,
             description='''
@@ -21,7 +23,7 @@ async def series_favorite(
 async def series_add_to_favorites(
     series_id: int,    
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
-):
+) -> None:
     await models.Series_favorite.add(series_id=series_id, user_id=user.id)
 
 
@@ -32,5 +34,5 @@ async def series_add_to_favorites(
 async def series_remove_from_favorites(
     series_id: int,    
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
-):
+) -> None:
     await models.Series_favorite.remove(series_id=series_id, user_id=user.id)

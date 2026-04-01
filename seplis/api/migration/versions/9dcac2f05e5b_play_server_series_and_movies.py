@@ -10,12 +10,13 @@ Create Date: 2022-12-22 21:35:18.878901
 revision = '9dcac2f05e5b'
 down_revision = '11d0e1d994f9'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 from seplis.utils.sqlalchemy import UUID
 
-def upgrade():
+
+def upgrade() -> None:
     op.create_table(
         'play_server_movies', 
         sa.Column('play_server_id', UUID, sa.ForeignKey('play_servers.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
@@ -33,5 +34,5 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, nullable=False),
     )
 
-def downgrade():
+def downgrade() -> None:
     pass

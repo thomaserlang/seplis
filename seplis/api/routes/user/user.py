@@ -1,7 +1,8 @@
-from fastapi import Depends
 import sqlalchemy as sa
-from ...dependencies import get_session, AsyncSession
+from fastapi import Depends
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, get_session
 from .router import router
 
 

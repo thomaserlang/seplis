@@ -1,8 +1,12 @@
-import sqlalchemy as sa
-from seplis.utils.sqlalchemy import UtcDateTime
-from .base import Base
-from seplis import utils
 from datetime import datetime
+
+import sqlalchemy as sa
+
+from seplis import utils
+from seplis.utils.sqlalchemy import UtcDateTime
+
+from .base import Base
+
 
 class App(Base):
     __tablename__ = 'apps'
@@ -18,7 +22,7 @@ class App(Base):
     updated = sa.Column(UtcDateTime, onupdate=datetime.utcnow)
 
 
-    def __init__(self, user_id, name, level, redirect_uri=None):
+    def __init__(self, user_id, name, level, redirect_uri=None) -> None:
         '''
         :param user_id: int
         :param name: str

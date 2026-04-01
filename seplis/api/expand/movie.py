@@ -1,11 +1,13 @@
 import asyncio
+
 import sqlalchemy as sa
+
+from .. import exceptions, models, schemas
 from ..database import auto_session
 from ..dependencies import AsyncSession
-from .. import schemas, models, exceptions
 
 
-async def expand_movies(expand: list[str], user: schemas.User_authenticated, movies: list[schemas.Movie]):
+async def expand_movies(expand: list[str], user: schemas.User_authenticated, movies: list[schemas.Movie]) -> None:
     if not expand:
         return
     if not user:
@@ -31,7 +33,7 @@ async def expand_movies(expand: list[str], user: schemas.User_authenticated, mov
 
 
 @auto_session
-async def expand_user_watchlist(user_id: int, movies: list[schemas.Movie], session: AsyncSession):
+async def expand_user_watchlist(user_id: int, movies: list[schemas.Movie], session: AsyncSession) -> None:
     _movies: dict[int, schemas.Movie] = {}
     for s in movies:
         s.user_watchlist = schemas.Movie_watchlist()
@@ -48,7 +50,7 @@ async def expand_user_watchlist(user_id: int, movies: list[schemas.Movie], sessi
 
 
 @auto_session
-async def expand_user_favorite(user_id: int, movies: list[schemas.Movie], session: AsyncSession):
+async def expand_user_favorite(user_id: int, movies: list[schemas.Movie], session: AsyncSession) -> None:
     _movies: dict[int, schemas.Movie] = {}
     for s in movies:
         s.user_favorite = schemas.Movie_favorite()
@@ -65,7 +67,7 @@ async def expand_user_favorite(user_id: int, movies: list[schemas.Movie], sessio
         
 
 @auto_session
-async def expand_user_watched(user_id: int, movies: list[schemas.Movie], session: AsyncSession):
+async def expand_user_watched(user_id: int, movies: list[schemas.Movie], session: AsyncSession) -> None:
     _movies: dict[int, schemas.Movie] = {}
     for s in movies:
         s.user_watched = schemas.Movie_watched()

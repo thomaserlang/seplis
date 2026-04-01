@@ -1,8 +1,11 @@
+from datetime import UTC, datetime
+
 import sqlalchemy as sa
-from datetime import datetime, timezone
+
 from seplis.utils.sqlalchemy import UtcDateTime
+
+from ..database import AsyncSession, auto_session
 from .base import Base
-from ..database import auto_session, AsyncSession
 
 
 class Movie_favorite(Base):
@@ -16,17 +19,17 @@ class Movie_favorite(Base):
 
     @staticmethod
     @auto_session
-    async def add(user_id: int | str, movie_id: int, session: AsyncSession = None):
+    async def add(user_id: int | str, movie_id: int, session: AsyncSession = None) -> None:
         await session.execute(sa.insert(Movie_favorite).values(
             movie_id=movie_id,
             user_id=user_id,
-            created_at=datetime.now(tz=timezone.utc),
+            created_at=datetime.now(tz=UTC),
         ).prefix_with('IGNORE'))
 
 
     @staticmethod
     @auto_session
-    async def remove(user_id: int | str, movie_id: int, session: AsyncSession = None):
+    async def remove(user_id: int | str, movie_id: int, session: AsyncSession = None) -> None:
         await session.execute(sa.delete(Movie_favorite).where(
             Movie_favorite.movie_id == movie_id,
             Movie_favorite.user_id == user_id,

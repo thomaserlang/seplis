@@ -1,10 +1,11 @@
-from fastapi import Security
-import sqlalchemy as sa
 import asyncio
 
-from ...database import auto_session
-from ...dependencies import authenticated, AsyncSession
+import sqlalchemy as sa
+from fastapi import Security
+
 from ... import models, schemas
+from ...database import auto_session
+from ...dependencies import AsyncSession, authenticated
 from .router import router
 
 

@@ -1,3 +1,1 @@
-from . import series
-from . import movies
-from . import people
+from . import movies, people, series

@@ -10,11 +10,11 @@ Create Date: 2022-09-03 22:27:37.509074
 revision = 'd8a21dcfd496'
 down_revision = '04b0aceac318'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.alter_column('images', 'type', existing_type=sa.Integer, type_=sa.String(50))
     op.execute('UPDATE images SET type="poster" WHERE type="1"')
     op.execute('UPDATE images SET relation_type="series" WHERE relation_type="show"')

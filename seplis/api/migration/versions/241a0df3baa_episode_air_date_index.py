@@ -11,10 +11,9 @@ revision = '241a0df3baa'
 down_revision = '27aaf557802'
 
 from alembic import op
-import sqlalchemy as sa
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_index(
         'ix_episodes_show_id_air_date',
         'episodes',
@@ -22,5 +21,5 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     pass

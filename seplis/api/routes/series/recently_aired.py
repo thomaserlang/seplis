@@ -1,12 +1,14 @@
+from datetime import UTC, datetime, timedelta
+
+import sqlalchemy as sa
 from fastapi import Depends
 from pydantic import conint
-import sqlalchemy as sa
-from datetime import datetime, timezone, timedelta
+
+from .... import utils
+from ... import models, schemas
+from ...dependencies import AsyncSession, get_session
 from ...filter.series import filter_series_query
 from ...filter.series.query_filter_schema import Series_query_filter
-from ...dependencies import get_session, AsyncSession
-from ... import models, schemas
-from .... import utils
 from .router import router
 
 
@@ -18,7 +20,7 @@ async def get_series_recently_aired(
     days_ahead: conint(ge=0, le=10) = 0,
     days_behind: conint(ge=0, le=10) = 7,
 ):
-    dt = datetime.now(tz=timezone.utc)
+    dt = datetime.now(tz=UTC)
     episodes_query = sa.select(
         models.Episode.series_id,
         sa.func.min(models.Episode.number).label('episode_number'),

@@ -10,14 +10,14 @@ Create Date: 2023-09-03 20:01:03.959896
 revision = 'b51bdd1df429'
 down_revision = '20559ab61113'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.alter_column('series', 'rating_weighted', type_=sa.DECIMAL(precision=12, scale=4), existing_type=sa.Float, existing_nullable=False, existing_server_default='0')
     op.alter_column('movies', 'rating_weighted', type_=sa.DECIMAL(precision=12, scale=4), existing_type=sa.Float, existing_nullable=False, existing_server_default='0')
 
 
-def downgrade():
+def downgrade() -> None:
     pass

@@ -1,9 +1,11 @@
-import sqlalchemy as sa
 import asyncio
+
+import sqlalchemy as sa
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database import auto_session
 from .base import Base
-from sqlalchemy.ext.asyncio import AsyncSession
+
 
 class Genre(Base):
     __tablename__ = 'genres'

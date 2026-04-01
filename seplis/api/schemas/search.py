@@ -1,7 +1,9 @@
-from pydantic import BaseModel, ConfigDict
 from datetime import date
-from .image import Image
+
+from pydantic import BaseModel, ConfigDict
+
 from .genre import Genre
+from .image import Image
 
 
 class Search_title_document_title(BaseModel):

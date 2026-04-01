@@ -28,15 +28,9 @@ set_logger(f'api-{config.api.port}.log')
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
-    if not config.test:
-        await database.setup()
-    else:
-        await database.setup_test()
+    await database.setup()
     yield
-    if not config.test:
-        await database.close()
-    else:
-        await database.close_test()
+    await database.close()
 
 
 app = FastAPI(title='SEPLIS API', version='2.0', lifespan=lifespan)

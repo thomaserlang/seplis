@@ -22,7 +22,7 @@ statuses = {
 client = httpx.AsyncClient()
 
 
-async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
+async def update_movie(movie_id=None, movie: schemas.Movie | None = None) -> None:
     if movie_id:
         async with database.session() as session:
             result = await session.scalar(sa.select(models.Movie).where(models.Movie.id == movie_id))
@@ -39,7 +39,7 @@ async def update_movie(movie_id=None, movie: schemas.Movie | None = None):
     await update_cast(movie)
 
 
-async def update_movies_bulk(from_movie_id=0, do_async=False):
+async def update_movies_bulk(from_movie_id=0, do_async=False) -> None:
     logger.info('Updating movies')
     movies = await _get_movies(from_movie_id)
     while movies:
@@ -67,7 +67,7 @@ async def _get_movies(from_movie_id: int):
         return await session.scalars(query)
 
 
-async def update_incremental():
+async def update_incremental() -> None:
     page = 1
     logger.info('Incremental update running')
     while True:
@@ -104,7 +104,7 @@ async def update_incremental():
             page += 1
 
 
-async def update_movie_metadata(movie: schemas.Movie):
+async def update_movie_metadata(movie: schemas.Movie) -> None:
     logger.debug(f'[Movie: {movie.id}] Updating metadata')
     themoviedb = movie.externals.get('themoviedb')
     if not themoviedb:
@@ -124,7 +124,7 @@ async def update_movie_metadata(movie: schemas.Movie):
             return
         r = r.json()
         if not r['movie_results']:
-            logger.warninging(
+            logger.warning(
                 f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"')
             return
         themoviedb = r['movie_results'][0]['id']
@@ -189,7 +189,7 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     return data
 
 
-async def update_images(movie: schemas.Movie):
+async def update_images(movie: schemas.Movie) -> None:
     logger.debug(f'[Movie: {movie.id}] Updating images')
     if not movie.externals.get('themoviedb'):
         logger.error(f'Missing externals.themoviedb for movie: "{movie.id}"')
@@ -218,7 +218,7 @@ async def update_images(movie: schemas.Movie):
     logger.debug(
         f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
 
-    async def save_image(image):
+    async def save_image(image) -> None:
         try:
             key = f'themoviedb-{image["file_path"]}'
             if key not in image_external_ids:
@@ -255,7 +255,7 @@ async def update_images(movie: schemas.Movie):
             ), movie_id=movie.id)
 
 
-async def update_cast(movie: schemas.Movie):
+async def update_cast(movie: schemas.Movie) -> None:
     logger.debug(f'[Movie: {movie.id}] Updating cast')
     if not movie.externals.get('themoviedb'):
         logger.error(f'Missing externals.themoviedb for movie: "{movie.id}"')
@@ -284,7 +284,7 @@ async def update_cast(movie: schemas.Movie):
         return
     logger.debug(f'[Movie: {movie.id}] Found {len(m["cast"])} cast members')
 
-    async def save_cast(member):
+    async def save_cast(member) -> None:
         try:
             key = f'themoviedb-{member["id"]}'
             if key not in cast:

@@ -1,3 +1,6 @@
+# flake8: noqa
+# type: ignore
+
 from . import me
 from . import reset_password
 from . import watched

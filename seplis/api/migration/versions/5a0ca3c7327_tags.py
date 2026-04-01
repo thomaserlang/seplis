@@ -10,10 +10,11 @@ Create Date: 2014-02-22 13:36:23.272327
 revision = '5a0ca3c7327'
 down_revision = '5acfab2c2cd'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
-def upgrade():
+
+def upgrade() -> None:
     op.create_table(
         'tags',
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
@@ -31,6 +32,6 @@ def upgrade():
         sa.Column('tag_id', sa.Integer, sa.ForeignKey('tags.id', ondelete='cascade', onupdate='cascade'), autoincrement=False, primary_key=True),
     )
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('tag_relations')
     op.drop_table('tags')

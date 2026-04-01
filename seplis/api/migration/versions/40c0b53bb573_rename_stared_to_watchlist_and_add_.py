@@ -10,11 +10,11 @@ Create Date: 2023-03-15 15:41:32.744554
 revision = '40c0b53bb573'
 down_revision = '5e570f8032e8'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.rename_table('movies_stared', 'movie_watchlist')
     op.create_table('movie_favorites', 
         sa.Column('movie_id',
@@ -40,5 +40,5 @@ def upgrade():
         sa.Column('created_at', sa.DateTime),               
     )
 
-def downgrade():
+def downgrade() -> None:
     pass

@@ -1,8 +1,9 @@
-from fastapi import Depends, Security
-import sqlalchemy as sa
 import jwt
-from ...dependencies import authenticated, get_session, AsyncSession
+import sqlalchemy as sa
+from fastapi import Depends, Security
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 

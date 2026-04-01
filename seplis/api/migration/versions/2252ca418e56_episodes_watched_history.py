@@ -10,11 +10,11 @@ Create Date: 2022-10-08 14:01:46.739259
 revision = '2252ca418e56'
 down_revision = '9ba3d50cb498'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table('episodes_watched_history',
         sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('series_id',
@@ -52,7 +52,7 @@ def upgrade():
 
     history = []
     for ew in episodes_watched:
-        for i in range(ew['times']):
+        for _i in range(ew['times']):
             history.append({
                 'user_id': ew['user_id'],
                 'series_id': ew['show_id'],
@@ -69,5 +69,5 @@ def upgrade():
     op.bulk_insert(episode_watched_history, history)
 
 
-def downgrade():
+def downgrade() -> None:
     pass

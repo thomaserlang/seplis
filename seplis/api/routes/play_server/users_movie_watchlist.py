@@ -1,14 +1,17 @@
-from typing import Literal
-from fastapi import Depends
 from datetime import datetime
-from pydantic import BaseModel
+from typing import Literal
+
 import sqlalchemy as sa
+from fastapi import Depends
+from pydantic import BaseModel
 
 from seplis.api.filter.movies import filter_movies, filter_movies_query
 from seplis.api.filter.movies.query_filter_schema import Movie_query_filter
-from ...dependencies import get_session, AsyncSession
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, get_session
 from .play_server import router
+
 
 class Radarr_response(BaseModel):
     tmdbid: int
@@ -54,3 +57,4 @@ async def get_play_server_users_movie_watchlist(
         rows = await session.scalars(query)
         return [Radarr_response(tmdbid=int(r.externals['themoviedb']), id=int(r.externals['themoviedb'])) 
                    for r in rows if r.externals.get('themoviedb')]
+    return None

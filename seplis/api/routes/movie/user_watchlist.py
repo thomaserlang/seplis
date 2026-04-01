@@ -1,7 +1,8 @@
-from fastapi import Depends, Security
 import sqlalchemy as sa
-from ...dependencies import authenticated, get_session, AsyncSession
+from fastapi import Depends, Security
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -20,11 +21,10 @@ async def get_watchlist(
     ))
     if not w:
         return schemas.Movie_watchlist()
-    else:
-        return schemas.Movie_watchlist(
-            on_watchlist=True,
-            created_at=w,
-        )
+    return schemas.Movie_watchlist(
+        on_watchlist=True,
+        created_at=w,
+    )
 
 
 @router.put('/{movie_id}/watchlist', status_code=204,
@@ -34,7 +34,7 @@ async def get_watchlist(
 async def add_to_watchlist(
     movie_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
-):
+) -> None:
     await models.Movie_watchlist.add(user_id=user.id, movie_id=movie_id)
 
 
@@ -45,5 +45,5 @@ async def add_to_watchlist(
 async def remove_from_watchlist(
     movie_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),    
-):
+) -> None:
     await models.Movie_watchlist.remove(user_id=user.id, movie_id=movie_id)

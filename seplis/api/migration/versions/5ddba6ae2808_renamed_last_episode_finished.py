@@ -11,12 +11,11 @@ revision = '5ddba6ae2808'
 down_revision = '9dcac2f05e5b'
 
 from alembic import op
-import sqlalchemy as sa
 
 
-def upgrade():
+def upgrade() -> None:
     op.rename_table('episode_last_finished', 'episode_last_watched')
 
 
-def downgrade():
+def downgrade() -> None:
     pass

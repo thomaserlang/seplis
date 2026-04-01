@@ -10,11 +10,11 @@ Create Date: 2013-09-23 20:15:08.823000
 revision = '570da0d12cde'
 down_revision = None
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         'shows',
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
@@ -34,5 +34,5 @@ def upgrade():
         sa.Column('seasons', sa.Text),
     )
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('shows')

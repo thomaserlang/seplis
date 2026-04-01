@@ -1,9 +1,10 @@
-from fastapi import Security, Depends
 import sqlalchemy as sa
-from starlette.concurrency import run_in_threadpool
+from fastapi import Depends, Security
 from passlib.hash import pbkdf2_sha256
-from ...dependencies import authenticated, get_session, AsyncSession
-from ... import models, schemas, exceptions
+from starlette.concurrency import run_in_threadpool
+
+from ... import exceptions, models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -40,7 +41,7 @@ async def change_password(
     data: schemas.User_change_password,
     user: schemas.User_authenticated = Security(authenticated, scopes=['me']),
     session: AsyncSession = Depends(get_session),
-):
+) -> None:
     password_hash = await session.scalar(sa.select(models.User.password).where(models.User.id == user.id))
     if not password_hash:
         raise exceptions.User_unknown()

@@ -1,27 +1,31 @@
-import os
-from datetime import datetime
 import codecs
+import io
 import mimetypes
+import os
+import secrets
 import sys
 import uuid
-import io
+from datetime import datetime
+
 import sqlalchemy as sa
-import secrets
-from .jsonutils import *
+
 from . import sqlalchemy
+from .datetime_now import datetime_now as datetime_now
+from .jsonutils import *
+
 
 def random_key(nbytes=16):
     return secrets.token_hex(nbytes)
-  
+
 
 def parse_link_header(link_header):
-    '''
+    """
     Parses a Link header into a dict according to: http://tools.ietf.org/html/rfc5988#page-6.
-    
+
     Example:
-        
+
         <https://api.example.com/1/users?page=2&per_page=1>; rel="next", <https://api.example.com/1/users?page=3&per_page=1>; rel="last"
-    
+
     Turns into:
 
         {
@@ -31,7 +35,7 @@ def parse_link_header(link_header):
 
     :param link_header: str
     :returns: dict
-    '''
+    """
     links = link_header.split(',')
     parsed_links = {}
     for link in links:
@@ -60,22 +64,24 @@ def flatten(d, parent_key='', sep='_'):
         items.append((new_key, v))
     return dict(items)
 
-def keys_to_remove(keys, d):
-    '''
+
+def keys_to_remove(keys, d) -> None:
+    """
     Removes one or more keys from a dict.
 
     :param keys: list of str
     :param d: dict
-    '''
+    """
     for key in keys:
         if key in d:
             del d[key]
 
+
 # From http://stackoverflow.com/a/18888633
-class MultipartFormdataEncoder(object):
-    def __init__(self):
+class MultipartFormdataEncoder:
+    def __init__(self) -> None:
         self.boundary = uuid.uuid4().hex
-        self.content_type = 'multipart/form-data; boundary={}'.format(self.boundary)
+        self.content_type = f'multipart/form-data; boundary={self.boundary}'
 
     @classmethod
     def u(cls, s):
@@ -92,35 +98,48 @@ class MultipartFormdataEncoder(object):
         Yield body's chunk as bytes
         """
         encoder = codecs.getencoder('utf-8')
-        for (key, value) in fields:
+        for key, value in fields:
             key = self.u(key)
-            yield encoder('--{}\r\n'.format(self.boundary))
-            yield encoder(self.u('Content-Disposition: form-data; name="{}"\r\n').format(key))
+            yield encoder(f'--{self.boundary}\r\n')
+            yield encoder(
+                self.u('Content-Disposition: form-data; name="{}"\r\n').format(key)
+            )
             yield encoder('\r\n')
             if isinstance(value, int) or isinstance(value, float):
                 value = str(value)
             yield encoder(self.u(value))
             yield encoder('\r\n')
-        for (key, filename, fd) in files:
+        for key, filename, fd in files:
             key = self.u(key)
             filename = self.u(filename)
-            yield encoder('--{}\r\n'.format(self.boundary))
-            yield encoder(self.u('Content-Disposition: form-data; name="{}"; filename="{}"\r\n').format(key, filename))
-            yield encoder('Content-Type: {}\r\n'.format(mimetypes.guess_type(filename)[0] or 'application/octet-stream'))
+            yield encoder(f'--{self.boundary}\r\n')
+            yield encoder(
+                self.u(
+                    'Content-Disposition: form-data; name="{}"; filename="{}"\r\n'
+                ).format(key, filename)
+            )
+            yield encoder(
+                'Content-Type: {}\r\n'.format(
+                    mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+                )
+            )
             yield encoder('\r\n')
             yield (fd, len(fd))
             yield encoder('\r\n')
-        yield encoder('--{}--\r\n'.format(self.boundary))
+        yield encoder(f'--{self.boundary}--\r\n')
 
     def encode(self, fields, files):
         body = io.BytesIO()
-        for chunk, chunk_len in self.iter(fields, files):
+        for chunk, _chunk_len in self.iter(fields, files):
             body.write(chunk)
         return self.content_type, body.getvalue()
 
-def get_files(path, ext, skip=[]):
+
+def get_files(path, ext, skip=None):
+    if skip is None:
+        skip = []
     files = []
-    for dirname, dirnames, filenames in os.walk(path):
+    for dirname, _dirnames, filenames in os.walk(path):
         for file_ in filenames:
             info = os.path.splitext(file_)
             if len(info) != 2:
@@ -129,23 +148,22 @@ def get_files(path, ext, skip=[]):
                 continue
             if file_ in skip:
                 continue
-            files.append(
-                os.path.join(dirname, file_)
-            )
+            files.append(os.path.join(dirname, file_))
     return files
 
-class JSONEncodedDict(sa.TypeDecorator):  
-    impl = sa.Text  
-  
+
+class JSONEncodedDict(sa.TypeDecorator):
+    impl = sa.Text
+
     def process_bind_param(self, value, dialect):
-        if value is None:  
+        if value is None:
             return None
         if isinstance(value, str):
             return value
         return json_dumps(value)
-  
-    def process_result_value(self, value, dialect):  
-        if not value:  
+
+    def process_result_value(self, value, dialect):
+        if not value:
             return None
         return json_loads(value)
 
@@ -157,6 +175,7 @@ class JSONEncodedDict(sa.TypeDecorator):
     def empty_dict(cls):
         return {}
 
+
 class YesNoBoolean(sa.TypeDecorator):
     true_str = 'Y'
     false_str = 'N'
@@ -164,18 +183,19 @@ class YesNoBoolean(sa.TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         return self.true_str if value else self.false_str
-  
-    def process_result_value(self, value, dialect):  
+
+    def process_result_value(self, value, dialect) -> bool:
         return True if value == self.true_str else False
 
+
 class dotdict(dict):
-    
     def __getattr__(self, attr):
         return self.get(attr)
-    
-    __setattr__= dict.__setitem__
-    
-    __delattr__= dict.__delitem__
+
+    __setattr__ = dict.__setitem__
+
+    __delattr__ = dict.__delitem__
+
 
 def isoformat(dt):
     r = dt.isoformat()
@@ -183,15 +203,16 @@ def isoformat(dt):
         r += 'Z'
     return r
 
+
 def row_to_dict(row):
     if not row:
-        return
+        return None
     if isinstance(row, sa.engine.Row):
         return dict(row._mapping)
 
     ir = sa.inspect(row)
     if ir.expired:
-        session = getattr(row, 'session')
+        session = row.session
         if session:
             session.refresh(row)
     unloaded = ir.unloaded
@@ -208,44 +229,50 @@ def row_to_dict(row):
             d[attr.key] = attr.value
     return d
 
+
 def _None_check_str(v):
-    '''Converts 'None' to None.
+    """Converts 'None' to None.
 
     :param v: str
     :returns: str or None
-    '''
+    """
     if v == 'None':
-        return
+        return None
     return v
+
+
 def _None_check_int(v):
     if v == 'None':
-        return
+        return None
     return int(v)
 
+
 def redis_sa_model_dict(rd, cls):
-    '''Takes a dict returned from redis and
-    converts values to the same type as specified 
+    """Takes a dict returned from redis and
+    converts values to the same type as specified
     in the model.
 
     :param rd: dict from redis
     :param cls: SQLAlchemy model class
-    '''
+    """
     types = {
         sa.Integer: _None_check_int,
         sa.DateTime: _None_check_str,
         sa.String: _None_check_str,
     }
     for key in rd:
-        if not key in cls.__table__.columns:
+        if key not in cls.__table__.columns:
             continue
-        t = types.get(
-            type(cls.__table__.columns[key].type)
-        )
+        t = types.get(type(cls.__table__.columns[key].type))
         if t:
             rd[key] = t(rd[key])
     return rd
 
 
-def calculate_weighted_rating(rating: float, votes: int, min_votes: int=3000, mean_vote_global: float=6.9):
-    '''True Bayesian Estimate'''
-    return (votes / (votes + min_votes)) * rating + (min_votes / (votes + min_votes)) * mean_vote_global
+def calculate_weighted_rating(
+    rating: float, votes: int, min_votes: int = 3000, mean_vote_global: float = 6.9
+):
+    """True Bayesian Estimate"""
+    return (votes / (votes + min_votes)) * rating + (
+        min_votes / (votes + min_votes)
+    ) * mean_vote_global

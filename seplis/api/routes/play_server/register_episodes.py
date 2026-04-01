@@ -1,6 +1,7 @@
 from fastapi import Security
-from ...dependencies import play_server_secret
+
 from ... import models, schemas
+from ...dependencies import play_server_secret
 from .router import router
 
 
@@ -9,7 +10,7 @@ async def register_play_server_episode_put(
     play_server_id: str,
     data: list[schemas.Play_server_episode_create],
     secret: str = Security(play_server_secret),
-):
+) -> None:
     await models.Play_server_episode.save(
         play_server_id=play_server_id,
         play_server_secret=secret,
@@ -23,7 +24,7 @@ async def register_play_server_episode_patch(
     play_server_id: str,
     data: list[schemas.Play_server_episode_create],
     secret: str = Security(play_server_secret),
-):
+) -> None:
     await models.Play_server_episode.save(
         play_server_id=play_server_id,
         play_server_secret=secret,
@@ -38,7 +39,7 @@ async def delete_episode_from_play_server(
     series_id: int,
     episode_number: int,
     secret: str = Security(play_server_secret),
-):
+) -> None:
     await models.Play_server_episode.delete(
         play_server_id=play_server_id,
         series_id=series_id,

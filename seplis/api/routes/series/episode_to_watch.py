@@ -1,7 +1,8 @@
 import sqlalchemy as sa
 from fastapi import Depends, Response, Security
-from ...dependencies import authenticated, get_session, AsyncSession
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from ...expand.episodes import expand_user_can_watch
 from .router import router
 

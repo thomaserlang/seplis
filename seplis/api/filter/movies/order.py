@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+
 from ... import models
 from .query_filter_schema import Movie_query_filter
 
@@ -10,11 +11,11 @@ def order_query(query: any, filter_query: Movie_query_filter):
         order.append(sa.desc(sa.func.count(models.Movie_genre.genre_id)))
     for sort in filter_query.sort:
         direction = sa.asc if sort.endswith('_asc') else sa.desc
-        if sort.startswith('user_watchlist_added_at') and filter_query.user_watchlist != False:
+        if sort.startswith('user_watchlist_added_at') and filter_query.user_watchlist:
             order.append(direction(models.Movie_watchlist.created_at))
-        if sort.startswith('user_favorite_added_at') and filter_query.user_favorites != False:
+        if sort.startswith('user_favorite_added_at') and filter_query.user_favorites:
             order.append(direction(models.Movie_favorite.created_at))
-        elif sort.startswith('user_last_watched_at') and filter_query.user_has_watched != False:
+        elif sort.startswith('user_last_watched_at') and filter_query.user_has_watched:
             order.append(direction(models.Movie_watched.watched_at))
         elif sort.startswith('rating'):
             order.append(direction(models.Movie.rating_weighted))

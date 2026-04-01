@@ -1,8 +1,9 @@
 import sqlalchemy as sa
 from fastapi import Depends, Security
-from ...dependencies import authenticated, get_session, AsyncSession
-from ... import models, schemas
+
 from .... import utils
+from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -14,7 +15,7 @@ async def movie_cast_add(
     movie_id: int,
     data: schemas.Movie_cast_person_create,
     user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
-):
+) -> None:
     data.movie_id = movie_id
     await models.Movie_cast.save(data=data)
 
@@ -24,7 +25,7 @@ async def movie_cast_delete(
     movie_id: int,
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
-):
+) -> None:
     await models.Movie_cast.delete(
         movie_id=movie_id,
         person_id=person_id,

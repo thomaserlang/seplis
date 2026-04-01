@@ -1,8 +1,9 @@
 import sqlalchemy as sa
-from fastapi import Depends, Security, UploadFile, Form
+from fastapi import Depends, Form, Security, UploadFile
+
 from .... import utils
-from ...dependencies import authenticated, get_session, AsyncSession
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -43,7 +44,7 @@ async def delete_image(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['series:manage_images']),
-):
+) -> None:
     await session.execute(sa.update(models.Series).values(poster_image_id=None).where(
         models.Series.id == series_id,
         models.Series.poster_image_id == image_id,

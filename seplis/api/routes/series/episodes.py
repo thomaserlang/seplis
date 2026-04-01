@@ -1,9 +1,16 @@
-from fastapi import Depends
-import sqlalchemy as sa
 from datetime import date
-from ...dependencies import get_current_user_no_raise, get_expand, get_session, AsyncSession
-from ... import models, schemas
+
+import sqlalchemy as sa
+from fastapi import Depends
+
 from .... import utils
+from ... import models, schemas
+from ...dependencies import (
+    AsyncSession,
+    get_current_user_no_raise,
+    get_expand,
+    get_session,
+)
 from ...expand.episodes import expand_episodes
 from .router import router
 

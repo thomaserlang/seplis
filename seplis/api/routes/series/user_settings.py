@@ -1,7 +1,8 @@
-from fastapi import Depends, Security
 import sqlalchemy as sa
-from ...dependencies import authenticated, get_session, AsyncSession
+from fastapi import Depends, Security
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -20,8 +21,7 @@ async def get_series_user_settings(
     ))
     if not settings:
         return schemas.User_series_settings()
-    else:
-        return settings
+    return settings
 
 
 @router.put('/{series_id}/user-settings', response_model=schemas.User_series_settings,

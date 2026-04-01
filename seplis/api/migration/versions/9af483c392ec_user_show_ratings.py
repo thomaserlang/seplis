@@ -10,11 +10,11 @@ Create Date: 2020-02-15 13:47:01.728018
 revision = '9af483c392ec'
 down_revision = '52798db29b1b'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table('user_show_ratings',
         sa.Column('user_id', sa.Integer, sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False),
         sa.Column('show_id', sa.Integer, sa.ForeignKey('shows.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False), 
@@ -24,4 +24,4 @@ def upgrade():
 
 
 def downgrade():
-    raise NotImplemented()
+    raise NotImplementedError()

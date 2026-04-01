@@ -10,11 +10,11 @@ Create Date: 2019-04-11 21:06:13.727004
 revision = '1852cafc4891'
 down_revision = '238440685e7c'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('shows',
         sa.Column('total_episodes', sa.Integer, server_default='0')
     )
@@ -29,5 +29,5 @@ def upgrade():
             e.show_id=s.id;
     '''))
 
-def downgrade():
+def downgrade() -> None:
     pass

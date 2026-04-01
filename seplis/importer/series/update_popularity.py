@@ -1,13 +1,15 @@
-import sqlalchemy as sa
 from datetime import datetime
-from ..themoviedb_export import get_ids
-from . import importer, TheMovieDB
-from ...api.database import database
-from ...api import models, schemas
+
+import sqlalchemy as sa
+
 from ... import logger
+from ...api import models, schemas
+from ...api.database import database
+from ..themoviedb_export import get_ids
+from . import TheMovieDB, importer
 
 
-async def update_popularity(create_series = True, create_above_popularity: float | None = 1.0):
+async def update_popularity(create_series = True, create_above_popularity: float | None = 1.0) -> None:
     logger.info('Updating series popularity')
     series: dict[str, schemas.Series] = {}
     dt = datetime.now().date()
@@ -30,7 +32,7 @@ async def update_popularity(create_series = True, create_above_popularity: float
                     'popularity': data.popularity or 0,
                     'date': dt,
                 })
-            elif create_series and create_above_popularity != None and data.popularity >= create_above_popularity:                
+            elif create_series and create_above_popularity is not None and data.popularity >= create_above_popularity:                
                 ids_to_create.append(id_)
             if len(insert_data) == 10000:
                 await session.execute(sa.insert(models.Series_popularity_history).prefix_with('IGNORE').values(insert_data))

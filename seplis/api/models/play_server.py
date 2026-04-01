@@ -1,13 +1,17 @@
+from datetime import UTC, datetime, timedelta
+
 import sqlalchemy as sa
 from uuid6 import uuid7
-from seplis.utils.sqlalchemy import UtcDateTime
-from .base import Base
+
 from seplis import utils
-from datetime import datetime, timezone, timedelta
-from ..database import database, auto_session, AsyncSession
-from .. import schemas, exceptions
+from seplis.utils.sqlalchemy import UtcDateTime
+
+from .. import exceptions, schemas
+from ..database import AsyncSession, auto_session, database
+from .base import Base
 from .movie import Movie
 from .series import Series
+
 
 class Play_server(Base):
     __tablename__ = 'play_servers'
@@ -29,18 +33,18 @@ class Play_server(Base):
                     play_server_id = str(uuid7())
                     await session.execute(sa.insert(Play_server).values(
                         id=play_server_id,
-                        created_at=datetime.now(tz=timezone.utc),
+                        created_at=datetime.now(tz=UTC),
                         user_id=user_id,
                         **_data
                     ))
                     await session.execute(sa.insert(Play_server_access).values(
                         play_server_id=play_server_id,
                         user_id=user_id,
-                        created_at=datetime.now(tz=timezone.utc),
+                        created_at=datetime.now(tz=UTC),
                     ))
                 else:
                     await session.execute(sa.update(Play_server).where(Play_server.id == play_server_id).values(
-                        updated_at=datetime.now(tz=timezone.utc),
+                        updated_at=datetime.now(tz=UTC),
                         **_data
                     ))
                 play_server = await session.scalar(sa.select(Play_server).where(Play_server.id == play_server_id))
@@ -49,7 +53,7 @@ class Play_server(Base):
 
 
     @staticmethod
-    async def delete(id_: str, user_id: int | str):        
+    async def delete(id_: str, user_id: int | str) -> None:        
         async with database.session() as session:
             async with session.begin():
                 p = await session.scalar(sa.select(Play_server.id).where(
@@ -77,7 +81,7 @@ class Play_server_access(Base):
 
 
     @staticmethod
-    async def remove_user(play_server_id: str, owner_user_id: int | str, user_id: int | str):
+    async def remove_user(play_server_id: str, owner_user_id: int | str, user_id: int | str) -> bool:
         async with database.session() as session:
             p = session.scalar(sa.select(Play_server.id).where(
                 Play_server.id == play_server_id,
@@ -126,8 +130,8 @@ class Play_server_invite(Base):
             ins = sa.dialects.mysql.insert(Play_server_invite).values(
                 play_server_id=play_server_id,
                 invite_id=invite_id,
-                created_at=datetime.now(tz=timezone.utc),
-                expires_at=datetime.now(tz=timezone.utc)+timedelta(hours=24),
+                created_at=datetime.now(tz=UTC),
+                expires_at=datetime.now(tz=UTC)+timedelta(hours=24),
                 **data.model_dump(exclude_unset=True)
             )
             ins = ins.on_duplicate_key_update(
@@ -141,19 +145,19 @@ class Play_server_invite(Base):
 
 
     @staticmethod
-    async def accept_invite(user_id: str, invite_id: str):
+    async def accept_invite(user_id: str, invite_id: str) -> bool:
         async with database.session() as session:
             play_server_id = await session.scalar(sa.select(Play_server_invite.play_server_id).where(
                 Play_server_invite.user_id == user_id,
                 Play_server_invite.invite_id == invite_id,
-                Play_server_invite.expires_at >= datetime.now(tz=timezone.utc),
+                Play_server_invite.expires_at >= datetime.now(tz=UTC),
             ))
             if not play_server_id:
                 raise exceptions.Play_server_invite_invalid()
             await session.execute(sa.insert(Play_server_access).values(
                 play_server_id=play_server_id,
                 user_id=user_id,
-                created_at=datetime.now(tz=timezone.utc),
+                created_at=datetime.now(tz=UTC),
             ))
             await session.execute(sa.delete(Play_server_invite).where(
                 Play_server_invite.user_id == user_id,
@@ -164,7 +168,7 @@ class Play_server_invite(Base):
 
 
     @staticmethod
-    async def delete_invite(play_server_id: str, owner_user_id: str, user_id: str):
+    async def delete_invite(play_server_id: str, owner_user_id: str, user_id: str) -> bool:
         async with database.session() as session:
             p = await session.scalar(sa.select(Play_server.id).where(
                 Play_server.id == play_server_id,
@@ -193,7 +197,7 @@ class Play_server_movie(Base):
 
     @staticmethod
     @auto_session
-    async def save(play_server_id: str, play_server_secret: str, data: list[schemas.Play_server_movie_create], patch=True, session: AsyncSession = None):
+    async def save(play_server_id: str, play_server_secret: str, data: list[schemas.Play_server_movie_create], patch=True, session: AsyncSession = None) -> None:
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
             Play_server.secret == play_server_secret,
@@ -206,7 +210,7 @@ class Play_server_movie(Base):
                 Play_server_movie.play_server_id == play_server_id,
             ))
         if data:
-            dt = datetime.now(tz=timezone.utc)
+            dt = datetime.now(tz=UTC)
             sql = sa.dialects.mysql.insert(Play_server_movie).values([{
                 'play_server_id': play_server_id,
                 'movie_id': r.movie_id,
@@ -229,7 +233,7 @@ class Play_server_movie(Base):
     
     @staticmethod
     @auto_session
-    async def delete(play_server_id: str, play_server_secret: str, movie_id: int, patch=True, session: AsyncSession = None):
+    async def delete(play_server_id: str, play_server_secret: str, movie_id: int, patch=True, session: AsyncSession = None) -> None:
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
             Play_server.secret == play_server_secret,
@@ -254,7 +258,7 @@ class Play_server_episode(Base):
 
     @staticmethod
     @auto_session
-    async def save(play_server_id: str, play_server_secret: str, data: list[schemas.Play_server_episode_create], patch=True, session: AsyncSession = None):
+    async def save(play_server_id: str, play_server_secret: str, data: list[schemas.Play_server_episode_create], patch=True, session: AsyncSession = None) -> None:
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
             Play_server.secret == play_server_secret,
@@ -268,7 +272,7 @@ class Play_server_episode(Base):
             ))
 
         if data:
-            dt = datetime.now(tz=timezone.utc)
+            dt = datetime.now(tz=UTC)
             sql = sa.dialects.mysql.insert(Play_server_episode).values([{
                 'play_server_id': play_server_id,
                 'series_id': r.series_id,
@@ -296,7 +300,7 @@ class Play_server_episode(Base):
 
     @staticmethod
     @auto_session
-    async def delete(play_server_id: str, play_server_secret: str, series_id: int, episode_number: int, session: AsyncSession = None):
+    async def delete(play_server_id: str, play_server_secret: str, series_id: int, episode_number: int, session: AsyncSession = None) -> None:
         p = await session.scalar(sa.select(Play_server.id).where(
             Play_server.id == play_server_id,
             Play_server.secret == play_server_secret,

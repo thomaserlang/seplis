@@ -1,3 +1,6 @@
+# flake8: noqa
+# type: ignore
+
 from . import access
 from . import invite
 from . import register_episodes

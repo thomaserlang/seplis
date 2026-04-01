@@ -10,11 +10,11 @@ Create Date: 2022-12-17 14:57:42.645729
 revision = 'f689fc38a115'
 down_revision = '70ca870cca7a'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('movies', sa.Column('original_title', sa.String(200)))
     op.execute('UPDATE movies SET original_title=title')
     op.add_column('movies', sa.Column('tagline', sa.String(500)))
@@ -30,5 +30,5 @@ def upgrade():
     )
     
 
-def downgrade():
+def downgrade() -> None:
     pass

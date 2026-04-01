@@ -10,11 +10,11 @@ Create Date: 2016-02-05 20:01:53.126393
 revision = '344275444b8'
 down_revision = '6b61517732'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table('user_show_subtitle_lang',
         sa.Column(
             'user_id', 
@@ -34,4 +34,4 @@ def upgrade():
 
 
 def downgrade():
-    raise NotImplemented()
+    raise NotImplementedError()

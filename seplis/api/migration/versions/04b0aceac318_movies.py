@@ -10,11 +10,11 @@ Create Date: 2022-05-23 18:40:53.642589
 revision = '04b0aceac318'
 down_revision = '302b36a96c40'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table('movies',
         sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('title', sa.String(200)),
@@ -132,7 +132,7 @@ def upgrade():
         sa.Column('created_at', sa.DateTime),
     )
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('movies')
     op.drop_table('movie_externals')
     op.drop_table('movies_watched')

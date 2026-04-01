@@ -1,10 +1,13 @@
-from fastapi import Depends, Security
+from datetime import UTC, datetime
+
 import sqlalchemy as sa
-from datetime import datetime, timezone
-from ...dependencies import authenticated, get_session, AsyncSession
-from ... import models, schemas
+from fastapi import Depends, Security
+
 from .... import utils
+from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
+
 
 @router.get('/countdown', response_model=schemas.Page_cursor_result[schemas.Series_and_episode],
             description='''
@@ -21,7 +24,7 @@ async def series_countdown(
     ).where(
         models.Series_watchlist.user_id == user.id,
         models.Episode.series_id == models.Series_watchlist.series_id,
-        models.Episode.air_datetime > datetime.now(tz=timezone.utc),
+        models.Episode.air_datetime > datetime.now(tz=UTC),
     ).group_by(models.Episode.series_id).subquery()
     query = sa.select(models.Series, models.Episode).where(
         models.Series.id == episodes_query.c.series_id,

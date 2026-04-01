@@ -1,3 +1,6 @@
+# flake8: noqa
+# type: ignore
+
 from . import cast
 from . import user_favorite
 from . import recently_aired

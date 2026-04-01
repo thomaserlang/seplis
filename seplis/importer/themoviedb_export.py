@@ -1,12 +1,15 @@
-import httpx
-import tempfile
-import os
 import gzip
-from typing import Literal, AsyncIterator
-from datetime import datetime, timezone, timedelta
-from seplis import logger, utils
+import os
+import tempfile
+from collections.abc import AsyncIterator
+from datetime import UTC, datetime, timedelta
+from typing import Literal
+
+import httpx
 from aiofile import async_open
 from pydantic import BaseModel, ConfigDict, Field
+
+from seplis import utils
 
 
 class Id_data(BaseModel):
@@ -39,8 +42,8 @@ async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterato
 
 async def _get_url(export):
     dts = [
-        datetime.now(tz=timezone.utc).strftime('%m_%d_%Y'),
-        (datetime.now(tz=timezone.utc)-timedelta(days=1)).strftime('%m_%d_%Y'),
+        datetime.now(tz=UTC).strftime('%m_%d_%Y'),
+        (datetime.now(tz=UTC)-timedelta(days=1)).strftime('%m_%d_%Y'),
     ]
     for dt in dts:
         url = f'http://files.tmdb.org/p/exports/{export}_{dt}.json.gz'
@@ -48,3 +51,4 @@ async def _get_url(export):
             r = await client.head(url)
             if r.status_code == 200:
                 return url
+    return None

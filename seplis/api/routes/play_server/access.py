@@ -1,8 +1,9 @@
-from fastapi import Depends, Security
 import sqlalchemy as sa
-from ...dependencies import authenticated, get_session, AsyncSession
-from ... import models, schemas
+from fastapi import Depends, Security
+
 from .... import utils
+from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -39,7 +40,7 @@ async def remove_user_access(
     play_server_id: str,
     user_id: str,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
-):
+) -> None:
     await models.Play_server_access.remove_user(
         play_server_id=play_server_id,
         owner_user_id=user.id,

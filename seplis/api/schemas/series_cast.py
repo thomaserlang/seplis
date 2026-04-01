@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, constr
+
 from .person import Person
 
 

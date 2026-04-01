@@ -10,12 +10,12 @@ Create Date: 2018-02-24 19:17:36.539818
 revision = '22d4ef0f875'
 down_revision = '54371f572a3'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy.sql import text
 
 
-def upgrade():
+def upgrade() -> None:
     op.alter_column(
         'episodes_watched', 
         'updated_at',
@@ -33,7 +33,7 @@ def upgrade():
 
     con = op.get_bind()
     if con.engine.name == 'mysql':
-        result = con.execute(text('''
+        con.execute(text('''
             INSERT INTO episode_watching (show_id, episode_number, user_id)
             SELECT show_id, episode_number, user_id FROM (
                 SELECT 
@@ -46,4 +46,4 @@ def upgrade():
         '''))
 
 def downgrade():    
-    raise NotImplemented()
+    raise NotImplementedError()

@@ -83,7 +83,7 @@ class Movie(Base):
         return schemas.Movie.model_validate(movie)
 
     @staticmethod
-    async def delete(movie_id: int):
+    async def delete(movie_id: int) -> None:
         from . import Image
         async with database.session() as session:
             async with session.begin():
@@ -173,7 +173,7 @@ class Movie(Base):
         return [schemas.Genre.model_validate(r) for r in rr]
 
     @staticmethod
-    async def _save_for_search(movie: Movie):
+    async def _save_for_search(movie: Movie) -> None:
         doc = movie.title_document()
         if not doc:
             return
@@ -225,6 +225,7 @@ class Movie(Base):
         ))
         if movie:
             return schemas.Movie.model_validate(movie)
+        return None
 
 
 class Movie_external(Base):
@@ -341,11 +342,12 @@ class Movie_watched(Base):
         ))
         if w:
             return schemas.Movie_watched.model_validate(w)
+        return None
 
 
     @staticmethod
     @auto_session
-    async def set_position(user_id: int | str, movie_id: int, position: int, session: AsyncSession = None):
+    async def set_position(user_id: int | str, movie_id: int, position: int, session: AsyncSession = None) -> None:
         if position == 0:
             await Movie_watched.reset_position(user_id=user_id, movie_id=movie_id)
             return
@@ -364,7 +366,7 @@ class Movie_watched(Base):
 
     @staticmethod
     @auto_session
-    async def reset_position(user_id: int | str, movie_id: int, session: AsyncSession = None):
+    async def reset_position(user_id: int | str, movie_id: int, session: AsyncSession = None) -> None:
         w = await session.scalar(sa.select(Movie_watched).where(
             Movie_watched.movie_id == movie_id,
             Movie_watched.user_id == user_id,
@@ -417,7 +419,7 @@ class Movie_genre(Base):
         'genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
 
 
-async def rebuild_movies():
+async def rebuild_movies() -> None:
     async def c():
         async with database.session() as session:
             result = await session.stream(sa.select(Movie))

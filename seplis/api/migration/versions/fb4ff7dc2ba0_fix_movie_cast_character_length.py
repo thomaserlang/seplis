@@ -10,11 +10,11 @@ Create Date: 2023-05-29 21:51:55.667377
 revision = 'fb4ff7dc2ba0'
 down_revision = '658e6daee3a1'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.alter_column(
         'movie_cast',
         'character',
@@ -23,5 +23,5 @@ def upgrade():
     )
 
 
-def downgrade():
+def downgrade() -> None:
     pass

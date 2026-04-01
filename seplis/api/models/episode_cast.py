@@ -1,7 +1,8 @@
 import sqlalchemy as sa
-from .base import Base
-from ..database import auto_session, AsyncSession
+
 from .. import schemas
+from ..database import AsyncSession, auto_session
+from .base import Base
 
 
 class Episode_cast(Base):
@@ -15,7 +16,7 @@ class Episode_cast(Base):
 
     @staticmethod
     @auto_session
-    async def save(data: schemas.Episode_cast_person_create, session: AsyncSession):
+    async def save(data: schemas.Episode_cast_person_create, session: AsyncSession) -> None:
         data_ = data.model_dump(exclude_unset=True)
         await session.execute(sa.dialects.mysql.insert(Episode_cast).values(
             data_
@@ -24,7 +25,7 @@ class Episode_cast(Base):
 
     @staticmethod
     @auto_session
-    async def delete(series_id: int, episode_number: int, person_id: int, session: AsyncSession):
+    async def delete(series_id: int, episode_number: int, person_id: int, session: AsyncSession) -> None:
         await session.execute(sa.delete(Episode_cast).where(
             Episode_cast.series_id == series_id,
             Episode_cast.episode_number == episode_number,

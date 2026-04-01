@@ -11,7 +11,7 @@ from seplis.importer.people.importer import create_person
 from .base import importers
 
 
-async def update_series_by_id(series_id):
+async def update_series_by_id(series_id) -> None:
     async with database.session() as session:
         result = await session.scalar(
             sa.select(models.Series).where(models.Series.id == series_id)
@@ -21,7 +21,7 @@ async def update_series_by_id(series_id):
         await update_series(schemas.Series.model_validate(result))
 
 
-async def update_series_bulk(from_series_id=0, do_async=False):
+async def update_series_bulk(from_series_id=0, do_async=False) -> None:
 
     logger.info('Updating series')
 
@@ -54,7 +54,7 @@ async def _get_series(from_series_id: int):
         return [schemas.Series.model_validate(series) for series in results]
 
 
-async def update_series_incremental():
+async def update_series_incremental() -> None:
     logger.info('Incremental series update started')
     if not importers:
         logger.warning('No series importers registered')
@@ -68,7 +68,7 @@ async def update_series_incremental():
             logger.exception(e)
 
 
-async def _importer_incremental(importer):
+async def _importer_incremental(importer) -> None:
     timestamp = time.time()
     external_ids = await importer.incremental_updates()
     if not external_ids:
@@ -100,7 +100,7 @@ async def _importer_incremental(importer):
     importer.save_timestamp(timestamp)
 
 
-async def update_series(series: schemas.Series):
+async def update_series(series: schemas.Series) -> None:
     if not series.externals:
         logger.warning(f'[Series: {series.id}]: No externals')
         return
@@ -115,7 +115,7 @@ async def update_series(series: schemas.Series):
     await update_series_cast(series)
 
 
-async def check_external_ids(series: schemas.Series):
+async def check_external_ids(series: schemas.Series) -> None:
     """If themoviedb id is missing, try and find it from imdb id"""
     if not series.externals.get('themoviedb') and series.externals.get('imdb'):
         logger.debug(f'[Series: {series.id}] Missing themoviedb, trying to find it')
@@ -135,7 +135,7 @@ async def check_external_ids(series: schemas.Series):
             )
 
 
-async def update_series_info(series: schemas.Series):
+async def update_series_info(series: schemas.Series) -> None:
     logger.debug(f'[Series: {series.id}] Updating info')
     if not series.importers.info:
         logger.debug(f'[Series: {series.id}] No info importer')
@@ -151,7 +151,7 @@ async def update_series_info(series: schemas.Series):
         )
 
 
-async def update_series_episodes(series: schemas.Series):
+async def update_series_episodes(series: schemas.Series) -> None:
     logger.debug(f'[Series: {series.id}] Updating episodes')
     if not series.importers.episodes:
         logger.debug(f'[Series: {series.id}] No episodes')
@@ -161,12 +161,12 @@ async def update_series_episodes(series: schemas.Series):
         method='episodes',
         external_id=series.externals[series.importers.episodes],
     )
-    if episodes != None:
+    if episodes is not None:
         update = schemas.Series_update(episodes=episodes)
         await models.Series.save(data=update, series_id=series.id, patch=False)
 
 
-async def update_series_images(series: schemas.Series):
+async def update_series_images(series: schemas.Series) -> None:
     logger.debug(f'[Series: {series.id}] Updating images')
     imp_names = _importers_with_support(series.externals, 'images')
     async with database.session() as session:
@@ -183,7 +183,7 @@ async def update_series_images(series: schemas.Series):
             for image in result
         }
 
-    async def save_image(image):
+    async def save_image(image) -> None:
         try:
             if f'{image.external_name}-{image.external_id}' not in current_images:
                 current_images[
@@ -232,7 +232,7 @@ async def update_series_images(series: schemas.Series):
             )
 
 
-async def update_series_cast(series: schemas.Series):
+async def update_series_cast(series: schemas.Series) -> None:
     logger.debug(f'[Series: {series.id}] Updating cast')
     external_name = 'themoviedb'  # TODO: Should be specified per series
     if not series.externals.get(external_name):
@@ -266,7 +266,7 @@ async def update_series_cast(series: schemas.Series):
             if cast.person.externals.get(external_name)
         }
 
-    async def save_cast(member: schemas.Series_cast_person_import):
+    async def save_cast(member: schemas.Series_cast_person_import) -> None:
         try:
             key = f'{external_name}-{member.external_id}'
             if key not in cast:

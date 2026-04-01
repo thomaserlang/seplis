@@ -10,13 +10,16 @@ Create Date: 2013-11-03 00:29:32.340451
 revision = '5acfab2c2cd'
 down_revision = '10859a97330e'
 
-from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.sql import text
 from datetime import datetime
+
+import sqlalchemy as sa
+from alembic import op
+from sqlalchemy.sql import text
+
 from seplis import utils
 
-def upgrade():
+
+def upgrade() -> None:
     op.create_table(
         'users',
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
@@ -53,7 +56,7 @@ def upgrade():
     )
 
     con = op.get_bind()
-    result = con.execute(text('''
+    con.execute(text('''
         INSERT INTO users (name, email, password, created, level) 
         VALUES (:name, :email, :password, :created, :level) 
     '''), dict(
@@ -99,7 +102,7 @@ def upgrade():
         sa.Column('user_level', sa.Integer),
     )
 
-def downgrade():
+def downgrade() -> None:
     op.drop_table('tokens')
     op.drop_table('apps')
     op.drop_table('episodes_watched')    

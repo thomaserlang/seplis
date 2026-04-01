@@ -10,11 +10,11 @@ Create Date: 2023-09-02 09:28:55.318557
 revision = '46047fb08936'
 down_revision = '62b9b42489ce'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('movies', sa.Column('rating_weighted', sa.Float(), nullable=False, server_default='0'))
     op.add_column('series', sa.Column('rating_weighted', sa.Float(), nullable=False, server_default='0'))
 
@@ -25,5 +25,5 @@ def upgrade():
     op.create_index(op.f('ix_series_rating_weighted'), 'series', ['rating_weighted'], unique=False)
 
 
-def downgrade():
+def downgrade() -> None:
     pass

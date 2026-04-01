@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, constr
+
 from .person import Person
+
 
 class Episode_cast_person_create(BaseModel):
     series_id: int | None = None

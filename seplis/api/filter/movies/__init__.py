@@ -1,16 +1,17 @@
-from ...expand.movie import expand_movies
-from ... import schemas, models
 from .... import utils
+from ... import models, schemas
+from ...expand.movie import expand_movies
+from .genres import filter_genres
+from .language import filter_language
+from .order import order_query
 from .query_filter_schema import Movie_query_filter
-from .user_watchlist import filter_user_watchlist
-from .user_has_watched import filter_user_has_watched
+from .rating import filter_rating
+from .release_date import filter_release_date
 from .user_can_watch import filter_can_watch
 from .user_favorites import filter_user_favorites
-from .release_date import filter_release_date
-from .order import order_query
-from .genres import filter_genres
-from .rating import filter_rating
-from .language import filter_language
+from .user_has_watched import filter_user_has_watched
+from .user_watchlist import filter_user_watchlist
+
 
 async def filter_movies(session, query: any, filter_query: Movie_query_filter, page_cursor: schemas.Page_cursor_query):
     p = await utils.sqlalchemy.paginate_cursor(

@@ -154,6 +154,7 @@ class TheMovieDB(Series_importer_base):
                 type='poster',
                 source_url=f'https://image.tmdb.org/t/p/original{data["poster_path"]}',
             )
+        return None
 
     async def incremental_updates(self) -> list[str]:
         page = 1
@@ -183,6 +184,7 @@ class TheMovieDB(Series_importer_base):
             if not data['tv_results']:
                 return None
             return data['tv_results'][0]['id']
+        return None
 
 
 register_importer(TheMovieDB())

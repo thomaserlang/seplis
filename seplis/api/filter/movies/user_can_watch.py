@@ -1,5 +1,5 @@
-from .query_filter_schema import Movie_query_filter
 from ... import exceptions, models
+from .query_filter_schema import Movie_query_filter
 
 
 def filter_can_watch(query, filter_query: Movie_query_filter):

@@ -1,9 +1,19 @@
+from datetime import date, datetime
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, constr, conint, confloat, field_validator, validator, Field
-from datetime import datetime, date
-from .image import Image
+
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    confloat,
+    conint,
+    constr,
+    field_validator,
+)
+
+from .episode import Episode, Episode_create, Episode_update, User_can_watch
 from .genre import Genre
-from .episode import Episode_create, Episode_update, Episode, User_can_watch
+from .image import Image
 
 
 class Series_importers(BaseModel):
@@ -115,7 +125,7 @@ class Series(BaseModel):
     
     model_config = ConfigDict(from_attributes=True)
 
-    def to_request(self):
+    def to_request(self) -> None:
         data = Series_update.model_validate(self)
         data.poster_image_id = self.poster_image.id if self.poster_image else None
         data.genre_names = [g.name for g in self.genres]

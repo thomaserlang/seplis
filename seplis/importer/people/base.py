@@ -12,7 +12,7 @@ importers = {}
 
 client = httpx.AsyncClient()
 
-def register_importer(obj):
+def register_importer(obj) -> None:
     if not isinstance(obj, Importer_base):
         raise Exception('The object must be an instance of `Show_importer_base()`')
     if not obj.external_name:

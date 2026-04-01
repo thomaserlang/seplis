@@ -1,8 +1,10 @@
-from fastapi import Depends, Security
+from datetime import UTC, datetime
+
 import sqlalchemy as sa
-from datetime import datetime, timezone
-from ...dependencies import authenticated, get_session, AsyncSession
+from fastapi import Depends, Security
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -31,12 +33,12 @@ async def update_rating(
     data: schemas.Series_user_rating_update,
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_ratings']),
-):
+) -> None:
     sql = sa.dialects.mysql.insert(models.Series_user_rating).values(
         user_id=user.id,
         series_id=series_id,
         rating=data.rating,
-        updated_at=datetime.now(tz=timezone.utc),
+        updated_at=datetime.now(tz=UTC),
     )
     sql = sql.on_duplicate_key_update(
         rating=sql.inserted.rating,
@@ -53,7 +55,7 @@ async def delete_rating(
     series_id: int,
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_ratings']),
-):
+) -> None:
     await session.execute(sa.delete(models.Series_user_rating).where(        
         models.Series_user_rating.user_id == user.id,
         models.Series_user_rating.series_id == series_id,

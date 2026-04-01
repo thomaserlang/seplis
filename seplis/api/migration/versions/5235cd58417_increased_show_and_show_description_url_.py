@@ -10,11 +10,11 @@ Create Date: 2017-02-25 18:56:33.397641
 revision = '5235cd58417'
 down_revision = '4a675e7e995'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.alter_column(
         'shows', 
         'description_url',
@@ -27,4 +27,4 @@ def upgrade():
     )
 
 def downgrade():
-    raise NotImplemented()
+    raise NotImplementedError()

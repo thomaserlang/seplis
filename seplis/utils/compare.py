@@ -1,12 +1,12 @@
 from pydantic import BaseModel
 
-from seplis import logger
 
-
-def compare(new: BaseModel, old: BaseModel, skip_keys: list[str] = []):
+def compare(new: BaseModel, old: BaseModel, skip_keys: list[str] = None):
     '''
     Returns what is different in a compared to b.
     '''
+    if skip_keys is None:
+        skip_keys = []
     new_dict = new.model_dump(exclude_unset=True)
     old_dict = old.model_dump()
 

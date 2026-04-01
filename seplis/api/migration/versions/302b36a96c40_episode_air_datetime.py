@@ -10,15 +10,15 @@ Create Date: 2020-02-29 20:48:52.438393
 revision = '302b36a96c40'
 down_revision = '9af483c392ec'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('episodes',
         sa.Column('air_datetime', sa.DateTime),
     )
 
 
-def downgrade():
+def downgrade() -> None:
     pass

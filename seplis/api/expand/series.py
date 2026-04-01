@@ -1,12 +1,13 @@
 import asyncio
+
 import sqlalchemy as sa
 
+from .. import exceptions, models, schemas
 from ..database import auto_session
 from ..dependencies import AsyncSession
-from .. import schemas, models, exceptions
 
 
-async def expand_series(expand: list[str], user: schemas.User, series: list[schemas.Series]):
+async def expand_series(expand: list[str], user: schemas.User, series: list[schemas.Series]) -> None:
     if not expand:
         return
     if not user:
@@ -42,7 +43,7 @@ async def expand_series(expand: list[str], user: schemas.User, series: list[sche
 
 
 @auto_session
-async def expand_user_watchlist(user_id: int, series: list[schemas.Series], session: AsyncSession):
+async def expand_user_watchlist(user_id: int, series: list[schemas.Series], session: AsyncSession) -> None:
     _series: dict[int, schemas.Series] = {}
     for s in series:
         s.user_watchlist = schemas.Series_watchlist()
@@ -59,7 +60,7 @@ async def expand_user_watchlist(user_id: int, series: list[schemas.Series], sess
 
 
 @auto_session
-async def expand_user_favorite(user_id: int, series: list[schemas.Series], session: AsyncSession):
+async def expand_user_favorite(user_id: int, series: list[schemas.Series], session: AsyncSession) -> None:
     _series: dict[int, schemas.Series] = {}
     for s in series:
         s.user_favorite = schemas.Series_favorite()
@@ -76,7 +77,7 @@ async def expand_user_favorite(user_id: int, series: list[schemas.Series], sessi
         
 
 @auto_session
-async def expand_user_can_watch(user_id: int, series: list[schemas.Episode], session: AsyncSession):
+async def expand_user_can_watch(user_id: int, series: list[schemas.Episode], session: AsyncSession) -> None:
     _series: dict[int, schemas.Episode] = {}
     for s in series:
         s.user_can_watch = schemas.User_can_watch()
@@ -94,7 +95,7 @@ async def expand_user_can_watch(user_id: int, series: list[schemas.Episode], ses
 
 
 @auto_session
-async def expand_user_last_episode_watched(user_id: int, series: list[schemas.Series], session: AsyncSession):
+async def expand_user_last_episode_watched(user_id: int, series: list[schemas.Series], session: AsyncSession) -> None:
     _series: dict[int, schemas.Series] = {s.id: s for s in series}
     result: list[models.Episode] = await session.scalars(sa.select(
         models.Episode
@@ -110,7 +111,7 @@ async def expand_user_last_episode_watched(user_id: int, series: list[schemas.Se
     
 
 @auto_session
-async def expand_user_rating(user_id: int, series: list[schemas.Series], session: AsyncSession):
+async def expand_user_rating(user_id: int, series: list[schemas.Series], session: AsyncSession) -> None:
     _series: dict[int, schemas.Series] = {}
     for s in series:
         s.user_can_watch = schemas.Series_user_rating()

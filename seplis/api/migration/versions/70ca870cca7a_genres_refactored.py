@@ -10,11 +10,11 @@ Create Date: 2022-12-16 22:58:29.033052
 revision = '70ca870cca7a'
 down_revision = 'ad52dc5692f0'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.drop_constraint('PRIMARY', 'genres', type_='primary')
     op.execute("ALTER TABLE genres ADD id INT PRIMARY KEY AUTO_INCREMENT;")
     op.alter_column('genres', 'genre', existing_type=sa.String(100), existing_nullable=False, new_column_name='name')
@@ -35,5 +35,5 @@ def upgrade():
     op.create_index('ix_name', 'genres', ['name'])
 
 
-def downgrade():
+def downgrade() -> None:
     pass

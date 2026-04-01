@@ -1,8 +1,10 @@
 import sqlalchemy as sa
 from fastapi import Depends, Query, Security
-from ...dependencies import authenticated, get_session, AsyncSession
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
+
 
 @router.get('/me/watched', response_model=schemas.Page_cursor_result[schemas.User_watched],
             description='''

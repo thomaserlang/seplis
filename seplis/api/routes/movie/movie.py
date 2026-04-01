@@ -1,11 +1,18 @@
-from fastapi import Depends, HTTPException, Security
 import sqlalchemy as sa
+from fastapi import Depends, HTTPException, Security
+
 from ....api.filter.movies.query_filter_schema import Movie_query_filter
 from ... import models, schemas
-from ...dependencies import authenticated, get_current_user_no_raise, get_expand, get_session, AsyncSession
 from ...database import database
-from ...filter.movies import filter_movies
+from ...dependencies import (
+    AsyncSession,
+    authenticated,
+    get_current_user_no_raise,
+    get_expand,
+    get_session,
+)
 from ...expand.movie import expand_movies
+from ...filter.movies import filter_movies
 from .router import router
 
 
@@ -16,13 +23,12 @@ async def get_movies(
     filter_query: Movie_query_filter = Depends(),
 ):
     query = sa.select(models.Movie)
-    p = await filter_movies(
+    return await filter_movies(
         query=query,
         session=session,
         filter_query=filter_query,
         page_cursor=page_cursor,
     )
-    return p
 
 
 @router.get('/{movie_id}', response_model=schemas.Movie)
@@ -88,7 +94,7 @@ async def delete_movie(
     movie_id: int,
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['movie:delete']),
-):
+) -> None:
     await models.Movie.delete(movie_id=movie_id)
 
 
@@ -100,5 +106,5 @@ async def request_update(
     movie_id: int,
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['movie:update']),
-):
+) -> None:
     await database.redis_queue.enqueue_job('update_movie', movie_id)

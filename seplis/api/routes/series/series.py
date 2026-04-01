@@ -1,11 +1,18 @@
 import sqlalchemy as sa
 from fastapi import Depends, HTTPException, Security
+
+from ... import models, schemas
+from ...database import database
+from ...dependencies import (
+    AsyncSession,
+    authenticated,
+    get_current_user_no_raise,
+    get_expand,
+    get_session,
+)
 from ...expand.series import expand_series
 from ...filter.series import filter_series
 from ...filter.series.query_filter_schema import Series_query_filter
-from ...dependencies import authenticated, get_current_user_no_raise, get_expand, get_session, AsyncSession
-from ...database import database
-from ... import models, schemas
 from .router import router
 
 
@@ -16,13 +23,12 @@ async def get_series(
     filter_query: Series_query_filter = Depends(),
 ):
     query = sa.select(models.Series)
-    p = await filter_series(
+    return await filter_series(
         query=query,
         session=session,
         filter_query=filter_query,
         page_cursor=page_cursor,
     )
-    return p
 
 
 @router.get('/{series_id}', response_model=schemas.Series)
@@ -105,7 +111,7 @@ async def delete_series(
     series_id: int,
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['series:delete']),
-):
+) -> None:
     await models.Series.delete(series_id)
 
 
@@ -117,5 +123,5 @@ async def request_update(
     series_id: int,
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['series:update']),
-):
+) -> None:
     await database.redis_queue.enqueue_job('update_series', series_id)

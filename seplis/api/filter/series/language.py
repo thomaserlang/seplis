@@ -1,5 +1,5 @@
-from .query_filter_schema import Series_query_filter
 from ... import models
+from .query_filter_schema import Series_query_filter
 
 
 def filter_language(query, filter_query: Series_query_filter):

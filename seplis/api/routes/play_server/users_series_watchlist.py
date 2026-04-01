@@ -1,13 +1,16 @@
-from typing import Literal
-from fastapi import Depends
 from datetime import datetime
-from pydantic import BaseModel
+from typing import Literal
+
 import sqlalchemy as sa
-from ...dependencies import get_session, AsyncSession
-from ...filter.series.query_filter_schema import Series_query_filter
-from ...filter.series import filter_series, filter_series_query
+from fastapi import Depends
+from pydantic import BaseModel
+
 from ... import models, schemas
+from ...dependencies import AsyncSession, get_session
+from ...filter.series import filter_series, filter_series_query
+from ...filter.series.query_filter_schema import Series_query_filter
 from .play_server import router
+
 
 class Sonarr_response(BaseModel):
     TvdbId: int
@@ -53,4 +56,5 @@ async def get_play_servers_user_series_watchlist(
         rows = await session.scalars(query)
         return [Sonarr_response(TvdbId=int(r.externals['thetvdb'])) 
                    for r in rows if r.externals.get('thetvdb')]
+    return None
 

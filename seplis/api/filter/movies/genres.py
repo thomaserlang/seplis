@@ -1,6 +1,7 @@
 import sqlalchemy as sa
-from .query_filter_schema import Movie_query_filter
+
 from ... import models
+from .query_filter_schema import Movie_query_filter
 
 
 def filter_genres(query, filter_query: Movie_query_filter):
@@ -20,7 +21,7 @@ def filter_genres(query, filter_query: Movie_query_filter):
             ),
             isouter=True,
         ).where(
-            genre.movie_id == None,
+            genre.movie_id is None,
         )
 
     return query

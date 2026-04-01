@@ -1,7 +1,10 @@
 import sqlalchemy as sa
-from seplis.api.database import auto_session, AsyncSession
-from .base import Base
+
+from seplis.api.database import AsyncSession, auto_session
+
 from .. import schemas
+from .base import Base
+
 
 class Series_cast(Base):
     __tablename__ = 'series_cast'
@@ -14,7 +17,7 @@ class Series_cast(Base):
 
     @staticmethod
     @auto_session
-    async def save(data: schemas.Series_cast_person_create, session: AsyncSession):
+    async def save(data: schemas.Series_cast_person_create, session: AsyncSession) -> None:
         data_ = data.model_dump(exclude_unset=True)
         await session.execute(sa.dialects.mysql.insert(Series_cast).values(
             data_
@@ -22,7 +25,7 @@ class Series_cast(Base):
 
     @staticmethod
     @auto_session
-    async def delete(series_id: int, person_id: int, session: AsyncSession):
+    async def delete(series_id: int, person_id: int, session: AsyncSession) -> None:
         await session.execute(sa.delete(Series_cast).where(
             Series_cast.series_id == series_id,
             Series_cast.person_id == person_id,

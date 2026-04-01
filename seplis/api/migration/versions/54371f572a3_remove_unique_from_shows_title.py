@@ -11,11 +11,10 @@ revision = '54371f572a3'
 down_revision = '2cef22402df'
 
 from alembic import op
-import sqlalchemy as sa
 
 
-def upgrade():
+def upgrade() -> None:
     op.drop_index('title', table_name='shows')
 
 def downgrade():
-    raise NotImplemented()
+    raise NotImplementedError()

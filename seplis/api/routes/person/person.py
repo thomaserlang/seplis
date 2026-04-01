@@ -1,6 +1,7 @@
 from fastapi import Security
+
+from ... import exceptions, models, schemas
 from ...dependencies import authenticated
-from ... import models, schemas, exceptions
 from .router import router
 
 
@@ -67,5 +68,5 @@ async def person_get(
 async def person_delete(
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['person:delete']),
-):
+) -> None:
     await models.Person.delete(person_id=person_id)

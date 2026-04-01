@@ -10,17 +10,18 @@ Create Date: 2022-12-09 22:48:05.244520
 revision = 'ad52dc5692f0'
 down_revision = '2252ca418e56'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from uuid6 import uuid7
 
 from seplis.utils.sqlalchemy import UUID
 
-def uuid7_mariadb():
+
+def uuid7_mariadb() -> str:
     a = str(uuid7())
     return f'{a[24:32]}-{a[32:36]}-{a[19:23]}-{a[14:18]}-{a[0:8]}{a[9:13]}'
 
-def upgrade():
+def upgrade() -> None:
     op.drop_constraint('play_access_ibfk_1', 'play_access', 'foreignkey')
     
     op.alter_column('play_servers', 'id', 
@@ -79,5 +80,5 @@ def upgrade():
     conn.execute(sa.text('UPDATE play_server_access SET created_at=NOW();'))
 
 
-def downgrade():
+def downgrade() -> None:
     pass

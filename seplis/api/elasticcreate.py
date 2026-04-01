@@ -1,7 +1,7 @@
 from seplis import config
 
 
-async def create_indices(es):
+async def create_indices(es) -> None:
     await es.options(ignore_status=[400,404]).indices.delete(index=config.api.elasticsearch.index_prefix+'titles')
     
     settings = {

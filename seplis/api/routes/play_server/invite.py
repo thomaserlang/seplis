@@ -1,8 +1,9 @@
-from fastapi import Depends, Security
 import sqlalchemy as sa
-from ...dependencies import authenticated, get_session, AsyncSession
-from ... import models, schemas
+from fastapi import Depends, Security
+
 from .... import utils
+from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -15,12 +16,11 @@ async def create_play_server_invite(
     data: schemas.Play_server_invite_create,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
 ):
-    p = await models.Play_server_invite.invite(
+    return await models.Play_server_invite.invite(
         play_server_id=play_server_id,
         owner_user_id=user.id,
         data=data,
     )
-    return p
 
 
 @router.get('/{play_server_id}/invites', 
@@ -56,7 +56,7 @@ async def get_play_server_invites(
 async def accept_play_server_invite(
     data: schemas.Play_server_invite_id,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_servers']),
-):
+) -> None:
     await models.Play_server_invite.accept_invite(
         user_id=user.id,
         invite_id=data.invite_id,

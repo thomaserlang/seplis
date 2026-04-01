@@ -10,11 +10,11 @@ Create Date: 2023-09-02 10:44:19.685366
 revision = '20559ab61113'
 down_revision = '46047fb08936'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.add_column('genres', sa.Column('type', sa.String(30), nullable=True))
     op.add_column('genres', sa.Column('number_of', sa.Integer(), nullable=True, server_default='0'))
     
@@ -27,5 +27,5 @@ def upgrade():
     op.execute(sa.text('delete from genres where isnull(type)'))
 
 
-def downgrade():
+def downgrade() -> None:
     pass

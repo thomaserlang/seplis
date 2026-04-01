@@ -1,6 +1,7 @@
 import sqlalchemy as sa
-from .query_filter_schema import Series_query_filter
+
 from ... import exceptions, models
+from .query_filter_schema import Series_query_filter
 
 
 def filter_user_rating(query: any, filter_query: Series_query_filter):

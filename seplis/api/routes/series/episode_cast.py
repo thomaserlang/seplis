@@ -1,8 +1,9 @@
 import sqlalchemy as sa
 from fastapi import Depends, Security
-from ...dependencies import authenticated, get_session, AsyncSession
-from ... import models, schemas
+
 from .... import utils
+from ... import models, schemas
+from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
@@ -15,7 +16,7 @@ async def episode_cast_add(
     episode_number: int,
     data: schemas.Episode_cast_person_create,
     user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
-):
+) -> None:
     data.series_id = series_id
     data.episode_number = episode_number
     await models.Episode_cast.save(data=data)
@@ -30,7 +31,7 @@ async def episode_cast_delete(
     episode_number: int,
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
-):
+) -> None:
     await models.Episode_cast.delete(
         series_id=series_id,
         episode_number=episode_number,

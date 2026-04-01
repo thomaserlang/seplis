@@ -10,11 +10,11 @@ Create Date: 2023-04-07 20:57:49.383506
 revision = '92b92ef5b119'
 down_revision = '7072ccfb43ee'
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 
-def upgrade():
+def upgrade() -> None:
     op.create_table(
         'people', 
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
@@ -67,5 +67,5 @@ def upgrade():
     )
     
 
-def downgrade():
+def downgrade() -> None:
     pass
