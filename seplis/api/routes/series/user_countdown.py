@@ -44,7 +44,7 @@ async def series_countdown(
             models.MEpisode.number == episodes_query.c.episode_number,
         )
         .order_by(
-            sa.asc(models.MEpisode.air_datetime),
+            sa.asc(sa.func.coalesce(models.MEpisode.air_datetime, '1970-01-01 00:00:00')),
             models.MEpisode.series_id,
         )
     )

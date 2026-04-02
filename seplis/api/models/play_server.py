@@ -21,7 +21,7 @@ class MPlayServer(Base):
     created_at: Mapped[datetime] = mapped_column(UtcDateTime)
     updated_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
     user_id: Mapped[int | None] = mapped_column()
-    name: Mapped[str | None] = mapped_column(sa.String(45))
+    name: Mapped[str] = mapped_column(sa.String(45))
     url: Mapped[str | None] = mapped_column(sa.String(200))
     secret: Mapped[str | None] = mapped_column(sa.String(200))
 

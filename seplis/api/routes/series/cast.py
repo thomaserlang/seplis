@@ -7,10 +7,13 @@ from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
-@router.put('/{series_id}/cast', status_code=204,
-            description='''
+@router.put(
+    '/{series_id}/cast',
+    status_code=204,
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def series_cast_add(
     series_id: int,
     cast_member: schemas.Series_cast_person_create,
@@ -20,10 +23,13 @@ async def series_cast_add(
     await models.MSeriesCast.save(data=cast_member)
 
 
-@router.delete('/{series_id}/cast', status_code=204,
-            description='''
+@router.delete(
+    '/{series_id}/cast',
+    status_code=204,
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def series_cast_delete(
     series_id: int,
     person_id: int,
@@ -35,10 +41,13 @@ async def series_cast_delete(
     )
 
 
-@router.get('/{series_id}/cast', response_model=schemas.Page_cursor_result[schemas.Series_cast_person],
-            description='''
+@router.get(
+    '/{series_id}/cast',
+    response_model=schemas.Page_cursor_result[schemas.Series_cast_person],
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def series_cast_get(
     series_id: int,
     order_le: int = None,
@@ -46,10 +55,14 @@ async def series_cast_get(
     page_query: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.MSeriesCast).where(
-        models.MSeriesCast.series_id == series_id,
-    ).order_by(
-        sa.asc(models.MSeriesCast.order),
+    query = (
+        sa.select(models.MSeriesCast)
+        .where(
+            models.MSeriesCast.series_id == series_id,
+        )
+        .order_by(
+            sa.asc(sa.func.coalesce(models.MSeriesCast.order, 0)),
+        )
     )
 
     if order_le is not None:

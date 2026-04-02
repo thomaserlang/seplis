@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .person import MPerson
 
 
-class EpisodeCast(Base):
+class MEpisodeCast(Base):
     __tablename__ = 'episode_cast'
 
     person_id: Mapped[int] = mapped_column(sa.ForeignKey('people.id'), primary_key=True)
@@ -28,7 +28,7 @@ class EpisodeCast(Base):
     ) -> None:
         data_ = data.model_dump(exclude_unset=True)
         await session.execute(
-            sa.dialects.mysql.insert(EpisodeCast)
+            sa.dialects.mysql.insert(MEpisodeCast)
             .values(data_)
             .on_duplicate_key_update(data_)
         )
@@ -39,9 +39,9 @@ class EpisodeCast(Base):
         series_id: int, episode_number: int, person_id: int, session: AsyncSession
     ) -> None:
         await session.execute(
-            sa.delete(EpisodeCast).where(
-                EpisodeCast.series_id == series_id,
-                EpisodeCast.episode_number == episode_number,
-                EpisodeCast.person_id == person_id,
+            sa.delete(MEpisodeCast).where(
+                MEpisodeCast.series_id == series_id,
+                MEpisodeCast.episode_number == episode_number,
+                MEpisodeCast.person_id == person_id,
             )
         )

@@ -7,10 +7,13 @@ from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
-@router.put('/{series_id}/episodes/{episode_number}/cast', status_code=204,
-            description='''
+@router.put(
+    '/{series_id}/episodes/{episode_number}/cast',
+    status_code=204,
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def episode_cast_add(
     series_id: int,
     episode_number: int,
@@ -19,42 +22,51 @@ async def episode_cast_add(
 ) -> None:
     data.series_id = series_id
     data.episode_number = episode_number
-    await models.EpisodeCast.save(data=data)
+    await models.MEpisodeCast.save(data=data)
 
 
-@router.delete('/{series_id}/episodes/{episode_number}/cast/{person_id}', status_code=204,
-            description='''
+@router.delete(
+    '/{series_id}/episodes/{episode_number}/cast/{person_id}',
+    status_code=204,
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def episode_cast_delete(
     series_id: int,
     episode_number: int,
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ) -> None:
-    await models.EpisodeCast.delete(
+    await models.MEpisodeCast.delete(
         series_id=series_id,
         episode_number=episode_number,
         person_id=person_id,
     )
 
 
-@router.get('/{series_id}/episodes/{episode_number}/cast', 
-            response_model=schemas.Page_cursor_result[schemas.Episode_cast_person],
-            description='''
+@router.get(
+    '/{series_id}/episodes/{episode_number}/cast',
+    response_model=schemas.Page_cursor_result[schemas.Episode_cast_person],
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def episode_cast_get(
     series_id: int,
     episode_number: int,
     page_query: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.EpisodeCast).where(
-        models.EpisodeCast.series_id == series_id,
-        models.EpisodeCast.episode_number == episode_number,
-    ).order_by(
-        models.EpisodeCast.order,
+    query = (
+        sa.select(models.MEpisodeCast)
+        .where(
+            models.MEpisodeCast.series_id == series_id,
+            models.MEpisodeCast.episode_number == episode_number,
+        )
+        .order_by(
+            sa.func.coalesce(models.MEpisodeCast.order, 0),
+        )
     )
     p = await utils.sqlalchemy.paginate_cursor(
         session=session,

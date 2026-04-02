@@ -7,10 +7,13 @@ from ...dependencies import AsyncSession, authenticated, get_session
 from .router import router
 
 
-@router.put('/{movie_id}/cast', status_code=204,
-            description='''
+@router.put(
+    '/{movie_id}/cast',
+    status_code=204,
+    description="""
             **Scope required:** `movie:edit`
-            ''')
+            """,
+)
 async def movie_cast_add(
     movie_id: int,
     data: schemas.Movie_cast_person_create,
@@ -32,7 +35,10 @@ async def movie_cast_delete(
     )
 
 
-@router.get('/{movie_id}/cast', response_model=schemas.Page_cursor_result[schemas.Movie_cast_person])
+@router.get(
+    '/{movie_id}/cast',
+    response_model=schemas.Page_cursor_result[schemas.Movie_cast_person],
+)
 async def movie_cast_get(
     movie_id: int,
     page_query: schemas.Page_cursor_query = Depends(),
@@ -40,12 +46,16 @@ async def movie_cast_get(
     order_ge: int = None,
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.MMovieCast).where(
-        models.MMovieCast.movie_id == movie_id,
-    ).order_by(
-        sa.asc(models.MMovieCast.order),
+    query = (
+        sa.select(models.MMovieCast)
+        .where(
+            models.MMovieCast.movie_id == movie_id,
+        )
+        .order_by(
+            sa.asc(sa.func.coalesce(models.MMovieCast.order, 0)),
+        )
     )
-    
+
     if order_le is not None:
         query = query.where(models.MMovieCast.order <= order_le)
     if order_ge is not None:

@@ -74,7 +74,7 @@ async def get_user_series_to_watch(
         .order_by(None)
         .order_by(
             sa.desc(latest_aired_episode.c.latest_aired_episode_datetime),
-            sa.desc(models.MSeries.popularity),
+            sa.desc(sa.func.coalesce(models.MSeries.popularity, 0)),
             models.MEpisode.series_id,
         )
     )

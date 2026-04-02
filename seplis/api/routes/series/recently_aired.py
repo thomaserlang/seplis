@@ -52,7 +52,9 @@ async def get_series_recently_aired(
             models.MEpisode.number == episodes_query.c.episode_number,
         )
         .order_by(
-            sa.desc(models.MEpisode.air_datetime),
+            sa.desc(
+                sa.func.coalesce(models.MEpisode.air_datetime, '1970-01-01 00:00:00')
+            ),
             models.MEpisode.series_id,
         )
     )
