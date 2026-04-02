@@ -1,0 +1,215 @@
+@import "@mantine/core/styles.css" layer(mantine-core);
+@import "@mantine/notifications/styles.css" layer(mantine-notifications);
+
+@layer mantine-core, mantine-notifications;
+
+body {
+  --app-shell-footer-offset: -1rem;
+  --content-height: calc(
+    100dvh -
+      calc(
+        var(--app-shell-header-offset, 0.5rem) +
+          var(--app-shell-padding, 0.5rem) * 1.2
+      )
+  );
+
+  --radius: 0.65rem;
+  --background: light-dark(oklch(0.98 0 0), oklch(0.145 0 0));
+  --foreground: light-dark(oklch(0.145 0 0), oklch(0.985 0 0));
+  --card: light-dark(oklch(1 0 0), oklch(0.205 0 0));
+  --card-foreground: light-dark(oklch(0.145 0 0), oklch(0.985 0 0));
+  --popover: light-dark(oklch(1 0 0), oklch(0.205 0 0));
+  --popover-foreground: light-dark(oklch(0.145 0 0), oklch(0.985 0 0));
+  --primary: light-dark(oklch(0.205 0 0), oklch(0.922 0 0));
+  --primary-foreground: light-dark(oklch(0.985 0 0), oklch(0.205 0 0));
+  --secondary: light-dark(oklch(0.97 0 0), oklch(0.269 0 0));
+  --secondary-foreground: light-dark(oklch(0.205 0 0), oklch(0.985 0 0));
+  --muted: light-dark(oklch(0.93 0 0), oklch(0.269 0 0));
+  --muted-foreground: light-dark(oklch(0.556 0 0), oklch(0.708 0 0));
+  --accent: light-dark(oklch(0.97 0 0), oklch(0.269 0 0));
+  --accent-foreground: light-dark(oklch(0.205 0 0), oklch(0.985 0 0));
+  --destructive: light-dark(
+    oklch(0.577 0.245 27.325),
+    oklch(0.704 0.191 22.216)
+  );
+  --border: light-dark(oklch(0.922 0 0), oklch(1 0 0 / 10%));
+  --input: light-dark(oklch(0.922 0 0), oklch(1 0 0 / 15%));
+  --ring: light-dark(oklch(0.708 0 0), oklch(0.556 0 0));
+  --chart-1: light-dark(oklch(0.646 0.222 41.116), oklch(0.488 0.243 264.376));
+  --chart-2: light-dark(oklch(0.6 0.118 184.704), oklch(0.696 0.17 162.48));
+  --chart-3: light-dark(oklch(0.398 0.07 227.392), oklch(0.769 0.188 70.08));
+  --chart-4: light-dark(oklch(0.828 0.189 84.429), oklch(0.627 0.265 303.9));
+  --chart-5: light-dark(oklch(0.769 0.188 70.08), oklch(0.645 0.246 16.439));
+  --radius: 0.625rem;
+  --sidebar: light-dark(oklch(0.985 0 0), oklch(0.205 0 0));
+  --sidebar-foreground: light-dark(oklch(0.145 0 0), oklch(0.985 0 0));
+  --sidebar-primary: light-dark(oklch(0.205 0 0), oklch(0.488 0.243 264.376));
+  --sidebar-primary-foreground: light-dark(oklch(0.985 0 0), oklch(0.985 0 0));
+  --sidebar-accent: light-dark(oklch(0.97 0 0), oklch(0.269 0 0));
+  --sidebar-accent-foreground: light-dark(oklch(0.205 0 0), oklch(0.985 0 0));
+  --sidebar-border: light-dark(oklch(0.922 0 0), oklch(1 0 0 / 10%));
+  --sidebar-ring: light-dark(oklch(0.708 0 0), oklch(0.556 0 0));
+
+  --mantine-color-text: var(--foreground);
+  --text-color: var(--foreground);
+  --color-text: var(--foreground);
+
+  --mantine-primary-color-filled: var(--primary);
+  --mantine-primary-color-filled-hover: color-mix(
+    in oklab,
+    var(--primary) 90%,
+    transparent
+  );
+
+  --hightlight-color: light-dark(var(--mantine-color-gray-1), lab(15% 0 0));
+  --mantine-color-blue-light-hover: light-dark(
+    oklch(0.205 0 0 / 10%),
+    oklch(0.205 0 0 / 80%)
+  );
+
+  --background-color: var(--background);
+  background-color: var(--background);
+
+  --body-color: var(--card);
+  --mantine-color-body: var(--card);
+
+  --border-color: var(--border);
+  --mantine-color-default-border: var(--border-color);
+
+  --navbar-background-color: var(--background-color);
+
+  --switch-thumb-bg: var(--background);
+
+  @mixin dark {
+    --mantine-datatable-shadow-background-bottom:
+      linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2)),
+      linear-gradient(rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.2));
+  }
+}
+
+.mantine-Checkbox-labelWrapper {
+  --label-offset-start: 0.5rem;
+}
+
+.mantine-Modal-title {
+  font-weight: bolder;
+  width: 100%;
+}
+
+.mantine-Modal-close:focus,
+.mantine-Drawer-close:focus {
+  outline: none;
+}
+
+.no-outline:focus {
+  outline: none;
+}
+
+.mantine-AppShell-header {
+  background-color: var(--navbar-background-color);
+}
+
+.mantine-AppShell-navbar {
+  background-color: var(--navbar-background-color);
+}
+
+.mantine-Tabs-tab:where([data-active]) {
+  font-weight: 700;
+}
+
+.mantine-NavLink-root:where([data-active], [aria-current="page"]) {
+  font-weight: 700;
+}
+
+.logo {
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 1.5rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.container-full-height {
+  height: var(--content-height);
+}
+
+.mantine-Button-root[data-variant="primary"],
+.mantine-Button-root[type="submit"]:not([data-variant]) {
+  --button-color: var(--primary-foreground) !important;
+}
+
+.mantine-Button-root[data-variant="subtle"] {
+  color: var(--primary);
+}
+.mantine-Button-root:not([data-variant]) {
+  color: var(--secondary);
+}
+
+.mantine-Button-section {
+  margin-inline-end: calc(var(--mantine-spacing-xs) / 2);
+}
+
+.mantine-NavLink-root {
+  --nl-bg: light-dark(lab(92% 0 0), lab(15% 0 0));
+  --nl-hover: light-dark(lab(92% 0 0), lab(25% 0 0));
+  color: light-dark(lab(22% 0 0), lab(75% 0 0));
+
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.25rem;
+
+  &.active {
+    color: var(--color-text);
+    font-weight: 500;
+  }
+  &:hover {
+    background-color: var(--nl-hover);
+  }
+}
+
+.mantine-NavLink-children {
+  margin-left: 1.3rem;
+  border-left: 2px solid var(--border-color);
+
+  .mantine-NavLink-root {
+    margin-left: -0.7rem;
+  }
+}
+
+.mantine-NavLink-children .mantine-NavLink-children {
+  margin-left: -0.5rem;
+  border-left: none;
+}
+
+.mantine-Divider-root {
+  --divider-color: var(--border-color);
+}
+
+.mantine-datatable {
+  --mantine-datatable-border-color: var(--border-color);
+  --table-border-color: var(--border-color);
+  --mantine-datatable-highlight-on-hover-color: var(--hightlight-color);
+}
+
+.mantine-Table-td {
+  border-color: var(--border-color);
+}
+
+.mantine-AppShell-navbar {
+  border-color: var(--border-color);
+}
+
+.mantine-AppShell-header {
+  border-color: var(--border-color);
+}
+
+.mantine-Paper-root {
+  border-color: var(--border-color);
+}
+
+.mantine-Input-wrapper {
+  --input-bd: var(--border-color);
+}

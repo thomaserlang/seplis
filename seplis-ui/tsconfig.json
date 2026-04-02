@@ -22,13 +22,8 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "plugins": [
-      {
-        "name": "typescript-plugin-css-modules"
-      }
-    ]
   },
-  "include": ["./src"],
+  "include": ["./src", "vite-env.d.ts"],
   "exclude": ["node_modules", "**/node_modules/*", "/public"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

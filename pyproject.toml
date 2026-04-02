@@ -61,6 +61,9 @@ quote-style = "single"
 select = ["E", "F", "UP", "B", "I", "FAST", "ANN", "RET"]
 ignore = ['ANN401']
 
+[tool.uv.pip]
+exclude-newer = "7 days"
+
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"
 filterwarnings = [

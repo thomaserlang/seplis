@@ -1,34 +1,35 @@
 <!doctype html>
 <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-        <link rel="apple-touch-icon" sizes="120x120" href="/img/apple-touch-icon.png">
-        <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
-        <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
-        <link rel="manifest" href="/img/manifest.json">
-        <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#428bca">
-        <meta name="theme-color" content="#428bca">
-        <title>SEPLIS</title>
-        <style>
-            .unsupported-browser {
-                background-color: orange;
-                padding: 0.5rem;
-            }
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="120x120"
+      href="/img/apple-touch-icon.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/img/favicon-32x32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="/img/favicon-16x16.png"
+    />
+    <link rel="manifest" href="/img/manifest.json" />
+    <link rel="mask-icon" href="/img/safari-pinned-tab.svg" color="#428bca" />
+    <meta name="theme-color" content="#428bca" />
+    <title>SEPLIS</title>
+  </head>
+  <body>
+    <div id="root"></div>
 
-            @supports (aspect-ratio: 16/9) {
-                .unsupported-browser {
-                    display: none;
-                }
-            }
-
-        </style>
-    </head>
-    <body>
-        <div class="unsupported-browser">
-            <h2>SEPLIS Warning: Your browser is unsupported.</h2>
-        </div>
-        <div id="root"></div>
-
-        <script type="module" src="/src/main.tsx"></script>
-    </body>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
