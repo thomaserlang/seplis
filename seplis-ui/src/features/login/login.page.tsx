@@ -1,9 +1,10 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { Anchor, Container, Flex, Image, Paper, Title } from '@mantine/core'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Container, Flex, Paper, Title } from '@mantine/core'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useGetCurrentUser } from '../user/api/user.api'
 import { LoginForm } from './components/login-form'
+import { LoginLogo } from './components/login-logo'
 import { Token, UsersLoggedIn } from './types/login.types'
 
 export function Component() {
@@ -41,13 +42,7 @@ export function Component() {
     return (
         <Container size="30rem" mt="2rem">
             <Flex justify="center" align="center" mb="2rem">
-                <Anchor component={Link} to="/">
-                    <Image
-                        radius="50%"
-                        w="4rem"
-                        src="/img/android-chrome-96x96.png"
-                    />
-                </Anchor>
+                <LoginLogo />
             </Flex>
             <Paper withBorder shadow="sm" p="2rem">
                 <Title mb="2rem">Log in to SEPLIS</Title>
