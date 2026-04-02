@@ -4,7 +4,7 @@ import { RequestResetPasswordForm } from './components/request-reset-password-fo
 
 export function Component() {
     return (
-        <Container size="35rem" mt="2rem">
+        <Container size="30rem" mt="2rem">
             <Flex justify="center" align="center" mb="2rem">
                 <Anchor component={Link} to="/">
                     <Image
@@ -15,7 +15,7 @@ export function Component() {
                 </Anchor>
             </Flex>
             <Paper withBorder shadow="sm" p="2rem">
-                <Title mb="2rem">Request Password Reset</Title>
+                <Title mb="2rem">Password Reset</Title>
                 <Flex gap="1rem" direction="column">
                     <RequestResetPasswordForm />
                 </Flex>
