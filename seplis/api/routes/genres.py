@@ -13,8 +13,8 @@ async def get_genres(
     type: Literal['series', 'movie'],
     session: Annotated[AsyncSession, Depends(get_session)],
 ):
-    rows = await session.scalars(sa.select(models.Genre).where(
-        models.Genre.type == type,
-        models.Genre.number_of > 0,
-    ).order_by(models.Genre.name))
+    rows = await session.scalars(sa.select(models.MGenre).where(
+        models.MGenre.type == type,
+        models.MGenre.number_of > 0,
+    ).order_by(models.MGenre.name))
     return [schemas.Genre.model_validate(row) for row in rows]

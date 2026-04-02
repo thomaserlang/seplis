@@ -27,20 +27,20 @@ async def get_play_servers_user_series_watchlist(
     added_at_le: datetime = None,
     response_format: Literal['standard', 'sonarr'] = 'standard',
 ):
-    query = sa.select(models.Series).where(
-        models.Play_server_access.play_server_id == play_server_id,
-        models.Series_watchlist.user_id == models.Play_server_access.user_id,
-        models.Series.id == models.Series_watchlist.series_id,
-    ).group_by(models.Series.id)
+    query = sa.select(models.MSeries).where(
+        models.MPlayServerAccess.play_server_id == play_server_id,
+        models.MSeriesWatchlist.user_id == models.MPlayServerAccess.user_id,
+        models.MSeries.id == models.MSeriesWatchlist.series_id,
+    ).group_by(models.MSeries.id)
 
     if added_at_ge:
         query = query.where(
-            models.Series_watchlist.created_at >= added_at_ge,
+            models.MSeriesWatchlist.created_at >= added_at_ge,
         )
     
     if added_at_le:
         query = query.where(
-            models.Series_watchlist.created_at <= added_at_le,
+            models.MSeriesWatchlist.created_at <= added_at_le,
         )
 
     if response_format == 'standard':

@@ -23,7 +23,7 @@ async def test_play_server_invite(client: AsyncClient) -> None:
     assert data.code == 2251, data.code
 
 
-    user = await models.User.save(data=schemas.User_create(email='test2@example.com', username='test2', password='1'*10), user_id=None)
+    user = await models.MUser.save(data=schemas.User_create(email='test2@example.com', username='test2', password='1'*10), user_id=None)
     
     r = await client.post(f'/2/play-servers/{server.id}/invites', json={
         'user_id': user.id,
@@ -41,7 +41,7 @@ async def test_play_server_invite(client: AsyncClient) -> None:
     assert invites.items[0].expires_at is not None
     
 
-    token = await models.Token.new_token(user_id=user.id, scopes=['me'])
+    token = await models.MToken.new_token(user_id=user.id, scopes=['me'])
 
     r = await client.post('/2/play-servers/accept-invite', json={
         'invite_id': data.invite_id,

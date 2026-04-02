@@ -17,12 +17,12 @@ async def get_episode_play_servers(
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:play']),
 ):
-    query: list[models.Play_server] = await session.scalars(sa.select(models.Play_server).where(
-        models.Play_server_access.user_id == user.id,
-        models.Play_server.id == models.Play_server_access.play_server_id,
-        models.Play_server_episode.play_server_id == models.Play_server.id,
-        models.Play_server_episode.series_id == series_id,
-        models.Play_server_episode.episode_number == episode_number,
+    query: list[models.MPlayServer] = await session.scalars(sa.select(models.MPlayServer).where(
+        models.MPlayServerAccess.user_id == user.id,
+        models.MPlayServer.id == models.MPlayServerAccess.play_server_id,
+        models.MPlayServerEpisode.play_server_id == models.MPlayServer.id,
+        models.MPlayServerEpisode.series_id == series_id,
+        models.MPlayServerEpisode.episode_number == episode_number,
     ))
     play_ids: list[schemas.Play_request] = []
     for row in query:

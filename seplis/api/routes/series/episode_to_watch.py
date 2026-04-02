@@ -22,23 +22,30 @@ episodes the result will be empty 204`.
 
 """
 
-@router.get('/{series_id}/episode-to-watch', response_model=schemas.Episode, description=DESCRIPTION)
+
+@router.get(
+    '/{series_id}/episode-to-watch',
+    response_model=schemas.Episode,
+    description=DESCRIPTION,
+)
 async def get_episode_to_watch(
     series_id: int | str,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
-    session: AsyncSession=Depends(get_session),
+    session: AsyncSession = Depends(get_session),
 ):
-    ew = await session.execute(sa.select(
-        models.Episode_watched.episode_number,
-        models.Episode_watched.position,
-    ).where(
-        models.Episode_last_watched.user_id == user.id,
-        models.Episode_last_watched.series_id == series_id,
-        models.Episode_watched.series_id == models.Episode_last_watched.series_id,
-        models.Episode_watched.user_id == models.Episode_last_watched.user_id,
-        models.Episode_watched.episode_number ==\
-            models.Episode_last_watched.episode_number,
-    ))
+    ew = await session.execute(
+        sa.select(
+            models.MEpisodeWatched.episode_number,
+            models.MEpisodeWatched.position,
+        ).where(
+            models.MEpisodeLastWatched.user_id == user.id,
+            models.MEpisodeLastWatched.series_id == series_id,
+            models.MEpisodeWatched.series_id == models.MEpisodeLastWatched.series_id,
+            models.MEpisodeWatched.user_id == models.MEpisodeLastWatched.user_id,
+            models.MEpisodeWatched.episode_number
+            == models.MEpisodeLastWatched.episode_number,
+        )
+    )
     ew = ew.first()
 
     episode_number = 1
@@ -47,27 +54,37 @@ async def get_episode_to_watch(
         if ew.position == 0:
             episode_number += 1
 
-    e = await session.execute(sa.select(
-        models.Episode,
-        models.Episode_watched,
-    ).where(
-        models.Episode.series_id == series_id,
-        models.Episode.number == episode_number,
-    ).join(
-        models.Episode_watched, sa.and_(
-            models.Episode_watched.user_id == user.id,
-            models.Episode_watched.series_id == models.Episode.series_id,
-            models.Episode_watched.episode_number == models.Episode.number,
-        ),
-        isouter=True
-    ))
+    e = await session.execute(
+        sa.select(
+            models.MEpisode,
+            models.MEpisodeWatched,
+        )
+        .where(
+            models.MEpisode.series_id == series_id,
+            models.MEpisode.number == episode_number,
+        )
+        .join(
+            models.MEpisodeWatched,
+            sa.and_(
+                models.MEpisodeWatched.user_id == user.id,
+                models.MEpisodeWatched.series_id == models.MEpisode.series_id,
+                models.MEpisodeWatched.episode_number == models.MEpisode.number,
+            ),
+            isouter=True,
+        )
+    )
     e = e.first()
-    
+
     if not e:
         return Response(status_code=204)
 
-    episode = schemas.Episode.model_validate(e.Episode)
-    episode.user_watched = schemas.Episode_watched.model_validate(e.Episode_watched) if e.Episode_watched else \
-        schemas.Episode_watched(episode_number=e.Episode.number)    
-    await expand_user_can_watch(series_id=series_id, user_id=user.id, episodes=[episode], session=session)
+    episode = schemas.Episode.model_validate(e.MEpisode)
+    episode.user_watched = (
+        schemas.Episode_watched.model_validate(e.MEpisodeWatched)
+        if e.MEpisodeWatched
+        else schemas.Episode_watched(episode_number=e.MEpisode.number)
+    )
+    await expand_user_can_watch(
+        series_id=series_id, user_id=user.id, episodes=[episode], session=session
+    )
     return episode

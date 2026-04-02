@@ -10,7 +10,7 @@ from seplis.api.testbase import AsyncClient, parse_obj_as, run_file
 async def test_search(client: AsyncClient) -> None:
     await elasticcreate.create_indices(database.es)
 
-    movie1: schemas.Movie = await models.Movie.save(schemas.Movie_create(
+    movie1: schemas.Movie = await models.MMovie.save(schemas.Movie_create(
         title='National Treasure',
         externals={
             'imdb': 'tt0368891',
@@ -67,7 +67,7 @@ async def test_search(client: AsyncClient) -> None:
     data = parse_obj_as (list[schemas.Search_title_document], r.json())
     assert data[0].id == movie1.id
 
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='This is a test show',
         alternative_titles=[
             'kurt 1',
@@ -96,7 +96,7 @@ async def test_search(client: AsyncClient) -> None:
 
 
     # Test apostrophe
-    series2: schemas.Series = await models.Series.save(schemas.Series_create(
+    series2: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='DC\'s legend of something',
         alternative_titles=[
             'DC’s kurt',
@@ -138,11 +138,11 @@ async def test_search(client: AsyncClient) -> None:
     # Searching for "dcs legend of something" should not return
     # "Test DC's legend of something" as the first result
 
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='Test DCs legend of something',
     ), series_id=None)
 
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='legend',
     ), series_id=None)
 
@@ -156,12 +156,12 @@ async def test_search(client: AsyncClient) -> None:
 
 
     # Test the walking dead
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='The Walking Dead',
         premiered='2010-10-31',
     ), series_id=None)
 
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='Fear the Walking Dead',
         premiered='2015-08-23',
     ), series_id=None)
@@ -176,7 +176,7 @@ async def test_search(client: AsyncClient) -> None:
 
 
     # Test `&` and `and`
-    await models.Movie.save(schemas.Movie_create(
+    await models.MMovie.save(schemas.Movie_create(
         title='Test & Test',
         release_date='2010-10-31',
     ), movie_id=None)
@@ -189,7 +189,7 @@ async def test_search(client: AsyncClient) -> None:
     assert len(data) == 1, data
 
 
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='The Devil\'s Hour',
         alternative_titles=[
             'kurt 1',
@@ -197,7 +197,7 @@ async def test_search(client: AsyncClient) -> None:
         popularity=64.918,
     ), series_id=None)
 
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='Devils',
         popularity=14.16,
     ), series_id=None)
@@ -217,7 +217,7 @@ async def test_search(client: AsyncClient) -> None:
     assert data[0].title == 'Devils'
 
     
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='Euphoria U.S',
     ), series_id=None)
     await database.es.indices.refresh(index=config.api.elasticsearch.index_prefix+'titles')

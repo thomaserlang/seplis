@@ -14,7 +14,7 @@ async def update_popularity(create_series = True, create_above_popularity: float
     series: dict[str, schemas.Series] = {}
     dt = datetime.now().date()
     async with database.session() as session:
-        result = await session.stream(sa.select(models.Series).options(sa.orm.noload("*")))
+        result = await session.stream(sa.select(models.MSeries).options(sa.orm.noload("*")))
         async for db_series in result.yield_per(1000):
             for r in db_series:
                 if r.externals.get('themoviedb'):
@@ -35,20 +35,20 @@ async def update_popularity(create_series = True, create_above_popularity: float
             elif create_series and create_above_popularity is not None and data.popularity >= create_above_popularity:                
                 ids_to_create.append(id_)
             if len(insert_data) == 10000:
-                await session.execute(sa.insert(models.Series_popularity_history).prefix_with('IGNORE').values(insert_data))
+                await session.execute(sa.insert(models.MSeriesPopularityHistory).prefix_with('IGNORE').values(insert_data))
                 insert_data = []
         if insert_data:
-            await session.execute(sa.insert(models.Series_popularity_history).prefix_with('IGNORE').values(insert_data))
+            await session.execute(sa.insert(models.MSeriesPopularityHistory).prefix_with('IGNORE').values(insert_data))
         
-        await session.execute(sa.update(models.Series).values({
-                models.Series.popularity: 0
+        await session.execute(sa.update(models.MSeries).values({
+                models.MSeries.popularity: 0
             }),
         )
-        await session.execute(sa.update(models.Series).values({
-                models.Series.popularity: models.Series_popularity_history.popularity
+        await session.execute(sa.update(models.MSeries).values({
+                models.MSeries.popularity: models.MSeriesPopularityHistory.popularity
             }).where(
-                models.Series_popularity_history.date == dt,
-                models.Series_popularity_history.series_id == models.Series.id,
+                models.MSeriesPopularityHistory.date == dt,
+                models.MSeriesPopularityHistory.series_id == models.MSeries.id,
             ),
         )
         await session.commit()
@@ -65,7 +65,7 @@ async def update_popularity(create_series = True, create_above_popularity: float
 
             if series_data.externals['imdb'] in series:
                 logger.info(f'Adding TMDb id {id_} to externals')
-                await models.Series.save(
+                await models.MSeries.save(
                     series_id=series[series_data.externals['imdb']], 
                     data=schemas.Series_update(
                         externals={'themoviedb': id_},
@@ -78,7 +78,7 @@ async def update_popularity(create_series = True, create_above_popularity: float
                     info='themoviedb',
                     episodes='themoviedb',
                 )
-                s = await models.Series.save(data=series_data, series_id=None)
+                s = await models.MSeries.save(data=series_data, series_id=None)
                 await importer.update_series(series=s)
         except (KeyboardInterrupt, SystemExit):
             raise

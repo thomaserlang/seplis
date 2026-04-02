@@ -8,7 +8,7 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_movie_watched_position(client: AsyncClient) -> None:
     await user_signin(client)
 
-    movie: schemas.Movie = await models.Movie.save(schemas.Movie_create(
+    movie: schemas.Movie = await models.MMovie.save(schemas.Movie_create(
         title='Test movie',
     ), movie_id=None)
 

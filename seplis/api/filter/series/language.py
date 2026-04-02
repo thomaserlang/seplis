@@ -5,6 +5,6 @@ from .query_filter_schema import Series_query_filter
 def filter_language(query, filter_query: Series_query_filter):
     if filter_query.language:
         query = query.where(
-            models.Series.language.in_(filter_query.language),
+            models.MSeries.language.in_(filter_query.language),
         )
     return query

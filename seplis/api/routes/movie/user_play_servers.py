@@ -16,11 +16,11 @@ async def get_movie_play_servers(
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:play']),
 ):
-    query: list[models.Play_server] = await session.scalars(sa.select(models.Play_server).where(
-        models.Play_server_access.user_id == user.id,
-        models.Play_server.id == models.Play_server_access.play_server_id,
-        models.Play_server_movie.play_server_id == models.Play_server.id,
-        models.Play_server_movie.movie_id == movie_id,
+    query: list[models.MPlayServer] = await session.scalars(sa.select(models.MPlayServer).where(
+        models.MPlayServerAccess.user_id == user.id,
+        models.MPlayServer.id == models.MPlayServerAccess.play_server_id,
+        models.MPlayServerMovie.play_server_id == models.MPlayServer.id,
+        models.MPlayServerMovie.movie_id == movie_id,
     ))
     play_ids: list[schemas.Play_request] = []
     for row in query:

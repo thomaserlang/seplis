@@ -11,7 +11,7 @@ async def register_play_server_movies_put(
     data: list[schemas.Play_server_movie_create],
     secret: str = Security(play_server_secret),
 ) -> None:
-    await models.Play_server_movie.save(
+    await models.MPlayServerMovie.save(
         play_server_id=play_server_id,
         play_server_secret=secret,
         data=data,
@@ -25,7 +25,7 @@ async def register_play_server_movie_patch(
     data: list[schemas.Play_server_movie_create],
     secret: str = Security(play_server_secret),
 ) -> None:
-    await models.Play_server_movie.save(
+    await models.MPlayServerMovie.save(
         play_server_id=play_server_id,
         play_server_secret=secret,
         data=data,
@@ -39,7 +39,7 @@ async def delete_movie_from_play_server(
     movie_id: int,
     secret: str = Security(play_server_secret),
 ) -> None:
-    await models.Play_server_movie.delete(
+    await models.MPlayServerMovie.delete(
         play_server_id=play_server_id,
         movie_id=movie_id,
         play_server_secret=secret,

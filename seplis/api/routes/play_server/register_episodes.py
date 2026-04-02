@@ -11,7 +11,7 @@ async def register_play_server_episode_put(
     data: list[schemas.Play_server_episode_create],
     secret: str = Security(play_server_secret),
 ) -> None:
-    await models.Play_server_episode.save(
+    await models.MPlayServerEpisode.save(
         play_server_id=play_server_id,
         play_server_secret=secret,
         data=data,
@@ -25,7 +25,7 @@ async def register_play_server_episode_patch(
     data: list[schemas.Play_server_episode_create],
     secret: str = Security(play_server_secret),
 ) -> None:
-    await models.Play_server_episode.save(
+    await models.MPlayServerEpisode.save(
         play_server_id=play_server_id,
         play_server_secret=secret,
         data=data,
@@ -40,7 +40,7 @@ async def delete_episode_from_play_server(
     episode_number: int,
     secret: str = Security(play_server_secret),
 ) -> None:
-    await models.Play_server_episode.delete(
+    await models.MPlayServerEpisode.delete(
         play_server_id=play_server_id,
         series_id=series_id,
         episode_number=episode_number,

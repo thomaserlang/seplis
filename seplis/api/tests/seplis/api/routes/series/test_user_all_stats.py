@@ -8,7 +8,7 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_series_user_stats(client: AsyncClient) -> None:
     await user_signin(client)
 
-    series1: schemas.Series = await models.Series.save(schemas.Series_create(
+    series1: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         runtime=30,
         episodes=[
@@ -17,7 +17,7 @@ async def test_series_user_stats(client: AsyncClient) -> None:
             schemas.Episode_create(number=3, title='3', runtime=40),
         ]
     ), series_id=None)
-    series2: schemas.Series = await models.Series.save(schemas.Series_create(
+    series2: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         runtime=30,
         episodes=[

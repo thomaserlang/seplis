@@ -19,7 +19,7 @@ async def episode_cast_add(
 ) -> None:
     data.series_id = series_id
     data.episode_number = episode_number
-    await models.Episode_cast.save(data=data)
+    await models.EpisodeCast.save(data=data)
 
 
 @router.delete('/{series_id}/episodes/{episode_number}/cast/{person_id}', status_code=204,
@@ -32,7 +32,7 @@ async def episode_cast_delete(
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ) -> None:
-    await models.Episode_cast.delete(
+    await models.EpisodeCast.delete(
         series_id=series_id,
         episode_number=episode_number,
         person_id=person_id,
@@ -50,11 +50,11 @@ async def episode_cast_get(
     page_query: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.Episode_cast).where(
-        models.Episode_cast.series_id == series_id,
-        models.Episode_cast.episode_number == episode_number,
+    query = sa.select(models.EpisodeCast).where(
+        models.EpisodeCast.series_id == series_id,
+        models.EpisodeCast.episode_number == episode_number,
     ).order_by(
-        models.Episode_cast.order,
+        models.EpisodeCast.order,
     )
     p = await utils.sqlalchemy.paginate_cursor(
         session=session,

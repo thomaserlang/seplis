@@ -1,8 +1,14 @@
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from decimal import Decimal
+from typing import TYPE_CHECKING
 
 import sqlalchemy as sa
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from .image import MImage
 
 from seplis.utils.sqlalchemy import UtcDateTime
 
@@ -10,42 +16,43 @@ from ... import config, constants, utils
 from .. import exceptions, schemas
 from ..database import auto_session, database
 from .base import Base
-from .episode import Episode
-from .genre import Genre
+from .episode import MEpisode
+from .genre import MGenre
 
 
-class Series(Base):
+class MSeries(Base):
     __tablename__ = 'series'
 
-    id = sa.Column(sa.Integer, autoincrement=True, primary_key=True)
-    created_at = sa.Column(UtcDateTime)
-    updated_at = sa.Column(UtcDateTime)
-    status = sa.Column(sa.Integer, default=0, nullable=False)
-    title = sa.Column(sa.String(200))
-    original_title = sa.Column(sa.String(200))
-    plot = sa.Column(sa.String(2000), nullable=True)
-    tagline = sa.Column(sa.String(500), nullable=True)
-    premiered = sa.Column(sa.Date)
-    ended = sa.Column(sa.Date)
-    externals = sa.Column(sa.JSON(), default=lambda: {})
-    importer_info = sa.Column(sa.String(45), nullable=True)
-    importer_episodes = sa.Column(sa.String(45), nullable=True)
-    seasons = sa.Column(sa.JSON(), default=lambda: [])
-    runtime = sa.Column(sa.Integer, nullable=True)
-    genres = sa.Column(sa.JSON(), default=lambda: [])
-    alternative_titles = sa.Column(sa.JSON(), default=lambda: [])
-    poster_image_id = sa.Column(sa.Integer, sa.ForeignKey('images.id'), nullable=True)
-    poster_image = sa.orm.relationship('Image', lazy=False)
-    episode_type = sa.Column(
-        sa.Integer,
-        default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE,
+    id: Mapped[int] = mapped_column(autoincrement=True, primary_key=True)
+    created_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    updated_at: Mapped[datetime | None] = mapped_column(UtcDateTime)
+    status: Mapped[int] = mapped_column(default=0)
+    title: Mapped[str | None] = mapped_column(sa.String(200))
+    original_title: Mapped[str | None] = mapped_column(sa.String(200))
+    plot: Mapped[str | None] = mapped_column(sa.String(2000))
+    tagline: Mapped[str | None] = mapped_column(sa.String(500))
+    premiered: Mapped[date | None] = mapped_column(sa.Date)
+    ended: Mapped[date | None] = mapped_column(sa.Date)
+    externals: Mapped[dict | None] = mapped_column(sa.JSON(), default=lambda: {})
+    importer_info: Mapped[str | None] = mapped_column(sa.String(45))
+    importer_episodes: Mapped[str | None] = mapped_column(sa.String(45))
+    seasons: Mapped[list | None] = mapped_column(sa.JSON(), default=lambda: [])
+    runtime: Mapped[int | None] = mapped_column()
+    genres: Mapped[list | None] = mapped_column(sa.JSON(), default=lambda: [])
+    alternative_titles: Mapped[list | None] = mapped_column(sa.JSON(), default=lambda: [])
+    poster_image_id: Mapped[int | None] = mapped_column(sa.ForeignKey('images.id'))
+    poster_image: Mapped[MImage | None] = relationship('MImage', lazy=False)
+    episode_type: Mapped[int | None] = mapped_column(
+        default=constants.SHOW_EPISODE_TYPE_SEASON_EPISODE
     )
-    total_episodes = sa.Column(sa.Integer, default=0)
-    language = sa.Column(sa.String(100), nullable=True)
-    popularity = sa.Column(sa.DECIMAL(precision=12, scale=4), nullable=True)
-    rating = sa.Column(sa.DECIMAL(4, 2), nullable=True)
-    rating_votes = sa.Column(sa.Integer, nullable=True)
-    rating_weighted = sa.Column(sa.DECIMAL(precision=12, scale=4), nullable=False, server_default='0')
+    total_episodes: Mapped[int | None] = mapped_column(default=0)
+    language: Mapped[str | None] = mapped_column(sa.String(100))
+    popularity: Mapped[Decimal | None] = mapped_column(sa.DECIMAL(precision=12, scale=4))
+    rating: Mapped[Decimal | None] = mapped_column(sa.DECIMAL(4, 2))
+    rating_votes: Mapped[int | None] = mapped_column()
+    rating_weighted: Mapped[Decimal] = mapped_column(
+        sa.DECIMAL(precision=12, scale=4), server_default='0'
+    )
 
     @property
     def importers(self):
@@ -56,152 +63,228 @@ class Series(Base):
 
     @classmethod
     @auto_session
-    async def save(cls,
+    async def save(
+        cls,
         data: schemas.Series_create | schemas.Series_update,
         series_id: int | None = None,
         patch=True,
         overwrite_genres=False,
-        session=None
+        session=None,
     ):
         _data = data.model_dump(exclude_unset=True) if data else {}
         if not series_id:
-            r = await session.execute(sa.insert(Series))
+            r = await session.execute(sa.insert(MSeries))
             series_id = r.lastrowid
             _data['created_at'] = datetime.now(tz=UTC)
             if not data.original_title:
                 _data['original_title'] = data.title
         else:
-            m = await session.scalar(sa.select(Series.id).where(Series.id == series_id))
+            m = await session.scalar(sa.select(MSeries.id).where(MSeries.id == series_id))
             if not m:
                 raise HTTPException(404, f'Unknown series id: {series_id}')
             _data['updated_at'] = datetime.now(tz=UTC)
 
         if 'externals' in _data:
-            _data['externals'] = await cls._save_externals(session, series_id, _data['externals'], patch)
+            _data['externals'] = await cls._save_externals(
+                session, series_id, _data['externals'], patch
+            )
         if 'alternative_titles' in _data:
-            _data['alternative_titles'] = await cls._save_alternative_titles(session, series_id, _data['alternative_titles'], patch)
+            _data['alternative_titles'] = await cls._save_alternative_titles(
+                session, series_id, _data['alternative_titles'], patch
+            )
         if 'genre_names' in _data:
-            _data['genres'] = await cls._save_genres(session, series_id, _data.pop('genre_names'), False if overwrite_genres else patch)
+            _data['genres'] = await cls._save_genres(
+                session,
+                series_id,
+                _data.pop('genre_names'),
+                False if overwrite_genres else patch,
+            )
         if 'importers' in _data:
             _data.update(utils.flatten(_data.pop('importers'), 'importer'))
         if data.rating and data.rating_votes:
-            _data['rating_weighted'] = utils.calculate_weighted_rating(data.rating, data.rating_votes)
+            _data['rating_weighted'] = utils.calculate_weighted_rating(
+                data.rating, data.rating_votes
+            )
 
         if 'episodes' in _data:
             _data.pop('episodes')
             await cls._save_episodes(session, series_id, data.episodes, patch=patch)
         if _data:
-            await session.execute(sa.update(Series).where(Series.id == series_id).values(**_data))
-        data = await session.scalar(sa.select(Series).where(Series.id == series_id))
+            await session.execute(
+                sa.update(MSeries).where(MSeries.id == series_id).values(**_data)
+            )
+        data = await session.scalar(sa.select(MSeries).where(MSeries.id == series_id))
         await cls._save_for_search(data)
         return schemas.Series.model_validate(data)
 
     @classmethod
     async def delete(self, series_id: int) -> None:
-        from . import Image
+        from . import MImage
+
         async with database.session() as session:
             async with session.begin():
-                await session.execute(sa.delete(Series).where(
-                    Series.id == series_id))
-                await session.execute(sa.delete(Image).where(
-                    Image.relation_type == 'series',
-                    Image.relation_id == series_id,
-                ))
+                await session.execute(sa.delete(MSeries).where(MSeries.id == series_id))
+                await session.execute(
+                    sa.delete(MImage).where(
+                        MImage.relation_type == 'series',
+                        MImage.relation_id == series_id,
+                    )
+                )
                 await session.commit()
                 await database.es.delete(
-                    index=config.api.elasticsearch.index_prefix+'titles',
+                    index=config.api.elasticsearch.index_prefix + 'titles',
                     id=f'series-{series_id}',
                 )
 
     @staticmethod
-    async def _save_externals(session: AsyncSession, series_id: str | int, externals: dict[str, str | None], patch: bool):
+    async def _save_externals(
+        session: AsyncSession,
+        series_id: str | int,
+        externals: dict[str, str | None],
+        patch: bool,
+    ):
         current_externals = {}
         if not patch:
-            await session.execute(sa.delete(Series_external).where(Series_external.series_id == series_id))
+            await session.execute(
+                sa.delete(MSeriesExternal).where(MSeriesExternal.series_id == series_id)
+            )
         else:
-            current_externals = await session.scalar(sa.select(Series.externals).where(Series.id == series_id))
+            current_externals = await session.scalar(
+                sa.select(MSeries.externals).where(MSeries.id == series_id)
+            )
 
         for key in externals:
-            if externals[key]:                
-                dup_series = await session.scalar(sa.select(Series).where(
-                    Series_external.title == key,
-                    Series_external.value == externals[key],
-                    Series_external.series_id != series_id,
-                    Series.id == Series_external.series_id,
-                ))
+            if externals[key]:
+                dup_series = await session.scalar(
+                    sa.select(MSeries).where(
+                        MSeriesExternal.title == key,
+                        MSeriesExternal.value == externals[key],
+                        MSeriesExternal.series_id != series_id,
+                        MSeries.id == MSeriesExternal.series_id,
+                    )
+                )
                 if dup_series:
                     raise exceptions.Series_external_duplicated(
                         external_title=key,
                         external_value=externals[key],
-                        series=utils.json_loads(utils.json_dumps(
-                            schemas.Series.model_validate(dup_series)))
+                        series=utils.json_loads(
+                            utils.json_dumps(schemas.Series.model_validate(dup_series))
+                        ),
                     )
 
-            if (key not in current_externals):
+            if key not in current_externals:
                 if externals[key]:
-                    await session.execute(sa.insert(Series_external)
-                                          .values(series_id=series_id, title=key, value=externals[key]))
+                    await session.execute(
+                        sa.insert(MSeriesExternal).values(
+                            series_id=series_id, title=key, value=externals[key]
+                        )
+                    )
                     current_externals[key] = externals[key]
-            elif (current_externals[key] != externals[key]):
-                if (externals[key]):
-                    await session.execute(sa.update(Series_external).where(
-                        Series_external.series_id == series_id,
-                        Series_external.title == key,
-                    ).values(value=externals[key]))
+            elif current_externals[key] != externals[key]:
+                if externals[key]:
+                    await session.execute(
+                        sa.update(MSeriesExternal)
+                        .where(
+                            MSeriesExternal.series_id == series_id,
+                            MSeriesExternal.title == key,
+                        )
+                        .values(value=externals[key])
+                    )
                     current_externals[key] = externals[key]
                 else:
-                    await session.execute(sa.delete(Series_external).where(
-                        Series_external.series_id == series_id,
-                        Series_external.title == key
-                    ))
+                    await session.execute(
+                        sa.delete(MSeriesExternal).where(
+                            MSeriesExternal.series_id == series_id,
+                            MSeriesExternal.title == key,
+                        )
+                    )
                     current_externals.pop(key)
         return current_externals
 
     @staticmethod
-    async def _save_alternative_titles(session: AsyncSession, series_id: str | int, alternative_titles: list[str], patch: bool):
+    async def _save_alternative_titles(
+        session: AsyncSession,
+        series_id: str | int,
+        alternative_titles: list[str],
+        patch: bool,
+    ):
         if not patch:
             return set(alternative_titles)
-        current_alternative_titles = await session.scalar(sa.select(Series.alternative_titles).where(Series.id == series_id))
+        current_alternative_titles = await session.scalar(
+            sa.select(MSeries.alternative_titles).where(MSeries.id == series_id)
+        )
         return set(current_alternative_titles + alternative_titles)
 
     @staticmethod
-    async def _save_genres(session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool) -> list[schemas.Genre]:
-        genre_ids: set[int] = await Genre.get_or_create_genres(genres, type_='series')
+    async def _save_genres(
+        session: AsyncSession, series_id: str | int, genres: list[str | int], patch: bool
+    ) -> list[schemas.Genre]:
+        genre_ids: set[int] = await MGenre.get_or_create_genres(genres, type_='series')
         current_genres: set[int] = set()
         if patch:
-            current_genres = set(await session.scalars(sa.select(Series_genre.genre_id).where(Series_genre.series_id == series_id)))
+            current_genres = set(
+                await session.scalars(
+                    sa.select(Series_genre.genre_id).where(
+                        Series_genre.series_id == series_id
+                    )
+                )
+            )
         else:
-            await session.execute(sa.delete(Series_genre).where(Series_genre.series_id == series_id))
-        new_genre_ids = (genre_ids - current_genres)
+            await session.execute(
+                sa.delete(Series_genre).where(Series_genre.series_id == series_id)
+            )
+        new_genre_ids = genre_ids - current_genres
         if new_genre_ids:
-            await session.execute(sa.insert(Series_genre).prefix_with('IGNORE'), [
-                {'series_id': series_id, 'genre_id': genre_id} for genre_id in new_genre_ids
-            ])
+            await session.execute(
+                sa.insert(Series_genre).prefix_with('IGNORE'),
+                [
+                    {'series_id': series_id, 'genre_id': genre_id}
+                    for genre_id in new_genre_ids
+                ],
+            )
         if genre_ids != current_genres:
-            await session.execute(sa.text('update genres set number_of = (select count(genres.id) from series_genres where series_genres.genre_id = genres.id) where type="series"' ))
-        rr = await session.scalars(sa.select(Genre).where(Series_genre.series_id == series_id, Genre.id == Series_genre.genre_id).order_by(Genre.name))
+            await session.execute(
+                sa.text(
+                    'update genres set number_of = (select count(genres.id) from series_genres where series_genres.genre_id = genres.id) where type="series"'
+                )
+            )
+        rr = await session.scalars(
+            sa.select(MGenre)
+            .where(Series_genre.series_id == series_id, MGenre.id == Series_genre.genre_id)
+            .order_by(MGenre.name)
+        )
         return [schemas.Genre.model_validate(r) for r in rr]
 
     @staticmethod
-    async def _save_for_search(series: Series) -> None:
+    async def _save_for_search(series: MSeries) -> None:
         doc = series.title_document()
         if not doc:
             return
         await database.es.index(
-            index=config.api.elasticsearch.index_prefix+'titles',
+            index=config.api.elasticsearch.index_prefix + 'titles',
             id=f'series-{series.id}',
             document=doc.model_dump(),
         )
 
     @classmethod
-    async def _save_episodes(cls, session: AsyncSession, series_id: int, episodes: list[schemas.Episode_create | schemas.Episode_update], patch: bool) -> None:
+    async def _save_episodes(
+        cls,
+        session: AsyncSession,
+        series_id: int,
+        episodes: list[schemas.Episode_create | schemas.Episode_update],
+        patch: bool,
+    ) -> None:
         if not patch:
-            await session.execute(sa.delete(Episode).where(Episode.series_id == series_id))
+            await session.execute(
+                sa.delete(MEpisode).where(MEpisode.series_id == series_id)
+            )
         else:
-            await session.execute(sa.delete(Episode).where(
-                Episode.series_id == series_id,
-                Episode.number.notin_([e.number for e in episodes if e.number]),
-            ))
+            await session.execute(
+                sa.delete(MEpisode).where(
+                    MEpisode.series_id == series_id,
+                    MEpisode.number.notin_([e.number for e in episodes if e.number]),
+                )
+            )
         if not episodes:
             return
         rows = []
@@ -209,9 +292,11 @@ class Series(Base):
             data = episode.model_dump(exclude_unset=True)
             data['series_id'] = series_id
             if 'air_datetime' in data and 'air_date' not in data:
-                data['air_date'] = episode.air_datetime.date() if episode.air_datetime else None
+                data['air_date'] = (
+                    episode.air_datetime.date() if episode.air_datetime else None
+                )
             rows.append(data)
-        await session.execute(sa.insert(Episode).prefix_with('IGNORE'), rows)
+        await session.execute(sa.insert(MEpisode).prefix_with('IGNORE'), rows)
         await cls.update_seasons(session, series_id)
 
     def title_document(self):
@@ -231,8 +316,9 @@ class Series(Base):
             titles=[schemas.Search_title_document_title(title=title) for title in titles],
             release_date=self.premiered,
             imdb=self.externals.get('imdb'),
-            poster_image=schemas.Image.model_validate(
-                self.poster_image) if self.poster_image else None,
+            poster_image=schemas.Image.model_validate(self.poster_image)
+            if self.poster_image
+            else None,
             popularity=self.popularity or 0,
             genres=self.genres,
             rating=self.rating,
@@ -247,89 +333,108 @@ class Series(Base):
     async def update_seasons(session: AsyncSession, series_id: int) -> None:
         """Counts the number of episodes per season.
 
-            [
-                {
-                    'season': 1,
-                    'from': 1,
-                    'to': 22,
-                    'total': 22,
-                },
-                {
-                    'season': 2,
-                    'from': 23,
-                    'to': 44,
-                    'total': 22,
-                }
-            ]
+        [
+            {
+                'season': 1,
+                'from': 1,
+                'to': 22,
+                'total': 22,
+            },
+            {
+                'season': 2,
+                'from': 23,
+                'to': 44,
+                'total': 22,
+            }
+        ]
         """
-        rows = await session.execute(sa.select(
-            Episode.season.label('season'),
-            sa.func.min(Episode.number).label('from_'),
-            sa.func.max(Episode.number).label('to'),
-            sa.func.count(Episode.number).label('total'),
-        ).where(
-            Episode.series_id == series_id,
-        ).group_by(Episode.season))
+        rows = await session.execute(
+            sa.select(
+                MEpisode.season.label('season'),
+                sa.func.min(MEpisode.number).label('from_'),
+                sa.func.max(MEpisode.number).label('to'),
+                sa.func.count(MEpisode.number).label('total'),
+            )
+            .where(
+                MEpisode.series_id == series_id,
+            )
+            .group_by(MEpisode.season)
+        )
         seasons: list[schemas.Series_season] = []
         total_episodes = 0
         for row in rows:
             total_episodes += row.total
             if not row.season:
                 continue
-            seasons.append(schemas.Series_season(
-                season=row.season,
-                from_=row.from_,
-                to=row.to,
-                total=row.total,
-            ))
-        await session.execute(sa.update(Series).where(Series.id == series_id).values(
-            seasons=seasons,
-            total_episodes=total_episodes,
-        ))
+            seasons.append(
+                schemas.Series_season(
+                    season=row.season,
+                    from_=row.from_,
+                    to=row.to,
+                    total=row.total,
+                )
+            )
+        await session.execute(
+            sa.update(MSeries)
+            .where(MSeries.id == series_id)
+            .values(
+                seasons=seasons,
+                total_episodes=total_episodes,
+            )
+        )
 
     @staticmethod
-    async def get_by_external(session: AsyncSession, external_title: str, external_value: str) -> Series:
-        r = await session.scalars(sa.select(Series).where(
-            Series_external.title == external_title,
-            Series_external.value == external_value,
-            Series.id == Series_external.series_id,
-        ))
+    async def get_by_external(
+        session: AsyncSession, external_title: str, external_value: str
+    ) -> MSeries:
+        r = await session.scalars(
+            sa.select(MSeries).where(
+                MSeriesExternal.title == external_title,
+                MSeriesExternal.value == external_value,
+                MSeries.id == MSeriesExternal.series_id,
+            )
+        )
         if r:
             return r.first()
         return None
 
 
-class Series_external(Base):
+class MSeriesExternal(Base):
     __tablename__ = 'series_externals'
 
-    series_id = sa.Column(sa.Integer, sa.ForeignKey(
-        'series.id'), primary_key=True)
-    title = sa.Column(sa.String(45), primary_key=True)
-    value = sa.Column(sa.String(45))
+    series_id: Mapped[int] = mapped_column(sa.ForeignKey('series.id'), primary_key=True)
+    title: Mapped[str] = mapped_column(sa.String(45), primary_key=True)
+    value: Mapped[str | None] = mapped_column(sa.String(45))
 
 
 class Series_genre(Base):
     __tablename__ = 'series_genres'
 
-    series_id = sa.Column(sa.Integer, sa.ForeignKey(
-        'series.id'), primary_key=True, autoincrement=False)
-    genre_id = sa.Column(sa.Integer, sa.ForeignKey(
-        'genres.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False)
+    series_id: Mapped[int] = mapped_column(
+        sa.ForeignKey('series.id'), primary_key=True, autoincrement=False
+    )
+    genre_id: Mapped[int] = mapped_column(
+        sa.ForeignKey('genres.id', ondelete='cascade', onupdate='cascade'),
+        primary_key=True,
+        autoincrement=False,
+    )
 
 
 async def rebuild_series() -> None:
     async def c():
         async with database.session() as session:
-            result = await session.stream(sa.select(Series))
+            result = await session.stream(sa.select(MSeries))
             async for series in result.yield_per(1000):
                 for s in series:
                     d = s.title_document()
                     if not d:
                         continue
                     yield {
-                        '_index': config.api.elasticsearch.index_prefix+'titles',
+                        '_index': config.api.elasticsearch.index_prefix + 'titles',
                         '_id': f'series-{s.id}',
-                        **d.model_dump()
+                        **d.model_dump(),
                     }
+
     from elasticsearch import helpers
+
     await helpers.async_bulk(database.es, c())

@@ -15,9 +15,9 @@ async def get_favorite(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_lists']),
 ):
-    w = await session.scalar(sa.select(models.Movie_favorite.created_at).where(
-        models.Movie_favorite.user_id == user.id,
-        models.Movie_favorite.movie_id == movie_id,
+    w = await session.scalar(sa.select(models.MMovieFavorite.created_at).where(
+        models.MMovieFavorite.user_id == user.id,
+        models.MMovieFavorite.movie_id == movie_id,
     ))
     if not w:
         return schemas.Movie_favorite()
@@ -35,7 +35,7 @@ async def add_to_favorite(
     movie_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
 ) -> None:
-    await models.Movie_favorite.add(user_id=user.id, movie_id=movie_id)
+    await models.MMovieFavorite.add(user_id=user.id, movie_id=movie_id)
 
 
 @router.delete('/{movie_id}/favorite', status_code=204,
@@ -46,4 +46,4 @@ async def remove_from_favorite(
     movie_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),    
 ) -> None:
-    await models.Movie_favorite.remove(user_id=user.id, movie_id=movie_id)
+    await models.MMovieFavorite.remove(user_id=user.id, movie_id=movie_id)

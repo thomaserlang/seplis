@@ -18,7 +18,7 @@ async def test_token(client: AsyncClient) -> None:
     )
     assert r.status_code == 201, r.content
     async with database.session() as session:
-        app = models.App(
+        app = models.MApp(
             user_id=1,
             name='testbase app',
             redirect_uri='',

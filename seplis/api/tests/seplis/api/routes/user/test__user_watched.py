@@ -8,7 +8,7 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_user_watched(client: AsyncClient) -> None:
     await user_signin(client)
 
-    series1: schemas.Series = await models.Series.save(
+    series1: schemas.Series = await models.MSeries.save(
         schemas.Series_create(
             title='Test series 1',
             episodes=[
@@ -19,7 +19,7 @@ async def test_user_watched(client: AsyncClient) -> None:
         series_id=None,
     )
 
-    series2: schemas.Series = await models.Series.save(
+    series2: schemas.Series = await models.MSeries.save(
         schemas.Series_create(
             title='Test series 2',
             episodes=[
@@ -30,14 +30,14 @@ async def test_user_watched(client: AsyncClient) -> None:
         series_id=None,
     )
 
-    movie1: schemas.Movie = await models.Movie.save(
+    movie1: schemas.Movie = await models.MMovie.save(
         schemas.Movie_create(
             title='Movie 1',
         ),
         movie_id=None,
     )
 
-    movie2: schemas.Movie = await models.Movie.save(
+    movie2: schemas.Movie = await models.MMovie.save(
         schemas.Movie_create(
             title='Movie 2',
         ),

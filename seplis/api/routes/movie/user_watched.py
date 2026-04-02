@@ -15,9 +15,9 @@ async def get_watched(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
-    w = await session.scalar(sa.select(models.Movie_watched).where(
-        models.Movie_watched.user_id == user.id,
-        models.Movie_watched.movie_id == movie_id,
+    w = await session.scalar(sa.select(models.MMovieWatched).where(
+        models.MMovieWatched.user_id == user.id,
+        models.MMovieWatched.movie_id == movie_id,
     ))
     return schemas.Movie_watched.model_validate(w) if w else schemas.Movie_watched()
 
@@ -32,7 +32,7 @@ async def watched_increment(
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):  
     data = schemas.Movie_watched_increment.model_validate(request) if request else schemas.Movie_watched_increment()
-    w = await models.Movie_watched.increment(
+    w = await models.MMovieWatched.increment(
         user_id=user.id,
         movie_id=movie_id,
         data=data,
@@ -48,7 +48,7 @@ async def watched_decrement(
     movie_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),    
 ):
-    w = await models.Movie_watched.decrement(
+    w = await models.MMovieWatched.decrement(
         user_id=user.id,
         movie_id=movie_id,
     )

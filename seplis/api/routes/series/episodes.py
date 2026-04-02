@@ -29,23 +29,23 @@ async def get_episodes(
     page_cursor: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.Episode).where(
-        models.Episode.series_id == series_id,
+    query = sa.select(models.MEpisode).where(
+        models.MEpisode.series_id == series_id,
     ).order_by(
-        models.Episode.number
+        models.MEpisode.number
     )
     if season:
-        query = query.where(models.Episode.season == season)
+        query = query.where(models.MEpisode.season == season)
     if episode:
-        query = query.where(models.Episode.episode == episode)
+        query = query.where(models.MEpisode.episode == episode)
     if number:
-        query = query.where(models.Episode.number == number)
+        query = query.where(models.MEpisode.number == number)
     if air_date:
-        query = query.where(models.Episode.air_date == air_date)
+        query = query.where(models.MEpisode.air_date == air_date)
     if air_date_ge:
-        query = query.where(models.Episode.air_date >= air_date_ge)
+        query = query.where(models.MEpisode.air_date >= air_date_ge)
     if air_date_le:
-        query = query.where(models.Episode.air_date <= air_date_le)
+        query = query.where(models.MEpisode.air_date <= air_date_le)
 
     p = await utils.sqlalchemy.paginate_cursor(
         session=session, 

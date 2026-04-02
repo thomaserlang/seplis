@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 
 import sqlalchemy as sa
+from sqlalchemy.orm import Mapped, mapped_column
 
 from seplis.utils.sqlalchemy import UtcDateTime
 
@@ -8,29 +9,40 @@ from ..database import AsyncSession, auto_session
 from .base import Base
 
 
-class Movie_watchlist(Base):
+class MMovieWatchlist(Base):
     __tablename__ = 'movie_watchlist'
 
-    movie_id = sa.Column(sa.Integer, sa.ForeignKey(
-        'movies.id'), primary_key=True, autoincrement=False)
-    user_id = sa.Column(sa.Integer, sa.ForeignKey(
-        'users.id'), primary_key=True, autoincrement=False)
-    created_at = sa.Column(UtcDateTime, nullable=False)
+    movie_id: Mapped[int] = mapped_column(
+        sa.ForeignKey('movies.id'), primary_key=True, autoincrement=False
+    )
+    user_id: Mapped[int] = mapped_column(
+        sa.ForeignKey('users.id'), primary_key=True, autoincrement=False
+    )
+    created_at: Mapped[datetime] = mapped_column(UtcDateTime)
 
     @staticmethod
     @auto_session
-    async def add(user_id: int | str, movie_id: int, session: AsyncSession = None) -> None:
-        await session.execute(sa.insert(Movie_watchlist).values(
-            movie_id=movie_id,
-            user_id=user_id,
-            created_at=datetime.now(tz=UTC),
-        ).prefix_with('IGNORE'))
-
+    async def add(
+        user_id: int | str, movie_id: int, session: AsyncSession = None
+    ) -> None:
+        await session.execute(
+            sa.insert(MMovieWatchlist)
+            .values(
+                movie_id=movie_id,
+                user_id=user_id,
+                created_at=datetime.now(tz=UTC),
+            )
+            .prefix_with('IGNORE')
+        )
 
     @staticmethod
     @auto_session
-    async def remove(user_id: int | str, movie_id: int, session: AsyncSession = None) -> None:
-        await session.execute(sa.delete(Movie_watchlist).where(
-            Movie_watchlist.movie_id == movie_id,
-            Movie_watchlist.user_id == user_id,
-        ))
+    async def remove(
+        user_id: int | str, movie_id: int, session: AsyncSession = None
+    ) -> None:
+        await session.execute(
+            sa.delete(MMovieWatchlist).where(
+                MMovieWatchlist.movie_id == movie_id,
+                MMovieWatchlist.user_id == user_id,
+            )
+        )

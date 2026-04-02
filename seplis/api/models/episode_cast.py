@@ -1,33 +1,47 @@
+from typing import TYPE_CHECKING
+
 import sqlalchemy as sa
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .. import schemas
 from ..database import AsyncSession, auto_session
 from .base import Base
 
+if TYPE_CHECKING:
+    from .person import MPerson
 
-class Episode_cast(Base):
+
+class EpisodeCast(Base):
     __tablename__ = 'episode_cast'
-    person_id = sa.Column(sa.Integer, sa.ForeignKey('people.id'), primary_key=True)
-    series_id = sa.Column(sa.Integer, sa.ForeignKey('series.id'), primary_key=True)
-    person = sa.orm.relationship('Person', lazy=False)
-    episode_number = sa.Column(sa.Integer, primary_key=True)
-    character = sa.Column(sa.String(200))
-    order = sa.Column(sa.Integer)
+
+    person_id: Mapped[int] = mapped_column(sa.ForeignKey('people.id'), primary_key=True)
+    series_id: Mapped[int] = mapped_column(sa.ForeignKey('series.id'), primary_key=True)
+    person: Mapped[MPerson] = relationship('MPerson', lazy=False)
+    episode_number: Mapped[int] = mapped_column(primary_key=True)
+    character: Mapped[str | None] = mapped_column(sa.String(200))
+    order: Mapped[int | None] = mapped_column()
 
     @staticmethod
     @auto_session
-    async def save(data: schemas.Episode_cast_person_create, session: AsyncSession) -> None:
+    async def save(
+        data: schemas.Episode_cast_person_create, session: AsyncSession
+    ) -> None:
         data_ = data.model_dump(exclude_unset=True)
-        await session.execute(sa.dialects.mysql.insert(Episode_cast).values(
-            data_
-        ).on_duplicate_key_update(data_))
-
+        await session.execute(
+            sa.dialects.mysql.insert(EpisodeCast)
+            .values(data_)
+            .on_duplicate_key_update(data_)
+        )
 
     @staticmethod
     @auto_session
-    async def delete(series_id: int, episode_number: int, person_id: int, session: AsyncSession) -> None:
-        await session.execute(sa.delete(Episode_cast).where(
-            Episode_cast.series_id == series_id,
-            Episode_cast.episode_number == episode_number,
-            Episode_cast.person_id == person_id,
-        ))
+    async def delete(
+        series_id: int, episode_number: int, person_id: int, session: AsyncSession
+    ) -> None:
+        await session.execute(
+            sa.delete(EpisodeCast).where(
+                EpisodeCast.series_id == series_id,
+                EpisodeCast.episode_number == episode_number,
+                EpisodeCast.person_id == person_id,
+            )
+        )

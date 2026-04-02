@@ -16,10 +16,10 @@ def filter_user_rating(query: any, filter_query: Series_query_filter):
 
 def filter_user_rating_query(query: any, user_id: int):
     return query.join(
-        models.Series_user_rating,
+        models.MSeriesUserRating,
         sa.and_(
-            models.Series_user_rating.user_id == user_id,
-            models.Series.id == models.Series_user_rating.series_id,
+            models.MSeriesUserRating.user_id == user_id,
+            models.MSeries.id == models.MSeriesUserRating.series_id,
         ),
         isouter=True,
     )

@@ -14,18 +14,18 @@ def filter_user_has_watched(query, filter_query: Movie_query_filter):
 
     if filter_query.user_has_watched or has_sort:
         query = query.where(
-            models.Movie_watched.user_id == filter_query.user.id,
-            models.Movie_watched.movie_id == models.Movie.id,
+            models.MMovieWatched.user_id == filter_query.user.id,
+            models.MMovieWatched.movie_id == models.MMovie.id,
         )
     elif not filter_query.user_has_watched:
         query = query.join(
-            models.Movie_watched,
+            models.MMovieWatched,
             sa.and_(
-                models.Movie_watched.user_id == filter_query.user.id,
-                models.Movie_watched.movie_id == models.Movie.id,
+                models.MMovieWatched.user_id == filter_query.user.id,
+                models.MMovieWatched.movie_id == models.MMovie.id,
             ),
             isouter=True,
         ).where(
-            models.Movie_watched.movie_id is None,
+            models.MMovieWatched.movie_id is None,
         )
     return query

@@ -30,16 +30,16 @@ async def get_series(
 
 @auto_session
 async def series_watchlist(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
-    count: int = await session.scalar(sa.select(sa.func.count(models.Series_watchlist.series_id)).where(
-        models.Series_watchlist.user_id == user_id
+    count: int = await session.scalar(sa.select(sa.func.count(models.MSeriesWatchlist.series_id)).where(
+        models.MSeriesWatchlist.user_id == user_id
     ))
     return {'series_watchlist': count}
 
 
 @auto_session
 async def series_watched(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
-    count: int = await session.scalar(sa.select(sa.func.count(models.Episode_last_watched.series_id)).where(
-        models.Episode_last_watched.user_id == user_id,
+    count: int = await session.scalar(sa.select(sa.func.count(models.MEpisodeLastWatched.series_id)).where(
+        models.MEpisodeLastWatched.user_id == user_id,
     ))
     return {'series_watched': count}
 
@@ -47,19 +47,19 @@ async def series_watched(user_id: int | str, session: AsyncSession = None) -> di
 @auto_session
 async def episodes_watched(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
     r = await session.execute(sa.select(
-        sa.func.sum(models.Episode_watched.times).label('episodes_watched'),
+        sa.func.sum(models.MEpisodeWatched.times).label('episodes_watched'),
         sa.func.sum(
-            models.Episode_watched.times * \
+            models.MEpisodeWatched.times * \
                 sa.func.ifnull(
-                    models.Episode.runtime,
-                    sa.func.ifnull(models.Series.runtime, 0),
+                    models.MEpisode.runtime,
+                    sa.func.ifnull(models.MSeries.runtime, 0),
                 )
         ).label('episodes_watched_minutes'),
     ).where(
-        models.Episode_watched.user_id == user_id,
-        models.Episode.series_id == models.Episode_watched.series_id,
-        models.Episode.number == models.Episode_watched.episode_number,
-        models.Series.id == models.Episode_watched.series_id,
+        models.MEpisodeWatched.user_id == user_id,
+        models.MEpisode.series_id == models.MEpisodeWatched.series_id,
+        models.MEpisode.number == models.MEpisodeWatched.episode_number,
+        models.MSeries.id == models.MEpisodeWatched.series_id,
     ))
     r = r.first()
     return {
@@ -71,11 +71,11 @@ async def episodes_watched(user_id: int | str, session: AsyncSession = None) -> 
 @auto_session
 async def series_finished(user_id: int | str, session: AsyncSession = None) -> dict[str, int]:
     count: int = await session.scalar(sa.select(
-        sa.func.count(models.Series.id)
+        sa.func.count(models.MSeries.id)
     ).where(
-        models.Episode_watched.user_id == user_id,
-        models.Series.id == models.Episode_watched.series_id,
-        models.Episode_watched.episode_number == models.Series.total_episodes,
-        models.Episode_watched.times > 0,
+        models.MEpisodeWatched.user_id == user_id,
+        models.MSeries.id == models.MEpisodeWatched.series_id,
+        models.MEpisodeWatched.episode_number == models.MSeries.total_episodes,
+        models.MEpisodeWatched.times > 0,
     ))
     return {'series_finished': count}

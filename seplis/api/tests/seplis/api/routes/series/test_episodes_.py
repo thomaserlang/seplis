@@ -6,7 +6,7 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 
 @pytest.mark.asyncio
 async def test_episode_to_watch(client: AsyncClient) -> None:
-    series: schemas.Series = await models.Series.save(schemas.Series_create(
+    series: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         runtime=30,
         episodes=[
@@ -55,7 +55,7 @@ async def test_episode_to_watch(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_pagination(client: AsyncClient) -> None:
-    series: schemas.Series = await models.Series.save(schemas.Series_create(
+    series: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         runtime=30,
         episodes=[

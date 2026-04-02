@@ -8,11 +8,11 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_user_movies_favorites(client: AsyncClient) -> None:
     await user_signin(client)
 
-    movie1: schemas.Movie = await models.Movie.save(schemas.Movie_create(
+    movie1: schemas.Movie = await models.MMovie.save(schemas.Movie_create(
         title='Movie 1',
     ), movie_id=None)
 
-    movie2: schemas.Movie = await models.Movie.save(schemas.Movie_create(
+    movie2: schemas.Movie = await models.MMovie.save(schemas.Movie_create(
         title='Movie 2',
     ), movie_id=None)
     

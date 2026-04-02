@@ -39,5 +39,5 @@ def filter_movies_query(query: any, filter_query: Movie_query_filter):
     query = filter_language(query, filter_query)
     query = order_query(query, filter_query)
     if filter_query.collection_id:
-        query = query.where(models.Movie.collection_id.in_(filter_query.collection_id))
+        query = query.where(models.MMovie.collection_id.in_(filter_query.collection_id))
     return query

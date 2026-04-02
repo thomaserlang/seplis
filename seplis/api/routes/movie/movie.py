@@ -22,7 +22,7 @@ async def get_movies(
     session: AsyncSession = Depends(get_session),
     filter_query: Movie_query_filter = Depends(),
 ):
-    query = sa.select(models.Movie)
+    query = sa.select(models.MMovie)
     return await filter_movies(
         query=query,
         session=session,
@@ -39,7 +39,7 @@ async def get_movie(
     user: schemas.User_authenticated | None = Depends(
         get_current_user_no_raise),
 ):
-    movie = await session.scalar(sa.select(models.Movie).where(models.Movie.id == movie_id))
+    movie = await session.scalar(sa.select(models.MMovie).where(models.MMovie.id == movie_id))
     if not movie:
         raise HTTPException(404, 'Unknown movie')
     await expand_movies(movies=[movie], user=user, expand=expand)
@@ -55,7 +55,7 @@ async def create_movie(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['movie:create']),
 ):
-    movie = await models.Movie.save(data, movie_id=None, patch=False)
+    movie = await models.MMovie.save(data, movie_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_movie', int(movie.id))
     return movie
 
@@ -70,7 +70,7 @@ async def update_movie(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['movie:edit']),
 ):
-    return await models.Movie.save(movie_id=movie_id, data=data, patch=False)
+    return await models.MMovie.save(movie_id=movie_id, data=data, patch=False)
 
 
 @router.patch('/{movie_id}', response_model=schemas.Movie,
@@ -83,7 +83,7 @@ async def patch_movie(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['movie:edit']),
 ):
-    return await models.Movie.save(movie_id=movie_id, data=data, patch=True)
+    return await models.MMovie.save(movie_id=movie_id, data=data, patch=True)
 
 
 @router.delete('/{movie_id}', status_code=204,
@@ -95,7 +95,7 @@ async def delete_movie(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['movie:delete']),
 ) -> None:
-    await models.Movie.delete(movie_id=movie_id)
+    await models.MMovie.delete(movie_id=movie_id)
 
 
 @router.post('/{movie_id}/update', status_code=204,

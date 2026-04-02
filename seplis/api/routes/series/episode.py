@@ -21,9 +21,9 @@ async def get_episode(
     user: schemas.User_authenticated | None = Depends(get_current_user_no_raise),
     session: AsyncSession = Depends(get_session),
 ):
-    episode = await session.scalar(sa.select(models.Episode).where(
-        models.Episode.series_id == series_id,
-        models.Episode.number == number,
+    episode = await session.scalar(sa.select(models.MEpisode).where(
+        models.MEpisode.series_id == series_id,
+        models.MEpisode.number == number,
     ))
     if not episode:
         raise HTTPException(404, 'Unknown episode')
@@ -43,7 +43,7 @@ async def delete_episode(
     session: AsyncSession=Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ) -> None:
-    await session.execute(sa.delete(models.Episode).where(
-        models.Episode.series_id == series_id,
-        models.Episode.number == number,
+    await session.execute(sa.delete(models.MEpisode).where(
+        models.MEpisode.series_id == series_id,
+        models.MEpisode.number == number,
     ))

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, confloat, conint, constr, field_vali
 from .genre import Genre
 from .helper import default_datetime
 from .image import Image
-from .movie_collection import Movie_collection
+from .movie_collection import MMovieCollection
 
 
 class Movie_create(BaseModel, extra='forbid', validate_assignment=True):   
@@ -90,7 +90,7 @@ class Movie(BaseModel):
     rating: float | None = None
     rating_votes: int | None = None
     genres: list[Genre]
-    collection: Movie_collection | None = None
+    collection: MMovieCollection | None = None
     user_watched: Movie_watched | None = None
     user_watchlist: Movie_watchlist | None = None
     user_favorite: Movie_favorite | None = None

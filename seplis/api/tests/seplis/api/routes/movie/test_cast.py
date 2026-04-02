@@ -8,11 +8,11 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_movie_cast(client: AsyncClient) -> None:
     await user_signin(client, ['movie:edit'])
 
-    movie = await models.Movie.save(schemas.Movie_create(
+    movie = await models.MMovie.save(schemas.Movie_create(
         title='Test movie',
     ))
 
-    person = await models.Person.save(schemas.Person_create(
+    person = await models.MPerson.save(schemas.Person_create(
         name='Test person',
     ))
 

@@ -8,7 +8,7 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_episode_last_watched(client: AsyncClient) -> None:
     await user_signin(client)
 
-    series: schemas.Series = await models.Series.save(schemas.Series_create(
+    series: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         runtime=30,
         episodes=[

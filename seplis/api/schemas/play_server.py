@@ -3,6 +3,8 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, conint, constr
 
+from seplis.utils import datetime_now
+
 from .helper import default_datetime
 from .user import User_public
 
@@ -10,7 +12,7 @@ from .user import User_public
 class Play_server_create(BaseModel):
     name: constr(min_length=1, max_length=45)
     url: constr(min_length=1, max_length=200)
-    secret: constr(min_length=20, max_length=200)    
+    secret: constr(min_length=20, max_length=200)
 
 
 class Play_server_update(BaseModel):
@@ -25,8 +27,10 @@ class Play_server(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class Play_server_with_url(Play_server):
     url: str
+
 
 class Play_server_with_secret(Play_server_with_url):
     secret: str
@@ -38,12 +42,16 @@ class Play_request(BaseModel):
 
 
 class Play_id_info_base(BaseModel):
-    exp: Annotated[datetime, Field(default_factory=lambda: datetime.utcnow() + timedelta(hours=8))]
+    exp: Annotated[
+        datetime, Field(default_factory=lambda: datetime_now() + timedelta(hours=8))
+    ]
+
 
 class Play_id_info_episode(Play_id_info_base):
     type: str = 'series'
     series_id: int
     number: int
+
 
 class Play_id_info_movie(Play_id_info_base):
     type: str = 'movie'

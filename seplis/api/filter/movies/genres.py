@@ -7,16 +7,16 @@ from .query_filter_schema import Movie_query_filter
 def filter_genres(query, filter_query: Movie_query_filter):
     if filter_query.genre_id:
         query = query.where(
-            models.Movie_genre.genre_id.in_(filter_query.genre_id),
-            models.Movie.id == models.Movie_genre.movie_id,
-        ).group_by(models.Movie.id)
+            models.MMovieGenre.genre_id.in_(filter_query.genre_id),
+            models.MMovie.id == models.MMovieGenre.movie_id,
+        ).group_by(models.MMovie.id)
 
     if filter_query.not_genre_id:
-        genre = sa.orm.aliased(models.Movie_genre)
+        genre = sa.orm.aliased(models.MMovieGenre)
         query = query.join(
             genre,
             sa.and_(
-                genre.movie_id == models.Movie.id,
+                genre.movie_id == models.MMovie.id,
                 genre.genre_id.in_(filter_query.not_genre_id),
             ),
             isouter=True,

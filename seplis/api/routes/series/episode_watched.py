@@ -17,10 +17,10 @@ async def get_watched(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
-    ew = await session.scalar(sa.select(models.Episode_watched).where(
-        models.Episode_watched.user_id == user.id,
-        models.Episode_watched.series_id == series_id,
-        models.Episode_watched.episode_number == episode_number,
+    ew = await session.scalar(sa.select(models.MEpisodeWatched).where(
+        models.MEpisodeWatched.user_id == user.id,
+        models.MEpisodeWatched.series_id == series_id,
+        models.MEpisodeWatched.episode_number == episode_number,
     ))
     if ew:
         return schemas.Episode_watched.model_validate(ew)
@@ -39,17 +39,17 @@ async def watched_increment(
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):  
     data = schemas.Episode_watched_increment.model_validate(request) if request else schemas.Episode_watched_increment()
-    await models.Episode_watched.increment(
+    await models.MEpisodeWatched.increment(
         session=session,
         user_id=user.id,
         series_id=series_id,
         episode_number=episode_number,
         data=data,
     )
-    ew = await session.scalar(sa.select(models.Episode_watched).where(
-        models.Episode_watched.user_id == user.id,
-        models.Episode_watched.series_id == series_id,
-        models.Episode_watched.episode_number == episode_number,
+    ew = await session.scalar(sa.select(models.MEpisodeWatched).where(
+        models.MEpisodeWatched.user_id == user.id,
+        models.MEpisodeWatched.series_id == series_id,
+        models.MEpisodeWatched.episode_number == episode_number,
     ))
     await session.commit()
     return schemas.Episode_watched.model_validate(ew)
@@ -65,16 +65,16 @@ async def watched_decrement(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),    
 ):
-    await models.Episode_watched.decrement(
+    await models.MEpisodeWatched.decrement(
         session=session,
         user_id=user.id,
         series_id=series_id,
         episode_number=episode_number,
     )
-    ew = await session.scalar(sa.select(models.Episode_watched).where(
-        models.Episode_watched.user_id == user.id,
-        models.Episode_watched.series_id == series_id,
-        models.Episode_watched.episode_number == episode_number,
+    ew = await session.scalar(sa.select(models.MEpisodeWatched).where(
+        models.MEpisodeWatched.user_id == user.id,
+        models.MEpisodeWatched.series_id == series_id,
+        models.MEpisodeWatched.episode_number == episode_number,
     ))
     await session.commit()
     if ew:
@@ -98,7 +98,7 @@ async def watched_increment_range(
     if to_episode_number < from_episode_number:
         raise exceptions.API_exception(400, 0, 'to_episode_number must be bigger than from_episode_number')
     for n in range(from_episode_number, to_episode_number+1):
-        await models.Episode_watched.increment(
+        await models.MEpisodeWatched.increment(
             session=session,
             user_id=user.id,
             series_id=series_id,

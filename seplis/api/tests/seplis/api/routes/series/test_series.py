@@ -405,7 +405,7 @@ async def test_series_get(client: AsyncClient) -> None:
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert data.items == []
 
-    series1 = await models.Series.save(
+    series1 = await models.MSeries.save(
         data=schemas.Series_create(
             title='Test 1',
             genre_names=['Test1'],
@@ -414,7 +414,7 @@ async def test_series_get(client: AsyncClient) -> None:
             ],
         )
     )
-    series2 = await models.Series.save(
+    series2 = await models.MSeries.save(
         data=schemas.Series_create(
             title='Test 2',
             genre_names=['Test2'],
@@ -430,7 +430,7 @@ async def test_series_get(client: AsyncClient) -> None:
 
     user_id = await user_signin(client)
 
-    await models.Series_watchlist.add(series_id=series1.id, user_id=user_id)
+    await models.MSeriesWatchlist.add(series_id=series1.id, user_id=user_id)
 
     r = await client.get('/2/series?user_watchlist=true')
     assert r.status_code == 200
@@ -458,7 +458,7 @@ async def test_series_get(client: AsyncClient) -> None:
     assert data.items[1].user_watchlist
     assert not data.items[1].user_watchlist.on_watchlist
 
-    await models.Episode_watched.increment(
+    await models.MEpisodeWatched.increment(
         series_id=series2.id,
         episode_number=1,
         user_id=user_id,

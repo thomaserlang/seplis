@@ -8,13 +8,13 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_user_series_watchlist(client: AsyncClient) -> None:
     await user_signin(client)
 
-    series1: schemas.Series = await models.Series.save(
+    series1: schemas.Series = await models.MSeries.save(
         schemas.Series_create(
             title='Test series',
         ),
         series_id=None,
     )
-    series2: schemas.Series = await models.Series.save(
+    series2: schemas.Series = await models.MSeries.save(
         schemas.Series_create(
             title='Test series 2',
         ),

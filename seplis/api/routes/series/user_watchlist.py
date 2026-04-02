@@ -13,7 +13,7 @@ async def series_watchlist(
     series_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_lists']),
 ):
-    return await models.Series_watchlist.get(series_id=series_id, user_id=user.id)
+    return await models.MSeriesWatchlist.get(series_id=series_id, user_id=user.id)
     
 
 @router.put('/{series_id}/watchlist', status_code=204,
@@ -24,7 +24,7 @@ async def series_add_to_watchlist(
     series_id: int,    
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
 ) -> None:
-    await models.Series_watchlist.add(series_id=series_id, user_id=user.id)
+    await models.MSeriesWatchlist.add(series_id=series_id, user_id=user.id)
 
 
 @router.delete('/{series_id}/watchlist', status_code=204,
@@ -35,4 +35,4 @@ async def series_remove_from_watchlist(
     series_id: int,    
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
 ) -> None:
-    await models.Series_watchlist.remove(series_id=series_id, user_id=user.id)
+    await models.MSeriesWatchlist.remove(series_id=series_id, user_id=user.id)

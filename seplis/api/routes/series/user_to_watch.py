@@ -28,61 +28,61 @@ async def get_user_series_to_watch(
 ) -> schemas.Page_cursor_result[schemas.Series_and_episode]:
     episodes_query = (
         sa.select(
-            models.Episode_watched.series_id,
-            sa.func.max(models.Episode_watched.episode_number).label('episode_number'),
+            models.MEpisodeWatched.series_id,
+            sa.func.max(models.MEpisodeWatched.episode_number).label('episode_number'),
         )
         .where(
-            models.Series_watchlist.user_id == user.id,
-            models.Episode_watched.user_id == models.Series_watchlist.user_id,
-            models.Episode_watched.series_id == models.Series_watchlist.series_id,
-            models.Episode_watched.times > 0,
+            models.MSeriesWatchlist.user_id == user.id,
+            models.MEpisodeWatched.user_id == models.MSeriesWatchlist.user_id,
+            models.MEpisodeWatched.series_id == models.MSeriesWatchlist.series_id,
+            models.MEpisodeWatched.times > 0,
         )
-        .group_by(models.Episode_watched.series_id)
+        .group_by(models.MEpisodeWatched.series_id)
         .subquery()
     )
 
     latest_aired_episode = (
         sa.select(
-            models.Episode.series_id,
-            sa.func.max(models.Episode.air_datetime).label(
+            models.MEpisode.series_id,
+            sa.func.max(models.MEpisode.air_datetime).label(
                 'latest_aired_episode_datetime'
             ),
         )
         .where(
-            models.Series_watchlist.user_id == user.id,
-            models.Episode.series_id == models.Series_watchlist.series_id,
-            models.Episode.air_datetime <= datetime.now(tz=UTC),
+            models.MSeriesWatchlist.user_id == user.id,
+            models.MEpisode.series_id == models.MSeriesWatchlist.series_id,
+            models.MEpisode.air_datetime <= datetime.now(tz=UTC),
         )
-        .group_by(models.Episode.series_id)
+        .group_by(models.MEpisode.series_id)
         .subquery()
     )
 
-    query = sa.select(models.Series, models.Episode).where(
-        models.Series.id == episodes_query.c.series_id,
-        models.Episode.series_id == models.Series.id,
-        models.Episode.number == episodes_query.c.episode_number + 1,
-        models.Episode.air_datetime <= datetime.now(tz=UTC),
-        latest_aired_episode.c.series_id == models.Series.id,
+    query = sa.select(models.MSeries, models.MEpisode).where(
+        models.MSeries.id == episodes_query.c.series_id,
+        models.MEpisode.series_id == models.MSeries.id,
+        models.MEpisode.number == episodes_query.c.episode_number + 1,
+        models.MEpisode.air_datetime <= datetime.now(tz=UTC),
+        latest_aired_episode.c.series_id == models.MSeries.id,
     )
 
     query = (
         filter_series_query(
             query=query,
             filter_query=filter_query,
-            can_watch_episode_number=models.Episode.number,
+            can_watch_episode_number=models.MEpisode.number,
         )
         .order_by(None)
         .order_by(
             sa.desc(latest_aired_episode.c.latest_aired_episode_datetime),
-            sa.desc(models.Series.popularity),
-            models.Episode.series_id,
+            sa.desc(models.MSeries.popularity),
+            models.MEpisode.series_id,
         )
     )
     p = await utils.sqlalchemy.paginate_cursor_total(
         session=session, query=query, page_query=page_cursor
     )
     p.items = [
-        schemas.Series_and_episode(series=item.Series, episode=item.Episode)
+        schemas.Series_and_episode(series=item.MSeries, episode=item.MEpisode)
         for item in p.items
     ]
     return p

@@ -25,18 +25,18 @@ def filter_user_favorites(query, filter_query: Series_query_filter):
 def filter_user_favorites_query(query, user_favorites: bool, user_id: Any):
     if user_favorites:
         query = query.where(
-            models.Series_favorite.user_id == user_id,
-            models.Series_favorite.series_id == models.Series.id,
+            models.MSeriesFavorite.user_id == user_id,
+            models.MSeriesFavorite.series_id == models.MSeries.id,
         )
     elif not user_favorites:
         query = query.join(
-            models.Series_favorite,
+            models.MSeriesFavorite,
             sa.and_(
-                models.Series_favorite.user_id == user_id,
-                models.Series_favorite.series_id == models.Series.id,
+                models.MSeriesFavorite.user_id == user_id,
+                models.MSeriesFavorite.series_id == models.MSeries.id,
             ),
             isouter=True,
         ).where(
-            models.Series_favorite.series_id is None,
+            models.MSeriesFavorite.series_id is None,
         )
     return query

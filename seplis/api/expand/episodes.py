@@ -35,12 +35,12 @@ async def expand_user_watched(series_id: int, user_id: int, episodes: list[schem
     for episode in episodes:
         episode.user_watched = schemas.Episode_watched(episode_number=episode.number)
         _episodes[episode.number] = episode
-    result: list[models.Episode_watched] = await session.scalars(sa.select(
-        models.Episode_watched,
+    result: list[models.MEpisodeWatched] = await session.scalars(sa.select(
+        models.MEpisodeWatched,
     ).where(
-        models.Episode_watched.user_id == user_id,
-        models.Episode_watched.series_id == series_id,
-        models.Episode_watched.episode_number.in_(set(_episodes.keys())),
+        models.MEpisodeWatched.user_id == user_id,
+        models.MEpisodeWatched.series_id == series_id,
+        models.MEpisodeWatched.episode_number.in_(set(_episodes.keys())),
     ))
     for episode_watched in result:
         _episodes[episode_watched.episode_number].user_watched = \
@@ -52,13 +52,13 @@ async def expand_user_can_watch(series_id: int, user_id: int, episodes: list[sch
     for episode in episodes:
         episode.user_can_watch = schemas.User_can_watch()
         _episodes[episode.number] = episode
-    result: list[models.Play_server_episode] = await session.scalars(sa.select(
-        models.Play_server_episode,
+    result: list[models.MPlayServerEpisode] = await session.scalars(sa.select(
+        models.MPlayServerEpisode,
     ).where(
-        models.Play_server_access.user_id == user_id,
-        models.Play_server_episode.play_server_id == models.Play_server_access.play_server_id,
-        models.Play_server_episode.series_id == series_id,
-        models.Play_server_episode.episode_number.in_(set(_episodes.keys())),
-    ).group_by(models.Play_server_episode.episode_number))
+        models.MPlayServerAccess.user_id == user_id,
+        models.MPlayServerEpisode.play_server_id == models.MPlayServerAccess.play_server_id,
+        models.MPlayServerEpisode.series_id == series_id,
+        models.MPlayServerEpisode.episode_number.in_(set(_episodes.keys())),
+    ).group_by(models.MPlayServerEpisode.episode_number))
     for episode_watched in result:
         _episodes[episode_watched.episode_number].user_can_watch.on_play_server = True

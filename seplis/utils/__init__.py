@@ -9,8 +9,8 @@ from datetime import datetime
 
 import sqlalchemy as sa
 
-from . import sqlalchemy
-from .datetime_now import datetime_now as datetime_now
+from . import sqlalchemy as sqlalchemy
+from .datetime_now_util import datetime_now as datetime_now
 from .jsonutils import *
 
 

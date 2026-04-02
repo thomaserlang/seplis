@@ -12,7 +12,7 @@ from .base import importers
 
 async def update_person_by_id(person_id) -> None:
     async with database.session() as session:
-        result = await session.scalar(sa.select(models.Person).where(models.Person.id == person_id))
+        result = await session.scalar(sa.select(models.MPerson).where(models.MPerson.id == person_id))
         if not result:
             logger.error(f'Unknown person: {person_id}')
             return
@@ -52,7 +52,7 @@ async def update_person_info(person: schemas.Person):
     if info.also_known_as and missing_also_known_as:
         data['also_known_as'] = info.also_known_as
     if data:
-        return await models.Person.save(data=schemas.Person_update.model_validate(data), person_id=person.id, patch=True)
+        return await models.MPerson.save(data=schemas.Person_update.model_validate(data), person_id=person.id, patch=True)
     logger.debug(f'[Person: {person.id}] No info updates')
     return None
 
@@ -61,9 +61,9 @@ async def update_person_images(person: schemas.Person) -> None:
     logger.debug(f'[Person: {person.id}] Updating images')
     imp_names = _importers_with_support(person.externals, 'images')
     async with database.session() as session:
-        result = await session.scalars(sa.select(models.Image).where(
-            models.Image.relation_id == person.id,
-            models.Image.relation_type == 'person',
+        result = await session.scalars(sa.select(models.MImage).where(
+            models.MImage.relation_id == person.id,
+            models.MImage.relation_type == 'person',
         ))
         current_images = {
             f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
@@ -72,7 +72,7 @@ async def update_person_images(person: schemas.Person) -> None:
     async def save_image(image) -> None:
         try:
             if f'{image.external_name}-{image.external_id}' not in current_images:
-                images_added.append(await models.Image.save(
+                images_added.append(await models.MImage.save(
                     relation_type='person',
                     relation_id=person.id,
                     image_data=image,
@@ -108,7 +108,7 @@ async def update_person_images(person: schemas.Person) -> None:
         if all_images:            
             logger.info(
                 f'[Person: {person.id}] Setting new primary image: {all_images[0].id}')
-            await models.Person.save(
+            await models.MPerson.save(
                 data=schemas.Person_update(
                     profile_image_id=all_images[0].id
                 ),

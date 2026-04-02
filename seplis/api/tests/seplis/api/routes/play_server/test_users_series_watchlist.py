@@ -15,9 +15,9 @@ async def test_get_play_servers_user_series_watchlist(client: AsyncClient) -> No
     assert r.status_code == 201, r.content
     play_server = schemas.Play_server.model_validate(r.json())
 
-    series = await models.Series.save(data=schemas.Series_create(title='Test', externals={'thetvdb': '1'}))
+    series = await models.MSeries.save(data=schemas.Series_create(title='Test', externals={'thetvdb': '1'}))
 
-    await models.Series_watchlist.add(series_id=series.id, user_id=user_id)
+    await models.MSeriesWatchlist.add(series_id=series.id, user_id=user_id)
 
     r = await client.get(f'/2/play-servers/{play_server.id}/users-series-watchlist')
     assert r.status_code == 200

@@ -10,7 +10,7 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_user_series_watchlist(client: AsyncClient) -> None:
     await user_signin(client)
     dt = datetime.now(tz=UTC)
-    series1: schemas.Series = await models.Series.save(schemas.Series_create(
+    series1: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1, air_datetime=dt-timedelta(days=2)),
@@ -18,7 +18,7 @@ async def test_user_series_watchlist(client: AsyncClient) -> None:
             schemas.Episode_create(title='Episode 3', number=3, air_datetime=dt+timedelta(days=1)),
         ]
     ))
-    series2: schemas.Series = await models.Series.save(schemas.Series_create(
+    series2: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series 2',
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1, air_datetime=dt-timedelta(days=1)),
@@ -26,7 +26,7 @@ async def test_user_series_watchlist(client: AsyncClient) -> None:
             schemas.Episode_create(title='Episode 3', number=3, air_datetime=dt+timedelta(days=1)),
         ]
     ))
-    await models.Series.save(schemas.Series_create(
+    await models.MSeries.save(schemas.Series_create(
         title='Test series 3',
         episodes=[
             schemas.Episode_create(title='Episode 1', number=1, air_datetime=dt-timedelta(days=1)),

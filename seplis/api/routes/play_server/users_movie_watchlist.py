@@ -28,20 +28,20 @@ async def get_play_server_users_movie_watchlist(
     added_at_le: datetime = None,
     response_format: Literal['standard', 'radarr'] = 'standard',
 ):
-    query = sa.select(models.Movie).where(
-        models.Play_server_access.play_server_id == play_server_id,
-        models.Movie_watchlist.user_id == models.Play_server_access.user_id,
-        models.Movie.id == models.Movie_watchlist.movie_id,
-    ).order_by(models.Movie.id).group_by(models.Movie.id)
+    query = sa.select(models.MMovie).where(
+        models.MPlayServerAccess.play_server_id == play_server_id,
+        models.MMovieWatchlist.user_id == models.MPlayServerAccess.user_id,
+        models.MMovie.id == models.MMovieWatchlist.movie_id,
+    ).order_by(models.MMovie.id).group_by(models.MMovie.id)
 
     if added_at_ge:
         query = query.where(
-            models.Movie_watchlist.created_at >= added_at_ge,
+            models.MMovieWatchlist.created_at >= added_at_ge,
         )
     
     if added_at_le:
         query = query.where(
-            models.Movie_watchlist.created_at <= added_at_le,
+            models.MMovieWatchlist.created_at <= added_at_le,
         )
 
     if response_format == 'standard':

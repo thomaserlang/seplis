@@ -13,7 +13,7 @@ async def person_create(
     data: schemas.Person_create,
     user: schemas.User_authenticated = Security(authenticated, scopes=['person:create']),
 ):
-    return await models.Person.save(data=data)
+    return await models.MPerson.save(data=data)
 
 
 @router.put('/{person_id}', response_model=schemas.Person,
@@ -25,7 +25,7 @@ async def person_update(
     data: schemas.Person_update,
     user: schemas.User_authenticated = Security(authenticated, scopes=['person:edit']),
 ):
-    return await models.Person.save(
+    return await models.MPerson.save(
         person_id=person_id,
         data=data,
         patch=False,
@@ -41,7 +41,7 @@ async def person_patch(
     data: schemas.Person_update,
     user: schemas.User_authenticated = Security(authenticated, scopes=['person:edit']),
 ):
-    return await models.Person.save(
+    return await models.MPerson.save(
         person_id=person_id,
         data=data,
         patch=True,
@@ -55,7 +55,7 @@ async def person_patch(
 async def person_get(
     person_id: int,
 ):
-    person = await models.Person.get(person_id=person_id)
+    person = await models.MPerson.get(person_id=person_id)
     if not person:
         raise exceptions.Not_found('Person not found')
     return person
@@ -69,4 +69,4 @@ async def person_delete(
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['person:delete']),
 ) -> None:
-    await models.Person.delete(person_id=person_id)
+    await models.MPerson.delete(person_id=person_id)

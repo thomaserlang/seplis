@@ -15,9 +15,9 @@ async def get_position(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
-    ew = await session.scalar(sa.select(models.Movie_watched).where(
-        models.Movie_watched.movie_id == movie_id,
-        models.Movie_watched.user_id == user.id,
+    ew = await session.scalar(sa.select(models.MMovieWatched).where(
+        models.MMovieWatched.movie_id == movie_id,
+        models.MMovieWatched.user_id == user.id,
     ))
     if not ew:        
         return Response(status_code=204)
@@ -33,7 +33,7 @@ async def set_position(
     position: int = Body(..., embed=True, ge=0, le=86400),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ) -> None:
-    await models.Movie_watched.set_position(
+    await models.MMovieWatched.set_position(
         user_id=user.id,
         movie_id=movie_id,
         position=position,
@@ -48,7 +48,7 @@ async def delete_position(
     movie_id: int, 
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ) -> None:
-    await models.Movie_watched.reset_position(
+    await models.MMovieWatched.reset_position(
         user_id=user.id,
         movie_id=movie_id,
     )

@@ -12,11 +12,11 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_movie_watched(client: AsyncClient) -> None:
     user_id = await user_signin(client)
 
-    movie = await models.Movie.save(schemas.Movie_create(
+    movie = await models.MMovie.save(schemas.Movie_create(
         title='Movie',
     ), movie_id=None)
 
-    await models.Movie_watchlist.add(user_id, movie.id)
+    await models.MMovieWatchlist.add(user_id, movie.id)
 
     r = await client.get(f'/2/movies/{movie.id}/watched')
     data = schemas.Movie_watched.model_validate(r.json())

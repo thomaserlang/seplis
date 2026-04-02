@@ -25,7 +25,7 @@ client = httpx.AsyncClient()
 async def update_movie(movie_id=None, movie: schemas.Movie | None = None) -> None:
     if movie_id:
         async with database.session() as session:
-            result = await session.scalar(sa.select(models.Movie).where(models.Movie.id == movie_id))
+            result = await session.scalar(sa.select(models.MMovie).where(models.MMovie.id == movie_id))
             if not result:
                 logger.error(f'Unknown movie: {movie_id}')
                 return
@@ -62,8 +62,8 @@ async def update_movies_bulk(from_movie_id=0, do_async=False) -> None:
 
 async def _get_movies(from_movie_id: int):
     async with database.session() as session:
-        query = sa.select(models.Movie)
-        query = query.where(models.Movie.id > from_movie_id).limit(100)
+        query = sa.select(models.MMovie)
+        query = query.where(models.MMovie.id > from_movie_id).limit(100)
         return await session.scalars(query)
 
 
@@ -82,10 +82,10 @@ async def update_incremental() -> None:
         async with database.session() as session:
             for r in data['results']:
                 logger.info(f'Checking: {r["id"]}')
-                result = await session.scalar(sa.select(models.Movie).where(
+                result = await session.scalar(sa.select(models.MMovie).where(
                     models.Movie_external.title == 'themoviedb',
                     models.Movie_external.value == r['id'],
-                    models.Movie.id == models.Movie_external.movie_id,
+                    models.MMovie.id == models.Movie_external.movie_id,
                 ))
                 if not result:
                     continue
@@ -138,7 +138,7 @@ async def update_movie_metadata(movie: schemas.Movie) -> None:
         data['alternative_titles'] = new_data.alternative_titles
     if data:
         logger.debug(f'[Movie: {movie.id}] Updating: {data}')
-        await models.Movie.save(data=schemas.Movie_update.model_validate(data), movie_id=movie.id, patch=True, overwrite_genres=True)
+        await models.MMovie.save(data=schemas.Movie_update.model_validate(data), movie_id=movie.id, patch=True, overwrite_genres=True)
     else:
         logger.debug(f'[Movie: {movie.id}] No metadata updates')
 
@@ -153,9 +153,9 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
             f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}')
         error = r.json()
         if error['status_code'] == 34:
-            m = await models.Movie.get_from_external('themoviedb', themoviedb)
+            m = await models.MMovie.get_from_external('themoviedb', themoviedb)
             if m:
-                await models.Movie.delete(movie_id=m.id)
+                await models.MMovie.delete(movie_id=m.id)
                 logger.info(f'Movie not found on TMDB, deleteing: TMDB {themoviedb} from the database')
         return None
     r = r.json()
@@ -196,9 +196,9 @@ async def update_images(movie: schemas.Movie) -> None:
         return
 
     async with database.session() as session:
-        result = await session.scalars(sa.select(models.Image).where(
-            models.Image.relation_type == 'movie',
-            models.Image.relation_id == movie.id,
+        result = await session.scalars(sa.select(models.MImage).where(
+            models.MImage.relation_type == 'movie',
+            models.MImage.relation_id == movie.id,
         ))
         image_external_ids = {
             f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
@@ -224,7 +224,7 @@ async def update_images(movie: schemas.Movie) -> None:
             if key not in image_external_ids:
                 source_url = f'https://image.tmdb.org/t/p/original{image["file_path"]}'
                 logger.debug(f'[Movie: {movie.id}] Saving image: {source_url}')
-                saved_image = await models.Image.save(
+                saved_image = await models.MImage.save(
                     relation_type='movie',
                     relation_id=movie.id,
                     image_data=schemas.Image_import(
@@ -250,7 +250,7 @@ async def update_images(movie: schemas.Movie) -> None:
         if not movie.poster_image or movie.poster_image.id != image_external_ids[key].id:
             logger.info(
                 f'[Movie: {movie.id}] Setting primary image: {image_external_ids[key].id}')
-            await models.Movie.save(data=schemas.Movie_update(
+            await models.MMovie.save(data=schemas.Movie_update(
                 poster_image_id=image_external_ids[key].id,
             ), movie_id=movie.id)
 
@@ -263,8 +263,8 @@ async def update_cast(movie: schemas.Movie) -> None:
 
     # Get existing cast
     async with database.session() as session:
-        result = await session.scalars(sa.select(models.Movie_cast).where(
-            models.Movie_cast.movie_id == movie.id,
+        result = await session.scalars(sa.select(models.MMovieCast).where(
+            models.MMovieCast.movie_id == movie.id,
         ))
         cast: dict[str, schemas.Movie_cast_person] = {f'themoviedb-{cast.person.externals["themoviedb"]}': 
                 schemas.Movie_cast_person.model_validate(cast) for cast in result \
@@ -289,7 +289,7 @@ async def update_cast(movie: schemas.Movie) -> None:
             key = f'themoviedb-{member["id"]}'
             if key not in cast:
                 # Create the person if they don't "exist"
-                person = await models.Person.get_from_external('themoviedb', member['id'])
+                person = await models.MPerson.get_from_external('themoviedb', member['id'])
                 if not person:
                     person = await create_person('themoviedb', member['id'])
                 cast[key] = schemas.Movie_cast_person(
@@ -301,7 +301,7 @@ async def update_cast(movie: schemas.Movie) -> None:
             if cast[key].character != member['character'][:200] or \
                 cast[key].order != member['order']:
                 logger.debug(f'[Movie: {movie.id}] Saving cast: {member["name"]} ({member["id"]})')
-                await models.Movie_cast.save(
+                await models.MMovieCast.save(
                     data=schemas.Movie_cast_person_update(
                         movie_id=movie.id,
                         person_id=cast[key].person.id,
@@ -320,4 +320,4 @@ async def update_cast(movie: schemas.Movie) -> None:
     for _, member in cast.items():
         if not any(member.person.externals.get('themoviedb') == str(m['id']) for m in m['cast']):
             logger.debug(f'[Movie: {movie.id}] Deleting cast: {member.person.name}')
-            await models.Movie_cast.delete(movie_id=movie.id, person_id=member.person.id)
+            await models.MMovieCast.delete(movie_id=movie.id, person_id=member.person.id)

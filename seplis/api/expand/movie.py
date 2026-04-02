@@ -38,11 +38,11 @@ async def expand_user_watchlist(user_id: int, movies: list[schemas.Movie], sessi
     for s in movies:
         s.user_watchlist = schemas.Movie_watchlist()
         _movies[s.id] = s
-    result: list[models.Movie_watchlist] = await session.scalars(sa.select(
-        models.Movie_watchlist,
+    result: list[models.MMovieWatchlist] = await session.scalars(sa.select(
+        models.MMovieWatchlist,
     ).where(
-        models.Movie_watchlist.user_id == user_id,
-        models.Movie_watchlist.movie_id.in_(set(_movies.keys())),
+        models.MMovieWatchlist.user_id == user_id,
+        models.MMovieWatchlist.movie_id.in_(set(_movies.keys())),
     ))
     for s in result:
         _movies[s.movie_id].user_watchlist = schemas.Movie_watchlist.model_validate(s)
@@ -55,11 +55,11 @@ async def expand_user_favorite(user_id: int, movies: list[schemas.Movie], sessio
     for s in movies:
         s.user_favorite = schemas.Movie_favorite()
         _movies[s.id] = s
-    result: list[models.Movie_favorite] = await session.scalars(sa.select(
-        models.Movie_favorite,
+    result: list[models.MMovieFavorite] = await session.scalars(sa.select(
+        models.MMovieFavorite,
     ).where(
-        models.Movie_favorite.user_id == user_id,
-        models.Movie_favorite.movie_id.in_(set(_movies.keys())),
+        models.MMovieFavorite.user_id == user_id,
+        models.MMovieFavorite.movie_id.in_(set(_movies.keys())),
     ))
     for s in result:
         _movies[s.movie_id].user_favorite = schemas.Movie_favorite.model_validate(s)
@@ -72,11 +72,11 @@ async def expand_user_watched(user_id: int, movies: list[schemas.Movie], session
     for s in movies:
         s.user_watched = schemas.Movie_watched()
         _movies[s.id] = s
-    result: list[models.Movie_watched] = await session.scalars(sa.select(
-        models.Movie_watched,
+    result: list[models.MMovieWatched] = await session.scalars(sa.select(
+        models.MMovieWatched,
     ).where(
-        models.Movie_watched.user_id == user_id,
-        models.Movie_watched.movie_id.in_(set(_movies.keys())),
+        models.MMovieWatched.user_id == user_id,
+        models.MMovieWatched.movie_id.in_(set(_movies.keys())),
     ))
     for s in result:
         _movies[s.movie_id].user_watched = \

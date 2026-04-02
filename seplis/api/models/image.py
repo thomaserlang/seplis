@@ -4,7 +4,9 @@ from datetime import datetime
 
 import sqlalchemy as sa
 from fastapi import UploadFile
+from sqlalchemy.orm import Mapped, mapped_column
 
+from seplis.utils import datetime_now
 from seplis.utils.sqlalchemy import UtcDateTime
 
 from ... import config, logger, utils
@@ -13,35 +15,41 @@ from ..database import database
 from .base import Base
 
 
-class Image(Base):
+class MImage(Base):
     __tablename__ = 'images'
 
-    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    relation_type = sa.Column(sa.String(20))
-    relation_id = sa.Column(sa.Integer)
-    external_name = sa.Column(sa.String(50))
-    external_id = sa.Column(sa.String(50))
-    height = sa.Column(sa.Integer)
-    width = sa.Column(sa.Integer)
-    file_id = sa.Column(sa.String(64))
-    created_at = sa.Column(UtcDateTime, default=datetime.utcnow)
-    type = sa.Column(sa.String(50))
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    relation_type: Mapped[str | None] = mapped_column(sa.String(20))
+    relation_id: Mapped[int | None] = mapped_column()
+    external_name: Mapped[str | None] = mapped_column(sa.String(50))
+    external_id: Mapped[str | None] = mapped_column(sa.String(50))
+    height: Mapped[int | None] = mapped_column()
+    width: Mapped[int | None] = mapped_column()
+    file_id: Mapped[str | None] = mapped_column(sa.String(64))
+    created_at: Mapped[datetime | None] = mapped_column(UtcDateTime, default=datetime_now)
+    type: Mapped[str | None] = mapped_column(sa.String(50))
 
     @property
     def url(self):
         return urllib.parse.urljoin(str(config.api.image_url), self.file_id)
 
-    async def save(relation_type: str, relation_id: str, image_data: schemas.Image_import) -> schemas.Image:
+    async def save(
+        relation_type: str, relation_id: str, image_data: schemas.Image_import
+    ) -> schemas.Image:
         from ..dependencies import httpx_client
 
         async with database.session() as session:
             if image_data.external_name or image_data.external_id:
-                q = await session.scalar(sa.select(models.Image).where(
-                    models.Image.external_name == image_data.external_name,
-                    models.Image.external_id == image_data.external_id,
-                ))
+                q = await session.scalar(
+                    sa.select(models.MImage).where(
+                        models.MImage.external_name == image_data.external_name,
+                        models.MImage.external_id == image_data.external_id,
+                    )
+                )
                 if q:
-                    logger.debug(f'Duplicate image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id}, returning stored image')
+                    logger.debug(
+                        f'Duplicate image with `external_name`: {image_data.external_name} and `external_id`: {image_data.external_id}, returning stored image'
+                    )
                     return schemas.Image.model_validate(q)
 
             if not image_data.file and not image_data.source_url:
@@ -52,42 +60,51 @@ class Image(Base):
                 if r.status_code != 200:
                     logger.error(f'File download of image failed: {r.content}')
                     raise exceptions.API_exception(500, 0, 'Unable to store the image')
-                image_data.file = UploadFile(io.BytesIO(r.content), filename=urllib.parse.urlparse(image_data.source_url).path)
+                image_data.file = UploadFile(
+                    io.BytesIO(r.content),
+                    filename=urllib.parse.urlparse(image_data.source_url).path,
+                )
 
             async def upload_bytes():
-                while content := await image_data.file.read(128*1024):
+                while content := await image_data.file.read(128 * 1024):
                     yield content
 
             r = await httpx_client.post(
                 urllib.parse.urljoin(str(config.api.storitch_host), '/store/session'),
                 headers={
-                    'X-Storitch': utils.json_dumps({
-                        'finished': True,
-                        'filename': image_data.file.filename,
-                    }),
+                    'X-Storitch': utils.json_dumps(
+                        {
+                            'finished': True,
+                            'filename': image_data.file.filename,
+                        }
+                    ),
                     'content-type': 'application/octet-stream',
                     'authorization': config.api.storitch_api_key,
                 },
-                content=upload_bytes()
+                content=upload_bytes(),
             )
             if r.status_code >= 400:
                 logger.error(f'File upload failed: {r.content}')
                 raise exceptions.API_exception(500, 0, 'Unable to store the image')
-            
+
             file = utils.json_loads(r.content)
             if file['type'] != 'image':
                 raise exceptions.Image_no_data()
 
-            r = await session.execute(sa.insert(models.Image).values(
-                relation_type=relation_type,
-                relation_id=relation_id,
-                external_name=image_data.external_name,
-                external_id=image_data.external_id,
-                height=file['height'],
-                width=file['width'],
-                file_id=file['file_id'],
-                type=image_data.type,
-            ))
-            image = await session.scalar(sa.select(models.Image).where(models.Image.id == r.lastrowid))
+            r = await session.execute(
+                sa.insert(models.MImage).values(
+                    relation_type=relation_type,
+                    relation_id=relation_id,
+                    external_name=image_data.external_name,
+                    external_id=image_data.external_id,
+                    height=file['height'],
+                    width=file['width'],
+                    file_id=file['file_id'],
+                    type=image_data.type,
+                )
+            )
+            image = await session.scalar(
+                sa.select(models.MImage).where(models.MImage.id == r.lastrowid)
+            )
             await session.commit()
             return schemas.Image.model_validate(image, strict=False)

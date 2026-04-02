@@ -15,9 +15,9 @@ async def get_watchlist(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_lists']),
 ):
-    w = await session.scalar(sa.select(models.Movie_watchlist.created_at).where(
-        models.Movie_watchlist.user_id == user.id,
-        models.Movie_watchlist.movie_id == movie_id,
+    w = await session.scalar(sa.select(models.MMovieWatchlist.created_at).where(
+        models.MMovieWatchlist.user_id == user.id,
+        models.MMovieWatchlist.movie_id == movie_id,
     ))
     if not w:
         return schemas.Movie_watchlist()
@@ -35,7 +35,7 @@ async def add_to_watchlist(
     movie_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),
 ) -> None:
-    await models.Movie_watchlist.add(user_id=user.id, movie_id=movie_id)
+    await models.MMovieWatchlist.add(user_id=user.id, movie_id=movie_id)
 
 
 @router.delete('/{movie_id}/watchlist', status_code=204,
@@ -46,4 +46,4 @@ async def remove_from_watchlist(
     movie_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_lists']),    
 ) -> None:
-    await models.Movie_watchlist.remove(user_id=user.id, movie_id=movie_id)
+    await models.MMovieWatchlist.remove(user_id=user.id, movie_id=movie_id)

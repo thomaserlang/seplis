@@ -21,10 +21,10 @@ async def create_token_route(
 ) -> schemas.Token:
 
     user = await session.scalar(
-        sa.select(models.User).where(
+        sa.select(models.MUser).where(
             sa.or_(
-                models.User.email == data.login,
-                models.User.username == data.login,
+                models.MUser.email == data.login,
+                models.MUser.username == data.login,
             )
         )
     )
@@ -41,7 +41,7 @@ async def create_token_route(
     if not matches:
         raise exceptions.Wrong_login_or_password()
 
-    token = await models.Token.new_token(user_id=user.id, scopes=user.scopes)
+    token = await models.MToken.new_token(user_id=user.id, scopes=user.scopes)
 
     await send_new_login(
         to=user.email, ip=request.client.host if request.client else 'unknown'
@@ -56,7 +56,7 @@ async def create_progress_token_route(
         schemas.User_authenticated, Security(authenticated, scopes=['user:progress'])
     ],
 ) -> schemas.Token:
-    token = await models.Token.new_token(
+    token = await models.MToken.new_token(
         user_id=user.id, scopes=['user:progress'], expires_days=1
     )
     return schemas.Token(access_token=token)

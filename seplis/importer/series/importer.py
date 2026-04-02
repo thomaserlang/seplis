@@ -14,7 +14,7 @@ from .base import importers
 async def update_series_by_id(series_id) -> None:
     async with database.session() as session:
         result = await session.scalar(
-            sa.select(models.Series).where(models.Series.id == series_id)
+            sa.select(models.MSeries).where(models.MSeries.id == series_id)
         )
         if not result:
             logger.error(f'Unknown series: {series_id}')
@@ -48,8 +48,8 @@ async def update_series_bulk(from_series_id=0, do_async=False) -> None:
 
 async def _get_series(from_series_id: int):
     async with database.session() as session:
-        query = sa.select(models.Series)
-        query = query.where(models.Series.id > from_series_id).limit(100)
+        query = sa.select(models.MSeries)
+        query = query.where(models.MSeries.id > from_series_id).limit(100)
         results = await session.scalars(query)
         return [schemas.Series.model_validate(series) for series in results]
 
@@ -76,10 +76,10 @@ async def _importer_incremental(importer) -> None:
     async with database.session() as session:
         for external_id in external_ids:
             result = await session.scalar(
-                sa.select(models.Series).where(
-                    models.Series_external.title == importer.external_name,
-                    models.Series_external.value == external_id,
-                    models.Series.id == models.Series_external.series_id,
+                sa.select(models.MSeries).where(
+                    models.MSeriesExternal.title == importer.external_name,
+                    models.MSeriesExternal.value == external_id,
+                    models.MSeries.id == models.MSeriesExternal.series_id,
                 )
             )
             if not result:
@@ -124,7 +124,7 @@ async def check_external_ids(series: schemas.Series) -> None:
         )
         if id_:
             logger.debug(f'[Series: {series.id}] Found themoviedb id: {id_}')
-            await models.Series.save(
+            await models.MSeries.save(
                 data=schemas.Series_update(
                     externals={
                         'themoviedb': id_,
@@ -146,7 +146,7 @@ async def update_series_info(series: schemas.Series) -> None:
         external_id=series.externals.get(series.importers.info),
     )
     if info:
-        await models.Series.save(
+        await models.MSeries.save(
             data=info, series_id=series.id, patch=True, overwrite_genres=True
         )
 
@@ -163,7 +163,7 @@ async def update_series_episodes(series: schemas.Series) -> None:
     )
     if episodes is not None:
         update = schemas.Series_update(episodes=episodes)
-        await models.Series.save(data=update, series_id=series.id, patch=False)
+        await models.MSeries.save(data=update, series_id=series.id, patch=False)
 
 
 async def update_series_images(series: schemas.Series) -> None:
@@ -171,9 +171,9 @@ async def update_series_images(series: schemas.Series) -> None:
     imp_names = _importers_with_support(series.externals, 'images')
     async with database.session() as session:
         result = await session.scalars(
-            sa.select(models.Image).where(
-                models.Image.relation_id == series.id,
-                models.Image.relation_type == 'series',
+            sa.select(models.MImage).where(
+                models.MImage.relation_id == series.id,
+                models.MImage.relation_type == 'series',
             )
         )
         current_images = {
@@ -188,7 +188,7 @@ async def update_series_images(series: schemas.Series) -> None:
             if f'{image.external_name}-{image.external_id}' not in current_images:
                 current_images[
                     f'{image.external_name}-{image.external_id}'
-                ] = await models.Image.save(
+                ] = await models.MImage.save(
                     relation_type='series',
                     relation_id=series.id,
                     image_data=image,
@@ -227,7 +227,7 @@ async def update_series_images(series: schemas.Series) -> None:
 
     if image:
         if not series.poster_image or series.poster_image.id != image.id:
-            await models.Series.save(
+            await models.MSeries.save(
                 data=schemas.Series_update(poster_image_id=image.id), series_id=series.id
             )
 
@@ -254,8 +254,8 @@ async def update_series_cast(series: schemas.Series) -> None:
     # Get existing cast
     async with database.session() as session:
         result = await session.scalars(
-            sa.select(models.Series_cast).where(
-                models.Series_cast.series_id == series.id,
+            sa.select(models.MSeriesCast).where(
+                models.MSeriesCast.series_id == series.id,
             )
         )
         cast: dict[str, schemas.Series_cast_person] = {
@@ -271,7 +271,7 @@ async def update_series_cast(series: schemas.Series) -> None:
             key = f'{external_name}-{member.external_id}'
             if key not in cast:
                 # Create the person if they don't "exist"
-                person = await models.Person.get_from_external(
+                person = await models.MPerson.get_from_external(
                     external_name, member.external_id
                 )
                 if not person:
@@ -289,7 +289,7 @@ async def update_series_cast(series: schemas.Series) -> None:
                 logger.debug(
                     f'[Series: {series.id}] Saving cast: {cast[key].person.name} ({cast[key].person.id})'
                 )
-                await models.Series_cast.save(
+                await models.MSeriesCast.save(
                     data=schemas.Series_cast_person_update(
                         series_id=series.id,
                         person_id=cast[key].person.id,
@@ -316,7 +316,7 @@ async def update_series_cast(series: schemas.Series) -> None:
             logger.debug(
                 f'[Series: {series.id}] Deleting cast: {member.person.name} ({member.person.id}))'
             )
-            await models.Series_cast.delete(
+            await models.MSeriesCast.delete(
                 series_id=series.id, person_id=member.person.id
             )
 

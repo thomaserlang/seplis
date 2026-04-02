@@ -16,11 +16,11 @@ async def send_reset_link(
     session: AsyncSession = Depends(get_session),
 ):
     user_id = await session.scalar(
-        sa.select(models.User.id).where(models.User.email == email)
+        sa.select(models.MUser.id).where(models.MUser.email == email)
     )
     if not user_id:
         return Response(status_code=204)
-    url = await models.Reset_password.create_reset_link(user_id)
+    url = await models.MResetPassword.create_reset_link(user_id)
     await send_reset_password(to=email, url=url)
     return None
 
@@ -32,12 +32,12 @@ async def reset_password(
     session: AsyncSession = Depends(get_session),
 ) -> None:
     user_id = await session.scalar(
-        sa.select(models.Reset_password.user_id).where(
-            models.Reset_password.key == key,
-            models.Reset_password.expires >= datetime.now(tz=UTC),
+        sa.select(models.MResetPassword.user_id).where(
+            models.MResetPassword.key == key,
+            models.MResetPassword.expires >= datetime.now(tz=UTC),
         )
     )
     if not user_id:
         raise exceptions.Forbidden('Invalid reset key')
 
-    await models.User.change_password(user_id=user_id, new_password=new_password)
+    await models.MUser.change_password(user_id=user_id, new_password=new_password)

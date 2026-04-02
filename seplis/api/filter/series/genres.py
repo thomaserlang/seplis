@@ -10,7 +10,7 @@ def filter_genres(query, filter_query: Series_query_filter):
         query = query.where(
             sa.exists(
                 sa.select(1).where(
-                    genre_alias.series_id == models.Series.id,
+                    genre_alias.series_id == models.MSeries.id,
                     genre_alias.genre_id.in_(filter_query.genre_id),
                 )
             )
@@ -21,7 +21,7 @@ def filter_genres(query, filter_query: Series_query_filter):
         query = query.where(
             ~sa.exists(
                 sa.select(1).where(
-                    genre_alias.series_id == models.Series.id,
+                    genre_alias.series_id == models.MSeries.id,
                     genre_alias.genre_id.in_(filter_query.not_genre_id),
                 )
             )

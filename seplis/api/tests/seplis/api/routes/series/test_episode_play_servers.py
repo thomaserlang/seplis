@@ -8,7 +8,7 @@ from seplis.api.testbase import AsyncClient, parse_obj_as, run_file, user_signin
 async def test_episode_play_servers(client: AsyncClient) -> None:
     user_id = await user_signin(client)
 
-    series: schemas.Series = await models.Series.save(schemas.Series_create(
+    series: schemas.Series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         runtime=30,
         episodes=[
@@ -16,13 +16,13 @@ async def test_episode_play_servers(client: AsyncClient) -> None:
         ]
     ), series_id=None)
 
-    play_server = await models.Play_server.save(schemas.Play_server_create(
+    play_server = await models.MPlayServer.save(schemas.Play_server_create(
         name='Test',
         url='http://example.net',
         secret='1'*20,
     ), play_server_id=None, user_id=user_id)
 
-    await models.Play_server_episode.save(
+    await models.MPlayServerEpisode.save(
         play_server_id=play_server.id,
         play_server_secret='1'*20,
         data=[

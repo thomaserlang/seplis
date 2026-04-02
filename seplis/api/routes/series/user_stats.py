@@ -16,19 +16,19 @@ async def get_user_stats(
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:view_stats']),
 ):
     q = await session.execute(sa.select(
-        sa.func.ifnull(sa.func.sum(models.Episode_watched.times), 0).label('episodes_watched'),
+        sa.func.ifnull(sa.func.sum(models.MEpisodeWatched.times), 0).label('episodes_watched'),
         sa.func.ifnull(sa.func.sum(
-            models.Episode_watched.times * \
+            models.MEpisodeWatched.times * \
                 sa.func.ifnull(
-                    models.Episode.runtime,
-                    sa.func.ifnull(models.Series.runtime, 0),
+                    models.MEpisode.runtime,
+                    sa.func.ifnull(models.MSeries.runtime, 0),
                 )
         ), 0).label('episodes_watched_minutes'),
     ).where(        
-        models.Episode_watched.user_id == user.id,
-        models.Episode_watched.series_id == series_id,
-        models.Episode.series_id == models.Episode_watched.series_id,
-        models.Episode.number == models.Episode_watched.episode_number,
-        models.Series.id == models.Episode_watched.series_id,
+        models.MEpisodeWatched.user_id == user.id,
+        models.MEpisodeWatched.series_id == series_id,
+        models.MEpisode.series_id == models.MEpisodeWatched.series_id,
+        models.MEpisode.number == models.MEpisodeWatched.episode_number,
+        models.MSeries.id == models.MEpisodeWatched.series_id,
     ))
     return schemas.Series_user_stats.model_validate(q.first())

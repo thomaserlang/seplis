@@ -16,7 +16,7 @@ async def update_popularity(create_movies = True, create_above_popularity: float
     movies: dict[str, schemas.Movie] = {}
     dt = datetime.now().date()
     async with database.session() as session:
-        result = await session.stream(sa.select(models.Movie).options(sa.orm.noload("*")))
+        result = await session.stream(sa.select(models.MMovie).options(sa.orm.noload("*")))
         async for db_movies in result.yield_per(1000):
             for movie in db_movies:
                 if movie.externals.get('themoviedb'):
@@ -36,22 +36,22 @@ async def update_popularity(create_movies = True, create_above_popularity: float
                 ids_to_create.append(id_)
             if len(insert_data) == 10000:
                 await session.execute(
-                    sa.insert(models.Movie_popularity_history).prefix_with('IGNORE').values(insert_data),
+                    sa.insert(models.MMoviePopularityHistory).prefix_with('IGNORE').values(insert_data),
                 )
                 insert_data = []
         if insert_data:
             await session.execute(
-                sa.insert(models.Movie_popularity_history).prefix_with('IGNORE').values(insert_data),
+                sa.insert(models.MMoviePopularityHistory).prefix_with('IGNORE').values(insert_data),
             )
-        await session.execute(sa.update(models.Movie).values({
-                models.Movie.popularity: 0
+        await session.execute(sa.update(models.MMovie).values({
+                models.MMovie.popularity: 0
             }),
         )
-        await session.execute(sa.update(models.Movie).values({
-                models.Movie.popularity: models.Movie_popularity_history.popularity
+        await session.execute(sa.update(models.MMovie).values({
+                models.MMovie.popularity: models.MMoviePopularityHistory.popularity
             }).where(
-                models.Movie_popularity_history.date == dt,
-                models.Movie_popularity_history.movie_id == models.Movie.id,
+                models.MMoviePopularityHistory.date == dt,
+                models.MMoviePopularityHistory.movie_id == models.MMovie.id,
             ),
         )
         await session.commit()
@@ -63,11 +63,11 @@ async def update_popularity(create_movies = True, create_above_popularity: float
             movie_data = await importer.get_movie_data(id_)
             if not movie_data:
                 continue
-            movie = await models.Movie.save(
+            movie = await models.MMovie.save(
                 data=movie_data,
             )
         except exceptions.Movie_external_duplicated as e:
-            await models.Movie.save(data=schemas.Movie_update(
+            await models.MMovie.save(data=schemas.Movie_update(
                 externals={
                     'themoviedb': str(id_),
                 },

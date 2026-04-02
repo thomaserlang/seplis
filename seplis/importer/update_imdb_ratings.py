@@ -21,7 +21,7 @@ async def update_imdb_ratings() -> None:
     insert_data = []
     async with database.session() as session:
         logger.info('Updating imdb ratings for movies')
-        result = await session.execute(sa.select(models.Movie.id, models.Movie.externals, models.Movie.rating, models.Movie.rating_votes))
+        result = await session.execute(sa.select(models.MMovie.id, models.MMovie.externals, models.MMovie.rating, models.MMovie.rating_votes))
         for movie in result:
             if movie.externals.get('imdb') not in ratings:
                 continue
@@ -36,20 +36,20 @@ async def update_imdb_ratings() -> None:
             })
             if len(insert_data) == 10000:
                 await session.execute(
-                    sa.insert(models.Movie_rating_history.__table__).prefix_with('IGNORE').values(insert_data),
+                    sa.insert(models.MMovieRatingHistory.__table__).prefix_with('IGNORE').values(insert_data),
                 )
                 insert_data = []
         if insert_data:
             await session.execute(
-                sa.insert(models.Movie_rating_history.__table__).prefix_with('IGNORE').values(insert_data),
+                sa.insert(models.MMovieRatingHistory.__table__).prefix_with('IGNORE').values(insert_data),
             )
         insert_data = []
-        await session.execute(sa.update(models.Movie.__table__).values({
-                models.Movie.rating: models.Movie_rating_history.rating,
-                models.Movie.rating_votes: models.Movie_rating_history.votes,
+        await session.execute(sa.update(models.MMovie.__table__).values({
+                models.MMovie.rating: models.MMovieRatingHistory.rating,
+                models.MMovie.rating_votes: models.MMovieRatingHistory.votes,
             }).where(
-                models.Movie_rating_history.date == dt,
-                models.Movie_rating_history.movie_id == models.Movie.id,
+                models.MMovieRatingHistory.date == dt,
+                models.MMovieRatingHistory.movie_id == models.MMovie.id,
             ),
         )
         await session.commit()
@@ -57,7 +57,7 @@ async def update_imdb_ratings() -> None:
 
     async with database.session() as session:
         logger.info('Updating imdb ratings for series')
-        result = await session.execute(sa.select(models.Series.id, models.Series.externals, models.Series.rating, models.Series.rating_votes))
+        result = await session.execute(sa.select(models.MSeries.id, models.MSeries.externals, models.MSeries.rating, models.MSeries.rating_votes))
         for s in result:
             if s.externals.get('imdb') not in ratings:
                 continue
@@ -73,20 +73,20 @@ async def update_imdb_ratings() -> None:
 
             if len(insert_data) == 10000:
                 await session.execute(
-                    sa.insert(models.Series_rating_history.__table__).prefix_with('IGNORE').values(insert_data),
+                    sa.insert(models.MSeriesRatingHistory.__table__).prefix_with('IGNORE').values(insert_data),
                 )
                 insert_data = []
         if insert_data:
             await session.execute(
-                sa.insert(models.Series_rating_history.__table__).prefix_with('IGNORE').values(insert_data),
+                sa.insert(models.MSeriesRatingHistory.__table__).prefix_with('IGNORE').values(insert_data),
             )
         insert_data = []
-        await session.execute(sa.update(models.Series.__table__).values({
-                models.Series.rating: models.Series_rating_history.rating,
-                models.Series.rating_votes: models.Series_rating_history.votes,
+        await session.execute(sa.update(models.MSeries.__table__).values({
+                models.MSeries.rating: models.MSeriesRatingHistory.rating,
+                models.MSeries.rating_votes: models.MSeriesRatingHistory.votes,
             }).where(
-                models.Series_rating_history.date == dt,
-                models.Series_rating_history.series_id == models.Series.id,
+                models.MSeriesRatingHistory.date == dt,
+                models.MSeriesRatingHistory.series_id == models.MSeries.id,
             ),
         )
         await session.commit()

@@ -10,17 +10,17 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_play_server_register_episodes(client: AsyncClient) -> None:
     user_id = await user_signin(client)
 
-    play_server: schemas.Play_server = await models.Play_server.save(data=schemas.Play_server_create(
+    play_server: schemas.Play_server = await models.MPlayServer.save(data=schemas.Play_server_create(
         name='Test play',
         url='http://example.net',
         secret='2'*20
     ), user_id=user_id)
 
-    series1: schemas.Series = await models.Series.save(data=schemas.Series_create(
+    series1: schemas.Series = await models.MSeries.save(data=schemas.Series_create(
         title='Test 1',
         episodes=[schemas.Episode_create(title='EP', number=1)]
     ))    
-    series2: schemas.Series = await models.Series.save(data=schemas.Series_create(
+    series2: schemas.Series = await models.MSeries.save(data=schemas.Series_create(
         title='Test 2',
         episodes=[schemas.Episode_create(title='EP2', number=1)]
     ))    
@@ -41,7 +41,7 @@ async def test_play_server_register_episodes(client: AsyncClient) -> None:
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.Play_server_episode))
+        r = await session.scalars(sa.select(models.MPlayServerEpisode))
         assert r.all()[0].series_id == series1.id
 
     r = await client.patch(f'/2/play-servers/{play_server.id}/episodes', json=[
@@ -52,8 +52,8 @@ async def test_play_server_register_episodes(client: AsyncClient) -> None:
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.Play_server_episode).where(
-            models.Play_server_episode.play_server_id == play_server.id
+        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
+            models.MPlayServerEpisode.play_server_id == play_server.id
         ))
         r = r.all()
         assert r[0].series_id == series1.id
@@ -68,8 +68,8 @@ async def test_play_server_register_episodes(client: AsyncClient) -> None:
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.Play_server_episode).where(
-            models.Play_server_episode.play_server_id == play_server.id
+        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
+            models.MPlayServerEpisode.play_server_id == play_server.id
         ))
         r = r.all()
         assert r[0].series_id == series1.id
@@ -81,8 +81,8 @@ async def test_play_server_register_episodes(client: AsyncClient) -> None:
     assert r.status_code == 204
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.Play_server_episode).where(
-            models.Play_server_episode.play_server_id == play_server.id
+        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
+            models.MPlayServerEpisode.play_server_id == play_server.id
         ))
         r = r.all()
         assert r[0].series_id == series2.id
@@ -93,8 +93,8 @@ async def test_play_server_register_episodes(client: AsyncClient) -> None:
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.Play_server_episode).where(
-            models.Play_server_episode.play_server_id == play_server.id
+        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
+            models.MPlayServerEpisode.play_server_id == play_server.id
         ))
         assert len(r.all()) == 0
 

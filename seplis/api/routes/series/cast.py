@@ -17,7 +17,7 @@ async def series_cast_add(
     user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ) -> None:
     cast_member.series_id = series_id
-    await models.Series_cast.save(data=cast_member)
+    await models.MSeriesCast.save(data=cast_member)
 
 
 @router.delete('/{series_id}/cast', status_code=204,
@@ -29,7 +29,7 @@ async def series_cast_delete(
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
 ) -> None:
-    await models.Series_cast.delete(
+    await models.MSeriesCast.delete(
         series_id=series_id,
         person_id=person_id,
     )
@@ -46,16 +46,16 @@ async def series_cast_get(
     page_query: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.Series_cast).where(
-        models.Series_cast.series_id == series_id,
+    query = sa.select(models.MSeriesCast).where(
+        models.MSeriesCast.series_id == series_id,
     ).order_by(
-        sa.asc(models.Series_cast.order),
+        sa.asc(models.MSeriesCast.order),
     )
 
     if order_le is not None:
-        query = query.where(models.Series_cast.order <= order_le)
+        query = query.where(models.MSeriesCast.order <= order_le)
     if order_ge is not None:
-        query = query.where(models.Series_cast.order >= order_ge)
+        query = query.where(models.MSeriesCast.order >= order_ge)
 
     p = await utils.sqlalchemy.paginate_cursor(
         session=session,

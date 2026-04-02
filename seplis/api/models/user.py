@@ -18,7 +18,7 @@ from .. import schemas
 from .base import Base
 
 
-class User_public(Base):
+class MUserPublic(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -26,7 +26,7 @@ class User_public(Base):
     created_at: Mapped[datetime] = mapped_column(UtcDateTime, default=utils.datetime_now)
 
 
-class User(User_public):
+class MUser(MUserPublic):
     email: Mapped[str] = mapped_column(sa.String(100), unique=True)
     password: Mapped[str] = mapped_column(sa.String(200))
     scopes: Mapped[str] = mapped_column(sa.String(2000), server_default='me')
@@ -47,32 +47,32 @@ class User(User_public):
 
             if 'email' in _data:
                 e = await session.scalar(
-                    sa.select(User).where(
-                        User.email == _data['email'],
-                        User.id != user_id,
+                    sa.select(MUser).where(
+                        MUser.email == _data['email'],
+                        MUser.id != user_id,
                     )
                 )
                 if e:
                     raise exceptions.User_email_duplicate()
             if 'username' in _data:
                 e = await session.scalar(
-                    sa.select(User).where(
-                        User.username == _data['username'],
-                        User.id != user_id,
+                    sa.select(MUser).where(
+                        MUser.username == _data['username'],
+                        MUser.id != user_id,
                     )
                 )
                 if e:
                     raise exceptions.User_username_duplicate()
             if not user_id:
                 r = cast(
-                    sa.Row[Any], await session.execute(sa.insert(User).values(_data))
+                    sa.Row[Any], await session.execute(sa.insert(MUser).values(_data))
                 )
                 user_id = r.lastrowid
             else:
                 await session.execute(
-                    sa.update(User).where(User.id == user_id).values(_data)
+                    sa.update(MUser).where(MUser.id == user_id).values(_data)
                 )
-            user = await session.scalar(sa.select(User).where(User.id == user_id))
+            user = await session.scalar(sa.select(MUser).where(MUser.id == user_id))
             await session.commit()
             return schemas.User.model_validate(user)
 
@@ -88,32 +88,34 @@ class User(User_public):
     ) -> None:
         password = await run_in_threadpool(pbkdf2_sha256.hash, new_password)
         await session.execute(
-            sa.update(User)
-            .where(User.id == user_id)
+            sa.update(MUser)
+            .where(MUser.id == user_id)
             .values(
                 password=password,
             )
         )
         if expire_tokens:
             tokens = await session.scalars(
-                sa.select(Token).where(
-                    Token.user_id == user_id,
+                sa.select(MToken).where(
+                    MToken.user_id == user_id,
                     sa.or_(
-                        Token.expires >= datetime.now(tz=UTC),
-                        Token.expires.is_(None),
+                        MToken.expires >= datetime.now(tz=UTC),
+                        MToken.expires.is_(None),
                     ),
-                    Token.token != current_token,
+                    MToken.token != current_token,
                 )
             )
             for token in tokens:
-                await session.execute(sa.delete(Token).where(Token.token == token.token))
+                await session.execute(
+                    sa.delete(MToken).where(MToken.token == token.token)
+                )
                 await database.redis.delete(f'seplis:tokens:{token.token}:user')
-        email = await session.scalar(sa.select(User.email).where(User.id == user_id))
+        email = await session.scalar(sa.select(MUser.email).where(MUser.id == user_id))
         if email is not None:
             await send_password_changed(email)
 
 
-class Token(Base):
+class MToken(Base):
     __tablename__ = 'tokens'
 
     user_id: Mapped[int | None] = mapped_column(sa.Integer)
@@ -134,7 +136,7 @@ class Token(Base):
         async with database.session() as session:
             token = utils.random_key(256)
             await session.execute(
-                sa.insert(Token).values(
+                sa.insert(MToken).values(
                     app_id=app_id,
                     user_id=user_id,
                     expires=datetime.now(tz=UTC) + timedelta(days=expires_days),
@@ -144,7 +146,7 @@ class Token(Base):
             )
             await session.commit()
             p: Pipeline = database.redis.pipeline()  # type: ignore[assignment]
-            Token.cache(p, token, user_id, scopes)
+            MToken.cache(p, token, user_id, scopes)
             await p.execute()
             return token
 
@@ -168,7 +170,7 @@ class Token(Base):
         return None
 
 
-class User_series_settings(Base):
+class MUserSeriesSettings(Base):
     __tablename__ = 'user_series_settings'
 
     user_id: Mapped[int] = mapped_column(
@@ -184,12 +186,12 @@ class User_series_settings(Base):
 async def rebuild_tokens() -> None:
     async with database.session() as session:
         result = await session.stream(
-            sa.select(Token).where(Token.expires >= datetime.now(tz=UTC))
+            sa.select(MToken).where(MToken.expires >= datetime.now(tz=UTC))
         )
         async for tokens in result.yield_per(10000):
             p: Pipeline = database.redis.pipeline()  # type: ignore[assignment]
             for token in tokens:
-                Token.cache(
+                MToken.cache(
                     pipe=p,
                     token=token.token,
                     user_id=token.user_id,

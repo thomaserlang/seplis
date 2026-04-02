@@ -11,7 +11,7 @@ from ..dependencies import AsyncSession
 from .base import Base
 
 
-class Series_watchlist(Base):
+class MSeriesWatchlist(Base):
     __tablename__ = 'series_watchlist'
 
     series_id: Mapped[int] = mapped_column(
@@ -27,7 +27,7 @@ class Series_watchlist(Base):
         series_id: int, user_id: int | str, session: AsyncSession = None
     ) -> None:
         await session.execute(
-            sa.insert(Series_watchlist)
+            sa.insert(MSeriesWatchlist)
             .values(
                 series_id=series_id,
                 user_id=user_id,
@@ -41,18 +41,18 @@ class Series_watchlist(Base):
         series_id: int, user_id: int | str, session: AsyncSession = None
     ) -> None:
         await session.execute(
-            sa.delete(Series_watchlist).where(
-                Series_watchlist.series_id == series_id,
-                Series_watchlist.user_id == user_id,
+            sa.delete(MSeriesWatchlist).where(
+                MSeriesWatchlist.series_id == series_id,
+                MSeriesWatchlist.user_id == user_id,
             )
         )
 
     @auto_session
     async def get(series_id: int, user_id: int | str, session: AsyncSession = None):
         f = await session.scalar(
-            sa.select(Series_watchlist.created_at).where(
-                Series_watchlist.series_id == series_id,
-                Series_watchlist.user_id == user_id,
+            sa.select(MSeriesWatchlist.created_at).where(
+                MSeriesWatchlist.series_id == series_id,
+                MSeriesWatchlist.user_id == user_id,
             )
         )
         if f:

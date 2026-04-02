@@ -7,15 +7,15 @@ from sqlakeyset.asyncio import select_page
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.types import DateTime, TypeDecorator
 
-from ..api import schemas
-
 
 async def paginate_cursor(
     session: AsyncSession,
     query: Any,
-    page_query: schemas.Page_cursor_query,
+    page_query: Any,
     backwards=False,
 ):
+    from ..api import schemas
+
     page = await select_page(
         s=session,
         selectable=query,
@@ -38,9 +38,11 @@ async def paginate_cursor(
 async def paginate_cursor_total(
     session: AsyncSession,
     query: Any,
-    page_query: schemas.Page_cursor_query,
+    page_query: Any,
     backwards=False,
 ):
+    from ..api import schemas
+
     count_subquery = query.order_by(None).options(sa.orm.noload('*')).subquery()
     p = await paginate_cursor(session, query, page_query, backwards)
     total = await session.scalar(

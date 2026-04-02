@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import exceptions
 from .database import database
-from .models.user import Token
+from .models.user import MToken
 from .schemas.user import User_authenticated
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/2/token')
@@ -25,7 +25,7 @@ async def get_session() -> AsyncGenerator[AsyncSession]:
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> User_authenticated:
-    user = await Token.get(token)
+    user = await MToken.get(token)
     if not user:
         raise exceptions.Not_signed_in_exception()
     return user
@@ -34,7 +34,7 @@ async def get_current_user(
 async def get_current_user_no_raise(
     token: Annotated[str, Depends(oauth2_scheme_no_raise)],
 ) -> User_authenticated | None:
-    return await Token.get(token)
+    return await MToken.get(token)
 
 
 async def authenticated(

@@ -22,7 +22,7 @@ async def get_series(
     page_cursor: schemas.Page_cursor_query = Depends(),
     filter_query: Series_query_filter = Depends(),
 ):
-    query = sa.select(models.Series)
+    query = sa.select(models.MSeries)
     return await filter_series(
         query=query,
         session=session,
@@ -39,7 +39,7 @@ async def get_series_one(
     user: schemas.User_authenticated | None = Depends(
         get_current_user_no_raise),
 ):
-    series = await session.scalar(sa.select(models.Series).where(models.Series.id == series_id))
+    series = await session.scalar(sa.select(models.MSeries).where(models.MSeries.id == series_id))
     if not series:
         raise HTTPException(404, 'Unknown series')
     s = schemas.Series.model_validate(series)
@@ -53,10 +53,10 @@ async def get_series_by_external(
     external_id: str,
     session: AsyncSession = Depends(get_session),
 ):
-    series = await session.scalar(sa.select(models.Series).where(
-        models.Series_external.title == external_name,
-        models.Series_external.value == external_id,
-        models.Series.id == models.Series_external.series_id,
+    series = await session.scalar(sa.select(models.MSeries).where(
+        models.MSeriesExternal.title == external_name,
+        models.MSeriesExternal.value == external_id,
+        models.MSeries.id == models.MSeriesExternal.series_id,
     ))
     if not series:
         raise HTTPException(404, 'Unknown series')
@@ -72,7 +72,7 @@ async def create_series(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['series:create']),
 ):
-    series = await models.Series.save(data, series_id=None, patch=False)
+    series = await models.MSeries.save(data, series_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_series', int(series.id))
     return series
 
@@ -87,7 +87,7 @@ async def update_series(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['series:edit']),
 ):
-    return await models.Series.save(series_id=series_id, data=data, patch=False)
+    return await models.MSeries.save(series_id=series_id, data=data, patch=False)
 
 
 @router.patch('/{series_id}', response_model=schemas.Series,
@@ -100,7 +100,7 @@ async def patch_series(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['series:edit']),
 ):
-    return await models.Series.save(series_id=series_id, data=data, patch=True)
+    return await models.MSeries.save(series_id=series_id, data=data, patch=True)
 
 
 @router.delete('/{series_id}', status_code=204,
@@ -112,7 +112,7 @@ async def delete_series(
     user: schemas.User_authenticated = Security(
         authenticated, scopes=['series:delete']),
 ) -> None:
-    await models.Series.delete(series_id)
+    await models.MSeries.delete(series_id)
 
 
 @router.post('/{series_id}/update', status_code=204,

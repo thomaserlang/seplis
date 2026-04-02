@@ -22,9 +22,9 @@ def filter_user_can_watch(
 
 def filter_user_can_watch_query(query: Any, user_id: int, episode_number: Any):
     return query.where(
-        models.Play_server_access.user_id == user_id,
-        models.Play_server_episode.play_server_id
-        == models.Play_server_access.play_server_id,
-        models.Play_server_episode.series_id == models.Series.id,
-        models.Play_server_episode.episode_number == episode_number,
+        models.MPlayServerAccess.user_id == user_id,
+        models.MPlayServerEpisode.play_server_id
+        == models.MPlayServerAccess.play_server_id,
+        models.MPlayServerEpisode.series_id == models.MSeries.id,
+        models.MPlayServerEpisode.episode_number == episode_number,
     )

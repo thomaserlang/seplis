@@ -15,12 +15,12 @@ async def test_play_server(client: AsyncClient) -> None:
     assert r.status_code == 201, r.content
     play_server = schemas.Play_server.model_validate(r.json())
 
-    movie = await models.Movie.save(data=schemas.Movie_create(
+    movie = await models.MMovie.save(data=schemas.Movie_create(
         title='Test',
         externals={'themoviedb': '1'},
     ), movie_id=None)
 
-    await models.Movie_watchlist.add(user_id=user_id, movie_id=movie.id)
+    await models.MMovieWatchlist.add(user_id=user_id, movie_id=movie.id)
 
     r = await client.get(f'/2/play-servers/{play_server.id}/users-movie-watchlist')
     assert r.status_code == 200

@@ -16,10 +16,10 @@ async def get_position(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
-    ew = await session.scalar(sa.select(models.Episode_watched).where(
-        models.Episode_watched.series_id == series_id,
-        models.Episode_watched.episode_number == episode_number,
-        models.Episode_watched.user_id == user.id,
+    ew = await session.scalar(sa.select(models.MEpisodeWatched).where(
+        models.MEpisodeWatched.series_id == series_id,
+        models.MEpisodeWatched.episode_number == episode_number,
+        models.MEpisodeWatched.user_id == user.id,
     ))
     if not ew:
         return Response(status_code=204)
@@ -37,7 +37,7 @@ async def set_position(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ) -> None:
-    await models.Episode_watched.set_position(
+    await models.MEpisodeWatched.set_position(
         session=session,
         user_id=user.id,
         series_id=series_id,
@@ -57,7 +57,7 @@ async def delete_position(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ) -> None:
-    await models.Episode_watched.reset_position(
+    await models.MEpisodeWatched.reset_position(
         session=session,
         user_id=user.id,
         series_id=series_id,

@@ -10,7 +10,7 @@ def filter_can_watch(query, filter_query: Movie_query_filter):
     if not filter_query.user:
         raise exceptions.Not_signed_in_exception()
     return query.where(
-        models.Play_server_access.user_id == filter_query.user.id,
-        models.Play_server_movie.play_server_id == models.Play_server_access.play_server_id,
-        models.Play_server_movie.movie_id == models.Movie.id,
+        models.MPlayServerAccess.user_id == filter_query.user.id,
+        models.MPlayServerMovie.play_server_id == models.MPlayServerAccess.play_server_id,
+        models.MPlayServerMovie.movie_id == models.MMovie.id,
     )

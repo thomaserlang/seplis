@@ -15,9 +15,9 @@ async def get_series_user_settings(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
 ):
-    settings = await session.scalar(sa.select(models.User_series_settings).where(
-        models.User_series_settings.user_id == user.id,
-        models.User_series_settings.series_id == series_id,
+    settings = await session.scalar(sa.select(models.MUserSeriesSettings).where(
+        models.MUserSeriesSettings.user_id == user.id,
+        models.MUserSeriesSettings.series_id == series_id,
     ))
     if not settings:
         return schemas.User_series_settings()
@@ -34,26 +34,26 @@ async def set_series_user_settings(
     session: AsyncSession = Depends(get_session),
     user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_settings']),
 ):
-    settings = await session.scalar(sa.select(models.User_series_settings).where(
-        models.User_series_settings.user_id == user.id,
-        models.User_series_settings.series_id == series_id,
+    settings = await session.scalar(sa.select(models.MUserSeriesSettings).where(
+        models.MUserSeriesSettings.user_id == user.id,
+        models.MUserSeriesSettings.series_id == series_id,
     ))
     if not settings:
-        await session.execute(sa.insert(models.User_series_settings).values(
+        await session.execute(sa.insert(models.MUserSeriesSettings).values(
             series_id=series_id,
             user_id=user.id,
             **data.model_dump(exclude_unset=True)
         ))
     else:
-        await session.execute(sa.update(models.User_series_settings).values(
+        await session.execute(sa.update(models.MUserSeriesSettings).values(
             **data.model_dump(exclude_unset=True)
         ).where(
-            models.User_series_settings.user_id == user.id,
-            models.User_series_settings.series_id == series_id,
+            models.MUserSeriesSettings.user_id == user.id,
+            models.MUserSeriesSettings.series_id == series_id,
         ))
-    settings = await session.scalar(sa.select(models.User_series_settings).where(
-        models.User_series_settings.user_id == user.id,
-        models.User_series_settings.series_id == series_id,
+    settings = await session.scalar(sa.select(models.MUserSeriesSettings).where(
+        models.MUserSeriesSettings.user_id == user.id,
+        models.MUserSeriesSettings.series_id == series_id,
     ))
     await session.commit()
     return settings

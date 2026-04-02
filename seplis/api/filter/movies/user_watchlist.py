@@ -14,18 +14,18 @@ def filter_user_watchlist(query, filter_query: Movie_query_filter):
 
     if filter_query.user_watchlist or has_sort:
         query = query.where(
-            models.Movie_watchlist.user_id == filter_query.user.id,
-            models.Movie_watchlist.movie_id == models.Movie.id,
+            models.MMovieWatchlist.user_id == filter_query.user.id,
+            models.MMovieWatchlist.movie_id == models.MMovie.id,
         )
     elif not filter_query.user_watchlist:
         query = query.join(
-            models.Movie_watchlist,
+            models.MMovieWatchlist,
             sa.and_(
-                models.Movie_watchlist.user_id == filter_query.user.id,
-                models.Movie_watchlist.movie_id == models.Movie.id,
+                models.MMovieWatchlist.user_id == filter_query.user.id,
+                models.MMovieWatchlist.movie_id == models.MMovie.id,
             ),
             isouter=True,
         ).where(
-            models.Movie_watchlist.movie_id is None,
+            models.MMovieWatchlist.movie_id is None,
         )
     return query

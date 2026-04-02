@@ -17,7 +17,7 @@ async def movie_cast_add(
     user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
 ) -> None:
     data.movie_id = movie_id
-    await models.Movie_cast.save(data=data)
+    await models.MMovieCast.save(data=data)
 
 
 @router.delete('/{movie_id}/cast', status_code=204)
@@ -26,7 +26,7 @@ async def movie_cast_delete(
     person_id: int,
     user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
 ) -> None:
-    await models.Movie_cast.delete(
+    await models.MMovieCast.delete(
         movie_id=movie_id,
         person_id=person_id,
     )
@@ -40,16 +40,16 @@ async def movie_cast_get(
     order_ge: int = None,
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.Movie_cast).where(
-        models.Movie_cast.movie_id == movie_id,
+    query = sa.select(models.MMovieCast).where(
+        models.MMovieCast.movie_id == movie_id,
     ).order_by(
-        sa.asc(models.Movie_cast.order),
+        sa.asc(models.MMovieCast.order),
     )
     
     if order_le is not None:
-        query = query.where(models.Movie_cast.order <= order_le)
+        query = query.where(models.MMovieCast.order <= order_le)
     if order_ge is not None:
-        query = query.where(models.Movie_cast.order >= order_ge)
+        query = query.where(models.MMovieCast.order >= order_ge)
 
     p = await utils.sqlalchemy.paginate_cursor(
         session=session,

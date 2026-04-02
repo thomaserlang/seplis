@@ -16,9 +16,9 @@ async def get_play_servers(
     session: AsyncSession=Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):
-    query = sa.select(models.Play_server).where(
-        models.Play_server.user_id == user.id,
-    ).order_by(sa.asc(models.Play_server.name))
+    query = sa.select(models.MPlayServer).where(
+        models.MPlayServer.user_id == user.id,
+    ).order_by(sa.asc(models.MPlayServer.name))
 
     p = await utils.sqlalchemy.paginate_cursor_total(session=session, query=query, page_query=page_query)
     p.items = [row.Play_server for row in p.items]

@@ -14,18 +14,18 @@ def filter_user_favorites(query, filter_query: Movie_query_filter):
 
     if filter_query.user_favorites or has_sort:
         query = query.where(
-            models.Movie_favorite.user_id == filter_query.user.id,
-            models.Movie_favorite.movie_id == models.Movie.id,
+            models.MMovieFavorite.user_id == filter_query.user.id,
+            models.MMovieFavorite.movie_id == models.MMovie.id,
         )
     elif not filter_query.user_favorites:
         query = query.join(
-            models.Movie_favorite,
+            models.MMovieFavorite,
             sa.and_(
-                models.Movie_favorite.user_id == filter_query.user.id,
-                models.Movie_favorite.movie_id == models.Movie.id,
+                models.MMovieFavorite.user_id == filter_query.user.id,
+                models.MMovieFavorite.movie_id == models.MMovie.id,
             ),
             isouter=True,
         ).where(
-            models.Movie_favorite.movie_id is None,
+            models.MMovieFavorite.movie_id is None,
         )
     return query

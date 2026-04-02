@@ -8,14 +8,14 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_series_cast(client: AsyncClient) -> None:
     await user_signin(client, ['series:edit'])
 
-    series = await models.Series.save(schemas.Series_create(
+    series = await models.MSeries.save(schemas.Series_create(
         title='Test series',
         episodes=[
             schemas.Episode_create(number=1, title='Test episode'),
         ]
     ))
 
-    person = await models.Person.save(schemas.Person_create(
+    person = await models.MPerson.save(schemas.Person_create(
         name='Test person',
     ))
 
