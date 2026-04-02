@@ -72,7 +72,7 @@ export function UserCreateForm({ onSuccess }: Props) {
                 <Flex w="100%">
                     <Button
                         ml="auto"
-                        size="lg"
+                        size="compact-lg"
                         type="submit"
                         loading={create.isPending}
                     >

@@ -67,7 +67,7 @@ export function LoginForm({ onSuccess }: Props) {
                     </Anchor>
                     <Button
                         ml="auto"
-                        size="lg"
+                        size="compact-lg"
                         type="submit"
                         loading={token.isPending}
                     >

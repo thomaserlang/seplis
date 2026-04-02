@@ -41,7 +41,9 @@ export function Component() {
                 <LoginLogo />
             </Flex>
             <Paper withBorder shadow="sm" p="2rem">
-                <Title mb="2rem">Log in to SEPLIS</Title>
+                <Title mb="2rem" mt="-0.5rem">
+                    Log in to SEPLIS
+                </Title>
                 <Flex gap="1rem" direction="column">
                     {currentUser.error && (
                         <ErrorBox errorObj={currentUser.error} />
@@ -59,7 +61,7 @@ export function Component() {
                     variant="subtle"
                     to="/signup"
                     mt="0.5rem"
-                    size="lg"
+                    size="compact-lg"
                 >
                     Sign up
                 </Button>

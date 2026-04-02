@@ -1,4 +1,5 @@
 import { ErrorBox } from '@/components/error-box'
+import { setFormErrors } from '@/utils/form'
 import { Button, Flex, PasswordInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useResetPassword } from '../api/reset-password.api'
@@ -18,6 +19,11 @@ export function ResetPasswordForm({ resetKey, onSuccess }: Props) {
     })
     const resetPassword = useResetPassword({
         onSuccess,
+        onError: (err) => {
+            if (err.status === 422) {
+                setFormErrors(form, err)
+            }
+        },
     })
 
     return (
@@ -40,14 +46,15 @@ export function ResetPasswordForm({ resetKey, onSuccess }: Props) {
                     {...form.getInputProps('new_password')}
                 />
 
-                {resetPassword.error && (
-                    <ErrorBox errorObj={resetPassword.error} />
-                )}
+                {resetPassword.error &&
+                    resetPassword.error?.response.status !== 422 && (
+                        <ErrorBox errorObj={resetPassword.error} />
+                    )}
 
                 <Flex w="100%">
                     <Button
                         ml="auto"
-                        size="lg"
+                        size="compact-lg"
                         type="submit"
                         loading={resetPassword.isPending}
                     >
