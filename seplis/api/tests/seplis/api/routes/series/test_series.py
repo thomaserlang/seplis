@@ -4,6 +4,7 @@ from datetime import date
 import httpx
 import pytest
 import respx
+from pydantic import AnyHttpUrl
 
 from seplis import config
 from seplis.api import constants, models, schemas
@@ -26,7 +27,10 @@ async def test_series_create(client: AsyncClient) -> None:
         '/2/series',
         json={
             'title': 'QWERTY',
-            'plot': 'The cases of the Naval Criminal Investigative Service. \\_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ',
+            'plot': (
+                'The cases of the Naval Criminal Investigative '
+                'Service. \\_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ'
+            ),
             'premiered': '2003-01-01',
             'ended': None,
             'importers': {
@@ -56,9 +60,9 @@ async def test_series_create(client: AsyncClient) -> None:
     data = schemas.Series.model_validate(r.json())
     assert r.status_code == 200, r.content
     assert data.title, 'QWERTY'
-    assert (
-        data.plot
-        == 'The cases of the Naval Criminal Investigative Service. \\_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ'
+    assert data.plot == (
+        'The cases of the Naval Criminal Investigative '
+        'Service. \\_(ʘ_ʘ)_/ "\'<!--/*༼ つ ◕_◕ ༽つ'
     )
     assert data.premiered == date(2003, 1, 1)
     assert data.ended is None
@@ -238,8 +242,8 @@ async def test_series_create(client: AsyncClient) -> None:
     assert r.status_code == 200, r.content
     series = schemas.Series.model_validate(r.json())
     assert series.seasons == [
-        schemas.Series_season(total=2, season=1, to=2, from_=1),
-        schemas.Series_season(total=1, season=2, to=3, from_=3),
+        schemas.Series_season(total=2, season=1, to=2, from_=1),  # type: ignore
+        schemas.Series_season(total=1, season=2, to=3, from_=3),  # type: ignore
     ]
 
     r = await client.put(
@@ -290,7 +294,7 @@ async def test_series_create(client: AsyncClient) -> None:
     r = await client.get(f'/2/series/{series_id}/episodes/3')
     assert r.status_code == 404, r.content
 
-    config.api.storitch_host = 'http://storitch'
+    config.api.storitch_host = AnyHttpUrl('http://storitch')
     r = await client.post(
         f'/2/series/{series_id}/images',
         files={
@@ -311,7 +315,9 @@ async def test_series_create(client: AsyncClient) -> None:
                 'type': 'image',
                 'width': 1000,
                 'height': 680,
-                'hash': '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492',
+                'hash': (
+                    '8b31b97a043ef44b3073622ed00fa6aafc89422d0c3a926a3f6bc30ddfb1f492'
+                ),
                 'file_id': '1a4dd776-f82f-4df7-893a-c03a168bc90d',
             },
         )
@@ -370,6 +376,7 @@ async def test_series_create(client: AsyncClient) -> None:
     r = await client.get(f'/2/series/{series_id}')
     assert r.status_code == 200, r.content
     data = schemas.Series.model_validate(r.json())
+    assert data.poster_image
     assert data.poster_image.id == poster_image_id
 
     r = await client.delete(f'/2/series/{series_id}/images/{poster_image_id}')
@@ -446,7 +453,9 @@ async def test_series_get(client: AsyncClient) -> None:
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 2
+    assert data.items[0].user_watchlist
     assert data.items[0].user_watchlist.on_watchlist
+    assert data.items[1].user_watchlist
     assert not data.items[1].user_watchlist.on_watchlist
 
     await models.Episode_watched.increment(
@@ -463,6 +472,7 @@ async def test_series_get(client: AsyncClient) -> None:
     data = schemas.Page_cursor_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series2.id
+    assert data.items[0].user_last_episode_watched
     assert data.items[0].user_last_episode_watched.number == 1
 
     r = await client.get('/2/series?user_has_watched=false')
