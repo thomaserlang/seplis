@@ -23,7 +23,6 @@ export function ResetPasswordForm({ resetKey, onSuccess }: Props) {
     return (
         <form
             onSubmit={form.onSubmit((values) => {
-                console.log(values)
                 resetPassword.mutate({
                     data: values,
                 })

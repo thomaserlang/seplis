@@ -2,5 +2,11 @@ export interface User {
     id: number
     username: string
     created_at: string
-    level: number
+    scopes: string
+}
+
+export interface UserCreate {
+    username: string
+    password: string
+    email: string
 }

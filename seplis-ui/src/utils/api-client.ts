@@ -3,6 +3,19 @@ import ky from 'ky'
 const apiClient = ky.create({
     prefixUrl: '/api',
     hooks: {
+        beforeError: [
+            async (error) => {
+                const { response } = error
+                if (
+                    response?.headers
+                        .get('content-type')
+                        ?.includes('application/json')
+                ) {
+                    ;(error as any).data = await response.clone().json()
+                }
+                return error
+            },
+        ],
         beforeRequest: [
             (request) => {
                 const token = localStorage.getItem('accessToken')
