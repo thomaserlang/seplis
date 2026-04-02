@@ -1,10 +1,10 @@
 import { ErrorBox } from '@/components/error-box'
+import { Logo } from '@/components/logo'
 import { PageLoader } from '@/components/page-loader'
 import { Button, Container, Flex, Paper, Title } from '@mantine/core'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useGetCurrentUser } from './api/user.api'
 import { LoginForm } from './components/login-form'
-import { LoginLogo } from './components/login-logo'
 import { Token } from './types/login.types'
 import { setLogin } from './utils/login.utils'
 
@@ -38,7 +38,7 @@ export function Component() {
     return (
         <Container size="30rem" mt="2rem">
             <Flex justify="center" align="center" mb="2rem">
-                <LoginLogo />
+                <Logo />
             </Flex>
             <Paper withBorder shadow="sm" p="2rem">
                 <Title mb="2rem" mt="-0.5rem">

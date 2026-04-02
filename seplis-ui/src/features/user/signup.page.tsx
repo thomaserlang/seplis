@@ -1,9 +1,9 @@
 import { ErrorBox } from '@/components/error-box'
+import { Logo } from '@/components/logo'
 import { PageLoader } from '@/components/page-loader'
 import { Container, Flex, Paper, Title } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 import { useCreateToken } from './api/token.api'
-import { LoginLogo } from './components/login-logo'
 import { UserCreateForm } from './components/user-create-form'
 import { User } from './types/user.types'
 import { setLogin } from './utils/login.utils'
@@ -37,7 +37,7 @@ export function Component() {
     return (
         <Container size="30rem" mt="2rem">
             <Flex justify="center" align="center" mb="2rem">
-                <LoginLogo />
+                <Logo />
             </Flex>
             <Paper withBorder shadow="sm" p="2rem">
                 <Title mb="2rem">Sign up to SEPLIS</Title>

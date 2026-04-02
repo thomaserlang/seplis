@@ -1,7 +1,7 @@
 import { Anchor, Image } from '@mantine/core'
 import { Link } from 'react-router-dom'
 
-export function LoginLogo() {
+export function Logo() {
     return (
         <Anchor component={Link} to="/">
             <Image

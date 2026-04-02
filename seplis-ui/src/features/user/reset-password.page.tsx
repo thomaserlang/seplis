@@ -1,6 +1,6 @@
+import { Logo } from '@/components/logo'
 import { Container, Flex, Paper, Title } from '@mantine/core'
 import { useNavigate, useParams } from 'react-router-dom'
-import { LoginLogo } from './components/login-logo'
 import { ResetPasswordForm } from './components/reset-password-form'
 
 export function Component() {
@@ -12,7 +12,7 @@ export function Component() {
     return (
         <Container size="30rem" mt="2rem">
             <Flex justify="center" align="center" mb="2rem">
-                <LoginLogo />
+                <Logo />
             </Flex>
             <Paper withBorder shadow="sm" p="2rem">
                 <Title mb="2rem">Reset Password</Title>
