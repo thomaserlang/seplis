@@ -3,10 +3,10 @@ import { Logo } from '@/components/logo'
 import { PageLoader } from '@/components/page-loader'
 import { Button, Container, Flex, Paper, Title } from '@mantine/core'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { setActiveUser } from './api/active-user.api'
 import { useGetCurrentUser } from './api/user.api'
 import { LoginForm } from './components/login-form'
 import { Token } from './types/login.types'
-import { setLogin } from './utils/login.utils'
 
 export function Component() {
     const navigate = useNavigate()
@@ -22,7 +22,7 @@ export function Component() {
         const r = await currentUser.refetch()
         if (!r.data) return
 
-        setLogin({
+        setActiveUser({
             user: r.data,
             token: token.access_token,
         })

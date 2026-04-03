@@ -1,5 +1,5 @@
 import { ErrorBox } from '@/components/error-box'
-import { setFormErrors } from '@/utils/form'
+import { setFormErrors } from '@/utils/form.utils'
 import { Button, Flex, PasswordInput, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useCreateUser } from '../api/user.api'

@@ -7,6 +7,7 @@ import { RouterProvider } from 'react-router-dom'
 import { queryClient } from './queryclient'
 import { router } from './router'
 
+import { ModalsProvider } from '@mantine/modals'
 import { theme } from './theme'
 import './theme.css'
 
@@ -15,7 +16,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <MantineProvider theme={theme} forceColorScheme={'dark'}>
             <Notifications position="top-right" />
             <QueryClientProvider client={queryClient}>
-                <RouterProvider router={router} />
+                <ModalsProvider>
+                    <RouterProvider router={router} />
+                </ModalsProvider>
             </QueryClientProvider>
         </MantineProvider>
     </React.StrictMode>,

@@ -2,10 +2,12 @@ import { Anchor, Center, Container, Text, Title } from '@mantine/core'
 import {
     createBrowserRouter,
     isRouteErrorResponse,
+    Outlet,
     useRouteError,
 } from 'react-router-dom'
 import { ErrorBox } from './components/error-box'
 import { Logo } from './components/logo'
+import { MainShell } from './features/main-shell/components/main-shell'
 
 export const router = createBrowserRouter([
     {
@@ -35,10 +37,6 @@ export const router = createBrowserRouter([
         },
     },
     {
-        path: '/',
-        element: <div>Home</div>,
-    },
-    {
         path: '/login',
         lazy: () => import('./features/user/login.page'),
     },
@@ -53,5 +51,13 @@ export const router = createBrowserRouter([
     {
         path: '/signup',
         lazy: () => import('./features/user/signup.page'),
+    },
+    {
+        path: '/',
+        element: (
+            <MainShell>
+                <Outlet />
+            </MainShell>
+        ),
     },
 ])

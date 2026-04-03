@@ -3,10 +3,10 @@ import { Logo } from '@/components/logo'
 import { PageLoader } from '@/components/page-loader'
 import { Container, Flex, Paper, Title } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
+import { setActiveUser } from './api/active-user.api'
 import { useCreateToken } from './api/token.api'
 import { UserCreateForm } from './components/user-create-form'
 import { User } from './types/user.types'
-import { setLogin } from './utils/login.utils'
 
 export function Component() {
     const navigate = useNavigate()
@@ -27,7 +27,7 @@ export function Component() {
                 grant_type: 'password',
             },
         })
-        setLogin({
+        setActiveUser({
             user,
             token: r.access_token,
         })

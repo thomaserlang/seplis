@@ -51,9 +51,7 @@ body {
   --sidebar-ring: light-dark(oklch(0.708 0 0), oklch(0.556 0 0));
 
   --mantine-color-text: var(--foreground);
-  --text-color: var(--foreground);
-  --color-text: var(--foreground);
-
+  --mantine-color-dimmed: var(--muted-foreground);
   --mantine-primary-color-filled: var(--primary);
   --mantine-primary-color-filled-hover: color-mix(
     in oklab,
@@ -79,12 +77,6 @@ body {
   --navbar-background-color: var(--background-color);
 
   --switch-thumb-bg: var(--background);
-
-  @mixin dark {
-    --mantine-datatable-shadow-background-bottom:
-      linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2)),
-      linear-gradient(rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.2));
-  }
 }
 
 .mantine-Checkbox-labelWrapper {
@@ -153,13 +145,12 @@ body {
 }
 
 .mantine-NavLink-root {
-  --nl-bg: light-dark(lab(92% 0 0), lab(15% 0 0));
-  --nl-hover: light-dark(lab(92% 0 0), lab(25% 0 0));
+  --nl-bg: light-dark(lab(92% 0 0), lab(10% 0 0));
+  --nl-hover: light-dark(lab(92% 0 0), lab(15% 0 0));
   color: light-dark(lab(22% 0 0), lab(75% 0 0));
 
   padding: 0.25rem 0.75rem;
   border-radius: 0.5rem;
-  margin-bottom: 0.25rem;
 
   &.active {
     color: var(--color-text);
@@ -212,4 +203,15 @@ body {
 
 .mantine-Input-wrapper {
   --input-bd: var(--border-color);
+}
+
+.mantine-Menu-dropdown {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+}
+
+.mantine-Menu-item {
+  &:hover {
+    background-color: light-dark(lab(92% 0 0), lab(15% 0 0));
+  }
 }

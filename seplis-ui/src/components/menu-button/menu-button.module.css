@@ -1,0 +1,5 @@
+.root {
+  &:global(.active) {
+    background-color: light-dark(lab(92% 0 0), lab(10% 0 0));
+  }
+}
