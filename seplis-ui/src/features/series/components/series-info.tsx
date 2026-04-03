@@ -37,7 +37,7 @@ export function SeriesInfo({ series }: Props) {
             : null,
         series.rating != null
             ? {
-                  label: 'Rating',
+                  label: 'IMDb',
                   value: `★ ${series.rating.toFixed(1)}`,
                   color: 'oklch(0.82 0.18 85)',
               }

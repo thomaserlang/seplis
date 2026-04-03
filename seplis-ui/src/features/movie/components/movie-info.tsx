@@ -46,7 +46,7 @@ export function MovieInfo({ movie }: Props) {
             : null,
         movie.rating != null
             ? {
-                  label: 'Rating',
+                  label: 'IMDb',
                   value: `★ ${movie.rating.toFixed(1)}`,
                   color: 'oklch(0.82 0.18 85)',
               }
