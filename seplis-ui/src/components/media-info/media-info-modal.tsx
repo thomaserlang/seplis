@@ -3,7 +3,7 @@ import { Modal } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 import { useSearchParams } from 'react-router-dom'
 
-export function MainModalDisplay() {
+export function MediaInfoModal() {
     const [params, setParams] = useSearchParams()
 
     const mid = params.get('mid')

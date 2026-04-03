@@ -1,6 +1,9 @@
 import { MediaInfo, MediaMetaItem, MediaStatus } from '@/components/media-info'
 import { langCodeToLang } from '@/utils/language.utils'
+import { Flex } from '@mantine/core'
 import { Movie } from '../types/movie.types'
+import { MovieFavoriteButton } from './movie-favorite-button'
+import { MovieWatchlistButton } from './movie-watchlist-button'
 
 interface Props {
     movie: Movie
@@ -24,25 +27,42 @@ function formatRuntime(minutes: number) {
 }
 
 function formatMoney(amount: number) {
-    if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(1)}B`
+    if (amount >= 1_000_000_000)
+        return `$${(amount / 1_000_000_000).toFixed(1)}B`
     if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(0)}M`
     return `$${amount.toLocaleString()}`
 }
 
 export function MovieInfo({ movie }: Props) {
     const metaItems: MediaMetaItem[] = [
-        movie.release_date ? { label: 'Year', value: movie.release_date.substring(0, 4) } : null,
-        movie.runtime ? { label: 'Runtime', value: formatRuntime(movie.runtime) } : null,
-        movie.language ? { label: 'Language', value: langCodeToLang(movie.language) } : null,
+        movie.release_date
+            ? { label: 'Year', value: movie.release_date.substring(0, 4) }
+            : null,
+        movie.runtime
+            ? { label: 'Runtime', value: formatRuntime(movie.runtime) }
+            : null,
+        movie.language
+            ? { label: 'Language', value: langCodeToLang(movie.language) }
+            : null,
         movie.rating != null
-            ? { label: 'Rating', value: `★ ${movie.rating.toFixed(1)}`, color: 'oklch(0.82 0.18 85)' }
+            ? {
+                  label: 'Rating',
+                  value: `★ ${movie.rating.toFixed(1)}`,
+                  color: 'oklch(0.82 0.18 85)',
+              }
             : null,
     ].filter(Boolean) as MediaMetaItem[]
 
     const stats = [
-        movie.runtime ? { label: 'Runtime', value: formatRuntime(movie.runtime) } : null,
-        movie.budget ? { label: 'Budget', value: formatMoney(movie.budget) } : null,
-        movie.revenue ? { label: 'Revenue', value: formatMoney(movie.revenue) } : null,
+        movie.runtime
+            ? { label: 'Runtime', value: formatRuntime(movie.runtime) }
+            : null,
+        movie.budget
+            ? { label: 'Budget', value: formatMoney(movie.budget) }
+            : null,
+        movie.revenue
+            ? { label: 'Revenue', value: formatMoney(movie.revenue) }
+            : null,
         movie.user_watched?.times > 0
             ? { label: 'Watched', value: `${movie.user_watched.times}×` }
             : null,
@@ -50,7 +70,11 @@ export function MovieInfo({ movie }: Props) {
 
     return (
         <MediaInfo
-            posterUrl={movie.poster_image ? `${movie.poster_image.url}@SX320.webp` : undefined}
+            posterUrl={
+                movie.poster_image
+                    ? `${movie.poster_image.url}@SX320.webp`
+                    : undefined
+            }
             accentHue={30}
             status={movie.status != null ? STATUS[movie.status] : undefined}
             title={movie.title || movie.original_title || 'Unknown title'}
@@ -60,6 +84,12 @@ export function MovieInfo({ movie }: Props) {
             genres={movie.genres}
             plot={movie.plot}
             stats={stats}
+            renderMainButtons={() => (
+                <Flex gap="0.5rem" wrap="wrap">
+                    <MovieWatchlistButton movieId={movie.id} />
+                    <MovieFavoriteButton movieId={movie.id} />
+                </Flex>
+            )}
         />
     )
 }

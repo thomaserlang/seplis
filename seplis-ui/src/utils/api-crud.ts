@@ -149,7 +149,7 @@ export function usePageApiHelper<
     }
 }
 
-export function mutationApiHelper<
+export function useMutationApiHelper<
     T,
     TMutateProps extends MutationApiHelperProps,
 >({

@@ -33,15 +33,10 @@ export interface MovieWatched {
 
 export interface MovieWatchlist {
     on_watchlist: boolean
-    created_at: string
+    created_at: string | null
 }
 
 export interface MovieFavorite {
     favorite: boolean
-    created_at: string
-}
-
-export interface EventMovieWatched {
-    movieId: number
-    watched: MovieWatched
+    created_at: string | null
 }

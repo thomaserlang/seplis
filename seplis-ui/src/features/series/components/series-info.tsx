@@ -1,6 +1,9 @@
 import { MediaInfo, MediaMetaItem, MediaStatus } from '@/components/media-info'
 import { langCodeToLang } from '@/utils/language.utils'
+import { Flex } from '@mantine/core'
 import { Series } from '../types/series.types'
+import { SeriesFavoriteButton } from './series-favorite-button'
+import { SeriesWatchlistButton } from './series-watchlist-button'
 
 interface Props {
     series: Series
@@ -26,16 +29,27 @@ export function SeriesInfo({ series }: Props) {
 
     const metaItems: MediaMetaItem[] = [
         yearRange ? { label: 'Year', value: yearRange } : null,
-        series.runtime ? { label: 'Runtime', value: `${series.runtime} min / ep` } : null,
-        series.language ? { label: 'Language', value: langCodeToLang(series.language) } : null,
+        series.runtime
+            ? { label: 'Runtime', value: `${series.runtime} min / ep` }
+            : null,
+        series.language
+            ? { label: 'Language', value: langCodeToLang(series.language) }
+            : null,
         series.rating != null
-            ? { label: 'Rating', value: `★ ${series.rating.toFixed(1)}`, color: 'oklch(0.82 0.18 85)' }
+            ? {
+                  label: 'Rating',
+                  value: `★ ${series.rating.toFixed(1)}`,
+                  color: 'oklch(0.82 0.18 85)',
+              }
             : null,
     ].filter(Boolean) as MediaMetaItem[]
 
     const stats = [
         series.seasons.length > 0
-            ? { label: series.seasons.length === 1 ? 'Season' : 'Seasons', value: String(series.seasons.length) }
+            ? {
+                  label: series.seasons.length === 1 ? 'Season' : 'Seasons',
+                  value: String(series.seasons.length),
+              }
             : null,
         series.total_episodes > 0
             ? { label: 'Episodes', value: String(series.total_episodes) }
@@ -47,7 +61,11 @@ export function SeriesInfo({ series }: Props) {
 
     return (
         <MediaInfo
-            posterUrl={series.poster_image ? `${series.poster_image.url}@SX320.webp` : undefined}
+            posterUrl={
+                series.poster_image
+                    ? `${series.poster_image.url}@SX320.webp`
+                    : undefined
+            }
             accentHue={250}
             status={series.status != null ? STATUS[series.status] : undefined}
             title={series.title || series.original_title || 'Unknown title'}
@@ -57,6 +75,12 @@ export function SeriesInfo({ series }: Props) {
             genres={series.genres}
             plot={series.plot}
             stats={stats}
+            renderMainButtons={() => (
+                <Flex gap="0.5rem" wrap="wrap">
+                    <SeriesWatchlistButton seriesId={series.id} />
+                    <SeriesFavoriteButton seriesId={series.id} />
+                </Flex>
+            )}
         />
     )
 }

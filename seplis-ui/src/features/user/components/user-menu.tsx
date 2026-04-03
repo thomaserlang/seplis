@@ -1,11 +1,11 @@
 import { Avatar, Flex, Menu } from '@mantine/core'
 import { SignOutIcon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
-import { logout, useGetActiveUser } from '../api/active-user.api'
+import { logout, useActiveUser } from '../api/active-user.api'
 
 export function UserMenu() {
     const navigate = useNavigate()
-    const [user] = useGetActiveUser()
+    const [user] = useActiveUser()
 
     if (!user) return null
 

@@ -32,7 +32,7 @@ export function logout() {
     localStorage.removeItem('activeUser')
 }
 
-export function useGetActiveUser() {
+export function useActiveUser() {
     return useLocalStorage<User | null>({
         key: 'activeUser',
         defaultValue: null,

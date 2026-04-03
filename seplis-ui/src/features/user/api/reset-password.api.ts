@@ -1,4 +1,4 @@
-import { mutationApiHelper, MutationApiHelperProps } from '@/utils/api-crud'
+import { MutationApiHelperProps, useMutationApiHelper } from '@/utils/api-crud'
 import {
     RequestResetPasswordCreate,
     ResetPasswordCreate,
@@ -9,7 +9,7 @@ interface ResetPasswordCreateProps extends MutationApiHelperProps<RequestResetPa
 export const {
     mutation: createRequestResetPassword,
     useMutation: useCreateRequestResetPassword,
-} = mutationApiHelper<void, ResetPasswordCreateProps>({
+} = useMutationApiHelper<void, ResetPasswordCreateProps>({
     url: () => '2/users/send-reset-password',
     method: 'POST',
 })
@@ -17,7 +17,7 @@ export const {
 interface ResetPasswordProps extends MutationApiHelperProps<ResetPasswordCreate> {}
 
 export const { mutation: resetPassword, useMutation: useResetPassword } =
-    mutationApiHelper<void, ResetPasswordProps>({
+    useMutationApiHelper<void, ResetPasswordProps>({
         url: () => '2/users/reset-password',
         method: 'POST',
     })

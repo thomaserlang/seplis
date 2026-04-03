@@ -1,8 +1,8 @@
 import {
     ApiHelperProps,
-    mutationApiHelper,
     MutationApiHelperProps,
     useApiHelper,
+    useMutationApiHelper,
 } from '@/utils/api-crud'
 import { User, UserCreate } from '../types/user.types'
 
@@ -20,7 +20,7 @@ export const {
 interface CreateUserProps extends MutationApiHelperProps<UserCreate> {}
 
 export const { mutation: createUser, useMutation: useCreateUser } =
-    mutationApiHelper<User, CreateUserProps>({
+    useMutationApiHelper<User, CreateUserProps>({
         url: () => '2/users',
         method: 'POST',
     })

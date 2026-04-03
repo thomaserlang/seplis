@@ -3,42 +3,6 @@ import { Flex, Pill, Text, UnstyledButton } from '@mantine/core'
 import { useState } from 'react'
 import classes from './media-info.module.css'
 
-function PlotText({ plot }: { plot: string }) {
-    const [expanded, setExpanded] = useState(false)
-    const overflows = plot.length > 180
-
-    if (!overflows) {
-        return <Text size="sm" c="dimmed">{plot}</Text>
-    }
-
-    return (
-        <UnstyledButton onClick={() => setExpanded((e) => !e)} style={{ display: 'block', textAlign: 'left' }}>
-            <Text size="sm" c="dimmed" lineClamp={expanded ? undefined : 3}>
-                {plot}
-            </Text>
-            <Text size="xs" c="dimmed" fw={600} mt="0.25rem">
-                {expanded ? 'Show less' : 'Show more'}
-            </Text>
-        </UnstyledButton>
-    )
-}
-
-export interface MediaStatus {
-    label: string
-    dot: string
-}
-
-export interface MediaMetaItem {
-    label: string
-    value: string
-    color?: string
-}
-
-export interface MediaStatItem {
-    label: string
-    value: string
-}
-
 export interface MediaInfoProps {
     posterUrl?: string
     accentHue?: number
@@ -50,6 +14,7 @@ export interface MediaInfoProps {
     genres: Genre[]
     plot?: string | null
     stats: MediaStatItem[]
+    renderMainButtons?: () => React.ReactNode
 }
 
 export function MediaInfo({
@@ -63,6 +28,7 @@ export function MediaInfo({
     genres,
     plot,
     stats,
+    renderMainButtons,
 }: MediaInfoProps) {
     return (
         <div
@@ -156,6 +122,8 @@ export function MediaInfo({
                     </>
                 )}
 
+                {renderMainButtons && renderMainButtons()}
+
                 {plot && <PlotText plot={plot} />}
 
                 {stats.length > 0 && (
@@ -176,5 +144,48 @@ export function MediaInfo({
                 )}
             </div>
         </div>
+    )
+}
+
+export interface MediaStatus {
+    label: string
+    dot: string
+}
+
+export interface MediaMetaItem {
+    label: string
+    value: string
+    color?: string
+}
+
+export interface MediaStatItem {
+    label: string
+    value: string
+}
+
+function PlotText({ plot }: { plot: string }) {
+    const [expanded, setExpanded] = useState(false)
+    const overflows = plot.length > 180
+
+    if (!overflows) {
+        return (
+            <Text size="sm" c="dimmed">
+                {plot}
+            </Text>
+        )
+    }
+
+    return (
+        <UnstyledButton
+            onClick={() => setExpanded((e) => !e)}
+            style={{ display: 'block', textAlign: 'left' }}
+        >
+            <Text size="sm" c="dimmed" lineClamp={expanded ? undefined : 3}>
+                {plot}
+            </Text>
+            <Text size="xs" c="dimmed" fw={600} mt="0.25rem">
+                {expanded ? 'Show less' : 'Show more'}
+            </Text>
+        </UnstyledButton>
     )
 }
