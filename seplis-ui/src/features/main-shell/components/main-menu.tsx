@@ -19,11 +19,19 @@ export function MainMenu() {
                     console.log(item)
                     switch (item.type) {
                         case 'series': {
-                            navigate(`/series/${item.id}`)
+                            navigate(`/series/${item.id}`, {
+                                state: {
+                                    background: location,
+                                },
+                            })
                             break
                         }
                         case 'movie': {
-                            navigate(`/movies/${item.id}`)
+                            navigate(`/movies/${item.id}`, {
+                                state: {
+                                    background: location,
+                                },
+                            })
                             break
                         }
                     }

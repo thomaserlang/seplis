@@ -20,7 +20,7 @@ export function MainShell({ children }: Props) {
                     </Box>
                 </Flex>
             </AppShell.Header>
-            {children}
+            <AppShell.Main>{children}</AppShell.Main>
         </AppShell>
     )
 }
