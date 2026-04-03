@@ -1,6 +1,27 @@
 import { Genre } from '@/types/genre.types'
-import { Flex, Pill, Text } from '@mantine/core'
+import { Flex, Pill, Text, UnstyledButton } from '@mantine/core'
+import { useState } from 'react'
 import classes from './media-info.module.css'
+
+function PlotText({ plot }: { plot: string }) {
+    const [expanded, setExpanded] = useState(false)
+    const overflows = plot.length > 180
+
+    if (!overflows) {
+        return <Text size="sm" c="dimmed">{plot}</Text>
+    }
+
+    return (
+        <UnstyledButton onClick={() => setExpanded((e) => !e)} style={{ display: 'block', textAlign: 'left' }}>
+            <Text size="sm" c="dimmed" lineClamp={expanded ? undefined : 3}>
+                {plot}
+            </Text>
+            <Text size="xs" c="dimmed" fw={600} mt="0.25rem">
+                {expanded ? 'Show less' : 'Show more'}
+            </Text>
+        </UnstyledButton>
+    )
+}
 
 export interface MediaStatus {
     label: string
@@ -59,7 +80,11 @@ export function MediaInfo({
                                 className={classes.statusDot}
                                 style={{ background: status.dot }}
                             />
-                            <Text size="xs" fw={600} style={{ color: 'oklch(1 0 0 / 0.7)' }}>
+                            <Text
+                                size="xs"
+                                fw={600}
+                                style={{ color: 'oklch(1 0 0 / 0.7)' }}
+                            >
                                 {status.label}
                             </Text>
                         </Flex>
@@ -86,17 +111,30 @@ export function MediaInfo({
 
                 {metaItems.length > 0 && (
                     <>
-                        <div className={classes.divider} />
                         <Flex gap="1.25rem" wrap="wrap">
                             {metaItems.map((item) => (
-                                <Flex key={item.label} direction="column" gap="0.1rem">
-                                    <Text size="xs" c="dimmed" tt="uppercase" fw={600} lts="0.05em">
+                                <Flex
+                                    key={item.label}
+                                    direction="column"
+                                    gap="0.1rem"
+                                >
+                                    <Text
+                                        size="xs"
+                                        c="dimmed"
+                                        tt="uppercase"
+                                        fw={600}
+                                        lts="0.05em"
+                                    >
                                         {item.label}
                                     </Text>
                                     <Text
                                         size="sm"
                                         fw={item.color ? 700 : 600}
-                                        style={item.color ? { color: item.color } : undefined}
+                                        style={
+                                            item.color
+                                                ? { color: item.color }
+                                                : undefined
+                                        }
                                     >
                                         {item.value}
                                     </Text>
@@ -108,7 +146,6 @@ export function MediaInfo({
 
                 {genres.length > 0 && (
                     <>
-                        <div className={classes.divider} />
                         <Flex gap="0.35rem" wrap="wrap">
                             {genres.map((g) => (
                                 <Pill key={g.id} size="sm" fw={600}>
@@ -119,18 +156,10 @@ export function MediaInfo({
                     </>
                 )}
 
-                {plot && (
-                    <>
-                        <div className={classes.divider} />
-                        <Text size="sm" c="dimmed" style={{ lineHeight: 1.75, flex: 1 }}>
-                            {plot}
-                        </Text>
-                    </>
-                )}
+                {plot && <PlotText plot={plot} />}
 
                 {stats.length > 0 && (
                     <>
-                        <div className={classes.divider} />
                         <Flex gap="0.6rem">
                             {stats.map((s) => (
                                 <div key={s.label} className={classes.statBox}>

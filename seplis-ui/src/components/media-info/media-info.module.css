@@ -1,8 +1,13 @@
 .root {
   --accent-hue: 250;
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 16.25rem 1fr;
   align-items: start;
+  background: linear-gradient(
+    155deg,
+    color-mix(in oklab, var(--card) 91%, oklch(0.55 0.18 var(--accent-hue))) 0%,
+    var(--card) 55%
+  );
 }
 
 .posterPanel {
@@ -25,7 +30,7 @@
 .posterPanel::after {
   content: "";
   position: absolute;
-  inset: 0 0 -1px 0;
+  inset: 0 0 -0.0625rem 0;
   background: linear-gradient(
     to top,
     var(--mantine-color-body) 0%,
@@ -43,28 +48,18 @@
 }
 
 .statusDot {
-  width: 7px;
-  height: 7px;
+  width: 0.4375rem;
+  height: 0.4375rem;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
 .infoPanel {
-  padding: 1.75rem;
+  padding: 1.5rem;
+  padding-top: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  background: linear-gradient(
-    155deg,
-    color-mix(in oklab, var(--card) 91%, oklch(0.55 0.18 var(--accent-hue))) 0%,
-    var(--card) 55%
-  );
-}
-
-.divider {
-  height: 1px;
-  background: var(--border);
-  flex-shrink: 0;
+  gap: 1rem;
 }
 
 .statBox {
@@ -75,7 +70,7 @@
   gap: 0.1rem;
   padding: 0.75rem 1rem;
   border-radius: 0.6rem;
-  border: 1px solid var(--border);
+  border: 0.0625rem solid var(--border);
   background: var(--muted);
 }
 
@@ -86,8 +81,16 @@
   }
 
   .posterPanel {
-    height: 260px;
+    height: 16.25rem;
     border-bottom-right-radius: 0;
+  }
+
+  .posterPanel::after {
+    background: linear-gradient(
+      to top,
+      color-mix(in oklab, var(--card) 91%, oklch(0.55 0.18 var(--accent-hue))) 0%,
+      transparent 35%
+    );
   }
 
   .posterImg {
@@ -102,5 +105,10 @@
   .infoPanel {
     padding: 1.25rem;
     gap: 1rem;
+  }
+
+  .statBox {
+    --mantine-font-size-xl: 1rem;
+    padding: 0.5rem 0.6rem;
   }
 }

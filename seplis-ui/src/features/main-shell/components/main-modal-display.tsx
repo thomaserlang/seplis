@@ -27,11 +27,10 @@ export function MainModalDisplay() {
             styles={{
                 header: {
                     position: 'absolute',
-                    top: 0,
+                    top: -5,
                     right: 0,
                     background: 'transparent',
                     zIndex: 10,
-                    padding: '0.5rem',
                 },
                 body: { padding: 0 },
                 content: { overflowX: 'hidden', overflowY: 'auto' },
