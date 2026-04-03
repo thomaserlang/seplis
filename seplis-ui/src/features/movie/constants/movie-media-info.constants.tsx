@@ -1,8 +1,9 @@
 import { MediaTypeInfo } from '@/features/media-type'
+import { MovieContainer } from '../components/movie-container'
 
 export const movieMediaInfo: MediaTypeInfo = {
     name: 'Movie',
-    color: 'blue',
+    color: 'orange',
     mediaType: 'movie',
-    render: () => <div>Render movie</div>,
+    render: ({ itemId }) => <MovieContainer movieId={Number(itemId)} />,
 }

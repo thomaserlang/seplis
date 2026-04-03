@@ -1,0 +1,65 @@
+import { MediaInfo, MediaMetaItem, MediaStatus } from '@/components/media-info'
+import { langCodeToLang } from '@/utils/language.utils'
+import { Movie } from '../types/movie.types'
+
+interface Props {
+    movie: Movie
+}
+
+const STATUS: Record<number, MediaStatus> = {
+    0: { label: 'Unknown', dot: 'oklch(0.6 0 0)' },
+    1: { label: 'Released', dot: 'oklch(0.7 0.17 175)' },
+    2: { label: 'In production', dot: 'oklch(0.6 0.2 250)' },
+    3: { label: 'Planned', dot: 'oklch(0.55 0.22 295)' },
+    4: { label: 'Cancelled', dot: 'oklch(0.7 0.18 55)' },
+    5: { label: 'Rumored', dot: 'oklch(0.6 0 0)' },
+}
+
+function formatRuntime(minutes: number) {
+    const h = Math.floor(minutes / 60)
+    const m = minutes % 60
+    if (h === 0) return `${m}m`
+    if (m === 0) return `${h}h`
+    return `${h}h ${m}m`
+}
+
+function formatMoney(amount: number) {
+    if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(1)}B`
+    if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(0)}M`
+    return `$${amount.toLocaleString()}`
+}
+
+export function MovieInfo({ movie }: Props) {
+    const metaItems: MediaMetaItem[] = [
+        movie.release_date ? { label: 'Year', value: movie.release_date.substring(0, 4) } : null,
+        movie.runtime ? { label: 'Runtime', value: formatRuntime(movie.runtime) } : null,
+        movie.language ? { label: 'Language', value: langCodeToLang(movie.language) } : null,
+        movie.rating != null
+            ? { label: 'Rating', value: `★ ${movie.rating.toFixed(1)}`, color: 'oklch(0.82 0.18 85)' }
+            : null,
+    ].filter(Boolean) as MediaMetaItem[]
+
+    const stats = [
+        movie.runtime ? { label: 'Runtime', value: formatRuntime(movie.runtime) } : null,
+        movie.budget ? { label: 'Budget', value: formatMoney(movie.budget) } : null,
+        movie.revenue ? { label: 'Revenue', value: formatMoney(movie.revenue) } : null,
+        movie.user_watched?.times > 0
+            ? { label: 'Watched', value: `${movie.user_watched.times}×` }
+            : null,
+    ].filter(Boolean) as { label: string; value: string }[]
+
+    return (
+        <MediaInfo
+            posterUrl={movie.poster_image ? `${movie.poster_image.url}@SX320.webp` : undefined}
+            accentHue={30}
+            status={movie.status != null ? STATUS[movie.status] : undefined}
+            title={movie.title || movie.original_title || 'Unknown title'}
+            originalTitle={movie.original_title}
+            tagline={movie.tagline}
+            metaItems={metaItems}
+            genres={movie.genres}
+            plot={movie.plot}
+            stats={stats}
+        />
+    )
+}

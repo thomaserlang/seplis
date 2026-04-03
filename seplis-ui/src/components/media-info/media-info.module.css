@@ -1,4 +1,5 @@
 .root {
+  --accent-hue: 250;
   display: grid;
   grid-template-columns: 260px 1fr;
   align-items: start;
@@ -6,7 +7,11 @@
 
 .posterPanel {
   position: relative;
-  background: linear-gradient(160deg, oklch(0.2 0.05 250), oklch(0.1 0 0));
+  background: linear-gradient(
+    160deg,
+    oklch(0.2 0.05 var(--accent-hue)),
+    oklch(0.1 0 0)
+  );
   border-bottom-right-radius: var(--radius);
   overflow: hidden;
 }
@@ -20,13 +25,11 @@
 .posterPanel::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: 0 0 -1px 0;
   background: linear-gradient(
     to top,
-    oklch(0 0 0 / 0.97) 0%,
-    oklch(0 0 0 / 0.55) 38%,
-    oklch(0 0 0 / 0.1) 65%,
-    transparent 100%
+    var(--mantine-color-body) 0%,
+    transparent 15%
   );
 }
 
@@ -53,7 +56,7 @@
   gap: 1.25rem;
   background: linear-gradient(
     155deg,
-    color-mix(in oklab, var(--card) 91%, oklch(0.55 0.18 250)) 0%,
+    color-mix(in oklab, var(--card) 91%, oklch(0.55 0.18 var(--accent-hue))) 0%,
     var(--card) 55%
   );
 }
