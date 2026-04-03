@@ -4,7 +4,6 @@ import { SearchResult } from '../types/search.types'
 import { SearchResultItem } from './search-result'
 
 interface Props {
-    query: string
     results: SearchResult[]
     selectedIndex?: number
     onSelected?: (item: SearchResult) => void

@@ -79,7 +79,6 @@ export function SearchView({ onSelected }: Props) {
             )}
             {data && !isLoading && (
                 <SearchResults
-                    query={field.getValue()}
                     results={data}
                     selectedIndex={selectedIndex}
                     onSelected={onSelected}
