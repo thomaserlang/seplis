@@ -1,5 +1,5 @@
-import { Flex } from '@mantine/core'
 import { Series } from '../types/series.types'
+import { SeriesEpisodes } from './series-episodes'
 import { SeriesInfo } from './series-info'
 
 interface Props {
@@ -8,8 +8,9 @@ interface Props {
 
 export function SeriesView({ series }: Props) {
     return (
-        <Flex direction="column" gap="0.5rem">
+        <div>
             <SeriesInfo series={series} />
-        </Flex>
+            {series.seasons.length > 0 && <SeriesEpisodes series={series} />}
+        </div>
     )
 }

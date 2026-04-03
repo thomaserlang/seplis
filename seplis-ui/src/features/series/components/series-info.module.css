@@ -1,27 +1,24 @@
 .root {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 260px 1fr;
+  align-items: start;
 }
-
-/* ── Left: Poster panel ─────────────────────────── */
 
 .posterPanel {
   position: relative;
-  min-height: 420px;
   background: linear-gradient(160deg, oklch(0.2 0.05 250), oklch(0.1 0 0));
+  border-bottom-right-radius: var(--radius);
+  overflow: hidden;
 }
 
 .posterImg {
-  position: absolute;
-  inset: 0;
+  display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
+  height: auto;
 }
 
 .posterPanel::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
@@ -49,14 +46,11 @@
   flex-shrink: 0;
 }
 
-/* ── Right: Info panel ──────────────────────────── */
-
 .infoPanel {
   padding: 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  border-left: 1px solid var(--border);
   background: linear-gradient(
     155deg,
     color-mix(in oklab, var(--card) 91%, oklch(0.55 0.18 250)) 0%,

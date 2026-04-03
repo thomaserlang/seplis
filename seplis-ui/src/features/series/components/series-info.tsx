@@ -1,5 +1,5 @@
-import { Flex, Pill, Text } from '@mantine/core'
 import { langCodeToLang } from '@/utils/language.utils'
+import { Flex, Pill, Text } from '@mantine/core'
 import { Series } from '../types/series.types'
 import classes from './series-info.module.css'
 
@@ -29,13 +29,16 @@ export function SeriesInfo({ series }: Props) {
 
     const metaItems = [
         yearRange ? { label: 'Year', value: yearRange } : null,
-        series.runtime ? { label: 'Runtime', value: `${series.runtime} min / ep` } : null,
-        series.language ? { label: 'Language', value: langCodeToLang(series.language) } : null,
+        series.runtime
+            ? { label: 'Runtime', value: `${series.runtime} min / ep` }
+            : null,
+        series.language
+            ? { label: 'Language', value: langCodeToLang(series.language) }
+            : null,
     ].filter(Boolean) as { label: string; value: string }[]
 
     return (
         <div className={classes.root}>
-            {/* ── Left: Poster panel ── */}
             <div className={classes.posterPanel}>
                 {series.poster_image && (
                     <img
@@ -51,7 +54,11 @@ export function SeriesInfo({ series }: Props) {
                                 className={classes.statusDot}
                                 style={{ background: status.dot }}
                             />
-                            <Text size="xs" fw={600} style={{ color: 'oklch(1 0 0 / 0.7)' }}>
+                            <Text
+                                size="xs"
+                                fw={600}
+                                style={{ color: 'oklch(1 0 0 / 0.7)' }}
+                            >
                                 {status.label}
                             </Text>
                         </Flex>
@@ -59,18 +66,19 @@ export function SeriesInfo({ series }: Props) {
                 )}
             </div>
 
-            {/* ── Right: Info panel ── */}
             <div className={classes.infoPanel}>
-                {/* Title */}
                 <div>
                     <Text fw={700} size="xl" lh={1.2}>
-                        {series.title || series.original_title || 'Unknown title'}
+                        {series.title ||
+                            series.original_title ||
+                            'Unknown title'}
                     </Text>
-                    {series.original_title && series.original_title !== series.title && (
-                        <Text size="sm" c="dimmed" mt="0.2rem">
-                            {series.original_title}
-                        </Text>
-                    )}
+                    {series.original_title &&
+                        series.original_title !== series.title && (
+                            <Text size="sm" c="dimmed" mt="0.2rem">
+                                {series.original_title}
+                            </Text>
+                        )}
                     {series.tagline && (
                         <Text size="sm" c="dimmed" fs="italic" mt="0.25rem">
                             {series.tagline}
@@ -78,14 +86,23 @@ export function SeriesInfo({ series }: Props) {
                     )}
                 </div>
 
-                {/* Meta row */}
                 {metaItems.length > 0 && (
                     <>
                         <div className={classes.divider} />
                         <Flex gap="1.25rem" wrap="wrap">
                             {metaItems.map((item) => (
-                                <Flex key={item.label} direction="column" gap="0.1rem">
-                                    <Text size="xs" c="dimmed" tt="uppercase" fw={600} lts="0.05em">
+                                <Flex
+                                    key={item.label}
+                                    direction="column"
+                                    gap="0.1rem"
+                                >
+                                    <Text
+                                        size="xs"
+                                        c="dimmed"
+                                        tt="uppercase"
+                                        fw={600}
+                                        lts="0.05em"
+                                    >
                                         {item.label}
                                     </Text>
                                     <Text size="sm" fw={600}>
@@ -95,10 +112,20 @@ export function SeriesInfo({ series }: Props) {
                             ))}
                             {series.rating != null && (
                                 <Flex direction="column" gap="0.1rem">
-                                    <Text size="xs" c="dimmed" tt="uppercase" fw={600} lts="0.05em">
+                                    <Text
+                                        size="xs"
+                                        c="dimmed"
+                                        tt="uppercase"
+                                        fw={600}
+                                        lts="0.05em"
+                                    >
                                         Rating
                                     </Text>
-                                    <Text size="sm" fw={700} style={{ color: 'oklch(0.82 0.18 85)' }}>
+                                    <Text
+                                        size="sm"
+                                        fw={700}
+                                        style={{ color: 'oklch(0.82 0.18 85)' }}
+                                    >
                                         ★ {series.rating.toFixed(1)}
                                     </Text>
                                 </Flex>
@@ -107,7 +134,6 @@ export function SeriesInfo({ series }: Props) {
                     </>
                 )}
 
-                {/* Genres */}
                 {series.genres.length > 0 && (
                     <>
                         <div className={classes.divider} />
@@ -121,17 +147,19 @@ export function SeriesInfo({ series }: Props) {
                     </>
                 )}
 
-                {/* Plot */}
                 {series.plot && (
                     <>
                         <div className={classes.divider} />
-                        <Text size="sm" c="dimmed" style={{ lineHeight: 1.75, flex: 1 }}>
+                        <Text
+                            size="sm"
+                            c="dimmed"
+                            style={{ lineHeight: 1.75, flex: 1 }}
+                        >
                             {series.plot}
                         </Text>
                     </>
                 )}
 
-                {/* Stats */}
                 {(series.seasons.length > 0 || series.total_episodes > 0) && (
                     <>
                         <div className={classes.divider} />
@@ -142,7 +170,9 @@ export function SeriesInfo({ series }: Props) {
                                         {series.seasons.length}
                                     </Text>
                                     <Text size="xs" c="dimmed" fw={500}>
-                                        {series.seasons.length === 1 ? 'Season' : 'Seasons'}
+                                        {series.seasons.length === 1
+                                            ? 'Season'
+                                            : 'Seasons'}
                                     </Text>
                                 </div>
                             )}
