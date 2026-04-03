@@ -1,5 +1,6 @@
 import { mediaTypes } from '@/features/media-type'
 import { Modal } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { useSearchParams } from 'react-router-dom'
 
 export function MainModalDisplay() {
@@ -8,6 +9,7 @@ export function MainModalDisplay() {
     const mid = params.get('mid')
 
     const [type, id] = mid?.split('-') ?? []
+    const isMobile = useMediaQuery('(max-width: 48em)')
 
     const Container = mediaTypes[type as keyof typeof mediaTypes]?.render
 
@@ -21,6 +23,7 @@ export function MainModalDisplay() {
                 })
             }}
             size={1100}
+            fullScreen={isMobile}
             styles={{
                 header: {
                     position: 'absolute',
@@ -31,7 +34,7 @@ export function MainModalDisplay() {
                     padding: '0.5rem',
                 },
                 body: { padding: 0 },
-                content: { overflow: 'hidden' },
+                content: { overflowX: 'hidden', overflowY: 'auto' },
             }}
         >
             {Container && <Container itemId={id} />}

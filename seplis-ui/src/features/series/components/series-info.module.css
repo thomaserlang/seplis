@@ -4,6 +4,8 @@
   align-items: start;
 }
 
+/* ── Left: Poster panel ─────────────────────────── */
+
 .posterPanel {
   position: relative;
   background: linear-gradient(160deg, oklch(0.2 0.05 250), oklch(0.1 0 0));
@@ -46,6 +48,8 @@
   flex-shrink: 0;
 }
 
+/* ── Right: Info panel ──────────────────────────── */
+
 .infoPanel {
   padding: 1.75rem;
   display: flex;
@@ -74,4 +78,33 @@
   border-radius: 0.6rem;
   border: 1px solid var(--border);
   background: var(--muted);
+}
+
+/* ── Mobile ─────────────────────────────────────── */
+
+@media (max-width: 48em) {
+  .root {
+    grid-template-columns: 1fr;
+    align-items: unset;
+  }
+
+  .posterPanel {
+    height: 260px;
+    border-bottom-right-radius: 0;
+  }
+
+  /* Switch to cover image on mobile so the fixed height looks good */
+  .posterImg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .infoPanel {
+    padding: 1.25rem;
+    gap: 1rem;
+  }
 }
