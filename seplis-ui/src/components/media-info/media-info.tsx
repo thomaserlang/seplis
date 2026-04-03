@@ -114,7 +114,14 @@ export function MediaInfo({
                     <>
                         <Flex gap="0.35rem" wrap="wrap">
                             {genres.map((g) => (
-                                <Pill key={g.id} size="sm" fw={600}>
+                                <Pill
+                                    key={g.id}
+                                    size="sm"
+                                    fw={600}
+                                    style={{
+                                        backgroundColor: 'var(--secondary)',
+                                    }}
+                                >
                                     {g.name}
                                 </Pill>
                             ))}
@@ -122,9 +129,9 @@ export function MediaInfo({
                     </>
                 )}
 
-                {renderMainButtons && renderMainButtons()}
-
                 {plot && <PlotText plot={plot} />}
+
+                {renderMainButtons && renderMainButtons()}
 
                 {stats.length > 0 && (
                     <>
@@ -183,7 +190,7 @@ function PlotText({ plot }: { plot: string }) {
             <Text size="sm" c="dimmed" lineClamp={expanded ? undefined : 3}>
                 {plot}
             </Text>
-            <Text size="xs" c="dimmed" fw={600} mt="0.25rem">
+            <Text size="xs" c="dimmed" fw={600}>
                 {expanded ? 'Show less' : 'Show more'}
             </Text>
         </UnstyledButton>
