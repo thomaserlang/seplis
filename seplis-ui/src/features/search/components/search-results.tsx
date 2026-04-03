@@ -1,34 +1,40 @@
-import { ErrorBox } from '@/components/error-box'
-import { PageLoader } from '@/components/page-loader'
-import { Text } from '@mantine/core'
-import { useGetSearch } from '../api/search.api'
+import { Flex, ScrollArea } from '@mantine/core'
+import { useEffect, useRef } from 'react'
+import { SearchResult } from '../types/search.types'
 import { SearchResultItem } from './search-result'
 
 interface Props {
     query: string
+    results: SearchResult[]
+    selectedIndex?: number
+    onSelected?: (item: SearchResult) => void
 }
 
-export function SearchResults({ query }: Props) {
-    const { data, isLoading, error } = useGetSearch({
-        params: {
-            query,
-        },
-        options: {
-            enabled: !!query,
-        },
-    })
+export function SearchResults({ results, selectedIndex, onSelected }: Props) {
+    const itemRefs = useRef<(HTMLDivElement | null)[]>([])
 
-    if (error) return <ErrorBox errorObj={error} />
-    if (isLoading) return <PageLoader />
-    if (!query) return null
-    if (!data)
-        return (
-            <Text fw={600} size="lg">
-                No results
-            </Text>
-        )
+    useEffect(() => {
+        if (selectedIndex == null || selectedIndex < 0) return
+        const el = itemRefs.current[selectedIndex]
+        if (!el) return
+        el.scrollIntoView({ block: 'nearest' })
+    }, [selectedIndex])
 
-    return data.map((result) => (
-        <SearchResultItem key={result.id} item={result} />
-    ))
+    return (
+        <ScrollArea.Autosize mah={400}>
+            <Flex direction="column" gap="0.25rem" h="100%">
+                {results.map((result, index) => (
+                    <SearchResultItem
+                        key={result.id}
+                        ref={(el) => {
+                            itemRefs.current[index] = el
+                        }}
+                        item={result}
+                        isSelected={index === selectedIndex}
+                        onClick={onSelected}
+                    />
+                ))}
+            </Flex>
+        </ScrollArea.Autosize>
+    )
 }

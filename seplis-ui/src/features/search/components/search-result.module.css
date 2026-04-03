@@ -1,0 +1,10 @@
+.item {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.item:hover,
+.selected {
+  background-color: var(--accent);
+}
