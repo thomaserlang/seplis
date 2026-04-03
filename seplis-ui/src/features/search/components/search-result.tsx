@@ -1,3 +1,4 @@
+import { mediaTypes } from '@/features/media-type'
 import { langCodeToLang } from '@/utils/language.utils'
 import { Flex, Image, Pill, Text } from '@mantine/core'
 import cx from 'clsx'
@@ -65,7 +66,7 @@ export const SearchResultItem = forwardRef<HTMLDivElement, Props>(
                             <Pill
                                 size="sm"
                                 fw={600}
-                                c={typeColor({ type: item.type })}
+                                c={mediaTypes[item.type]?.color || 'gray'}
                                 style={{ textTransform: 'capitalize' }}
                             >
                                 {item.type}
@@ -82,14 +83,3 @@ export const SearchResultItem = forwardRef<HTMLDivElement, Props>(
         )
     },
 )
-
-function typeColor({ type }: { type: string }) {
-    switch (type) {
-        case 'movie':
-            return 'green'
-        case 'series':
-            return 'blue'
-        default:
-            return undefined
-    }
-}

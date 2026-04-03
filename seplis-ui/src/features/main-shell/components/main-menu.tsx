@@ -1,11 +1,12 @@
-import { MenuButton } from '@/components/menu-button/menu-button'
-import { SearchTrigger } from '@/features/search/components/search-trigger'
+import { MenuButton } from '@/components/menu-button'
+import { mediaTypes } from '@/features/media-type'
+import { SearchTrigger } from '@/features/search'
 import { Button } from '@mantine/core'
 import { MagnifyingGlassIcon } from '@phosphor-icons/react'
-import { useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 
 export function MainMenu() {
-    const navigate = useNavigate()
+    const [_, setParams] = useSearchParams()
     return (
         <>
             <MenuButton label="Home" to="/" end />
@@ -16,25 +17,13 @@ export function MainMenu() {
             />
             <SearchTrigger
                 onSelected={(item) => {
-                    console.log(item)
-                    switch (item.type) {
-                        case 'series': {
-                            navigate(`/series/${item.id}`, {
-                                state: {
-                                    background: location,
-                                },
-                            })
-                            break
-                        }
-                        case 'movie': {
-                            navigate(`/movies/${item.id}`, {
-                                state: {
-                                    background: location,
-                                },
-                            })
-                            break
-                        }
-                    }
+                    setParams((params) => {
+                        params.set(
+                            'mid',
+                            `${mediaTypes[item.type].mediaType}-${item.id}`,
+                        )
+                        return params
+                    })
                 }}
             >
                 <Button

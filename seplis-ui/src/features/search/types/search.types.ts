@@ -1,8 +1,9 @@
+import { MediaType } from '@/features/media-type'
 import { Genre } from '@/types/genre.types'
 import { IImage } from '@/types/image.types'
 
 export interface SearchResult {
-    type: string
+    type: MediaType
     id: number
     title: string | null
     release_date: string | null
