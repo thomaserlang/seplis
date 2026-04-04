@@ -1,6 +1,6 @@
 import { ActionIcon, Button, Group, Popover } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { FlagIcon, MinusIcon, PlusIcon } from '@phosphor-icons/react'
+import { MinusIcon, PlusIcon } from '@phosphor-icons/react'
 import classes from './watched-button.module.css'
 
 interface Props {
@@ -42,7 +42,6 @@ export function WatchedButton({
                             className={progressClass}
                             onClick={handleMainClick}
                             loading={loading}
-                            leftSection={<FlagIcon weight="fill" />}
                         >
                             Watched
                         </Button>
