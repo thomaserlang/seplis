@@ -55,6 +55,7 @@ export function SearchView({ onSelected }: Props) {
     )
 
     const [selectedIndex, setSelectedIndex] = useState<number>(-1)
+    const hasData = !!data && data.length > 0
 
     return (
         <Flex direction="column" gap="1rem">
@@ -68,16 +69,15 @@ export function SearchView({ onSelected }: Props) {
                     setSelectedIndex(0)
                 }}
             />
-
             {error && <ErrorBox errorObj={error} />}
             {isLoading && <PageLoader />}
 
-            {!data && field.getValue() && !isLoading && (
+            {!hasData && !isLoading && (
                 <Text fw={600} size="lg">
                     No results
                 </Text>
             )}
-            {data && !isLoading && (
+            {hasData && !isLoading && (
                 <SearchResults
                     results={data}
                     selectedIndex={selectedIndex}
