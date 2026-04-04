@@ -1,6 +1,6 @@
 import { Genre } from '@/types/genre.types'
 import { Flex, Pill, Text, UnstyledButton } from '@mantine/core'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import classes from './media-info.module.css'
 
 export interface MediaInfoProps {
@@ -172,27 +172,40 @@ export interface MediaStatItem {
 
 function PlotText({ plot }: { plot: string }) {
     const [expanded, setExpanded] = useState(false)
-    const overflows = plot.length > 180
+    const [overflows, setOverflows] = useState(false)
+    const textRef = useRef<HTMLDivElement>(null)
 
-    if (!overflows) {
-        return (
-            <Text size="sm" c="dimmed">
-                {plot}
-            </Text>
-        )
-    }
+    useEffect(() => {
+        const el = textRef.current
+        if (el) {
+            setOverflows(el.scrollHeight > el.clientHeight)
+        }
+    }, [plot])
 
     return (
         <UnstyledButton
-            onClick={() => setExpanded((e) => !e)}
-            style={{ display: 'block', textAlign: 'left' }}
+            onClick={
+                overflows || expanded ? () => setExpanded((e) => !e) : undefined
+            }
+            style={{
+                display: 'block',
+                textAlign: 'left',
+                cursor: overflows || expanded ? 'pointer' : 'default',
+            }}
         >
-            <Text size="sm" c="dimmed" lineClamp={expanded ? undefined : 3}>
+            <Text
+                ref={textRef}
+                size="sm"
+                c="dimmed"
+                lineClamp={expanded ? undefined : 3}
+            >
                 {plot}
             </Text>
-            <Text size="xs" c="dimmed" fw={600}>
-                {expanded ? 'Show less' : 'Show more'}
-            </Text>
+            {(overflows || expanded) && (
+                <Text size="xs" c="dimmed" fw={600}>
+                    {expanded ? 'Show less' : 'Show more'}
+                </Text>
+            )}
         </UnstyledButton>
     )
 }
