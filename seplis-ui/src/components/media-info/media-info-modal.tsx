@@ -16,6 +16,8 @@ export function MediaInfoModal() {
     return (
         <Modal
             opened={!!Container}
+            trapFocus={true}
+            autoFocus={true}
             onClose={() => {
                 setParams((params) => {
                     params.delete('mid')

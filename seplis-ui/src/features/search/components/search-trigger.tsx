@@ -18,8 +18,8 @@ export function SearchTrigger({ children, onSelected }: Props) {
                 children: (
                     <SearchView
                         onSelected={(item) => {
-                            onSelected?.(item)
                             closeModal('search-modal')
+                            onSelected?.(item)
                         }}
                     />
                 ),
