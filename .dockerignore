@@ -1,7 +1,7 @@
 *
 
+seplis-ui/.env
+
 !seplis
 !uv.lock
 !pyproject.toml
-
-seplis-ui/.env
