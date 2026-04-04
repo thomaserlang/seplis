@@ -23,7 +23,11 @@ export const SearchResultItem = forwardRef<HTMLDivElement, Props>(
                 style={{ cursor: onClick ? 'pointer' : undefined }}
             >
                 {item.poster_image && (
-                    <Image src={item.poster_image.url} w="3rem" radius="sm" />
+                    <Image
+                        src={`${item.poster_image.url}@SX320.webp`}
+                        w="3rem"
+                        radius="sm"
+                    />
                 )}
                 <Flex direction="column" gap="0.15rem" miw="0">
                     <Text
