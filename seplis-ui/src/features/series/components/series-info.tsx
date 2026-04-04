@@ -42,9 +42,6 @@ export function SeriesInfo({ series }: Props) {
                   color: 'oklch(0.82 0.18 85)',
               }
             : null,
-    ].filter(Boolean) as MediaMetaItem[]
-
-    const stats = [
         series.seasons.length > 0
             ? {
                   label: series.seasons.length === 1 ? 'Season' : 'Seasons',
@@ -54,10 +51,7 @@ export function SeriesInfo({ series }: Props) {
         series.total_episodes > 0
             ? { label: 'Episodes', value: String(series.total_episodes) }
             : null,
-        series.runtime != null
-            ? { label: 'Min / ep', value: String(series.runtime) }
-            : null,
-    ].filter(Boolean) as { label: string; value: string }[]
+    ].filter(Boolean) as MediaMetaItem[]
 
     return (
         <MediaInfo
@@ -74,7 +68,6 @@ export function SeriesInfo({ series }: Props) {
             metaItems={metaItems}
             genres={series.genres}
             plot={series.plot}
-            stats={stats}
             renderMainButtons={() => (
                 <Flex gap="0.5rem" wrap="wrap">
                     <SeriesWatchlistButton seriesId={series.id} />

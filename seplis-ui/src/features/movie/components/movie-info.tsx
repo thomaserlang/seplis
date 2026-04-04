@@ -3,6 +3,7 @@ import { langCodeToLang } from '@/utils/language.utils'
 import { Flex } from '@mantine/core'
 import { Movie } from '../types/movie.types'
 import { MovieFavoriteButton } from './movie-favorite-button'
+import { MovieWatchedButton } from './movie-watched-button'
 import { MovieWatchlistButton } from './movie-watchlist-button'
 
 interface Props {
@@ -51,22 +52,13 @@ export function MovieInfo({ movie }: Props) {
                   color: 'oklch(0.82 0.18 85)',
               }
             : null,
-    ].filter(Boolean) as MediaMetaItem[]
-
-    const stats = [
-        movie.runtime
-            ? { label: 'Runtime', value: formatRuntime(movie.runtime) }
-            : null,
         movie.budget
             ? { label: 'Budget', value: formatMoney(movie.budget) }
             : null,
         movie.revenue
             ? { label: 'Revenue', value: formatMoney(movie.revenue) }
             : null,
-        movie.user_watched?.times > 0
-            ? { label: 'Watched', value: `${movie.user_watched.times}×` }
-            : null,
-    ].filter(Boolean) as { label: string; value: string }[]
+    ].filter(Boolean) as MediaMetaItem[]
 
     return (
         <MediaInfo
@@ -83,11 +75,11 @@ export function MovieInfo({ movie }: Props) {
             metaItems={metaItems}
             genres={movie.genres}
             plot={movie.plot}
-            stats={stats}
             renderMainButtons={() => (
                 <Flex gap="0.5rem" wrap="wrap">
                     <MovieWatchlistButton movieId={movie.id} />
                     <MovieFavoriteButton movieId={movie.id} />
+                    <MovieWatchedButton movieId={movie.id} />
                 </Flex>
             )}
         />

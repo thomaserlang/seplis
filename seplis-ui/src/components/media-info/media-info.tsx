@@ -13,7 +13,6 @@ export interface MediaInfoProps {
     metaItems: MediaMetaItem[]
     genres: Genre[]
     plot?: string | null
-    stats: MediaStatItem[]
     renderMainButtons?: () => React.ReactNode
 }
 
@@ -27,7 +26,6 @@ export function MediaInfo({
     metaItems,
     genres,
     plot,
-    stats,
     renderMainButtons,
 }: MediaInfoProps) {
     return (
@@ -77,7 +75,7 @@ export function MediaInfo({
 
                 {metaItems.length > 0 && (
                     <>
-                        <Flex gap="1.25rem" wrap="wrap">
+                        <Flex gap="1.25rem" rowGap="0.6rem" wrap="wrap">
                             {metaItems.map((item) => (
                                 <Flex
                                     key={item.label}
@@ -132,23 +130,6 @@ export function MediaInfo({
                 {plot && <PlotText plot={plot} />}
 
                 {renderMainButtons && renderMainButtons()}
-
-                {stats.length > 0 && (
-                    <>
-                        <Flex gap="0.6rem">
-                            {stats.map((s) => (
-                                <div key={s.label} className={classes.statBox}>
-                                    <Text fw={800} size="xl" lh={1}>
-                                        {s.value}
-                                    </Text>
-                                    <Text size="xs" c="dimmed" fw={500}>
-                                        {s.label}
-                                    </Text>
-                                </div>
-                            ))}
-                        </Flex>
-                    </>
-                )}
             </div>
         </div>
     )
