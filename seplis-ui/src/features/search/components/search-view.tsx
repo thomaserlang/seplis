@@ -72,7 +72,7 @@ export function SearchView({ onSelected }: Props) {
             {error && <ErrorBox errorObj={error} />}
             {isLoading && <PageLoader />}
 
-            {!hasData && !isLoading && (
+            {data && !hasData && !isLoading && (
                 <Text fw={600} size="lg">
                     No results
                 </Text>
