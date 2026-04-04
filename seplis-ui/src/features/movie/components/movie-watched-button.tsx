@@ -9,9 +9,10 @@ import {
 
 interface Props {
     movieId: number
+    runtime?: number | null
 }
 
-export function MovieWatchedButton({ movieId }: Props) {
+export function MovieWatchedButton({ movieId, runtime }: Props) {
     const [user] = useActiveUser()
     const { data, isLoading } = useGetMovieWatched({
         movieId,
@@ -34,6 +35,7 @@ export function MovieWatchedButton({ movieId }: Props) {
         <WatchedButton
             times={data?.times ?? 0}
             position={data?.position ?? 0}
+            runtime={runtime}
             loading={isLoading}
             onIncrement={() => increment.mutate({ movieId })}
             onDecrement={() => decrement.mutate({ movieId })}

@@ -79,7 +79,10 @@ export function MovieInfo({ movie }: Props) {
                 <Flex gap="0.5rem" wrap="wrap">
                     <MovieWatchlistButton movieId={movie.id} />
                     <MovieFavoriteButton movieId={movie.id} />
-                    <MovieWatchedButton movieId={movie.id} />
+                    <MovieWatchedButton
+                        movieId={movie.id}
+                        runtime={movie.runtime}
+                    />
                 </Flex>
             )}
         />

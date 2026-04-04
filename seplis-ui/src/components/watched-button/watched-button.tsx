@@ -6,6 +6,7 @@ import classes from './watched-button.module.css'
 interface Props {
     times?: number
     position?: number
+    runtime?: number | null
     loading?: boolean
     onIncrement?: () => void
     onDecrement?: () => void
@@ -16,6 +17,7 @@ export function WatchedButton({
     onDecrement,
     times = 0,
     position = 0,
+    runtime,
     loading = false,
 }: Props) {
     const [opened, { toggle, close }] = useDisclosure(false)
@@ -31,6 +33,11 @@ export function WatchedButton({
               ? classes.watched
               : classes.notWatched
 
+    const progressPercent = Math.max(
+        0,
+        Math.min(100, runtime ? (position / (runtime * 60)) * 100 : 50),
+    )
+
     return (
         <>
             <Popover position="top" opened={opened} onChange={close}>
@@ -42,6 +49,13 @@ export function WatchedButton({
                             className={progressClass}
                             onClick={handleMainClick}
                             loading={loading}
+                            style={
+                                position > 0
+                                    ? ({
+                                          '--progress': `${progressPercent}%`,
+                                      } as React.CSSProperties)
+                                    : undefined
+                            }
                         >
                             Watched
                         </Button>
