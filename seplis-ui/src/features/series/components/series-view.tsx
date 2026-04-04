@@ -9,6 +9,7 @@ interface Props {
 export function SeriesView({ series }: Props) {
     return (
         <div>
+            <title>{series.title}</title>
             <SeriesInfo series={series} />
             {series.seasons.length > 0 && <SeriesEpisodes series={series} />}
         </div>
