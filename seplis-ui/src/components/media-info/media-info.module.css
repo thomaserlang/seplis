@@ -5,7 +5,7 @@
   align-items: start;
   background: linear-gradient(
     155deg,
-    color-mix(in oklab, var(--card) 91%, oklch(0.55 0.18 var(--accent-hue))) 0%,
+    color-mix(in oklab, var(--card) 85%, oklch(0.55 0.18 var(--accent-hue))) 0%,
     var(--card) 55%
   );
 }
