@@ -1,6 +1,12 @@
-import { ActionIcon, Button, Group, Popover } from '@mantine/core'
+import {
+    ActionIcon,
+    Button,
+    Group,
+    MantineStyleProp,
+    Popover,
+} from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { MinusIcon, PlusIcon } from '@phosphor-icons/react'
+import { CheckIcon, MinusIcon, PlusIcon } from '@phosphor-icons/react'
 import classes from './watched-button.module.css'
 
 interface Props {
@@ -24,19 +30,30 @@ export function WatchedButton({
 
     const handleMainClick = times === 0 && position === 0 ? onIncrement : toggle
 
-    const progressClass =
+    const progressPercent =
         position > 0
-            ? times > 0
-                ? classes.inProgressCompleted
-                : classes.inProgress
-            : times > 0
-              ? classes.watched
-              : classes.notWatched
+            ? Math.max(
+                  15,
+                  Math.min(
+                      100,
+                      runtime ? (position / (runtime * 60)) * 100 : 50,
+                  ),
+              )
+            : 0
 
-    const progressPercent = Math.max(
-        0,
-        Math.min(100, runtime ? (position / (runtime * 60)) * 100 : 50),
-    )
+    const style: MantineStyleProp = {}
+
+    if (position > 0) {
+        style['--progress'] = `${progressPercent}%`
+    }
+
+    if (times > 0) {
+        style['--watched'] = 'oklch(42.209% 0.1039 141.021)'
+        style['--button-bg'] = 'var(--watched)'
+        style['--button-hover'] =
+            'color-mix(in oklab, var(--watched) 95%, white)'
+        style['--button-active'] = 'var(--watched)'
+    }
 
     return (
         <>
@@ -44,25 +61,23 @@ export function WatchedButton({
                 <Popover.Target>
                     <Button.Group>
                         <Button
-                            variant="filled"
+                            leftSection={
+                                <CheckIcon
+                                    weight={times > 0 ? 'fill' : 'regular'}
+                                />
+                            }
+                            variant="default"
                             size="compact-md"
-                            className={progressClass}
+                            className={classes.progress}
                             onClick={handleMainClick}
                             loading={loading}
-                            style={
-                                position > 0
-                                    ? ({
-                                          '--progress': `${progressPercent}%`,
-                                      } as React.CSSProperties)
-                                    : undefined
-                            }
+                            style={style}
                         >
                             Watched
                         </Button>
                         <Button
-                            variant="outline"
+                            variant="default"
                             size="compact-md"
-                            className={classes.timesWatched}
                             onClick={handleMainClick}
                             loading={loading}
                             title={`${times} time${times !== 1 ? 's' : ''} watched`}

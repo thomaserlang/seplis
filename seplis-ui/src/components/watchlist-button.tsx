@@ -9,11 +9,24 @@ interface Props extends ButtonProps {
 export function WatchlistButton({ active, ...props }: Props) {
     return (
         <Button
-            color={active ? '#FAF089' : 'var(--secondary)'}
-            variant="filled"
-            autoContrast={true}
+            style={
+                active
+                    ? ({
+                          '--watchlist': 'oklab(50% 0.1 0.1 / 0.5)',
+                          '--button-bg': 'var(--watchlist)',
+                          '--button-hover':
+                              'color-mix(in oklab, var(--watchlist) 95%, white)',
+                          '--button-active': 'var(--watchlist)',
+                          '--button-bd':
+                              '0.0625rem solid color-mix(in oklab, var(--watchlist) 80%, white)',
+                      } as React.CSSProperties)
+                    : undefined
+            }
+            variant="default"
             size="compact-md"
-            leftSection={<BookmarkSimpleIcon weight="fill" />}
+            leftSection={
+                <BookmarkSimpleIcon weight={active ? 'fill' : 'regular'} />
+            }
             {...props}
         >
             Watchlist

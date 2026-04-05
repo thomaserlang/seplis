@@ -9,11 +9,22 @@ interface Props extends ButtonProps {
 export function FavoriteButton({ active, ...props }: Props) {
     return (
         <Button
-            color={active ? '#90cdf4' : 'var(--secondary)'}
-            variant="filled"
-            autoContrast={true}
+            style={
+                active
+                    ? ({
+                          '--favorite': 'oklch(0.5861 0.1011 202.24)',
+                          '--button-bg': 'var(--favorite)',
+                          '--button-hover':
+                              'color-mix(in oklab, var(--favorite) 95%, white)',
+                          '--button-active': 'var(--favorite)',
+                          '--button-bd':
+                              '0.0625rem solid color-mix(in oklab, var(--favorite) 80%, white)',
+                      } as React.CSSProperties)
+                    : undefined
+            }
+            variant="default"
             size="compact-md"
-            leftSection={<StarIcon weight="fill" />}
+            leftSection={<StarIcon weight={active ? 'fill' : 'regular'} />}
             {...props}
         >
             Favorite
