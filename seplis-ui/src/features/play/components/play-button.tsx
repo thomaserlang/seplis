@@ -30,7 +30,7 @@ export function PlayButton({
                 playRequests={playRequests}
                 getPlayRequests={getPlayRequests}
             >
-                <Button size={size} variant="default">
+                <Button size={size} variant="default" {...props}>
                     <CaretDownIcon weight="bold" />
                 </Button>
             </PlaySourceDownloadMenu>

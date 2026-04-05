@@ -1,4 +1,4 @@
-import { getActiveUser } from '@/features/user'
+import { useActiveUser } from '@/features/user'
 import { useGetEpisodeLastWatched } from '../api/episode-last-watched.api'
 import { EpisodeCard } from './episode-card'
 
@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function EpisodeLastWatchedCard({ seriesId }: Props) {
-    const user = getActiveUser()
+    const [user] = useActiveUser()
     const { data, isLoading } = useGetEpisodeLastWatched({
         seriesId,
         options: {

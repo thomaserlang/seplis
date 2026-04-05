@@ -1,4 +1,4 @@
-import { getActiveUser } from '@/features/user'
+import { useActiveUser } from '@/features/user'
 import { useGetEpisodeToWatch } from '../api/episode-to-watch.api'
 import { EpisodeCard } from './episode-card'
 
@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function EpisodeToWatchCard({ seriesId }: Props) {
-    const user = getActiveUser()
+    const [user] = useActiveUser()
     const { data, isLoading } = useGetEpisodeToWatch({
         seriesId,
         options: {

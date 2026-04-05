@@ -30,6 +30,7 @@ export function logout() {
     delete users[activeUser.id]
     localStorage.setItem('users', JSON.stringify(users))
     localStorage.removeItem('activeUser')
+    localStorage.removeItem('accessToken')
 }
 
 export function useActiveUser() {

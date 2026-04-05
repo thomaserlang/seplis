@@ -1,4 +1,5 @@
 import { PlayButton } from '@/features/play'
+import { useActiveUser } from '@/features/user'
 import { ButtonSize } from '@mantine/core'
 import { useGetEpisodePlayRequests } from '../api/episode-play-requests.api'
 
@@ -15,11 +16,12 @@ export function EpisodePlayButton({
     canPlay,
     size,
 }: Props) {
+    const [user] = useActiveUser()
     const { data, isLoading, refetch } = useGetEpisodePlayRequests({
         seriesId,
         episodeNumber,
         options: {
-            enabled: canPlay === undefined,
+            enabled: !!user && canPlay === undefined,
         },
     })
 
