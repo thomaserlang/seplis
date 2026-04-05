@@ -45,10 +45,11 @@ export function WatchedButton({
 
     if (position > 0) {
         style['--progress'] = `${progressPercent}%`
+        style['--progress-color'] = 'oklch(0.82 0.18 90)'
     }
 
     if (times > 0) {
-        style['--watched'] = 'oklch(42.209% 0.1039 141.021)'
+        style['--watched'] = 'oklch(0.42 0.17 145)'
         style['--button-bg'] = 'var(--watched)'
         style['--button-hover'] =
             'color-mix(in oklab, var(--watched) 95%, white)'

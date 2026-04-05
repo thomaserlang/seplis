@@ -12,7 +12,7 @@ export function FavoriteButton({ active, ...props }: Props) {
             style={
                 active
                     ? ({
-                          '--favorite': 'oklch(0.5861 0.1011 202.24)',
+                          '--favorite': 'oklch(0.55 0.18 55)',
                           '--button-bg': 'var(--favorite)',
                           '--button-hover':
                               'color-mix(in oklab, var(--favorite) 95%, white)',

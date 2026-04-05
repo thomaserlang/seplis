@@ -21,7 +21,7 @@ export function PlaySourceDownloadMenu({ playRequests }: Props) {
         <Menu opened={opened} onChange={setOpened}>
             <Menu.Target>
                 <Button size="compact-md" variant="default">
-                    <CaretDownIcon />
+                    <CaretDownIcon weight="bold" />
                 </Button>
             </Menu.Target>
             <Menu.Dropdown>
@@ -43,24 +43,23 @@ function MenuItems({ playRequests }: { playRequests: PlayRequest[] }) {
     if (!data || data.length === 0)
         return <Menu.Item>No sources available</Menu.Item>
 
-    return (
+    // TODO display the name of the play server it comes from
+    return data.map((playServer: PlayRequestSources) => (
         <>
             <Menu.Label>Sources</Menu.Label>
-            {data.map((playServer: PlayRequestSources) =>
-                playServer.sources.map((source: PlaySource) => (
-                    <Menu.Item
-                        component="a"
-                        href={`${playServer.request.play_url}/source?play_id=${playServer.request.play_id}&source_index=${source.index}`}
-                        key={`${playServer.request.play_url}-${source.index}`}
-                        target="_blank"
-                    >
-                        <Text size="sm">
-                            Download ({playSourceStr(source)} -{' '}
-                            {prettyBytes(source.size)})
-                        </Text>
-                    </Menu.Item>
-                )),
-            )}
+            {playServer.sources.map((source: PlaySource) => (
+                <Menu.Item
+                    component="a"
+                    href={`${playServer.request.play_url}/source?play_id=${playServer.request.play_id}&source_index=${source.index}`}
+                    key={`${playServer.request.play_url}-${source.index}`}
+                    target="_blank"
+                >
+                    <Text size="sm">
+                        Download ({playSourceStr(source)} -{' '}
+                        {prettyBytes(source.size)})
+                    </Text>
+                </Menu.Item>
+            ))}
         </>
-    )
+    ))
 }

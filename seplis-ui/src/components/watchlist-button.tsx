@@ -12,7 +12,7 @@ export function WatchlistButton({ active, ...props }: Props) {
             style={
                 active
                     ? ({
-                          '--watchlist': 'oklab(50% 0.1 0.1 / 0.5)',
+                          '--watchlist': 'oklch(0.45 0.18 280)',
                           '--button-bg': 'var(--watchlist)',
                           '--button-hover':
                               'color-mix(in oklab, var(--watchlist) 95%, white)',

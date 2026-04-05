@@ -6,6 +6,7 @@ import {
     useMutationApiHelper,
 } from '@/utils/api-crud'
 import { MovieWatched } from '../types/movie.types'
+import { movieWatchlistQueryKey } from './movie-watchlist.api'
 
 interface MovieWatchedGetProps extends ApiHelperProps<{}> {
     movieId: number
@@ -35,6 +36,9 @@ export const {
             movieWatchedQueryKey({ movieId: variables.movieId }),
             data,
         )
+        queryClient.invalidateQueries({
+            queryKey: movieWatchlistQueryKey({ movieId: variables.movieId }),
+        })
     },
 })
 
@@ -53,5 +57,8 @@ export const {
             movieWatchedQueryKey({ movieId: variables.movieId }),
             data,
         )
+        queryClient.invalidateQueries({
+            queryKey: movieWatchlistQueryKey({ movieId: variables.movieId }),
+        })
     },
 })

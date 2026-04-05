@@ -1,6 +1,3 @@
-:root {
-    --watched-button-in-progress-blue: #428bca;
-}
 
 
 .progress::after {
@@ -10,5 +7,5 @@
     left: 0;
     width: var(--progress, 0%);
     height: 4px;
-    background-color: var(--watched-button-in-progress-blue);
+    background-color: var(--progress-color);
 }
