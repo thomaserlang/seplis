@@ -59,37 +59,27 @@ export function SeriesEpisodes({ series }: Props) {
             {isLoading && <PageLoader />}
 
             {!isLoading && (
-                <div className={classes.list}>
+                <div>
                     {episodes.map((ep) => (
                         <div key={ep.number} className={classes.episode}>
                             <div className={classes.epNumber}>
-                                <Text size="sm" fw={700} c="dimmed" lh={1.2}>
+                                <Text size="sm" fw={700} c="dimmed">
                                     {ep.episode ?? ep.number}
                                 </Text>
                                 {ep.episode != null &&
                                     ep.episode !== ep.number && (
-                                        <Text
-                                            size="xs"
-                                            c="dimmed"
-                                            lh={1}
-                                            style={{ opacity: 0.45 }}
-                                        >
+                                        <Text size="xs" c="dimmed">
                                             {ep.number}
                                         </Text>
                                     )}
                             </div>
                             <div className={classes.epMain}>
-                                <Text size="sm" fw={600} lh={1.3}>
+                                <Text size="sm" fw={600}>
                                     {ep.title ||
                                         `Episode ${ep.episode ?? ep.number}`}
                                 </Text>
                                 {ep.plot && (
-                                    <Text
-                                        size="xs"
-                                        c="dimmed"
-                                        lineClamp={2}
-                                        mt="0.2rem"
-                                    >
+                                    <Text size="xs" c="dimmed">
                                         {ep.plot}
                                     </Text>
                                 )}
