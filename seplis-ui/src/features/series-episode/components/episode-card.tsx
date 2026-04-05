@@ -83,10 +83,10 @@ function EpisodeCardContent({
     return (
         <Paper
             withBorder
-            p="sm"
+            p="0.5rem"
             style={{ borderLeft: `3px solid ${accentColor}` }}
         >
-            <Flex direction="column" gap="xs">
+            <Flex direction="column" gap="0.25rem">
                 <Flex align="center" gap="xs">
                     <Badge
                         size="sm"
