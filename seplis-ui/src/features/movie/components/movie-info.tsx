@@ -3,6 +3,7 @@ import { langCodeToLang } from '@/utils/language.utils'
 import { Flex } from '@mantine/core'
 import { Movie } from '../types/movie.types'
 import { MovieFavoriteButton } from './movie-favorite-button'
+import { MoviePlayButton } from './movie-play-button'
 import { MovieWatchedButton } from './movie-watched-button'
 import { MovieWatchlistButton } from './movie-watchlist-button'
 
@@ -83,6 +84,7 @@ export function MovieInfo({ movie }: Props) {
                         movieId={movie.id}
                         runtime={movie.runtime}
                     />
+                    <MoviePlayButton movieId={movie.id} />
                 </Flex>
             )}
         />
