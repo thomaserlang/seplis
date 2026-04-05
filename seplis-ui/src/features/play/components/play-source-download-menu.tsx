@@ -4,28 +4,38 @@ import {
     PlayRequestSources,
     PlaySource,
 } from '@/features/play/types/play-source.types'
-import { Button, Menu } from '@mantine/core'
-import { CaretDownIcon, DownloadIcon } from '@phosphor-icons/react'
+import { Menu } from '@mantine/core'
+import { DownloadIcon } from '@phosphor-icons/react'
 import prettyBytes from 'pretty-bytes'
 import { useState } from 'react'
 import { useGetPlayRequestSources } from '../api/play-server-sources.api'
 import { playSourceStr } from '../utils/play-source.utils'
 
 interface Props {
-    playRequests: PlayRequest[]
+    children: React.ReactElement<{ onClick: () => void }>
+    playRequests: PlayRequest[] | undefined
+    getPlayRequests: () => void
 }
 
-export function PlaySourceDownloadMenu({ playRequests }: Props) {
+export function PlaySourceDownloadMenu({
+    children,
+    playRequests,
+    getPlayRequests,
+}: Props) {
     const [opened, setOpened] = useState(false)
     return (
-        <Menu opened={opened} onChange={setOpened}>
-            <Menu.Target>
-                <Button size="compact-md" variant="default">
-                    <CaretDownIcon weight="bold" />
-                </Button>
-            </Menu.Target>
+        <Menu
+            opened={opened}
+            onChange={(opened) => {
+                setOpened(opened)
+                getPlayRequests()
+            }}
+        >
+            <Menu.Target>{children}</Menu.Target>
             <Menu.Dropdown>
-                {opened && <MenuItems playRequests={playRequests} />}
+                {playRequests && playRequests.length > 0 && opened && (
+                    <MenuItems playRequests={playRequests} />
+                )}
             </Menu.Dropdown>
         </Menu>
     )

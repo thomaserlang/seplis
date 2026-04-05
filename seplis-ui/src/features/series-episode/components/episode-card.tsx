@@ -25,7 +25,9 @@ export function EpisodeCard({
         <Box w="100%">
             <SectionTitle title={title} />
             {loading && <EpisodeCardSkeleton />}
-            {!loading && !episode && <EpisodeCardEmpty noEpisodeText={noEpisodeText} />}
+            {!loading && !episode && (
+                <EpisodeCardEmpty noEpisodeText={noEpisodeText} />
+            )}
             {!loading && episode && (
                 <EpisodeCardContent
                     seriesId={seriesId}
@@ -116,10 +118,12 @@ function EpisodeCardContent({
                     <EpisodePlayButton
                         seriesId={seriesId}
                         episodeNumber={episode.number}
+                        canPlay={episode.user_can_watch?.on_play_server}
                     />
                     <EpisodeWatchedButton
                         seriesId={seriesId}
-                        episodeId={episode.number}
+                        episodeNumber={episode.number}
+                        episode={episode}
                     />
                 </Flex>
             </Flex>

@@ -6,13 +6,14 @@ interface Props {
 }
 
 export function MoviePlayButton({ movieId }: Props) {
-    const { data, isLoading } = useGetMoviePlayRequests({
+    const { data, isLoading, refetch } = useGetMoviePlayRequests({
         movieId,
     })
     return (
         data && (
             <PlayButton
                 playRequests={data ?? []}
+                getPlayRequests={refetch}
                 loading={isLoading}
                 disabled={!data || data.length === 0}
             />

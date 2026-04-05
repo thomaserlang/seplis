@@ -3,21 +3,27 @@ import {
     InfiniteData,
     QueryKey,
     useInfiniteQuery,
+    UseInfiniteQueryOptions,
     UseInfiniteQueryResult,
     useMutation,
     UseMutationResult,
     useQuery,
+    UseQueryOptions,
+    UseQueryResult,
 } from '@tanstack/react-query'
 import { apiClient } from './api-client'
 
+export type QueryOptions<T = unknown> = Omit<
+    UseQueryOptions<T>,
+    'queryKey' | 'queryFn'
+>
+export type InfiniteQueryOptions<T = unknown> = Omit<
+    UseInfiniteQueryOptions<T, Error, InfiniteData<T>, QueryKey, string>,
+    'queryKey' | 'queryFn' | 'initialPageParam' | 'getNextPageParam'
+>
+
 export interface PropsOptionsQuery {
     options?: QueryOptions
-}
-
-export interface QueryOptions {
-    enabled?: boolean
-    refetchInterval?: number | false
-    retry?: boolean | number
 }
 
 export type MutationProps<DataT = unknown, VarT = unknown> = {
@@ -54,7 +60,7 @@ export function useApiHelper<T, TGetProps extends ApiHelperProps>({
     formatParams?: (props: TGetProps) => QueryParams
 }): {
     get: (props: TGetProps) => Promise<T>
-    useGet: (props?: TGetProps) => ReturnType<typeof useQuery<T>>
+    useGet: (props?: Omit<TGetProps, 'options'> & { options?: QueryOptions<T> }) => UseQueryResult<T>
     queryKey: (props: TGetProps) => QueryKey
 } {
     const get = async (props: TGetProps) => {
@@ -68,13 +74,14 @@ export function useApiHelper<T, TGetProps extends ApiHelperProps>({
             })
             .json<T>()
     }
-    const useGet = (props?: TGetProps) => {
-        return useQuery({
-            queryKey: queryKey(props || ({} as TGetProps)),
+    const useGet = (props?: Omit<TGetProps, 'options'> & { options?: QueryOptions<T> }) => {
+        return useQuery<T>({
+            queryKey: queryKey((props || {}) as TGetProps),
             queryFn: ({ signal }) =>
-                get({ ...(props || ({} as TGetProps)), signal }),
-            ...props?.options,
-        })
+                get({ ...((props || {}) as TGetProps), signal }),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ...(props?.options as any),
+        }) as UseQueryResult<T>
     }
     return {
         get,
@@ -102,7 +109,7 @@ export function usePageApiHelper<
 }): {
     getPage: (props: TGetListProps) => Promise<PageCursor<T, TListLookupData>>
     useGetPage: (
-        props: TGetListProps,
+        props: Omit<TGetListProps, 'options'> & { options?: InfiniteQueryOptions<PageCursor<T, TListLookupData>> },
     ) => UseInfiniteQueryResult<
         InfiniteData<PageCursor<T, TListLookupData>, unknown>,
         Error
@@ -122,12 +129,9 @@ export function usePageApiHelper<
             })
             .json<PageCursor<T, TListLookupData>>()
     }
-    const useGetList = (props: TGetListProps) => {
+    const useGetList = (props: Omit<TGetListProps, 'options'> & { options?: InfiniteQueryOptions<PageCursor<T, TListLookupData>> }) => {
         return useInfiniteQuery({
-            queryKey: queryKey({
-                ...props,
-                params: props?.params,
-            }),
+            queryKey: queryKey({ ...props, params: props?.params } as TGetListProps),
             queryFn: ({ pageParam, signal }) =>
                 getList({
                     ...props,
@@ -136,10 +140,10 @@ export function usePageApiHelper<
                         ...props.params,
                         cursor: pageParam,
                     },
-                }),
+                } as TGetListProps),
             initialPageParam: '',
             getNextPageParam: (lastPage) => lastPage.cursor,
-            ...props.options,
+            ...(props.options as any),
         })
     }
     return {
@@ -234,7 +238,10 @@ export async function fetchAllPages<
     return all
 }
 
-type QueryParams = Record<string, string | number | boolean | undefined | null | string[]>
+type QueryParams = Record<
+    string,
+    string | number | boolean | undefined | null | string[]
+>
 
 function toSearchParams(
     params?: QueryParams,

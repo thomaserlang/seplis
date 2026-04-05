@@ -47,8 +47,6 @@
   padding-top: 0.1rem;
 }
 
-/* ── Mobile ─────────────────────────────────────── */
-
 @media (max-width: 48em) {
 .episode {
     grid-template-columns: 2.5rem 1fr;

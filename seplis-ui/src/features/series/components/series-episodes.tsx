@@ -1,7 +1,12 @@
-import { useGetEpisodes } from '@/features/series-episode'
+import { PageLoader } from '@/components/page-loader'
+import {
+    EpisodePlayButton,
+    EpisodeWatchedButton,
+    useGetEpisodes,
+} from '@/features/series-episode'
 import { getActiveUser } from '@/features/user'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Flex, Loader, Select, Text } from '@mantine/core'
+import { Flex, Select, Text } from '@mantine/core'
 import { useState } from 'react'
 import { Series } from '../types/series.types'
 import classes from './series-episodes.module.css'
@@ -13,13 +18,12 @@ interface Props {
 export function SeriesEpisodes({ series }: Props) {
     const user = getActiveUser()
     const [season, setSeason] = useState(series.seasons[0]?.season ?? 1)
-
     const { data, isLoading } = useGetEpisodes({
         seriesId: series.id,
         params: {
             season,
             per_page: 100,
-            expand: user ? ['user_watched', 'user_can_watch'] : undefined,
+            expand: user ? 'user_watched,user_can_watch' : undefined,
         },
     })
 
@@ -52,11 +56,7 @@ export function SeriesEpisodes({ series }: Props) {
                 )}
             </Flex>
 
-            {isLoading && (
-                <Flex justify="center" p="xl">
-                    <Loader size="sm" />
-                </Flex>
-            )}
+            {isLoading && <PageLoader />}
 
             {!isLoading && (
                 <div className={classes.list}>
@@ -79,17 +79,10 @@ export function SeriesEpisodes({ series }: Props) {
                                     )}
                             </div>
                             <div className={classes.epMain}>
-                                <Flex align="baseline" gap="0.5rem">
-                                    <Text size="sm" fw={600} lh={1.3}>
-                                        {ep.title ||
-                                            `Episode ${ep.episode ?? ep.number}`}
-                                    </Text>
-                                    {ep.user_watched && (
-                                        <Text size="xs" c="teal" fw={600}>
-                                            ✓
-                                        </Text>
-                                    )}
-                                </Flex>
+                                <Text size="sm" fw={600} lh={1.3}>
+                                    {ep.title ||
+                                        `Episode ${ep.episode ?? ep.number}`}
+                                </Text>
                                 {ep.plot && (
                                     <Text
                                         size="xs"
@@ -100,6 +93,29 @@ export function SeriesEpisodes({ series }: Props) {
                                         {ep.plot}
                                     </Text>
                                 )}
+
+                                <Flex
+                                    mt="0.25rem"
+                                    gap="0.5rem"
+                                    direction="row"
+                                    wrap="wrap"
+                                    w="100%"
+                                >
+                                    <EpisodePlayButton
+                                        size="compact-xs"
+                                        seriesId={series.id}
+                                        episodeNumber={ep.number}
+                                        canPlay={
+                                            ep.user_can_watch?.on_play_server
+                                        }
+                                    />
+                                    <EpisodeWatchedButton
+                                        seriesId={series.id}
+                                        episodeNumber={ep.number}
+                                        episode={ep}
+                                        size="compact-xs"
+                                    />
+                                </Flex>
                             </div>
                             <Flex
                                 direction="column"

@@ -1,6 +1,7 @@
 import {
     ActionIcon,
     Button,
+    ButtonSize,
     Group,
     MantineStyleProp,
     Popover,
@@ -14,6 +15,7 @@ interface Props {
     position?: number
     duration?: number | null
     loading?: boolean
+    size?: ButtonSize
     onIncrement?: () => void
     onDecrement?: () => void
 }
@@ -25,6 +27,7 @@ export function WatchedButton({
     position = 0,
     duration,
     loading = false,
+    size = 'compact-md',
 }: Props) {
     const [opened, { toggle, close }] = useDisclosure(false)
 
@@ -68,7 +71,7 @@ export function WatchedButton({
                                 />
                             }
                             variant="default"
-                            size="compact-md"
+                            size={size}
                             className={classes.progress}
                             onClick={handleMainClick}
                             loading={loading}
@@ -78,7 +81,7 @@ export function WatchedButton({
                         </Button>
                         <Button
                             variant="default"
-                            size="compact-md"
+                            size={size}
                             onClick={handleMainClick}
                             loading={loading}
                             title={`${times} time${times !== 1 ? 's' : ''} watched`}
