@@ -1,6 +1,9 @@
 import { Genre } from '@/types/genre.types'
 import { IImage } from '@/types/image.types'
-import { Episode, UserCanWatchEpisode } from './episodes.types'
+import {
+    Episode,
+    UserCanWatchEpisode,
+} from '../../series-episode/types/episode.types'
 
 export interface Series {
     id: number

@@ -1,7 +1,7 @@
+import { useGetEpisodes } from '@/features/series-episode'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import { Flex, Loader, Select, Text } from '@mantine/core'
 import { useState } from 'react'
-import { useGetEpisodes } from '../api/episodes.api'
 import { Series } from '../types/series.types'
 import classes from './series-episodes.module.css'
 

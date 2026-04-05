@@ -12,7 +12,7 @@ import classes from './watched-button.module.css'
 interface Props {
     times?: number
     position?: number
-    runtime?: number | null
+    duration?: number | null
     loading?: boolean
     onIncrement?: () => void
     onDecrement?: () => void
@@ -23,7 +23,7 @@ export function WatchedButton({
     onDecrement,
     times = 0,
     position = 0,
-    runtime,
+    duration,
     loading = false,
 }: Props) {
     const [opened, { toggle, close }] = useDisclosure(false)
@@ -36,7 +36,7 @@ export function WatchedButton({
                   15,
                   Math.min(
                       100,
-                      runtime ? (position / (runtime * 60)) * 100 : 50,
+                      duration ? (position / (duration * 60)) * 100 : 50,
                   ),
               )
             : 0
@@ -45,7 +45,7 @@ export function WatchedButton({
 
     if (position > 0) {
         style['--progress'] = `${progressPercent}%`
-        style['--progress-color'] = 'oklch(0.82 0.18 90)'
+        style['--progress-color'] = 'oklch(0.60 0.22 145)'
     }
 
     if (times > 0) {

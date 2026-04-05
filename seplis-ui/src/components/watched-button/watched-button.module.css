@@ -8,4 +8,5 @@
     width: var(--progress, 0%);
     height: 4px;
     background-color: var(--progress-color);
+    border-radius: 0 2px 2px 0;
 }

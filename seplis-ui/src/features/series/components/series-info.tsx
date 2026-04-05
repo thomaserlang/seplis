@@ -1,4 +1,8 @@
 import { MediaInfo, MediaMetaItem, MediaStatus } from '@/components/media-info'
+import {
+    EpisodeLastWatchedCard,
+    EpisodeToWatchCard,
+} from '@/features/series-episode'
 import { langCodeToLang } from '@/utils/language.utils'
 import { Flex } from '@mantine/core'
 import { Series } from '../types/series.types'
@@ -69,9 +73,15 @@ export function SeriesInfo({ series }: Props) {
             genres={series.genres}
             plot={series.plot}
             renderMainButtons={() => (
-                <Flex gap="0.5rem" wrap="wrap">
-                    <SeriesWatchlistButton seriesId={series.id} />
-                    <SeriesFavoriteButton seriesId={series.id} />
+                <Flex gap="1rem" direction="column">
+                    <Flex gap="0.5rem" wrap="wrap">
+                        <SeriesWatchlistButton seriesId={series.id} />
+                        <SeriesFavoriteButton seriesId={series.id} />
+                    </Flex>
+                    <Flex gap="1rem" wrap="wrap">
+                        <EpisodeToWatchCard seriesId={series.id} />
+                        <EpisodeLastWatchedCard seriesId={series.id} />
+                    </Flex>
                 </Flex>
             )}
         />

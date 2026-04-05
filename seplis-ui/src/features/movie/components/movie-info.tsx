@@ -82,7 +82,7 @@ export function MovieInfo({ movie }: Props) {
                     <MovieFavoriteButton movieId={movie.id} />
                     <MovieWatchedButton
                         movieId={movie.id}
-                        runtime={movie.runtime}
+                        duration={movie.runtime}
                     />
                     <MoviePlayButton movieId={movie.id} />
                 </Flex>

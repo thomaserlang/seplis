@@ -1,5 +1,5 @@
 import { ApiHelperProps, usePageApiHelper } from '@/utils/api-crud'
-import { Episode } from '../types/episodes.types'
+import { Episode } from '../types/episode.types'
 
 interface EpisodesParams {
     season?: number

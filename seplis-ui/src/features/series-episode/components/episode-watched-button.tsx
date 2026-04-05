@@ -2,30 +2,32 @@ import { WatchedButton } from '@/components/watched-button'
 import { useActiveUser } from '@/features/user'
 import { toastError } from '@/utils/toast'
 import {
-    useDecrementMovieWatched,
-    useGetMovieWatched,
-    useIncrementMovieWatched,
-} from '../api/movie-watched.api'
+    useDecrementEpisodeWatched,
+    useGetEpisodeWatched,
+    useIncrementEpisodeWatched,
+} from '../api/episode-watched.api'
 
 interface Props {
-    movieId: number
+    seriesId: number
+    episodeId: number
     duration?: number | null
 }
 
-export function MovieWatchedButton({ movieId, duration }: Props) {
+export function EpisodeWatchedButton({ seriesId, episodeId, duration }: Props) {
     const [user] = useActiveUser()
-    const { data, isLoading } = useGetMovieWatched({
-        movieId,
+    const { data, isLoading } = useGetEpisodeWatched({
+        seriesId,
+        episodeId,
         options: {
             enabled: !!user,
         },
     })
-    const increment = useIncrementMovieWatched({
+    const increment = useIncrementEpisodeWatched({
         onError: (e) => {
             toastError(e)
         },
     })
-    const decrement = useDecrementMovieWatched({
+    const decrement = useDecrementEpisodeWatched({
         onError: (e) => {
             toastError(e)
         },
@@ -37,8 +39,8 @@ export function MovieWatchedButton({ movieId, duration }: Props) {
             position={data?.position ?? 0}
             duration={duration}
             loading={isLoading}
-            onIncrement={() => increment.mutate({ movieId })}
-            onDecrement={() => decrement.mutate({ movieId })}
+            onIncrement={() => increment.mutate({ seriesId, episodeId })}
+            onDecrement={() => decrement.mutate({ seriesId, episodeId })}
         />
     )
 }
