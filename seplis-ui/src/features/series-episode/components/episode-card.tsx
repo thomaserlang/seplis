@@ -22,7 +22,7 @@ export function EpisodeCard({
     noEpisodeText,
 }: Props) {
     return (
-        <Box w="100%">
+        <Box>
             <SectionTitle title={title} />
             {loading && <EpisodeCardSkeleton />}
             {!loading && !episode && (
@@ -41,7 +41,7 @@ export function EpisodeCard({
 
 function EpisodeCardSkeleton() {
     return (
-        <Paper withBorder p="sm" miw={220}>
+        <Paper withBorder p="sm">
             <Flex direction="column" gap="xs">
                 <Skeleton height={18} width={60} radius="xl" />
                 <Skeleton height={14} width="80%" />
@@ -88,23 +88,23 @@ function EpisodeCardContent({
         >
             <Flex direction="column" gap="0.25rem">
                 <Flex align="center" gap="xs">
-                    <Badge
-                        size="sm"
-                        variant="light"
-                        color="blue"
-                        style={{ flexShrink: 0 }}
-                    >
+                    <Badge size="md" variant="light" color="blue">
                         {episodeLabel}
                     </Badge>
                     {episode.air_date && (
-                        <Text size="xs" c="dimmed" truncate>
+                        <Text size="sm" c="dimmed" truncate>
                             {episode.air_date}
                         </Text>
                     )}
                 </Flex>
 
                 <Box>
-                    <Text size="sm" fw={600} lineClamp={2}>
+                    <Text
+                        size="md"
+                        fw={600}
+                        title={episode.title || ''}
+                        truncate
+                    >
                         {episode.title || 'Untitled'}
                     </Text>
                     {episode.runtime && (

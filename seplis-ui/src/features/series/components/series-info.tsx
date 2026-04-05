@@ -79,16 +79,10 @@ export function SeriesInfo({ series }: Props) {
                         <SeriesFavoriteButton seriesId={series.id} />
                     </Flex>
                     <Flex gap="1rem" wrap="wrap">
-                        <Box
-                            w={{ base: '100%', sm: 'auto' }}
-                            miw={{ base: '100%', xs: 300 }}
-                        >
+                        <Box style={{ flex: '1 1 18rem' }} miw="0">
                             <EpisodeToWatchCard seriesId={series.id} />
                         </Box>
-                        <Box
-                            w={{ base: '100%', sm: 'auto' }}
-                            miw={{ base: '100%', xs: 300 }}
-                        >
+                        <Box style={{ flex: '1 1 18rem' }} miw="0">
                             <EpisodeLastWatchedCard seriesId={series.id} />
                         </Box>
                     </Flex>
