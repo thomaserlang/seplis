@@ -7,7 +7,7 @@ import {
 import { Menu } from '@mantine/core'
 import { DownloadIcon } from '@phosphor-icons/react'
 import prettyBytes from 'pretty-bytes'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useGetPlayRequestSources } from '../api/play-server-sources.api'
 import { playSourceStr } from '../utils/play-source.utils'
 
@@ -55,7 +55,7 @@ function MenuItems({ playRequests }: { playRequests: PlayRequest[] }) {
 
     // TODO display the name of the play server it comes from
     return data.map((playServer: PlayRequestSources) => (
-        <>
+        <Fragment key={playServer.request.play_id}>
             <Menu.Label>Download</Menu.Label>
             {playServer.sources.map((source: PlaySource) => (
                 <Menu.Item
@@ -68,6 +68,6 @@ function MenuItems({ playRequests }: { playRequests: PlayRequest[] }) {
                     {playSourceStr(source)} ({prettyBytes(source.size)})
                 </Menu.Item>
             ))}
-        </>
+        </Fragment>
     ))
 }
