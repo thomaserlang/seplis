@@ -4,8 +4,8 @@ import {
     PlayRequestSources,
     PlaySource,
 } from '@/features/play/types/play-source.types'
-import { Button, Menu, Text } from '@mantine/core'
-import { CaretDownIcon } from '@phosphor-icons/react'
+import { Button, Menu } from '@mantine/core'
+import { CaretDownIcon, DownloadIcon } from '@phosphor-icons/react'
 import prettyBytes from 'pretty-bytes'
 import { useState } from 'react'
 import { useGetPlayRequestSources } from '../api/play-server-sources.api'
@@ -46,18 +46,16 @@ function MenuItems({ playRequests }: { playRequests: PlayRequest[] }) {
     // TODO display the name of the play server it comes from
     return data.map((playServer: PlayRequestSources) => (
         <>
-            <Menu.Label>Sources</Menu.Label>
+            <Menu.Label>Download</Menu.Label>
             {playServer.sources.map((source: PlaySource) => (
                 <Menu.Item
                     component="a"
                     href={`${playServer.request.play_url}/source?play_id=${playServer.request.play_id}&source_index=${source.index}`}
                     key={`${playServer.request.play_url}-${source.index}`}
                     target="_blank"
+                    leftSection={<DownloadIcon weight="bold" />}
                 >
-                    <Text size="sm">
-                        Download ({playSourceStr(source)} -{' '}
-                        {prettyBytes(source.size)})
-                    </Text>
+                    {playSourceStr(source)} ({prettyBytes(source.size)})
                 </Menu.Item>
             ))}
         </>
