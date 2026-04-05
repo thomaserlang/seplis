@@ -21,19 +21,23 @@ export function PlayButton({
             <Button
                 variant="default"
                 size={size}
-                leftSection={<PlayIcon weight="fill" />}
+                leftSection={
+                    <PlayIcon weight={props.disabled ? 'regular' : 'fill'} />
+                }
                 {...props}
             >
                 Play
             </Button>
-            <PlaySourceDownloadMenu
-                playRequests={playRequests}
-                getPlayRequests={getPlayRequests}
-            >
-                <Button size={size} variant="default" {...props}>
-                    <CaretDownIcon weight="bold" />
-                </Button>
-            </PlaySourceDownloadMenu>
+            {!props.disabled && (
+                <PlaySourceDownloadMenu
+                    playRequests={playRequests}
+                    getPlayRequests={getPlayRequests}
+                >
+                    <Button size={size} variant="default">
+                        <CaretDownIcon weight="bold" />
+                    </Button>
+                </PlaySourceDownloadMenu>
+            )}
         </Button.Group>
     )
 }

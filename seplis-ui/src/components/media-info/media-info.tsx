@@ -35,7 +35,7 @@ export function MediaInfo({
         >
             <div className={classes.posterPanel}>
                 {posterUrl && (
-                    <img src={posterUrl} alt="" className={classes.posterImg} />
+                    <img src={posterUrl} className={classes.posterImg} />
                 )}
                 {status && (
                     <div className={classes.posterMeta}>
@@ -169,8 +169,6 @@ function PlotText({ plot }: { plot: string }) {
                 overflows || expanded ? () => setExpanded((e) => !e) : undefined
             }
             style={{
-                display: 'block',
-                textAlign: 'left',
                 cursor: overflows || expanded ? 'pointer' : 'default',
             }}
         >
@@ -182,11 +180,6 @@ function PlotText({ plot }: { plot: string }) {
             >
                 {plot}
             </Text>
-            {(overflows || expanded) && (
-                <Text size="xs" c="dimmed" fw={600}>
-                    {expanded ? 'Show less' : 'Show more'}
-                </Text>
-            )}
         </UnstyledButton>
     )
 }
