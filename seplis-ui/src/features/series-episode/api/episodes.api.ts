@@ -1,6 +1,8 @@
 import { ApiHelperProps, usePageApiHelper } from '@/utils/api-crud'
 import { Episode } from '../types/episode.types'
 
+type EpisodeExpand = 'user_watched' | 'user_can_watch'
+
 interface EpisodesParams {
     season?: number
     episode?: number
@@ -8,7 +10,7 @@ interface EpisodesParams {
     air_date?: string
     air_date_ge?: string
     air_date_le?: string
-    expand?: string[]
+    expand?: EpisodeExpand[]
 }
 
 interface EpisodesProps extends ApiHelperProps<EpisodesParams> {

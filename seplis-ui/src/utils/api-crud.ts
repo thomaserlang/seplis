@@ -234,15 +234,20 @@ export async function fetchAllPages<
     return all
 }
 
-type QueryParams = Record<string, string | number | boolean | undefined | null>
+type QueryParams = Record<string, string | number | boolean | undefined | null | string[]>
 
 function toSearchParams(
     params?: QueryParams,
-): Record<string, string | number | boolean> | undefined {
+): (string | number | boolean)[][] | undefined {
     if (!params) return undefined
-    const result: Record<string, string | number | boolean> = {}
+    const result: (string | number | boolean)[][] = []
     for (const [k, v] of Object.entries(params)) {
-        if (v != null) result[k] = v
+        if (v == null) continue
+        if (Array.isArray(v)) {
+            for (const item of v) result.push([k, item])
+        } else {
+            result.push([k, v])
+        }
     }
     return result
 }

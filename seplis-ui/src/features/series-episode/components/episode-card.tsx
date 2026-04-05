@@ -21,95 +21,109 @@ export function EpisodeCard({
     accentColor = 'oklch(0.55 0.22 250)',
     noEpisodeText,
 }: Props) {
-    if (loading) {
-        return (
-            <Box w="100%">
-                <SectionTitle title={title} />
-                <Paper withBorder p="sm" miw={220}>
-                    <Flex direction="column" gap="xs">
-                        <Skeleton height={18} width={60} radius="xl" />
-                        <Skeleton height={14} width="80%" />
-                        <Skeleton height={12} width={100} />
-                        <Flex gap="xs" mt={4}>
-                            <Skeleton height={30} width={90} radius="sm" />
-                            <Skeleton height={30} width={90} radius="sm" />
-                        </Flex>
-                    </Flex>
-                </Paper>
-            </Box>
-        )
-    }
+    return (
+        <Box w="100%">
+            <SectionTitle title={title} />
+            {loading && <EpisodeCardSkeleton />}
+            {!loading && !episode && <EpisodeCardEmpty noEpisodeText={noEpisodeText} />}
+            {!loading && episode && (
+                <EpisodeCardContent
+                    seriesId={seriesId}
+                    episode={episode}
+                    accentColor={accentColor}
+                />
+            )}
+        </Box>
+    )
+}
 
-    if (!episode) {
-        return (
-            <Box w="100%">
-                <SectionTitle title={title} />
-                <Paper withBorder p="sm">
-                    <Flex align="center" gap="sm" c="dimmed">
-                        <TelevisionSimpleIcon size={28} />
-                        <Text size="sm">
-                            {noEpisodeText || 'No episode to watch'}
-                        </Text>
-                    </Flex>
-                </Paper>
-            </Box>
-        )
-    }
+function EpisodeCardSkeleton() {
+    return (
+        <Paper withBorder p="sm" miw={220}>
+            <Flex direction="column" gap="xs">
+                <Skeleton height={18} width={60} radius="xl" />
+                <Skeleton height={14} width="80%" />
+                <Skeleton height={12} width={100} />
+                <Flex gap="xs" mt={4}>
+                    <Skeleton height={30} width={90} radius="sm" />
+                    <Skeleton height={30} width={90} radius="sm" />
+                </Flex>
+            </Flex>
+        </Paper>
+    )
+}
 
+function EpisodeCardEmpty({ noEpisodeText }: { noEpisodeText?: string }) {
+    return (
+        <Paper withBorder p="sm">
+            <Flex align="center" gap="sm" c="dimmed">
+                <TelevisionSimpleIcon size={28} />
+                <Text size="sm">{noEpisodeText || 'No episode to watch'}</Text>
+            </Flex>
+        </Paper>
+    )
+}
+
+function EpisodeCardContent({
+    seriesId,
+    episode,
+    accentColor,
+}: {
+    seriesId: number
+    episode: Episode
+    accentColor: string
+}) {
     const episodeLabel =
         episode.season != null && episode.episode != null
             ? `S${episode.season}E${episode.episode}`
             : `Ep ${episode.number}`
 
     return (
-        <Box w="100%">
-            <SectionTitle title={title} />
-            <Paper
-                withBorder
-                p="sm"
-                style={{ borderLeft: `3px solid ${accentColor}` }}
-            >
-                <Flex direction="column" gap="xs">
-                    <Flex align="center" gap="xs">
-                        <Badge
-                            size="sm"
-                            variant="light"
-                            color="blue"
-                            style={{ flexShrink: 0 }}
-                        >
-                            {episodeLabel}
-                        </Badge>
-                        {episode.air_date && (
-                            <Text size="xs" c="dimmed" truncate>
-                                {episode.air_date}
-                            </Text>
-                        )}
-                    </Flex>
-
-                    <Box>
-                        <Text size="sm" fw={600} lineClamp={2}>
-                            {episode.title || 'Untitled'}
+        <Paper
+            withBorder
+            p="sm"
+            style={{ borderLeft: `3px solid ${accentColor}` }}
+        >
+            <Flex direction="column" gap="xs">
+                <Flex align="center" gap="xs">
+                    <Badge
+                        size="sm"
+                        variant="light"
+                        color="blue"
+                        style={{ flexShrink: 0 }}
+                    >
+                        {episodeLabel}
+                    </Badge>
+                    {episode.air_date && (
+                        <Text size="xs" c="dimmed" truncate>
+                            {episode.air_date}
                         </Text>
-                        {episode.runtime && (
-                            <Text size="xs" c="dimmed" mt={2}>
-                                {episode.runtime} min
-                            </Text>
-                        )}
-                    </Box>
-
-                    <Flex gap="xs" wrap="wrap">
-                        <EpisodePlayButton
-                            seriesId={seriesId}
-                            episodeNumber={episode.number}
-                        />
-                        <EpisodeWatchedButton
-                            seriesId={seriesId}
-                            episodeId={episode.number}
-                        />
-                    </Flex>
+                    )}
                 </Flex>
-            </Paper>
-        </Box>
+
+                <Box>
+                    <Text size="sm" fw={600} lineClamp={2}>
+                        {episode.title || 'Untitled'}
+                    </Text>
+                    {episode.runtime && (
+                        <Text size="xs" c="dimmed" mt={2}>
+                            {episode.runtime} min
+                        </Text>
+                    )}
+                </Box>
+
+                <Flex gap="xs" wrap="wrap">
+                    <EpisodePlayButton
+                        seriesId={seriesId}
+                        episodeNumber={episode.number}
+                    />
+                    <EpisodeWatchedButton
+                        seriesId={seriesId}
+                        episodeId={episode.number}
+                    />
+                </Flex>
+            </Flex>
+        </Paper>
     )
 }
 

@@ -1,4 +1,5 @@
 import { useGetEpisodes } from '@/features/series-episode'
+import { getActiveUser } from '@/features/user'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import { Flex, Loader, Select, Text } from '@mantine/core'
 import { useState } from 'react'
@@ -10,11 +11,16 @@ interface Props {
 }
 
 export function SeriesEpisodes({ series }: Props) {
+    const user = getActiveUser()
     const [season, setSeason] = useState(series.seasons[0]?.season ?? 1)
 
     const { data, isLoading } = useGetEpisodes({
         seriesId: series.id,
-        params: { season, per_page: 100 },
+        params: {
+            season,
+            per_page: 100,
+            expand: user ? ['user_watched', 'user_can_watch'] : undefined,
+        },
     })
 
     const episodes = pageItemsFlatten(data)
