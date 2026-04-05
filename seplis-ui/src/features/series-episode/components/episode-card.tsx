@@ -1,4 +1,5 @@
 import { Badge, Box, Flex, Paper, Skeleton, Text } from '@mantine/core'
+import { TelevisionSimpleIcon } from '@phosphor-icons/react'
 import { Episode } from '../types/episode.types'
 import { EpisodePlayButton } from './episode-play-button'
 import { EpisodeWatchedButton } from './episode-watched-button'
@@ -23,18 +24,7 @@ export function EpisodeCard({
     if (loading) {
         return (
             <Box>
-                {title && (
-                    <Text
-                        size="xs"
-                        tt="uppercase"
-                        fw={700}
-                        c="dimmed"
-                        mb={6}
-                        lts={0.5}
-                    >
-                        {title}
-                    </Text>
-                )}
+                <SectionTitle title={title} />
                 <Paper withBorder p="sm" miw={220}>
                     <Flex direction="column" gap="xs">
                         <Skeleton height={18} width={60} radius="xl" />
@@ -53,48 +43,19 @@ export function EpisodeCard({
     if (!episode) {
         return (
             <Box>
-                {title && (
-                    <Text
-                        size="xs"
-                        tt="uppercase"
-                        fw={700}
-                        c="dimmed"
-                        mb={6}
-                        lts={0.5}
-                    >
-                        {title}
-                    </Text>
-                )}
+                <SectionTitle title={title} />
                 <Paper withBorder p="sm">
-                    <Text size="sm" c="dimmed">
-                        {noEpisodeText || 'No episode to watch'}
-                    </Text>
+                    <Flex align="center" gap="sm" c="dimmed">
+                        <TelevisionSimpleIcon size={28} />
+                        <Text size="sm">
+                            {noEpisodeText || 'No episode to watch'}
+                        </Text>
+                    </Flex>
                 </Paper>
             </Box>
         )
     }
 
-    return (
-        <EpisodeInfo
-            seriesId={seriesId}
-            episode={episode}
-            title={title}
-            accentColor={accentColor}
-        />
-    )
-}
-
-function EpisodeInfo({
-    seriesId,
-    episode,
-    title,
-    accentColor,
-}: {
-    seriesId: number
-    episode: Episode
-    title?: string
-    accentColor?: string
-}) {
     const episodeLabel =
         episode.season != null && episode.episode != null
             ? `S${episode.season}E${episode.episode}`
@@ -102,24 +63,11 @@ function EpisodeInfo({
 
     return (
         <Box>
-            {title && (
-                <Text
-                    size="xs"
-                    tt="uppercase"
-                    fw={700}
-                    c="dimmed"
-                    mb={6}
-                    lts={0.5}
-                >
-                    {title}
-                </Text>
-            )}
+            <SectionTitle title={title} />
             <Paper
                 withBorder
                 p="sm"
-                style={{
-                    borderLeft: `3px solid ${accentColor}`,
-                }}
+                style={{ borderLeft: `3px solid ${accentColor}` }}
             >
                 <Flex direction="column" gap="xs">
                     <Flex align="center" gap="xs">
@@ -162,5 +110,14 @@ function EpisodeInfo({
                 </Flex>
             </Paper>
         </Box>
+    )
+}
+
+function SectionTitle({ title }: { title?: string }) {
+    if (!title) return null
+    return (
+        <Text size="xs" tt="uppercase" fw={700} c="dimmed" mb={6} lts={0.5}>
+            {title}
+        </Text>
     )
 }
