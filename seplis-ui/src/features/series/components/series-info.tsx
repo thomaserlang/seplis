@@ -4,7 +4,7 @@ import {
     EpisodeToWatchCard,
 } from '@/features/series-episode'
 import { langCodeToLang } from '@/utils/language.utils'
-import { Flex } from '@mantine/core'
+import { Box, Flex } from '@mantine/core'
 import { Series } from '../types/series.types'
 import { SeriesFavoriteButton } from './series-favorite-button'
 import { SeriesWatchlistButton } from './series-watchlist-button'
@@ -79,8 +79,18 @@ export function SeriesInfo({ series }: Props) {
                         <SeriesFavoriteButton seriesId={series.id} />
                     </Flex>
                     <Flex gap="1rem" wrap="wrap">
-                        <EpisodeToWatchCard seriesId={series.id} />
-                        <EpisodeLastWatchedCard seriesId={series.id} />
+                        <Box
+                            w={{ base: '100%', sm: 'auto' }}
+                            miw={{ base: '100%', xs: 300 }}
+                        >
+                            <EpisodeToWatchCard seriesId={series.id} />
+                        </Box>
+                        <Box
+                            w={{ base: '100%', sm: 'auto' }}
+                            miw={{ base: '100%', xs: 300 }}
+                        >
+                            <EpisodeLastWatchedCard seriesId={series.id} />
+                        </Box>
                     </Flex>
                 </Flex>
             )}

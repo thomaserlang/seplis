@@ -23,7 +23,7 @@ export function EpisodeCard({
 }: Props) {
     if (loading) {
         return (
-            <Box>
+            <Box w="100%">
                 <SectionTitle title={title} />
                 <Paper withBorder p="sm" miw={220}>
                     <Flex direction="column" gap="xs">
@@ -42,7 +42,7 @@ export function EpisodeCard({
 
     if (!episode) {
         return (
-            <Box>
+            <Box w="100%">
                 <SectionTitle title={title} />
                 <Paper withBorder p="sm">
                     <Flex align="center" gap="sm" c="dimmed">
@@ -62,7 +62,7 @@ export function EpisodeCard({
             : `Ep ${episode.number}`
 
     return (
-        <Box>
+        <Box w="100%">
             <SectionTitle title={title} />
             <Paper
                 withBorder
