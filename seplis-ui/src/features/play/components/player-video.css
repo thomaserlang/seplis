@@ -968,15 +968,15 @@
 .media-default-skin {
   --media-caption-track-duration: var(--media-controls-transition-duration);
   --media-caption-track-delay: 25ms;
-  --media-caption-track-y: calc(var(--media-icon-size) * -0.125);
+  --media-caption-track-y: -2rem;
 
   &:has(.media-controls[data-visible]) {
-    --media-caption-track-y: calc(var(--media-icon-size) * -1.375);
+    --media-caption-track-y: calc(var(--media-icon-size) * -2);
   }
 
   @container media-root (width > 42rem) {
     &:has(.media-controls[data-visible]) > * {
-      --media-caption-track-y: calc(var(--media-icon-size) * -0.875);
+      --media-caption-track-y: calc(var(--media-icon-size) * -2);
     }
   }
 }
