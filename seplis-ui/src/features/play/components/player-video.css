@@ -879,15 +879,15 @@
 /* Sub-menu header (entire header is the back button) */
 .media-default-skin .media-settings__sub-header {
   all: unset;
+  box-sizing: border-box;
   cursor: pointer;
   display: flex;
+  width: 100%;
   align-items: center;
   gap: calc(var(--media-icon-size) * 0.15);
   padding: calc(var(--media-icon-size) * 0.15) calc(var(--media-icon-size) * 0.25);
   font-size: calc(var(--media-icon-size) * 0.3);
-  border-radius: calc(var(--media-icon-size) * 0.1);
-  margin: 0 calc(var(--media-icon-size) * 0.1);
-  margin-bottom: calc(var(--media-icon-size) * 0.05);
+  border-radius: calc(var(--media-icon-size) * 0.15);
 
   &:hover {
     background-color: color-mix(in srgb, currentColor 10%, transparent);

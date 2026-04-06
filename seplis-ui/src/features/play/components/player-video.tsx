@@ -620,6 +620,22 @@ function SettingsPopover({
         >
             <Popover.Trigger render={gearButton} />
             <Popover.Popup className="media-surface media-popover media-popover--settings">
+                {panel !== 'main' && (
+                    <SubMenuHeader
+                        title={
+                            panel === 'source'
+                                ? 'Source'
+                                : panel === 'bitrate'
+                                  ? 'Bitrate'
+                                  : panel === 'audio'
+                                    ? 'Audio'
+                                    : panel === 'subtitles'
+                                      ? 'Subtitles'
+                                      : 'Subtitle Sync'
+                        }
+                        onBack={back}
+                    />
+                )}
                 <div className="media-settings">
                     {panel === 'main' && (
                         <>
@@ -659,77 +675,64 @@ function SettingsPopover({
                         </>
                     )}
 
-                    {panel === 'source' && (
-                        <>
-                            <SubMenuHeader title="Source" onBack={back} />
-                            {playRequestsSources.map((server) =>
-                                server.sources.map((src) => (
-                                    <OptionItem
-                                        key={`${server.request.play_id}-${src.index}`}
-                                        active={
-                                            currentRequest.play_id ===
-                                                server.request.play_id &&
-                                            currentSource.index === src.index
-                                        }
-                                        onClick={() => {
-                                            onSourceChange({
-                                                request: server.request,
-                                                source: src,
-                                            })
-                                            back()
-                                        }}
-                                    >
-                                        {playSourceStr(src)}
-                                    </OptionItem>
-                                )),
-                            )}
-                        </>
-                    )}
-
-                    {panel === 'bitrate' && (
-                        <>
-                            <SubMenuHeader title="Bitrate" onBack={back} />
-                            {availableBitrates.map((bitrate) => (
+                    {panel === 'source' &&
+                        playRequestsSources.map((server) =>
+                            server.sources.map((src) => (
                                 <OptionItem
-                                    key={bitrate}
-                                    active={maxBitrate === bitrate}
+                                    key={`${server.request.play_id}-${src.index}`}
+                                    active={
+                                        currentRequest.play_id ===
+                                            server.request.play_id &&
+                                        currentSource.index === src.index
+                                    }
                                     onClick={() => {
-                                        onBitrateChange(bitrate)
+                                        onSourceChange({
+                                            request: server.request,
+                                            source: src,
+                                        })
                                         back()
                                     }}
                                 >
-                                    {bitrate === MAX_BITRATE
-                                        ? `Max (${bitratePretty(currentSource.bit_rate)})`
-                                        : playSourceBitrateStr(
-                                              bitrate,
-                                              currentSource,
-                                          )}
+                                    {playSourceStr(src)}
                                 </OptionItem>
-                            ))}
-                        </>
-                    )}
+                            )),
+                        )}
 
-                    {panel === 'audio' && (
-                        <>
-                            <SubMenuHeader title="Audio" onBack={back} />
-                            {currentSource.audio.map((track) => (
-                                <OptionItem
-                                    key={track.index}
-                                    active={audioLang === track.language}
-                                    onClick={() => {
-                                        onAudioLangChange(track.language)
-                                        back()
-                                    }}
-                                >
-                                    {track.title || track.language}
-                                </OptionItem>
-                            ))}
-                        </>
-                    )}
+                    {panel === 'bitrate' &&
+                        availableBitrates.map((bitrate) => (
+                            <OptionItem
+                                key={bitrate}
+                                active={maxBitrate === bitrate}
+                                onClick={() => {
+                                    onBitrateChange(bitrate)
+                                    back()
+                                }}
+                            >
+                                {bitrate === MAX_BITRATE
+                                    ? `Max (${bitratePretty(currentSource.bit_rate)})`
+                                    : playSourceBitrateStr(
+                                          bitrate,
+                                          currentSource,
+                                      )}
+                            </OptionItem>
+                        ))}
+
+                    {panel === 'audio' &&
+                        currentSource.audio.map((track) => (
+                            <OptionItem
+                                key={track.index}
+                                active={audioLang === track.language}
+                                onClick={() => {
+                                    onAudioLangChange(track.language)
+                                    back()
+                                }}
+                            >
+                                {track.title || track.language}
+                            </OptionItem>
+                        ))}
 
                     {panel === 'subtitles' && (
                         <>
-                            <SubMenuHeader title="Subtitles" onBack={back} />
                             <OptionItem
                                 active={!activeSubtitleKey}
                                 onClick={() => setSubtitle(undefined)}
@@ -754,10 +757,6 @@ function SettingsPopover({
 
                     {panel === 'subtitle-sync' && (
                         <>
-                            <SubMenuHeader
-                                title="Subtitle Sync"
-                                onBack={back}
-                            />
                             <div className="media-settings__sync">
                                 <button
                                     type="button"
