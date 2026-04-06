@@ -47,10 +47,6 @@ import {
 import { PlayServerMedia } from '../types/play-source.types'
 import './player-video.css'
 
-// ================================================================
-// Player
-// ================================================================
-
 const SEEK_TIME = 10
 
 export const Player = createPlayer({ features: videoFeatures })
