@@ -207,7 +207,9 @@ export function PlayerVideo({
                                         type="pointer"
                                         className="media-time media-preview__time"
                                     />
-                                    <Loader />
+                                    <div className="media-preview__spinner media-icon">
+                                        <Loader />
+                                    </div>
                                 </div>
                             </TimeSlider.Root>
                             <Time.Value

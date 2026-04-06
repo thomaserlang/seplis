@@ -295,6 +295,7 @@
     from var(--media-controls-current-shadow-color) l c h / calc(alpha * 0.4)
   );
   text-shadow: 0 1px 0 var(--media-controls-current-shadow-color);
+  gap: calc(var(--media-icon-size) * 0.2);
 }
 
 /* ==========================================================================
@@ -312,7 +313,7 @@
 
 .media-default-skin .media-time {
   font-variant-numeric: tabular-nums;
-  font-size: calc(var(--media-icon-size) * 0.);
+  font-size: calc(var(--media-icon-size) * 0.3);
 }
 
 /* ==========================================================================
@@ -1183,13 +1184,13 @@
       var(--media-preview-max-width) / 2 + var(--media-preview-padding) -
         var(--media-preview-inset)
     ),
-    var(--media-slider-pointer),
+    calc(var(--media-slider-pointer) - calc(var(--media-icon-size) * 0.4)),
     calc(
       100% - var(--media-preview-max-width) / 2 - var(--media-preview-padding) +
         var(--media-preview-inset)
     )
   );
-  bottom: calc(100% + var(--media-icon-size) * 0.3);
+  bottom: 75%;
   translate: -50%;
   opacity: 0;
   scale: 0.8;
@@ -1210,7 +1211,7 @@
 }
 .media-default-skin--video
   .media-slider[data-pointing]
-  .media-slider__preview:has([role="img"]:not([data-hidden])) {
+  .media-slider__preview {
   opacity: 1;
   scale: 1;
   filter: blur(0);
