@@ -53,6 +53,14 @@ export const router = createBrowserRouter([
         lazy: () => import('./features/user/signup.page'),
     },
     {
+        path: '/series/:seriesId/episodes/:episodeNumber/play',
+        lazy: () => import('./features/series-episode/episode-play.page'),
+    },
+    {
+        path: '/movies/:movieId/play',
+        lazy: () => import('./features/movie/movie-play.page'),
+    },
+    {
         path: '/',
         element: (
             <MainShell>

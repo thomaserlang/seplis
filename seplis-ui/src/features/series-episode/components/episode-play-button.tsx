@@ -1,6 +1,7 @@
 import { PlayButton } from '@/features/play'
 import { useActiveUser } from '@/features/user'
 import { ButtonSize } from '@mantine/core'
+import { useNavigate } from 'react-router-dom'
 import { useGetEpisodePlayRequests } from '../api/episode-play-requests.api'
 
 interface Props {
@@ -17,6 +18,7 @@ export function EpisodePlayButton({
     size,
 }: Props) {
     const [user] = useActiveUser()
+    const navigate = useNavigate()
     const { data, isLoading, refetch } = useGetEpisodePlayRequests({
         seriesId,
         episodeNumber,
@@ -34,6 +36,9 @@ export function EpisodePlayButton({
             loading={isLoading}
             size={size}
             disabled={(!data || data.length === 0) && !canPlay}
+            onClick={() => {
+                navigate(`/series/${seriesId}/episodes/${episodeNumber}/play`)
+            }}
         />
     )
 }

@@ -40,7 +40,7 @@ export interface PlayRequestSources {
     sources: PlaySource[]
 }
 
-export interface PlayServerRequestMedia {
+export interface PlayServerMedia {
     direct_play_url: string
     can_direct_play: boolean
     hls_url: string

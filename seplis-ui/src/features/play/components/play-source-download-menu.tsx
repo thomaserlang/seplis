@@ -8,7 +8,7 @@ import { Menu } from '@mantine/core'
 import { DownloadIcon } from '@phosphor-icons/react'
 import prettyBytes from 'pretty-bytes'
 import { Fragment, useState } from 'react'
-import { useGetPlayRequestSources } from '../api/play-server-sources.api'
+import { useGetPlayRequestSources } from '../api/play-request-sources.api'
 import { playSourceStr } from '../utils/play-source.utils'
 
 interface Props {
