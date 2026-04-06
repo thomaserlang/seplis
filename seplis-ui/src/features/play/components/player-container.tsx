@@ -2,6 +2,7 @@ import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
 import { PlayRequest } from '../types/play-source.types'
+import { Player } from './player-video'
 import { PlayerView } from './player-view'
 
 interface Props {
@@ -29,11 +30,13 @@ export function PlayerContainer({
         )
 
     return (
-        <PlayerView
-            playRequestsSources={data}
-            title={title}
-            subtitle={subtitle}
-            onClose={onClose}
-        />
+        <Player.Provider>
+            <PlayerView
+                playRequestsSources={data}
+                title={title}
+                subtitle={subtitle}
+                onClose={onClose}
+            />
+        </Player.Provider>
     )
 }
