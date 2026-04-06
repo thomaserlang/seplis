@@ -1162,11 +1162,11 @@
 }
 
 .media-default-skin--video .media-slider__fill {
-  background-color: #e50914;
+  background-color: oklch(43.779% 0.16841 258.85); 
 }
 
 .media-default-skin--video .media-slider__thumb {
-  background-color: #e50914;
+  background-color: oklch(43.779% 0.16841 258.85);
 }
 
 .media-default-skin--video .media-slider__preview {
