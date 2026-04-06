@@ -430,12 +430,24 @@ function VideoClickHandler(): ReactNode {
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (
-                e.code === 'Space' &&
-                !(e.target instanceof HTMLInputElement) &&
-                !(e.target instanceof HTMLTextAreaElement)
-            ) {
+                e.target instanceof HTMLInputElement ||
+                e.target instanceof HTMLTextAreaElement
+            )
+                return
+
+            if (e.code === 'Space') {
                 e.preventDefault()
                 togglePlayback()
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault()
+                if (media)
+                    media.currentTime = Math.max(
+                        0,
+                        media.currentTime - SEEK_TIME,
+                    )
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault()
+                if (media) media.currentTime += SEEK_TIME
             }
         }
         document.addEventListener('keydown', handleKeyDown)
