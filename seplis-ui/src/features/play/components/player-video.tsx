@@ -33,10 +33,17 @@ import {
     Tooltip,
     VolumeSlider,
     createPlayer,
+    useMedia,
     usePlayer,
 } from '@videojs/react'
 import { Video, videoFeatures } from '@videojs/react/video'
-import { forwardRef, type ComponentProps, type ReactNode } from 'react'
+import {
+    forwardRef,
+    useCallback,
+    useEffect,
+    type ComponentProps,
+    type ReactNode,
+} from 'react'
 import { PlayServerMedia } from '../types/play-source.types'
 import './player-video.css'
 
@@ -304,6 +311,7 @@ export function PlayerVideo({
                     </Tooltip.Provider>
                 </Controls.Root>
 
+                <VideoClickHandler />
                 <div className="media-overlay" />
             </Container>
         </Player.Provider>
@@ -313,6 +321,47 @@ export function PlayerVideo({
 // ================================================================
 // Components
 // ================================================================
+
+function VideoClickHandler(): ReactNode {
+    const media = useMedia()
+
+    const togglePlayback = useCallback(() => {
+        if (!media) return
+        if (media.paused) {
+            media.play()
+        } else {
+            media.pause()
+        }
+    }, [media])
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (
+                e.code === 'Space' &&
+                !(e.target instanceof HTMLInputElement) &&
+                !(e.target instanceof HTMLTextAreaElement)
+            ) {
+                e.preventDefault()
+                togglePlayback()
+            }
+        }
+        document.addEventListener('keydown', handleKeyDown)
+        return () => document.removeEventListener('keydown', handleKeyDown)
+    }, [togglePlayback])
+
+    return (
+        <div
+            className="media-click-handler"
+            style={{
+                position: 'absolute',
+                inset: 0,
+                cursor: 'pointer',
+                zIndex: 1,
+            }}
+            onClick={togglePlayback}
+        />
+    )
+}
 
 const Button = forwardRef<HTMLButtonElement, ComponentProps<'button'>>(
     function Button({ className, ...props }, ref) {
