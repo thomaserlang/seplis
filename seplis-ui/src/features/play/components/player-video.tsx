@@ -1,5 +1,4 @@
 import { PageLoader } from '@/components/page-loader'
-import { Loader } from '@mantine/core'
 import {
     ArrowClockwiseIcon,
     ArrowCounterClockwiseIcon,
@@ -31,13 +30,11 @@ import {
     PlaybackRateButton,
     Popover,
     SeekButton,
-    Slider,
     Time,
     TimeSlider,
     Tooltip,
     VolumeSlider,
     createPlayer,
-    selectTextTrack,
     useMedia,
     usePlayer,
     usePopoverContext,
@@ -101,7 +98,24 @@ export function PlayerVideo({
 }: VideoPlayerProps): ReactNode {
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
-            <Video src={media.hls_url} autoPlay />
+            <Video src={media.hls_url} autoPlay crossOrigin="anonymous">
+                {currentPlayRequestSource.source.subtitles.map((sub, i) => (
+                    <track
+                        key={`${sub.language}:${sub.index}`}
+                        kind="subtitles"
+                        label={sub.title || sub.language}
+                        srcLang={sub.language}
+                        src={
+                            `${currentPlayRequestSource.request.play_url}/subtitle-file` +
+                            `?play_id=${currentPlayRequestSource.request.play_id}` +
+                            `&source_index=${currentPlayRequestSource.source.index}` +
+                            `&offset=0` +
+                            `&lang=${sub.language}:${sub.index}`
+                        }
+                        default={i === 0}
+                    />
+                ))}
+            </Video>
 
             <Controls.Root className="media-header">
                 {onClose && (
@@ -234,14 +248,10 @@ export function PlayerVideo({
                             <TimeSlider.Thumb className="react-time-slider-parts__thumb" />
 
                             <div className="media-surface media-preview media-slider__preview">
-                                <Slider.Thumbnail className="media-preview__thumbnail" />
                                 <TimeSlider.Value
                                     type="pointer"
                                     className="media-time media-preview__time"
                                 />
-                                <div className="media-preview__spinner media-icon">
-                                    <Loader />
-                                </div>
                             </div>
                         </TimeSlider.Root>
                         <Time.Value type="duration" className="media-time" />
@@ -471,7 +481,6 @@ function SettingsPopover({
 }: SettingsPopoverProps): ReactNode {
     const [panel, setPanel] = useState<SettingsPanel>('main')
     const media = useMedia()
-    const tracks = usePlayer(selectTextTrack)
     const { source: currentSource, request: currentRequest } =
         currentPlayRequestSource
 
@@ -502,10 +511,7 @@ function SettingsPopover({
         return sub?.title || lang
     })()
 
-    console.log(tracks)
     const setSubtitle = (key: string | undefined) => {
-        console.log(tracks)
-        tracks?.toggleSubtitles(true)
         if (!media) return
         // Disable all subtitle/caption tracks first
 
