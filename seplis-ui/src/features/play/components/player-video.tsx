@@ -10,9 +10,11 @@ import {
     CornersInIcon,
     CornersOutIcon,
     GearIcon,
+    MinusIcon,
     PauseIcon,
     PictureInPictureIcon,
     PlayIcon,
+    PlusIcon,
     SpeakerHighIcon,
     SpeakerLowIcon,
     SpeakerXIcon,
@@ -99,12 +101,21 @@ export function PlayerVideo({
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
     >(undefined)
+    const [subtitleOffset, setSubtitleOffset] = useState(0)
 
     const activeSubtitle = activeSubtitleKey
         ? currentPlayRequestSource.source.subtitles.find((s) => {
               const [lang, idxStr] = activeSubtitleKey.split(':')
               return s.language === lang && s.index === parseInt(idxStr)
           })
+        : undefined
+
+    const subtitleUrl = activeSubtitleKey
+        ? `${currentPlayRequestSource.request.play_url}/subtitle-file` +
+          `?play_id=${currentPlayRequestSource.request.play_id}` +
+          `&source_index=${currentPlayRequestSource.source.index}` +
+          `&offset=0` +
+          `&lang=${activeSubtitleKey}`
         : undefined
 
     return (
@@ -118,23 +129,21 @@ export function PlayerVideo({
                 autoPlay
                 crossOrigin="anonymous"
             >
-                {activeSubtitle && (
+                {activeSubtitle && subtitleUrl && (
                     <track
                         key={activeSubtitleKey}
                         kind="subtitles"
                         label={activeSubtitle.title || activeSubtitle.language}
                         srcLang={activeSubtitle.language}
-                        src={
-                            `${currentPlayRequestSource.request.play_url}/subtitle-file` +
-                            `?play_id=${currentPlayRequestSource.request.play_id}` +
-                            `&source_index=${currentPlayRequestSource.source.index}` +
-                            `&offset=0` +
-                            `&lang=${activeSubtitleKey}`
-                        }
+                        src={subtitleUrl}
                         default
                     />
                 )}
             </Video>
+
+            {activeSubtitleKey && (
+                <SubtitleOffsetApplier offset={subtitleOffset} />
+            )}
 
             <Controls.Root className="media-header">
                 {onClose && (
@@ -323,10 +332,12 @@ export function PlayerVideo({
                             maxBitrate={maxBitrate}
                             audioLang={audioLang}
                             activeSubtitleKey={activeSubtitleKey}
+                            subtitleOffset={subtitleOffset}
                             onSourceChange={onSourceChange}
                             onBitrateChange={onBitrateChange}
                             onAudioLangChange={onAudioLangChange}
                             onSubtitleChange={setActiveSubtitleKey}
+                            onSubtitleOffsetChange={setSubtitleOffset}
                         />
 
                         <Tooltip.Root side="top">
@@ -378,6 +389,30 @@ export function PlayerVideo({
             <div className="media-overlay" />
         </Container>
     )
+}
+
+function SubtitleOffsetApplier({ offset }: { offset: number }): ReactNode {
+    const media = useMedia()
+
+    useEffect(() => {
+        if (!media) return
+        const tracks = media.textTracks
+        for (let i = 0; i < tracks.length; i++) {
+            const track = tracks[i]
+            if (track.kind !== 'subtitles' || !track.cues) continue
+            for (let j = 0; j < track.cues.length; j++) {
+                const cue = track.cues[j]
+                if (!('_originalStart' in cue)) {
+                    ;(cue as any)._originalStart = cue.startTime
+                    ;(cue as any)._originalEnd = cue.endTime
+                }
+                cue.startTime = (cue as any)._originalStart + offset
+                cue.endTime = (cue as any)._originalEnd + offset
+            }
+        }
+    }, [media, offset])
+
+    return null
 }
 
 function VideoClickHandler(): ReactNode {
@@ -479,7 +514,13 @@ function VolumePopover(): ReactNode {
 
 // ─── Settings ────────────────────────────────────────────────────────────────
 
-type SettingsPanel = 'main' | 'source' | 'bitrate' | 'audio' | 'subtitles'
+type SettingsPanel =
+    | 'main'
+    | 'source'
+    | 'bitrate'
+    | 'audio'
+    | 'subtitles'
+    | 'subtitle-sync'
 
 interface SettingsPopoverProps {
     currentPlayRequestSource: PlayRequestSource
@@ -487,10 +528,12 @@ interface SettingsPopoverProps {
     maxBitrate: number
     audioLang: string | undefined
     activeSubtitleKey: string | undefined
+    subtitleOffset: number
     onSourceChange: (source: PlayRequestSource) => void
     onBitrateChange: (bitrate: number) => void
     onAudioLangChange: (lang: string | undefined) => void
     onSubtitleChange: (key: string | undefined) => void
+    onSubtitleOffsetChange: (offset: number) => void
 }
 
 function SettingsPopover({
@@ -499,12 +542,16 @@ function SettingsPopover({
     maxBitrate,
     audioLang,
     activeSubtitleKey,
+    subtitleOffset,
     onSourceChange,
     onBitrateChange,
     onAudioLangChange,
     onSubtitleChange,
+    onSubtitleOffsetChange,
 }: SettingsPopoverProps): ReactNode {
     const [panel, setPanel] = useState<SettingsPanel>('main')
+    const [open, setOpen] = useState(false)
+    const controlsVisible = usePlayer((s) => s.controlsVisible)
     const { source: currentSource, request: currentRequest } =
         currentPlayRequestSource
 
@@ -544,8 +591,23 @@ function SettingsPopover({
 
     const back = () => setPanel('main')
 
+    useEffect(() => {
+        if (!controlsVisible && open) {
+            setOpen(false)
+        }
+    }, [controlsVisible, open])
+
     return (
-        <Popover.Root side="top">
+        <Popover.Root
+            side="top"
+            open={open}
+            onOpenChange={(nextOpen) => {
+                if (nextOpen) {
+                    setPanel('main')
+                }
+                setOpen(nextOpen)
+            }}
+        >
             <Popover.Trigger render={gearButton} />
             <Popover.Popup className="media-surface media-popover media-popover--settings">
                 <div className="media-settings">
@@ -575,6 +637,15 @@ function SettingsPopover({
                                     onClick={() => setPanel('subtitles')}
                                 />
                             )}
+                            <MainItem
+                                label="Subtitle Sync"
+                                value={
+                                    subtitleOffset === 0
+                                        ? '0s'
+                                        : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`
+                                }
+                                onClick={() => setPanel('subtitle-sync')}
+                            />
                         </>
                     )}
 
@@ -668,6 +739,65 @@ function SettingsPopover({
                                     </OptionItem>
                                 )
                             })}
+                        </>
+                    )}
+
+                    {panel === 'subtitle-sync' && (
+                        <>
+                            <SubMenuHeader
+                                title="Subtitle Sync"
+                                onBack={back}
+                            />
+                            <div className="media-settings__sync">
+                                <button
+                                    type="button"
+                                    className="media-settings__sync-btn"
+                                    onClick={() =>
+                                        onSubtitleOffsetChange(
+                                            Math.round(
+                                                (subtitleOffset - 0.5) * 10,
+                                            ) / 10,
+                                        )
+                                    }
+                                >
+                                    <MinusIcon weight="bold" />
+                                </button>
+                                <span className="media-settings__sync-value">
+                                    {subtitleOffset === 0
+                                        ? '0s'
+                                        : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`}
+                                </span>
+                                <button
+                                    type="button"
+                                    className="media-settings__sync-btn"
+                                    onClick={() =>
+                                        onSubtitleOffsetChange(
+                                            Math.round(
+                                                (subtitleOffset + 0.5) * 10,
+                                            ) / 10,
+                                        )
+                                    }
+                                >
+                                    <PlusIcon weight="bold" />
+                                </button>
+                            </div>
+                            {subtitleOffset !== 0 ? (
+                                <button
+                                    type="button"
+                                    className="media-settings__sync-reset"
+                                    onClick={() => onSubtitleOffsetChange(0)}
+                                >
+                                    Reset
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    className="media-settings__sync-reset"
+                                    disabled
+                                >
+                                    Reset
+                                </button>
+                            )}
                         </>
                     )}
                 </div>
