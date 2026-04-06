@@ -10,9 +10,17 @@ import { PlayerVideo } from './player-video'
 
 interface Props {
     playRequestsSources: PlayRequestSources[]
+    title?: string
+    subtitle?: string
+    onClose?: () => void
 }
 
-export function PlayerView({ playRequestsSources }: Props) {
+export function PlayerView({
+    playRequestsSources,
+    title,
+    subtitle,
+    onClose,
+}: Props) {
     const [source] = useState(() => pickStartSource(playRequestsSources))
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
@@ -22,5 +30,12 @@ export function PlayerView({ playRequestsSources }: Props) {
     if (error) return <ErrorBox errorObj={error} />
     if (!data) return <div>No media found</div>
 
-    return <PlayerVideo media={data} />
+    return (
+        <PlayerVideo
+            media={data}
+            title={title}
+            subtitle={subtitle}
+            onClose={onClose}
+        />
+    )
 }

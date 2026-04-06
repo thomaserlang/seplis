@@ -6,9 +6,17 @@ import { PlayerView } from './player-view'
 
 interface Props {
     playRequests: PlayRequest[]
+    title?: string
+    subtitle?: string
+    onClose?: () => void
 }
 
-export function PlayerContainer({ playRequests }: Props) {
+export function PlayerContainer({
+    playRequests,
+    title,
+    subtitle,
+    onClose,
+}: Props) {
     const { data, isLoading, error } = useGetPlayRequestSources({
         playRequests,
     })
@@ -17,5 +25,12 @@ export function PlayerContainer({ playRequests }: Props) {
     if (error) return <ErrorBox errorObj={error} />
     if (!data || data.length === 0)
         return <ErrorBox message="No playable sources found" />
-    return <PlayerView playRequestsSources={data} />
+    return (
+        <PlayerView
+            playRequestsSources={data}
+            title={title}
+            subtitle={subtitle}
+            onClose={onClose}
+        />
+    )
 }
