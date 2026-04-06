@@ -12,6 +12,8 @@ interface Props {
     playRequestsSources: PlayRequestSources[]
     title?: string
     subtitle?: string
+    loading?: boolean
+    error?: Error | null
     onClose?: () => void
 }
 
@@ -28,7 +30,7 @@ export function PlayerView({
 
     if (isLoading) return <PageLoader />
     if (error) return <ErrorBox errorObj={error} />
-    if (!data) return <div>No media found</div>
+    if (!data) return <ErrorBox message="No playable source found" />
 
     return (
         <PlayerVideo

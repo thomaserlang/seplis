@@ -7,7 +7,7 @@ interface EpisodeParams {
 
 interface EpisodeProps extends ApiHelperProps<EpisodeParams> {
     seriesId: number
-    number: number
+    episodeNumber: number
 }
 
 export const {
@@ -15,9 +15,10 @@ export const {
     useGet: useGetEpisode,
     queryKey: episodeQueryKey,
 } = useApiHelper<Episode, EpisodeProps>({
-    url: (props) => `2/series/${props.seriesId}/episodes/${props.number}`,
+    url: (props) =>
+        `2/series/${props.seriesId}/episodes/${props.episodeNumber}`,
     queryKey: (props) =>
-        ['episode', props.seriesId, props.number, props.params].filter(
+        ['episode', props.seriesId, props.episodeNumber, props.params].filter(
             (f) => f !== undefined,
         ),
 })

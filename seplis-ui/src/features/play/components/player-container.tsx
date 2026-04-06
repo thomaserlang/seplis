@@ -24,7 +24,10 @@ export function PlayerContainer({
     if (isLoading) return <PageLoader />
     if (error) return <ErrorBox errorObj={error} />
     if (!data || data.length === 0)
-        return <ErrorBox message="No playable sources found" />
+        return (
+            <ErrorBox message="No play server available, please try again later." />
+        )
+
     return (
         <PlayerView
             playRequestsSources={data}
