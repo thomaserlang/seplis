@@ -45,6 +45,7 @@ import {
     type ReactNode,
 } from 'react'
 import { PlayServerMedia } from '../types/play-source.types'
+
 import './player-video.css'
 
 const SEEK_TIME = 10
