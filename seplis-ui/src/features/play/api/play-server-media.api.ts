@@ -46,7 +46,9 @@ export const {
                         max_video_bitrate: maxBitrate,
                         supported_video_codecs: String(videoCodecs),
                         transcode_video_codec: videoCodecs[0],
-                        supported_audio_codecs: String(getSupportedAudioCodecs()),
+                        supported_audio_codecs: String(
+                            getSupportedAudioCodecs(),
+                        ),
                         transcode_audio_codec: 'aac',
                         format: 'hls',
                         max_audio_channels: maxAudioChannels,
@@ -54,7 +56,9 @@ export const {
                             getSupportedVideoContainers(),
                         ),
                         force_transcode: forceTranscode ? 'true' : 'false',
-                    }).filter(([, value]) => value !== undefined && value !== null),
+                    }).filter(
+                        ([, value]) => value !== undefined && value !== null,
+                    ),
                 ),
             },
         )
