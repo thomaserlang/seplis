@@ -44,8 +44,8 @@ import {
 import { Video, videoFeatures } from '@videojs/react/video'
 import {
     forwardRef,
-    useCallback,
     useEffect,
+    useEffectEvent,
     useState,
     type ComponentProps,
     type ReactNode,
@@ -418,41 +418,39 @@ function SubtitleOffsetApplier({ offset }: { offset: number }): ReactNode {
 function VideoClickHandler(): ReactNode {
     const media = useMedia()
 
-    const togglePlayback = useCallback(() => {
+    const togglePlayback = useEffectEvent(() => {
         if (!media) return
         if (media.paused) {
             media.play()
         } else {
             media.pause()
         }
-    }, [media])
+    })
+
+    const handleKeyDown = useEffectEvent((e: KeyboardEvent) => {
+        if (
+            e.target instanceof HTMLInputElement ||
+            e.target instanceof HTMLTextAreaElement
+        )
+            return
+
+        if (e.code === 'Space') {
+            e.preventDefault()
+            togglePlayback()
+        } else if (e.code === 'ArrowLeft') {
+            e.preventDefault()
+            if (media)
+                media.currentTime = Math.max(0, media.currentTime - SEEK_TIME)
+        } else if (e.code === 'ArrowRight') {
+            e.preventDefault()
+            if (media) media.currentTime += SEEK_TIME
+        }
+    })
 
     useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (
-                e.target instanceof HTMLInputElement ||
-                e.target instanceof HTMLTextAreaElement
-            )
-                return
-
-            if (e.code === 'Space') {
-                e.preventDefault()
-                togglePlayback()
-            } else if (e.code === 'ArrowLeft') {
-                e.preventDefault()
-                if (media)
-                    media.currentTime = Math.max(
-                        0,
-                        media.currentTime - SEEK_TIME,
-                    )
-            } else if (e.code === 'ArrowRight') {
-                e.preventDefault()
-                if (media) media.currentTime += SEEK_TIME
-            }
-        }
         document.addEventListener('keydown', handleKeyDown)
         return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [togglePlayback])
+    }, [])
 
     return (
         <div
