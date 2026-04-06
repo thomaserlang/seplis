@@ -96,25 +96,44 @@ export function PlayerVideo({
     onBitrateChange,
     onAudioLangChange,
 }: VideoPlayerProps): ReactNode {
+    const [activeSubtitleKey, setActiveSubtitleKey] = useState<
+        string | undefined
+    >(undefined)
+
+    const activeSubtitle = activeSubtitleKey
+        ? currentPlayRequestSource.source.subtitles.find((s) => {
+              const [lang, idxStr] = activeSubtitleKey.split(':')
+              return s.language === lang && s.index === parseInt(idxStr)
+          })
+        : undefined
+
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
-            <Video src={media.hls_url} autoPlay crossOrigin="anonymous">
-                {currentPlayRequestSource.source.subtitles.map((sub, i) => (
+            <Video
+                src={
+                    media.can_direct_play
+                        ? media.direct_play_url
+                        : media.hls_url
+                }
+                autoPlay
+                crossOrigin="anonymous"
+            >
+                {activeSubtitle && (
                     <track
-                        key={`${sub.language}:${sub.index}`}
+                        key={activeSubtitleKey}
                         kind="subtitles"
-                        label={sub.title || sub.language}
-                        srcLang={sub.language}
+                        label={activeSubtitle.title || activeSubtitle.language}
+                        srcLang={activeSubtitle.language}
                         src={
                             `${currentPlayRequestSource.request.play_url}/subtitle-file` +
                             `?play_id=${currentPlayRequestSource.request.play_id}` +
                             `&source_index=${currentPlayRequestSource.source.index}` +
                             `&offset=0` +
-                            `&lang=${sub.language}:${sub.index}`
+                            `&lang=${activeSubtitleKey}`
                         }
-                        default={i === 0}
+                        default
                     />
-                ))}
+                )}
             </Video>
 
             <Controls.Root className="media-header">
@@ -303,9 +322,11 @@ export function PlayerVideo({
                             playRequestsSources={playRequestsSources}
                             maxBitrate={maxBitrate}
                             audioLang={audioLang}
+                            activeSubtitleKey={activeSubtitleKey}
                             onSourceChange={onSourceChange}
                             onBitrateChange={onBitrateChange}
                             onAudioLangChange={onAudioLangChange}
+                            onSubtitleChange={setActiveSubtitleKey}
                         />
 
                         <Tooltip.Root side="top">
@@ -465,9 +486,11 @@ interface SettingsPopoverProps {
     playRequestsSources: PlayRequestSources[]
     maxBitrate: number
     audioLang: string | undefined
+    activeSubtitleKey: string | undefined
     onSourceChange: (source: PlayRequestSource) => void
     onBitrateChange: (bitrate: number) => void
     onAudioLangChange: (lang: string | undefined) => void
+    onSubtitleChange: (key: string | undefined) => void
 }
 
 function SettingsPopover({
@@ -475,18 +498,15 @@ function SettingsPopover({
     playRequestsSources,
     maxBitrate,
     audioLang,
+    activeSubtitleKey,
     onSourceChange,
     onBitrateChange,
     onAudioLangChange,
+    onSubtitleChange,
 }: SettingsPopoverProps): ReactNode {
     const [panel, setPanel] = useState<SettingsPanel>('main')
-    const media = useMedia()
     const { source: currentSource, request: currentRequest } =
         currentPlayRequestSource
-
-    const [activeSubtitleKey, setActiveSubtitleKey] = useState<
-        string | undefined
-    >(undefined)
 
     const availableBitrates = BITRATE_OPTIONS.filter(
         (b) => b === MAX_BITRATE || b < currentSource.bit_rate,
@@ -512,33 +532,7 @@ function SettingsPopover({
     })()
 
     const setSubtitle = (key: string | undefined) => {
-        if (!media) return
-        // Disable all subtitle/caption tracks first
-
-        for (const track of Array.from(media.textTracks ?? [])) {
-            if (track.kind === 'subtitles' || track.kind === 'captions') {
-                track.mode = 'disabled'
-            }
-        }
-        if (key) {
-            const [lang, idxStr] = key.split(':')
-            const srcIdx = parseInt(idxStr)
-            // Find which position this subtitle is among same-language tracks
-            const langGroup = currentSource.subtitles.filter(
-                (s) => s.language === lang,
-            )
-            const posInGroup = langGroup.findIndex((s) => s.index === srcIdx)
-            // Match to the nth text track with that language
-            const matchingTracks = Array.from(media.textTracks ?? []).filter(
-                (t) =>
-                    (t.kind === 'subtitles' || t.kind === 'captions') &&
-                    t.language === lang,
-            )
-            const target = matchingTracks[posInGroup] ?? matchingTracks[0]
-            console.log(target)
-            if (target) target.mode = 'showing'
-        }
-        setActiveSubtitleKey(key)
+        onSubtitleChange(key)
         back()
     }
 
