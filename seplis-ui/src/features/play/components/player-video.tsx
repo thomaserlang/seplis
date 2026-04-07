@@ -62,10 +62,7 @@ import {
     bitratePretty,
     playSourceBitrateStr,
 } from '../utils/play-bitrate.utils'
-import {
-    iso6392ToDisplayName,
-    playSourceStr,
-} from '../utils/play-source.utils'
+import { iso6392ToDisplayName, playSourceStr } from '../utils/play-source.utils'
 
 import './player-video.css'
 
@@ -659,7 +656,6 @@ function SettingsPopover({
             setOpen(false)
         }
     }, [controlsVisible, open])
-
     return (
         <Popover.Root
             side="top"
@@ -805,7 +801,10 @@ function SettingsPopover({
                                                 back()
                                             }}
                                         >
-                                            {trackLabel(track.title, track.language)}
+                                            {trackLabel(
+                                                track.title,
+                                                track.language,
+                                            )}
                                         </OptionItem>
                                     ))}
                                     {preferred.length > 0 &&
@@ -825,7 +824,10 @@ function SettingsPopover({
                                                 back()
                                             }}
                                         >
-                                            {trackLabel(track.title, track.language)}
+                                            {trackLabel(
+                                                track.title,
+                                                track.language,
+                                            )}
                                         </OptionItem>
                                     ))}
                                 </>
@@ -864,7 +866,10 @@ function SettingsPopover({
                                                 }
                                                 onClick={() => setSubtitle(key)}
                                             >
-                                                {trackLabel(track.title, track.language)}
+                                                {trackLabel(
+                                                    track.title,
+                                                    track.language,
+                                                )}
                                                 {track.forced && ' (Forced)'}
                                             </OptionItem>
                                         )
@@ -883,7 +888,10 @@ function SettingsPopover({
                                                 }
                                                 onClick={() => setSubtitle(key)}
                                             >
-                                                {trackLabel(track.title, track.language)}
+                                                {trackLabel(
+                                                    track.title,
+                                                    track.language,
+                                                )}
                                                 {track.forced && ' (Forced)'}
                                             </OptionItem>
                                         )
@@ -1012,10 +1020,7 @@ function SubMenuHeader({
     )
 }
 
-function trackLabel(
-    title: string | undefined,
-    language: string,
-): string {
+function trackLabel(title: string | undefined, language: string): string {
     const base = title || language
     const displayName = iso6392ToDisplayName(language)
     if (!displayName) return base

@@ -1,7 +1,7 @@
 import { getBrowserPreferredLangs } from '../utils/play-source.utils'
 
 export const PREFERRED_AUDIO_LANGS: string[] = [
-    'jpa',
+    'jpn',
     'eng',
     ...getBrowserPreferredLangs(),
 ]
