@@ -88,6 +88,10 @@ export function PlayerView({
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio,
         forceTranscode,
+        options: {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+        },
     })
     const media = useMedia()
 

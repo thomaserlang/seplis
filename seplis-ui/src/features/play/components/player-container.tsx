@@ -13,6 +13,10 @@ interface Props extends PlayerProps {
 export function PlayerContainer({ playRequests, ...props }: Props) {
     const { data, isLoading, error } = useGetPlayRequestSources({
         playRequests,
+        options: {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+        },
     })
 
     if (isLoading) return <PageLoader />

@@ -1067,6 +1067,7 @@
   font-size: 1.15em;
   font-weight: 500;
   line-height: 1.4;
+  padding: 1rem;
   color: oklch(0.98 0 0);
   background-color: transparent;
   text-shadow:

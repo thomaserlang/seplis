@@ -21,11 +21,28 @@ interface Props {
 }
 
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
-    const series = useGetSeries({ seriesId })
-    const episode = useGetEpisode({ seriesId, episodeNumber })
+    const series = useGetSeries({
+        seriesId,
+        options: {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+        },
+    })
+    const episode = useGetEpisode({
+        seriesId,
+        episodeNumber,
+        options: {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+        },
+    })
     const playRequests = useGetEpisodePlayRequests({
         seriesId,
         episodeNumber,
+        options: {
+            refetchOnWindowFocus: false,
+            staleTime: Infinity,
+        },
     })
     const episodeWatched = useGetEpisodeWatched({
         seriesId,
