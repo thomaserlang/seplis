@@ -149,8 +149,14 @@ export function PlayerView({
     }
 
     const handleBitrateChange = (bitrate: number) => {
-        localStorage.setItem('maxBitrate', String(bitrate))
-        setMaxBitrate(bitrate)
+        if (bitrate >= source.source.bit_rate) {
+            localStorage.removeItem('maxBitrate')
+            setMaxBitrate(MAX_BITRATE)
+        } else {
+            localStorage.setItem('maxBitrate', String(bitrate))
+            setMaxBitrate(bitrate)
+        }
+        capturePosition()
     }
 
     return (
