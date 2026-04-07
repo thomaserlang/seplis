@@ -33,11 +33,13 @@ export function PlayerView({
         getDefaultMaxBitrate(),
     )
     const [audioLang, setAudioLang] = useState<string | undefined>(undefined)
+    const [forceTranscode, setForceTranscode] = useState(false)
 
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio: audioLang,
+        forceTranscode,
     })
     const media = useMedia()
 
@@ -67,9 +69,11 @@ export function PlayerView({
             onClose={onClose}
             maxBitrate={maxBitrate}
             audioLang={audioLang}
+            forceTranscode={forceTranscode}
             onSourceChange={setSource}
             onBitrateChange={handleBitrateChange}
             onAudioLangChange={setAudioLang}
+            onForceTranscodeChange={setForceTranscode}
         />
     )
 }

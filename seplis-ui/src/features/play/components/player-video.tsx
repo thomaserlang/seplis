@@ -78,9 +78,11 @@ export interface VideoPlayerProps {
     playRequestsSources: PlayRequestSources[]
     maxBitrate: number
     audioLang: string | undefined
+    forceTranscode: boolean
     onSourceChange: (source: PlayRequestSource) => void
     onBitrateChange: (bitrate: number) => void
     onAudioLangChange: (lang: string | undefined) => void
+    onForceTranscodeChange: (value: boolean) => void
 }
 
 export function PlayerVideo({
@@ -92,9 +94,11 @@ export function PlayerVideo({
     playRequestsSources,
     maxBitrate,
     audioLang,
+    forceTranscode,
     onSourceChange,
     onBitrateChange,
     onAudioLangChange,
+    onForceTranscodeChange,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
@@ -308,11 +312,13 @@ export function PlayerVideo({
                             playRequestsSources={playRequestsSources}
                             maxBitrate={maxBitrate}
                             audioLang={audioLang}
+                            forceTranscode={forceTranscode}
                             activeSubtitleKey={activeSubtitleKey}
                             subtitleOffset={subtitleOffset}
                             onSourceChange={onSourceChange}
                             onBitrateChange={onBitrateChange}
                             onAudioLangChange={onAudioLangChange}
+                            onForceTranscodeChange={onForceTranscodeChange}
                             onSubtitleChange={setActiveSubtitleKey}
                             onSubtitleOffsetChange={setSubtitleOffset}
                         />
@@ -514,11 +520,13 @@ interface SettingsPopoverProps {
     playRequestsSources: PlayRequestSources[]
     maxBitrate: number
     audioLang: string | undefined
+    forceTranscode: boolean
     activeSubtitleKey: string | undefined
     subtitleOffset: number
     onSourceChange: (source: PlayRequestSource) => void
     onBitrateChange: (bitrate: number) => void
     onAudioLangChange: (lang: string | undefined) => void
+    onForceTranscodeChange: (value: boolean) => void
     onSubtitleChange: (key: string | undefined) => void
     onSubtitleOffsetChange: (offset: number) => void
 }
@@ -528,11 +536,13 @@ function SettingsPopover({
     playRequestsSources,
     maxBitrate,
     audioLang,
+    forceTranscode,
     activeSubtitleKey,
     subtitleOffset,
     onSourceChange,
     onBitrateChange,
     onAudioLangChange,
+    onForceTranscodeChange,
     onSubtitleChange,
     onSubtitleOffsetChange,
 }: SettingsPopoverProps): ReactNode {
@@ -648,6 +658,13 @@ function SettingsPopover({
                                         : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`
                                 }
                                 onClick={() => setPanel('subtitle-sync')}
+                            />
+                            <ToggleItem
+                                label="Force Transcode"
+                                value={forceTranscode}
+                                onToggle={() =>
+                                    onForceTranscodeChange(!forceTranscode)
+                                }
                             />
                         </>
                     )}
@@ -789,6 +806,29 @@ function SettingsPopover({
                 </div>
             </Popover.Popup>
         </Popover.Root>
+    )
+}
+
+function ToggleItem({
+    label,
+    value,
+    onToggle,
+}: {
+    label: string
+    value: boolean
+    onToggle: () => void
+}): ReactNode {
+    return (
+        <button
+            type="button"
+            className="media-settings__main-item"
+            onClick={onToggle}
+        >
+            <span className="media-settings__main-label">{label}</span>
+            <span className="media-settings__main-value">
+                {value ? 'On' : 'Off'}
+            </span>
+        </button>
     )
 }
 
