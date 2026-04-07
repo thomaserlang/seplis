@@ -6,6 +6,37 @@ import {
 } from '../types/play-source.types'
 import { getDefaultMaxBitrate } from './play-bitrate.utils'
 
+// Subset of BCP 47 primary subtags → ISO 639-2/B codes used in media streams.
+const BCP47_TO_ISO6392: Record<string, string> = {
+    af: 'afr', ar: 'ara', bg: 'bul', bn: 'ben', ca: 'cat',
+    cs: 'ces', da: 'dan', de: 'deu', el: 'ell', en: 'eng',
+    es: 'spa', et: 'est', fa: 'fas', fi: 'fin', fr: 'fra',
+    gu: 'guj', he: 'heb', hi: 'hin', hr: 'hrv', hu: 'hun',
+    hy: 'hye', id: 'ind', is: 'isl', it: 'ita', ja: 'jpn',
+    ka: 'kat', kn: 'kan', ko: 'kor', lt: 'lit', lv: 'lav',
+    mk: 'mkd', ml: 'mal', mr: 'mar', ms: 'msa', mt: 'mlt',
+    nl: 'nld', no: 'nor', pa: 'pan', pl: 'pol', pt: 'por',
+    ro: 'ron', ru: 'rus', sk: 'slk', sl: 'slv', sq: 'sqi',
+    sr: 'srp', sv: 'swe', sw: 'swa', ta: 'tam', te: 'tel',
+    th: 'tha', tr: 'tur', uk: 'ukr', ur: 'urd', vi: 'vie',
+    zh: 'zho',
+}
+
+export function getBrowserPreferredLangs(): string[] {
+    const langs = typeof navigator !== 'undefined' ? navigator.languages : []
+    const seen = new Set<string>()
+    const result: string[] = []
+    for (const tag of langs) {
+        const primary = tag.split('-')[0].toLowerCase()
+        const iso = BCP47_TO_ISO6392[primary]
+        if (iso && !seen.has(iso)) {
+            seen.add(iso)
+            result.push(iso)
+        }
+    }
+    return result
+}
+
 export function playSourceStr(source: PlaySource) {
     let s = `${source.resolution} ${source.codec.toUpperCase()}`
     if (source.video_color_range == 'hdr')
