@@ -17,10 +17,10 @@ export const { get: getPlayRequestSources, useGet: useGetPlayRequestSources } =
             'play-request-sources',
             ...playRequests.map((pr) => pr.play_id),
         ],
-        getFn: async ({ playRequests }) => {
+        getFn: async ({ playRequests, signal }) => {
             const data = await Promise.all(
                 playRequests.map((playRequest) =>
-                    getPlayServerSources(playRequest),
+                    getPlayServerSources(playRequest, signal),
                 ),
             )
             return data.filter(
@@ -31,6 +31,7 @@ export const { get: getPlayRequestSources, useGet: useGetPlayRequestSources } =
 
 export async function getPlayServerSources(
     playRequest: PlayRequest,
+    signal?: AbortSignal,
 ): Promise<PlayRequestSources | null> {
     try {
         const result = await ky.get<PlaySource[]>(
@@ -40,6 +41,7 @@ export async function getPlayServerSources(
                     play_id: playRequest.play_id,
                 },
                 timeout: 2000,
+                signal,
             },
         )
         const data: PlayRequestSources = {

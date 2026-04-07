@@ -30,6 +30,7 @@ export const {
         maxBitrate,
         forceTranscode = false,
         maxAudioChannels = 6,
+        signal,
     }) => {
         const videoCodecs = getSupportedVideoCodecs()
         if (videoCodecs.length == 0) throw new Error('No supported codecs')
@@ -37,6 +38,7 @@ export const {
         const r = await ky.get<PlayServerMedia>(
             `${playRequestSource.request.play_url}/request-media`,
             {
+                signal,
                 searchParams: Object.fromEntries(
                     Object.entries({
                         play_id: playRequestSource.request.play_id,

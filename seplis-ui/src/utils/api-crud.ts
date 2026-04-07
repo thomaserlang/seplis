@@ -56,11 +56,13 @@ export function useApiHelper<T, TGetProps extends ApiHelperProps>({
 }: {
     url: (props: TGetProps) => string
     queryKey: (props: TGetProps) => QueryKey
-    getFn?: (props: TGetProps) => Promise<T>
+    getFn?: (props: TGetProps & { signal?: AbortSignal }) => Promise<T>
     formatParams?: (props: TGetProps) => QueryParams
 }): {
     get: (props: TGetProps) => Promise<T>
-    useGet: (props?: Omit<TGetProps, 'options'> & { options?: QueryOptions<T> }) => UseQueryResult<T>
+    useGet: (
+        props?: Omit<TGetProps, 'options'> & { options?: QueryOptions<T> },
+    ) => UseQueryResult<T>
     queryKey: (props: TGetProps) => QueryKey
 } {
     const get = async (props: TGetProps) => {
@@ -74,7 +76,9 @@ export function useApiHelper<T, TGetProps extends ApiHelperProps>({
             })
             .json<T>()
     }
-    const useGet = (props?: Omit<TGetProps, 'options'> & { options?: QueryOptions<T> }) => {
+    const useGet = (
+        props?: Omit<TGetProps, 'options'> & { options?: QueryOptions<T> },
+    ) => {
         return useQuery<T>({
             queryKey: queryKey((props || {}) as TGetProps),
             queryFn: ({ signal }) =>
@@ -103,20 +107,24 @@ export function usePageApiHelper<
     url: (props: TGetListProps) => string
     queryKey: (props: TGetListProps) => QueryKey
     getPageFn?: (
-        props: TGetListProps,
+        props: TGetListProps & { signal?: AbortSignal },
     ) => Promise<PageCursor<T, TListLookupData>>
     formatParams?: (props: TGetListProps) => QueryParams
 }): {
-    getPage: (props: TGetListProps) => Promise<PageCursor<T, TListLookupData>>
+    getPage: (
+        props: TGetListProps & { signal?: AbortSignal },
+    ) => Promise<PageCursor<T, TListLookupData>>
     useGetPage: (
-        props: Omit<TGetListProps, 'options'> & { options?: InfiniteQueryOptions<PageCursor<T, TListLookupData>> },
+        props: Omit<TGetListProps, 'options'> & {
+            options?: InfiniteQueryOptions<PageCursor<T, TListLookupData>>
+        },
     ) => UseInfiniteQueryResult<
         InfiniteData<PageCursor<T, TListLookupData>, unknown>,
         Error
     >
     queryKey: (props: TGetListProps) => QueryKey
 } {
-    const getList = async (props: TGetListProps) => {
+    const getList = async (props: TGetListProps & { signal?: AbortSignal }) => {
         if (getPageFn) return getPageFn(props)
         return apiClient
             .get(url(props), {
@@ -129,9 +137,16 @@ export function usePageApiHelper<
             })
             .json<PageCursor<T, TListLookupData>>()
     }
-    const useGetList = (props: Omit<TGetListProps, 'options'> & { options?: InfiniteQueryOptions<PageCursor<T, TListLookupData>> }) => {
+    const useGetList = (
+        props: Omit<TGetListProps, 'options'> & {
+            options?: InfiniteQueryOptions<PageCursor<T, TListLookupData>>
+        },
+    ) => {
         return useInfiniteQuery({
-            queryKey: queryKey({ ...props, params: props?.params } as TGetListProps),
+            queryKey: queryKey({
+                ...props,
+                params: props?.params,
+            } as TGetListProps),
             queryFn: ({ pageParam, signal }) =>
                 getList({
                     ...props,
