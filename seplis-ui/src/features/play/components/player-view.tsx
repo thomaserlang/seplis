@@ -93,18 +93,27 @@ export function PlayerView({
 
     useEffect(() => {
         if (!media) return
+        let playInitiated = false
+
         media.onloadedmetadata = () => {
             if (resumeTimeRef.current !== undefined) {
                 media.currentTime = resumeTimeRef.current
                 resumeTimeRef.current = undefined
             }
         }
-        media.onloadeddata = () => {
-            media.play()
-        }
         media.oncanplay = () => {
             setIsVideoLoading(false)
             setSuppressErrorDialog(false)
+            if (media.paused && !playInitiated) {
+                // playInitiated is needed to prevent
+                // play from being called twice which
+                // currently causes the audio to bug and
+                // play twice one audio source even
+                // continues in the background after
+                // the player is closed
+                playInitiated = true
+                media.play()
+            }
         }
         media.onerror = () => {
             if (!forceTranscodeRef.current) {
@@ -130,6 +139,16 @@ export function PlayerView({
                 'player-volume',
                 String(Math.round(media.volume * 100) / 100),
             )
+        }
+
+        return () => {
+            media.pause()
+            media.onloadedmetadata = null
+            media.oncanplay = null
+            media.onerror = null
+            media.onseeked = null
+            media.ontimeupdate = null
+            media.onvolumechange = null
         }
     }, [media])
 

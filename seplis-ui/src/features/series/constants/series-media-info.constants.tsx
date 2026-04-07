@@ -1,4 +1,4 @@
-import { MediaTypeInfo } from '@/features/media-type'
+import { MediaTypeInfo } from '@/features/media-type/types/media-type-registry.types'
 import { SeriesContainer } from '../components/series-container'
 
 export const seriesMediaInfo: MediaTypeInfo = {
