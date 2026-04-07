@@ -774,95 +774,120 @@ function SettingsPopover({
                             </OptionItem>
                         ))}
 
-                    {panel === 'audio' && (() => {
-                        const preferred = currentSource.audio.filter(
-                            (t) => preferredAudioLangs?.includes(t.language),
-                        )
-                        const other = currentSource.audio.filter(
-                            (t) => !preferredAudioLangs?.includes(t.language),
-                        )
-                        const audioKey = (t: { language: string; index: number }) =>
-                            `${t.language}:${t.index}`
-                        return (
-                            <>
-                                {preferred.map((track) => (
-                                    <OptionItem
-                                        key={track.index}
-                                        active={audioLang === audioKey(track)}
-                                        onClick={() => {
-                                            onAudioLangChange(audioKey(track))
-                                            back()
-                                        }}
-                                    >
-                                        {track.title || track.language}
-                                    </OptionItem>
-                                ))}
-                                {preferred.length > 0 && other.length > 0 && (
-                                    <SettingsGroupDivider />
-                                )}
-                                {other.map((track) => (
-                                    <OptionItem
-                                        key={track.index}
-                                        active={audioLang === audioKey(track)}
-                                        onClick={() => {
-                                            onAudioLangChange(audioKey(track))
-                                            back()
-                                        }}
-                                    >
-                                        {track.title || track.language}
-                                    </OptionItem>
-                                ))}
-                            </>
-                        )
-                    })()}
+                    {panel === 'audio' &&
+                        (() => {
+                            const preferred = currentSource.audio.filter((t) =>
+                                preferredAudioLangs?.includes(t.language),
+                            )
+                            const other = currentSource.audio.filter(
+                                (t) =>
+                                    !preferredAudioLangs?.includes(t.language),
+                            )
+                            const audioKey = (t: {
+                                language: string
+                                index: number
+                            }) => `${t.language}:${t.index}`
+                            return (
+                                <>
+                                    {preferred.map((track) => (
+                                        <OptionItem
+                                            key={track.index}
+                                            active={
+                                                audioLang === audioKey(track)
+                                            }
+                                            onClick={() => {
+                                                onAudioLangChange(
+                                                    audioKey(track),
+                                                )
+                                                back()
+                                            }}
+                                        >
+                                            {track.title || track.language}
+                                        </OptionItem>
+                                    ))}
+                                    {preferred.length > 0 &&
+                                        other.length > 0 && (
+                                            <SettingsGroupDivider />
+                                        )}
+                                    {other.map((track) => (
+                                        <OptionItem
+                                            key={track.index}
+                                            active={
+                                                audioLang === audioKey(track)
+                                            }
+                                            onClick={() => {
+                                                onAudioLangChange(
+                                                    audioKey(track),
+                                                )
+                                                back()
+                                            }}
+                                        >
+                                            {track.title || track.language}
+                                        </OptionItem>
+                                    ))}
+                                </>
+                            )
+                        })()}
 
-                    {panel === 'subtitles' && (() => {
-                        const preferred = currentSource.subtitles.filter(
-                            (t) => preferredSubtitleLangs?.includes(t.language),
-                        )
-                        const other = currentSource.subtitles.filter(
-                            (t) => !preferredSubtitleLangs?.includes(t.language),
-                        )
-                        return (
-                            <>
-                                <OptionItem
-                                    active={!activeSubtitleKey}
-                                    onClick={() => setSubtitle(undefined)}
-                                >
-                                    Off
-                                </OptionItem>
-                                {preferred.map((track) => {
-                                    const key = `${track.language}:${track.index}`
-                                    return (
-                                        <OptionItem
-                                            key={key}
-                                            active={activeSubtitleKey === key}
-                                            onClick={() => setSubtitle(key)}
-                                        >
-                                            {track.title || track.language}
-                                            {track.forced && ' (Forced)'}
-                                        </OptionItem>
-                                    )
-                                })}
-                                {preferred.length > 0 && other.length > 0 && (
-                                    <SettingsGroupDivider />
-                                )}
-                                {other.map((track) => {
-                                    const key = `${track.language}:${track.index}`
-                                    return (
-                                        <OptionItem
-                                            key={key}
-                                            active={activeSubtitleKey === key}
-                                            onClick={() => setSubtitle(key)}
-                                        >
-                                            {track.title || track.language}
-                                            {track.forced && ' (Forced)'}
-                                        </OptionItem>
-                                    )
-                                })}
-                            </>
-                        )
-                    })()}
+                    {panel === 'subtitles' &&
+                        (() => {
+                            const preferred = currentSource.subtitles.filter(
+                                (t) =>
+                                    preferredSubtitleLangs?.includes(
+                                        t.language,
+                                    ),
+                            )
+                            const other = currentSource.subtitles.filter(
+                                (t) =>
+                                    !preferredSubtitleLangs?.includes(
+                                        t.language,
+                                    ),
+                            )
+                            return (
+                                <>
+                                    <OptionItem
+                                        active={!activeSubtitleKey}
+                                        onClick={() => setSubtitle(undefined)}
+                                    >
+                                        Off
+                                    </OptionItem>
+                                    {preferred.map((track) => {
+                                        const key = `${track.language}:${track.index}`
+                                        return (
+                                            <OptionItem
+                                                key={key}
+                                                active={
+                                                    activeSubtitleKey === key
+                                                }
+                                                onClick={() => setSubtitle(key)}
+                                            >
+                                                {track.title || track.language}
+                                                {track.forced && ' (Forced)'}
+                                            </OptionItem>
+                                        )
+                                    })}
+                                    {preferred.length > 0 &&
+                                        other.length > 0 && (
+                                            <SettingsGroupDivider />
+                                        )}
+                                    {other.map((track) => {
+                                        const key = `${track.language}:${track.index}`
+                                        return (
+                                            <OptionItem
+                                                key={key}
+                                                active={
+                                                    activeSubtitleKey === key
+                                                }
+                                                onClick={() => setSubtitle(key)}
+                                            >
+                                                {track.title || track.language}
+                                                {track.forced && ' (Forced)'}
+                                            </OptionItem>
+                                        )
+                                    })}
+                                </>
+                            )
+                        })()}
 
                     {panel === 'subtitle-sync' && (
                         <>
@@ -899,23 +924,14 @@ function SettingsPopover({
                                     <PlusIcon weight="bold" />
                                 </button>
                             </div>
-                            {subtitleOffset !== 0 ? (
-                                <button
-                                    type="button"
-                                    className="media-settings__sync-reset"
-                                    onClick={() => onSubtitleOffsetChange(0)}
-                                >
-                                    Reset
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    className="media-settings__sync-reset"
-                                    disabled
-                                >
-                                    Reset
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className="media-settings__sync-reset"
+                                disabled={subtitleOffset === 0}
+                                onClick={() => onSubtitleOffsetChange(0)}
+                            >
+                                Reset
+                            </button>
                         </>
                     )}
                 </div>
