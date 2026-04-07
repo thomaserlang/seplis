@@ -2,6 +2,7 @@ import {
     PlayRequestSource,
     PlayRequestSources,
     PlaySource,
+    PlaySourceStream,
 } from '../types/play-source.types'
 import { getDefaultMaxBitrate } from './play-bitrate.utils'
 
@@ -30,4 +31,98 @@ export function pickStartSource(
                     source: source,
                 }
     return s
+}
+
+function toLangIndex(stream: PlaySourceStream): string {
+    return `${stream.language}:${stream.index}`
+}
+
+function parseLangIndex(value: string): { lang: string; index: number | null } {
+    const parts = value.split(':')
+    const index = parts[1] !== undefined ? parseInt(parts[1], 10) : null
+    return { lang: parts[0], index: isNaN(index as number) ? null : index }
+}
+
+function findByLangIndex(
+    streams: PlaySourceStream[],
+    langIndex: string,
+): PlaySourceStream | undefined {
+    const { lang, index } = parseLangIndex(langIndex)
+    if (index !== null) {
+        const exact = streams.find(
+            (s) => s.language === lang && s.index === index,
+        )
+        if (exact) return exact
+    }
+    return streams.find((s) => s.language === lang)
+}
+
+export function pickStartAudio({
+    playSource,
+    defaultAudio,
+    preferredAudioLangs,
+}: {
+    playSource: PlaySource
+    defaultAudio?: string
+    preferredAudioLangs?: string[]
+}): string | undefined {
+    const streams = playSource.audio
+    if (!streams?.length) return undefined
+
+    if (defaultAudio) {
+        const match = findByLangIndex(streams, defaultAudio)
+        if (match) return toLangIndex(match)
+    }
+    if (preferredAudioLangs?.length) {
+        for (const lang of preferredAudioLangs) {
+            const match = streams.find((s) => s.language === lang)
+            if (match) return toLangIndex(match)
+        }
+    }
+
+    return toLangIndex(streams[0])
+}
+
+export function pickStartSubtitle({
+    playSource,
+    defaultSubtitle,
+    preferredSubtitleLangs,
+    audio,
+}: {
+    playSource: PlaySource
+    defaultSubtitle?: string
+    preferredSubtitleLangs?: string[]
+    audio?: string
+}): string | undefined {
+    const streams = playSource.subtitles
+    if (!streams?.length) return undefined
+
+    if (defaultSubtitle) {
+        const match = findByLangIndex(streams, defaultSubtitle)
+        return match ? toLangIndex(match) : undefined
+    }
+
+    const audioLang = audio ? parseLangIndex(audio).lang : undefined
+
+    // Pick a forced subtitle only if it matches the audio language.
+    if (audioLang) {
+        const forcedMatch = streams.find(
+            (s) => s.forced && s.language === audioLang,
+        )
+        if (forcedMatch) return toLangIndex(forcedMatch)
+    }
+
+    if (preferredSubtitleLangs?.length) {
+        for (const lang of preferredSubtitleLangs) {
+            const match = streams.find((s) => s.language === lang)
+            if (match) {
+                // No subtitle needed when the preferred language matches the
+                // audio — the user already understands the audio track.
+                if (audioLang && match.language === audioLang) return undefined
+                return toLangIndex(match)
+            }
+        }
+    }
+
+    return undefined
 }

@@ -17,8 +17,16 @@ import { useGetPlayServerMedia } from '../api/play-server-media.api'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import { PlayerProps } from '../types/player.types'
 import { getDefaultMaxBitrate } from '../utils/play-bitrate.utils'
-import { pickStartSource } from '../utils/play-source.utils'
+import {
+    pickStartAudio,
+    pickStartSource,
+    pickStartSubtitle,
+} from '../utils/play-source.utils'
 import { PlayerVideo } from './player-video'
+
+const PREFERRED_AUDIO_LANGS: string[] = ['jpn', 'eng'].filter(Boolean)
+
+const PREFERRED_SUBTITLE_LANGS: string[] = ['eng'].filter(Boolean)
 
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
@@ -43,7 +51,13 @@ export function PlayerView({
     const [maxBitrate, setMaxBitrate] = useState<number>(() =>
         getDefaultMaxBitrate(),
     )
-    const [audioLang, setAudioLang] = useState<string | undefined>(defaultAudio)
+    const [audio, setAudioLang] = useState<string | undefined>(
+        pickStartAudio({
+            playSource: source.source,
+            defaultAudio,
+            preferredAudioLangs: PREFERRED_AUDIO_LANGS,
+        }),
+    )
     const [forceTranscode, setForceTranscode] = useState(false)
     const forceTranscodeRef = useRef(forceTranscode)
     forceTranscodeRef.current = forceTranscode
@@ -72,7 +86,7 @@ export function PlayerView({
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
-        audio: audioLang,
+        audio: audio,
         forceTranscode,
     })
     const media = useMedia()
@@ -148,7 +162,7 @@ export function PlayerView({
             secondaryTitle={secondaryTitle}
             onClose={onClose}
             maxBitrate={maxBitrate}
-            audio={audioLang}
+            audio={audio}
             forceTranscode={forceTranscode}
             timeSliderStyle={frozenTimeStyle}
             isVideoLoading={isVideoLoading}
@@ -167,7 +181,12 @@ export function PlayerView({
                 capturePosition()
                 setForceTranscode(v)
             }}
-            defaultSubtitle={defaultSubtitle}
+            defaultSubtitle={pickStartSubtitle({
+                playSource: source.source,
+                defaultSubtitle,
+                preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
+                audio,
+            })}
             onSubtitleChange={onSubtitleChange}
         />
     )
