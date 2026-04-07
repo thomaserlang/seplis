@@ -34,6 +34,8 @@ export function PlayerView({
     defaultAudio,
     defaultSubtitle,
     defaultStartTime,
+    onAudioChange,
+    onSubtitleChange,
 }: Props) {
     const [source, setSource] = useState<PlayRequestSource>(() =>
         pickStartSource(playRequestsSources),
@@ -146,7 +148,7 @@ export function PlayerView({
             secondaryTitle={secondaryTitle}
             onClose={onClose}
             maxBitrate={maxBitrate}
-            audioLang={audioLang}
+            audio={audioLang}
             forceTranscode={forceTranscode}
             timeSliderStyle={frozenTimeStyle}
             isVideoLoading={isVideoLoading}
@@ -156,15 +158,17 @@ export function PlayerView({
                 setSource(s)
             }}
             onBitrateChange={handleBitrateChange}
-            onAudioLangChange={(lang) => {
+            onAudioChange={(audio) => {
                 capturePosition()
-                setAudioLang(lang)
+                setAudioLang(audio)
+                onAudioChange?.(audio)
             }}
             onForceTranscodeChange={(v) => {
                 capturePosition()
                 setForceTranscode(v)
             }}
             defaultSubtitle={defaultSubtitle}
+            onSubtitleChange={onSubtitleChange}
         />
     )
 }

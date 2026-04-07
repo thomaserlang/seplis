@@ -1,2 +1,4 @@
+export * from './api/series-user-settings.api'
+export * from './api/series.api'
 export * from './components/series-modal'
 export * from './constants/series-media-info.constants'

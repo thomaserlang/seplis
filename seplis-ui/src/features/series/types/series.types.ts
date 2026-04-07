@@ -75,6 +75,11 @@ export interface SeriesUserSettings {
     audio_lang: string | null
 }
 
+export interface SeriesUserSettingsUpdate {
+    subtitle_lang?: string | null
+    audio_lang?: string | null
+}
+
 export interface SeriesWithEpisodes extends Series {
     episodes: Episode[]
 }

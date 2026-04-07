@@ -1,7 +1,11 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { PlayerContainer } from '@/features/play'
-import { useGetSeries } from '@/features/series/api/series.api'
+import {
+    useGetSeries,
+    useGetSeriesUserSettings,
+    useUpdateSeriesUserSettings,
+} from '@/features/series'
 import { useGetEpisodePlayRequests } from '../api/episode-play-requests.api'
 import { useUpdateEpisodeWatchedPosition } from '../api/episode-watched-position'
 import {
@@ -27,10 +31,18 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
         seriesId,
         episodeNumber,
     })
+    const userSettings = useGetSeriesUserSettings({ seriesId })
+    const updateUserSettings = useUpdateSeriesUserSettings({})
     const updateWatchedPosition = useUpdateEpisodeWatchedPosition({})
     const incrementWatched = useIncrementEpisodeWatched({})
 
-    const queries = [series, episode, playRequests, episodeWatched]
+    const queries = [
+        series,
+        episode,
+        playRequests,
+        episodeWatched,
+        userSettings,
+    ]
     if (queries.some((q) => q.isLoading)) return <PageLoader />
 
     const error = queries.find((q) => q.error)?.error
@@ -53,6 +65,8 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             secondaryTitle={secondaryTitle}
             onClose={onClose}
             defaultStartTime={episodeWatched.data?.position ?? 0}
+            defaultAudio={userSettings.data?.audio_lang ?? undefined}
+            defaultSubtitle={userSettings.data?.subtitle_lang ?? undefined}
             onSavePosition={(position) =>
                 updateWatchedPosition.mutate({
                     seriesId,
@@ -64,6 +78,22 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             }
             onFinished={() => {
                 incrementWatched.mutate({ seriesId, episodeNumber })
+            }}
+            onSubtitleChange={(subtitle) => {
+                updateUserSettings.mutate({
+                    seriesId,
+                    data: {
+                        subtitle_lang: subtitle || null,
+                    },
+                })
+            }}
+            onAudioChange={(audio) => {
+                updateUserSettings.mutate({
+                    seriesId,
+                    data: {
+                        audio_lang: audio || null,
+                    },
+                })
             }}
         />
     )

@@ -78,12 +78,13 @@ export interface VideoPlayerProps {
     onClose?: () => void
     playRequestsSources: PlayRequestSources[]
     maxBitrate: number
-    audioLang: string | undefined
+    audio: string | undefined
     forceTranscode: boolean
     onSourceChange: (source: PlayRequestSource) => void
     onBitrateChange: (bitrate: number) => void
-    onAudioLangChange: (lang: string | undefined) => void
+    onAudioChange: (audio: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
+    onSubtitleChange?: (subtitle: string | undefined) => void
     timeSliderStyle?: CSSProperties
     isVideoLoading?: boolean
     suppressErrorDialog?: boolean
@@ -98,12 +99,13 @@ export function PlayerVideo({
     onClose,
     playRequestsSources,
     maxBitrate,
-    audioLang,
+    audio,
     forceTranscode,
     onSourceChange,
     onBitrateChange,
-    onAudioLangChange,
+    onAudioChange,
     onForceTranscodeChange,
+    onSubtitleChange,
     timeSliderStyle,
     isVideoLoading,
     suppressErrorDialog,
@@ -112,6 +114,11 @@ export function PlayerVideo({
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
     >(defaultSubtitle)
+
+    const handleSubtitleChange = (key: string | undefined) => {
+        setActiveSubtitleKey(key)
+        onSubtitleChange?.(key)
+    }
     const [subtitleOffset, setSubtitleOffset] = useState(0)
 
     useEffect(() => {
@@ -351,15 +358,15 @@ export function PlayerVideo({
                             currentPlayRequestSource={playRequestSource}
                             playRequestsSources={playRequestsSources}
                             maxBitrate={maxBitrate}
-                            audioLang={audioLang}
+                            audioLang={audio}
                             forceTranscode={forceTranscode}
                             activeSubtitleKey={activeSubtitleKey}
                             subtitleOffset={subtitleOffset}
                             onSourceChange={onSourceChange}
                             onBitrateChange={onBitrateChange}
-                            onAudioLangChange={onAudioLangChange}
+                            onAudioLangChange={onAudioChange}
                             onForceTranscodeChange={onForceTranscodeChange}
-                            onSubtitleChange={setActiveSubtitleKey}
+                            onSubtitleChange={handleSubtitleChange}
                             onSubtitleOffsetChange={setSubtitleOffset}
                         />
 
