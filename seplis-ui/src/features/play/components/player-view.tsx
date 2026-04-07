@@ -6,7 +6,7 @@ import {
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useMedia } from '@videojs/react'
-import { useEffect, useState } from 'react'
+import { type CSSProperties, useEffect, useRef, useState } from 'react'
 import { useGetPlayServerMedia } from '../api/play-server-media.api'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import { getDefaultMaxBitrate } from '../utils/play-bitrate.utils'
@@ -34,6 +34,9 @@ export function PlayerView({
     )
     const [audioLang, setAudioLang] = useState<string | undefined>(undefined)
     const [forceTranscode, setForceTranscode] = useState(false)
+    const resumeTimeRef = useRef<number | undefined>(undefined)
+    const [frozenTimeStyle, setFrozenTimeStyle] = useState<CSSProperties | undefined>(undefined)
+    const [isVideoLoading, setIsVideoLoading] = useState(true)
 
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
@@ -45,8 +48,23 @@ export function PlayerView({
 
     useEffect(() => {
         if (!media) return
+        media.onloadedmetadata = () => {
+            if (resumeTimeRef.current !== undefined) {
+                media.currentTime = resumeTimeRef.current
+                resumeTimeRef.current = undefined
+            }
+        }
         media.onloadeddata = () => {
             media.play()
+        }
+        media.oncanplay = () => {
+            setIsVideoLoading(false)
+        }
+        media.onerror = () => {
+            setIsVideoLoading(false)
+        }
+        media.onseeked = () => {
+            setFrozenTimeStyle(undefined)
         }
         const savedVolume = localStorage.getItem('player-volume')
         media.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.5
@@ -58,6 +76,14 @@ export function PlayerView({
     if (isLoading) return <PageLoader />
     if (error) return <ErrorBox errorObj={error} />
     if (!data) return <ErrorBox message="No playable source found" />
+
+    const capturePosition = () => {
+        if (!media) return
+        resumeTimeRef.current = media.currentTime
+        const fill = media.duration > 0 ? (media.currentTime / media.duration) * 100 : 0
+        setFrozenTimeStyle({ '--media-slider-fill': `${fill}%` } as CSSProperties)
+        setIsVideoLoading(true)
+    }
 
     const handleBitrateChange = (bitrate: number) => {
         localStorage.setItem('maxBitrate', String(bitrate))
@@ -75,10 +101,12 @@ export function PlayerView({
             maxBitrate={maxBitrate}
             audioLang={audioLang}
             forceTranscode={forceTranscode}
-            onSourceChange={setSource}
+            timeSliderStyle={frozenTimeStyle}
+            isVideoLoading={isVideoLoading}
+            onSourceChange={(s) => { capturePosition(); setSource(s) }}
             onBitrateChange={handleBitrateChange}
-            onAudioLangChange={setAudioLang}
-            onForceTranscodeChange={setForceTranscode}
+            onAudioLangChange={(lang) => { capturePosition(); setAudioLang(lang) }}
+            onForceTranscodeChange={(v) => { capturePosition(); setForceTranscode(v) }}
         />
     )
 }

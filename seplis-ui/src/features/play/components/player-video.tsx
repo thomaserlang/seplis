@@ -45,6 +45,7 @@ import {
     useEffect,
     useEffectEvent,
     useState,
+    type CSSProperties,
     type ComponentProps,
     type ReactNode,
 } from 'react'
@@ -83,6 +84,8 @@ export interface VideoPlayerProps {
     onBitrateChange: (bitrate: number) => void
     onAudioLangChange: (lang: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
+    timeSliderStyle?: CSSProperties
+    isVideoLoading?: boolean
 }
 
 export function PlayerVideo({
@@ -99,6 +102,8 @@ export function PlayerVideo({
     onBitrateChange,
     onAudioLangChange,
     onForceTranscodeChange,
+    timeSliderStyle,
+    isVideoLoading,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
@@ -180,6 +185,14 @@ export function PlayerVideo({
                 )}
             />
 
+            {isVideoLoading && (
+                <div className="media-buffering-indicator" data-visible="">
+                    <div className="media-surface">
+                        <PageLoader />
+                    </div>
+                </div>
+            )}
+
             <ErrorDialog.Root>
                 <ErrorDialog.Popup className="media-error">
                     <div className="media-error__dialog media-surface">
@@ -190,8 +203,19 @@ export function PlayerVideo({
                             <ErrorDialog.Description className="media-error__description" />
                         </div>
                         <div className="media-error__actions">
-                            <ErrorDialog.Close className="media-button media-button--primary">
-                                OK
+                            {onClose && (
+                                <ErrorDialog.Close
+                                    className="media-button media-button--subtle"
+                                    onClick={onClose}
+                                >
+                                    Go Back
+                                </ErrorDialog.Close>
+                            )}
+                            <ErrorDialog.Close
+                                className="media-button media-button--primary"
+                                onClick={() => window.location.reload()}
+                            >
+                                Refresh
                             </ErrorDialog.Close>
                         </div>
                     </div>
@@ -269,7 +293,7 @@ export function PlayerVideo({
 
                     <div className="media-time-controls">
                         <Time.Value type="current" className="media-time" />
-                        <TimeSlider.Root className="media-slider">
+                        <TimeSlider.Root className="media-slider" style={timeSliderStyle}>
                             <TimeSlider.Track className="media-slider__track">
                                 <TimeSlider.Fill className="media-slider__fill" />
                                 <TimeSlider.Buffer className="media-slider__buffer" />
