@@ -86,7 +86,7 @@ export function PlayerView({
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
-        audio: audio,
+        audio,
         forceTranscode,
     })
     const media = useMedia()
