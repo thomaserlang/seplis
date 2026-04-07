@@ -15,25 +15,18 @@ import {
 } from 'react'
 import { useGetPlayServerMedia } from '../api/play-server-media.api'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
+import {
+    PREFERRED_AUDIO_LANGS,
+    PREFERRED_SUBTITLE_LANGS,
+} from '../constants/play-language.constants'
 import { PlayerProps } from '../types/player.types'
 import { getDefaultMaxBitrate } from '../utils/play-bitrate.utils'
 import {
-    getBrowserPreferredLangs,
     pickStartAudio,
     pickStartSource,
     pickStartSubtitle,
 } from '../utils/play-source.utils'
 import { PlayerVideo } from './player-video'
-
-const PREFERRED_AUDIO_LANGS: string[] = [
-    'jpa',
-    'eng',
-    ...getBrowserPreferredLangs(),
-]
-const PREFERRED_SUBTITLE_LANGS: string[] = [
-    ...getBrowserPreferredLangs(),
-    'eng',
-]
 
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
@@ -195,6 +188,8 @@ export function PlayerView({
                 audio,
             })}
             onSubtitleChange={onSubtitleChange}
+            preferredAudioLangs={PREFERRED_AUDIO_LANGS}
+            preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
         />
     )
 }

@@ -1,4 +1,4 @@
-import { BCP47_TO_ISO6392 } from '../constants/play-language.constants'
+import { BCP47_TO_ISO6392 } from '../constants/iso6392.constants'
 import {
     PlayRequestSource,
     PlayRequestSources,
