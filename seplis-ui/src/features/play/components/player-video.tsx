@@ -62,7 +62,10 @@ import {
     bitratePretty,
     playSourceBitrateStr,
 } from '../utils/play-bitrate.utils'
-import { playSourceStr } from '../utils/play-source.utils'
+import {
+    iso6392ToDisplayName,
+    playSourceStr,
+} from '../utils/play-source.utils'
 
 import './player-video.css'
 
@@ -802,7 +805,7 @@ function SettingsPopover({
                                                 back()
                                             }}
                                         >
-                                            {track.title || track.language}
+                                            {trackLabel(track.title, track.language)}
                                         </OptionItem>
                                     ))}
                                     {preferred.length > 0 &&
@@ -822,7 +825,7 @@ function SettingsPopover({
                                                 back()
                                             }}
                                         >
-                                            {track.title || track.language}
+                                            {trackLabel(track.title, track.language)}
                                         </OptionItem>
                                     ))}
                                 </>
@@ -861,7 +864,7 @@ function SettingsPopover({
                                                 }
                                                 onClick={() => setSubtitle(key)}
                                             >
-                                                {track.title || track.language}
+                                                {trackLabel(track.title, track.language)}
                                                 {track.forced && ' (Forced)'}
                                             </OptionItem>
                                         )
@@ -880,7 +883,7 @@ function SettingsPopover({
                                                 }
                                                 onClick={() => setSubtitle(key)}
                                             >
-                                                {track.title || track.language}
+                                                {trackLabel(track.title, track.language)}
                                                 {track.forced && ' (Forced)'}
                                             </OptionItem>
                                         )
@@ -1007,6 +1010,17 @@ function SubMenuHeader({
             <span className="media-settings__sub-title">{title}</span>
         </button>
     )
+}
+
+function trackLabel(
+    title: string | undefined,
+    language: string,
+): string {
+    const base = title || language
+    const displayName = iso6392ToDisplayName(language)
+    if (!displayName) return base
+    if (base.toLowerCase().includes(displayName.toLowerCase())) return base
+    return `${base} (${displayName})`
 }
 
 function SettingsGroupDivider(): ReactNode {

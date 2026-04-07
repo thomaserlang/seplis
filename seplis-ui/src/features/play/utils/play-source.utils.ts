@@ -7,6 +7,21 @@ import {
 } from '../types/play-source.types'
 import { getDefaultMaxBitrate } from './play-bitrate.utils'
 
+export function iso6392ToDisplayName(iso6392: string): string | undefined {
+    if (typeof navigator === 'undefined') return undefined
+    const bcp47 = Object.entries(BCP47_TO_ISO6392).find(
+        ([, v]) => v === iso6392,
+    )?.[0]
+    if (!bcp47) return undefined
+    try {
+        return new Intl.DisplayNames(navigator.languages, {
+            type: 'language',
+        }).of(bcp47)
+    } catch {
+        return undefined
+    }
+}
+
 export function getBrowserPreferredLangs(): string[] {
     const langs = typeof navigator !== 'undefined' ? navigator.languages : []
     const seen = new Set<string>()
