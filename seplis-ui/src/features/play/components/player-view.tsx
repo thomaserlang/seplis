@@ -46,7 +46,7 @@ export function PlayerView({
     const forceTranscodeRef = useRef(forceTranscode)
     forceTranscodeRef.current = forceTranscode
     const resumeTimeRef = useRef<number | undefined>(defaultStartTime)
-    const lastSaveTimeRef = useRef<number>(0)
+    const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
 
     const handleTimeUpdate = useEffectEvent(
