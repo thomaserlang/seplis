@@ -34,9 +34,12 @@ export function PlayerView({
     )
     const [audioLang, setAudioLang] = useState<string | undefined>(undefined)
     const [forceTranscode, setForceTranscode] = useState(false)
+    const forceTranscodeRef = useRef(forceTranscode)
+    forceTranscodeRef.current = forceTranscode
     const resumeTimeRef = useRef<number | undefined>(undefined)
     const [frozenTimeStyle, setFrozenTimeStyle] = useState<CSSProperties | undefined>(undefined)
     const [isVideoLoading, setIsVideoLoading] = useState(true)
+    const [suppressErrorDialog, setSuppressErrorDialog] = useState(false)
 
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
@@ -59,9 +62,16 @@ export function PlayerView({
         }
         media.oncanplay = () => {
             setIsVideoLoading(false)
+            setSuppressErrorDialog(false)
         }
         media.onerror = () => {
-            setIsVideoLoading(false)
+            if (!forceTranscodeRef.current) {
+                setSuppressErrorDialog(true)
+                setIsVideoLoading(true)
+                setForceTranscode(true)
+            } else {
+                setIsVideoLoading(false)
+            }
         }
         media.onseeked = () => {
             setFrozenTimeStyle(undefined)
@@ -103,6 +113,7 @@ export function PlayerView({
             forceTranscode={forceTranscode}
             timeSliderStyle={frozenTimeStyle}
             isVideoLoading={isVideoLoading}
+            suppressErrorDialog={suppressErrorDialog}
             onSourceChange={(s) => { capturePosition(); setSource(s) }}
             onBitrateChange={handleBitrateChange}
             onAudioLangChange={(lang) => { capturePosition(); setAudioLang(lang) }}

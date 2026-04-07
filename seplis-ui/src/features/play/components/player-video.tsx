@@ -86,6 +86,7 @@ export interface VideoPlayerProps {
     onForceTranscodeChange: (value: boolean) => void
     timeSliderStyle?: CSSProperties
     isVideoLoading?: boolean
+    suppressErrorDialog?: boolean
 }
 
 export function PlayerVideo({
@@ -104,6 +105,7 @@ export function PlayerVideo({
     onForceTranscodeChange,
     timeSliderStyle,
     isVideoLoading,
+    suppressErrorDialog,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
@@ -193,34 +195,36 @@ export function PlayerVideo({
                 </div>
             )}
 
-            <ErrorDialog.Root>
-                <ErrorDialog.Popup className="media-error">
-                    <div className="media-error__dialog media-surface">
-                        <div className="media-error__content">
-                            <ErrorDialog.Title className="media-error__title">
-                                Something went wrong.
-                            </ErrorDialog.Title>
-                            <ErrorDialog.Description className="media-error__description" />
-                        </div>
-                        <div className="media-error__actions">
-                            {onClose && (
+            {!suppressErrorDialog && (
+                <ErrorDialog.Root>
+                    <ErrorDialog.Popup className="media-error">
+                        <div className="media-error__dialog media-surface">
+                            <div className="media-error__content">
+                                <ErrorDialog.Title className="media-error__title">
+                                    Something went wrong.
+                                </ErrorDialog.Title>
+                                <ErrorDialog.Description className="media-error__description" />
+                            </div>
+                            <div className="media-error__actions">
+                                {onClose && (
+                                    <ErrorDialog.Close
+                                        className="media-button media-button--subtle"
+                                        onClick={onClose}
+                                    >
+                                        Go Back
+                                    </ErrorDialog.Close>
+                                )}
                                 <ErrorDialog.Close
-                                    className="media-button media-button--subtle"
-                                    onClick={onClose}
+                                    className="media-button media-button--primary"
+                                    onClick={() => window.location.reload()}
                                 >
-                                    Go Back
+                                    Refresh
                                 </ErrorDialog.Close>
-                            )}
-                            <ErrorDialog.Close
-                                className="media-button media-button--primary"
-                                onClick={() => window.location.reload()}
-                            >
-                                Refresh
-                            </ErrorDialog.Close>
+                            </div>
                         </div>
-                    </div>
-                </ErrorDialog.Popup>
-            </ErrorDialog.Root>
+                    </ErrorDialog.Popup>
+                </ErrorDialog.Root>
+            )}
 
             <Controls.Root className="media-surface media-controls">
                 <Tooltip.Provider>
