@@ -6,7 +6,6 @@ import {
     CaretLeftIcon,
     CaretRightIcon,
     CheckIcon,
-    ClosedCaptioningIcon,
     CornersInIcon,
     CornersOutIcon,
     GearIcon,
@@ -21,7 +20,6 @@ import {
 } from '@phosphor-icons/react'
 import {
     BufferingIndicator,
-    CaptionsButton,
     Container,
     Controls,
     ErrorDialog,
@@ -304,27 +302,6 @@ export function PlayerVideo({
                         </Tooltip.Root>
 
                         <VolumePopover />
-
-                        <Tooltip.Root side="top">
-                            <Tooltip.Trigger
-                                render={
-                                    <CaptionsButton
-                                        className="media-button--captions"
-                                        render={<Button />}
-                                    >
-                                        <ClosedCaptioningIcon
-                                            className="media-icon media-icon--captions-off"
-                                            weight="regular"
-                                        />
-                                        <ClosedCaptioningIcon
-                                            className="media-icon media-icon--captions-on"
-                                            weight="fill"
-                                        />
-                                    </CaptionsButton>
-                                }
-                            />
-                            <Tooltip.Popup className="media-surface media-tooltip" />
-                        </Tooltip.Root>
 
                         <SettingsPopover
                             currentPlayRequestSource={currentPlayRequestSource}
