@@ -141,14 +141,6 @@ export function PlayerVideo({
           })
         : undefined
 
-    const subtitleUrl = activeSubtitleKey
-        ? `${playRequestSource.request.play_url}/subtitle-file` +
-          `?play_id=${playRequestSource.request.play_id}` +
-          `&source_index=${playRequestSource.source.index}` +
-          `&offset=0` +
-          `&lang=${activeSubtitleKey}`
-        : undefined
-
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
             <Video
@@ -160,13 +152,19 @@ export function PlayerVideo({
                 }
                 crossOrigin="anonymous"
             >
-                {activeSubtitle && subtitleUrl && (
+                {activeSubtitle && (
                     <track
                         key={activeSubtitleKey}
                         kind="subtitles"
                         label={activeSubtitle.title || activeSubtitle.language}
                         srcLang={activeSubtitle.language}
-                        src={subtitleUrl}
+                        src={
+                            `${playRequestSource.request.play_url}/subtitle-file` +
+                            `?play_id=${playRequestSource.request.play_id}` +
+                            `&source_index=${playRequestSource.source.index}` +
+                            `&offset=0` +
+                            `&lang=${activeSubtitleKey}`
+                        }
                         default
                     />
                 )}
