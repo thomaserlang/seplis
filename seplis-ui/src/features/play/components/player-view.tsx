@@ -48,6 +48,11 @@ export function PlayerView({
         media.onloadeddata = () => {
             media.play()
         }
+        const savedVolume = localStorage.getItem('player-volume')
+        media.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.5
+        media.onvolumechange = () => {
+            localStorage.setItem('player-volume', String(Math.round(media.volume * 100) / 100))
+        }
     }, [media])
 
     if (isLoading) return <PageLoader />
