@@ -14,12 +14,24 @@ interface Props {
     onClose?: () => void
 }
 
+const OPTIONS = {
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+}
+
 export function MoviePlayView({ movieId, onClose }: Props) {
-    const movie = useGetMovie({ movieId })
+    const movie = useGetMovie({
+        movieId,
+        options: OPTIONS,
+    })
     const playRequests = useGetMoviePlayRequests({
         movieId,
+        options: OPTIONS,
     })
-    const watchedPosition = useGetMovieWatched({ movieId })
+    const watchedPosition = useGetMovieWatched({
+        movieId,
+        options: OPTIONS,
+    })
     const updateWatchedPosition = useUpdateMovieWatchedPosition({})
     const incrementWatched = useIncrementMovieWatched({})
 

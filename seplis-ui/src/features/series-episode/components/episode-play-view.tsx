@@ -20,35 +20,35 @@ interface Props {
     onClose?: () => void
 }
 
+const OPTIONS = {
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
+}
+
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
     const series = useGetSeries({
         seriesId,
-        options: {
-            refetchOnWindowFocus: false,
-            staleTime: Infinity,
-        },
+        options: OPTIONS,
     })
     const episode = useGetEpisode({
         seriesId,
         episodeNumber,
-        options: {
-            refetchOnWindowFocus: false,
-            staleTime: Infinity,
-        },
+        options: OPTIONS,
     })
     const playRequests = useGetEpisodePlayRequests({
         seriesId,
         episodeNumber,
-        options: {
-            refetchOnWindowFocus: false,
-            staleTime: Infinity,
-        },
+        options: OPTIONS,
     })
     const episodeWatched = useGetEpisodeWatched({
         seriesId,
         episodeNumber,
+        options: OPTIONS,
     })
-    const userSettings = useGetSeriesUserSettings({ seriesId })
+    const userSettings = useGetSeriesUserSettings({
+        seriesId,
+        options: OPTIONS,
+    })
     const updateUserSettings = useUpdateSeriesUserSettings({})
     const updateWatchedPosition = useUpdateEpisodeWatchedPosition({})
     const incrementWatched = useIncrementEpisodeWatched({})
