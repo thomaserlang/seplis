@@ -1058,6 +1058,27 @@
   font-family: inherit;
 }
 
+.media-default-skin video::cue,
+.media-default-skin video::-webkit-media-text-track-display {
+  font-family: inherit;
+}
+
+.media-default-skin video::cue {
+  font-size: 1.15em;
+  font-weight: 500;
+  line-height: 1.4;
+  color: oklch(0.98 0 0);
+  background-color: transparent;
+  text-shadow:
+    0 0 5px oklch(0 0 0 / 0.95),
+    0 0 10px oklch(0 0 0 / 0.8),
+    0 1px 4px oklch(0 0 0 / 0.9),
+    0 0 20px oklch(0 0 0 / 0.4);
+  letter-spacing: 0.02em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
 /* ==========================================================================
    Icon State Visibility for Video Skins
 
