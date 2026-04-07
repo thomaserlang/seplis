@@ -87,6 +87,7 @@ export interface VideoPlayerProps {
     timeSliderStyle?: CSSProperties
     isVideoLoading?: boolean
     suppressErrorDialog?: boolean
+    defaultSubtitle?: string
 }
 
 export function PlayerVideo({
@@ -106,10 +107,11 @@ export function PlayerVideo({
     timeSliderStyle,
     isVideoLoading,
     suppressErrorDialog,
+    defaultSubtitle,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
-    >(undefined)
+    >(defaultSubtitle)
     const [subtitleOffset, setSubtitleOffset] = useState(0)
 
     const activeSubtitle = activeSubtitleKey

@@ -30,7 +30,7 @@ export const {
 
 interface EpisodeWatchedIncrementProps extends MutationApiHelperProps<{}> {
     seriesId: number
-    episodeId: number
+    episodeNumber: number
 }
 
 export const {
@@ -38,13 +38,13 @@ export const {
     useMutation: useIncrementEpisodeWatched,
 } = useMutationApiHelper<EpisodeWatched, EpisodeWatchedIncrementProps>({
     method: 'POST',
-    url: ({ seriesId, episodeId }) =>
+    url: ({ seriesId, episodeNumber: episodeId }) =>
         `2/series/${seriesId}/episodes/${episodeId}/watched`,
     onSuccess: ({ data, variables }) => {
         queryClient.setQueryData(
             episodeWatchedQueryKey({
                 seriesId: variables.seriesId,
-                episodeNumber: variables.episodeId,
+                episodeNumber: variables.episodeNumber,
             }),
             data,
         )

@@ -6,18 +6,22 @@ import {
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useMedia } from '@videojs/react'
-import { type CSSProperties, useEffect, useRef, useState } from 'react'
+import {
+    type CSSProperties,
+    useEffect,
+    useEffectEvent,
+    useRef,
+    useState,
+} from 'react'
 import { useGetPlayServerMedia } from '../api/play-server-media.api'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
+import { PlayerProps } from '../types/player.types'
 import { getDefaultMaxBitrate } from '../utils/play-bitrate.utils'
 import { pickStartSource } from '../utils/play-source.utils'
 import { PlayerVideo } from './player-video'
 
-interface Props {
+interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
-    title?: string
-    secondaryTitle?: string
-    onClose?: () => void
 }
 
 export function PlayerView({
@@ -25,6 +29,11 @@ export function PlayerView({
     title,
     secondaryTitle,
     onClose,
+    onSavePosition,
+    onFinished,
+    defaultAudio,
+    defaultSubtitle,
+    defaultStartTime,
 }: Props) {
     const [source, setSource] = useState<PlayRequestSource>(() =>
         pickStartSource(playRequestsSources),
@@ -32,12 +41,29 @@ export function PlayerView({
     const [maxBitrate, setMaxBitrate] = useState<number>(() =>
         getDefaultMaxBitrate(),
     )
-    const [audioLang, setAudioLang] = useState<string | undefined>(undefined)
+    const [audioLang, setAudioLang] = useState<string | undefined>(defaultAudio)
     const [forceTranscode, setForceTranscode] = useState(false)
     const forceTranscodeRef = useRef(forceTranscode)
     forceTranscodeRef.current = forceTranscode
-    const resumeTimeRef = useRef<number | undefined>(undefined)
-    const [frozenTimeStyle, setFrozenTimeStyle] = useState<CSSProperties | undefined>(undefined)
+    const resumeTimeRef = useRef<number | undefined>(defaultStartTime)
+    const lastSaveTimeRef = useRef<number>(0)
+    const finishedFiredRef = useRef(false)
+
+    const handleTimeUpdate = useEffectEvent(
+        (currentTime: number, duration: number) => {
+            if (finishedFiredRef.current) return
+            if (currentTime >= duration * 0.9) {
+                finishedFiredRef.current = true
+                onFinished?.()
+            } else if (currentTime - lastSaveTimeRef.current >= 10) {
+                lastSaveTimeRef.current = currentTime
+                onSavePosition?.(Math.round(currentTime))
+            }
+        },
+    )
+    const [frozenTimeStyle, setFrozenTimeStyle] = useState<
+        CSSProperties | undefined
+    >(undefined)
     const [isVideoLoading, setIsVideoLoading] = useState(true)
     const [suppressErrorDialog, setSuppressErrorDialog] = useState(false)
 
@@ -76,10 +102,18 @@ export function PlayerView({
         media.onseeked = () => {
             setFrozenTimeStyle(undefined)
         }
+        media.ontimeupdate = () => {
+            const { currentTime, duration } = media
+            if (!duration) return
+            handleTimeUpdate(currentTime, duration)
+        }
         const savedVolume = localStorage.getItem('player-volume')
         media.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.5
         media.onvolumechange = () => {
-            localStorage.setItem('player-volume', String(Math.round(media.volume * 100) / 100))
+            localStorage.setItem(
+                'player-volume',
+                String(Math.round(media.volume * 100) / 100),
+            )
         }
     }, [media])
 
@@ -90,8 +124,11 @@ export function PlayerView({
     const capturePosition = () => {
         if (!media) return
         resumeTimeRef.current = media.currentTime
-        const fill = media.duration > 0 ? (media.currentTime / media.duration) * 100 : 0
-        setFrozenTimeStyle({ '--media-slider-fill': `${fill}%` } as CSSProperties)
+        const fill =
+            media.duration > 0 ? (media.currentTime / media.duration) * 100 : 0
+        setFrozenTimeStyle({
+            '--media-slider-fill': `${fill}%`,
+        } as CSSProperties)
         setIsVideoLoading(true)
     }
 
@@ -114,10 +151,20 @@ export function PlayerView({
             timeSliderStyle={frozenTimeStyle}
             isVideoLoading={isVideoLoading}
             suppressErrorDialog={suppressErrorDialog}
-            onSourceChange={(s) => { capturePosition(); setSource(s) }}
+            onSourceChange={(s) => {
+                capturePosition()
+                setSource(s)
+            }}
             onBitrateChange={handleBitrateChange}
-            onAudioLangChange={(lang) => { capturePosition(); setAudioLang(lang) }}
-            onForceTranscodeChange={(v) => { capturePosition(); setForceTranscode(v) }}
+            onAudioLangChange={(lang) => {
+                capturePosition()
+                setAudioLang(lang)
+            }}
+            onForceTranscodeChange={(v) => {
+                capturePosition()
+                setForceTranscode(v)
+            }}
+            defaultSubtitle={defaultSubtitle}
         />
     )
 }

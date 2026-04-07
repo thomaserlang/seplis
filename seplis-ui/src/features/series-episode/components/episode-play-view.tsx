@@ -3,6 +3,11 @@ import { PageLoader } from '@/components/page-loader'
 import { PlayerContainer } from '@/features/play'
 import { useGetSeries } from '@/features/series/api/series.api'
 import { useGetEpisodePlayRequests } from '../api/episode-play-requests.api'
+import { useUpdateEpisodeWatchedPosition } from '../api/episode-watched-position'
+import {
+    useGetEpisodeWatched,
+    useIncrementEpisodeWatched,
+} from '../api/episode-watched.api'
 import { useGetEpisode } from '../api/episode.api'
 
 interface Props {
@@ -18,12 +23,19 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
         seriesId,
         episodeNumber,
     })
+    const episodeWatched = useGetEpisodeWatched({
+        seriesId,
+        episodeNumber,
+    })
+    const updateWatchedPosition = useUpdateEpisodeWatchedPosition({})
+    const incrementWatched = useIncrementEpisodeWatched({})
 
-    if (series.isLoading || episode.isLoading || playRequests.isLoading)
-        return <PageLoader />
-    if (series.error) return <ErrorBox errorObj={series.error} />
-    if (episode.error) return <ErrorBox errorObj={episode.error} />
-    if (playRequests.error) return <ErrorBox errorObj={playRequests.error} />
+    const queries = [series, episode, playRequests, episodeWatched]
+    if (queries.some((q) => q.isLoading)) return <PageLoader />
+
+    const error = queries.find((q) => q.error)?.error
+    if (error) return <ErrorBox errorObj={error} />
+
     if (!series.data) return <ErrorBox message="Series not found" />
     if (!episode.data) return <ErrorBox message="Episode not found" />
     if (!playRequests.data)
@@ -40,6 +52,19 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             title={title}
             secondaryTitle={secondaryTitle}
             onClose={onClose}
+            defaultStartTime={episodeWatched.data?.position ?? 0}
+            onSavePosition={(position) =>
+                updateWatchedPosition.mutate({
+                    seriesId,
+                    episodeNumber,
+                    data: {
+                        position,
+                    },
+                })
+            }
+            onFinished={() => {
+                incrementWatched.mutate({ seriesId, episodeNumber })
+            }}
         />
     )
 }

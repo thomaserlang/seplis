@@ -2,22 +2,15 @@ import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
 import { PlayRequest } from '../types/play-source.types'
+import { PlayerProps } from '../types/player.types'
 import { Player } from './player-video'
 import { PlayerView } from './player-view'
 
-interface Props {
+interface Props extends PlayerProps {
     playRequests: PlayRequest[]
-    title?: string
-    secondaryTitle?: string
-    onClose?: () => void
 }
 
-export function PlayerContainer({
-    playRequests,
-    title,
-    secondaryTitle,
-    onClose,
-}: Props) {
+export function PlayerContainer({ playRequests, ...props }: Props) {
     const { data, isLoading, error } = useGetPlayRequestSources({
         playRequests,
     })
@@ -31,12 +24,7 @@ export function PlayerContainer({
 
     return (
         <Player.Provider>
-            <PlayerView
-                playRequestsSources={data}
-                title={title}
-                secondaryTitle={secondaryTitle}
-                onClose={onClose}
-            />
+            <PlayerView playRequestsSources={data} {...props} />
         </Player.Provider>
     )
 }

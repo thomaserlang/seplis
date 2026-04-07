@@ -50,7 +50,7 @@ export function EpisodeWatchedButton({
             loading={isLoading}
             size={size}
             onIncrement={() =>
-                increment.mutate({ seriesId, episodeId: episodeNumber })
+                increment.mutate({ seriesId, episodeNumber: episodeNumber })
             }
             onDecrement={() =>
                 decrement.mutate({ seriesId, episodeId: episodeNumber })
