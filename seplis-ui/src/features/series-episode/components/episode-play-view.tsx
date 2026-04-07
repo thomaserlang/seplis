@@ -30,7 +30,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
         return <ErrorBox message="No playable requests found" />
 
     const title = series.data?.title ?? undefined
-    const subtitle = episode.data
+    const secondaryTitle = episode.data
         ? `S${episode.data.season} E${episode.data.episode}${episode.data.title ? ` - ${episode.data.title}` : ''}`
         : undefined
 
@@ -38,7 +38,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
         <PlayerContainer
             playRequests={playRequests.data}
             title={title}
-            subtitle={subtitle}
+            secondaryTitle={secondaryTitle}
             onClose={onClose}
         />
     )

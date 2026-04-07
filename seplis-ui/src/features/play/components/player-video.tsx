@@ -74,7 +74,7 @@ export interface VideoPlayerProps {
     currentPlayRequestSource: PlayRequestSource
     media: PlayServerMedia
     title?: string
-    subtitle?: string
+    secondaryTitle?: string
     onClose?: () => void
     playRequestsSources: PlayRequestSources[]
     maxBitrate: number
@@ -93,7 +93,7 @@ export function PlayerVideo({
     currentPlayRequestSource,
     media,
     title,
-    subtitle,
+    secondaryTitle,
     onClose,
     playRequestsSources,
     maxBitrate,
@@ -168,9 +168,9 @@ export function PlayerVideo({
                 {title && (
                     <div className="media-header__info">
                         <span className="media-header__title">{title}</span>
-                        {subtitle && (
-                            <span className="media-header__subtitle">
-                                {subtitle}
+                        {secondaryTitle && (
+                            <span className="media-header__secondaryTitle">
+                                {secondaryTitle}
                             </span>
                         )}
                     </div>
@@ -297,7 +297,10 @@ export function PlayerVideo({
 
                     <div className="media-time-controls">
                         <Time.Value type="current" className="media-time" />
-                        <TimeSlider.Root className="media-slider" style={timeSliderStyle}>
+                        <TimeSlider.Root
+                            className="media-slider"
+                            style={timeSliderStyle}
+                        >
                             <TimeSlider.Track className="media-slider__track">
                                 <TimeSlider.Fill className="media-slider__fill" />
                                 <TimeSlider.Buffer className="media-slider__buffer" />

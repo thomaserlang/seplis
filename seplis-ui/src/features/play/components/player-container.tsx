@@ -8,14 +8,14 @@ import { PlayerView } from './player-view'
 interface Props {
     playRequests: PlayRequest[]
     title?: string
-    subtitle?: string
+    secondaryTitle?: string
     onClose?: () => void
 }
 
 export function PlayerContainer({
     playRequests,
     title,
-    subtitle,
+    secondaryTitle,
     onClose,
 }: Props) {
     const { data, isLoading, error } = useGetPlayRequestSources({
@@ -34,7 +34,7 @@ export function PlayerContainer({
             <PlayerView
                 playRequestsSources={data}
                 title={title}
-                subtitle={subtitle}
+                secondaryTitle={secondaryTitle}
                 onClose={onClose}
             />
         </Player.Provider>

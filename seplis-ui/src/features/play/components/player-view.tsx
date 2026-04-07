@@ -16,14 +16,14 @@ import { PlayerVideo } from './player-video'
 interface Props {
     playRequestsSources: PlayRequestSources[]
     title?: string
-    subtitle?: string
+    secondaryTitle?: string
     onClose?: () => void
 }
 
 export function PlayerView({
     playRequestsSources,
     title,
-    subtitle,
+    secondaryTitle,
     onClose,
 }: Props) {
     const [source, setSource] = useState<PlayRequestSource>(() =>
@@ -106,7 +106,7 @@ export function PlayerView({
             currentPlayRequestSource={source}
             playRequestsSources={playRequestsSources}
             title={title}
-            subtitle={subtitle}
+            secondaryTitle={secondaryTitle}
             onClose={onClose}
             maxBitrate={maxBitrate}
             audioLang={audioLang}

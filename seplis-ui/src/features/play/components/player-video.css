@@ -4,7 +4,7 @@
 
 :root {
   --media-border-radius: 0;
-  --media-icon-size: 4rem;
+  --media-icon-size: 3.5rem;
 }
 
 .media-default-skin *,
@@ -198,7 +198,7 @@
   text-shadow: 0 1px 3px oklch(0 0 0 / 0.6);
 }
 
-.media-default-skin .media-header__subtitle {
+.media-default-skin .media-header__secondaryTitle {
   font-size: calc(var(--media-icon-size) * 0.45);
   font-weight: 400;
   opacity: 0.7;
@@ -819,8 +819,8 @@
 }
 
 .media-default-skin .media-popover--settings {
-  border-radius: calc(var(--media-icon-size) * 0.15);
-  width: calc(var(--media-icon-size) * 4.5);
+  border-radius: 0.5rem;
+  width: calc(var(--media-icon-size) * 5);
   overflow: hidden;
 }
 
