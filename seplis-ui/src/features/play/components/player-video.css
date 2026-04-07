@@ -829,6 +829,11 @@
   flex-direction: column;
   padding: calc(var(--media-icon-size) * 0.1) 0;
   max-height: calc(var(--media-icon-size) * 6.5);
+
+  &[data-panel="audio"],
+  &[data-panel="subtitles"] {
+    max-height: calc(var(--media-icon-size) * 3.5);
+  }
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;

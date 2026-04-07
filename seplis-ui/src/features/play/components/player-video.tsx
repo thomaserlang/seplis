@@ -618,10 +618,16 @@ function SettingsPopover({
             ? `Max (${bitratePretty(currentSource.bit_rate)})`
             : bitratePretty(maxBitrate)
 
-    const currentAudioLabel = audioLang
-        ? (currentSource.audio.find((a) => a.language === audioLang)?.title ??
-          audioLang)
-        : 'Default'
+    const currentAudioLabel = (() => {
+        if (!audioLang) return 'Default'
+        const [lang, idxStr] = audioLang.split(':')
+        const index = parseInt(idxStr, 10)
+        const track =
+            currentSource.audio.find(
+                (a) => a.language === lang && a.index === index,
+            ) ?? currentSource.audio.find((a) => a.language === lang)
+        return track?.title ?? track?.language ?? audioLang
+    })()
 
     const subtitleLabel = (() => {
         if (!activeSubtitleKey) return 'Off'
@@ -680,7 +686,7 @@ function SettingsPopover({
                         onBack={back}
                     />
                 )}
-                <div className="media-settings">
+                <div className="media-settings" data-panel={panel}>
                     {panel === 'main' && (
                         <>
                             <MainItem
@@ -775,14 +781,16 @@ function SettingsPopover({
                         const other = currentSource.audio.filter(
                             (t) => !preferredAudioLangs?.includes(t.language),
                         )
+                        const audioKey = (t: { language: string; index: number }) =>
+                            `${t.language}:${t.index}`
                         return (
                             <>
                                 {preferred.map((track) => (
                                     <OptionItem
                                         key={track.index}
-                                        active={audioLang === track.language}
+                                        active={audioLang === audioKey(track)}
                                         onClick={() => {
-                                            onAudioLangChange(track.language)
+                                            onAudioLangChange(audioKey(track))
                                             back()
                                         }}
                                     >
@@ -795,9 +803,9 @@ function SettingsPopover({
                                 {other.map((track) => (
                                     <OptionItem
                                         key={track.index}
-                                        active={audioLang === track.language}
+                                        active={audioLang === audioKey(track)}
                                         onClick={() => {
-                                            onAudioLangChange(track.language)
+                                            onAudioLangChange(audioKey(track))
                                             back()
                                         }}
                                     >
