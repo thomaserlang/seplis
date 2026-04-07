@@ -71,8 +71,8 @@ const SEEK_TIME = 10
 export const Player = createPlayer({ features: videoFeatures })
 
 export interface VideoPlayerProps {
-    currentPlayRequestSource: PlayRequestSource
-    media: PlayServerMedia
+    playRequestSource: PlayRequestSource
+    playServerMedia: PlayServerMedia
     title?: string
     secondaryTitle?: string
     onClose?: () => void
@@ -91,8 +91,8 @@ export interface VideoPlayerProps {
 }
 
 export function PlayerVideo({
-    currentPlayRequestSource,
-    media,
+    playRequestSource,
+    playServerMedia,
     title,
     secondaryTitle,
     onClose,
@@ -115,16 +115,16 @@ export function PlayerVideo({
     const [subtitleOffset, setSubtitleOffset] = useState(0)
 
     const activeSubtitle = activeSubtitleKey
-        ? currentPlayRequestSource.source.subtitles.find((s) => {
+        ? playRequestSource.source.subtitles.find((s) => {
               const [lang, idxStr] = activeSubtitleKey.split(':')
               return s.language === lang && s.index === parseInt(idxStr)
           })
         : undefined
 
     const subtitleUrl = activeSubtitleKey
-        ? `${currentPlayRequestSource.request.play_url}/subtitle-file` +
-          `?play_id=${currentPlayRequestSource.request.play_id}` +
-          `&source_index=${currentPlayRequestSource.source.index}` +
+        ? `${playRequestSource.request.play_url}/subtitle-file` +
+          `?play_id=${playRequestSource.request.play_id}` +
+          `&source_index=${playRequestSource.source.index}` +
           `&offset=0` +
           `&lang=${activeSubtitleKey}`
         : undefined
@@ -133,9 +133,9 @@ export function PlayerVideo({
         <Container className={`media-default-skin media-default-skin--video`}>
             <Video
                 src={
-                    media.can_direct_play
-                        ? media.direct_play_url
-                        : media.hls_url
+                    playServerMedia.can_direct_play
+                        ? playServerMedia.direct_play_url
+                        : playServerMedia.hls_url
                 }
                 autoPlay
                 crossOrigin="anonymous"
@@ -341,7 +341,7 @@ export function PlayerVideo({
                         <VolumePopover />
 
                         <SettingsPopover
-                            currentPlayRequestSource={currentPlayRequestSource}
+                            currentPlayRequestSource={playRequestSource}
                             playRequestsSources={playRequestsSources}
                             maxBitrate={maxBitrate}
                             audioLang={audioLang}

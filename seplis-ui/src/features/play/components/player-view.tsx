@@ -139,8 +139,8 @@ export function PlayerView({
 
     return (
         <PlayerVideo
-            media={data}
-            currentPlayRequestSource={source}
+            playServerMedia={data}
+            playRequestSource={source}
             playRequestsSources={playRequestsSources}
             title={title}
             secondaryTitle={secondaryTitle}
