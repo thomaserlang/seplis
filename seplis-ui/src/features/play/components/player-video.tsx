@@ -114,6 +114,13 @@ export function PlayerVideo({
     >(defaultSubtitle)
     const [subtitleOffset, setSubtitleOffset] = useState(0)
 
+    useEffect(() => {
+        const id = setInterval(() => {
+            fetch(playServerMedia.keep_alive_url).catch(() => {})
+        }, 5000)
+        return () => clearInterval(id)
+    }, [playServerMedia.keep_alive_url])
+
     const activeSubtitle = activeSubtitleKey
         ? playRequestSource.source.subtitles.find((s) => {
               const [lang, idxStr] = activeSubtitleKey.split(':')
