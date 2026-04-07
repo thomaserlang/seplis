@@ -20,15 +20,6 @@ export interface EpisodeWatched {
     watched_at: string | null
 }
 
-export function EpisodeWatchedDefault(EpisodeNumber: number): EpisodeWatched {
-    return {
-        episode_number: EpisodeNumber,
-        times: 0,
-        position: 0,
-        watched_at: null,
-    }
-}
-
 export interface UserCanWatchEpisode {
     on_play_server: boolean
 }
