@@ -858,6 +858,15 @@
   &:hover {
     background-color: color-mix(in srgb, currentColor 10%, transparent);
   }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.6;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
 }
 
 .media-default-skin .media-settings__main-label {

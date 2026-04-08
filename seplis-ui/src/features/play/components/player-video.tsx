@@ -692,26 +692,30 @@ function SettingsPopover({
                                 label="Source"
                                 value={playSourceStr(currentSource)}
                                 onClick={() => setPanel('source')}
+                                disabled={
+                                    playRequestsSources.reduce(
+                                        (n, s) => n + s.sources.length,
+                                        0,
+                                    ) <= 1
+                                }
                             />
                             <MainItem
                                 label="Bitrate"
                                 value={currentBitrateLabel}
                                 onClick={() => setPanel('bitrate')}
                             />
-                            {currentSource.audio.length > 1 && (
-                                <MainItem
-                                    label="Audio"
-                                    value={currentAudioLabel}
-                                    onClick={() => setPanel('audio')}
-                                />
-                            )}
-                            {currentSource.subtitles.length > 0 && (
-                                <MainItem
-                                    label="Subtitles"
-                                    value={subtitleLabel}
-                                    onClick={() => setPanel('subtitles')}
-                                />
-                            )}
+                            <MainItem
+                                label="Audio"
+                                value={currentAudioLabel}
+                                onClick={() => setPanel('audio')}
+                                disabled={currentSource.audio.length <= 1}
+                            />
+                            <MainItem
+                                label="Subtitles"
+                                value={subtitleLabel}
+                                onClick={() => setPanel('subtitles')}
+                                disabled={currentSource.subtitles.length === 0}
+                            />
                             <MainItem
                                 label="Subtitle Sync"
                                 value={
@@ -978,22 +982,30 @@ function MainItem({
     label,
     value,
     onClick,
+    disabled,
 }: {
     label: string
     value?: string
     onClick: () => void
+    disabled?: boolean
 }): ReactNode {
     return (
         <button
             type="button"
             className="media-settings__main-item"
-            onClick={onClick}
+            onClick={disabled ? undefined : onClick}
+            disabled={disabled}
         >
             <span className="media-settings__main-label">{label}</span>
             {value && (
                 <span className="media-settings__main-value">{value}</span>
             )}
-            <CaretRightIcon className="media-settings__chevron" weight="bold" />
+            {!disabled && (
+                <CaretRightIcon
+                    className="media-settings__chevron"
+                    weight="bold"
+                />
+            )}
         </button>
     )
 }
