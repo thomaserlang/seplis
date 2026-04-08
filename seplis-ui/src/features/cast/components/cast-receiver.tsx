@@ -27,8 +27,8 @@ interface CafTrack {
     subtype: string
     name: string
     language: string
-    contentId: string
-    contentType: string
+    trackContentId: string
+    trackContentType: string
 }
 
 export function CastReceiver() {
@@ -298,6 +298,8 @@ export function CastReceiver() {
         }
     }, [])
 
+    const isPlaying = status === 'Playing'
+
     return (
         <div
             style={{
@@ -309,50 +311,55 @@ export function CastReceiver() {
                 overflow: 'hidden',
             }}
         >
-            {/* Splash — visible while waiting for content */}
-            <div
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    gap: '1rem',
-                }}
-            >
-                <div
-                    style={{
-                        fontSize: '4rem',
-                        fontWeight: 700,
-                        letterSpacing: '0.25em',
-                        opacity: 0.9,
-                    }}
-                >
-                    SEPLIS
-                </div>
-                <div
-                    style={{
-                        fontSize: '1.1rem',
-                        opacity: 0.5,
-                        maxWidth: '60%',
-                        textAlign: 'center',
-                    }}
-                >
-                    {status}
-                </div>
-            </div>
-
-            {/* CAF player — overlays the splash once content is playing */}
+            {/* CAF player — always rendered so CAF can control it */}
             {React.createElement('cast-media-player', {
                 style: {
                     position: 'absolute',
                     inset: 0,
                     width: '100%',
                     height: '100%',
+                    zIndex: 0,
                 },
             })}
+
+            {/* Splash — sits above the player while no content is playing */}
+            {!isPlaying && (
+                <div
+                    style={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        gap: '1rem',
+                        zIndex: 1,
+                        background: '#111',
+                    }}
+                >
+                    <div
+                        style={{
+                            fontSize: '4rem',
+                            fontWeight: 700,
+                            letterSpacing: '0.25em',
+                            opacity: 0.9,
+                        }}
+                    >
+                        SEPLIS
+                    </div>
+                    <div
+                        style={{
+                            fontSize: '1.1rem',
+                            opacity: 0.5,
+                            maxWidth: '60%',
+                            textAlign: 'center',
+                        }}
+                    >
+                        {status}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
@@ -379,13 +386,13 @@ function buildSubtitleTracks(prs: PlayRequestSource): CafTrack[] {
         subtype: 'SUBTITLES',
         name: sub.title || sub.language,
         language: sub.language,
-        contentId:
+        trackContentId:
             `${prs.request.play_url}/subtitle-file` +
             `?play_id=${prs.request.play_id}` +
             `&source_index=${prs.source.index}` +
             `&offset=0` +
             `&lang=${sub.language}:${sub.index}`,
-        contentType: 'text/vtt',
+        trackContentType: 'text/vtt',
     }))
 }
 
