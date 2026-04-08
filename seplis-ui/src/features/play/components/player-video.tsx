@@ -26,6 +26,7 @@ import {
     useMedia,
 } from '@videojs/react'
 import { Video, videoFeatures } from '@videojs/react/video'
+import JASSUB from 'jassub'
 import {
     useEffect,
     useEffectEvent,
@@ -117,6 +118,21 @@ export function PlayerVideo({
           })
         : undefined
 
+    // TODO: JASSUB does not render in Safari, fall back to browser <track> for ASS/SSA
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    const isAssSubtitle =
+        !isSafari &&
+        (activeSubtitle?.codec === 'ass' || activeSubtitle?.codec === 'ssa')
+
+    const subtitleUrl = activeSubtitleKey
+        ? `${playRequestSource.request.play_url}/subtitle-file` +
+          `?play_id=${playRequestSource.request.play_id}` +
+          `&source_index=${playRequestSource.source.index}` +
+          `&offset=0` +
+          `&lang=${activeSubtitleKey}` +
+          (isAssSubtitle ? `&output_format=ass` : '')
+        : undefined
+
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
             <Video
@@ -127,26 +143,23 @@ export function PlayerVideo({
                 }
                 crossOrigin="anonymous"
             >
-                {activeSubtitle && (
+                {activeSubtitle && !isAssSubtitle && subtitleUrl && (
                     <track
                         key={activeSubtitleKey}
                         kind="subtitles"
                         label={activeSubtitle.title || activeSubtitle.language}
                         srcLang={activeSubtitle.language}
-                        src={
-                            `${playRequestSource.request.play_url}/subtitle-file` +
-                            `?play_id=${playRequestSource.request.play_id}` +
-                            `&source_index=${playRequestSource.source.index}` +
-                            `&offset=0` +
-                            `&lang=${activeSubtitleKey}`
-                        }
+                        src={subtitleUrl}
                         default
                     />
                 )}
             </Video>
 
-            {activeSubtitleKey && (
+            {activeSubtitleKey && !isAssSubtitle && (
                 <SubtitleOffsetApplier offset={subtitleOffset} />
+            )}
+            {isAssSubtitle && subtitleUrl && (
+                <AssSubtitle subUrl={subtitleUrl} offset={subtitleOffset} />
             )}
 
             <Controls.Root className="media-header">
@@ -414,6 +427,36 @@ function AutoplayOnce(): ReactNode {
         hasAutoplayed.current = true
         media.play().catch(() => {})
     }, [media])
+
+    return null
+}
+
+function AssSubtitle({
+    subUrl,
+    offset,
+}: {
+    subUrl: string
+    offset: number
+}): ReactNode {
+    const media = useMedia()
+    const jassubRef = useRef<JASSUB | null>(null)
+
+    useEffect(() => {
+        if (!media) return
+        const jassub = new JASSUB({
+            video: media as unknown as HTMLVideoElement,
+            subUrl,
+        })
+        jassubRef.current = jassub
+        return () => {
+            jassub.destroy()
+            jassubRef.current = null
+        }
+    }, [media, subUrl])
+
+    useEffect(() => {
+        if (jassubRef.current) jassubRef.current.timeOffset = offset
+    }, [offset])
 
     return null
 }

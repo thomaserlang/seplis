@@ -31,6 +31,7 @@
     "@phosphor-icons/react": "2.1.10",
     "@tanstack/react-query": "^5.96.1",
     "@videojs/react": "^10.0.0-beta.15",
+    "jassub": "^2.4.2",
     "ky": "^1.14.3",
     "pretty-bytes": "^7.1.0",
     "react": "^19.2.4",
