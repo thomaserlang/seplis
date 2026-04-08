@@ -5,8 +5,6 @@ import {
 
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { CastSenderPlayer } from '@/features/cast/components/cast-sender-player'
-import { useCastSender } from '@/features/cast/hooks/use-cast-sender'
 import { useMedia } from '@videojs/react'
 import {
     type CSSProperties,
@@ -80,31 +78,6 @@ export function PlayerView({
             }),
     )
 
-    // Cast sender — manages Cast SDK, session state and remote playback
-    const castSender = useCastSender()
-    const { isConnected: isCasting } = castSender.state
-    const pendingCastTimeRef = useRef<number | undefined>(undefined)
-
-    // Fires with fresh state whenever isCasting becomes true
-    const handleCastSessionStarted = useEffectEvent(() => {
-        castSender.loadMedia({
-            playRequests: playRequestsSources.map((s) => s.request),
-            sourcePlayId: source.request.play_id,
-            sourceIndex: source.source.index,
-            audio,
-            subtitle: activeSubtitle,
-            maxBitrate,
-            startTime: pendingCastTimeRef.current ?? defaultStartTime ?? 0,
-            title,
-            secondaryTitle,
-        })
-        pendingCastTimeRef.current = undefined
-    })
-
-    useEffect(() => {
-        if (isCasting) handleCastSessionStarted()
-    }, [isCasting])
-
     const handleTimeUpdate = useEffectEvent(
         (currentTime: number, duration: number) => {
             if (finishedFiredRef.current) return
@@ -136,15 +109,10 @@ export function PlayerView({
     const media = useMedia()
 
     useEffect(() => {
+        console.log(media)
         if (!media) return
         let playInitiated = false
 
-        media.onloadedmetadata = () => {
-            if (resumeTimeRef.current !== undefined) {
-                media.currentTime = resumeTimeRef.current
-                resumeTimeRef.current = undefined
-            }
-        }
         media.oncanplay = () => {
             setIsVideoLoading(false)
             setSuppressErrorDialog(false)
@@ -156,10 +124,12 @@ export function PlayerView({
                 // continues in the background after
                 // the player is closed
                 playInitiated = true
+                console.log('huh')
                 media.play()
             }
         }
         media.onerror = () => {
+            console.log('media error', media.error)
             if (!forceTranscodeRef.current) {
                 setSuppressErrorDialog(true)
                 setIsVideoLoading(true)
@@ -184,54 +154,7 @@ export function PlayerView({
                 String(Math.round(media.volume * 100) / 100),
             )
         }
-
-        return () => {
-            media.pause()
-            media.onloadedmetadata = null
-            media.oncanplay = null
-            media.onerror = null
-            media.onseeked = null
-            media.ontimeupdate = null
-            media.onvolumechange = null
-        }
     }, [media])
-
-    // Show cast player immediately — don't block on local media fetch
-    if (isCasting) {
-        return (
-            <CastSenderPlayer
-                cast={castSender}
-                title={title}
-                secondaryTitle={secondaryTitle}
-                onClose={onClose}
-                playRequestsSources={playRequestsSources}
-                currentPlayRequestSource={source}
-                maxBitrate={maxBitrate}
-                audio={audio}
-                activeSubtitle={activeSubtitle}
-                preferredAudioLangs={PREFERRED_AUDIO_LANGS}
-                preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-                onSourceChange={(s) => setSource(s)}
-                onBitrateChange={(b) => {
-                    if (b >= source.source.bit_rate) {
-                        localStorage.removeItem('maxBitrate')
-                        setMaxBitrate(MAX_BITRATE)
-                    } else {
-                        localStorage.setItem('maxBitrate', String(b))
-                        setMaxBitrate(b)
-                    }
-                }}
-                onAudioChange={(a) => {
-                    setAudioLang(a)
-                    onAudioChange?.(a)
-                }}
-                onSubtitleChange={(s) => {
-                    setActiveSubtitle(s)
-                    onSubtitleChange?.(s)
-                }}
-            />
-        )
-    }
 
     if (isLoading) return <PageLoader />
     if (error) return <ErrorBox errorObj={error} />
@@ -257,16 +180,6 @@ export function PlayerView({
             setMaxBitrate(bitrate)
         }
         capturePosition()
-    }
-
-    const handleRequestCast = (currentTime: number) => {
-        if (isCasting) {
-            castSender.stopCasting()
-        } else {
-            pendingCastTimeRef.current = currentTime
-            media?.pause()
-            castSender.requestSession()
-        }
     }
 
     return (
@@ -304,8 +217,7 @@ export function PlayerView({
             }}
             preferredAudioLangs={PREFERRED_AUDIO_LANGS}
             preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-            onRequestCast={handleRequestCast}
-            isCasting={isCasting}
+            defaultStartTime={defaultStartTime}
         />
     )
 }
