@@ -6,9 +6,10 @@ import {
     PlayRequestSources,
     PlaySource,
 } from '@/features/play/types/play-source.types'
-import { useEffect, useRef } from 'react'
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { CAST_NAMESPACE, CastLoadData, CastSenderMessage } from '../types/cast-messages.types'
+
+const LOG_TAG = 'SEPLIS'
 
 // CAF context is a singleton — guard against React StrictMode double-invoke
 let receiverInitialized = false
@@ -31,8 +32,10 @@ interface CafTrack {
 }
 
 export function CastReceiver() {
+    const [status, setStatus] = useState('Waiting for connection…')
     const stateRef = useRef<ReceiverState | null>(null)
     const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    const logRef = useRef<(msg: string, ...args: unknown[]) => void>(() => {})
 
     useEffect(() => {
         if (receiverInitialized) return
@@ -40,21 +43,69 @@ export function CastReceiver() {
 
         const cast = (window as any).cast
         if (!cast?.framework) {
-            console.error(
-                '[Cast Receiver] SDK not found — check that the receiver script ' +
-                'is loaded before React in index.html.',
-            )
+            const msg = 'Cast Receiver SDK not found. Check cast-receiver.html script tags.'
+            console.error('[SEPLIS]', msg)
+            setStatus(`Error: ${msg}`)
             return
         }
+
+        // ── Debug logger ──────────────────────────────────────────────────
+        // https://developers.google.com/cast/docs/debugging/cast_debug_logger
+        const debugLogger = (cast as any).debug?.CastDebugLogger?.getInstance()
+        if (debugLogger) {
+            debugLogger.setEnabled(true)
+            debugLogger.showDebugLogs(true)
+            // Show all framework core events and media status in the overlay
+            debugLogger.loggerLevelByEvents = {
+                'cast.framework.events.category.CORE':
+                    cast.framework.LoggerLevel.INFO,
+                'cast.framework.events.EventType.MEDIA_STATUS':
+                    cast.framework.LoggerLevel.DEBUG,
+            }
+        } else {
+            console.warn('[SEPLIS] CastDebugLogger not available — add caf_debugger.js to cast-receiver.html')
+        }
+
+        // Unified log helper: writes to console + debug overlay
+        const log = (msg: string, ...args: unknown[]) => {
+            console.log(`[${LOG_TAG}]`, msg, ...args)
+            debugLogger?.info(LOG_TAG, msg, ...args)
+        }
+        logRef.current = log
+
+        log('SDK ready, initialising receiver context')
 
         const context = cast.framework.CastReceiverContext.getInstance()
         const playerManager = context.getPlayerManager()
 
-        // ── LOAD interceptor ───────────────────────────────────────────────
-        // This runs whenever the sender calls loadMedia(), AND whenever we
-        // call playerManager.load() from the receiver for settings changes.
-        // The `isReload` flag in customData lets us short-circuit the
-        // expensive API fetch on receiver-triggered reloads.
+        // ── System events ─────────────────────────────────────────────────
+        context.addEventListener(cast.framework.system.EventType.READY, () => {
+            log('Receiver READY')
+            setStatus('Ready — waiting for content…')
+        })
+        context.addEventListener(cast.framework.system.EventType.ERROR, (e: any) => {
+            log('System ERROR', e)
+            setStatus(`System error: ${JSON.stringify(e)}`)
+        })
+        context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, (e: any) => {
+            log('Sender connected', e?.senderId)
+            setStatus('Sender connected')
+        })
+        context.addEventListener(cast.framework.system.EventType.SENDER_DISCONNECTED, (e: any) => {
+            log('Sender disconnected', e?.senderId)
+        })
+
+        // ── Player events ─────────────────────────────────────────────────
+        playerManager.addEventListener(
+            cast.framework.events.EventType.ERROR,
+            (e: any) => log('Player ERROR', e),
+        )
+        playerManager.addEventListener(
+            cast.framework.events.EventType.BUFFERING,
+            (e: any) => log('Buffering', e?.isBuffering),
+        )
+
+        // ── LOAD interceptor ──────────────────────────────────────────────
         playerManager.setMessageInterceptor(
             cast.framework.messages.MessageType.LOAD,
             async (loadRequest: any) => {
@@ -62,15 +113,22 @@ export function CastReceiver() {
                     | (CastLoadData & { isReload?: boolean })
                     | undefined
 
+                log('LOAD interceptor', { isReload: customData?.isReload, hasPlayRequests: !!customData?.playRequests })
+
                 if (!customData?.playRequests) return loadRequest
 
-                // Short-circuit: URL already resolved, just play it
-                if (customData.isReload) return loadRequest
+                // Short-circuit: URL already resolved by a receiver-side reload
+                if (customData.isReload) {
+                    log('isReload=true, passing through')
+                    return loadRequest
+                }
 
+                setStatus('Loading sources…')
                 try {
                     const sources = await getPlayRequestSources({
                         playRequests: customData.playRequests,
                     })
+                    log('Sources fetched', sources?.length)
 
                     if (!sources?.length) throw new Error('No play sources available')
 
@@ -79,10 +137,10 @@ export function CastReceiver() {
                         customData.sourcePlayId,
                         customData.sourceIndex,
                     )
+                    log('Source resolved', playRequestSource.source.resolution, playRequestSource.source.codec)
 
-                    // getPlayServerMedia runs on the Chromecast's Chromium browser,
-                    // so getSupportedVideoCodecs() / canPlayType() reflect what
-                    // the Chromecast device actually supports.
+                    setStatus('Negotiating stream…')
+                    // Codec detection runs on the Chromecast's Chromium browser
                     const mediaData = await getPlayServerMedia({
                         playRequestSource,
                         audio: customData.audio,
@@ -92,8 +150,8 @@ export function CastReceiver() {
                                 : undefined,
                         startTime: customData.startTime,
                     })
+                    log('Media URL ready', { canDirectPlay: mediaData.can_direct_play, url: mediaData.hls_url })
 
-                    // Restart keep-alive for this session
                     if (keepAliveRef.current) clearInterval(keepAliveRef.current)
                     keepAliveRef.current = setInterval(() => {
                         fetch(mediaData.keep_alive_url).catch(() => {})
@@ -107,12 +165,8 @@ export function CastReceiver() {
                         subtitleTracks,
                     }
 
-                    // Activate the requested subtitle track
                     if (customData.subtitle) {
-                        const trackId = findSubtitleTrackId(
-                            playRequestSource,
-                            customData.subtitle,
-                        )
+                        const trackId = findSubtitleTrackId(playRequestSource, customData.subtitle)
                         if (trackId !== null) loadRequest.activeTrackIds = [trackId]
                     }
 
@@ -127,38 +181,38 @@ export function CastReceiver() {
                     loadRequest.media.duration = playRequestSource.source.duration
                     loadRequest.media.tracks = subtitleTracks
                     loadRequest.media.metadata = {
-                        metadataType: 0, // GenericMediaMetadata
+                        metadataType: 0,
                         title: customData.title,
                         subtitle: customData.secondaryTitle,
                     }
                     loadRequest.currentTime = customData.startTime ?? 0
 
+                    setStatus('Playing')
                     return loadRequest
                 } catch (e) {
-                    console.error('[Cast Receiver] Failed to load media', e)
+                    const msg = e instanceof Error ? e.message : String(e)
+                    log('LOAD ERROR', msg)
+                    setStatus(`Load error: ${msg}`)
                     throw e
                 }
             },
         )
 
-        // ── Custom message listener (settings changes from sender) ─────────
+        // ── Custom messages (settings changes from sender) ────────────────
         context.addCustomMessageListener(
             CAST_NAMESPACE,
             async (event: { data: CastSenderMessage; senderId: string }) => {
                 const msg = event.data
                 const current = stateRef.current
+                log('Custom message', msg.type)
                 if (!current) return
 
-                // Subtitle toggle — no reload needed, just switch tracks
                 if (msg.type === 'setSubtitle') {
                     const ttm = playerManager.getTextTracksManager()
                     if (!msg.subtitle) {
                         ttm.setActiveByIds([])
                     } else {
-                        const trackId = findSubtitleTrackId(
-                            current.playRequestSource,
-                            msg.subtitle,
-                        )
+                        const trackId = findSubtitleTrackId(current.playRequestSource, msg.subtitle)
                         if (trackId !== null) ttm.setActiveByIds([trackId])
                     }
                     stateRef.current = {
@@ -168,7 +222,6 @@ export function CastReceiver() {
                     return
                 }
 
-                // Audio / bitrate / source changes need a new media URL
                 let newLoadData = { ...current.loadData }
                 let newPlayRequestSource = current.playRequestSource
 
@@ -181,14 +234,9 @@ export function CastReceiver() {
                         (s) => s.request.play_id === msg.playId,
                     )
                     if (reqSources) {
-                        const src = reqSources.sources.find(
-                            (s) => s.index === msg.sourceIndex,
-                        )
+                        const src = reqSources.sources.find((s) => s.index === msg.sourceIndex)
                         if (src) {
-                            newPlayRequestSource = {
-                                request: reqSources.request,
-                                source: src,
-                            }
+                            newPlayRequestSource = { request: reqSources.request, source: src }
                             newLoadData.sourcePlayId = msg.playId
                             newLoadData.sourceIndex = msg.sourceIndex
                         }
@@ -207,7 +255,6 @@ export function CastReceiver() {
                         startTime: currentTime,
                     })
 
-                    // Restart keep-alive for the new session URL
                     if (keepAliveRef.current) clearInterval(keepAliveRef.current)
                     keepAliveRef.current = setInterval(() => {
                         fetch(mediaData.keep_alive_url).catch(() => {})
@@ -216,8 +263,8 @@ export function CastReceiver() {
                     const url = mediaData.can_direct_play
                         ? mediaData.direct_play_url
                         : mediaData.hls_url
-
                     const subtitleTracks = buildSubtitleTracks(newPlayRequestSource)
+
                     stateRef.current = {
                         loadData: newLoadData,
                         playRequestSources: current.playRequestSources,
@@ -225,8 +272,6 @@ export function CastReceiver() {
                         subtitleTracks,
                     }
 
-                    // Reload via playerManager. isReload=true bypasses the full
-                    // API fetch in the interceptor — the URL is already resolved.
                     playerManager.load({
                         type: 'LOAD',
                         media: {
@@ -240,12 +285,12 @@ export function CastReceiver() {
                         currentTime,
                     })
                 } catch (e) {
-                    console.error('[Cast Receiver] Failed to reload after settings change', e)
+                    log('Settings reload ERROR', e instanceof Error ? e.message : String(e))
                 }
             },
         )
 
-        // start() must be called LAST, after all interceptors/listeners are set
+        log('Calling context.start()')
         context.start()
 
         return () => {
@@ -253,14 +298,60 @@ export function CastReceiver() {
         }
     }, [])
 
-    // <cast-media-player> is the CAF web component that handles HLS playback,
-    // subtitles, and the standard Cast receiver UI automatically.
-    // React.createElement is used directly because TypeScript doesn't know
-    // about this custom element in the JSX IntrinsicElements map.
     return (
-        <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
+        <div
+            style={{
+                position: 'relative',
+                width: '100vw',
+                height: '100vh',
+                background: '#111',
+                fontFamily: 'sans-serif',
+                overflow: 'hidden',
+            }}
+        >
+            {/* Splash — visible while waiting for content */}
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    gap: '1rem',
+                }}
+            >
+                <div
+                    style={{
+                        fontSize: '4rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.25em',
+                        opacity: 0.9,
+                    }}
+                >
+                    SEPLIS
+                </div>
+                <div
+                    style={{
+                        fontSize: '1.1rem',
+                        opacity: 0.5,
+                        maxWidth: '60%',
+                        textAlign: 'center',
+                    }}
+                >
+                    {status}
+                </div>
+            </div>
+
+            {/* CAF player — overlays the splash once content is playing */}
             {React.createElement('cast-media-player', {
-                style: { width: '100%', height: '100%' },
+                style: {
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                },
             })}
         </div>
     )
@@ -298,7 +389,6 @@ function buildSubtitleTracks(prs: PlayRequestSource): CafTrack[] {
     }))
 }
 
-/** Returns the 1-based trackId for a subtitle key like "eng:0", or null. */
 function findSubtitleTrackId(prs: PlayRequestSource, subtitleKey: string): number | null {
     const [lang, idxStr] = subtitleKey.split(':')
     const idx = prs.source.subtitles.findIndex(
