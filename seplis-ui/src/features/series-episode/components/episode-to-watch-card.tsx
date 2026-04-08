@@ -20,7 +20,11 @@ export function EpisodeToWatchCard({ seriesId }: Props) {
             seriesId={seriesId}
             episode={data}
             loading={isLoading}
-            title="Next to watch"
+            title={
+                !data?.user_watched?.position
+                    ? 'Next to watch'
+                    : 'Continue watching'
+            }
             accentColor="oklch(0.55 0.22 250)"
             noEpisodeText="No episode to watch"
         />
