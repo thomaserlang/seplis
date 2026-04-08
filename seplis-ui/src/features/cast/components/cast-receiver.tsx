@@ -66,7 +66,7 @@ export function CastReceiver() {
         const playerManager = context.getPlayerManager()
 
         context.addEventListener(cast.framework.system.EventType.READY, () => {
-            if (debugLogger && !debugLogger.debugOverlayElement_) {
+            if (import.meta.env.DEV && debugLogger && !debugLogger.debugOverlayElement_) {
                 debugLogger.setEnabled(true)
                 debugLogger.showDebugLogs(true)
             }
