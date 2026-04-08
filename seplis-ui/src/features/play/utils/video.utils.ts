@@ -1,9 +1,9 @@
 export function getSupportedVideoCodecs() {
     const video = document.createElement('video')
     const types: { [key: string]: string } = {
+        'video/mp4; codecs="avc1.42E01E"': 'h264',
         'video/mp4; codecs="hvc1"': 'hevc',
         'video/mp4; codecs="hev1.1.6.L93.90"': 'hevc',
-        'video/mp4; codecs="avc1.42E01E"': 'h264',
         'video/mp4; codecs="av01.0.08M.08"': 'av1',
     }
     const codecs: string[] = []
