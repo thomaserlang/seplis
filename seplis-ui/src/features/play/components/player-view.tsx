@@ -113,6 +113,13 @@ export function PlayerView({
         if (!media) return
         let playInitiated = false
 
+        media.onloadedmetadata = () => {
+            console.log('metadata loaded')
+            if (resumeTimeRef.current !== undefined) {
+                media.currentTime = resumeTimeRef.current
+                resumeTimeRef.current = undefined
+            }
+        }
         media.oncanplay = () => {
             setIsVideoLoading(false)
             setSuppressErrorDialog(false)
