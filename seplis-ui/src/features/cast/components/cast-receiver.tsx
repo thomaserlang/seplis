@@ -6,7 +6,7 @@ import {
     PlayRequestSources,
     PlaySource,
 } from '@/features/play/types/play-source.types'
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { CAST_NAMESPACE, CastLoadData, CastSenderMessage } from '../types/cast-messages.types'
 
 const LOG_TAG = 'SEPLIS'
@@ -18,7 +18,6 @@ interface ReceiverState {
     loadData: CastLoadData
     playRequestSources: PlayRequestSources[]
     playRequestSource: PlayRequestSource
-    subtitleTracks: CafTrack[]
 }
 
 interface CafTrack {
@@ -32,10 +31,8 @@ interface CafTrack {
 }
 
 export function CastReceiver() {
-    const [status, setStatus] = useState('Waiting for connection…')
     const stateRef = useRef<ReceiverState | null>(null)
     const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null)
-    const logRef = useRef<(msg: string, ...args: unknown[]) => void>(() => {})
 
     useEffect(() => {
         if (receiverInitialized) return
@@ -43,66 +40,39 @@ export function CastReceiver() {
 
         const cast = (window as any).cast
         if (!cast?.framework) {
-            const msg = 'Cast Receiver SDK not found. Check cast-receiver.html script tags.'
-            console.error('[SEPLIS]', msg)
-            setStatus(`Error: ${msg}`)
+            console.error('[SEPLIS] Cast Receiver SDK not found — check cast-receiver.html script tags.')
             return
         }
 
-        // ── Debug logger ──────────────────────────────────────────────────
-        // https://developers.google.com/cast/docs/debugging/cast_debug_logger
         const debugLogger = (cast as any).debug?.CastDebugLogger?.getInstance()
         if (debugLogger) {
-            debugLogger.setEnabled(true)
-            debugLogger.showDebugLogs(true)
-            // Show all framework core events and media status in the overlay
             debugLogger.loggerLevelByEvents = {
-                'cast.framework.events.category.CORE':
-                    cast.framework.LoggerLevel.INFO,
-                'cast.framework.events.EventType.MEDIA_STATUS':
-                    cast.framework.LoggerLevel.DEBUG,
+                'cast.framework.events.category.CORE': cast.framework.LoggerLevel.INFO,
+                'cast.framework.events.EventType.MEDIA_STATUS': cast.framework.LoggerLevel.DEBUG,
             }
-        } else {
-            console.warn('[SEPLIS] CastDebugLogger not available — add caf_debugger.js to cast-receiver.html')
         }
 
-        // Unified log helper: writes to console + debug overlay
         const log = (msg: string, ...args: unknown[]) => {
             console.log(`[${LOG_TAG}]`, msg, ...args)
             debugLogger?.info(LOG_TAG, msg, ...args)
         }
-        logRef.current = log
 
         log('SDK ready, initialising receiver context')
 
         const context = cast.framework.CastReceiverContext.getInstance()
         const playerManager = context.getPlayerManager()
 
-        // ── System events ─────────────────────────────────────────────────
         context.addEventListener(cast.framework.system.EventType.READY, () => {
+            if (debugLogger && !debugLogger.debugOverlayElement_) {
+                debugLogger.setEnabled(true)
+                debugLogger.showDebugLogs(true)
+            }
             log('Receiver READY')
-            setStatus('Ready — waiting for content…')
-        })
-        context.addEventListener(cast.framework.system.EventType.ERROR, (e: any) => {
-            log('System ERROR', e)
-            setStatus(`System error: ${JSON.stringify(e)}`)
-        })
-        context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, (e: any) => {
-            log('Sender connected', e?.senderId)
-            setStatus('Sender connected')
-        })
-        context.addEventListener(cast.framework.system.EventType.SENDER_DISCONNECTED, (e: any) => {
-            log('Sender disconnected', e?.senderId)
         })
 
-        // ── Player events ─────────────────────────────────────────────────
         playerManager.addEventListener(
             cast.framework.events.EventType.ERROR,
             (e: any) => log('Player ERROR', e),
-        )
-        playerManager.addEventListener(
-            cast.framework.events.EventType.BUFFERING,
-            (e: any) => log('Buffering', e?.isBuffering),
         )
 
         // ── LOAD interceptor ──────────────────────────────────────────────
@@ -117,13 +87,11 @@ export function CastReceiver() {
 
                 if (!customData?.playRequests) return loadRequest
 
-                // Short-circuit: URL already resolved by a receiver-side reload
                 if (customData.isReload) {
                     log('isReload=true, passing through')
                     return loadRequest
                 }
 
-                setStatus('Loading sources…')
                 try {
                     const sources = await getPlayRequestSources({
                         playRequests: customData.playRequests,
@@ -139,8 +107,6 @@ export function CastReceiver() {
                     )
                     log('Source resolved', playRequestSource.source.resolution, playRequestSource.source.codec)
 
-                    setStatus('Negotiating stream…')
-                    // Codec detection runs on the Chromecast's Chromium browser
                     const mediaData = await getPlayServerMedia({
                         playRequestSource,
                         audio: customData.audio,
@@ -150,21 +116,20 @@ export function CastReceiver() {
                                 : undefined,
                         startTime: customData.startTime,
                     })
-                    log('Media URL ready', { canDirectPlay: mediaData.can_direct_play, url: mediaData.hls_url })
+                    log('Media URL ready', { canDirectPlay: mediaData.can_direct_play })
 
                     if (keepAliveRef.current) clearInterval(keepAliveRef.current)
                     keepAliveRef.current = setInterval(() => {
                         fetch(mediaData.keep_alive_url).catch(() => {})
                     }, 5000)
 
-                    const subtitleTracks = buildSubtitleTracks(playRequestSource)
                     stateRef.current = {
                         loadData: customData,
                         playRequestSources: sources,
                         playRequestSource,
-                        subtitleTracks,
                     }
 
+                    const subtitleTracks = buildSubtitleTracks(playRequestSource)
                     if (customData.subtitle) {
                         const trackId = findSubtitleTrackId(playRequestSource, customData.subtitle)
                         if (trackId !== null) loadRequest.activeTrackIds = [trackId]
@@ -181,18 +146,16 @@ export function CastReceiver() {
                     loadRequest.media.duration = playRequestSource.source.duration
                     loadRequest.media.tracks = subtitleTracks
                     loadRequest.media.metadata = {
-                        metadataType: 0,
+                        metadataType: 0, // GENERIC
                         title: customData.title,
                         subtitle: customData.secondaryTitle,
                     }
                     loadRequest.currentTime = customData.startTime ?? 0
 
-                    setStatus('Playing')
                     return loadRequest
                 } catch (e) {
                     const msg = e instanceof Error ? e.message : String(e)
                     log('LOAD ERROR', msg)
-                    setStatus(`Load error: ${msg}`)
                     throw e
                 }
             },
@@ -269,7 +232,6 @@ export function CastReceiver() {
                         loadData: newLoadData,
                         playRequestSources: current.playRequestSources,
                         playRequestSource: newPlayRequestSource,
-                        subtitleTracks,
                     }
 
                     playerManager.load({
@@ -298,70 +260,7 @@ export function CastReceiver() {
         }
     }, [])
 
-    const isPlaying = status === 'Playing'
-
-    return (
-        <div
-            style={{
-                position: 'relative',
-                width: '100vw',
-                height: '100vh',
-                background: '#111',
-                fontFamily: 'sans-serif',
-                overflow: 'hidden',
-            }}
-        >
-            {/* CAF player — always rendered so CAF can control it */}
-            {React.createElement('cast-media-player', {
-                style: {
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    zIndex: 0,
-                },
-            })}
-
-            {/* Splash — sits above the player while no content is playing */}
-            {!isPlaying && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#fff',
-                        gap: '1rem',
-                        zIndex: 1,
-                        background: '#111',
-                    }}
-                >
-                    <div
-                        style={{
-                            fontSize: '4rem',
-                            fontWeight: 700,
-                            letterSpacing: '0.25em',
-                            opacity: 0.9,
-                        }}
-                    >
-                        SEPLIS
-                    </div>
-                    <div
-                        style={{
-                            fontSize: '1.1rem',
-                            opacity: 0.5,
-                            maxWidth: '60%',
-                            textAlign: 'center',
-                        }}
-                    >
-                        {status}
-                    </div>
-                </div>
-            )}
-        </div>
-    )
+    return null
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
