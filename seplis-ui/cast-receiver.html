@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    />
+    <title>SEPLIS</title>
+    <!--
+      Cast Receiver SDK MUST be the very first script — it registers the
+      cast.framework namespace and the <cast-media-player> custom element
+      before any application code runs.
+    -->
+    <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+  </head>
+  <body>
+    <div id="cast-receiver-root"></div>
+    <script type="module" src="/src/cast-receiver-main.tsx"></script>
+  </body>
+</html>

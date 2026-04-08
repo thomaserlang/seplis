@@ -29,20 +29,6 @@
   </head>
   <body>
     <div id="root"></div>
-
-    <!--
-      Load the Cast Receiver SDK synchronously (blocking) only on the
-      /cast-receiver page so it is ready before React starts.
-      Must come before the module script.
-    -->
-    <script>
-      if (window.location.pathname.startsWith('/cast-receiver')) {
-        document.write(
-          '<script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"><\/script>'
-        )
-      }
-    </script>
-
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
