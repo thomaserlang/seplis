@@ -13,3 +13,7 @@ http://play.seplis.local {
 http://images.seplis.local {
 	reverse_proxy host.docker.internal:3000
 }
+
+http://test.seplis.net {
+	reverse_proxy host.docker.internal:5173
+}
