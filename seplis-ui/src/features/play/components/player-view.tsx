@@ -110,8 +110,6 @@ export function PlayerView({
 
     useEffect(() => {
         if (!media) return
-        let playInitiated = false
-
         media.onloadedmetadata = () => {
             if (resumeTimeRef.current !== undefined) {
                 media.currentTime = resumeTimeRef.current
@@ -121,16 +119,6 @@ export function PlayerView({
         media.oncanplay = () => {
             setIsVideoLoading(false)
             setSuppressErrorDialog(false)
-            if (media.paused && !playInitiated) {
-                // playInitiated is needed to prevent
-                // play from being called twice which
-                // currently causes the audio to bug and
-                // play twice one audio source even
-                // continues in the background after
-                // the player is closed
-                playInitiated = true
-                media.play()
-            }
         }
         media.onerror = () => {
             if (!forceTranscodeRef.current) {
@@ -145,9 +133,8 @@ export function PlayerView({
             setFrozenTimeStyle(undefined)
         }
         media.ontimeupdate = () => {
-            const { currentTime, duration } = media
-            if (!duration) return
-            handleTimeUpdate(currentTime, duration)
+            if (!media.duration) return
+            handleTimeUpdate(media.currentTime, media.duration)
         }
         const savedVolume = localStorage.getItem('player-volume')
         media.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.5

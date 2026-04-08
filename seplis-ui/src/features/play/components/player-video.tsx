@@ -29,6 +29,7 @@ import { Video, videoFeatures } from '@videojs/react/video'
 import {
     useEffect,
     useEffectEvent,
+    useRef,
     useState,
     type CSSProperties,
     type ReactNode,
@@ -397,10 +398,24 @@ export function PlayerVideo({
                 </Tooltip.Provider>
             </Controls.Root>
 
+            <AutoplayOnce />
             <VideoClickHandler />
             <div className="media-overlay" />
         </Container>
     )
+}
+
+function AutoplayOnce(): ReactNode {
+    const media = useMedia()
+    const hasAutoplayed = useRef(false)
+
+    useEffect(() => {
+        if (!media || hasAutoplayed.current) return
+        hasAutoplayed.current = true
+        media.play().catch(() => {})
+    }, [media])
+
+    return null
 }
 
 function SubtitleOffsetApplier({ offset }: { offset: number }): ReactNode {
