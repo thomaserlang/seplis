@@ -50,6 +50,9 @@ export function CastReceiver() {
                 'cast.framework.events.category.CORE': cast.framework.LoggerLevel.INFO,
                 'cast.framework.events.EventType.MEDIA_STATUS': cast.framework.LoggerLevel.DEBUG,
             }
+            debugLogger.loggerLevelByTags = {
+                [LOG_TAG]: cast.framework.LoggerLevel.DEBUG,
+            }
         }
 
         const log = (msg: string, ...args: unknown[]) => {
@@ -143,6 +146,7 @@ export function CastReceiver() {
                     loadRequest.media.contentType = mediaData.can_direct_play
                         ? 'video/mp4'
                         : 'application/x-mpegURL'
+                    loadRequest.media.streamType = cast.framework.messages.StreamType.BUFFERED
                     loadRequest.media.duration = playRequestSource.source.duration
                     loadRequest.media.tracks = subtitleTracks
                     loadRequest.media.metadata = {
