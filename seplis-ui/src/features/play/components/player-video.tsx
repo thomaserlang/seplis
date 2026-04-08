@@ -68,7 +68,6 @@ export interface VideoPlayerProps {
     defaultSubtitle?: string
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
-    defaultStartTime?: number
 }
 
 export function PlayerVideo({
@@ -92,7 +91,6 @@ export function PlayerVideo({
     defaultSubtitle,
     preferredAudioLangs,
     preferredSubtitleLangs,
-    defaultStartTime,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
@@ -122,10 +120,9 @@ export function PlayerVideo({
         <Container className={`media-default-skin media-default-skin--video`}>
             <Video
                 src={
-                    (playServerMedia.can_direct_play
+                    playServerMedia.can_direct_play
                         ? playServerMedia.direct_play_url
-                        : playServerMedia.hls_url) +
-                    `#t=${defaultStartTime || 0}`
+                        : playServerMedia.hls_url
                 }
                 crossOrigin="anonymous"
             >

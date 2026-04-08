@@ -220,7 +220,6 @@ export function PlayerView({
             }}
             preferredAudioLangs={PREFERRED_AUDIO_LANGS}
             preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-            defaultStartTime={defaultStartTime}
         />
     )
 }
