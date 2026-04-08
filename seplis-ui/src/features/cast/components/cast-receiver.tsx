@@ -201,6 +201,12 @@ export function CastReceiver() {
                         startTime: currentTime,
                     })
 
+                    // Restart keep-alive for the new session URL
+                    if (keepAliveRef.current) clearInterval(keepAliveRef.current)
+                    keepAliveRef.current = setInterval(() => {
+                        fetch(mediaData.keep_alive_url).catch(() => {})
+                    }, 5000)
+
                     const url = mediaData.can_direct_play
                         ? mediaData.direct_play_url
                         : mediaData.hls_url

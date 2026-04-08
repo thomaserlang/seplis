@@ -85,9 +85,8 @@ export function PlayerView({
     const { isConnected: isCasting } = castSender.state
     const pendingCastTimeRef = useRef<number | undefined>(undefined)
 
-    // When a cast session becomes active, load media on the receiver
-    useEffect(() => {
-        if (!isCasting) return
+    // Fires with fresh state whenever isCasting becomes true
+    const handleCastSessionStarted = useEffectEvent(() => {
         castSender.loadMedia({
             playRequests: playRequestsSources.map((s) => s.request),
             sourcePlayId: source.request.play_id,
@@ -100,6 +99,10 @@ export function PlayerView({
             secondaryTitle,
         })
         pendingCastTimeRef.current = undefined
+    })
+
+    useEffect(() => {
+        if (isCasting) handleCastSessionStarted()
     }, [isCasting])
 
     const handleTimeUpdate = useEffectEvent(
@@ -193,42 +196,7 @@ export function PlayerView({
         }
     }, [media])
 
-    if (isLoading) return <PageLoader />
-    if (error) return <ErrorBox errorObj={error} />
-    if (!data) return <ErrorBox message="No playable source found" />
-
-    const capturePosition = () => {
-        if (!media) return
-        resumeTimeRef.current = media.currentTime
-        const fill =
-            media.duration > 0 ? (media.currentTime / media.duration) * 100 : 0
-        setFrozenTimeStyle({
-            '--media-slider-fill': `${fill}%`,
-        } as CSSProperties)
-        setIsVideoLoading(true)
-    }
-
-    const handleBitrateChange = (bitrate: number) => {
-        if (bitrate >= source.source.bit_rate) {
-            localStorage.removeItem('maxBitrate')
-            setMaxBitrate(MAX_BITRATE)
-        } else {
-            localStorage.setItem('maxBitrate', String(bitrate))
-            setMaxBitrate(bitrate)
-        }
-        capturePosition()
-    }
-
-    const handleRequestCast = (currentTime: number) => {
-        if (isCasting) {
-            castSender.stopCasting()
-        } else {
-            pendingCastTimeRef.current = currentTime
-            media?.pause()
-            castSender.requestSession()
-        }
-    }
-
+    // Show cast player immediately — don't block on local media fetch
     if (isCasting) {
         return (
             <CastSenderPlayer
@@ -263,6 +231,42 @@ export function PlayerView({
                 }}
             />
         )
+    }
+
+    if (isLoading) return <PageLoader />
+    if (error) return <ErrorBox errorObj={error} />
+    if (!data) return <ErrorBox message="No playable source found" />
+
+    const capturePosition = () => {
+        if (!media) return
+        resumeTimeRef.current = media.currentTime
+        const fill =
+            media.duration > 0 ? (media.currentTime / media.duration) * 100 : 0
+        setFrozenTimeStyle({
+            '--media-slider-fill': `${fill}%`,
+        } as CSSProperties)
+        setIsVideoLoading(true)
+    }
+
+    const handleBitrateChange = (bitrate: number) => {
+        if (bitrate >= source.source.bit_rate) {
+            localStorage.removeItem('maxBitrate')
+            setMaxBitrate(MAX_BITRATE)
+        } else {
+            localStorage.setItem('maxBitrate', String(bitrate))
+            setMaxBitrate(bitrate)
+        }
+        capturePosition()
+    }
+
+    const handleRequestCast = (currentTime: number) => {
+        if (isCasting) {
+            castSender.stopCasting()
+        } else {
+            pendingCastTimeRef.current = currentTime
+            media?.pause()
+            castSender.requestSession()
+        }
     }
 
     return (
