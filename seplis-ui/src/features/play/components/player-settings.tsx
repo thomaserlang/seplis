@@ -242,7 +242,8 @@ export function SettingsPopover({
                                     back()
                                 }}
                             >
-                                {bitrate === MAX_BITRATE
+                                {bitrate === MAX_BITRATE ||
+                                bitrate >= currentSource.bit_rate
                                     ? `Max (${bitratePretty(currentSource.bit_rate)})`
                                     : playSourceBitrateStr(
                                           bitrate,
