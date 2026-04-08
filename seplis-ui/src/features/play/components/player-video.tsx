@@ -128,7 +128,6 @@ export function PlayerVideo({
                     `#t=${defaultStartTime || 0}`
                 }
                 crossOrigin="anonymous"
-                autoPlay={false}
             >
                 {activeSubtitle && (
                     <track
