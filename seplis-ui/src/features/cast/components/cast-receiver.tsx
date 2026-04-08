@@ -44,20 +44,23 @@ export function CastReceiver() {
             return
         }
 
-        const debugLogger = (cast as any).debug?.CastDebugLogger?.getInstance()
-        if (debugLogger) {
-            debugLogger.loggerLevelByEvents = {
+        const castDebugLogger = import.meta.env.DEV
+            ? (cast as any).debug?.CastDebugLogger?.getInstance()
+            : null
+
+        if (castDebugLogger) {
+            castDebugLogger.loggerLevelByEvents = {
                 'cast.framework.events.category.CORE': cast.framework.LoggerLevel.INFO,
                 'cast.framework.events.EventType.MEDIA_STATUS': cast.framework.LoggerLevel.DEBUG,
             }
-            debugLogger.loggerLevelByTags = {
+            castDebugLogger.loggerLevelByTags = {
                 [LOG_TAG]: cast.framework.LoggerLevel.DEBUG,
             }
         }
 
         const log = (msg: string, ...args: unknown[]) => {
             console.log(`[${LOG_TAG}]`, msg, ...args)
-            debugLogger?.info(LOG_TAG, msg, ...args)
+            castDebugLogger?.info(LOG_TAG, msg, ...args)
         }
 
         log('SDK ready, initialising receiver context')
@@ -66,9 +69,10 @@ export function CastReceiver() {
         const playerManager = context.getPlayerManager()
 
         context.addEventListener(cast.framework.system.EventType.READY, () => {
-            if (import.meta.env.DEV && debugLogger && !debugLogger.debugOverlayElement_) {
-                debugLogger.setEnabled(true)
-                debugLogger.showDebugLogs(true)
+            if (castDebugLogger && !castDebugLogger.debugOverlayElement_) {
+                castDebugLogger.setEnabled(true)
+                castDebugLogger.showDebugLogs(true)
+                castDebugLogger.clearDebugLogs()
             }
             log('Receiver READY')
         })
