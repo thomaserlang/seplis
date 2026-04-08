@@ -10,6 +10,9 @@ import { useEffect, useRef } from 'react'
 import React from 'react'
 import { CAST_NAMESPACE, CastLoadData, CastSenderMessage } from '../types/cast-messages.types'
 
+// CAF context is a singleton — guard against React StrictMode double-invoke
+let receiverInitialized = false
+
 interface ReceiverState {
     loadData: CastLoadData
     playRequestSources: PlayRequestSources[]
@@ -32,6 +35,9 @@ export function CastReceiver() {
     const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
     useEffect(() => {
+        if (receiverInitialized) return
+        receiverInitialized = true
+
         const cast = (window as any).cast
         if (!cast?.framework) {
             console.error(
