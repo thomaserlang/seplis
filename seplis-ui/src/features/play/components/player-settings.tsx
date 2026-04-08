@@ -17,7 +17,7 @@ import {
     bitratePretty,
     playSourceBitrateStr,
 } from '../utils/play-bitrate.utils'
-import { iso6392ToDisplayName, playSourceStr } from '../utils/play-source.utils'
+import { audioCodecLabel, iso6392ToDisplayName, playSourceStr } from '../utils/play-source.utils'
 import { Button } from './player-controls'
 
 type SettingsPanel =
@@ -264,10 +264,7 @@ export function SettingsPopover({
                                                 back()
                                             }}
                                         >
-                                            {trackLabel(
-                                                track.title,
-                                                track.language,
-                                            )}
+                                            <AudioTrackLabel track={track} />
                                         </OptionItem>
                                     ))}
                                     {preferred.length > 0 &&
@@ -287,10 +284,7 @@ export function SettingsPopover({
                                                 back()
                                             }}
                                         >
-                                            {trackLabel(
-                                                track.title,
-                                                track.language,
-                                            )}
+                                            <AudioTrackLabel track={track} />
                                         </OptionItem>
                                     ))}
                                 </>
@@ -497,6 +491,23 @@ function trackLabel(title: string | undefined, language: string): string {
     if (!displayName) return base
     if (base.toLowerCase().includes(displayName.toLowerCase())) return base
     return `${base} (${displayName})`
+}
+
+function AudioTrackLabel({
+    track,
+}: {
+    track: { title: string; language: string; codec: string | null }
+}): ReactNode {
+    const label = trackLabel(track.title, track.language)
+    const codec = audioCodecLabel(track.codec, track.title)
+    return (
+        <span className="media-settings__audio-track">
+            {label}
+            {codec && (
+                <span className="media-settings__audio-codec">{codec}</span>
+            )}
+        </span>
+    )
 }
 
 function SettingsGroupDivider(): ReactNode {
