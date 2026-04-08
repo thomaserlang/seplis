@@ -50,6 +50,7 @@ export async function getPlayServerSources(
         }
         return data
     } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return null
         console.log(e)
         return null
     }
