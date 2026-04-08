@@ -109,12 +109,10 @@ export function PlayerView({
     const media = useMedia()
 
     useEffect(() => {
-        console.log(media)
         if (!media) return
         let playInitiated = false
 
         media.onloadedmetadata = () => {
-            console.log('metadata loaded')
             if (resumeTimeRef.current !== undefined) {
                 media.currentTime = resumeTimeRef.current
                 resumeTimeRef.current = undefined
@@ -131,12 +129,10 @@ export function PlayerView({
                 // continues in the background after
                 // the player is closed
                 playInitiated = true
-                console.log('huh')
                 media.play()
             }
         }
         media.onerror = () => {
-            console.log('media error', media.error)
             if (!forceTranscodeRef.current) {
                 setSuppressErrorDialog(true)
                 setIsVideoLoading(true)
