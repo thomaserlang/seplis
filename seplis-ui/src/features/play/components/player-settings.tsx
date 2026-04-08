@@ -123,11 +123,6 @@ export function SettingsPopover({
 
     const back = () => setPanel('main')
 
-    const setSubtitle = (key: string | undefined) => {
-        onSubtitleChange(key)
-        back()
-    }
-
     const gearButton = (
         <Button aria-label="Settings">
             <GearIcon className="media-icon" weight="bold" />
@@ -161,266 +156,373 @@ export function SettingsPopover({
                 )}
                 <div className="media-settings" data-panel={panel}>
                     {panel === 'main' && (
-                        <>
-                            <MainItem
-                                label={PANEL_TITLES.source}
-                                value={playSourceStr(currentSource)}
-                                onClick={() => setPanel('source')}
-                                disabled={
-                                    playRequestsSources.reduce(
-                                        (n, s) => n + s.sources.length,
-                                        0,
-                                    ) <= 1
-                                }
-                            />
-                            <MainItem
-                                label={PANEL_TITLES.bitrate}
-                                value={currentBitrateLabel}
-                                onClick={() => setPanel('bitrate')}
-                            />
-                            <MainItem
-                                label={PANEL_TITLES.audio}
-                                value={currentAudioLabel}
-                                onClick={() => setPanel('audio')}
-                                disabled={currentSource.audio.length <= 1}
-                            />
-                            <MainItem
-                                label={PANEL_TITLES.subtitles}
-                                value={subtitleLabel}
-                                onClick={() => setPanel('subtitles')}
-                                disabled={currentSource.subtitles.length === 0}
-                            />
-                            <MainItem
-                                label={PANEL_TITLES['subtitle-sync']}
-                                value={
-                                    subtitleOffset === 0
-                                        ? '0s'
-                                        : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`
-                                }
-                                onClick={() => setPanel('subtitle-sync')}
-                            />
-                            <ToggleItem
-                                label="Force Transcode"
-                                value={forceTranscode}
-                                onToggle={() =>
-                                    onForceTranscodeChange(!forceTranscode)
-                                }
-                            />
-                        </>
+                        <MainPanel
+                            currentSource={currentSource}
+                            playRequestsSources={playRequestsSources}
+                            currentBitrateLabel={currentBitrateLabel}
+                            currentAudioLabel={currentAudioLabel}
+                            subtitleLabel={subtitleLabel}
+                            subtitleOffset={subtitleOffset}
+                            forceTranscode={forceTranscode}
+                            onForceTranscodeChange={onForceTranscodeChange}
+                            setPanel={setPanel}
+                        />
                     )}
-
-                    {panel === 'source' &&
-                        playRequestsSources.map((server) =>
-                            server.sources.map((src) => (
-                                <OptionItem
-                                    key={`${server.request.play_id}-${src.index}`}
-                                    active={
-                                        currentRequest.play_id ===
-                                            server.request.play_id &&
-                                        currentSource.index === src.index
-                                    }
-                                    onClick={() => {
-                                        onSourceChange({
-                                            request: server.request,
-                                            source: src,
-                                        })
-                                        back()
-                                    }}
-                                >
-                                    {playSourceStr(src)}
-                                </OptionItem>
-                            )),
-                        )}
-
-                    {panel === 'bitrate' &&
-                        availableBitrates.map((bitrate) => (
-                            <OptionItem
-                                key={bitrate}
-                                active={maxBitrate === bitrate}
-                                onClick={() => {
-                                    onBitrateChange(bitrate)
-                                    back()
-                                }}
-                            >
-                                {bitrate === MAX_BITRATE ||
-                                bitrate >= currentSource.bit_rate
-                                    ? `Max (${bitratePretty(currentSource.bit_rate)})`
-                                    : playSourceBitrateStr(
-                                          bitrate,
-                                          currentSource,
-                                      )}
-                            </OptionItem>
-                        ))}
-
-                    {panel === 'audio' &&
-                        (() => {
-                            const preferred = currentSource.audio.filter((t) =>
-                                preferredAudioLangs?.includes(t.language),
-                            )
-                            const other = currentSource.audio.filter(
-                                (t) =>
-                                    !preferredAudioLangs?.includes(t.language),
-                            )
-                            const audioKey = (t: {
-                                language: string
-                                index: number
-                            }) => `${t.language}:${t.index}`
-                            return (
-                                <>
-                                    {preferred.map((track) => (
-                                        <OptionItem
-                                            key={track.index}
-                                            active={
-                                                audioLang === audioKey(track)
-                                            }
-                                            onClick={() => {
-                                                onAudioLangChange(
-                                                    audioKey(track),
-                                                )
-                                                back()
-                                            }}
-                                        >
-                                            <AudioTrackLabel track={track} />
-                                        </OptionItem>
-                                    ))}
-                                    {preferred.length > 0 &&
-                                        other.length > 0 && (
-                                            <SettingsGroupDivider />
-                                        )}
-                                    {other.map((track) => (
-                                        <OptionItem
-                                            key={track.index}
-                                            active={
-                                                audioLang === audioKey(track)
-                                            }
-                                            onClick={() => {
-                                                onAudioLangChange(
-                                                    audioKey(track),
-                                                )
-                                                back()
-                                            }}
-                                        >
-                                            <AudioTrackLabel track={track} />
-                                        </OptionItem>
-                                    ))}
-                                </>
-                            )
-                        })()}
-
-                    {panel === 'subtitles' &&
-                        (() => {
-                            const preferred = currentSource.subtitles.filter(
-                                (t) =>
-                                    preferredSubtitleLangs?.includes(
-                                        t.language,
-                                    ),
-                            )
-                            const other = currentSource.subtitles.filter(
-                                (t) =>
-                                    !preferredSubtitleLangs?.includes(
-                                        t.language,
-                                    ),
-                            )
-                            return (
-                                <>
-                                    <OptionItem
-                                        active={!activeSubtitleKey}
-                                        onClick={() => setSubtitle(undefined)}
-                                    >
-                                        Off
-                                    </OptionItem>
-                                    {preferred.map((track) => {
-                                        const key = `${track.language}:${track.index}`
-                                        return (
-                                            <OptionItem
-                                                key={key}
-                                                active={
-                                                    activeSubtitleKey === key
-                                                }
-                                                onClick={() => setSubtitle(key)}
-                                            >
-                                                {trackLabel(
-                                                    track.title,
-                                                    track.language,
-                                                )}
-                                                {track.forced && ' (Forced)'}
-                                            </OptionItem>
-                                        )
-                                    })}
-                                    {preferred.length > 0 &&
-                                        other.length > 0 && (
-                                            <SettingsGroupDivider />
-                                        )}
-                                    {other.map((track) => {
-                                        const key = `${track.language}:${track.index}`
-                                        return (
-                                            <OptionItem
-                                                key={key}
-                                                active={
-                                                    activeSubtitleKey === key
-                                                }
-                                                onClick={() => setSubtitle(key)}
-                                            >
-                                                {trackLabel(
-                                                    track.title,
-                                                    track.language,
-                                                )}
-                                                {track.forced && ' (Forced)'}
-                                            </OptionItem>
-                                        )
-                                    })}
-                                </>
-                            )
-                        })()}
-
+                    {panel === 'source' && (
+                        <SourcePanel
+                            playRequestsSources={playRequestsSources}
+                            currentRequest={currentRequest}
+                            currentSource={currentSource}
+                            onSourceChange={onSourceChange}
+                            back={back}
+                        />
+                    )}
+                    {panel === 'bitrate' && (
+                        <BitratePanel
+                            availableBitrates={availableBitrates}
+                            maxBitrate={maxBitrate}
+                            currentSource={currentSource}
+                            onBitrateChange={onBitrateChange}
+                            back={back}
+                        />
+                    )}
+                    {panel === 'audio' && (
+                        <AudioPanel
+                            currentSource={currentSource}
+                            audioLang={audioLang}
+                            preferredAudioLangs={preferredAudioLangs}
+                            onAudioLangChange={onAudioLangChange}
+                            back={back}
+                        />
+                    )}
+                    {panel === 'subtitles' && (
+                        <SubtitlesPanel
+                            currentSource={currentSource}
+                            activeSubtitleKey={activeSubtitleKey}
+                            preferredSubtitleLangs={preferredSubtitleLangs}
+                            onSubtitleChange={onSubtitleChange}
+                            back={back}
+                        />
+                    )}
                     {panel === 'subtitle-sync' && (
-                        <>
-                            <div className="media-settings__sync">
-                                <button
-                                    type="button"
-                                    className="media-settings__sync-btn"
-                                    onClick={() =>
-                                        onSubtitleOffsetChange(
-                                            Math.round(
-                                                (subtitleOffset - 0.5) * 10,
-                                            ) / 10,
-                                        )
-                                    }
-                                >
-                                    <MinusIcon weight="bold" />
-                                </button>
-                                <span className="media-settings__sync-value">
-                                    {subtitleOffset === 0
-                                        ? '0s'
-                                        : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`}
-                                </span>
-                                <button
-                                    type="button"
-                                    className="media-settings__sync-btn"
-                                    onClick={() =>
-                                        onSubtitleOffsetChange(
-                                            Math.round(
-                                                (subtitleOffset + 0.5) * 10,
-                                            ) / 10,
-                                        )
-                                    }
-                                >
-                                    <PlusIcon weight="bold" />
-                                </button>
-                            </div>
-                            <button
-                                type="button"
-                                className="media-settings__sync-reset"
-                                disabled={subtitleOffset === 0}
-                                onClick={() => onSubtitleOffsetChange(0)}
-                            >
-                                Reset
-                            </button>
-                        </>
+                        <SubtitleSyncPanel
+                            subtitleOffset={subtitleOffset}
+                            onSubtitleOffsetChange={onSubtitleOffsetChange}
+                        />
                     )}
                 </div>
             </Popover.Popup>
         </Popover.Root>
+    )
+}
+
+function MainPanel({
+    currentSource,
+    playRequestsSources,
+    currentBitrateLabel,
+    currentAudioLabel,
+    subtitleLabel,
+    subtitleOffset,
+    forceTranscode,
+    onForceTranscodeChange,
+    setPanel,
+}: {
+    currentSource: PlayRequestSource['source']
+    playRequestsSources: PlayRequestSources[]
+    currentBitrateLabel: ReactNode
+    currentAudioLabel: ReactNode
+    subtitleLabel: ReactNode
+    subtitleOffset: number
+    forceTranscode: boolean
+    onForceTranscodeChange: (value: boolean) => void
+    setPanel: (panel: SettingsPanel) => void
+}): ReactNode {
+    return (
+        <>
+            <MainItem
+                label={PANEL_TITLES.source}
+                value={playSourceStr(currentSource)}
+                onClick={() => setPanel('source')}
+                disabled={
+                    playRequestsSources.reduce(
+                        (n, s) => n + s.sources.length,
+                        0,
+                    ) <= 1
+                }
+            />
+            <MainItem
+                label={PANEL_TITLES.bitrate}
+                value={currentBitrateLabel}
+                onClick={() => setPanel('bitrate')}
+            />
+            <MainItem
+                label={PANEL_TITLES.audio}
+                value={currentAudioLabel}
+                onClick={() => setPanel('audio')}
+                disabled={currentSource.audio.length <= 1}
+            />
+            <MainItem
+                label={PANEL_TITLES.subtitles}
+                value={subtitleLabel}
+                onClick={() => setPanel('subtitles')}
+                disabled={currentSource.subtitles.length === 0}
+            />
+            <MainItem
+                label={PANEL_TITLES['subtitle-sync']}
+                value={
+                    subtitleOffset === 0
+                        ? '0s'
+                        : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`
+                }
+                onClick={() => setPanel('subtitle-sync')}
+            />
+            <ToggleItem
+                label="Force Transcode"
+                value={forceTranscode}
+                onToggle={() => onForceTranscodeChange(!forceTranscode)}
+            />
+        </>
+    )
+}
+
+function SourcePanel({
+    playRequestsSources,
+    currentRequest,
+    currentSource,
+    onSourceChange,
+    back,
+}: {
+    playRequestsSources: PlayRequestSources[]
+    currentRequest: PlayRequestSource['request']
+    currentSource: PlayRequestSource['source']
+    onSourceChange: (source: PlayRequestSource) => void
+    back: () => void
+}): ReactNode {
+    return (
+        <>
+            {playRequestsSources.map((server) =>
+                server.sources.map((src) => (
+                    <OptionItem
+                        key={`${server.request.play_id}-${src.index}`}
+                        active={
+                            currentRequest.play_id ===
+                                server.request.play_id &&
+                            currentSource.index === src.index
+                        }
+                        onClick={() => {
+                            onSourceChange({
+                                request: server.request,
+                                source: src,
+                            })
+                            back()
+                        }}
+                    >
+                        {playSourceStr(src)}
+                    </OptionItem>
+                )),
+            )}
+        </>
+    )
+}
+
+function BitratePanel({
+    availableBitrates,
+    maxBitrate,
+    currentSource,
+    onBitrateChange,
+    back,
+}: {
+    availableBitrates: number[]
+    maxBitrate: number
+    currentSource: PlayRequestSource['source']
+    onBitrateChange: (bitrate: number) => void
+    back: () => void
+}): ReactNode {
+    return (
+        <>
+            {availableBitrates.map((bitrate) => (
+                <OptionItem
+                    key={bitrate}
+                    active={maxBitrate === bitrate}
+                    onClick={() => {
+                        onBitrateChange(bitrate)
+                        back()
+                    }}
+                >
+                    {bitrate === MAX_BITRATE || bitrate >= currentSource.bit_rate
+                        ? `Max (${bitratePretty(currentSource.bit_rate)})`
+                        : playSourceBitrateStr(bitrate, currentSource)}
+                </OptionItem>
+            ))}
+        </>
+    )
+}
+
+function AudioPanel({
+    currentSource,
+    audioLang,
+    preferredAudioLangs,
+    onAudioLangChange,
+    back,
+}: {
+    currentSource: PlayRequestSource['source']
+    audioLang: string | undefined
+    preferredAudioLangs: string[] | undefined
+    onAudioLangChange: (lang: string | undefined) => void
+    back: () => void
+}): ReactNode {
+    const audioKey = (t: { language: string; index: number }) =>
+        `${t.language}:${t.index}`
+    const preferred = currentSource.audio.filter((t) =>
+        preferredAudioLangs?.includes(t.language),
+    )
+    const other = currentSource.audio.filter(
+        (t) => !preferredAudioLangs?.includes(t.language),
+    )
+    return (
+        <>
+            {preferred.map((track) => (
+                <OptionItem
+                    key={track.index}
+                    active={audioLang === audioKey(track)}
+                    onClick={() => {
+                        onAudioLangChange(audioKey(track))
+                        back()
+                    }}
+                >
+                    <AudioTrackLabel track={track} />
+                </OptionItem>
+            ))}
+            {preferred.length > 0 && other.length > 0 && (
+                <SettingsGroupDivider />
+            )}
+            {other.map((track) => (
+                <OptionItem
+                    key={track.index}
+                    active={audioLang === audioKey(track)}
+                    onClick={() => {
+                        onAudioLangChange(audioKey(track))
+                        back()
+                    }}
+                >
+                    <AudioTrackLabel track={track} />
+                </OptionItem>
+            ))}
+        </>
+    )
+}
+
+function SubtitlesPanel({
+    currentSource,
+    activeSubtitleKey,
+    preferredSubtitleLangs,
+    onSubtitleChange,
+    back,
+}: {
+    currentSource: PlayRequestSource['source']
+    activeSubtitleKey: string | undefined
+    preferredSubtitleLangs: string[] | undefined
+    onSubtitleChange: (key: string | undefined) => void
+    back: () => void
+}): ReactNode {
+    const setSubtitle = (key: string | undefined) => {
+        onSubtitleChange(key)
+        back()
+    }
+    const preferred = currentSource.subtitles.filter((t) =>
+        preferredSubtitleLangs?.includes(t.language),
+    )
+    const other = currentSource.subtitles.filter(
+        (t) => !preferredSubtitleLangs?.includes(t.language),
+    )
+    return (
+        <>
+            <OptionItem
+                active={!activeSubtitleKey}
+                onClick={() => setSubtitle(undefined)}
+            >
+                Off
+            </OptionItem>
+            {preferred.map((track) => {
+                const key = `${track.language}:${track.index}`
+                return (
+                    <OptionItem
+                        key={key}
+                        active={activeSubtitleKey === key}
+                        onClick={() => setSubtitle(key)}
+                    >
+                        {trackLabel(track.title, track.language)}
+                        {track.forced && ' (Forced)'}
+                    </OptionItem>
+                )
+            })}
+            {preferred.length > 0 && other.length > 0 && (
+                <SettingsGroupDivider />
+            )}
+            {other.map((track) => {
+                const key = `${track.language}:${track.index}`
+                return (
+                    <OptionItem
+                        key={key}
+                        active={activeSubtitleKey === key}
+                        onClick={() => setSubtitle(key)}
+                    >
+                        {trackLabel(track.title, track.language)}
+                        {track.forced && ' (Forced)'}
+                    </OptionItem>
+                )
+            })}
+        </>
+    )
+}
+
+function SubtitleSyncPanel({
+    subtitleOffset,
+    onSubtitleOffsetChange,
+}: {
+    subtitleOffset: number
+    onSubtitleOffsetChange: (offset: number) => void
+}): ReactNode {
+    return (
+        <>
+            <div className="media-settings__sync">
+                <button
+                    type="button"
+                    className="media-settings__sync-btn"
+                    onClick={() =>
+                        onSubtitleOffsetChange(
+                            Math.round((subtitleOffset - 0.5) * 10) / 10,
+                        )
+                    }
+                >
+                    <MinusIcon weight="bold" />
+                </button>
+                <span className="media-settings__sync-value">
+                    {subtitleOffset === 0
+                        ? '0s'
+                        : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`}
+                </span>
+                <button
+                    type="button"
+                    className="media-settings__sync-btn"
+                    onClick={() =>
+                        onSubtitleOffsetChange(
+                            Math.round((subtitleOffset + 0.5) * 10) / 10,
+                        )
+                    }
+                >
+                    <PlusIcon weight="bold" />
+                </button>
+            </div>
+            <button
+                type="button"
+                className="media-settings__sync-reset"
+                disabled={subtitleOffset === 0}
+                onClick={() => onSubtitleOffsetChange(0)}
+            >
+                Reset
+            </button>
+        </>
     )
 }
 
