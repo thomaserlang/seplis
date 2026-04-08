@@ -8,7 +8,10 @@ import {
 } from '@phosphor-icons/react'
 import { Popover, usePlayer, usePopoverContext } from '@videojs/react'
 import { useEffect, useState, type ReactNode } from 'react'
-import { BITRATE_OPTIONS, MAX_BITRATE } from '../constants/play-bitrate.constants'
+import {
+    BITRATE_OPTIONS,
+    MAX_BITRATE,
+} from '../constants/play-bitrate.constants'
 import {
     PlayRequestSource,
     PlayRequestSources,
@@ -17,7 +20,11 @@ import {
     bitratePretty,
     playSourceBitrateStr,
 } from '../utils/play-bitrate.utils'
-import { audioCodecLabel, iso6392ToDisplayName, playSourceStr } from '../utils/play-source.utils'
+import {
+    audioCodecLabel,
+    iso6392ToDisplayName,
+    playSourceStr,
+} from '../utils/play-source.utils'
 import { Button } from './player-controls'
 
 type SettingsPanel =
@@ -94,7 +101,8 @@ export function SettingsPopover({
             currentSource.audio.find(
                 (a) => a.language === lang && a.index === index,
             ) ?? currentSource.audio.find((a) => a.language === lang)
-        return track?.title ?? track?.language ?? audioLang
+        if (!track) return audioLang
+        return <AudioTrackLabel track={track} />
     })()
 
     const subtitleLabel = (() => {
@@ -103,7 +111,13 @@ export function SettingsPopover({
         const sub = currentSource.subtitles.find(
             (s) => s.language === lang && s.index === parseInt(idxStr),
         )
-        return sub?.title || lang
+        if (!sub) return lang
+        return (
+            <>
+                {trackLabel(sub.title, sub.language)}
+                {sub.forced && ' (Forced)'}
+            </>
+        )
     })()
 
     const back = () => setPanel('main')
@@ -438,7 +452,7 @@ function MainItem({
     disabled,
 }: {
     label: string
-    value?: string
+    value?: ReactNode
     onClick: () => void
     disabled?: boolean
 }): ReactNode {
@@ -447,7 +461,6 @@ function MainItem({
             type="button"
             className="media-settings__main-item"
             onClick={disabled ? undefined : onClick}
-            disabled={disabled}
         >
             <span className="media-settings__main-label">{label}</span>
             {value && (
@@ -489,6 +502,7 @@ function trackLabel(title: string | undefined, language: string): string {
     const base = title || language
     const displayName = iso6392ToDisplayName(language)
     if (!displayName) return base
+    if (base === language) return displayName
     if (base.toLowerCase().includes(displayName.toLowerCase())) return base
     return `${base} (${displayName})`
 }
