@@ -22,7 +22,6 @@ interface Props {
 
 const OPTIONS = {
     refetchOnWindowFocus: false,
-    staleTime: Infinity,
 }
 
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {

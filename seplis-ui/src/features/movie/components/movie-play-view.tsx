@@ -16,7 +16,6 @@ interface Props {
 
 const OPTIONS = {
     refetchOnWindowFocus: false,
-    staleTime: Infinity,
 }
 
 export function MoviePlayView({ movieId, onClose }: Props) {
