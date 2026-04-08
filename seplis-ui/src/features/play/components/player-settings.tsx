@@ -35,13 +35,14 @@ type SettingsPanel =
     | 'subtitles'
     | 'subtitle-sync'
 
-const PANEL_TITLES: Partial<Record<SettingsPanel, string>> = {
+const PANEL_TITLES: Record<SettingsPanel, string> = {
+    main: 'Settings',
     source: 'Source',
-    bitrate: 'Bitrate',
+    bitrate: 'Quality',
     audio: 'Audio',
     subtitles: 'Subtitles',
     'subtitle-sync': 'Subtitle Sync',
-}
+} as const
 
 export interface SettingsPopoverProps {
     currentPlayRequestSource: PlayRequestSource
@@ -162,7 +163,7 @@ export function SettingsPopover({
                     {panel === 'main' && (
                         <>
                             <MainItem
-                                label="Source"
+                                label={PANEL_TITLES.source}
                                 value={playSourceStr(currentSource)}
                                 onClick={() => setPanel('source')}
                                 disabled={
@@ -173,24 +174,24 @@ export function SettingsPopover({
                                 }
                             />
                             <MainItem
-                                label="Bitrate"
+                                label={PANEL_TITLES.bitrate}
                                 value={currentBitrateLabel}
                                 onClick={() => setPanel('bitrate')}
                             />
                             <MainItem
-                                label="Audio"
+                                label={PANEL_TITLES.audio}
                                 value={currentAudioLabel}
                                 onClick={() => setPanel('audio')}
                                 disabled={currentSource.audio.length <= 1}
                             />
                             <MainItem
-                                label="Subtitles"
+                                label={PANEL_TITLES.subtitles}
                                 value={subtitleLabel}
                                 onClick={() => setPanel('subtitles')}
                                 disabled={currentSource.subtitles.length === 0}
                             />
                             <MainItem
-                                label="Subtitle Sync"
+                                label={PANEL_TITLES['subtitle-sync']}
                                 value={
                                     subtitleOffset === 0
                                         ? '0s'
