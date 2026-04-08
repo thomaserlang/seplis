@@ -6,6 +6,7 @@ import {
     ArrowLeftIcon,
     CaretLeftIcon,
     CaretRightIcon,
+    ScreencastIcon,
     CheckIcon,
     CornersInIcon,
     CornersOutIcon,
@@ -93,6 +94,8 @@ export interface VideoPlayerProps {
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
     defaultStartTime?: number
+    onRequestCast?: (currentTime: number) => void
+    isCasting?: boolean
 }
 
 export function PlayerVideo({
@@ -117,6 +120,8 @@ export function PlayerVideo({
     preferredAudioLangs,
     preferredSubtitleLangs,
     defaultStartTime,
+    onRequestCast,
+    isCasting,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
@@ -377,6 +382,11 @@ export function PlayerVideo({
                             preferredSubtitleLangs={preferredSubtitleLangs}
                         />
 
+                        <CastButton
+                            onRequestCast={onRequestCast}
+                            isCasting={isCasting}
+                        />
+
                         <AirPlayButton />
 
                         <Tooltip.Root side="top">
@@ -564,6 +574,52 @@ function AirPlayButton(): ReactNode {
             />
             <Tooltip.Popup className="media-surface media-tooltip">
                 {active ? 'Disconnect AirPlay' : 'AirPlay'}
+            </Tooltip.Popup>
+        </Tooltip.Root>
+    )
+}
+
+function CastButton({
+    onRequestCast,
+    isCasting,
+}: {
+    onRequestCast?: (currentTime: number) => void
+    isCasting?: boolean
+}): ReactNode {
+    const media = useMedia()
+    const [sdkReady, setSdkReady] = useState(false)
+
+    useEffect(() => {
+        // Lazily import cast-sdk to avoid loading it on the receiver page
+        import('@/features/cast/cast-sdk').then(({ onCastSdkReady, initCastContext }) => {
+            onCastSdkReady(() => {
+                initCastContext()
+                setSdkReady(true)
+            })
+        })
+    }, [])
+
+    if (!sdkReady) return null
+
+    return (
+        <Tooltip.Root side="top">
+            <Tooltip.Trigger
+                render={
+                    <button
+                        type="button"
+                        aria-label={isCasting ? 'Stop casting' : 'Cast'}
+                        className={`media-button media-button--subtle media-button--icon${isCasting ? ' media-button--airplay-active' : ''}`}
+                        onClick={() => onRequestCast?.(media?.currentTime ?? 0)}
+                    >
+                        <ScreencastIcon
+                            className="media-icon"
+                            weight={isCasting ? 'fill' : 'regular'}
+                        />
+                    </button>
+                }
+            />
+            <Tooltip.Popup className="media-surface media-tooltip">
+                {isCasting ? 'Stop casting' : 'Cast'}
             </Tooltip.Popup>
         </Tooltip.Root>
     )

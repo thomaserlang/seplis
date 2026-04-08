@@ -5,6 +5,8 @@ import {
 
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
+import { CastSenderPlayer } from '@/features/cast/components/cast-sender-player'
+import { useCastSender } from '@/features/cast/hooks/use-cast-sender'
 import { useMedia } from '@videojs/react'
 import {
     type CSSProperties,
@@ -64,6 +66,41 @@ export function PlayerView({
     const resumeTimeRef = useRef<number | undefined>(defaultStartTime)
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
+    const [activeSubtitle, setActiveSubtitle] = useState<string | undefined>(
+        () =>
+            pickStartSubtitle({
+                playSource: source.source,
+                defaultSubtitle,
+                preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
+                audio: pickStartAudio({
+                    playSource: source.source,
+                    defaultAudio,
+                    preferredAudioLangs: PREFERRED_AUDIO_LANGS,
+                }),
+            }),
+    )
+
+    // Cast sender — manages Cast SDK, session state and remote playback
+    const castSender = useCastSender()
+    const { isConnected: isCasting } = castSender.state
+    const pendingCastTimeRef = useRef<number | undefined>(undefined)
+
+    // When a cast session becomes active, load media on the receiver
+    useEffect(() => {
+        if (!isCasting) return
+        castSender.loadMedia({
+            playRequests: playRequestsSources.map((s) => s.request),
+            sourcePlayId: source.request.play_id,
+            sourceIndex: source.source.index,
+            audio,
+            subtitle: activeSubtitle,
+            maxBitrate,
+            startTime: pendingCastTimeRef.current ?? defaultStartTime ?? 0,
+            title,
+            secondaryTitle,
+        })
+        pendingCastTimeRef.current = undefined
+    }, [isCasting])
 
     const handleTimeUpdate = useEffectEvent(
         (currentTime: number, duration: number) => {
@@ -182,6 +219,52 @@ export function PlayerView({
         capturePosition()
     }
 
+    const handleRequestCast = (currentTime: number) => {
+        if (isCasting) {
+            castSender.stopCasting()
+        } else {
+            pendingCastTimeRef.current = currentTime
+            media?.pause()
+            castSender.requestSession()
+        }
+    }
+
+    if (isCasting) {
+        return (
+            <CastSenderPlayer
+                cast={castSender}
+                title={title}
+                secondaryTitle={secondaryTitle}
+                onClose={onClose}
+                playRequestsSources={playRequestsSources}
+                currentPlayRequestSource={source}
+                maxBitrate={maxBitrate}
+                audio={audio}
+                activeSubtitle={activeSubtitle}
+                preferredAudioLangs={PREFERRED_AUDIO_LANGS}
+                preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
+                onSourceChange={(s) => setSource(s)}
+                onBitrateChange={(b) => {
+                    if (b >= source.source.bit_rate) {
+                        localStorage.removeItem('maxBitrate')
+                        setMaxBitrate(MAX_BITRATE)
+                    } else {
+                        localStorage.setItem('maxBitrate', String(b))
+                        setMaxBitrate(b)
+                    }
+                }}
+                onAudioChange={(a) => {
+                    setAudioLang(a)
+                    onAudioChange?.(a)
+                }}
+                onSubtitleChange={(s) => {
+                    setActiveSubtitle(s)
+                    onSubtitleChange?.(s)
+                }}
+            />
+        )
+    }
+
     return (
         <PlayerVideo
             playServerMedia={data}
@@ -210,15 +293,15 @@ export function PlayerView({
                 capturePosition()
                 setForceTranscode(v)
             }}
-            defaultSubtitle={pickStartSubtitle({
-                playSource: source.source,
-                defaultSubtitle,
-                preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
-                audio,
-            })}
-            onSubtitleChange={onSubtitleChange}
+            defaultSubtitle={activeSubtitle}
+            onSubtitleChange={(s) => {
+                setActiveSubtitle(s)
+                onSubtitleChange?.(s)
+            }}
             preferredAudioLangs={PREFERRED_AUDIO_LANGS}
             preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
+            onRequestCast={handleRequestCast}
+            isCasting={isCasting}
         />
     )
 }
