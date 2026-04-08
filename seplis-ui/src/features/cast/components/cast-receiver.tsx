@@ -6,62 +6,67 @@ import {
     PlayRequestSources,
     PlaySource,
 } from '@/features/play/types/play-source.types'
-import { useEffect, useRef, useState } from 'react'
-import { CastLoadData, CAST_NAMESPACE, CastSenderMessage } from '../types/cast-messages.types'
+import { useEffect, useRef } from 'react'
+import React from 'react'
+import { CAST_NAMESPACE, CastLoadData, CastSenderMessage } from '../types/cast-messages.types'
 
-interface ReceiverPlayState {
+interface ReceiverState {
     loadData: CastLoadData
     playRequestSources: PlayRequestSources[]
     playRequestSource: PlayRequestSource
+    subtitleTracks: CafTrack[]
+}
+
+interface CafTrack {
+    trackId: number
+    type: string
+    subtype: string
+    name: string
+    language: string
+    contentId: string
+    contentType: string
 }
 
 export function CastReceiver() {
-    const videoRef = useRef<HTMLVideoElement>(null)
-    const [playState, setPlayState] = useState<ReceiverPlayState | null>(null)
-    const [isLoading, setIsLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
-    const playStateRef = useRef<ReceiverPlayState | null>(null)
+    const stateRef = useRef<ReceiverState | null>(null)
     const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null)
-    const keepAliveUrlRef = useRef<string | null>(null)
 
     useEffect(() => {
-        const script = document.createElement('script')
-        script.src =
-            'https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js'
-        script.onload = initReceiver
-        script.onerror = () => setError('Failed to load Cast SDK')
-        document.head.appendChild(script)
-        return () => {
-            document.head.removeChild(script)
-        }
-    }, [])
-
-    const initReceiver = () => {
         const cast = (window as any).cast
+        if (!cast?.framework) {
+            console.error(
+                '[Cast Receiver] SDK not found — check that the receiver script ' +
+                'is loaded before React in index.html.',
+            )
+            return
+        }
+
         const context = cast.framework.CastReceiverContext.getInstance()
         const playerManager = context.getPlayerManager()
 
-        // Give CAF control over our video element
-        if (videoRef.current) {
-            playerManager.setMediaElement(videoRef.current)
-        }
-
-        // Intercept LOAD to resolve the actual HLS/MP4 URL from the play server
+        // ── LOAD interceptor ───────────────────────────────────────────────
+        // This runs whenever the sender calls loadMedia(), AND whenever we
+        // call playerManager.load() from the receiver for settings changes.
+        // The `isReload` flag in customData lets us short-circuit the
+        // expensive API fetch on receiver-triggered reloads.
         playerManager.setMessageInterceptor(
             cast.framework.messages.MessageType.LOAD,
             async (loadRequest: any) => {
-                const customData = loadRequest.media.customData as CastLoadData
+                const customData = loadRequest.media?.customData as
+                    | (CastLoadData & { isReload?: boolean })
+                    | undefined
+
                 if (!customData?.playRequests) return loadRequest
 
-                setIsLoading(true)
-                setError(null)
+                // Short-circuit: URL already resolved, just play it
+                if (customData.isReload) return loadRequest
 
                 try {
-                    const sources = await getPlayRequestSources({ playRequests: customData.playRequests })
+                    const sources = await getPlayRequestSources({
+                        playRequests: customData.playRequests,
+                    })
 
-                    if (!sources || sources.length === 0) {
-                        throw new Error('No play sources available')
-                    }
+                    if (!sources?.length) throw new Error('No play sources available')
 
                     const playRequestSource = resolveSource(
                         sources,
@@ -69,8 +74,9 @@ export function CastReceiver() {
                         customData.sourceIndex,
                     )
 
-                    // getPlayServerMedia runs on the Chromecast's browser,
-                    // so codec detection reflects what Chromecast actually supports
+                    // getPlayServerMedia runs on the Chromecast's Chromium browser,
+                    // so getSupportedVideoCodecs() / canPlayType() reflect what
+                    // the Chromecast device actually supports.
                     const mediaData = await getPlayServerMedia({
                         playRequestSource,
                         audio: customData.audio,
@@ -81,42 +87,27 @@ export function CastReceiver() {
                         startTime: customData.startTime,
                     })
 
-                    // Start keep-alive for the play session
+                    // Restart keep-alive for this session
                     if (keepAliveRef.current) clearInterval(keepAliveRef.current)
-                    keepAliveUrlRef.current = mediaData.keep_alive_url
                     keepAliveRef.current = setInterval(() => {
-                        if (keepAliveUrlRef.current) {
-                            fetch(keepAliveUrlRef.current).catch(() => {})
-                        }
+                        fetch(mediaData.keep_alive_url).catch(() => {})
                     }, 5000)
 
-                    // Build subtitle tracks for CAF
-                    const subtitleTracks = playRequestSource.source.subtitles.map(
-                        (sub, i) => ({
-                            trackId: i + 1,
-                            type: 'TEXT',
-                            subtype: 'SUBTITLES',
-                            name: sub.title || sub.language,
-                            language: sub.language,
-                            contentId:
-                                `${playRequestSource.request.play_url}/subtitle-file` +
-                                `?play_id=${playRequestSource.request.play_id}` +
-                                `&source_index=${playRequestSource.source.index}` +
-                                `&offset=0` +
-                                `&lang=${sub.language}:${sub.index}`,
-                            contentType: 'text/vtt',
-                        }),
-                    )
+                    const subtitleTracks = buildSubtitleTracks(playRequestSource)
+                    stateRef.current = {
+                        loadData: customData,
+                        playRequestSources: sources,
+                        playRequestSource,
+                        subtitleTracks,
+                    }
 
-                    // Activate selected subtitle track
+                    // Activate the requested subtitle track
                     if (customData.subtitle) {
-                        const [lang, idxStr] = customData.subtitle.split(':')
-                        const subIdx = playRequestSource.source.subtitles.findIndex(
-                            (s) => s.language === lang && s.index === parseInt(idxStr),
+                        const trackId = findSubtitleTrackId(
+                            playRequestSource,
+                            customData.subtitle,
                         )
-                        if (subIdx !== -1) {
-                            loadRequest.activeTrackIds = [subIdx + 1]
-                        }
+                        if (trackId !== null) loadRequest.activeTrackIds = [trackId]
                     }
 
                     const url = mediaData.can_direct_play
@@ -130,55 +121,48 @@ export function CastReceiver() {
                     loadRequest.media.duration = playRequestSource.source.duration
                     loadRequest.media.tracks = subtitleTracks
                     loadRequest.media.metadata = {
-                        metadataType: 0,
+                        metadataType: 0, // GenericMediaMetadata
                         title: customData.title,
                         subtitle: customData.secondaryTitle,
                     }
-
-                    const newState: ReceiverPlayState = {
-                        loadData: customData,
-                        playRequestSources: sources,
-                        playRequestSource,
-                    }
-                    playStateRef.current = newState
-                    setPlayState(newState)
-                    setIsLoading(false)
+                    loadRequest.currentTime = customData.startTime ?? 0
 
                     return loadRequest
                 } catch (e) {
-                    const msg = e instanceof Error ? e.message : 'Failed to load media'
-                    setError(msg)
-                    setIsLoading(false)
+                    console.error('[Cast Receiver] Failed to load media', e)
                     throw e
                 }
             },
         )
 
-        // Handle settings changes from the sender
+        // ── Custom message listener (settings changes from sender) ─────────
         context.addCustomMessageListener(
             CAST_NAMESPACE,
             async (event: { data: CastSenderMessage; senderId: string }) => {
                 const msg = event.data
-                const current = playStateRef.current
+                const current = stateRef.current
                 if (!current) return
 
+                // Subtitle toggle — no reload needed, just switch tracks
                 if (msg.type === 'setSubtitle') {
+                    const ttm = playerManager.getTextTracksManager()
                     if (!msg.subtitle) {
-                        playerManager.setActiveTrackIds([])
+                        ttm.setActiveByIds([])
                     } else {
-                        const [lang, idxStr] = msg.subtitle.split(':')
-                        const subIdx = current.playRequestSource.source.subtitles.findIndex(
-                            (s) => s.language === lang && s.index === parseInt(idxStr),
+                        const trackId = findSubtitleTrackId(
+                            current.playRequestSource,
+                            msg.subtitle,
                         )
-                        if (subIdx !== -1) {
-                            playerManager.setActiveTrackIds([subIdx + 1])
-                        }
+                        if (trackId !== null) ttm.setActiveByIds([trackId])
                     }
-                    updateState({ loadData: { ...current.loadData, subtitle: msg.subtitle } })
+                    stateRef.current = {
+                        ...current,
+                        loadData: { ...current.loadData, subtitle: msg.subtitle },
+                    }
                     return
                 }
 
-                // Audio, bitrate, or source changes require fetching a new stream URL
+                // Audio / bitrate / source changes need a new media URL
                 let newLoadData = { ...current.loadData }
                 let newPlayRequestSource = current.playRequestSource
 
@@ -195,7 +179,10 @@ export function CastReceiver() {
                             (s) => s.index === msg.sourceIndex,
                         )
                         if (src) {
-                            newPlayRequestSource = { request: reqSources.request, source: src }
+                            newPlayRequestSource = {
+                                request: reqSources.request,
+                                source: src,
+                            }
                             newLoadData.sourcePlayId = msg.playId
                             newLoadData.sourceIndex = msg.sourceIndex
                         }
@@ -203,7 +190,7 @@ export function CastReceiver() {
                 }
 
                 try {
-                    const currentTime = videoRef.current?.currentTime ?? 0
+                    const currentTime = playerManager.getCurrentTimeSec() ?? 0
                     const mediaData = await getPlayServerMedia({
                         playRequestSource: newPlayRequestSource,
                         audio: newLoadData.audio,
@@ -214,143 +201,96 @@ export function CastReceiver() {
                         startTime: currentTime,
                     })
 
-                    keepAliveUrlRef.current = mediaData.keep_alive_url
-
                     const url = mediaData.can_direct_play
                         ? mediaData.direct_play_url
                         : mediaData.hls_url
 
-                    // Directly update the video element src; CAF will pick up the events
-                    if (videoRef.current) {
-                        const v = videoRef.current
-                        const wasPaused = v.paused
-                        v.src = url
-                        v.load()
-                        v.currentTime = currentTime
-                        if (!wasPaused) v.play().catch(() => {})
-                    }
-
-                    const newState: ReceiverPlayState = {
+                    const subtitleTracks = buildSubtitleTracks(newPlayRequestSource)
+                    stateRef.current = {
                         loadData: newLoadData,
                         playRequestSources: current.playRequestSources,
                         playRequestSource: newPlayRequestSource,
+                        subtitleTracks,
                     }
-                    playStateRef.current = newState
-                    setPlayState(newState)
+
+                    // Reload via playerManager. isReload=true bypasses the full
+                    // API fetch in the interceptor — the URL is already resolved.
+                    playerManager.load({
+                        type: 'LOAD',
+                        media: {
+                            contentId: url,
+                            contentType: mediaData.can_direct_play
+                                ? 'video/mp4'
+                                : 'application/x-mpegURL',
+                            customData: { ...newLoadData, isReload: true },
+                            tracks: subtitleTracks,
+                        },
+                        currentTime,
+                    })
                 } catch (e) {
-                    console.error('Failed to reload media after settings change', e)
+                    console.error('[Cast Receiver] Failed to reload after settings change', e)
                 }
             },
         )
 
+        // start() must be called LAST, after all interceptors/listeners are set
         context.start()
-    }
 
-    const updateState = (partial: Partial<ReceiverPlayState>) => {
-        setPlayState((prev) => {
-            if (!prev) return prev
-            const next = { ...prev, ...partial }
-            playStateRef.current = next
-            return next
-        })
-    }
+        return () => {
+            if (keepAliveRef.current) clearInterval(keepAliveRef.current)
+        }
+    }, [])
 
+    // <cast-media-player> is the CAF web component that handles HLS playback,
+    // subtitles, and the standard Cast receiver UI automatically.
+    // React.createElement is used directly because TypeScript doesn't know
+    // about this custom element in the JSX IntrinsicElements map.
     return (
-        <div
-            style={{
-                width: '100vw',
-                height: '100vh',
-                background: '#000',
-                position: 'relative',
-                overflow: 'hidden',
-                fontFamily: 'sans-serif',
-            }}
-        >
-            <video
-                ref={videoRef}
-                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-            />
-
-            {/* Metadata overlay */}
-            {playState && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        padding: '3rem 3rem 2rem',
-                        background:
-                            'linear-gradient(transparent, rgba(0,0,0,0.85))',
-                        color: '#fff',
-                        pointerEvents: 'none',
-                    }}
-                >
-                    {playState.loadData.title && (
-                        <div
-                            style={{
-                                fontSize: '2rem',
-                                fontWeight: 700,
-                                lineHeight: 1.2,
-                                textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-                            }}
-                        >
-                            {playState.loadData.title}
-                        </div>
-                    )}
-                    {playState.loadData.secondaryTitle && (
-                        <div
-                            style={{
-                                fontSize: '1.25rem',
-                                marginTop: '0.25rem',
-                                opacity: 0.8,
-                                textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-                            }}
-                        >
-                            {playState.loadData.secondaryTitle}
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Loading / error overlay */}
-            {(isLoading || error) && (
-                <div
-                    style={{
-                        position: 'absolute',
-                        inset: 0,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: 'rgba(0,0,0,0.6)',
-                        color: '#fff',
-                        fontSize: '1.25rem',
-                    }}
-                >
-                    {error ? (
-                        <span style={{ color: '#f88' }}>{error}</span>
-                    ) : (
-                        <span>Loading…</span>
-                    )}
-                </div>
-            )}
+        <div style={{ width: '100vw', height: '100vh', background: '#000' }}>
+            {React.createElement('cast-media-player', {
+                style: { width: '100%', height: '100%' },
+            })}
         </div>
     )
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function resolveSource(
     sources: PlayRequestSources[],
     sourcePlayId: string,
     sourceIndex: number,
 ): PlayRequestSource {
-    const reqSources = sources.find((s) => s.request.play_id === sourcePlayId)
-    const pool: { request: PlayRequestSources['request']; source: PlaySource }[] = (
-        reqSources ?? sources[0]
-    ).sources.map((src) => ({
-        request: (reqSources ?? sources[0]).request,
-        source: src,
-    }))
+    const reqSources =
+        sources.find((s) => s.request.play_id === sourcePlayId) ?? sources[0]
+    const source =
+        reqSources.sources.find((s: PlaySource) => s.index === sourceIndex) ??
+        reqSources.sources[0]
+    return { request: reqSources.request, source }
+}
 
-    const exact = pool.find((p) => p.source.index === sourceIndex)
-    return exact ?? pool[0]
+function buildSubtitleTracks(prs: PlayRequestSource): CafTrack[] {
+    return prs.source.subtitles.map((sub, i) => ({
+        trackId: i + 1,
+        type: 'TEXT',
+        subtype: 'SUBTITLES',
+        name: sub.title || sub.language,
+        language: sub.language,
+        contentId:
+            `${prs.request.play_url}/subtitle-file` +
+            `?play_id=${prs.request.play_id}` +
+            `&source_index=${prs.source.index}` +
+            `&offset=0` +
+            `&lang=${sub.language}:${sub.index}`,
+        contentType: 'text/vtt',
+    }))
+}
+
+/** Returns the 1-based trackId for a subtitle key like "eng:0", or null. */
+function findSubtitleTrackId(prs: PlayRequestSource, subtitleKey: string): number | null {
+    const [lang, idxStr] = subtitleKey.split(':')
+    const idx = prs.source.subtitles.findIndex(
+        (s) => s.language === lang && s.index === parseInt(idxStr),
+    )
+    return idx === -1 ? null : idx + 1
 }

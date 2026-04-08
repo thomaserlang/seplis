@@ -2,7 +2,7 @@ import { PlayRequest } from '@/features/play/types/play-source.types'
 
 export const CAST_NAMESPACE = 'urn:x-cast:seplis'
 export const CAST_APP_ID =
-    (import.meta as any).env?.VITE_CAST_APP_ID ?? 'EA4A67C4'
+    (import.meta as any).env?.VITE_CAST_APP_ID ?? '0BB2BE80'
 
 export interface CastLoadData {
     playRequests: PlayRequest[]
