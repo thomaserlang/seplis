@@ -1,23 +1,32 @@
-import ky from 'ky'
+import ky, { isHTTPError } from 'ky'
 
 const apiClient = ky.create({
-    prefixUrl: '/api',
+    prefix: '/api',
+    retry: {
+        limit: 3,
+        jitter: true,
+        shouldRetry: ({ error }) => {
+            if (isHTTPError(error)) {
+                return error.response.status >= 500
+            }
+        },
+    },
     hooks: {
         beforeError: [
-            async (error) => {
-                const { response } = error
+            async ({ error }) => {
                 if (
-                    response?.headers
+                    isHTTPError(error) &&
+                    error.response.headers
                         .get('content-type')
                         ?.includes('application/json')
                 ) {
-                    ;(error as any).data = await response.clone().json()
+                    error.data = await error.response.clone().json()
                 }
                 return error
             },
         ],
         beforeRequest: [
-            (request) => {
+            ({ request }) => {
                 const token = localStorage.getItem('accessToken')
                 if (token) {
                     request.headers.set('Authorization', `Bearer ${token}`)
@@ -27,7 +36,7 @@ const apiClient = ky.create({
             },
         ],
         afterResponse: [
-            (_request, _options, response) => {
+            ({ response }) => {
                 if (
                     response.status === 401 &&
                     !location.pathname.startsWith('/login')

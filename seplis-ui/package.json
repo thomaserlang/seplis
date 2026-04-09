@@ -15,27 +15,27 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
-    "postcss": "^8.5.8",
+    "postcss": "^8.5.9",
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^6.0.2",
-    "vite": "^8.0.3"
+    "vite": "^8.0.8"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
-    "@mantine/core": "^9.0.0",
-    "@mantine/form": "^9.0.0",
-    "@mantine/hooks": "^9.0.0",
-    "@mantine/modals": "^9.0.0",
-    "@mantine/notifications": "^9.0.0",
+    "@mantine/core": "^9.0.1",
+    "@mantine/form": "^9.0.1",
+    "@mantine/hooks": "^9.0.1",
+    "@mantine/modals": "^9.0.1",
+    "@mantine/notifications": "^9.0.1",
     "@phosphor-icons/react": "2.1.10",
-    "@tanstack/react-query": "^5.96.1",
+    "@tanstack/react-query": "^5.97.0",
     "@videojs/react": "^10.0.0-beta.15",
     "jassub": "^2.4.2",
-    "ky": "^1.14.3",
+    "ky": "^2.0.0",
     "pretty-bytes": "^7.1.0",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.2"
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^7.14.0"
   }
 }
