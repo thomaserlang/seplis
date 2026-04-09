@@ -75,7 +75,6 @@ export interface VideoPlayerProps {
     onPlayError?: (event: PlayErrorEvent) => void
     timeSliderStyle?: CSSProperties
     isVideoLoading?: boolean
-    suppressErrorDialog?: boolean
     defaultSubtitle?: string
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
@@ -99,7 +98,6 @@ export function PlayerVideo({
     onPlayError,
     timeSliderStyle,
     isVideoLoading,
-    suppressErrorDialog,
     defaultSubtitle,
     preferredAudioLangs,
     preferredSubtitleLangs,
@@ -209,36 +207,34 @@ export function PlayerVideo({
                 </div>
             )}
 
-            {!suppressErrorDialog && (
-                <ErrorDialog.Root>
-                    <ErrorDialog.Popup className="media-error">
-                        <div className="media-error__dialog media-surface">
-                            <div className="media-error__content">
-                                <ErrorDialog.Title className="media-error__title">
-                                    Something went wrong.
-                                </ErrorDialog.Title>
-                                <ErrorDialog.Description className="media-error__description" />
-                            </div>
-                            <div className="media-error__actions">
-                                {onClose && (
-                                    <ErrorDialog.Close
-                                        className="media-button media-button--subtle"
-                                        onClick={onClose}
-                                    >
-                                        Go Back
-                                    </ErrorDialog.Close>
-                                )}
-                                <ErrorDialog.Close
-                                    className="media-button media-button--primary"
-                                    onClick={() => window.location.reload()}
-                                >
-                                    Refresh
-                                </ErrorDialog.Close>
-                            </div>
+            <ErrorDialog.Root>
+                <ErrorDialog.Popup className="media-error">
+                    <div className="media-error__dialog media-surface">
+                        <div className="media-error__content">
+                            <ErrorDialog.Title className="media-error__title">
+                                Something went wrong.
+                            </ErrorDialog.Title>
+                            <ErrorDialog.Description className="media-error__description" />
                         </div>
-                    </ErrorDialog.Popup>
-                </ErrorDialog.Root>
-            )}
+                        <div className="media-error__actions">
+                            {onClose && (
+                                <ErrorDialog.Close
+                                    className="media-button media-button--subtle"
+                                    onClick={onClose}
+                                >
+                                    Go Back
+                                </ErrorDialog.Close>
+                            )}
+                            <ErrorDialog.Close
+                                className="media-button media-button--primary"
+                                onClick={() => window.location.reload()}
+                            >
+                                Refresh
+                            </ErrorDialog.Close>
+                        </div>
+                    </div>
+                </ErrorDialog.Popup>
+            </ErrorDialog.Root>
 
             <Controls.Root className="media-surface media-controls">
                 <Tooltip.Provider>

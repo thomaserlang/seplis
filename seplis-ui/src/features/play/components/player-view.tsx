@@ -6,13 +6,7 @@ import {
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useMedia } from '@videojs/react'
-import {
-    type CSSProperties,
-    useEffect,
-    useEffectEvent,
-    useRef,
-    useState,
-} from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useGetPlayServerMedia } from '../api/play-server-media.api'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import {
@@ -92,28 +86,18 @@ export function PlayerView({
         },
     )
 
-    const triggerForceTranscode = useEffectEvent(() => {
+    const handlePlayError = useEffectEvent(() => {
         if (!forceTranscodeRef.current) {
             const m = media
             if (m) {
                 wasPlayingRef.current = !m.paused
                 resumeTimeRef.current = m.currentTime
-                const fill =
-                    m.duration > 0 ? (m.currentTime / m.duration) * 100 : 0
-                setFrozenTimeStyle({
-                    '--media-slider-fill': `${fill}%`,
-                } as CSSProperties)
             }
-            setSuppressErrorDialog(true)
             setIsVideoLoading(true)
             setForceTranscode(true)
         }
     })
-    const [frozenTimeStyle, setFrozenTimeStyle] = useState<
-        CSSProperties | undefined
-    >(undefined)
     const [isVideoLoading, setIsVideoLoading] = useState(true)
-    const [suppressErrorDialog, setSuppressErrorDialog] = useState(false)
 
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
@@ -137,24 +121,15 @@ export function PlayerView({
         }
         media.oncanplay = () => {
             setIsVideoLoading(false)
-            setSuppressErrorDialog(false)
             if (wasPlayingRef.current) {
                 wasPlayingRef.current = false
                 media.play().catch(() => {})
             }
         }
         media.onerror = () => {
-            if (!forceTranscodeRef.current) {
-                setSuppressErrorDialog(true)
-                setIsVideoLoading(true)
-                setForceTranscode(true)
-            } else {
-                setIsVideoLoading(false)
-            }
+            handlePlayError()
         }
-        media.onseeked = () => {
-            setFrozenTimeStyle(undefined)
-        }
+        media.onseeked = () => {}
         media.ontimeupdate = () => {
             if (!media.duration) return
             handleTimeUpdate(media.currentTime, media.duration)
@@ -177,11 +152,6 @@ export function PlayerView({
         if (!media) return
         wasPlayingRef.current = !media.paused
         resumeTimeRef.current = media.currentTime
-        const fill =
-            media.duration > 0 ? (media.currentTime / media.duration) * 100 : 0
-        setFrozenTimeStyle({
-            '--media-slider-fill': `${fill}%`,
-        } as CSSProperties)
         setIsVideoLoading(true)
     }
 
@@ -207,9 +177,7 @@ export function PlayerView({
             maxBitrate={maxBitrate}
             audio={audio}
             forceTranscode={forceTranscode}
-            timeSliderStyle={frozenTimeStyle}
             isVideoLoading={isVideoLoading}
-            suppressErrorDialog={suppressErrorDialog}
             onSourceChange={(s) => {
                 capturePosition()
                 setSource(s)
@@ -220,7 +188,7 @@ export function PlayerView({
                 setAudioLang(audio)
                 onAudioChange?.(audio)
             }}
-            onPlayError={triggerForceTranscode}
+            onPlayError={handlePlayError}
             onForceTranscodeChange={(v) => {
                 capturePosition()
                 setForceTranscode(v)
