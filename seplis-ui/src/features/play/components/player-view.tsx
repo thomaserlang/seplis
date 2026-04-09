@@ -5,7 +5,6 @@ import {
 
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { useMedia } from '@videojs/react'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useGetPlayServerMedia } from '../api/play-server-media.api'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
@@ -53,9 +52,8 @@ export function PlayerView({
         }),
     )
     const [forceTranscode, setForceTranscode] = useState(false)
-    const forceTranscodeRef = useRef(forceTranscode)
-    forceTranscodeRef.current = forceTranscode
     const resumeTimeRef = useRef<number>(defaultStartTime ?? 0)
+    const currentTimeRef = useRef<number>(defaultStartTime ?? 0)
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
     const [isVideoLoading, setIsVideoLoading] = useState(true)
@@ -69,11 +67,9 @@ export function PlayerView({
             staleTime: Infinity,
         },
     })
-    const media = useMedia()
-
     const handleTimeUpdate = useEffectEvent(
         (currentTime: number, duration: number) => {
-            resumeTimeRef.current = currentTime
+            currentTimeRef.current = currentTime
             if (finishedFiredRef.current) return
             if (currentTime >= duration * 0.9) {
                 finishedFiredRef.current = true
@@ -86,36 +82,15 @@ export function PlayerView({
     )
 
     const handlePlayError = () => {
-        if (!forceTranscodeRef.current) {
-            setIsVideoLoading(true)
+        if (!forceTranscode) {
             setForceTranscode(true)
         }
     }
 
     useEffect(() => {
-        if (!media) return
-        media.onloadedmetadata = () => {
-            media.currentTime = resumeTimeRef.current
-        }
-        media.oncanplay = () => {
-            setIsVideoLoading(false)
-        }
-        media.onerror = () => {
-            handlePlayError()
-        }
-        media.ontimeupdate = () => {
-            if (!media.duration) return
-            handleTimeUpdate(media.currentTime, media.duration)
-        }
-        const savedVolume = localStorage.getItem('player-volume')
-        media.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.5
-        media.onvolumechange = () => {
-            localStorage.setItem(
-                'player-volume',
-                String(Math.round(media.volume * 100) / 100),
-            )
-        }
-    }, [media])
+        resumeTimeRef.current = currentTimeRef.current
+        setIsVideoLoading(true)
+    }, [data])
 
     if (isLoading) return <PageLoader />
     if (error) return <ErrorBox errorObj={error} />
@@ -143,6 +118,7 @@ export function PlayerView({
             audio={audio}
             forceTranscode={forceTranscode}
             isVideoLoading={isVideoLoading || isRefetching}
+            startTime={resumeTimeRef.current}
             onSourceChange={setSource}
             onBitrateChange={handleBitrateChange}
             onAudioChange={(audio) => {
@@ -151,6 +127,9 @@ export function PlayerView({
             }}
             onPlayError={handlePlayError}
             onForceTranscodeChange={setForceTranscode}
+            onVideoReady={() => setIsVideoLoading(false)}
+            onVideoError={handlePlayError}
+            onTimeUpdate={handleTimeUpdate}
             defaultSubtitle={pickStartSubtitle({
                 playSource: source.source,
                 defaultSubtitle,

@@ -78,6 +78,10 @@ export interface VideoPlayerProps {
     defaultSubtitle?: string
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
+    startTime?: number
+    onVideoReady?: () => void
+    onVideoError?: () => void
+    onTimeUpdate?: (currentTime: number, duration: number) => void
 }
 
 export function PlayerVideo({
@@ -101,6 +105,10 @@ export function PlayerVideo({
     defaultSubtitle,
     preferredAudioLangs,
     preferredSubtitleLangs,
+    startTime = 0,
+    onVideoReady,
+    onVideoError,
+    onTimeUpdate,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
@@ -414,6 +422,12 @@ export function PlayerVideo({
             </Controls.Root>
 
             <AutoPlay />
+            <MediaEventHandler
+                startTime={startTime}
+                onVideoReady={onVideoReady}
+                onVideoError={onVideoError}
+                onTimeUpdate={onTimeUpdate}
+            />
             <VideoClickHandler />
             <PlayErrorHandler src={src} onPlayError={onPlayError} />
             <div className="media-overlay" />
@@ -425,8 +439,46 @@ function AutoPlay(): ReactNode {
     const media = useMedia()
     useEffect(() => {
         if (!media) return
-        if (!media.paused) return
         media.play().catch(() => {})
+    }, [media])
+
+    return null
+}
+
+function MediaEventHandler({
+    startTime = 0,
+    onVideoReady,
+    onVideoError,
+    onTimeUpdate,
+}: {
+    startTime?: number
+    onVideoReady?: () => void
+    onVideoError?: () => void
+    onTimeUpdate?: (currentTime: number, duration: number) => void
+}): null {
+    const media = useMedia()
+    const startTimeRef = useRef(startTime)
+    startTimeRef.current = startTime
+
+    useEffect(() => {
+        if (!media) return
+        media.onloadedmetadata = () => {
+            media.currentTime = startTimeRef.current
+        }
+        media.oncanplay = () => onVideoReady?.()
+        media.onerror = () => onVideoError?.()
+        media.ontimeupdate = () => {
+            if (!media.duration) return
+            onTimeUpdate?.(media.currentTime, media.duration)
+        }
+        const savedVolume = localStorage.getItem('player-volume')
+        media.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.5
+        media.onvolumechange = () => {
+            localStorage.setItem(
+                'player-volume',
+                String(Math.round(media.volume * 100) / 100),
+            )
+        }
     }, [media])
 
     return null
