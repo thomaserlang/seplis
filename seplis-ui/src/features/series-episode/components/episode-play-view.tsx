@@ -2,17 +2,18 @@ import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { PlayerContainer } from '@/features/play'
 import {
-    useGetSeries,
-    useGetSeriesUserSettings,
-    useUpdateSeriesUserSettings,
+    getSeries,
+    getSeriesUserSettings,
+    updateSeriesUserSettings,
 } from '@/features/series'
-import { useGetEpisodePlayRequests } from '../api/episode-play-requests.api'
-import { useUpdateEpisodeWatchedPosition } from '../api/episode-watched-position'
+import { useQuery } from '@tanstack/react-query'
+import { getEpisodePlayRequests } from '../api/episode-play-requests.api'
+import { updateEpisodeWatchedPosition } from '../api/episode-watched-position'
 import {
-    useGetEpisodeWatched,
-    useIncrementEpisodeWatched,
+    getEpisodeWatched,
+    incrementEpisodeWatched,
 } from '../api/episode-watched.api'
-import { useGetEpisode } from '../api/episode.api'
+import { getEpisode } from '../api/episode.api'
 
 interface Props {
     seriesId: number
@@ -20,69 +21,64 @@ interface Props {
     onClose?: () => void
 }
 
-const OPTIONS = {
-    refetchOnWindowFocus: false,
-}
-
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
-    const series = useGetSeries({
-        seriesId,
-        options: OPTIONS,
+    const data = useQuery({
+        queryKey: ['episode-play-view', seriesId, episodeNumber],
+        queryFn: async () => {
+            const [
+                series,
+                episode,
+                playRequests,
+                episodeWatched,
+                userSettings,
+            ] = await Promise.all([
+                getSeries({ seriesId }),
+                getEpisode({ seriesId, episodeNumber }),
+                getEpisodePlayRequests({
+                    seriesId,
+                    episodeNumber,
+                }),
+                getEpisodeWatched({
+                    seriesId,
+                    episodeNumber,
+                }),
+                getSeriesUserSettings({ seriesId }),
+            ])
+            return {
+                series,
+                episode,
+                playRequests,
+                episodeWatched,
+                userSettings,
+            }
+        },
+        refetchOnWindowFocus: false,
     })
-    const episode = useGetEpisode({
-        seriesId,
-        episodeNumber,
-        options: OPTIONS,
-    })
-    const playRequests = useGetEpisodePlayRequests({
-        seriesId,
-        episodeNumber,
-        options: OPTIONS,
-    })
-    const episodeWatched = useGetEpisodeWatched({
-        seriesId,
-        episodeNumber,
-        options: OPTIONS,
-    })
-    const userSettings = useGetSeriesUserSettings({
-        seriesId,
-        options: OPTIONS,
-    })
-    const updateUserSettings = useUpdateSeriesUserSettings({})
-    const updateWatchedPosition = useUpdateEpisodeWatchedPosition({})
-    const incrementWatched = useIncrementEpisodeWatched({})
 
-    const queries = [
-        series,
-        episode,
-        playRequests,
-        episodeWatched,
-        userSettings,
-    ]
-    if (queries.some((q) => q.isLoading)) return <PageLoader />
+    if (data.isLoading) return <PageLoader />
+    if (data.error) return <ErrorBox errorObj={data.error} />
 
-    const error = queries.find((q) => q.error)?.error
-    if (error) return <ErrorBox errorObj={error} />
+    const { series, episode, playRequests, episodeWatched, userSettings } =
+        data.data || {}
 
-    if (!series.data) return <ErrorBox message="Series not found" />
-    if (!episode.data) return <ErrorBox message="Episode not found" />
-    if (!playRequests.data)
-        return <ErrorBox message="No playable requests found" />
+    if (!series) return <ErrorBox message="Series not found" />
+    if (!episode) return <ErrorBox message="Episode not found" />
+    if (!playRequests) return <ErrorBox message="No playable requests found" />
 
-    const title = series.data?.title ?? undefined
-    const secondaryTitle = `S${episode.data.season} E${episode.data.episode}${episode.data.title ? ` - ${episode.data.title}` : ''}`
+    const title = series.title || 'Unknown Title'
+    const secondaryTitle = `S${episode.season} E${episode.episode}${episode?.title ? ` - ${episode?.title}` : ''}`
 
     return (
         <PlayerContainer
-            playRequests={playRequests.data}
+            playRequests={playRequests}
             title={title}
             secondaryTitle={secondaryTitle}
             onClose={onClose}
-            defaultStartTime={episodeWatched.data?.position ?? 0}
-            defaultAudio={userSettings.data?.audio_lang ?? undefined}
-            defaultSubtitle={userSettings.data?.subtitle_lang ?? undefined}
+            defaultStartTime={episodeWatched?.position ?? 0}
+            defaultAudio={userSettings?.audio_lang ?? undefined}
+            defaultSubtitle={userSettings?.subtitle_lang ?? undefined}
             onSavePosition={(position) =>
-                updateWatchedPosition.mutate({
+                updateEpisodeWatchedPosition({
                     seriesId,
                     episodeNumber,
                     data: {
@@ -91,10 +87,10 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                 })
             }
             onFinished={() => {
-                incrementWatched.mutate({ seriesId, episodeNumber })
+                incrementEpisodeWatched({ seriesId, episodeNumber })
             }}
             onSubtitleChange={(subtitle) => {
-                updateUserSettings.mutate({
+                updateSeriesUserSettings({
                     seriesId,
                     data: {
                         subtitle_lang: subtitle || null,
@@ -102,7 +98,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                 })
             }}
             onAudioChange={(audio) => {
-                updateUserSettings.mutate({
+                updateSeriesUserSettings({
                     seriesId,
                     data: {
                         audio_lang: audio || null,

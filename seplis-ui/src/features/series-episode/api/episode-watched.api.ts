@@ -17,7 +17,7 @@ interface EpisodeWatchedGetProps extends ApiHelperProps<{}> {
 export const {
     get: getEpisodeWatched,
     useGet: useGetEpisodeWatched,
-    queryKey: episodeWatchedQueryKey,
+    queryKey: getEpisodeWatchedQueryKey,
 } = useApiHelper<EpisodeWatched, EpisodeWatchedGetProps>({
     url: ({ seriesId, episodeNumber: episodeId }) =>
         `2/series/${seriesId}/episodes/${episodeId}/watched`,
@@ -34,7 +34,7 @@ interface EpisodeWatchedIncrementProps extends MutationApiHelperProps<{}> {
 }
 
 export const {
-    mutation: episodeIncrementWatched,
+    mutation: incrementEpisodeWatched,
     useMutation: useIncrementEpisodeWatched,
 } = useMutationApiHelper<EpisodeWatched, EpisodeWatchedIncrementProps>({
     method: 'POST',
@@ -42,7 +42,7 @@ export const {
         `2/series/${seriesId}/episodes/${episodeId}/watched`,
     onSuccess: ({ data, variables }) => {
         queryClient.setQueryData(
-            episodeWatchedQueryKey({
+            getEpisodeWatchedQueryKey({
                 seriesId: variables.seriesId,
                 episodeNumber: variables.episodeNumber,
             }),
@@ -65,7 +65,7 @@ interface EpisodeWatchedDecrementProps extends MutationApiHelperProps<{}> {
 }
 
 export const {
-    mutation: episodeDecrementWatched,
+    mutation: decrementEpisodeWatched,
     useMutation: useDecrementEpisodeWatched,
 } = useMutationApiHelper<EpisodeWatched, EpisodeWatchedDecrementProps>({
     method: 'DELETE',
@@ -73,7 +73,7 @@ export const {
         `2/series/${seriesId}/episodes/${episodeId}/watched`,
     onSuccess: ({ data, variables }) => {
         queryClient.setQueryData(
-            episodeWatchedQueryKey({
+            getEpisodeWatchedQueryKey({
                 seriesId: variables.seriesId,
                 episodeNumber: variables.episodeId,
             }),

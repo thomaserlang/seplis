@@ -55,51 +55,11 @@ export function PlayerView({
     const [forceTranscode, setForceTranscode] = useState(false)
     const forceTranscodeRef = useRef(forceTranscode)
     forceTranscodeRef.current = forceTranscode
-    const resumeTimeRef = useRef<number | undefined>(defaultStartTime)
-    const wasPlayingRef = useRef(false)
+    const resumeTimeRef = useRef<number>(defaultStartTime ?? 0)
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
-    const [activeSubtitle, setActiveSubtitle] = useState<string | undefined>(
-        () =>
-            pickStartSubtitle({
-                playSource: source.source,
-                defaultSubtitle,
-                preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
-                audio: pickStartAudio({
-                    playSource: source.source,
-                    defaultAudio,
-                    preferredAudioLangs: PREFERRED_AUDIO_LANGS,
-                }),
-            }),
-    )
-
-    const handleTimeUpdate = useEffectEvent(
-        (currentTime: number, duration: number) => {
-            if (finishedFiredRef.current) return
-            if (currentTime >= duration * 0.9) {
-                finishedFiredRef.current = true
-                onFinished?.()
-            } else if (currentTime - lastSaveTimeRef.current >= 10) {
-                lastSaveTimeRef.current = currentTime
-                onSavePosition?.(Math.round(currentTime))
-            }
-        },
-    )
-
-    const handlePlayError = useEffectEvent(() => {
-        if (!forceTranscodeRef.current) {
-            const m = media
-            if (m) {
-                wasPlayingRef.current = !m.paused
-                resumeTimeRef.current = m.currentTime
-            }
-            setIsVideoLoading(true)
-            setForceTranscode(true)
-        }
-    })
     const [isVideoLoading, setIsVideoLoading] = useState(true)
-
-    const { data, isLoading, error } = useGetPlayServerMedia({
+    const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
         playRequestSource: source,
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio,
@@ -111,25 +71,38 @@ export function PlayerView({
     })
     const media = useMedia()
 
+    const handleTimeUpdate = useEffectEvent(
+        (currentTime: number, duration: number) => {
+            resumeTimeRef.current = currentTime
+            if (finishedFiredRef.current) return
+            if (currentTime >= duration * 0.9) {
+                finishedFiredRef.current = true
+                onFinished?.()
+            } else if (currentTime - lastSaveTimeRef.current >= 10) {
+                lastSaveTimeRef.current = currentTime
+                onSavePosition?.(Math.round(currentTime))
+            }
+        },
+    )
+
+    const handlePlayError = () => {
+        if (!forceTranscodeRef.current) {
+            setIsVideoLoading(true)
+            setForceTranscode(true)
+        }
+    }
+
     useEffect(() => {
         if (!media) return
         media.onloadedmetadata = () => {
-            if (resumeTimeRef.current !== undefined) {
-                media.currentTime = resumeTimeRef.current
-                resumeTimeRef.current = undefined
-            }
+            media.currentTime = resumeTimeRef.current
         }
         media.oncanplay = () => {
             setIsVideoLoading(false)
-            if (wasPlayingRef.current) {
-                wasPlayingRef.current = false
-                media.play().catch(() => {})
-            }
         }
         media.onerror = () => {
             handlePlayError()
         }
-        media.onseeked = () => {}
         media.ontimeupdate = () => {
             if (!media.duration) return
             handleTimeUpdate(media.currentTime, media.duration)
@@ -148,13 +121,6 @@ export function PlayerView({
     if (error) return <ErrorBox errorObj={error} />
     if (!data) return <ErrorBox message="No playable source found" />
 
-    const capturePosition = () => {
-        if (!media) return
-        wasPlayingRef.current = !media.paused
-        resumeTimeRef.current = media.currentTime
-        setIsVideoLoading(true)
-    }
-
     const handleBitrateChange = (bitrate: number) => {
         if (bitrate >= source.source.bit_rate) {
             localStorage.removeItem('maxBitrate')
@@ -163,7 +129,6 @@ export function PlayerView({
             localStorage.setItem('maxBitrate', String(bitrate))
             setMaxBitrate(bitrate)
         }
-        capturePosition()
     }
 
     return (
@@ -177,25 +142,22 @@ export function PlayerView({
             maxBitrate={maxBitrate}
             audio={audio}
             forceTranscode={forceTranscode}
-            isVideoLoading={isVideoLoading}
-            onSourceChange={(s) => {
-                capturePosition()
-                setSource(s)
-            }}
+            isVideoLoading={isVideoLoading || isRefetching}
+            onSourceChange={setSource}
             onBitrateChange={handleBitrateChange}
             onAudioChange={(audio) => {
-                capturePosition()
                 setAudioLang(audio)
                 onAudioChange?.(audio)
             }}
             onPlayError={handlePlayError}
-            onForceTranscodeChange={(v) => {
-                capturePosition()
-                setForceTranscode(v)
-            }}
-            defaultSubtitle={activeSubtitle}
+            onForceTranscodeChange={setForceTranscode}
+            defaultSubtitle={pickStartSubtitle({
+                playSource: source.source,
+                defaultSubtitle,
+                preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
+                audio,
+            })}
             onSubtitleChange={(s) => {
-                setActiveSubtitle(s)
                 onSubtitleChange?.(s)
             }}
             preferredAudioLangs={PREFERRED_AUDIO_LANGS}

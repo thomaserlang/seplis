@@ -22,7 +22,16 @@ export const {
     queryKey: playServerMediaQueryKey,
 } = useApiHelper<PlayServerMedia, PlayServerMediaGetProps>({
     url: () => '',
-    queryKey: (props) => ['play-server-media', { ...props }],
+    queryKey: (props) =>
+        [
+            'play-server-media',
+            props.playRequestSource.request.play_id,
+            props.startTime,
+            props.audio,
+            props.maxBitrate,
+            props.forceTranscode,
+            props.maxAudioChannels,
+        ].filter((x) => x !== undefined),
     getFn: async ({
         playRequestSource,
         startTime,

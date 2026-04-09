@@ -157,13 +157,13 @@ export function PlayerVideo({
                         default
                     />
                 )}
+                {isAssSubtitle && subtitleUrl && (
+                    <AssSubtitle subUrl={subtitleUrl} offset={subtitleOffset} />
+                )}
             </Video>
 
             {activeSubtitleKey && !isAssSubtitle && (
                 <SubtitleOffsetApplier offset={subtitleOffset} />
-            )}
-            {isAssSubtitle && subtitleUrl && (
-                <AssSubtitle subUrl={subtitleUrl} offset={subtitleOffset} />
             )}
 
             <Controls.Root className="media-header">
@@ -413,7 +413,7 @@ export function PlayerVideo({
                 </Tooltip.Provider>
             </Controls.Root>
 
-            <AutoplayOnce />
+            <AutoPlay />
             <VideoClickHandler />
             <PlayErrorHandler src={src} onPlayError={onPlayError} />
             <div className="media-overlay" />
@@ -421,13 +421,11 @@ export function PlayerVideo({
     )
 }
 
-function AutoplayOnce(): ReactNode {
+function AutoPlay(): ReactNode {
     const media = useMedia()
-    const hasAutoplayed = useRef(false)
-
     useEffect(() => {
-        if (!media || hasAutoplayed.current) return
-        hasAutoplayed.current = true
+        if (!media) return
+        if (!media.paused) return
         media.play().catch(() => {})
     }, [media])
 

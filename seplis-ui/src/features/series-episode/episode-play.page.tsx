@@ -18,6 +18,7 @@ export function Component() {
     return (
         <Box h="100dvh" w="100dvw">
             <EpisodePlayView
+                key={`${sid}-${epNum}`}
                 seriesId={sid}
                 episodeNumber={epNum}
                 onClose={() => navigate(-1)}

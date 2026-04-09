@@ -26,7 +26,7 @@ interface MovieWatchedIncrementProps extends MutationApiHelperProps<{}> {
 }
 
 export const {
-    mutation: movieIncrementWatched,
+    mutation: incrementMovieWatched,
     useMutation: useIncrementMovieWatched,
 } = useMutationApiHelper<MovieWatched, MovieWatchedIncrementProps>({
     method: 'POST',
@@ -47,7 +47,7 @@ interface MovieWatchedDecrementProps extends MutationApiHelperProps<{}> {
 }
 
 export const {
-    mutation: movieDecrementWatched,
+    mutation: decrementMovieWatched,
     useMutation: useDecrementMovieWatched,
 } = useMutationApiHelper<MovieWatched, MovieWatchedDecrementProps>({
     method: 'DELETE',

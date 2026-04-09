@@ -1,56 +1,57 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { PlayerContainer } from '@/features/play'
-import { useGetMoviePlayRequests } from '../api/movie-play-requests.api'
-import { useUpdateMovieWatchedPosition } from '../api/movie-watched-position'
+import { useQuery } from '@tanstack/react-query'
+import { getMoviePlayRequests } from '../api/movie-play-requests.api'
+import { updateMovieWatchedPosition } from '../api/movie-watched-position'
 import {
-    useGetMovieWatched,
-    useIncrementMovieWatched,
+    getMovieWatched,
+    incrementMovieWatched,
 } from '../api/movie-watched.api'
-import { useGetMovie } from '../api/movie.api'
+import { getMovie } from '../api/movie.api'
 
 interface Props {
     movieId: number
     onClose?: () => void
 }
 
-const OPTIONS = {
-    refetchOnWindowFocus: false,
-}
-
 export function MoviePlayView({ movieId, onClose }: Props) {
-    const movie = useGetMovie({
-        movieId,
-        options: OPTIONS,
+    const data = useQuery({
+        queryKey: ['movie-play-view', movieId],
+        queryFn: async () => {
+            const [movie, playRequests, watchedPosition] = await Promise.all([
+                getMovie({ movieId }),
+                getMoviePlayRequests({
+                    movieId,
+                }),
+                getMovieWatched({
+                    movieId,
+                }),
+            ])
+            return {
+                movie,
+                playRequests,
+                watchedPosition,
+            }
+        },
+        refetchOnWindowFocus: false,
     })
-    const playRequests = useGetMoviePlayRequests({
-        movieId,
-        options: OPTIONS,
-    })
-    const watchedPosition = useGetMovieWatched({
-        movieId,
-        options: OPTIONS,
-    })
-    const updateWatchedPosition = useUpdateMovieWatchedPosition({})
-    const incrementWatched = useIncrementMovieWatched({})
+    if (data.isLoading) return <PageLoader />
 
-    const queries = [movie, playRequests, watchedPosition]
-    if (queries.some((q) => q.isLoading)) return <PageLoader />
+    if (data.error) return <ErrorBox errorObj={data.error} />
+    const { movie, playRequests, watchedPosition } = data.data || {}
 
-    const error = queries.find((q) => q.error)?.error
-    if (error) return <ErrorBox errorObj={error} />
-    if (!movie.data) return <ErrorBox message="Movie not found" />
-    if (!playRequests.data)
-        return <ErrorBox message="No playable sources found" />
+    if (!movie) return <ErrorBox message="Movie not found" />
+    if (!playRequests) return <ErrorBox message="No playable sources found" />
 
     return (
         <PlayerContainer
-            playRequests={playRequests.data}
-            title={movie.data.title ?? undefined}
+            playRequests={playRequests}
+            title={movie.title ?? undefined}
             onClose={onClose}
-            defaultStartTime={watchedPosition.data?.position ?? 0}
+            defaultStartTime={watchedPosition?.position ?? 0}
             onSavePosition={(position) =>
-                updateWatchedPosition.mutate({
+                updateMovieWatchedPosition({
                     movieId,
                     data: {
                         position,
@@ -58,7 +59,7 @@ export function MoviePlayView({ movieId, onClose }: Props) {
                 })
             }
             onFinished={() => {
-                incrementWatched.mutate({ movieId })
+                incrementMovieWatched({ movieId })
             }}
         />
     )

@@ -15,7 +15,6 @@ export function PlayerContainer({ playRequests, ...props }: Props) {
         playRequests,
         options: {
             refetchOnWindowFocus: false,
-            staleTime: Infinity,
         },
     })
 
