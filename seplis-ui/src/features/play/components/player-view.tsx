@@ -28,8 +28,6 @@ import {
 } from '../utils/play-source.utils'
 import { PlayerVideo } from './player-video'
 
-const FORCE_TRANSCODE_TIMEOUT = 6_000
-
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
 }
@@ -63,13 +61,8 @@ export function PlayerView({
     const [forceTranscode, setForceTranscode] = useState(false)
     const forceTranscodeRef = useRef(forceTranscode)
     forceTranscodeRef.current = forceTranscode
-    const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-        undefined,
-    )
-    const stallTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-        undefined,
-    )
     const resumeTimeRef = useRef<number | undefined>(defaultStartTime)
+    const wasPlayingRef = useRef(false)
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
     const [activeSubtitle, setActiveSubtitle] = useState<string | undefined>(
@@ -103,6 +96,7 @@ export function PlayerView({
         if (!forceTranscodeRef.current) {
             const m = media
             if (m) {
+                wasPlayingRef.current = !m.paused
                 resumeTimeRef.current = m.currentTime
                 const fill =
                     m.duration > 0 ? (m.currentTime / m.duration) * 100 : 0
@@ -142,14 +136,14 @@ export function PlayerView({
             }
         }
         media.oncanplay = () => {
-            clearTimeout(loadTimeoutRef.current)
-            clearTimeout(stallTimeoutRef.current)
             setIsVideoLoading(false)
             setSuppressErrorDialog(false)
+            if (wasPlayingRef.current) {
+                wasPlayingRef.current = false
+                media.play().catch(() => {})
+            }
         }
         media.onerror = () => {
-            clearTimeout(loadTimeoutRef.current)
-            clearTimeout(stallTimeoutRef.current)
             if (!forceTranscodeRef.current) {
                 setSuppressErrorDialog(true)
                 setIsVideoLoading(true)
@@ -157,16 +151,6 @@ export function PlayerView({
             } else {
                 setIsVideoLoading(false)
             }
-        }
-        media.onwaiting = () => {
-            clearTimeout(stallTimeoutRef.current)
-            stallTimeoutRef.current = setTimeout(
-                triggerForceTranscode,
-                FORCE_TRANSCODE_TIMEOUT,
-            )
-        }
-        media.onplaying = () => {
-            clearTimeout(stallTimeoutRef.current)
         }
         media.onseeked = () => {
             setFrozenTimeStyle(undefined)
@@ -185,24 +169,13 @@ export function PlayerView({
         }
     }, [media])
 
-    const dataUrl = data ? (data.hls_url ?? data.direct_play_url) : undefined
-
-    useEffect(() => {
-        if (!dataUrl) return
-        clearTimeout(loadTimeoutRef.current)
-        loadTimeoutRef.current = setTimeout(
-            triggerForceTranscode,
-            FORCE_TRANSCODE_TIMEOUT,
-        )
-        return () => clearTimeout(loadTimeoutRef.current)
-    }, [dataUrl])
-
     if (isLoading) return <PageLoader />
     if (error) return <ErrorBox errorObj={error} />
     if (!data) return <ErrorBox message="No playable source found" />
 
     const capturePosition = () => {
         if (!media) return
+        wasPlayingRef.current = !media.paused
         resumeTimeRef.current = media.currentTime
         const fill =
             media.duration > 0 ? (media.currentTime / media.duration) * 100 : 0
@@ -247,6 +220,7 @@ export function PlayerView({
                 setAudioLang(audio)
                 onAudioChange?.(audio)
             }}
+            onPlayError={triggerForceTranscode}
             onForceTranscodeChange={(v) => {
                 capturePosition()
                 setForceTranscode(v)

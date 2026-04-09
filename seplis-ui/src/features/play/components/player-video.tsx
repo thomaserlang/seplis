@@ -46,6 +46,14 @@ import { SettingsPopover } from './player-settings'
 import './player-video.css'
 
 const SEEK_TIME = 10
+const STALL_LOAD_TIMEOUT = 6_000
+
+export type PlayErrorType = 'load_timeout' | 'stall_timeout'
+
+export interface PlayErrorEvent {
+    type: PlayErrorType
+    count: number
+}
 
 export const Player = createPlayer({ features: videoFeatures })
 
@@ -64,6 +72,7 @@ export interface VideoPlayerProps {
     onAudioChange: (audio: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
     onSubtitleChange?: (subtitle: string | undefined) => void
+    onPlayError?: (event: PlayErrorEvent) => void
     timeSliderStyle?: CSSProperties
     isVideoLoading?: boolean
     suppressErrorDialog?: boolean
@@ -87,6 +96,7 @@ export function PlayerVideo({
     onAudioChange,
     onForceTranscodeChange,
     onSubtitleChange,
+    onPlayError,
     timeSliderStyle,
     isVideoLoading,
     suppressErrorDialog,
@@ -132,16 +142,13 @@ export function PlayerVideo({
           (isAssSubtitle ? `&output_format=ass` : '')
         : undefined
 
+    const src = playServerMedia.can_direct_play
+        ? playServerMedia.direct_play_url
+        : playServerMedia.hls_url
+
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
-            <Video
-                src={
-                    playServerMedia.can_direct_play
-                        ? playServerMedia.direct_play_url
-                        : playServerMedia.hls_url
-                }
-                crossOrigin="anonymous"
-            >
+            <Video src={src} crossOrigin="anonymous">
                 {activeSubtitle && !isAssSubtitle && subtitleUrl && (
                     <track
                         key={activeSubtitleKey}
@@ -412,6 +419,7 @@ export function PlayerVideo({
 
             <AutoplayOnce />
             <VideoClickHandler />
+            <PlayErrorHandler src={src} onPlayError={onPlayError} />
             <div className="media-overlay" />
         </Container>
     )
@@ -480,6 +488,68 @@ function SubtitleOffsetApplier({ offset }: { offset: number }): ReactNode {
             }
         }
     }, [media, offset])
+
+    return null
+}
+
+function PlayErrorHandler({
+    src,
+    onPlayError,
+}: {
+    src: string | undefined
+    onPlayError?: (event: PlayErrorEvent) => void
+}): null {
+    const media = useMedia()
+    const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+        undefined,
+    )
+    const stallTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+        undefined,
+    )
+    const countsRef = useRef<Record<PlayErrorType, number>>({
+        load_timeout: 0,
+        stall_timeout: 0,
+    })
+
+    const fireError = useEffectEvent((type: PlayErrorType) => {
+        countsRef.current[type]++
+        onPlayError?.({ type, count: countsRef.current[type] })
+    })
+
+    useEffect(() => {
+        clearTimeout(loadTimeoutRef.current)
+        loadTimeoutRef.current = setTimeout(
+            () => fireError('load_timeout'),
+            STALL_LOAD_TIMEOUT,
+        )
+        return () => clearTimeout(loadTimeoutRef.current)
+    }, [src])
+
+    useEffect(() => {
+        if (!media) return
+        const onWaiting = () => {
+            clearTimeout(stallTimeoutRef.current)
+            stallTimeoutRef.current = setTimeout(
+                () => fireError('stall_timeout'),
+                STALL_LOAD_TIMEOUT,
+            )
+        }
+        const onPlaying = () => clearTimeout(stallTimeoutRef.current)
+        const clearAll = () => {
+            clearTimeout(loadTimeoutRef.current)
+            clearTimeout(stallTimeoutRef.current)
+        }
+        media.addEventListener('waiting', onWaiting)
+        media.addEventListener('playing', onPlaying)
+        media.addEventListener('canplay', clearAll)
+        media.addEventListener('error', clearAll)
+        return () => {
+            media.removeEventListener('waiting', onWaiting)
+            media.removeEventListener('playing', onPlaying)
+            media.removeEventListener('canplay', clearAll)
+            media.removeEventListener('error', clearAll)
+        }
+    }, [media])
 
     return null
 }
