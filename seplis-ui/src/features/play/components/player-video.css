@@ -299,17 +299,15 @@
   align-items: center;
   column-gap: calc(var(--media-icon-size) * 0.05);
   padding: calc(var(--media-icon-size) * 0.1);
-  border-radius: calc(var(--media-icon-size) * 0.375);
-  --media-controls-current-shadow-color: oklch(
-    from currentColor 0 0 0 / clamp(0, calc((l - 0.5) * 0.5), 0.15)
-  );
+  border-radius: 1.5rem;
+  --media-controls-current-shadow-color: oklch(from currentColor 0 0 0 / clamp(0, calc((l - 0.5) * 0.5), 0.15));
   --media-controls-current-shadow-color-subtle: oklch(
-    from var(--media-controls-current-shadow-color) l c h / calc(alpha * 0.4)
+    from var(--media-controls-current-shadow-color) l c h /
+    calc(alpha * 0.4)
   );
   text-shadow: 0 1px 0 var(--media-controls-current-shadow-color);
   gap: calc(var(--media-icon-size) * 0.2);
 }
-
 /* ==========================================================================
    Time Display
    ========================================================================== */
@@ -325,7 +323,7 @@
 
 .media-default-skin .media-time {
   font-variant-numeric: tabular-nums;
-  font-size: calc(var(--media-icon-size) * 0.3);
+  font-size: 0.8rem;
 }
 
 /* ==========================================================================
@@ -833,20 +831,15 @@
 
 .media-default-skin .media-popover--settings {
   border-radius: 0.5rem;
-  width: calc(var(--media-icon-size) * 5);
-  overflow: hidden;
+  width: 18rem;
 }
 
 .media-default-skin .media-settings {
   display: flex;
   flex-direction: column;
-  padding: calc(var(--media-icon-size) * 0.1) 0;
-  max-height: calc(var(--media-icon-size) * 6.5);
+  padding: 0.3rem 0;
+  max-height: 25rem;
 
-  &[data-panel="audio"],
-  &[data-panel="subtitles"] {
-    max-height: calc(var(--media-icon-size) * 3.5);
-  }
   overflow-y: auto;
   overflow-x: hidden;
   scrollbar-width: none;
@@ -862,12 +855,11 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: calc(var(--media-icon-size) * 0.15);
-  padding: calc(var(--media-icon-size) * 0.15)
-    calc(var(--media-icon-size) * 0.25);
-  font-size: calc(var(--media-icon-size) * 0.3);
-  border-radius: calc(var(--media-icon-size) * 0.1);
-  margin: 0 calc(var(--media-icon-size) * 0.1);
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.3rem;
+  margin: 0 0.3rem;
 
   &:hover {
     background-color: color-mix(in srgb, currentColor 10%, transparent);
@@ -889,17 +881,17 @@
 }
 
 .media-default-skin .media-settings__main-value {
-  font-size: calc(var(--media-icon-size) * 0.27);
+  font-size: 1rem;
   opacity: 0.55;
-  max-width: calc(var(--media-icon-size) * 2.2);
+  max-width: 8rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .media-default-skin .media-settings__chevron {
-  width: calc(var(--media-icon-size) * 0.28);
-  height: calc(var(--media-icon-size) * 0.28);
+  width: 0.84rem;
+  height: 0.84rem;
   opacity: 0.4;
   flex-shrink: 0;
 }
@@ -912,11 +904,10 @@
   display: flex;
   width: 100%;
   align-items: center;
-  gap: calc(var(--media-icon-size) * 0.15);
-  padding: calc(var(--media-icon-size) * 0.15)
-    calc(var(--media-icon-size) * 0.25);
-  font-size: calc(var(--media-icon-size) * 0.3);
-  border-radius: calc(var(--media-icon-size) * 0.15);
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 1rem;
+  border-radius: 0.45rem;
 
   &:hover {
     background-color: color-mix(in srgb, currentColor 10%, transparent);
@@ -924,14 +915,14 @@
 }
 
 .media-default-skin .media-settings__back-icon {
-  width: calc(var(--media-icon-size) * 0.28);
-  height: calc(var(--media-icon-size) * 0.28);
+  width: 0.84rem;
+  height: 0.84rem;
   opacity: 0.4;
   flex-shrink: 0;
 }
 
 .media-default-skin .media-settings__sub-title {
-  font-size: calc(var(--media-icon-size) * 0.3);
+  font-size: 1rem;
   font-weight: 500;
 }
 
@@ -941,12 +932,11 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: calc(var(--media-icon-size) * 0.15);
-  padding: calc(var(--media-icon-size) * 0.12)
-    calc(var(--media-icon-size) * 0.2);
-  font-size: calc(var(--media-icon-size) * 0.3);
-  border-radius: calc(var(--media-icon-size) * 0.1);
-  margin: 0 calc(var(--media-icon-size) * 0.1);
+  gap: 0.45rem;
+  padding: 0.36rem 0.6rem;
+  font-size: 1rem;
+  border-radius: 0.3rem;
+  margin: 0 0.3rem;
 
   &:hover {
     background-color: color-mix(in srgb, currentColor 10%, transparent);
@@ -965,7 +955,7 @@
 }
 
 .media-default-skin .media-settings__audio-codec {
-  font-size: 0.7em;
+  font-size: 0.8rem;
   opacity: 0.55;
   font-weight: 400;
 }
@@ -1269,10 +1259,10 @@
 .media-default-skin--video .media-error__dialog {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--media-icon-size) * 0.19);
-  max-width: calc(var(--media-icon-size) * 4.5);
-  padding: calc(var(--media-icon-size) * 0.19);
-  border-radius: calc(var(--media-icon-size) * 0.44);
+  gap: 0.75rem;
+  max-width: 18rem;
+  padding: 0.75rem;
+  border-radius: 1.75rem;
   color: oklch(1 0 0);
   text-shadow: 0 1px 0 oklch(0 0 0 / 0.25);
   transition-property: opacity, scale;
@@ -1301,14 +1291,13 @@
 .media-default-skin--video .media-error__content {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--media-icon-size) * 0.125);
-  padding: calc(var(--media-icon-size) * 0.125)
-    calc(var(--media-icon-size) * 0.125) calc(var(--media-icon-size) * 0.09);
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.375rem;
   text-shadow: inherit;
 }
 
 .media-default-skin--video .media-error__title {
-  font-size: 1.3rem;
+  font-size: 1rem;
 }
 
 /* ==========================================================================
@@ -1425,8 +1414,8 @@
 }
 
 .media-default-skin--video .media-slider__preview {
-  --media-preview-max-width: calc(var(--media-icon-size) * 2.75);
-  --media-preview-padding: calc(var(--media-icon-size) * -0.28);
+  --media-preview-max-width: 11rem;
+  --media-preview-padding: -1.125rem;
   /**
     Inset is the difference between the container width and the slider (100%) width.
     Divided by 2 as we render the time on both sides.
@@ -1434,18 +1423,19 @@
   --media-preview-inset: calc((100cqi - 100%) / 2);
 
   position: absolute;
+  position: absolute;
   left: clamp(
     calc(
       var(--media-preview-max-width) / 2 + var(--media-preview-padding) -
         var(--media-preview-inset)
     ),
-    calc(var(--media-slider-pointer) - calc(var(--media-icon-size) * 0.4)),
+    calc(var(--media-slider-pointer) - 1.2rem),
     calc(
       100% - var(--media-preview-max-width) / 2 - var(--media-preview-padding) +
         var(--media-preview-inset)
     )
   );
-  bottom: 75%;
+  bottom: 50%;
   translate: -50%;
   opacity: 0;
   scale: 0.8;
