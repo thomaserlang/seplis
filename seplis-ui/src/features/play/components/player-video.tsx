@@ -128,7 +128,6 @@ export function PlayerVideo({
         ? `${playRequestSource.request.play_url}/subtitle-file` +
           `?play_id=${playRequestSource.request.play_id}` +
           `&source_index=${playRequestSource.source.index}` +
-          `&offset=0` +
           `&lang=${activeSubtitleKey}` +
           (isAssSubtitle ? `&output_format=ass` : '')
         : undefined
