@@ -15,7 +15,7 @@
 
 :root {
   --media-border-radius: 0;
-  --media-icon-size: 3.5rem;
+  --media-icon-size: 3rem;
 }
 
 .media-default-skin *,
