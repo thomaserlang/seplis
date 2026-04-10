@@ -11,7 +11,7 @@
     "preview": "vite preview ."
   },
   "devDependencies": {
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -19,7 +19,9 @@
     "postcss-preset-mantine": "1.18.0",
     "postcss-simple-vars": "^7.0.1",
     "typescript": "^6.0.2",
-    "vite": "^8.0.8"
+    "vite": "^8.0.8",
+		"@types/chromecast-caf-receiver": "^6.0.26",
+		"@types/chromecast-caf-sender": "^1.0.11"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",

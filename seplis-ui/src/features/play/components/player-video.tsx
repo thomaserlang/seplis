@@ -40,7 +40,7 @@ import {
     PlayRequestSources,
     PlayServerMedia,
 } from '../types/play-source.types'
-import { AirPlayButton, Button, VolumePopover } from './player-controls'
+import { AirPlayButton, Button, ChromecastButton, VolumePopover } from './player-controls'
 import { SettingsPopover } from './player-settings'
 
 import './player-video.css'
@@ -375,6 +375,7 @@ export function PlayerVideo({
                         />
 
                         <AirPlayButton />
+                        <ChromecastButton />
 
                         <Tooltip.Root side="top">
                             <Tooltip.Trigger

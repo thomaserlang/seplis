@@ -1,10 +1,13 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
+import { ChromecastProvider } from '@/features/chromecast/providers/chromecast-provider'
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
 import { PlayRequest } from '../types/play-source.types'
 import { PlayerProps } from '../types/player.types'
 import { Player } from './player-video'
 import { PlayerView } from './player-view'
+
+const CHROMECAST_APP_ID = 'EA4A67C4'
 
 interface Props extends PlayerProps {
     playRequests: PlayRequest[]
@@ -26,8 +29,10 @@ export function PlayerContainer({ playRequests, ...props }: Props) {
         )
 
     return (
-        <Player.Provider>
-            <PlayerView playRequestsSources={data} {...props} />
-        </Player.Provider>
+        <ChromecastProvider receiverApplicationId={CHROMECAST_APP_ID}>
+            <Player.Provider>
+                <PlayerView playRequestsSources={data} {...props} />
+            </Player.Provider>
+        </ChromecastProvider>
     )
 }

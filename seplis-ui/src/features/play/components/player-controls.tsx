@@ -1,5 +1,6 @@
 import {
     AirplayIcon,
+    ScreencastIcon,
     SpeakerHighIcon,
     SpeakerLowIcon,
     SpeakerXIcon,
@@ -13,6 +14,7 @@ import {
     usePlayer,
 } from '@videojs/react'
 import { forwardRef, useEffect, useState, type ComponentProps, type ReactNode } from 'react'
+import { useChromecast } from '@/features/chromecast/providers/chromecast-provider'
 
 export const Button = forwardRef<HTMLButtonElement, ComponentProps<'button'>>(
     function Button({ className, ...props }, ref) {
@@ -129,6 +131,38 @@ export function AirPlayButton(): ReactNode {
             />
             <Tooltip.Popup className="media-surface media-tooltip">
                 {active ? 'Disconnect AirPlay' : 'AirPlay'}
+            </Tooltip.Popup>
+        </Tooltip.Root>
+    )
+}
+
+export function ChromecastButton(): ReactNode {
+    const { isAvailable, isConnected, requestSession, endSession } =
+        useChromecast()
+
+    if (!isAvailable) return null
+
+    return (
+        <Tooltip.Root side="top">
+            <Tooltip.Trigger
+                render={
+                    <button
+                        type="button"
+                        aria-label={isConnected ? 'Disconnect Chromecast' : 'Cast to TV'}
+                        className="media-button media-button--subtle media-button--icon"
+                        onClick={() =>
+                            isConnected ? endSession() : requestSession()
+                        }
+                    >
+                        <ScreencastIcon
+                            className="media-icon"
+                            weight={isConnected ? 'fill' : 'regular'}
+                        />
+                    </button>
+                }
+            />
+            <Tooltip.Popup className="media-surface media-tooltip">
+                {isConnected ? 'Disconnect Chromecast' : 'Cast to TV'}
             </Tooltip.Popup>
         </Tooltip.Root>
     )
