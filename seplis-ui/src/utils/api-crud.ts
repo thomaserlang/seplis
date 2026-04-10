@@ -197,14 +197,15 @@ export function useMutationApiHelper<
 } {
     const fn = async (props: TMutateProps) => {
         if (fetchFn) return fetchFn(props)
-        const data = await apiClient(url(props), {
+        const response = await apiClient(url(props), {
             method: method.toLowerCase(),
             json: props.data,
             searchParams: toSearchParams(
                 formatParams ? formatParams(props) : props.params,
             ),
             signal: props.signal,
-        }).json<T>()
+        })
+        const data = response.status === 204 ? (null as T) : await response.json<T>()
         onSuccess?.({ data, variables: props })
         return data
     }

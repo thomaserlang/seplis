@@ -40,9 +40,14 @@ import {
     PlayRequestSources,
     PlayServerMedia,
 } from '../types/play-source.types'
-import { AirPlayButton, Button, ChromecastButton, VolumePopover } from './player-controls'
-import { SettingsPopover } from './player-settings'
+import {
+    AirPlayButton,
+    Button,
+    ChromecastButton,
+    VolumePopover,
+} from './player-controls'
 
+import { SettingsPopover } from './player-controls/settings-popover'
 import './player-video.css'
 
 const SEEK_TIME = 10
@@ -357,7 +362,7 @@ export function PlayerVideo({
                         <VolumePopover />
 
                         <SettingsPopover
-                            currentPlayRequestSource={playRequestSource}
+                            playRequestSource={playRequestSource}
                             playRequestsSources={playRequestsSources}
                             maxBitrate={maxBitrate}
                             audioLang={audio}

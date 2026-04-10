@@ -11,6 +11,7 @@ import { useChromecastCafSender } from '../utils/react-chromecast-caf'
 interface ChromecastContextValue {
     castState: cast.framework.CastState | null
     sessionState: cast.framework.SessionState | null
+    castSession: cast.framework.CastSession | null
     player: cast.framework.RemotePlayer | null
     playerController: cast.framework.RemotePlayerController | null
     isAvailable: boolean
@@ -33,6 +34,8 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
     )
     const [sessionState, setSessionState] =
         useState<cast.framework.SessionState | null>(null)
+    const [castSession, setCastSession] =
+        useState<cast.framework.CastSession | null>(null)
     const playerRef = useRef<cast.framework.RemotePlayer | null>(null)
     const playerControllerRef =
         useRef<cast.framework.RemotePlayerController | null>(null)
@@ -40,6 +43,10 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
 
     useEffect(() => {
         if (!senderCast || !senderChrome) return
+
+        senderCast.framework.setLoggerLevel(
+            senderCast.framework.LoggerLevel.DEBUG,
+        )
 
         const castContext = senderCast.framework.CastContext.getInstance()
         castContext.setOptions({
@@ -57,6 +64,7 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
 
         setCastState(castContext.getCastState())
         setSessionState(castContext.getSessionState())
+        setCastSession(castContext.getCurrentSession())
 
         const onCastStateChange = (e: cast.framework.CastStateEventData) => {
             setCastState(e.castState)
@@ -65,6 +73,7 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
             e: cast.framework.SessionStateEventData,
         ) => {
             setSessionState(e.sessionState)
+            setCastSession(castContext.getCurrentSession())
         }
         const onPlayerChange = () => {
             setPlayerRevision((r) => r + 1)
@@ -125,6 +134,7 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
             value={{
                 castState,
                 sessionState,
+                castSession,
                 player: playerRef.current,
                 playerController: playerControllerRef.current,
                 isAvailable,

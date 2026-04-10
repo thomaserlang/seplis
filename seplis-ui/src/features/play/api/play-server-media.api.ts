@@ -14,6 +14,11 @@ export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     maxBitrate?: number
     forceTranscode?: boolean
     maxAudioChannels?: number
+    supportedVideoCodecs?: string[]
+    supportedAudioCodecs?: string[]
+    transcodeVideoCodec?: string
+    transcodeAudioCodec?: string
+    supportedVideoContainers?: string[]
 }
 
 export const {
@@ -31,6 +36,11 @@ export const {
             props.maxBitrate,
             props.forceTranscode,
             props.maxAudioChannels,
+            props.supportedVideoCodecs,
+            props.supportedAudioCodecs,
+            props.transcodeVideoCodec,
+            props.transcodeAudioCodec,
+            props.supportedVideoContainers,
         ].filter((x) => x !== undefined),
     getFn: async ({
         playRequestSource,
@@ -39,10 +49,21 @@ export const {
         maxBitrate,
         forceTranscode = false,
         maxAudioChannels = 6,
+        supportedVideoCodecs,
+        supportedAudioCodecs,
+        transcodeVideoCodec,
+        transcodeAudioCodec,
+        supportedVideoContainers,
         signal,
     }) => {
-        const videoCodecs = getSupportedVideoCodecs()
-        if (videoCodecs.length == 0) throw new Error('No supported codecs')
+        const videoCodecs = supportedVideoCodecs ?? getSupportedVideoCodecs()
+        if (videoCodecs.length === 0) throw new Error('No supported codecs')
+
+        const audioCodecs = supportedAudioCodecs ?? getSupportedAudioCodecs()
+        const videoContainers =
+            supportedVideoContainers ?? getSupportedVideoContainers()
+        const videoTranscodeCodec = transcodeVideoCodec ?? videoCodecs[0]
+        const audioTranscodeCodec = transcodeAudioCodec ?? 'aac'
 
         const r = await ky.get<PlayServerMedia>(
             `${playRequestSource.request.play_url}/request-media`,
@@ -56,16 +77,12 @@ export const {
                         audio_lang: audio,
                         max_video_bitrate: maxBitrate,
                         supported_video_codecs: String(videoCodecs),
-                        transcode_video_codec: videoCodecs[0],
-                        supported_audio_codecs: String(
-                            getSupportedAudioCodecs(),
-                        ),
-                        transcode_audio_codec: 'aac',
+                        transcode_video_codec: videoTranscodeCodec,
+                        supported_audio_codecs: String(audioCodecs),
+                        transcode_audio_codec: audioTranscodeCodec,
                         format: 'hls',
                         max_audio_channels: maxAudioChannels,
-                        supported_video_containers: String(
-                            getSupportedVideoContainers(),
-                        ),
+                        supported_video_containers: String(videoContainers),
                         force_transcode: forceTranscode ? 'true' : 'false',
                     }).filter(
                         ([, value]) => value !== undefined && value !== null,

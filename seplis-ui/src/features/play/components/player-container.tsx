@@ -1,13 +1,17 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { ChromecastProvider } from '@/features/chromecast/providers/chromecast-provider'
+import {
+    ChromecastProvider,
+    useChromecast,
+} from '@/features/play/components/chromecast/providers/chromecast-provider'
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
-import { PlayRequest } from '../types/play-source.types'
+import { PlayRequest, PlayRequestSources } from '../types/play-source.types'
 import { PlayerProps } from '../types/player.types'
+import { PlayerCastView } from './player-cast-view'
 import { Player } from './player-video'
 import { PlayerView } from './player-view'
 
-const CHROMECAST_APP_ID = 'EA4A67C4'
+const CHROMECAST_APP_ID = 'CC1AD845'
 
 interface Props extends PlayerProps {
     playRequests: PlayRequest[]
@@ -31,8 +35,27 @@ export function PlayerContainer({ playRequests, ...props }: Props) {
     return (
         <ChromecastProvider receiverApplicationId={CHROMECAST_APP_ID}>
             <Player.Provider>
-                <PlayerView playRequestsSources={data} {...props} />
+                <PlayerSwitch playRequestsSources={data} {...props} />
             </Player.Provider>
         </ChromecastProvider>
     )
+}
+
+interface SwitchProps extends PlayerProps {
+    playRequestsSources: PlayRequestSources[]
+}
+
+function PlayerSwitch({ playRequestsSources, ...props }: SwitchProps) {
+    const { isConnected } = useChromecast()
+
+    if (isConnected) {
+        return (
+            <PlayerCastView
+                playRequestsSources={playRequestsSources}
+                {...props}
+            />
+        )
+    }
+
+    return <PlayerView playRequestsSources={playRequestsSources} {...props} />
 }

@@ -1,0 +1,200 @@
+.settings {
+  font-size: 1rem;
+}
+
+.settingsBody {
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem 0;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.mainItem {
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+
+  border-radius: 0.3rem;
+
+  &:hover {
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+  }
+
+  &[aria-disabled="true"] {
+    cursor: default;
+
+    &:hover {
+      background-color: transparent;
+    }
+  }
+}
+
+.mainLabel {
+  flex: 1;
+  font-weight: 500;
+}
+
+.mainValue {
+  opacity: 0.55;
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chevron {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.subHeader {
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 0.45rem;
+
+  &:hover {
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+.backIcon {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+
+.subTitle {
+  font-weight: 600;
+}
+
+.option {
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.36rem 0.6rem;
+
+  border-radius: 0.3rem;
+  margin: 0 0.3rem;
+
+  &:hover {
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
+.optionActive {
+  font-weight: 500;
+}
+
+.optionLabel {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.audioTrack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1em;
+  line-height: 1.2;
+}
+
+.audioCodec {
+  font-size: 0.8rem;
+  opacity: 0.55;
+  font-weight: 400;
+}
+
+.groupDivider {
+  border-top: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  margin: 0.5rem 1rem;
+}
+
+.optionCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.4;
+  flex-shrink: 0;
+
+  & > svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.sync {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.syncBtn {
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: color-mix(in srgb, currentColor 20%, transparent);
+  }
+
+  & > svg {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+.syncValue {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 3rem;
+  text-align: center;
+}
+
+.syncReset {
+  cursor: pointer;
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 0.3rem;
+  opacity: 0.6;
+
+  &:hover {
+    opacity: 1;
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+  }
+
+  &[aria-disabled="true"] {
+    cursor: default;
+    opacity: 0.25;
+    background-color: transparent;
+  }
+}

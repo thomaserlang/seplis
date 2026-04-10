@@ -1,14 +1,13 @@
 import { Anchor, Image } from '@mantine/core'
 import { Link } from 'react-router-dom'
 
-interface Props {
-    size?: string
+interface Props extends Anchor.Props {
     hideShadow?: boolean
 }
 
-export function Logo({ size = '4rem', hideShadow = false }: Props) {
+export function Logo({ size = '4rem', hideShadow = false, ...props }: Props) {
     return (
-        <Anchor component={Link} to="/">
+        <Anchor component={Link} to="/" {...props}>
             <Image
                 radius="50%"
                 w={size}

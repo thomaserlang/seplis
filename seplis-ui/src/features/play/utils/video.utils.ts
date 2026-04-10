@@ -22,6 +22,16 @@ export function getSupportedVideoContainers() {
         .map(([, name]) => name)
 }
 
+// Safe codec/container defaults for Chromecast devices.
+// 1st/2nd gen Chromecast supports H.264 + AAC in HLS/MP4.
+// Newer devices also support H.265, VP9, Opus, FLAC — but H.264/AAC
+// are the widest-compatible defaults across all generations.
+export const CHROMECAST_SUPPORTED_VIDEO_CODECS = ['h264']
+export const CHROMECAST_SUPPORTED_AUDIO_CODECS = ['aac', 'opus', 'flac']
+export const CHROMECAST_TRANSCODE_VIDEO_CODEC = 'h264'
+export const CHROMECAST_TRANSCODE_AUDIO_CODEC = 'aac'
+export const CHROMECAST_SUPPORTED_VIDEO_CONTAINERS = ['mp4']
+
 export function getSupportedAudioCodecs() {
     const video = document.createElement('video')
     const types: { [key: string]: string } = {
