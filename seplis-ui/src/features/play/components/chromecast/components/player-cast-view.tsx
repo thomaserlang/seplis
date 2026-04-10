@@ -1,39 +1,40 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { PlayerCast } from '@/features/play/components/chromecast/components/player-cast'
-import { useChromecast } from '@/features/play/components/chromecast/providers/chromecast-provider'
-import { useEffect, useRef, useState } from 'react'
-import { useGetPlayServerMedia } from '../api/play-server-media.api'
-import { MAX_BITRATE } from '../constants/play-bitrate.constants'
+import { useGetPlayServerMedia } from '@/features/play/api/play-server-media.api'
+import { MAX_BITRATE } from '@/features/play/constants/play-bitrate.constants'
 import {
     PREFERRED_AUDIO_LANGS,
     PREFERRED_SUBTITLE_LANGS,
-} from '../constants/play-language.constants'
+} from '@/features/play/constants/play-language.constants'
 import {
     PlayRequestSource,
     PlayRequestSources,
-} from '../types/play-source.types'
-import { PlayerProps } from '../types/player.types'
-import { getDefaultMaxBitrate } from '../utils/play-bitrate.utils'
+} from '@/features/play/types/play-source.types'
+import { PlayerProps } from '@/features/play/types/player.types'
+import { getDefaultMaxBitrate } from '@/features/play/utils/play-bitrate.utils'
 import {
     pickStartAudio,
     pickStartSource,
     pickStartSubtitle,
-} from '../utils/play-source.utils'
-import {
-    CHROMECAST_SUPPORTED_AUDIO_CODECS,
-    CHROMECAST_SUPPORTED_VIDEO_CODECS,
-    CHROMECAST_SUPPORTED_VIDEO_CONTAINERS,
-    CHROMECAST_TRANSCODE_AUDIO_CODEC,
-    CHROMECAST_TRANSCODE_VIDEO_CODEC,
-} from '../utils/video.utils'
-
+} from '@/features/play/utils/play-source.utils'
 import { Container, Paper } from '@mantine/core'
-import './player-video.css'
+import { useEffect, useRef, useState } from 'react'
+import { useChromecast } from '../providers/chromecast-provider'
+import { PlayerCast } from './player-cast'
 
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
 }
+
+// Safe codec/container defaults for Chromecast devices.
+// 1st/2nd gen Chromecast supports H.264 + AAC in HLS/MP4.
+// Newer devices also support H.265, VP9, Opus, FLAC — but H.264/AAC
+// are the widest-compatible defaults across all generations.
+export const CHROMECAST_SUPPORTED_VIDEO_CODECS = ['h264']
+export const CHROMECAST_SUPPORTED_AUDIO_CODECS = ['aac', 'opus', 'flac']
+export const CHROMECAST_TRANSCODE_VIDEO_CODEC = 'h264'
+export const CHROMECAST_TRANSCODE_AUDIO_CODEC = 'aac'
+export const CHROMECAST_SUPPORTED_VIDEO_CONTAINERS = ['mp4']
 
 export function PlayerCastView({
     playRequestsSources,

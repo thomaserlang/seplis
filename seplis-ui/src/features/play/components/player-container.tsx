@@ -7,7 +7,7 @@ import {
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
 import { PlayRequest, PlayRequestSources } from '../types/play-source.types'
 import { PlayerProps } from '../types/player.types'
-import { PlayerCastView } from './player-cast-view'
+import { PlayerCastView } from './chromecast/components/player-cast-view'
 import { Player } from './player-video'
 import { PlayerView } from './player-view'
 
