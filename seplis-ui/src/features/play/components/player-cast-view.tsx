@@ -75,13 +75,10 @@ export function PlayerCastView({
         }),
     )
 
-    const [castError, setCastError] = useState<string | null>(null)
-
     const startTimeRef = useRef<number>(defaultStartTime ?? 0)
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
-    // Track the last URL sent so we reload even when React Query returns the
-    // same cached object reference (e.g. settings changed back to a prior value).
+
     const lastLoadedUrlRef = useRef<string | null>(null)
 
     const { data, isLoading, error } = useGetPlayServerMedia({
@@ -100,7 +97,6 @@ export function PlayerCastView({
         },
     })
 
-    // Keep the play server session alive while casting.
     useEffect(() => {
         if (!data) return
         const id = setInterval(() => {
@@ -109,7 +105,6 @@ export function PlayerCastView({
         return () => clearInterval(id)
     }, [data?.keep_alive_url])
 
-    // Track cast playback position for save-position and finished callbacks.
     useEffect(() => {
         if (!castPlayer) return
         const currentTime = castPlayer.currentTime ?? 0
@@ -124,8 +119,6 @@ export function PlayerCastView({
         }
     })
 
-    // Load (or reload) media on the cast device whenever the resolved URL
-    // changes, resuming at the current playback position.
     useEffect(() => {
         if (!data || !castSession) return
         if (data.hls_url === lastLoadedUrlRef.current) return
@@ -161,8 +154,6 @@ export function PlayerCastView({
         // @ts-ignore
         mediaInfo.hlsVideoSegmentFormat = // @ts-ignore
             chrome.cast.media.HlsSegmentFormat.FMP4
-        // CAF receivers require contentUrl for actual playback;
-        // contentId alone is treated as an opaque identifier.
         ;(mediaInfo as any).contentUrl = data.hls_url
         mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED
         mediaInfo.metadata = metadata
@@ -170,8 +161,7 @@ export function PlayerCastView({
 
         const request = new chrome.cast.media.LoadRequest(mediaInfo)
         request.autoplay = true
-        // Resume at the cast player's current time when already playing,
-        // otherwise use the start time from props.
+
         request.currentTime =
             castPlayer?.isMediaLoaded && (castPlayer.currentTime ?? 0) > 0
                 ? castPlayer.currentTime
@@ -183,25 +173,8 @@ export function PlayerCastView({
             )
             if (idx >= 0) request.activeTrackIds = [idx + 1]
         }
+    }, [data, castSession])
 
-        setCastError(null)
-        castSession
-            .loadMedia(request)
-            .then((errorCode) => {
-                if (errorCode) {
-                    const msg = `loadMedia error: ${errorCode}`
-                    console.error('[Cast]', msg)
-                    setCastError(msg)
-                }
-            })
-            .catch((err) => {
-                const msg = `loadMedia failed: ${err}`
-                console.error('[Cast]', msg)
-                setCastError(msg)
-            })
-    }, [data, castSession]) // eslint-disable-line react-hooks/exhaustive-deps
-
-    // Switch subtitle track on the cast device on the fly without reloading.
     useEffect(() => {
         if (!castSession) return
         const mediaSession = castSession.getMediaSession()
@@ -221,7 +194,7 @@ export function PlayerCastView({
             () => {},
             () => {},
         )
-    }, [activeSubtitleKey, castSession]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [activeSubtitleKey, castSession])
 
     if (isLoading) return <PageLoader />
     if (error) return <ErrorBox errorObj={error} />
