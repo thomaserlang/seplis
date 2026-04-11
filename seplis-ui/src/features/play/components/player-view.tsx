@@ -17,7 +17,7 @@ import {
     pickStartSource,
     pickStartSubtitle,
 } from '../utils/play-source.utils'
-import { PlayerVideo } from './player-video'
+import { Player, PlayerVideo } from './player-video'
 
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
@@ -87,38 +87,40 @@ export function PlayerView({
     }
 
     return (
-        <PlayerVideo
-            playRequestSource={source}
-            playRequestsSources={playRequestsSources}
-            title={title}
-            secondaryTitle={secondaryTitle}
-            onClose={onClose}
-            maxBitrate={maxBitrate}
-            audio={audio}
-            forceTranscode={forceTranscode}
-            defaultStartTime={defaultStartTime}
-            onSourceChange={setSource}
-            onBitrateChange={handleBitrateChange}
-            onAudioChange={(audio) => {
-                setAudioLang(audio)
-                onAudioChange?.(audio)
-            }}
-            onPlayError={handlePlayError}
-            onForceTranscodeChange={setForceTranscode}
-            onVideoError={handlePlayError}
-            onTimeUpdate={handleTimeUpdate}
-            defaultSubtitle={pickStartSubtitle({
-                playSource: source.source,
-                defaultSubtitle,
-                preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
-                audio,
-            })}
-            onSubtitleChange={(s) => {
-                onSubtitleChange?.(s)
-            }}
-            preferredAudioLangs={PREFERRED_AUDIO_LANGS}
-            preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-            playSettings={playSettings}
-        />
+        <Player.Provider>
+            <PlayerVideo
+                playRequestSource={source}
+                playRequestsSources={playRequestsSources}
+                title={title}
+                secondaryTitle={secondaryTitle}
+                onClose={onClose}
+                maxBitrate={maxBitrate}
+                audio={audio}
+                forceTranscode={forceTranscode}
+                defaultStartTime={defaultStartTime}
+                onSourceChange={setSource}
+                onBitrateChange={handleBitrateChange}
+                onAudioChange={(audio) => {
+                    setAudioLang(audio)
+                    onAudioChange?.(audio)
+                }}
+                onPlayError={handlePlayError}
+                onForceTranscodeChange={setForceTranscode}
+                onVideoError={handlePlayError}
+                onTimeUpdate={handleTimeUpdate}
+                defaultSubtitle={pickStartSubtitle({
+                    playSource: source.source,
+                    defaultSubtitle,
+                    preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
+                    audio,
+                })}
+                onSubtitleChange={(s) => {
+                    onSubtitleChange?.(s)
+                }}
+                preferredAudioLangs={PREFERRED_AUDIO_LANGS}
+                preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
+                playSettings={playSettings}
+            />
+        </Player.Provider>
     )
 }
