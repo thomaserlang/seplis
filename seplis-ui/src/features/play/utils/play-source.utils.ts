@@ -5,7 +5,6 @@ import {
     PlaySource,
     PlaySourceStream,
 } from '../types/play-source.types'
-import { getDefaultMaxBitrate } from './play-bitrate.utils'
 
 export function iso6392ToDisplayName(iso6392: string): string | undefined {
     if (typeof navigator === 'undefined') return undefined
@@ -47,16 +46,15 @@ export function playSourceStr(source: PlaySource) {
 
 export function pickStartSource(
     playServers: PlayRequestSources[],
-    defaultMaxBitrate?: number,
+    defaultMaxBitrate: number,
 ) {
     let s: PlayRequestSource = {
         request: playServers[0].request,
         source: playServers[0].sources[0],
     }
-    const maxBitrate = defaultMaxBitrate || getDefaultMaxBitrate()
     for (const playServer of playServers.reverse())
         for (const source of playServer.sources)
-            if (source.bit_rate <= maxBitrate)
+            if (source.bit_rate <= defaultMaxBitrate)
                 s = {
                     request: playServer.request,
                     source: source,

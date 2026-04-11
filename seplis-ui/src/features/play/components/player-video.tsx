@@ -49,7 +49,6 @@ import {
 } from './player-controls'
 
 import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
-import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import { UsePlaySettings } from '../hooks/use-play-settings'
 import { SettingsPopover } from './player-controls/settings-popover'
 import { PlayerError } from './player-error'
@@ -73,11 +72,9 @@ export interface VideoPlayerProps {
     secondaryTitle?: string
     onClose?: () => void
     playRequestsSources: PlayRequestSources[]
-    maxBitrate: number
     audio: string | undefined
     forceTranscode: boolean
     onSourceChange: (source: PlayRequestSource) => void
-    onBitrateChange: (bitrate: number) => void
     onAudioChange: (audio: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
     onSubtitleChange?: (subtitle: string | undefined) => void
@@ -99,11 +96,9 @@ export function PlayerVideo({
     secondaryTitle,
     onClose,
     playRequestsSources,
-    maxBitrate,
     audio,
     forceTranscode,
     onSourceChange,
-    onBitrateChange,
     onAudioChange,
     onForceTranscodeChange,
     onSubtitleChange,
@@ -123,7 +118,6 @@ export function PlayerVideo({
     const [videoLoading, setVideoLoading] = useState(true)
     const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
         playRequestSource,
-        maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio,
         forceTranscode,
         ...playSettings.settings,
@@ -416,13 +410,11 @@ export function PlayerVideo({
                         <SettingsPopover
                             playRequestSource={playRequestSource}
                             playRequestsSources={playRequestsSources}
-                            maxBitrate={maxBitrate}
                             audioLang={audio}
                             forceTranscode={forceTranscode}
                             activeSubtitleKey={activeSubtitleKey}
                             subtitleOffset={subtitleOffset}
                             onSourceChange={onSourceChange}
-                            onBitrateChange={onBitrateChange}
                             onAudioLangChange={onAudioChange}
                             onForceTranscodeChange={onForceTranscodeChange}
                             onSubtitleChange={handleSubtitleChange}

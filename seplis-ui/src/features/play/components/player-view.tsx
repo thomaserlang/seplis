@@ -4,14 +4,12 @@ import {
 } from '../types/play-source.types'
 
 import { useEffectEvent, useRef, useState } from 'react'
-import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import {
     PREFERRED_AUDIO_LANGS,
     PREFERRED_SUBTITLE_LANGS,
 } from '../constants/play-language.constants'
 import { usePlaySettings } from '../hooks/use-play-settings'
 import { PlayerProps } from '../types/player.types'
-import { getDefaultMaxBitrate } from '../utils/play-bitrate.utils'
 import {
     pickStartAudio,
     pickStartSource,
@@ -36,11 +34,9 @@ export function PlayerView({
     onAudioChange,
     onSubtitleChange,
 }: Props) {
+    const playSettings = usePlaySettings('play-settings')
     const [source, setSource] = useState<PlayRequestSource>(() =>
-        pickStartSource(playRequestsSources),
-    )
-    const [maxBitrate, setMaxBitrate] = useState<number>(() =>
-        getDefaultMaxBitrate(),
+        pickStartSource(playRequestsSources, playSettings.settings.maxBitrate),
     )
     const [audio, setAudioLang] = useState<string | undefined>(
         pickStartAudio({
@@ -53,8 +49,6 @@ export function PlayerView({
     const currentTimeRef = useRef<number>(defaultStartTime ?? 0)
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
-
-    const playSettings = usePlaySettings('play-settings')
 
     const handleTimeUpdate = useEffectEvent(
         (currentTime: number, duration: number) => {
@@ -76,16 +70,6 @@ export function PlayerView({
         }
     }
 
-    const handleBitrateChange = (bitrate: number) => {
-        if (bitrate >= source.source.bit_rate) {
-            localStorage.removeItem('maxBitrate')
-            setMaxBitrate(MAX_BITRATE)
-        } else {
-            localStorage.setItem('maxBitrate', String(bitrate))
-            setMaxBitrate(bitrate)
-        }
-    }
-
     return (
         <Player.Provider>
             <PlayerVideo
@@ -94,12 +78,10 @@ export function PlayerView({
                 title={title}
                 secondaryTitle={secondaryTitle}
                 onClose={onClose}
-                maxBitrate={maxBitrate}
                 audio={audio}
                 forceTranscode={forceTranscode}
                 defaultStartTime={defaultStartTime}
                 onSourceChange={setSource}
-                onBitrateChange={handleBitrateChange}
                 onAudioChange={(audio) => {
                     setAudioLang(audio)
                     onAudioChange?.(audio)

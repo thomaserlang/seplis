@@ -1,17 +1,4 @@
-import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import { PlaySource } from '../types/play-source.types'
-
-export function getDefaultMaxBitrate() {
-    const maxBitrate = localStorage.getItem('maxBitrate')
-    if (maxBitrate) return parseInt(maxBitrate)
-    return MAX_BITRATE
-}
-
-export function getBitrate(source: PlaySource) {
-    const bitrate = getDefaultMaxBitrate()
-    if (source.bit_rate <= bitrate) return source.bit_rate
-    return bitrate
-}
 
 export function playSourceBitrateStr(bitrate: number, source: PlaySource) {
     if (bitrate < source.bit_rate) return bitratePretty(bitrate)

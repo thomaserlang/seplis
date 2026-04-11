@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import {
     AudioCodec,
     HDRType,
@@ -15,6 +16,7 @@ import {
 } from '../utils/video.utils'
 
 export interface PlaySettings {
+    maxBitrate: number
     supportedVideoCodecs: VideoCodec[]
     supportedAudioCodecs: AudioCodec[]
     transcodeVideoCodec: VideoCodec
@@ -70,6 +72,7 @@ export function usePlaySettings(
     const audioCodecs = overrides.supportedAudioCodecs ?? defaultAudioCodecs
 
     const settings: PlaySettings = {
+        maxBitrate: overrides.maxBitrate ?? defaults?.maxBitrate ?? MAX_BITRATE,
         supportedVideoCodecs: videoCodecs,
         supportedAudioCodecs: audioCodecs,
         transcodeVideoCodec:

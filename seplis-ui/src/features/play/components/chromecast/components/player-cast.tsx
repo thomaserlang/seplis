@@ -19,12 +19,10 @@ interface Props {
     onClose?: () => void
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
-    maxBitrate: number
     audio: string | undefined
     forceTranscode: boolean
     activeSubtitleKey: string | undefined
     onSourceChange: (source: PlayRequestSource) => void
-    onBitrateChange: (bitrate: number) => void
     onAudioChange: (audio: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
     onSubtitleChange: (key: string | undefined) => void
@@ -39,12 +37,10 @@ export function PlayerCast({
     onClose,
     playRequestSource,
     playRequestsSources,
-    maxBitrate,
     audio,
     forceTranscode,
     activeSubtitleKey,
     onSourceChange,
-    onBitrateChange,
     onAudioChange,
     onForceTranscodeChange,
     onSubtitleChange,
@@ -156,13 +152,11 @@ export function PlayerCast({
                 onDisconnect={() => endSession(true)}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
-                maxBitrate={maxBitrate}
                 audioLang={audio}
                 forceTranscode={forceTranscode}
                 activeSubtitleKey={activeSubtitleKey}
                 subtitleOffset={subtitleOffset}
                 onSourceChange={onSourceChange}
-                onBitrateChange={onBitrateChange}
                 onAudioLangChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
                 onSubtitleChange={onSubtitleChange}

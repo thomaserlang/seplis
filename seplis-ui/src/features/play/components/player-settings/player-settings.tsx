@@ -22,13 +22,11 @@ interface Props extends PlayerSettingsProps {}
 export function PlayerSettings({
     playRequestSource,
     playRequestsSources,
-    maxBitrate,
     audioLang,
     forceTranscode,
     activeSubtitleKey,
     subtitleOffset,
     onSourceChange,
-    onBitrateChange,
     onAudioLangChange,
     onForceTranscodeChange,
     onSubtitleChange,
@@ -46,9 +44,9 @@ export function PlayerSettings({
     )
 
     const currentBitrateLabel =
-        maxBitrate === MAX_BITRATE
+        playSettings.settings.maxBitrate === MAX_BITRATE
             ? `Max (${bitratePretty(currentSource.bit_rate)})`
-            : bitratePretty(maxBitrate)
+            : bitratePretty(playSettings.settings.maxBitrate)
 
     const currentAudioLabel = (() => {
         if (!audioLang) return 'Default'
@@ -111,9 +109,15 @@ export function PlayerSettings({
             {panel === 'bitrate' && (
                 <BitratePanel
                     availableBitrates={availableBitrates}
-                    maxBitrate={maxBitrate}
+                    maxBitrate={playSettings.settings.maxBitrate}
                     currentSource={currentSource}
-                    onBitrateChange={onBitrateChange}
+                    onBitrateChange={(bitrate) => {
+                        if (bitrate >= currentSource.bit_rate) {
+                            playSettings.update({ maxBitrate: undefined })
+                        } else {
+                            playSettings.update({ maxBitrate: bitrate })
+                        }
+                    }}
                     back={back}
                     onClose={onClose}
                 />

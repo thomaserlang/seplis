@@ -46,6 +46,9 @@ export function WatchedButton({
 
     const style: MantineStyleProp = {}
 
+    style['--watched'] = 'oklch(0.4 0.07 240)'
+    style['--progress-color'] = 'oklch(0.55 0.1 240)'
+
     if (position > 0) {
         style['--progress'] = `${progressPercent}%`
     }
@@ -61,7 +64,7 @@ export function WatchedButton({
         <>
             <Popover position="top" opened={opened} onChange={close}>
                 <Popover.Target>
-                    <Button.Group className={classes.group}>
+                    <Button.Group>
                         <Button
                             leftSection={
                                 <CheckIcon

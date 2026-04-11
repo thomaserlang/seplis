@@ -1,7 +1,6 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useGetPlayServerMedia } from '@/features/play/api/play-server-request-media.api'
-import { MAX_BITRATE } from '@/features/play/constants/play-bitrate.constants'
 import {
     PREFERRED_AUDIO_LANGS,
     PREFERRED_SUBTITLE_LANGS,
@@ -12,7 +11,6 @@ import {
     PlayRequestSources,
 } from '@/features/play/types/play-source.types'
 import { PlayerProps } from '@/features/play/types/player.types'
-import { getDefaultMaxBitrate } from '@/features/play/utils/play-bitrate.utils'
 import {
     pickStartAudio,
     pickStartSource,
@@ -39,13 +37,17 @@ export function PlayerCastView({
     onSubtitleChange,
     castInfo,
 }: Props) {
+    const playSettings = usePlaySettings('cast-settings', {
+        supportedVideoCodecs: ['h264'],
+        supportedAudioCodecs: ['aac', 'opus', 'flac'],
+        transcodeVideoCodec: 'h264',
+        transcodeAudioCodec: 'aac',
+        supportedVideoContainers: ['mp4'],
+        maxAudioChannels: 2,
+    })
     const { castSession, player: castPlayer } = useChromecast()
-
     const [source, setSource] = useState<PlayRequestSource>(() =>
-        pickStartSource(playRequestsSources),
-    )
-    const [maxBitrate, setMaxBitrate] = useState<number>(() =>
-        getDefaultMaxBitrate(),
+        pickStartSource(playRequestsSources, playSettings.settings.maxBitrate),
     )
     const [audio, setAudioLang] = useState<string | undefined>(
         pickStartAudio({
@@ -69,18 +71,8 @@ export function PlayerCastView({
     const startTimeRef = useRef<number>(defaultStartTime ?? 0)
     const lastLoadedUrlRef = useRef<string | null>(null)
 
-    const playSettings = usePlaySettings('cast-settings', {
-        supportedVideoCodecs: ['h264'],
-        supportedAudioCodecs: ['aac', 'opus', 'flac'],
-        transcodeVideoCodec: 'h264',
-        transcodeAudioCodec: 'aac',
-        supportedVideoContainers: ['mp4'],
-        maxAudioChannels: 2,
-    })
-
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
-        maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio,
         forceTranscode,
         ...playSettings.settings,
@@ -177,16 +169,6 @@ export function PlayerCastView({
         )
     }, [activeSubtitleKey, castSession])
 
-    const handleBitrateChange = (bitrate: number) => {
-        if (bitrate >= source.source.bit_rate) {
-            localStorage.removeItem('maxBitrate')
-            setMaxBitrate(MAX_BITRATE)
-        } else {
-            localStorage.setItem('maxBitrate', String(bitrate))
-            setMaxBitrate(bitrate)
-        }
-    }
-
     return (
         <Container size="xs" pt="2rem">
             <Paper withBorder radius="1rem" p="1rem" bg="transparent">
@@ -202,12 +184,10 @@ export function PlayerCastView({
                         onClose={onClose}
                         playRequestSource={source}
                         playRequestsSources={playRequestsSources}
-                        maxBitrate={maxBitrate}
                         audio={audio}
                         forceTranscode={forceTranscode}
                         activeSubtitleKey={activeSubtitleKey}
                         onSourceChange={setSource}
-                        onBitrateChange={handleBitrateChange}
                         onAudioChange={(a) => {
                             setAudioLang(a)
                             onAudioChange?.(a)
