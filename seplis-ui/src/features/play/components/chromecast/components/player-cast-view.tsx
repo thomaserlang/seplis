@@ -48,6 +48,7 @@ export function PlayerCastView({
     defaultStartTime,
     onAudioChange,
     onSubtitleChange,
+    castInfo,
 }: Props) {
     const { castSession, player: castPlayer } = useChromecast()
 
@@ -97,14 +98,6 @@ export function PlayerCastView({
             staleTime: Infinity,
         },
     })
-
-    useEffect(() => {
-        if (!data) return
-        const id = setInterval(() => {
-            fetch(data.keep_alive_url).catch(() => {})
-        }, 5000)
-        return () => clearInterval(id)
-    }, [data?.keep_alive_url])
 
     useEffect(() => {
         if (!castPlayer) return
@@ -174,6 +167,16 @@ export function PlayerCastView({
             )
             if (idx >= 0) request.activeTrackIds = [idx + 1]
         }
+
+        request.customData = {
+            keep_alive_url: data.keep_alive_url,
+            save_position_url: castInfo?.savePositionUrl,
+            watched_url: castInfo?.watchedUrl,
+            token: localStorage.getItem('accessToken'),
+            duration: source.source.duration,
+        }
+
+        castSession.loadMedia(request)
     }, [data, castSession])
 
     useEffect(() => {

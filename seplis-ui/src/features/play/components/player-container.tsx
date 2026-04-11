@@ -4,6 +4,7 @@ import {
     ChromecastProvider,
     useChromecast,
 } from '@/features/play/components/chromecast/providers/chromecast-provider'
+import { useRef } from 'react'
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
 import { PlayRequest, PlayRequestSources } from '../types/play-source.types'
 import { PlayerProps } from '../types/player.types'
@@ -11,7 +12,7 @@ import { PlayerCastView } from './chromecast/components/player-cast-view'
 import { Player } from './player-video'
 import { PlayerView } from './player-view'
 
-const CHROMECAST_APP_ID = 'CC1AD845'
+const CHROMECAST_APP_ID = import.meta.env.DEV ? '0BB2BE80' : 'EA4A67C4'
 
 interface Props extends PlayerProps {
     playRequests: PlayRequest[]
@@ -46,9 +47,11 @@ interface SwitchProps extends PlayerProps {
 }
 
 function PlayerSwitch({ playRequestsSources, ...props }: SwitchProps) {
+    const wasConnectedRef = useRef(false)
     const { isConnected } = useChromecast()
 
     if (isConnected) {
+        wasConnectedRef.current = true
         return (
             <PlayerCastView
                 playRequestsSources={playRequestsSources}

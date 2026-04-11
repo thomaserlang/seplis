@@ -61,6 +61,10 @@ export function MoviePlayView({ movieId, onClose }: Props) {
             onFinished={() => {
                 incrementMovieWatched({ movieId })
             }}
+            castInfo={{
+                savePositionUrl: `${window.location.origin}/api/2/movies/${movieId}/watched-position`,
+                watchedUrl: `${window.location.origin}/api/2/movies/${movieId}/watched`,
+            }}
         />
     )
 }

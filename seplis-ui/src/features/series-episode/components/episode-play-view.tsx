@@ -89,6 +89,10 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             onFinished={() => {
                 incrementEpisodeWatched({ seriesId, episodeNumber })
             }}
+            castInfo={{
+                savePositionUrl: `${window.location.origin}/api/2/series/${seriesId}/episodes/${episodeNumber}/watched-position`,
+                watchedUrl: `${window.location.origin}/api/2/series/${seriesId}/episodes/${episodeNumber}/watched`,
+            }}
             onSubtitleChange={(subtitle) => {
                 updateSeriesUserSettings({
                     seriesId,

@@ -1,177 +1,149 @@
+<!doctype html>
 <html>
-
-<head>
+  <head>
     <title>SEPLIS CAST</title>
+    <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 
     <style>
-        body {
-            --progress-color: #428bca;
-            --splash-image: url('/img/seplis_background.jpg');
-            --splash-size: cover;
-            --logo-image: url('/img/apple-touch-icon.png');
-            --playback-logo-image: url('/img/apple-touch-icon.png');
-        }
+      body {
+        --progress-color: #428bca;
+        --splash-image: url("/img/seplis_background.jpg");
+        --splash-size: cover;
+        --logo-image: url("/img/apple-touch-icon.png");
+        --playback-logo-image: url("/img/apple-touch-icon.png");
+      }
     </style>
+  </head>
 
-    <script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"
-        integrity="sha256-BJeo0qm959uMBGb65z40ejJYGSgR7REI4+CW1fNKwOg=" crossorigin="anonymous"></script>
-</head>
-
-<body>
+  <body>
     <cast-media-player></cast-media-player>
+    <div
+      id="dbg"
+      style="
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: rgb(232, 232, 232);
+        font-size: 28px;
+        padding: 12px 20px;
+        z-index: 9999;
+        border-radius: 8px;
+        display: none;
+      "
+    ></div>
     <script>
-        var customData = null
-        var lastSavedTime = 0
-        var watchedIncremented = false
-        var prevViewedId = null
-        var keepAliveTimer = null
+      function dbg(msg) {
+        const el = document.getElementById("dbg");
+        el.textContent = msg;
+        el.style.display = "block";
+        clearTimeout(el._t);
+        el._t = setTimeout(() => {
+          el.style.display = "none";
+        }, 10000);
+      }
 
-        const context = cast.framework.CastReceiverContext.getInstance()
-        const playerManager = context.getPlayerManager()
+      const context = cast.framework.CastReceiverContext.getInstance();
+      const playerManager = context.getPlayerManager();
 
-        const GET_CUSTOM_DATA = 'urn:x-cast:net.seplis.cast.get_custom_data'
-        const NEW_TRACK = 'urn:x-cast:net.seplis.cast.new_track'
+      const CAST_NAMESPACE = "urn:x-cast:seplis.player";
 
-        function setPingTimer() {
-            if (!keepAliveTimer)
-                keepAliveTimer = setInterval(() => {
-                    $.get(`${customData['selectedRequestSource']['request']['play_url']}/keep-alive/${customData['session']}`)
-                }, 4000)
+      function applySubtitleOffset(offset) {
+        try {
+          const castPlayer =
+            document.getElementsByTagName("cast-media-player")[0];
+          const video = castPlayer.shadowRoot.querySelector("video");
+          if (video) {
+            dbg("Applying subtitle offset: " + offset + "s");
+            const tracks = video.textTracks;
+            for (let i = 0; i < tracks.length; i++) {
+              const track = tracks[i];
+              if (track.kind !== "subtitles" || !track.cues) continue;
+              for (let j = 0; j < track.cues.length; j++) {
+                const cue = track.cues[j];
+                if (!("_originalStart" in cue)) {
+                  cue._originalStart = cue.startTime;
+                  cue._originalEnd = cue.endTime;
+                }
+                cue.startTime = cue._originalStart + offset;
+                cue.endTime = cue._originalEnd + offset;
+              }
+            }
+          } else {
+            dbg("Video element not found, cannot apply subtitle offset");
+          }
+        } catch (err) {
+          dbg("Error applying subtitle offset" + err.message);
         }
+      }
 
-        context.addCustomMessageListener(
-            GET_CUSTOM_DATA,
-            event => {
-                context.sendCustomMessage(
-                    GET_CUSTOM_DATA,
-                    event.senderId,
-                    customData
-                )
-            }
-        )
+      context.addCustomMessageListener(CAST_NAMESPACE, (event) => {
+        dbg("raw: " + JSON.stringify(event.data));
+        const data = event.data;
+        if (!data || data.type !== "subtitleOffset") return;
+        applySubtitleOffset(data.offset);
+      });
 
-        context.addCustomMessageListener(
-            NEW_TRACK,
-            event => {
-                const textTracksManager = playerManager.getTextTracksManager();
-                if (event.data.lang) {
-                    const track = textTracksManager.createTrack();
-                    track.trackContentType = 'text/vtt';
-                    track.trackContentId = event.data.url;
-                    track.language = event.data.lang;
-                    textTracksManager.addTracks([track]);
-                    textTracksManager.setActiveByIds([track.trackId]);
-                } else {
-                    textTracksManager.setActiveByIds([]);
-                }
-                customData['subtitleLang'] = event.data.lang
-                if (event.data?.offset != undefined)
-                    customData['subtitleOffset'] = event.data.offset
-                context.sendCustomMessage(
-                    GET_CUSTOM_DATA,
-                    event.senderId,
-                    customData
-                )
-            }
-        )
 
-        context.addEventListener(
-            cast.framework.system.EventType.SENDER_CONNECTED,
-            event => {
-                context.sendCustomMessage(
-                    GET_CUSTOM_DATA,
-                    event.senderId,
-                    customData
-                )
-            }
-        )
+      let customData = null;
+      let keepAliveTimer = null;
+      let lastSavedPosition = 0;
+      let watchedIncremented = false;
 
-        playerManager.addEventListener(
-            cast.framework.events.EventType.REQUEST_LOAD,
-            event => {
-                customData = event.requestData.customData
-                lastSavedTime = customData.startTime
-                let id
-                if (customData['type'] == 'episode') {
-                    id = 'episode' + customData['series']['id'].toString() +
-                        customData['episode']['number'].toString()
-                } else if (customData['type'] == 'movie') {
-                    id = 'movie' + customData['movie']['id'].toString()
-                }
-                if (prevViewedId != id)
-                    watchedIncremented = false
-                prevViewedId = id
-                var senders = context.getSenders()
-                for (var i in senders) {
-                    context.sendCustomMessage(
-                        GET_CUSTOM_DATA,
-                        senders[i].id,
-                        customData
-                    )
-                }
-                setPingTimer()
-            }
-        )
+      function startKeepAlive(url) {
+        if (keepAliveTimer) clearInterval(keepAliveTimer);
+        keepAliveTimer = setInterval(() => {
+          fetch(url).catch(() => {});
+        }, 4000);
+      }
 
-        playerManager.addEventListener(
-            cast.framework.events.EventType.TIME_UPDATE,
-            event => {
-                if (!customData)
-                    return
-                setPingTimer()
-                let time = Math.floor(event.currentMediaTime)
-                
-                time += Math.round(customData['startTime'])
-                if (customData['startTime'] == time)
-                    return
-                if (lastSavedTime == time)
-                    return
-                lastSavedTime = time
-                if (time < 10)
-                    return
-                if ((time % 10) != 0)
-                    return
+      function apiRequest(url, method, body) {
+        if (!url || !customData?.token) return;
+        fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${customData.token}`,
+          },
+          body: body ? JSON.stringify(body) : undefined,
+        }).catch(() => {});
+      }
 
-                let duration = parseInt(customData['selectedRequestSource']['source']['duration'])
-                let watched = (((time / 100) * 10) > (duration - time))
+      playerManager.addEventListener(
+        cast.framework.events.EventType.REQUEST_LOAD,
+        (event) => {
+          customData = event.requestData?.customData ?? null;
+          lastSavedPosition = 0;
+          watchedIncremented = false;
+          if (customData?.keep_alive_url) {
+            startKeepAlive(customData.keep_alive_url);
+          }
+        },
+      );
 
-                let url
-                if (customData['type'] == 'episode') {
-                    url = customData['apiUrl'] +
-                        '/2/series/' + customData['series']['id'].toString() +
-                        '/episodes/' + customData['episode']['number'].toString()
-                } else if (customData['type'] == 'movie') {
-                    url = customData['apiUrl'] + '/2/movies/' + customData['movie']['id'].toString()
-                }
-                let putData = {}
-                if (watched) {
-                    if (!watchedIncremented) {
-                        watchedIncremented = true
-                        url += '/watched'
-                    } else {
-                        return
-                    }
-                } else {
-                    watchedIncremented = false
-                    url += '/watched-position'
-                    putData['position'] = time
-                }
-                $.ajax({
-                    url: url,
-                    type: (watchedIncremented) ? 'POST' : 'PUT',
-                    data: JSON.stringify(putData),
-                    dataType: 'json',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + customData.token,
-                    }
-                })
-            }
-        )
+      playerManager.addEventListener(
+        cast.framework.events.EventType.TIME_UPDATE,
+        (event) => {
+          if (!customData) return;
+          const time = Math.floor(event.currentMediaTime);
+          if (time < 5) return;
 
-        context.start()
+          const duration =
+            customData.duration ?? playerManager.getDurationSec();
+          if (!watchedIncremented && duration > 0 && time >= duration * 0.9) {
+            watchedIncremented = true;
+            apiRequest(customData.watched_url, "POST", {});
+            return;
+          }
+
+          if (time % 10 === 0 && time !== lastSavedPosition) {
+            lastSavedPosition = time;
+            apiRequest(customData.save_position_url, "PUT", { position: time });
+          }
+        },
+      );
+
+      context.start();
     </script>
-</body>
-
+  </body>
 </html>

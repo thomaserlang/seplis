@@ -1,3 +1,8 @@
+export interface CastInfo {
+    savePositionUrl: string
+    watchedUrl: string
+}
+
 export interface PlayerProps {
     title?: string
     secondaryTitle?: string
@@ -9,4 +14,5 @@ export interface PlayerProps {
     defaultSubtitle?: string
     onSubtitleChange?: (subtitle: string | undefined) => void
     defaultStartTime?: number
+    castInfo?: CastInfo
 }

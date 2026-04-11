@@ -10,6 +10,8 @@ import { CastControls } from './cast-controls'
 import { CastIdentity } from './cast-identity'
 import { CastProgress } from './cast-progress'
 
+const CAST_NAMESPACE = 'urn:x-cast:seplis.player'
+
 interface Props {
     title?: string
     secondaryTitle?: string
@@ -50,6 +52,17 @@ export function PlayerCast({
     const { player, playerController, castSession, endSession, isConnected } =
         useChromecast()
     const [subtitleOffset, setSubtitleOffset] = useState(0)
+
+    useEffect(() => () => setSubtitleOffset(0), [])
+
+    const sendSubtitleOffset = (offset: number) => {
+        console.log('Sending subtitle offset:', offset)
+        castSession?.sendMessage(CAST_NAMESPACE, {
+            type: 'subtitleOffset',
+            offset,
+        })
+    }
+
     const [dragTime, setDragTime] = useState<number | null>(null)
     const [settingsOpen, setSettingsOpen] = useState(false)
 
@@ -65,8 +78,6 @@ export function PlayerCast({
         if (playerState === prevPlayerStateRef.current) return
         prevPlayerStateRef.current = playerState
     })
-
-    useEffect(() => () => setSubtitleOffset(0), [])
 
     const formatTime = (secs: number) => {
         const h = Math.floor(secs / 3600)
@@ -147,7 +158,10 @@ export function PlayerCast({
                 onAudioLangChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
                 onSubtitleChange={onSubtitleChange}
-                onSubtitleOffsetChange={setSubtitleOffset}
+                onSubtitleOffsetChange={(offset) => {
+                    setSubtitleOffset(offset)
+                    sendSubtitleOffset(offset)
+                }}
                 preferredAudioLangs={preferredAudioLangs}
                 preferredSubtitleLangs={preferredSubtitleLangs}
             />
