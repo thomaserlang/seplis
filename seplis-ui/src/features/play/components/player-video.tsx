@@ -38,7 +38,6 @@ import {
 import {
     PlayRequestSource,
     PlayRequestSources,
-    PlayServerMedia,
 } from '../types/play-source.types'
 import {
     AirPlayButton,
@@ -47,8 +46,11 @@ import {
     VolumePopover,
 } from './player-controls'
 
+import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
+import { MAX_BITRATE } from '../constants/play-bitrate.constants'
+import { UsePlaySettings } from '../hooks/use-play-settings'
 import { SettingsPopover } from './player-controls/settings-popover'
-import { type PlaySettings, type PlaySettingsOverrides } from '../hooks/use-play-settings'
+import { PlayerError } from './player-error'
 import './player-video.css'
 
 const SEEK_TIME = 10
@@ -65,7 +67,6 @@ export const Player = createPlayer({ features: videoFeatures })
 
 export interface VideoPlayerProps {
     playRequestSource: PlayRequestSource
-    playServerMedia: PlayServerMedia
     title?: string
     secondaryTitle?: string
     onClose?: () => void
@@ -80,23 +81,18 @@ export interface VideoPlayerProps {
     onSubtitleChange?: (subtitle: string | undefined) => void
     onPlayError?: (event: PlayErrorEvent) => void
     timeSliderStyle?: CSSProperties
-    isVideoLoading?: boolean
     defaultSubtitle?: string
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
-    startTime?: number
+    defaultStartTime?: number
     onVideoReady?: () => void
     onVideoError?: () => void
     onTimeUpdate?: (currentTime: number, duration: number) => void
-    advancedSettings: PlaySettings
-    onAdvancedSettingsChange: (changes: Partial<PlaySettingsOverrides>) => void
-    onAdvancedSettingsReset: () => void
-    isAdvancedDefault: boolean
+    playSettings: UsePlaySettings
 }
 
 export function PlayerVideo({
     playRequestSource,
-    playServerMedia,
     title,
     secondaryTitle,
     onClose,
@@ -111,19 +107,31 @@ export function PlayerVideo({
     onSubtitleChange,
     onPlayError,
     timeSliderStyle,
-    isVideoLoading,
     defaultSubtitle,
     preferredAudioLangs,
     preferredSubtitleLangs,
-    startTime = 0,
+    defaultStartTime = 0,
     onVideoReady,
     onVideoError,
     onTimeUpdate,
-    advancedSettings,
-    onAdvancedSettingsChange,
-    onAdvancedSettingsReset,
-    isAdvancedDefault,
+    playSettings,
 }: VideoPlayerProps): ReactNode {
+    const media = useMedia()
+    const resumtimeRef = useRef<number>(defaultStartTime)
+    const [videoLoading, setVideoLoading] = useState(true)
+    const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
+        playRequestSource,
+        maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
+        audio,
+        forceTranscode,
+        ...playSettings.settings,
+        options: {
+            refetchOnWindowFocus: false,
+            // 6 hours
+            staleTime: 6 * 60 * 60 * 1000,
+        },
+    })
+
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
     >(defaultSubtitle)
@@ -135,11 +143,23 @@ export function PlayerVideo({
     const [subtitleOffset, setSubtitleOffset] = useState(0)
 
     useEffect(() => {
+        if (!data?.keep_alive_url) return
         const id = setInterval(() => {
-            fetch(playServerMedia.keep_alive_url).catch(() => {})
+            void fetch(data.keep_alive_url)
+                .then((response) => {
+                    if (response.status === 404) {
+                        clearInterval(id)
+                    }
+                })
+                .catch(() => {})
         }, 5000)
         return () => clearInterval(id)
-    }, [playServerMedia.keep_alive_url])
+    }, [data?.keep_alive_url || ''])
+
+    useEffect(() => {
+        resumtimeRef.current = media?.currentTime ?? resumtimeRef.current
+        setVideoLoading(true)
+    }, [data])
 
     const activeSubtitle = activeSubtitleKey
         ? playRequestSource.source.subtitles.find((s) => {
@@ -162,27 +182,37 @@ export function PlayerVideo({
           (isAssSubtitle ? `&output_format=ass` : '')
         : undefined
 
-    const src = playServerMedia.can_direct_play
-        ? playServerMedia.direct_play_url
-        : playServerMedia.hls_url
-
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
-            <Video src={src} crossOrigin="anonymous">
-                {activeSubtitle && !isAssSubtitle && subtitleUrl && (
-                    <track
-                        key={activeSubtitleKey}
-                        kind="subtitles"
-                        label={activeSubtitle.title || activeSubtitle.language}
-                        srcLang={activeSubtitle.language}
-                        src={subtitleUrl}
-                        default
-                    />
-                )}
-                {isAssSubtitle && subtitleUrl && (
-                    <AssSubtitle subUrl={subtitleUrl} offset={subtitleOffset} />
-                )}
-            </Video>
+            {data && (
+                <Video
+                    src={
+                        data.can_direct_play
+                            ? data.direct_play_url
+                            : data.hls_url
+                    }
+                    crossOrigin="anonymous"
+                >
+                    {activeSubtitle && !isAssSubtitle && subtitleUrl && (
+                        <track
+                            key={activeSubtitleKey}
+                            kind="subtitles"
+                            label={
+                                activeSubtitle.title || activeSubtitle.language
+                            }
+                            srcLang={activeSubtitle.language}
+                            src={subtitleUrl}
+                            default
+                        />
+                    )}
+                    {isAssSubtitle && subtitleUrl && (
+                        <AssSubtitle
+                            subUrl={subtitleUrl}
+                            offset={subtitleOffset}
+                        />
+                    )}
+                </Video>
+            )}
 
             {activeSubtitleKey && !isAssSubtitle && (
                 <SubtitleOffsetApplier offset={subtitleOffset} />
@@ -221,7 +251,7 @@ export function PlayerVideo({
                 )}
             />
 
-            {isVideoLoading && (
+            {(isLoading || isRefetching || videoLoading) && (
                 <div className="media-buffering-indicator" data-visible="">
                     <div className="media-surface">
                         <PageLoader />
@@ -257,6 +287,17 @@ export function PlayerVideo({
                     </div>
                 </ErrorDialog.Popup>
             </ErrorDialog.Root>
+
+            {error && (
+                <PlayerError
+                    title="Something went wrong on the play server"
+                    errorObj={error}
+                />
+            )}
+
+            {!data && !isLoading && !error && (
+                <PlayerError title="No playable source found" />
+            )}
 
             <Controls.Root className="media-surface media-controls">
                 <Tooltip.Provider>
@@ -386,10 +427,7 @@ export function PlayerVideo({
                             onSubtitleOffsetChange={setSubtitleOffset}
                             preferredAudioLangs={preferredAudioLangs}
                             preferredSubtitleLangs={preferredSubtitleLangs}
-                            advancedSettings={advancedSettings}
-                            onAdvancedSettingsChange={onAdvancedSettingsChange}
-                            onAdvancedSettingsReset={onAdvancedSettingsReset}
-                            isAdvancedDefault={isAdvancedDefault}
+                            playSettings={playSettings}
                         />
 
                         <AirPlayButton />
@@ -442,13 +480,23 @@ export function PlayerVideo({
 
             <AutoPlay />
             <MediaEventHandler
-                startTime={startTime}
+                startTime={resumtimeRef.current}
                 onVideoReady={onVideoReady}
                 onVideoError={onVideoError}
-                onTimeUpdate={onTimeUpdate}
+                onTimeUpdate={(currentTime, duration) => {
+                    onTimeUpdate?.(currentTime, duration)
+                    if (videoLoading) {
+                        setVideoLoading(false)
+                    }
+                }}
             />
             <VideoClickHandler />
-            <PlayErrorHandler src={src} onPlayError={onPlayError} />
+            {data && (
+                <PlayErrorHandler
+                    src={data.hls_url}
+                    onPlayError={onPlayError}
+                />
+            )}
             <div className="media-overlay" />
         </Container>
     )

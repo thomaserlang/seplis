@@ -3,10 +3,7 @@ import {
     PlayRequestSources,
 } from '../types/play-source.types'
 
-import { ErrorBox } from '@/components/error-box'
-import { PageLoader } from '@/components/page-loader'
-import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
+import { useEffectEvent, useRef, useState } from 'react'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import {
     PREFERRED_AUDIO_LANGS,
@@ -53,26 +50,12 @@ export function PlayerView({
         }),
     )
     const [forceTranscode, setForceTranscode] = useState(false)
-    const resumeTimeRef = useRef<number>(defaultStartTime ?? 0)
     const currentTimeRef = useRef<number>(defaultStartTime ?? 0)
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
-    const [isVideoLoading, setIsVideoLoading] = useState(true)
 
     const playSettings = usePlaySettings('play-settings')
-    const { settings } = playSettings
 
-    const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
-        playRequestSource: source,
-        maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
-        audio,
-        forceTranscode,
-        ...settings,
-        options: {
-            refetchOnWindowFocus: false,
-            staleTime: Infinity,
-        },
-    })
     const handleTimeUpdate = useEffectEvent(
         (currentTime: number, duration: number) => {
             currentTimeRef.current = currentTime
@@ -93,15 +76,6 @@ export function PlayerView({
         }
     }
 
-    useEffect(() => {
-        resumeTimeRef.current = currentTimeRef.current
-        setIsVideoLoading(true)
-    }, [data])
-
-    if (isLoading) return <PageLoader />
-    if (error) return <ErrorBox errorObj={error} />
-    if (!data) return <ErrorBox message="No playable source found" />
-
     const handleBitrateChange = (bitrate: number) => {
         if (bitrate >= source.source.bit_rate) {
             localStorage.removeItem('maxBitrate')
@@ -114,7 +88,6 @@ export function PlayerView({
 
     return (
         <PlayerVideo
-            playServerMedia={data}
             playRequestSource={source}
             playRequestsSources={playRequestsSources}
             title={title}
@@ -123,8 +96,7 @@ export function PlayerView({
             maxBitrate={maxBitrate}
             audio={audio}
             forceTranscode={forceTranscode}
-            isVideoLoading={isVideoLoading || isRefetching}
-            startTime={resumeTimeRef.current}
+            defaultStartTime={defaultStartTime}
             onSourceChange={setSource}
             onBitrateChange={handleBitrateChange}
             onAudioChange={(audio) => {
@@ -133,7 +105,6 @@ export function PlayerView({
             }}
             onPlayError={handlePlayError}
             onForceTranscodeChange={setForceTranscode}
-            onVideoReady={() => setIsVideoLoading(false)}
             onVideoError={handlePlayError}
             onTimeUpdate={handleTimeUpdate}
             defaultSubtitle={pickStartSubtitle({
@@ -147,10 +118,7 @@ export function PlayerView({
             }}
             preferredAudioLangs={PREFERRED_AUDIO_LANGS}
             preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-            advancedSettings={settings}
-            onAdvancedSettingsChange={playSettings.update}
-            onAdvancedSettingsReset={playSettings.reset}
-            isAdvancedDefault={playSettings.isDefault}
+            playSettings={playSettings}
         />
     )
 }

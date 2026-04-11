@@ -43,6 +43,7 @@ export const {
             props.supportedVideoContainers,
             props.format,
             props.supportedHdrFormats,
+            props.hdrEnabled,
         ].filter((x) => x !== undefined),
     getFn: async ({
         playRequestSource,

@@ -36,10 +36,7 @@ export function PlayerSettings({
     preferredAudioLangs,
     preferredSubtitleLangs,
     onClose,
-    advancedSettings,
-    onAdvancedSettingsChange,
-    onAdvancedSettingsReset,
-    isAdvancedDefault,
+    playSettings,
 }: Props): ReactNode {
     const [panel, setPanel] = useState<SettingsPanel>('main')
     const { source: currentSource, request: currentRequest } = playRequestSource
@@ -95,9 +92,9 @@ export function PlayerSettings({
                     forceTranscode={forceTranscode}
                     onForceTranscodeChange={onForceTranscodeChange}
                     setPanel={setPanel}
-                    hdrEnabled={advancedSettings.hdrEnabled}
+                    hdrEnabled={playSettings.settings.hdrEnabled}
                     onHdrChange={(value) =>
-                        onAdvancedSettingsChange({ hdrEnabled: value })
+                        playSettings.update({ hdrEnabled: value })
                     }
                 />
             )}
@@ -149,13 +146,7 @@ export function PlayerSettings({
                 />
             )}
             {panel === 'advanced' && (
-                <AdvancedPanel
-                    settings={advancedSettings}
-                    update={onAdvancedSettingsChange}
-                    reset={onAdvancedSettingsReset}
-                    isDefault={isAdvancedDefault}
-                    back={back}
-                />
+                <AdvancedPanel playSettings={playSettings} back={back} />
             )}
         </div>
     )

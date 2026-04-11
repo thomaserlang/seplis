@@ -31,7 +31,8 @@ export function errorMessageFromResponse(errorObj: any): ReactNode {
         ) {
             // @ts-ignore
             const error = errorObj.data as APIError
-            if (error) return error.message
+            if (error && error.message) return error.message
+            return <pre>{JSON.stringify(error, null, 2)}</pre>
         }
     }
     return <>{errorObj.message}</>

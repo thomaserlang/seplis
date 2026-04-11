@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { ALL_AUDIO_CHANNELS } from '../../constants/play-audio.constants'
 import {
-    type PlaySettings,
+    UsePlaySettings,
     type PlaySettingsOverrides,
 } from '../../hooks/use-play-settings'
 import { channelLabel } from '../../utils/play-audio.utils'
@@ -33,30 +33,22 @@ type SubPanel =
     | 'hdr-formats'
 
 interface Props {
-    settings: PlaySettings
-    update: (changes: Partial<PlaySettingsOverrides>) => void
-    reset: () => void
-    isDefault: boolean
+    playSettings: UsePlaySettings
     back: () => void
 }
 
-export function AdvancedPanel({
-    settings,
-    update,
-    reset,
-    isDefault,
-    back,
-}: Props): ReactNode {
+export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
     const [subPanel, setSubPanel] = useState<SubPanel>('main')
 
     const toMain = () => setSubPanel('main')
+    const { settings } = playSettings
 
     if (subPanel === 'video-codecs') {
         return (
             <MultiSelectPanel
                 title="Video Codecs"
                 options={VIDEO_CODECS}
-                selected={settings.supportedVideoCodecs}
+                selected={playSettings.settings.supportedVideoCodecs}
                 onApply={(next) => {
                     const changes: Partial<PlaySettingsOverrides> = {
                         supportedVideoCodecs: next,
@@ -64,7 +56,7 @@ export function AdvancedPanel({
                     if (next && !next.includes(settings.transcodeVideoCodec)) {
                         changes.transcodeVideoCodec = next[0]
                     }
-                    update(changes)
+                    playSettings.update(changes)
                 }}
                 back={toMain}
             />
@@ -77,7 +69,9 @@ export function AdvancedPanel({
                 title="HDR Formats"
                 options={HDR_FORMATS}
                 selected={settings.supportedHdrFormats}
-                onApply={(next) => update({ supportedHdrFormats: next })}
+                onApply={(next) =>
+                    playSettings.update({ supportedHdrFormats: next })
+                }
                 back={toMain}
             />
         )
@@ -89,7 +83,9 @@ export function AdvancedPanel({
                 title="Transcode Video Codec"
                 options={settings.supportedVideoCodecs}
                 value={settings.transcodeVideoCodec}
-                onSelect={(v) => update({ transcodeVideoCodec: v })}
+                onSelect={(v) =>
+                    playSettings.update({ transcodeVideoCodec: v })
+                }
                 back={toMain}
             />
         )
@@ -108,7 +104,7 @@ export function AdvancedPanel({
                     if (next && !next.includes(settings.transcodeAudioCodec)) {
                         changes.transcodeAudioCodec = next[0]
                     }
-                    update(changes)
+                    playSettings.update(changes)
                 }}
                 back={toMain}
             />
@@ -121,7 +117,9 @@ export function AdvancedPanel({
                 title="Transcode Audio Codec"
                 options={AUDIO_CODECS}
                 value={settings.transcodeAudioCodec}
-                onSelect={(v) => update({ transcodeAudioCodec: v })}
+                onSelect={(v) =>
+                    playSettings.update({ transcodeAudioCodec: v })
+                }
                 back={toMain}
             />
         )
@@ -133,7 +131,7 @@ export function AdvancedPanel({
                 title="Max Audio Channels"
                 options={ALL_AUDIO_CHANNELS}
                 value={settings.maxAudioChannels}
-                onSelect={(v) => update({ maxAudioChannels: v })}
+                onSelect={(v) => playSettings.update({ maxAudioChannels: v })}
                 back={toMain}
                 renderOption={channelLabel}
             />
@@ -146,7 +144,9 @@ export function AdvancedPanel({
                 title="Video Containers"
                 options={VIDEO_CONTAINERS}
                 selected={settings.supportedVideoContainers}
-                onApply={(next) => update({ supportedVideoContainers: next })}
+                onApply={(next) =>
+                    playSettings.update({ supportedVideoContainers: next })
+                }
                 back={toMain}
             />
         )
@@ -158,7 +158,7 @@ export function AdvancedPanel({
                 title="Stream Format"
                 options={STREAM_FORMATS}
                 value={settings.format}
-                onSelect={(v) => update({ format: v })}
+                onSelect={(v) => playSettings.update({ format: v })}
                 back={toMain}
             />
         )
@@ -211,17 +211,19 @@ export function AdvancedPanel({
                 <SettingsGroupDivider />
                 <div
                     role="button"
-                    tabIndex={isDefault ? -1 : 0}
-                    aria-disabled={isDefault}
+                    tabIndex={playSettings.isDefault ? -1 : 0}
+                    aria-disabled={playSettings.isDefault}
                     className={classes.syncReset}
-                    onClick={isDefault ? undefined : reset}
+                    onClick={
+                        playSettings.isDefault ? undefined : playSettings.reset
+                    }
                     onKeyDown={
-                        isDefault
+                        playSettings.isDefault
                             ? undefined
                             : (e) => {
                                   if (e.key === 'Enter' || e.key === ' ') {
                                       e.preventDefault()
-                                      reset()
+                                      playSettings.reset()
                                   }
                               }
                     }

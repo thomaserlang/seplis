@@ -237,10 +237,7 @@ export function PlayerCastView({
                     }}
                     preferredAudioLangs={PREFERRED_AUDIO_LANGS}
                     preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-                    advancedSettings={settings}
-                    onAdvancedSettingsChange={playSettings.update}
-                    onAdvancedSettingsReset={playSettings.reset}
-                    isAdvancedDefault={playSettings.isDefault}
+                    playSettings={playSettings}
                 />
             </Paper>
         </Container>

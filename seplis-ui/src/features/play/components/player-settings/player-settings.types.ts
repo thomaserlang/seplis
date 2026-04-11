@@ -1,8 +1,8 @@
+import { UsePlaySettings } from '../../hooks/use-play-settings'
 import {
     PlayRequestSource,
     PlayRequestSources,
 } from '../../types/play-source.types'
-import { type PlaySettings, type PlaySettingsOverrides } from '../../hooks/use-play-settings'
 
 export interface PlayerSettingsProps {
     playRequestSource: PlayRequestSource
@@ -21,8 +21,5 @@ export interface PlayerSettingsProps {
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
     onClose?: () => void
-    advancedSettings: PlaySettings
-    onAdvancedSettingsChange: (changes: Partial<PlaySettingsOverrides>) => void
-    onAdvancedSettingsReset: () => void
-    isAdvancedDefault: boolean
+    playSettings: UsePlaySettings
 }
