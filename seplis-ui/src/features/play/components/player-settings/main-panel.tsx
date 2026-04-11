@@ -46,6 +46,19 @@ export function MainPanel({
 }: Props): ReactNode {
     return (
         <SettingsBody mah="">
+            <MainItem label="Advanced" onClick={() => setPanel('advanced')} />
+            <ToggleItem
+                label="HDR"
+                value={hdrEnabled}
+                onToggle={() => {
+                    onHdrChange(!hdrEnabled)
+                }}
+            />
+            <ToggleItem
+                label="Force Transcode"
+                value={forceTranscode}
+                onToggle={() => onForceTranscodeChange(!forceTranscode)}
+            />
             <MainItem
                 label="Source"
                 value={playSourceStr(currentSource)}
@@ -83,19 +96,6 @@ export function MainPanel({
                 }
                 onClick={() => setPanel('subtitle-sync')}
             />
-            <ToggleItem
-                label="HDR"
-                value={hdrEnabled}
-                onToggle={() => {
-                    onHdrChange(!hdrEnabled)
-                }}
-            />
-            <ToggleItem
-                label="Force Transcode"
-                value={forceTranscode}
-                onToggle={() => onForceTranscodeChange(!forceTranscode)}
-            />
-            <MainItem label="Advanced" onClick={() => setPanel('advanced')} />
         </SettingsBody>
     )
 }
