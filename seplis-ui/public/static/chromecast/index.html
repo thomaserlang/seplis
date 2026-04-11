@@ -17,6 +17,7 @@
 
   <body>
     <cast-media-player></cast-media-player>
+
     <div
       id="dbg"
       style="
@@ -32,15 +33,17 @@
         display: none;
       "
     ></div>
+
     <script>
       function dbg(msg) {
+        return;
         const el = document.getElementById("dbg");
         el.textContent = msg;
         el.style.display = "block";
         clearTimeout(el._t);
         el._t = setTimeout(() => {
           el.style.display = "none";
-        }, 10000);
+        }, 5000);
       }
 
       const context = cast.framework.CastReceiverContext.getInstance();
@@ -48,42 +51,68 @@
 
       const CAST_NAMESPACE = "urn:x-cast:seplis.player";
 
-      function applySubtitleOffset(offset) {
+      let currentSubtitleOffset = 0;
+      let offsetPollInterval = null;
+
+      function applyOffsetToCues(offset) {
         try {
           const castPlayer =
             document.getElementsByTagName("cast-media-player")[0];
-          const video = castPlayer.shadowRoot.querySelector("video");
-          if (video) {
-            dbg("Applying subtitle offset: " + offset + "s");
-            const tracks = video.textTracks;
-            for (let i = 0; i < tracks.length; i++) {
-              const track = tracks[i];
-              if (track.kind !== "subtitles" || !track.cues) continue;
-              for (let j = 0; j < track.cues.length; j++) {
-                const cue = track.cues[j];
-                if (!("_originalStart" in cue)) {
-                  cue._originalStart = cue.startTime;
-                  cue._originalEnd = cue.endTime;
-                }
-                cue.startTime = cue._originalStart + offset;
-                cue.endTime = cue._originalEnd + offset;
+          const video = castPlayer?.shadowRoot?.querySelector("video");
+          if (!video) return 0;
+
+          const tracks = video.textTracks;
+          let modified = 0;
+
+          for (let i = 0; i < tracks.length; i++) {
+            const track = tracks[i];
+            if (track.kind !== "subtitles" || !track.cues) continue;
+
+            for (let j = 0; j < track.cues.length; j++) {
+              const cue = track.cues[j];
+
+              if (!("_originalStart" in cue)) {
+                cue._originalStart = cue.startTime;
+                cue._originalEnd = cue.endTime;
               }
+
+              cue.startTime = cue._originalStart + offset;
+              cue.endTime = cue._originalEnd + offset;
+              modified++;
             }
-          } else {
-            dbg("Video element not found, cannot apply subtitle offset");
           }
+
+          return modified;
         } catch (err) {
-          dbg("Error applying subtitle offset" + err.message);
+          dbg("Subtitle error: " + err.message);
+          return 0;
         }
       }
 
-      context.addCustomMessageListener(CAST_NAMESPACE, (event) => {
-        dbg("raw: " + JSON.stringify(event.data));
-        const data = event.data;
-        if (!data || data.type !== "subtitleOffset") return;
-        applySubtitleOffset(data.offset);
-      });
+      function applySubtitleOffset(offset) {
+        currentSubtitleOffset = offset;
 
+        const modified = applyOffsetToCues(offset);
+        dbg("Subtitle offset: " + offset + "s (" + modified + " cues)");
+
+        if (offsetPollInterval) {
+          clearInterval(offsetPollInterval);
+          offsetPollInterval = null;
+        }
+
+        if (offset !== 0) {
+          offsetPollInterval = setInterval(() => {
+            const n = applyOffsetToCues(currentSubtitleOffset);
+            dbg(
+              "Subtitle offset: " +
+                currentSubtitleOffset +
+                "s (" +
+                n +
+                " cues)",
+            );
+          }, 500);
+        }
+      }
 
       let customData = null;
       let keepAliveTimer = null;
@@ -92,6 +121,7 @@
 
       function startKeepAlive(url) {
         if (keepAliveTimer) clearInterval(keepAliveTimer);
+
         keepAliveTimer = setInterval(() => {
           fetch(url).catch(() => {});
         }, 4000);
@@ -99,6 +129,7 @@
 
       function apiRequest(url, method, body) {
         if (!url || !customData?.token) return;
+
         fetch(url, {
           method,
           headers: {
@@ -113,8 +144,16 @@
         cast.framework.events.EventType.REQUEST_LOAD,
         (event) => {
           customData = event.requestData?.customData ?? null;
+
           lastSavedPosition = 0;
           watchedIncremented = false;
+          currentSubtitleOffset = 0;
+
+          if (offsetPollInterval) {
+            clearInterval(offsetPollInterval);
+            offsetPollInterval = null;
+          }
+
           if (customData?.keep_alive_url) {
             startKeepAlive(customData.keep_alive_url);
           }
@@ -125,11 +164,13 @@
         cast.framework.events.EventType.TIME_UPDATE,
         (event) => {
           if (!customData) return;
+
           const time = Math.floor(event.currentMediaTime);
           if (time < 5) return;
 
           const duration =
             customData.duration ?? playerManager.getDurationSec();
+
           if (!watchedIncremented && duration > 0 && time >= duration * 0.9) {
             watchedIncremented = true;
             apiRequest(customData.watched_url, "POST", {});
@@ -138,12 +179,42 @@
 
           if (time % 10 === 0 && time !== lastSavedPosition) {
             lastSavedPosition = time;
-            apiRequest(customData.save_position_url, "PUT", { position: time });
+            apiRequest(customData.save_position_url, "PUT", {
+              position: time,
+            });
           }
         },
       );
 
-      context.start();
+      context.addEventListener(
+        cast.framework.system.EventType.SENDER_CONNECTED,
+        (event) => {
+          dbg("Sender connected" + event.senderId);
+        },
+      );
+
+      context.addEventListener(
+        cast.framework.system.EventType.SENDER_DISCONNECTED,
+        (event) => dbg("Sender disconnected" + event.senderId + ' - ' + event.reason),
+      );
+
+      context.addCustomMessageListener(CAST_NAMESPACE, (event) => {
+        const data = event.data;
+
+        if (!data || typeof data !== "object") return;
+
+        if (data.type === "subtitleOffset") {
+          dbg("Offset message received");
+          applySubtitleOffset(data.offset);
+        }
+      });
+
+      const options = new cast.framework.CastReceiverOptions();
+      options.customNamespaces = {
+        [CAST_NAMESPACE]: cast.framework.system.MessageType.JSON,
+      };
+
+      context.start(options);
     </script>
   </body>
 </html>

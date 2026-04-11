@@ -52,14 +52,20 @@ export function PlayerCast({
     preferredSubtitleLangs,
     playSettings,
 }: Props): ReactNode {
-    const { player, playerController, castSession, endSession, isConnected } =
-        useChromecast()
+    const {
+        player,
+        playerController,
+        castSession,
+        endSession,
+        isConnected,
+        sendMessage,
+    } = useChromecast()
     const [subtitleOffset, setSubtitleOffset] = useState(0)
 
     useEffect(() => () => setSubtitleOffset(0), [])
 
     const sendSubtitleOffset = (offset: number) => {
-        castSession?.sendMessage(CAST_NAMESPACE, {
+        sendMessage(CAST_NAMESPACE, {
             type: 'subtitleOffset',
             offset,
         })
@@ -147,7 +153,7 @@ export function PlayerCast({
                 onSeek={seek}
                 onPlayPause={() => playerController?.playOrPause()}
                 onSettingsOpenChange={setSettingsOpen}
-                onDisconnect={endSession}
+                onDisconnect={() => endSession(true)}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
                 maxBitrate={maxBitrate}

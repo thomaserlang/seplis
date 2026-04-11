@@ -32,8 +32,6 @@ export function PlayerCastView({
     title,
     secondaryTitle,
     onClose,
-    onSavePosition,
-    onFinished,
     defaultAudio,
     defaultSubtitle,
     defaultStartTime,
@@ -69,9 +67,6 @@ export function PlayerCastView({
     )
 
     const startTimeRef = useRef<number>(defaultStartTime ?? 0)
-    const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
-    const finishedFiredRef = useRef(false)
-
     const lastLoadedUrlRef = useRef<string | null>(null)
 
     const playSettings = usePlaySettings('cast-settings', {
@@ -82,32 +77,17 @@ export function PlayerCastView({
         supportedVideoContainers: ['mp4'],
         maxAudioChannels: 2,
     })
-    const { settings } = playSettings
 
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio,
         forceTranscode,
-        ...settings,
+        ...playSettings.settings,
         options: {
             refetchOnWindowFocus: false,
-            staleTime: Infinity,
+            staleTime: 6 * 60 * 60 * 1000, // 6 hours
         },
-    })
-
-    useEffect(() => {
-        if (!castPlayer) return
-        const currentTime = castPlayer.currentTime ?? 0
-        const duration = castPlayer.duration ?? 0
-        if (finishedFiredRef.current || duration === 0) return
-        if (currentTime >= duration * 0.9) {
-            finishedFiredRef.current = true
-            onFinished?.()
-        } else if (currentTime - lastSaveTimeRef.current >= 10) {
-            lastSaveTimeRef.current = currentTime
-            onSavePosition?.(Math.round(currentTime))
-        }
     })
 
     useEffect(() => {
@@ -197,10 +177,6 @@ export function PlayerCastView({
         )
     }, [activeSubtitleKey, castSession])
 
-    if (isLoading) return <PageLoader />
-    if (error) return <ErrorBox errorObj={error} />
-    if (!data) return <ErrorBox message="No playable source found" />
-
     const handleBitrateChange = (bitrate: number) => {
         if (bitrate >= source.source.bit_rate) {
             localStorage.removeItem('maxBitrate')
@@ -214,31 +190,38 @@ export function PlayerCastView({
     return (
         <Container size="xs" pt="2rem">
             <Paper withBorder radius="1rem" p="1rem" bg="transparent">
-                <PlayerCast
-                    title={title}
-                    secondaryTitle={secondaryTitle}
-                    onClose={onClose}
-                    playRequestSource={source}
-                    playRequestsSources={playRequestsSources}
-                    maxBitrate={maxBitrate}
-                    audio={audio}
-                    forceTranscode={forceTranscode}
-                    activeSubtitleKey={activeSubtitleKey}
-                    onSourceChange={setSource}
-                    onBitrateChange={handleBitrateChange}
-                    onAudioChange={(a) => {
-                        setAudioLang(a)
-                        onAudioChange?.(a)
-                    }}
-                    onForceTranscodeChange={setForceTranscode}
-                    onSubtitleChange={(s) => {
-                        setActiveSubtitleKey(s)
-                        onSubtitleChange?.(s)
-                    }}
-                    preferredAudioLangs={PREFERRED_AUDIO_LANGS}
-                    preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-                    playSettings={playSettings}
-                />
+                {isLoading && <PageLoader />}
+                {error && <ErrorBox errorObj={error} />}
+                {!data && !isLoading && (
+                    <ErrorBox message="No playable source found" />
+                )}
+                {data && (
+                    <PlayerCast
+                        title={title}
+                        secondaryTitle={secondaryTitle}
+                        onClose={onClose}
+                        playRequestSource={source}
+                        playRequestsSources={playRequestsSources}
+                        maxBitrate={maxBitrate}
+                        audio={audio}
+                        forceTranscode={forceTranscode}
+                        activeSubtitleKey={activeSubtitleKey}
+                        onSourceChange={setSource}
+                        onBitrateChange={handleBitrateChange}
+                        onAudioChange={(a) => {
+                            setAudioLang(a)
+                            onAudioChange?.(a)
+                        }}
+                        onForceTranscodeChange={setForceTranscode}
+                        onSubtitleChange={(s) => {
+                            setActiveSubtitleKey(s)
+                            onSubtitleChange?.(s)
+                        }}
+                        preferredAudioLangs={PREFERRED_AUDIO_LANGS}
+                        preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
+                        playSettings={playSettings}
+                    />
+                )}
             </Paper>
         </Container>
     )

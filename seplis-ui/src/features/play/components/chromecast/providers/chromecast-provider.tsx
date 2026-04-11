@@ -18,6 +18,7 @@ interface ChromecastContextValue {
     isConnected: boolean
     requestSession: () => Promise<chrome.cast.ErrorCode | undefined>
     endSession: (stopCasting?: boolean) => void
+    sendMessage: (namespace: string, message: unknown) => Promise<void>
 }
 
 const ChromecastContext = createContext<ChromecastContextValue | null>(null)
@@ -43,10 +44,6 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
 
     useEffect(() => {
         if (!senderCast || !senderChrome) return
-
-        senderCast.framework.setLoggerLevel(
-            senderCast.framework.LoggerLevel.DEBUG,
-        )
 
         const castContext = senderCast.framework.CastContext.getInstance()
         castContext.setOptions({
@@ -112,7 +109,9 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
 
     const requestSession = () => {
         if (!senderCast)
-            return Promise.resolve(undefined as unknown as chrome.cast.ErrorCode)
+            return Promise.resolve(
+                undefined as unknown as chrome.cast.ErrorCode,
+            )
         return senderCast.framework.CastContext.getInstance().requestSession()
     }
 
@@ -123,8 +122,15 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
         )
     }
 
-    const isConnected =
-        castState === senderCast?.framework.CastState.CONNECTED
+    const sendMessage = async (namespace: string, message: unknown) => {
+        if (!senderCast) return
+        const session =
+            senderCast.framework.CastContext.getInstance().getCurrentSession()
+        if (!session) return
+        await session.sendMessage(namespace, message)
+    }
+
+    const isConnected = castState === senderCast?.framework.CastState.CONNECTED
     const isAvailable =
         castState !== null &&
         castState !== senderCast?.framework.CastState.NO_DEVICES_AVAILABLE
@@ -141,6 +147,7 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
                 isConnected,
                 requestSession,
                 endSession,
+                sendMessage,
             }}
         >
             {children}
@@ -151,6 +158,8 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
 export function useChromecast() {
     const ctx = useContext(ChromecastContext)
     if (!ctx)
-        throw new Error('useChromecast must be used within a ChromecastProvider')
+        throw new Error(
+            'useChromecast must be used within a ChromecastProvider',
+        )
     return ctx
 }
