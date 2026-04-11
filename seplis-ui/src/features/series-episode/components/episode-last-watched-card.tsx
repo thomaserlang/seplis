@@ -15,13 +15,15 @@ export function EpisodeLastWatchedCard({ seriesId }: Props) {
         },
     })
 
+    if (!user) return
+
     return (
         <EpisodeCard
             seriesId={seriesId}
             episode={data}
             loading={isLoading}
             title="Last watched"
-            accentColor="oklch(0.55 0.18 150)"
+            accentColor="oklch(0.4 0.07 240)"
             noEpisodeText="No episode watched yet"
         />
     )

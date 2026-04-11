@@ -48,11 +48,9 @@ export function WatchedButton({
 
     if (position > 0) {
         style['--progress'] = `${progressPercent}%`
-        style['--progress-color'] = 'oklch(0.60 0.22 145)'
     }
 
     if (times > 0) {
-        style['--watched'] = 'oklch(0.42 0.17 145)'
         style['--button-bg'] = 'var(--watched)'
         style['--button-hover'] =
             'color-mix(in oklab, var(--watched) 95%, white)'
@@ -63,7 +61,7 @@ export function WatchedButton({
         <>
             <Popover position="top" opened={opened} onChange={close}>
                 <Popover.Target>
-                    <Button.Group>
+                    <Button.Group className={classes.group}>
                         <Button
                             leftSection={
                                 <CheckIcon
@@ -85,6 +83,7 @@ export function WatchedButton({
                             onClick={handleMainClick}
                             loading={loading}
                             title={`${times} time${times !== 1 ? 's' : ''} watched`}
+                            className={classes.times}
                         >
                             {times}
                         </Button>
