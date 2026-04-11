@@ -19,12 +19,12 @@ export const {
     useGet: useGetEpisodeWatched,
     queryKey: getEpisodeWatchedQueryKey,
 } = useApiHelper<EpisodeWatched, EpisodeWatchedGetProps>({
-    url: ({ seriesId, episodeNumber: episodeId }) =>
-        `2/series/${seriesId}/episodes/${episodeId}/watched`,
-    queryKey: ({ seriesId, episodeNumber: episodeId }) => [
+    url: ({ seriesId, episodeNumber }) =>
+        `2/series/${seriesId}/episodes/${episodeNumber}/watched`,
+    queryKey: ({ seriesId, episodeNumber }) => [
         'episode-watched',
         seriesId,
-        episodeId,
+        episodeNumber,
     ],
 })
 
@@ -38,8 +38,8 @@ export const {
     useMutation: useIncrementEpisodeWatched,
 } = useMutationApiHelper<EpisodeWatched, EpisodeWatchedIncrementProps>({
     method: 'POST',
-    url: ({ seriesId, episodeNumber: episodeId }) =>
-        `2/series/${seriesId}/episodes/${episodeId}/watched`,
+    url: ({ seriesId, episodeNumber }) =>
+        `2/series/${seriesId}/episodes/${episodeNumber}/watched`,
     onSuccess: ({ data, variables }) => {
         queryClient.setQueryData(
             getEpisodeWatchedQueryKey({
@@ -61,7 +61,7 @@ export const {
 
 interface EpisodeWatchedDecrementProps extends MutationApiHelperProps<{}> {
     seriesId: number
-    episodeId: number
+    episodeNumber: number
 }
 
 export const {
@@ -69,13 +69,13 @@ export const {
     useMutation: useDecrementEpisodeWatched,
 } = useMutationApiHelper<EpisodeWatched, EpisodeWatchedDecrementProps>({
     method: 'DELETE',
-    url: ({ seriesId, episodeId }) =>
-        `2/series/${seriesId}/episodes/${episodeId}/watched`,
+    url: ({ seriesId, episodeNumber }) =>
+        `2/series/${seriesId}/episodes/${episodeNumber}/watched`,
     onSuccess: ({ data, variables }) => {
         queryClient.setQueryData(
             getEpisodeWatchedQueryKey({
                 seriesId: variables.seriesId,
-                episodeNumber: variables.episodeId,
+                episodeNumber: variables.episodeNumber,
             }),
             data,
         )

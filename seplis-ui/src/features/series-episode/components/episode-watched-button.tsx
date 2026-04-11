@@ -53,7 +53,7 @@ export function EpisodeWatchedButton({
                 increment.mutate({ seriesId, episodeNumber: episodeNumber })
             }
             onDecrement={() =>
-                decrement.mutate({ seriesId, episodeId: episodeNumber })
+                decrement.mutate({ seriesId, episodeNumber: episodeNumber })
             }
         />
     )
