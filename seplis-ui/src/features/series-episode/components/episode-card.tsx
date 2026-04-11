@@ -23,7 +23,18 @@ export function EpisodeCard({
 }: Props) {
     return (
         <Box>
-            <SectionTitle title={title} />
+            {title && (
+                <Text
+                    size="xs"
+                    tt="uppercase"
+                    fw={700}
+                    c="dimmed"
+                    mb={6}
+                    lts={0.5}
+                >
+                    {title}
+                </Text>
+            )}
             {loading && <EpisodeCardSkeleton />}
             {!loading && !episode && (
                 <EpisodeCardEmpty noEpisodeText={noEpisodeText} />
@@ -128,14 +139,5 @@ function EpisodeCardContent({
                 </Flex>
             </Flex>
         </Paper>
-    )
-}
-
-function SectionTitle({ title }: { title?: string }) {
-    if (!title) return null
-    return (
-        <Text size="xs" tt="uppercase" fw={700} c="dimmed" mb={6} lts={0.5}>
-            {title}
-        </Text>
     )
 }

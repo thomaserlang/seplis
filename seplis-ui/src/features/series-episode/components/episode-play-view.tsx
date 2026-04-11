@@ -8,7 +8,7 @@ import {
 } from '@/features/series'
 import { useQuery } from '@tanstack/react-query'
 import { getEpisodePlayRequests } from '../api/episode-play-requests.api'
-import { updateEpisodeWatchedPosition } from '../api/episode-watched-position'
+import { updateEpisodeWatchedPosition } from '../api/episode-watched-position.api'
 import {
     getEpisodeWatched,
     incrementEpisodeWatched,

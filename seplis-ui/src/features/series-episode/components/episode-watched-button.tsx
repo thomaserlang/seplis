@@ -28,7 +28,6 @@ export function EpisodeWatchedButton({
         episodeNumber,
         options: {
             enabled: !!user && episode?.user_watched === undefined,
-            initialData: episode?.user_watched ?? undefined,
         },
     })
     const increment = useIncrementEpisodeWatched({
@@ -42,10 +41,12 @@ export function EpisodeWatchedButton({
         },
     })
 
+    const watchedData = data ?? episode?.user_watched
+
     return (
         <WatchedButton
-            times={data?.times ?? 0}
-            position={data?.position ?? 0}
+            times={watchedData?.times ?? 0}
+            position={watchedData?.position ?? 0}
             duration={episode?.runtime ?? 0}
             loading={isLoading}
             size={size}

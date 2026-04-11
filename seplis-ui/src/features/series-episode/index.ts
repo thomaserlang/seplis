@@ -1,6 +1,6 @@
 export * from './api/episode-play-requests.api'
 export * from './api/episode-to-watch.api'
-export * from './api/episode-watched-position'
+export * from './api/episode-watched-position.api'
 export * from './api/episodes.api'
 export * from './components/episode-last-watched-card'
 export * from './components/episode-play-button'
