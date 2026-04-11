@@ -15,6 +15,8 @@ import {
     Controls,
     ErrorDialog,
     FullscreenButton,
+    MediaGesture,
+    MediaHotkey,
     PiPButton,
     PlayButton,
     PlaybackRateButton,
@@ -490,7 +492,7 @@ export function PlayerVideo({
                     }
                 }}
             />
-            <VideoClickHandler />
+
             {data && (
                 <PlayErrorHandler
                     src={data.hls_url}
@@ -498,6 +500,49 @@ export function PlayerVideo({
                 />
             )}
             <div className="media-overlay" />
+
+            <MediaHotkey keys="Space" action="togglePaused" />
+            <MediaHotkey keys="k" action="togglePaused" />
+            <MediaHotkey keys="m" action="toggleMuted" />
+            <MediaHotkey keys="f" action="toggleFullscreen" />
+            <MediaHotkey keys="c" action="toggleSubtitles" />
+            <MediaHotkey keys="i" action="togglePictureInPicture" />
+            <MediaHotkey keys="ArrowRight" action="seekStep" value={5} />
+            <MediaHotkey keys="ArrowLeft" action="seekStep" value={-5} />
+            <MediaHotkey keys="l" action="seekStep" value={10} />
+            <MediaHotkey keys="j" action="seekStep" value={-10} />
+            <MediaHotkey keys="ArrowUp" action="volumeStep" value={0.05} />
+            <MediaHotkey keys="ArrowDown" action="volumeStep" value={-0.05} />
+            <MediaHotkey keys="0-9" action="seekToPercent" />
+            <MediaHotkey keys="Home" action="seekToPercent" value={0} />
+            <MediaHotkey keys="End" action="seekToPercent" value={100} />
+            <MediaHotkey keys=">" action="speedUp" />
+            <MediaHotkey keys="<" action="speedDown" />
+
+            <MediaGesture
+                type="tap"
+                action="togglePaused"
+                pointer="mouse"
+                region="center"
+            />
+            <MediaGesture type="tap" action="toggleControls" pointer="touch" />
+            <MediaGesture
+                type="doubletap"
+                action="seekStep"
+                value={-10}
+                region="left"
+            />
+            <MediaGesture
+                type="doubletap"
+                action="toggleFullscreen"
+                region="center"
+            />
+            <MediaGesture
+                type="doubletap"
+                action="seekStep"
+                value={10}
+                region="right"
+            />
         </Container>
     )
 }
@@ -665,55 +710,4 @@ function PlayErrorHandler({
     }, [media])
 
     return null
-}
-
-function VideoClickHandler(): ReactNode {
-    const media = useMedia()
-
-    const togglePlayback = useEffectEvent(() => {
-        if (!media) return
-        if (media.paused) {
-            media.play()
-        } else {
-            media.pause()
-        }
-    })
-
-    const handleKeyDown = useEffectEvent((e: KeyboardEvent) => {
-        if (
-            e.target instanceof HTMLInputElement ||
-            e.target instanceof HTMLTextAreaElement
-        )
-            return
-
-        if (e.code === 'Space') {
-            e.preventDefault()
-            togglePlayback()
-        } else if (e.code === 'ArrowLeft') {
-            e.preventDefault()
-            if (media)
-                media.currentTime = Math.max(0, media.currentTime - SEEK_TIME)
-        } else if (e.code === 'ArrowRight') {
-            e.preventDefault()
-            if (media) media.currentTime += SEEK_TIME
-        }
-    })
-
-    useEffect(() => {
-        document.addEventListener('keydown', handleKeyDown)
-        return () => document.removeEventListener('keydown', handleKeyDown)
-    }, [])
-
-    return (
-        <div
-            className="media-click-handler"
-            style={{
-                position: 'absolute',
-                inset: 0,
-                cursor: 'pointer',
-                zIndex: 1,
-            }}
-            onClick={togglePlayback}
-        />
-    )
 }

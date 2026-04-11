@@ -995,6 +995,9 @@
     --media-popup-transition-duration: 0ms;
   }
 
+  @media (prefers-color-scheme: dark) {
+    --media-border-color: transparent;
+  }
 
   @media (prefers-reduced-transparency: reduce) or (prefers-contrast: more) {
     --media-surface-background-color: oklch(0 0 0 / 0.85);
