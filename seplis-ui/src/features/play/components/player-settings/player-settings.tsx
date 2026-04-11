@@ -4,16 +4,17 @@ import {
     MAX_BITRATE,
 } from '../../constants/play-bitrate.constants'
 import { bitratePretty } from '../../utils/play-bitrate.utils'
+import { AdvancedPanel } from './advanced-panel'
 import { AudioPanel } from './audio-panel'
-import { AudioTrackLabel, trackLabel } from './audio-track-label'
+import { AudioTrackLabel } from './audio-track-label'
 import { BitratePanel } from './bitrate-panel'
-import { MainPanel } from './main-panel'
+import { MainPanel, SettingsPanel } from './main-panel'
 import { PlayerSettingsProps } from './player-settings.types'
-import { type SettingsPanel } from './settings-panel.types'
 import { SourcePanel } from './source-panel'
 import { SubtitleSyncPanel } from './subtitle-sync-panel'
 import { SubtitlesPanel } from './subtitles-panel'
 
+import { trackLabel } from '../../utils/play-track.utils'
 import classes from './player-settings.module.css'
 
 interface Props extends PlayerSettingsProps {}
@@ -35,6 +36,10 @@ export function PlayerSettings({
     preferredAudioLangs,
     preferredSubtitleLangs,
     onClose,
+    advancedSettings,
+    onAdvancedSettingsChange,
+    onAdvancedSettingsReset,
+    isAdvancedDefault,
 }: Props): ReactNode {
     const [panel, setPanel] = useState<SettingsPanel>('main')
     const { source: currentSource, request: currentRequest } = playRequestSource
@@ -136,6 +141,15 @@ export function PlayerSettings({
                 <SubtitleSyncPanel
                     subtitleOffset={subtitleOffset}
                     onSubtitleOffsetChange={onSubtitleOffsetChange}
+                    back={back}
+                />
+            )}
+            {panel === 'advanced' && (
+                <AdvancedPanel
+                    settings={advancedSettings}
+                    update={onAdvancedSettingsChange}
+                    reset={onAdvancedSettingsReset}
+                    isDefault={isAdvancedDefault}
                     back={back}
                 />
             )}

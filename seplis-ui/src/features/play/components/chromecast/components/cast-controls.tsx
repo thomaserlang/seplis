@@ -122,7 +122,16 @@ export function CastControls({
                             </ActionIcon>
                         </Tooltip>
                     </Popover.Target>
-                    <Popover.Dropdown p={0} style={{ width: 240 }}>
+                    <Popover.Dropdown
+                        p="0.5rem"
+                        style={{
+                            width: 300,
+                            backgroundColor: 'oklch(0.3 0 0 / 0.5)',
+                            backdropFilter: 'blur(16px) saturate(1.5)',
+                            boxShadow:
+                                '0 0 0 1px transparent, 0 1px 3px 0 oklch(0 0 0 / 0.3), 0 1px 2px -1px oklch(0 0 0 / 0.3)',
+                        }}
+                    >
                         <PlayerSettings
                             {...settingsProps}
                             onClose={() => onSettingsOpenChange(false)}

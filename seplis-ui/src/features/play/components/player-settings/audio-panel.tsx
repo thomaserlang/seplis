@@ -6,6 +6,15 @@ import { SettingsBody } from './settings-body'
 import { SettingsGroupDivider } from './settings-group-divider'
 import { SubMenuHeader } from './sub-menu-header'
 
+interface Props {
+    currentSource: PlayRequestSource['source']
+    audioLang: string | undefined
+    preferredAudioLangs: string[] | undefined
+    onAudioLangChange: (lang: string | undefined) => void
+    back: () => void
+    onClose?: () => void
+}
+
 export function AudioPanel({
     currentSource,
     audioLang,
@@ -13,14 +22,7 @@ export function AudioPanel({
     onAudioLangChange,
     back,
     onClose,
-}: {
-    currentSource: PlayRequestSource['source']
-    audioLang: string | undefined
-    preferredAudioLangs: string[] | undefined
-    onAudioLangChange: (lang: string | undefined) => void
-    back: () => void
-    onClose?: () => void
-}): ReactNode {
+}: Props): ReactNode {
     const audioKey = (t: { language: string; index: number }) =>
         `${t.language}:${t.index}`
     const preferred = currentSource.audio.filter((t) =>

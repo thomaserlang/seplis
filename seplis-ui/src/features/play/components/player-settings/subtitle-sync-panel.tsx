@@ -4,15 +4,17 @@ import classes from './player-settings.module.css'
 import { SettingsBody } from './settings-body'
 import { SubMenuHeader } from './sub-menu-header'
 
+interface Props {
+    subtitleOffset: number
+    onSubtitleOffsetChange: (offset: number) => void
+    back: () => void
+}
+
 export function SubtitleSyncPanel({
     subtitleOffset,
     onSubtitleOffsetChange,
     back,
-}: {
-    subtitleOffset: number
-    onSubtitleOffsetChange: (offset: number) => void
-    back: () => void
-}): ReactNode {
+}: Props): ReactNode {
     return (
         <>
             <SubMenuHeader title="Subtitle Sync" onBack={back} />

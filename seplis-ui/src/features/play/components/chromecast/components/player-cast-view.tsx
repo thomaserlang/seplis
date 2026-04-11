@@ -6,6 +6,7 @@ import {
     PREFERRED_AUDIO_LANGS,
     PREFERRED_SUBTITLE_LANGS,
 } from '@/features/play/constants/play-language.constants'
+import { usePlaySettings } from '@/features/play/hooks/use-play-settings'
 import {
     PlayRequestSource,
     PlayRequestSources,
@@ -25,16 +26,6 @@ import { PlayerCast } from './player-cast'
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
 }
-
-// Safe codec/container defaults for Chromecast devices.
-// 1st/2nd gen Chromecast supports H.264 + AAC in HLS/MP4.
-// Newer devices also support H.265, VP9, Opus, FLAC — but H.264/AAC
-// are the widest-compatible defaults across all generations.
-export const CHROMECAST_SUPPORTED_VIDEO_CODECS = ['h264']
-export const CHROMECAST_SUPPORTED_AUDIO_CODECS = ['aac', 'opus', 'flac']
-export const CHROMECAST_TRANSCODE_VIDEO_CODEC = 'h264'
-export const CHROMECAST_TRANSCODE_AUDIO_CODEC = 'aac'
-export const CHROMECAST_SUPPORTED_VIDEO_CONTAINERS = ['mp4']
 
 export function PlayerCastView({
     playRequestsSources,
@@ -83,16 +74,28 @@ export function PlayerCastView({
 
     const lastLoadedUrlRef = useRef<string | null>(null)
 
+    const playSettings = usePlaySettings('cast-settings', {
+        supportedVideoCodecs: ['h264'],
+        supportedAudioCodecs: ['aac', 'opus', 'flac'],
+        transcodeVideoCodec: 'h264',
+        transcodeAudioCodec: 'aac',
+        supportedVideoContainers: ['mp4'],
+        maxAudioChannels: 2,
+    })
+    const { settings } = playSettings
+
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio,
         forceTranscode,
-        supportedVideoCodecs: CHROMECAST_SUPPORTED_VIDEO_CODECS,
-        supportedAudioCodecs: CHROMECAST_SUPPORTED_AUDIO_CODECS,
-        transcodeVideoCodec: CHROMECAST_TRANSCODE_VIDEO_CODEC,
-        transcodeAudioCodec: CHROMECAST_TRANSCODE_AUDIO_CODEC,
-        supportedVideoContainers: CHROMECAST_SUPPORTED_VIDEO_CONTAINERS,
+        maxAudioChannels: settings.maxAudioChannels,
+        supportedVideoCodecs: settings.supportedVideoCodecs,
+        supportedAudioCodecs: settings.supportedAudioCodecs,
+        transcodeVideoCodec: settings.transcodeVideoCodec,
+        transcodeAudioCodec: settings.transcodeAudioCodec,
+        supportedVideoContainers: settings.supportedVideoContainers,
+        format: settings.format,
         options: {
             refetchOnWindowFocus: false,
             staleTime: Infinity,
@@ -240,6 +243,10 @@ export function PlayerCastView({
                     }}
                     preferredAudioLangs={PREFERRED_AUDIO_LANGS}
                     preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
+                    advancedSettings={settings}
+                    onAdvancedSettingsChange={playSettings.update}
+                    onAdvancedSettingsReset={playSettings.reset}
+                    isAdvancedDefault={playSettings.isDefault}
                 />
             </Paper>
         </Container>

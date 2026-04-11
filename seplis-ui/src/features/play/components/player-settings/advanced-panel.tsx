@@ -1,0 +1,225 @@
+import { useMemo, useState, type ReactNode } from 'react'
+import { ALL_AUDIO_CHANNELS } from '../../constants/play-audio.constants'
+import { ALL_STREAM_FORMATS } from '../../constants/play-stream.constants'
+import {
+    type PlaySettings,
+    type PlaySettingsOverrides,
+} from '../../hooks/use-play-settings'
+import { channelLabel } from '../../utils/play-audio.utils'
+import {
+    getSupportedAudioCodecs,
+    getSupportedVideoCodecs,
+    getSupportedVideoContainers,
+} from '../../utils/video.utils'
+
+import { MainItem } from './main-item'
+import { MultiSelectPanel } from './multi-select-panel'
+import classes from './player-settings.module.css'
+import { SettingsBody } from './settings-body'
+import { SettingsGroupDivider } from './settings-group-divider'
+import { SingleSelectPanel } from './single-select-panel'
+import { SubMenuHeader } from './sub-menu-header'
+
+type SubPanel =
+    | 'main'
+    | 'video-codecs'
+    | 'transcode-video'
+    | 'audio-codecs'
+    | 'transcode-audio'
+    | 'channels'
+    | 'containers'
+    | 'format'
+
+interface Props {
+    settings: PlaySettings
+    update: (changes: Partial<PlaySettingsOverrides>) => void
+    reset: () => void
+    isDefault: boolean
+    back: () => void
+}
+
+export function AdvancedPanel({
+    settings,
+    update,
+    reset,
+    isDefault,
+    back,
+}: Props): ReactNode {
+    const [subPanel, setSubPanel] = useState<SubPanel>('main')
+
+    const browserVideoCodecs = useMemo(() => getSupportedVideoCodecs(), [])
+    const browserAudioCodecs = useMemo(() => getSupportedAudioCodecs(), [])
+    const browserVideoContainers = useMemo(
+        () => getSupportedVideoContainers(),
+        [],
+    )
+
+    const toMain = () => setSubPanel('main')
+
+    if (subPanel === 'video-codecs') {
+        return (
+            <MultiSelectPanel
+                title="Video Codecs"
+                options={browserVideoCodecs}
+                selected={settings.supportedVideoCodecs}
+                defaultSelected={browserVideoCodecs}
+                onApply={(next) => {
+                    const changes: Partial<PlaySettingsOverrides> = {
+                        supportedVideoCodecs: next,
+                    }
+                    if (!next.includes(settings.transcodeVideoCodec)) {
+                        changes.transcodeVideoCodec = next[0]
+                    }
+                    update(changes)
+                }}
+                back={toMain}
+            />
+        )
+    }
+
+    if (subPanel === 'transcode-video') {
+        return (
+            <SingleSelectPanel
+                title="Transcode Video Codec"
+                options={settings.supportedVideoCodecs}
+                value={settings.transcodeVideoCodec}
+                onSelect={(v) => update({ transcodeVideoCodec: v })}
+                back={toMain}
+            />
+        )
+    }
+
+    if (subPanel === 'audio-codecs') {
+        return (
+            <MultiSelectPanel
+                title="Audio Codecs"
+                options={browserAudioCodecs}
+                selected={settings.supportedAudioCodecs}
+                defaultSelected={browserAudioCodecs}
+                onApply={(next) => {
+                    const changes: Partial<PlaySettingsOverrides> = {
+                        supportedAudioCodecs: next,
+                    }
+                    if (!next.includes(settings.transcodeAudioCodec)) {
+                        changes.transcodeAudioCodec = next[0]
+                    }
+                    update(changes)
+                }}
+                back={toMain}
+            />
+        )
+    }
+
+    if (subPanel === 'transcode-audio') {
+        return (
+            <SingleSelectPanel
+                title="Transcode Audio Codec"
+                options={settings.supportedAudioCodecs}
+                value={settings.transcodeAudioCodec}
+                onSelect={(v) => update({ transcodeAudioCodec: v })}
+                back={toMain}
+            />
+        )
+    }
+
+    if (subPanel === 'channels') {
+        return (
+            <SingleSelectPanel
+                title="Max Audio Channels"
+                options={ALL_AUDIO_CHANNELS}
+                value={settings.maxAudioChannels}
+                onSelect={(v) => update({ maxAudioChannels: v })}
+                back={toMain}
+                renderOption={channelLabel}
+            />
+        )
+    }
+
+    if (subPanel === 'containers') {
+        return (
+            <MultiSelectPanel
+                title="Video Containers"
+                options={browserVideoContainers}
+                selected={settings.supportedVideoContainers}
+                defaultSelected={browserVideoContainers}
+                onApply={(next) => update({ supportedVideoContainers: next })}
+                back={toMain}
+            />
+        )
+    }
+
+    if (subPanel === 'format') {
+        return (
+            <SingleSelectPanel
+                title="Stream Format"
+                options={ALL_STREAM_FORMATS}
+                value={settings.format as 'hls'}
+                onSelect={(v) => update({ format: v })}
+                back={toMain}
+            />
+        )
+    }
+
+    return (
+        <>
+            <SubMenuHeader title="Advanced" onBack={back} />
+            <SettingsBody mah="">
+                <MainItem
+                    label="Video Codecs"
+                    value={settings.supportedVideoCodecs.join(', ')}
+                    onClick={() => setSubPanel('video-codecs')}
+                />
+                <MainItem
+                    label="Transcode Video Codec"
+                    value={settings.transcodeVideoCodec}
+                    onClick={() => setSubPanel('transcode-video')}
+                />
+                <MainItem
+                    label="Audio Codecs"
+                    value={settings.supportedAudioCodecs.join(', ')}
+                    onClick={() => setSubPanel('audio-codecs')}
+                />
+                <MainItem
+                    label="Transcode Audio Codec"
+                    value={settings.transcodeAudioCodec}
+                    onClick={() => setSubPanel('transcode-audio')}
+                />
+                <MainItem
+                    label="Max Audio Channels"
+                    value={channelLabel(settings.maxAudioChannels)}
+                    onClick={() => setSubPanel('channels')}
+                />
+                <MainItem
+                    label="Video Containers"
+                    value={settings.supportedVideoContainers.join(', ')}
+                    onClick={() => setSubPanel('containers')}
+                />
+                <MainItem
+                    label="Stream Format"
+                    value={settings.format}
+                    onClick={() => setSubPanel('format')}
+                />
+                <SettingsGroupDivider />
+                <div
+                    role="button"
+                    tabIndex={isDefault ? -1 : 0}
+                    aria-disabled={isDefault}
+                    className={classes.syncReset}
+                    onClick={isDefault ? undefined : reset}
+                    onKeyDown={
+                        isDefault
+                            ? undefined
+                            : (e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault()
+                                      reset()
+                                  }
+                              }
+                    }
+                >
+                    Reset to defaults
+                </div>
+            </SettingsBody>
+        </>
+    )
+}

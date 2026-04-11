@@ -9,6 +9,15 @@ import { OptionItem } from './option-item'
 import { SettingsBody } from './settings-body'
 import { SubMenuHeader } from './sub-menu-header'
 
+interface Props {
+    availableBitrates: number[]
+    maxBitrate: number
+    currentSource: PlayRequestSource['source']
+    onBitrateChange: (bitrate: number) => void
+    back: () => void
+    onClose?: () => void
+}
+
 export function BitratePanel({
     availableBitrates,
     maxBitrate,
@@ -16,14 +25,7 @@ export function BitratePanel({
     onBitrateChange,
     back,
     onClose,
-}: {
-    availableBitrates: number[]
-    maxBitrate: number
-    currentSource: PlayRequestSource['source']
-    onBitrateChange: (bitrate: number) => void
-    back: () => void
-    onClose?: () => void
-}): ReactNode {
+}: Props): ReactNode {
     return (
         <>
             <SubMenuHeader title="Quality" onBack={back} />

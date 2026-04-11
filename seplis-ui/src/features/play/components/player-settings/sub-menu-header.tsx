@@ -2,13 +2,12 @@ import { CaretLeftIcon } from '@phosphor-icons/react'
 import { type ReactNode } from 'react'
 import classes from './player-settings.module.css'
 
-export function SubMenuHeader({
-    title,
-    onBack,
-}: {
+interface Props {
     title: string
     onBack: () => void
-}): ReactNode {
+}
+
+export function SubMenuHeader({ title, onBack }: Props): ReactNode {
     return (
         <div
             role="button"

@@ -6,8 +6,28 @@ import {
 import { playSourceStr } from '../../utils/play-source.utils'
 import { MainItem } from './main-item'
 import { SettingsBody } from './settings-body'
-import { type SettingsPanel } from './settings-panel.types'
 import { ToggleItem } from './toggle-item'
+
+export type SettingsPanel =
+    | 'main'
+    | 'source'
+    | 'bitrate'
+    | 'audio'
+    | 'subtitles'
+    | 'subtitle-sync'
+    | 'advanced'
+
+interface Props {
+    currentSource: PlayRequestSource['source']
+    playRequestsSources: PlayRequestSources[]
+    currentBitrateLabel: ReactNode
+    currentAudioLabel: ReactNode
+    subtitleLabel: ReactNode
+    subtitleOffset: number
+    forceTranscode: boolean
+    onForceTranscodeChange: (value: boolean) => void
+    setPanel: (panel: SettingsPanel) => void
+}
 
 export function MainPanel({
     currentSource,
@@ -19,17 +39,7 @@ export function MainPanel({
     forceTranscode,
     onForceTranscodeChange,
     setPanel,
-}: {
-    currentSource: PlayRequestSource['source']
-    playRequestsSources: PlayRequestSources[]
-    currentBitrateLabel: ReactNode
-    currentAudioLabel: ReactNode
-    subtitleLabel: ReactNode
-    subtitleOffset: number
-    forceTranscode: boolean
-    onForceTranscodeChange: (value: boolean) => void
-    setPanel: (panel: SettingsPanel) => void
-}): ReactNode {
+}: Props): ReactNode {
     return (
         <SettingsBody mah="">
             <MainItem
@@ -74,6 +84,7 @@ export function MainPanel({
                 value={forceTranscode}
                 onToggle={() => onForceTranscodeChange(!forceTranscode)}
             />
+            <MainItem label="Advanced" onClick={() => setPanel('advanced')} />
         </SettingsBody>
     )
 }

@@ -1,11 +1,6 @@
 import { ApiHelperProps, useApiHelper } from '@/utils/api-crud'
 import ky from 'ky'
 import { PlayRequestSource, PlayServerMedia } from '../types/play-source.types'
-import {
-    getSupportedAudioCodecs,
-    getSupportedVideoCodecs,
-    getSupportedVideoContainers,
-} from '../utils/video.utils'
 
 export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     playRequestSource: PlayRequestSource
@@ -13,12 +8,13 @@ export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     audio?: string
     maxBitrate?: number
     forceTranscode?: boolean
-    maxAudioChannels?: number
-    supportedVideoCodecs?: string[]
-    supportedAudioCodecs?: string[]
-    transcodeVideoCodec?: string
-    transcodeAudioCodec?: string
-    supportedVideoContainers?: string[]
+    maxAudioChannels: number
+    supportedVideoCodecs: string[]
+    supportedAudioCodecs: string[]
+    transcodeVideoCodec: string
+    transcodeAudioCodec: string
+    supportedVideoContainers: string[]
+    format: string
 }
 
 export const {
@@ -41,6 +37,7 @@ export const {
             props.transcodeVideoCodec,
             props.transcodeAudioCodec,
             props.supportedVideoContainers,
+            props.format,
         ].filter((x) => x !== undefined),
     getFn: async ({
         playRequestSource,
@@ -48,22 +45,17 @@ export const {
         audio,
         maxBitrate,
         forceTranscode = false,
-        maxAudioChannels = 6,
+        maxAudioChannels,
         supportedVideoCodecs,
         supportedAudioCodecs,
         transcodeVideoCodec,
         transcodeAudioCodec,
         supportedVideoContainers,
+        format,
         signal,
     }) => {
-        const videoCodecs = supportedVideoCodecs ?? getSupportedVideoCodecs()
-        if (videoCodecs.length === 0) throw new Error('No supported codecs')
-
-        const audioCodecs = supportedAudioCodecs ?? getSupportedAudioCodecs()
-        const videoContainers =
-            supportedVideoContainers ?? getSupportedVideoContainers()
-        const videoTranscodeCodec = transcodeVideoCodec ?? videoCodecs[0]
-        const audioTranscodeCodec = transcodeAudioCodec ?? 'aac'
+        if (supportedVideoCodecs.length === 0)
+            throw new Error('No supported video codecs')
 
         const r = await ky.get<PlayServerMedia>(
             `${playRequestSource.request.play_url}/request-media`,
@@ -76,13 +68,14 @@ export const {
                         start_time: startTime || 0,
                         audio_lang: audio,
                         max_video_bitrate: maxBitrate,
-                        supported_video_codecs: String(videoCodecs),
-                        transcode_video_codec: videoTranscodeCodec,
-                        supported_audio_codecs: String(audioCodecs),
-                        transcode_audio_codec: audioTranscodeCodec,
-                        format: 'hls',
+                        supported_video_codecs: String(supportedVideoCodecs),
+                        transcode_video_codec: transcodeVideoCodec,
+                        supported_audio_codecs: String(supportedAudioCodecs),
+                        transcode_audio_codec: transcodeAudioCodec,
+                        format,
                         max_audio_channels: maxAudioChannels,
-                        supported_video_containers: String(videoContainers),
+                        supported_video_containers:
+                            String(supportedVideoContainers),
                         force_transcode: forceTranscode ? 'true' : 'false',
                     }).filter(
                         ([, value]) => value !== undefined && value !== null,

@@ -1,10 +1,19 @@
 import { type ReactNode } from 'react'
 import { PlayRequestSource } from '../../types/play-source.types'
-import { trackLabel } from './audio-track-label'
+import { trackLabel } from '../../utils/play-track.utils'
 import { OptionItem } from './option-item'
 import { SettingsBody } from './settings-body'
 import { SettingsGroupDivider } from './settings-group-divider'
 import { SubMenuHeader } from './sub-menu-header'
+
+interface Props {
+    currentSource: PlayRequestSource['source']
+    activeSubtitleKey: string | undefined
+    preferredSubtitleLangs: string[] | undefined
+    onSubtitleChange: (key: string | undefined) => void
+    back: () => void
+    onClose?: () => void
+}
 
 export function SubtitlesPanel({
     currentSource,
@@ -13,14 +22,7 @@ export function SubtitlesPanel({
     onSubtitleChange,
     back,
     onClose,
-}: {
-    currentSource: PlayRequestSource['source']
-    activeSubtitleKey: string | undefined
-    preferredSubtitleLangs: string[] | undefined
-    onSubtitleChange: (key: string | undefined) => void
-    back: () => void
-    onClose?: () => void
-}): ReactNode {
+}: Props): ReactNode {
     const setSubtitle = (key: string | undefined) => {
         onSubtitleChange(key)
         back()

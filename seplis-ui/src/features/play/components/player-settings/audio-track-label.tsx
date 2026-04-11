@@ -1,21 +1,7 @@
 import { type ReactNode } from 'react'
-import {
-    audioCodecLabel,
-    iso6392ToDisplayName,
-} from '../../utils/play-source.utils'
+import { audioCodecLabel } from '../../utils/play-source.utils'
+import { trackLabel } from '../../utils/play-track.utils'
 import classes from './player-settings.module.css'
-
-export function trackLabel(
-    title: string | undefined,
-    language: string,
-): string {
-    const base = title || language
-    const displayName = iso6392ToDisplayName(language)
-    if (!displayName) return base
-    if (base === language) return displayName
-    if (base.toLowerCase().includes(displayName.toLowerCase())) return base
-    return `${base} (${displayName})`
-}
 
 export function AudioTrackLabel({
     track,

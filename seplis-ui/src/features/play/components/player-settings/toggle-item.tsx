@@ -1,15 +1,13 @@
 import { type ReactNode } from 'react'
 import classes from './player-settings.module.css'
 
-export function ToggleItem({
-    label,
-    value,
-    onToggle,
-}: {
+interface Props {
     label: string
     value: boolean
     onToggle: () => void
-}): ReactNode {
+}
+
+export function ToggleItem({ label, value, onToggle }: Props): ReactNode {
     return (
         <div
             role="button"

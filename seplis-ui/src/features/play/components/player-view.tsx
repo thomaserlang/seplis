@@ -12,6 +12,7 @@ import {
     PREFERRED_AUDIO_LANGS,
     PREFERRED_SUBTITLE_LANGS,
 } from '../constants/play-language.constants'
+import { usePlaySettings } from '../hooks/use-play-settings'
 import { PlayerProps } from '../types/player.types'
 import { getDefaultMaxBitrate } from '../utils/play-bitrate.utils'
 import {
@@ -57,11 +58,22 @@ export function PlayerView({
     const lastSaveTimeRef = useRef<number>(defaultStartTime ?? 0)
     const finishedFiredRef = useRef(false)
     const [isVideoLoading, setIsVideoLoading] = useState(true)
+
+    const playSettings = usePlaySettings('play-settings')
+    const { settings } = playSettings
+
     const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
         playRequestSource: source,
         maxBitrate: maxBitrate < MAX_BITRATE ? maxBitrate : undefined,
         audio,
         forceTranscode,
+        maxAudioChannels: settings.maxAudioChannels,
+        supportedVideoCodecs: settings.supportedVideoCodecs,
+        supportedAudioCodecs: settings.supportedAudioCodecs,
+        transcodeVideoCodec: settings.transcodeVideoCodec,
+        transcodeAudioCodec: settings.transcodeAudioCodec,
+        supportedVideoContainers: settings.supportedVideoContainers,
+        format: settings.format,
         options: {
             refetchOnWindowFocus: false,
             staleTime: Infinity,
@@ -141,6 +153,10 @@ export function PlayerView({
             }}
             preferredAudioLangs={PREFERRED_AUDIO_LANGS}
             preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
+            advancedSettings={settings}
+            onAdvancedSettingsChange={playSettings.update}
+            onAdvancedSettingsReset={playSettings.reset}
+            isAdvancedDefault={playSettings.isDefault}
         />
     )
 }

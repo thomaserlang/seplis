@@ -2,17 +2,19 @@ import { CaretRightIcon } from '@phosphor-icons/react'
 import { type ReactNode } from 'react'
 import classes from './player-settings.module.css'
 
+interface Props {
+    label: string
+    value?: ReactNode
+    onClick: () => void
+    disabled?: boolean
+}
+
 export function MainItem({
     label,
     value,
     onClick,
     disabled,
-}: {
-    label: string
-    value?: ReactNode
-    onClick: () => void
-    disabled?: boolean
-}): ReactNode {
+}: Props): ReactNode {
     return (
         <div
             role="button"

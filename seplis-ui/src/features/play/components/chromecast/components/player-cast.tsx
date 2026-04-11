@@ -1,4 +1,8 @@
 import {
+    type PlaySettings,
+    type PlaySettingsOverrides,
+} from '@/features/play/hooks/use-play-settings'
+import {
     PlayRequestSource,
     PlayRequestSources,
 } from '@/features/play/types/play-source.types'
@@ -29,6 +33,10 @@ interface Props {
     onSubtitleChange: (key: string | undefined) => void
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
+    advancedSettings: PlaySettings
+    onAdvancedSettingsChange: (changes: PlaySettingsOverrides) => void
+    onAdvancedSettingsReset: () => void
+    isAdvancedDefault: boolean
 }
 
 export function PlayerCast({
@@ -48,6 +56,10 @@ export function PlayerCast({
     onSubtitleChange,
     preferredAudioLangs,
     preferredSubtitleLangs,
+    advancedSettings,
+    onAdvancedSettingsChange,
+    onAdvancedSettingsReset,
+    isAdvancedDefault,
 }: Props): ReactNode {
     const { player, playerController, castSession, endSession, isConnected } =
         useChromecast()
@@ -56,7 +68,6 @@ export function PlayerCast({
     useEffect(() => () => setSubtitleOffset(0), [])
 
     const sendSubtitleOffset = (offset: number) => {
-        console.log('Sending subtitle offset:', offset)
         castSession?.sendMessage(CAST_NAMESPACE, {
             type: 'subtitleOffset',
             offset,
@@ -164,6 +175,10 @@ export function PlayerCast({
                 }}
                 preferredAudioLangs={preferredAudioLangs}
                 preferredSubtitleLangs={preferredSubtitleLangs}
+                advancedSettings={advancedSettings}
+                onAdvancedSettingsChange={onAdvancedSettingsChange}
+                onAdvancedSettingsReset={onAdvancedSettingsReset}
+                isAdvancedDefault={isAdvancedDefault}
             />
         </Flex>
     )

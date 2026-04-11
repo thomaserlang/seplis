@@ -48,6 +48,7 @@ import {
 } from './player-controls'
 
 import { SettingsPopover } from './player-controls/settings-popover'
+import { type PlaySettings, type PlaySettingsOverrides } from '../hooks/use-play-settings'
 import './player-video.css'
 
 const SEEK_TIME = 10
@@ -87,6 +88,10 @@ export interface VideoPlayerProps {
     onVideoReady?: () => void
     onVideoError?: () => void
     onTimeUpdate?: (currentTime: number, duration: number) => void
+    advancedSettings: PlaySettings
+    onAdvancedSettingsChange: (changes: Partial<PlaySettingsOverrides>) => void
+    onAdvancedSettingsReset: () => void
+    isAdvancedDefault: boolean
 }
 
 export function PlayerVideo({
@@ -114,6 +119,10 @@ export function PlayerVideo({
     onVideoReady,
     onVideoError,
     onTimeUpdate,
+    advancedSettings,
+    onAdvancedSettingsChange,
+    onAdvancedSettingsReset,
+    isAdvancedDefault,
 }: VideoPlayerProps): ReactNode {
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
@@ -377,6 +386,10 @@ export function PlayerVideo({
                             onSubtitleOffsetChange={setSubtitleOffset}
                             preferredAudioLangs={preferredAudioLangs}
                             preferredSubtitleLangs={preferredSubtitleLangs}
+                            advancedSettings={advancedSettings}
+                            onAdvancedSettingsChange={onAdvancedSettingsChange}
+                            onAdvancedSettingsReset={onAdvancedSettingsReset}
+                            isAdvancedDefault={isAdvancedDefault}
                         />
 
                         <AirPlayButton />

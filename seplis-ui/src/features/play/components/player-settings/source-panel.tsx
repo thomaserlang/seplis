@@ -8,6 +8,15 @@ import { OptionItem } from './option-item'
 import { SettingsBody } from './settings-body'
 import { SubMenuHeader } from './sub-menu-header'
 
+interface Props {
+    playRequestsSources: PlayRequestSources[]
+    currentRequest: PlayRequestSource['request']
+    currentSource: PlayRequestSource['source']
+    onSourceChange: (source: PlayRequestSource) => void
+    back: () => void
+    onClose?: () => void
+}
+
 export function SourcePanel({
     playRequestsSources,
     currentRequest,
@@ -15,14 +24,7 @@ export function SourcePanel({
     onSourceChange,
     back,
     onClose,
-}: {
-    playRequestsSources: PlayRequestSources[]
-    currentRequest: PlayRequestSource['request']
-    currentSource: PlayRequestSource['source']
-    onSourceChange: (source: PlayRequestSource) => void
-    back: () => void
-    onClose?: () => void
-}): ReactNode {
+}: Props): ReactNode {
     return (
         <>
             <SubMenuHeader title="Source" onBack={back} />

@@ -2,17 +2,19 @@ import { CheckIcon } from '@phosphor-icons/react'
 import { type ReactNode } from 'react'
 import classes from './player-settings.module.css'
 
+interface Props {
+    active: boolean
+    onClick: () => void
+    onClose?: () => void
+    children: ReactNode
+}
+
 export function OptionItem({
     active,
     onClick,
     onClose,
     children,
-}: {
-    active: boolean
-    onClick: () => void
-    onClose?: () => void
-    children: ReactNode
-}): ReactNode {
+}: Props): ReactNode {
     const handleSelect = () => {
         onClick()
         onClose?.()
