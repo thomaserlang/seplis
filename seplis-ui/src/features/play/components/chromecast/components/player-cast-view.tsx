@@ -1,6 +1,6 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { useGetPlayServerMedia } from '@/features/play/api/play-server-media.api'
+import { useGetPlayServerMedia } from '@/features/play/api/play-server-request-media.api'
 import { MAX_BITRATE } from '@/features/play/constants/play-bitrate.constants'
 import {
     PREFERRED_AUDIO_LANGS,

@@ -1,6 +1,7 @@
 import { ApiHelperProps, useApiHelper } from '@/utils/api-crud'
 import ky from 'ky'
 import { PlayRequestSource, PlayServerMedia } from '../types/play-source.types'
+import { recommendResolution } from '../utils/play-resolution.utils'
 
 export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     playRequestSource: PlayRequestSource
@@ -74,9 +75,16 @@ export const {
                         transcode_audio_codec: transcodeAudioCodec,
                         format,
                         max_audio_channels: maxAudioChannels,
-                        supported_video_containers:
-                            String(supportedVideoContainers),
+                        supported_video_containers: String(
+                            supportedVideoContainers,
+                        ),
                         force_transcode: forceTranscode ? 'true' : 'false',
+                        max_width: maxBitrate
+                            ? recommendResolution(
+                                  maxBitrate,
+                                  transcodeVideoCodec,
+                              )
+                            : undefined,
                     }).filter(
                         ([, value]) => value !== undefined && value !== null,
                     ),

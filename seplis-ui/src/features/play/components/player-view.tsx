@@ -6,7 +6,7 @@ import {
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useEffect, useEffectEvent, useRef, useState } from 'react'
-import { useGetPlayServerMedia } from '../api/play-server-media.api'
+import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import {
     PREFERRED_AUDIO_LANGS,
