@@ -1,5 +1,6 @@
 import { ApiHelperProps, useApiHelper } from '@/utils/api-crud'
 import ky from 'ky'
+import { HDRType } from '../types/media.types'
 import { PlayRequestSource, PlayServerMedia } from '../types/play-source.types'
 import { recommendResolution } from '../utils/play-resolution.utils'
 
@@ -16,6 +17,8 @@ export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     transcodeAudioCodec: string
     supportedVideoContainers: string[]
     format: string
+    supportedHdrFormats: HDRType[]
+    hdrEnabled: boolean
 }
 
 export const {
@@ -39,6 +42,7 @@ export const {
             props.transcodeAudioCodec,
             props.supportedVideoContainers,
             props.format,
+            props.supportedHdrFormats,
         ].filter((x) => x !== undefined),
     getFn: async ({
         playRequestSource,
@@ -53,6 +57,8 @@ export const {
         transcodeAudioCodec,
         supportedVideoContainers,
         format,
+        supportedHdrFormats,
+        hdrEnabled,
         signal,
     }) => {
         if (supportedVideoCodecs.length === 0)
@@ -85,9 +91,14 @@ export const {
                                   transcodeVideoCodec,
                               )
                             : undefined,
+                        // TODO: bug on the play server preventing multiple HDR formats to be sent
+                        supported_hdr_formats:
+                            hdrEnabled && supportedHdrFormats?.length
+                                ? supportedHdrFormats[0]
+                                : undefined,
                     }).filter(
                         ([, value]) => value !== undefined && value !== null,
-                    ),
+                    ) as [string, string | number | boolean][],
                 ),
             },
         )

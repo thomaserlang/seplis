@@ -26,6 +26,8 @@ interface Props {
     subtitleOffset: number
     forceTranscode: boolean
     onForceTranscodeChange: (value: boolean) => void
+    hdrEnabled: boolean
+    onHdrChange: (value: boolean) => void
     setPanel: (panel: SettingsPanel) => void
 }
 
@@ -39,6 +41,8 @@ export function MainPanel({
     forceTranscode,
     onForceTranscodeChange,
     setPanel,
+    hdrEnabled,
+    onHdrChange,
 }: Props): ReactNode {
     return (
         <SettingsBody mah="">
@@ -78,6 +82,13 @@ export function MainPanel({
                         : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`
                 }
                 onClick={() => setPanel('subtitle-sync')}
+            />
+            <ToggleItem
+                label="HDR"
+                value={hdrEnabled}
+                onToggle={() => {
+                    onHdrChange(!hdrEnabled)
+                }}
             />
             <ToggleItem
                 label="Force Transcode"

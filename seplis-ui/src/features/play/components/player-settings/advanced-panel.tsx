@@ -1,17 +1,18 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { ALL_AUDIO_CHANNELS } from '../../constants/play-audio.constants'
-import { ALL_STREAM_FORMATS } from '../../constants/play-stream.constants'
 import {
     type PlaySettings,
     type PlaySettingsOverrides,
 } from '../../hooks/use-play-settings'
 import { channelLabel } from '../../utils/play-audio.utils'
-import {
-    getSupportedAudioCodecs,
-    getSupportedVideoCodecs,
-    getSupportedVideoContainers,
-} from '../../utils/video.utils'
 
+import {
+    AUDIO_CODECS,
+    HDR_FORMATS,
+    STREAM_FORMATS,
+    VIDEO_CODECS,
+    VIDEO_CONTAINERS,
+} from '../../types/media.types'
 import { MainItem } from './main-item'
 import { MultiSelectPanel } from './multi-select-panel'
 import classes from './player-settings.module.css'
@@ -29,6 +30,7 @@ type SubPanel =
     | 'channels'
     | 'containers'
     | 'format'
+    | 'hdr-formats'
 
 interface Props {
     settings: PlaySettings
@@ -47,31 +49,35 @@ export function AdvancedPanel({
 }: Props): ReactNode {
     const [subPanel, setSubPanel] = useState<SubPanel>('main')
 
-    const browserVideoCodecs = useMemo(() => getSupportedVideoCodecs(), [])
-    const browserAudioCodecs = useMemo(() => getSupportedAudioCodecs(), [])
-    const browserVideoContainers = useMemo(
-        () => getSupportedVideoContainers(),
-        [],
-    )
-
     const toMain = () => setSubPanel('main')
 
     if (subPanel === 'video-codecs') {
         return (
             <MultiSelectPanel
                 title="Video Codecs"
-                options={browserVideoCodecs}
+                options={VIDEO_CODECS}
                 selected={settings.supportedVideoCodecs}
-                defaultSelected={browserVideoCodecs}
                 onApply={(next) => {
                     const changes: Partial<PlaySettingsOverrides> = {
                         supportedVideoCodecs: next,
                     }
-                    if (!next.includes(settings.transcodeVideoCodec)) {
+                    if (next && !next.includes(settings.transcodeVideoCodec)) {
                         changes.transcodeVideoCodec = next[0]
                     }
                     update(changes)
                 }}
+                back={toMain}
+            />
+        )
+    }
+
+    if (subPanel === 'hdr-formats') {
+        return (
+            <MultiSelectPanel
+                title="HDR Formats"
+                options={HDR_FORMATS}
+                selected={settings.supportedHdrFormats}
+                onApply={(next) => update({ supportedHdrFormats: next })}
                 back={toMain}
             />
         )
@@ -93,14 +99,13 @@ export function AdvancedPanel({
         return (
             <MultiSelectPanel
                 title="Audio Codecs"
-                options={browserAudioCodecs}
+                options={AUDIO_CODECS}
                 selected={settings.supportedAudioCodecs}
-                defaultSelected={browserAudioCodecs}
                 onApply={(next) => {
                     const changes: Partial<PlaySettingsOverrides> = {
                         supportedAudioCodecs: next,
                     }
-                    if (!next.includes(settings.transcodeAudioCodec)) {
+                    if (next && !next.includes(settings.transcodeAudioCodec)) {
                         changes.transcodeAudioCodec = next[0]
                     }
                     update(changes)
@@ -114,7 +119,7 @@ export function AdvancedPanel({
         return (
             <SingleSelectPanel
                 title="Transcode Audio Codec"
-                options={settings.supportedAudioCodecs}
+                options={AUDIO_CODECS}
                 value={settings.transcodeAudioCodec}
                 onSelect={(v) => update({ transcodeAudioCodec: v })}
                 back={toMain}
@@ -139,9 +144,8 @@ export function AdvancedPanel({
         return (
             <MultiSelectPanel
                 title="Video Containers"
-                options={browserVideoContainers}
+                options={VIDEO_CONTAINERS}
                 selected={settings.supportedVideoContainers}
-                defaultSelected={browserVideoContainers}
                 onApply={(next) => update({ supportedVideoContainers: next })}
                 back={toMain}
             />
@@ -152,8 +156,8 @@ export function AdvancedPanel({
         return (
             <SingleSelectPanel
                 title="Stream Format"
-                options={ALL_STREAM_FORMATS}
-                value={settings.format as 'hls'}
+                options={STREAM_FORMATS}
+                value={settings.format}
                 onSelect={(v) => update({ format: v })}
                 back={toMain}
             />
@@ -168,6 +172,11 @@ export function AdvancedPanel({
                     label="Video Codecs"
                     value={settings.supportedVideoCodecs.join(', ')}
                     onClick={() => setSubPanel('video-codecs')}
+                />
+                <MainItem
+                    label="HDR Formats"
+                    value={settings.supportedHdrFormats?.join(', ')}
+                    onClick={() => setSubPanel('hdr-formats')}
                 />
                 <MainItem
                     label="Transcode Video Codec"

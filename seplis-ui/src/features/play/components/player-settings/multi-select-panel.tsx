@@ -4,26 +4,24 @@ import classes from './player-settings.module.css'
 import { SettingsBody } from './settings-body'
 import { SubMenuHeader } from './sub-menu-header'
 
-interface Props {
+interface Props<T extends string> {
     title: string
-    options: string[]
-    selected: string[]
-    defaultSelected: string[]
-    onApply: (next: string[]) => void
+    options: T[]
+    selected: T[]
+    onApply: (next: T[] | undefined) => void
     back: () => void
 }
 
-export function MultiSelectPanel({
+export function MultiSelectPanel<T extends string>({
     title,
     options,
     selected,
-    defaultSelected,
     onApply,
     back,
-}: Props): ReactNode {
+}: Props<T>): ReactNode {
     const [local, setLocal] = useState(selected)
 
-    const toggle = (value: string) => {
+    const toggle = (value: T) => {
         setLocal((prev) => {
             if (prev.includes(value)) {
                 return prev.length === 1
@@ -49,20 +47,6 @@ export function MultiSelectPanel({
                 ))}
             </SettingsBody>
             <div className={classes.subActions}>
-                <div
-                    role="button"
-                    tabIndex={0}
-                    className={classes.subReset}
-                    onClick={() => setLocal(defaultSelected)}
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            setLocal(defaultSelected)
-                        }
-                    }}
-                >
-                    Reset
-                </div>
                 <div
                     role="button"
                     tabIndex={0}

@@ -95,6 +95,10 @@ export function PlayerSettings({
                     forceTranscode={forceTranscode}
                     onForceTranscodeChange={onForceTranscodeChange}
                     setPanel={setPanel}
+                    hdrEnabled={advancedSettings.hdrEnabled}
+                    onHdrChange={(value) =>
+                        onAdvancedSettingsChange({ hdrEnabled: value })
+                    }
                 />
             )}
             {panel === 'source' && (

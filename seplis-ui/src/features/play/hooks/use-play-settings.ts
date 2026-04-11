@@ -1,29 +1,32 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
+    AudioCodec,
+    HDRType,
+    StreamFormat,
+    VideoCodec,
+    VideoContainer,
+} from '../types/media.types'
+import {
+    getHdrSupport,
     getSupportedAudioCodecs,
+    getSupportedHDRTypes,
     getSupportedVideoCodecs,
     getSupportedVideoContainers,
 } from '../utils/video.utils'
 
-export interface PlaySettingsOverrides {
-    supportedVideoCodecs?: string[]
-    supportedAudioCodecs?: string[]
-    transcodeVideoCodec?: string
-    transcodeAudioCodec?: string
-    supportedVideoContainers?: string[]
-    maxAudioChannels?: number
-    format?: string
+export interface PlaySettings {
+    supportedVideoCodecs: VideoCodec[]
+    supportedAudioCodecs: AudioCodec[]
+    transcodeVideoCodec: VideoCodec
+    transcodeAudioCodec: AudioCodec
+    supportedVideoContainers: VideoContainer[]
+    maxAudioChannels: number
+    supportedHdrFormats: HDRType[]
+    hdrEnabled: boolean
+    format: StreamFormat
 }
 
-export interface PlaySettings {
-    supportedVideoCodecs: string[]
-    supportedAudioCodecs: string[]
-    transcodeVideoCodec: string
-    transcodeAudioCodec: string
-    supportedVideoContainers: string[]
-    maxAudioChannels: number
-    format: string
-}
+export interface PlaySettingsOverrides extends Partial<PlaySettings> {}
 
 export interface UsePlaySettings {
     settings: PlaySettings
@@ -43,6 +46,10 @@ export function usePlaySettings(
         () => getSupportedVideoContainers(),
         [],
     )
+    const [browserHdrTypes, setBrowserHdrTypes] = useState<HDRType[]>([])
+    useEffect(() => {
+        getSupportedHDRTypes().then(setBrowserHdrTypes)
+    }, [])
 
     const [overrides, setOverrides] = useState<PlaySettingsOverrides>(() => {
         try {
@@ -79,6 +86,12 @@ export function usePlaySettings(
         maxAudioChannels:
             overrides.maxAudioChannels ?? defaults?.maxAudioChannels ?? 6,
         format: overrides.format ?? defaults?.format ?? 'hls',
+        supportedHdrFormats:
+            overrides.supportedHdrFormats ??
+            defaults?.supportedHdrFormats ??
+            browserHdrTypes,
+        hdrEnabled:
+            overrides.hdrEnabled ?? defaults?.hdrEnabled ?? getHdrSupport(),
     }
 
     const update = (changes: Partial<PlaySettingsOverrides>) => {
