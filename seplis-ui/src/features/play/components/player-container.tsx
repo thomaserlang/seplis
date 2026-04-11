@@ -4,6 +4,7 @@ import {
     ChromecastProvider,
     useChromecast,
 } from '@/features/play/components/chromecast/providers/chromecast-provider'
+import { Container } from '@mantine/core'
 import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
@@ -30,7 +31,9 @@ export function PlayerContainer({ playRequests, ...props }: Props) {
     if (error) return <ErrorBox errorObj={error} />
     if (!data || data.length === 0)
         return (
-            <ErrorBox message="No play server available, please try again later." />
+            <Container mt="2rem" size="xs">
+                <ErrorBox message="No play server available, please try again later." />
+            </Container>
         )
 
     return (
