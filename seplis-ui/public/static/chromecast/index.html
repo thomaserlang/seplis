@@ -35,15 +35,19 @@
     ></div>
 
     <script>
-      function dbg(msg) {
-        return;
+      function dbg(msg, isError) {
         const el = document.getElementById("dbg");
+        el.style.whiteSpace = "pre-wrap";
         el.textContent = msg;
         el.style.display = "block";
+        el.style.color = isError ? "#ff6b6b" : "rgb(232, 232, 232)";
         clearTimeout(el._t);
-        el._t = setTimeout(() => {
-          el.style.display = "none";
-        }, 5000);
+        el._t = setTimeout(
+          () => {
+            el.style.display = "none";
+          },
+          isError ? 15000 : 5000,
+        );
       }
 
       const context = cast.framework.CastReceiverContext.getInstance();
@@ -137,7 +141,18 @@
             Authorization: `Bearer ${customData.token}`,
           },
           body: body ? JSON.stringify(body) : undefined,
-        }).catch(() => {});
+        })
+          .then((res) => {
+            if (!res.ok) {
+              dbg(
+                `API ${method} ${url} → ${res.status} ${res.statusText}`,
+                true,
+              );
+            }
+          })
+          .catch((e) => {
+            dbg(`API ${method} ${e.name}: ${e.message}\n${url}`, true);
+          });
       }
 
       playerManager.addEventListener(
@@ -163,24 +178,19 @@
       playerManager.addEventListener(
         cast.framework.events.EventType.TIME_UPDATE,
         (event) => {
-          if (!customData) return;
-
-          const time = Math.floor(event.currentMediaTime);
-          if (time < 5) return;
+          const currentTime = Math.floor(event.currentMediaTime);
 
           const duration =
             customData.duration ?? playerManager.getDurationSec();
 
-          if (!watchedIncremented && duration > 0 && time >= duration * 0.9) {
+          if (watchedIncremented) return;
+          if (currentTime >= duration * 0.9) {
             watchedIncremented = true;
             apiRequest(customData.watched_url, "POST", {});
-            return;
-          }
-
-          if (time % 10 === 0 && time !== lastSavedPosition) {
-            lastSavedPosition = time;
+          } else if (currentTime - lastSavedPosition >= 10) {
+            lastSavedPosition = currentTime;
             apiRequest(customData.save_position_url, "PUT", {
-              position: time,
+              position: currentTime,
             });
           }
         },
@@ -195,7 +205,8 @@
 
       context.addEventListener(
         cast.framework.system.EventType.SENDER_DISCONNECTED,
-        (event) => dbg("Sender disconnected" + event.senderId + ' - ' + event.reason),
+        (event) =>
+          dbg("Sender disconnected" + event.senderId + " - " + event.reason),
       );
 
       context.addCustomMessageListener(CAST_NAMESPACE, (event) => {
