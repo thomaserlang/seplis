@@ -169,6 +169,11 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
             <SubMenuHeader title="Advanced" onBack={back} />
             <SettingsBody mah="">
                 <MainItem
+                    label="Transcode Video Codec"
+                    value={settings.transcodeVideoCodec}
+                    onClick={() => setSubPanel('transcode-video')}
+                />
+                <MainItem
                     label="Video Codecs"
                     value={settings.supportedVideoCodecs.join(', ')}
                     onClick={() => setSubPanel('video-codecs')}
@@ -179,9 +184,9 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
                     onClick={() => setSubPanel('hdr-formats')}
                 />
                 <MainItem
-                    label="Transcode Video Codec"
-                    value={settings.transcodeVideoCodec}
-                    onClick={() => setSubPanel('transcode-video')}
+                    label="Video Containers"
+                    value={settings.supportedVideoContainers.join(', ')}
+                    onClick={() => setSubPanel('containers')}
                 />
                 <MainItem
                     label="Audio Codecs"
@@ -197,11 +202,6 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
                     label="Max Audio Channels"
                     value={channelLabel(settings.maxAudioChannels)}
                     onClick={() => setSubPanel('channels')}
-                />
-                <MainItem
-                    label="Video Containers"
-                    value={settings.supportedVideoContainers.join(', ')}
-                    onClick={() => setSubPanel('containers')}
                 />
                 <MainItem
                     label="Stream Format"
