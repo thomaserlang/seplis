@@ -18,14 +18,17 @@ export function SliderHoverCard({
     const hoverWidth = rect.width * 1.6
     const margin = 8
     let left = rect.left + rect.width / 2 - hoverWidth / 2
-    left = Math.max(margin, Math.min(left, window.innerWidth - hoverWidth - margin))
+    left = Math.max(
+        margin,
+        Math.min(left, window.innerWidth - hoverWidth - margin),
+    )
 
     // Scale origin aligns horizontally with the original card's center
     const originX = ((rect.left + rect.width / 2 - left) / hoverWidth) * 100
 
     const style: React.CSSProperties = {
         left,
-        width: hoverWidth,
+        width: `clamp(16.875rem, ${hoverWidth}px, 100%)`,
         top: rect.top + rect.height / 2,
         transformOrigin: `${originX}% 50%`,
     }
