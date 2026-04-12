@@ -1,8 +1,9 @@
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { PosterImage } from '@/components/poster-image/poster-image'
 import classes from '@/components/poster-page.module.css'
+import { useGetGenres } from '@/features/genres'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Chip, Flex, Loader, Select } from '@mantine/core'
+import { Button, Checkbox, Divider, Flex, Loader, Popover, ScrollArea, Select, Stack } from '@mantine/core'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useGetMovies } from './api/movies.api'
@@ -29,6 +30,7 @@ export function Component() {
     const userWatchlist = params.get('user_watchlist') === '1'
     const userFavorites = params.get('user_favorites') === '1'
     const unwatchedOnly = params.get('user_has_watched') === 'false'
+    const genreIds = params.get('genre_id')?.split(',').map(Number).filter(Boolean) ?? []
 
     function set(key: string, value: string | null) {
         setParams((prev) => {
@@ -39,8 +41,16 @@ export function Component() {
         })
     }
 
+    function toggleGenre(id: number) {
+        const next = genreIds.includes(id)
+            ? genreIds.filter((g) => g !== id)
+            : [...genreIds, id]
+        set('genre_id', next.length ? next.join(',') : null)
+    }
+
     const filter: MoviesGetParams = {
         sort: [sort],
+        genre_id: genreIds.length ? genreIds : undefined,
         user_can_watch: userCanWatch || undefined,
         user_watchlist: userWatchlist || undefined,
         user_favorites: userFavorites || undefined,
@@ -49,6 +59,7 @@ export function Component() {
 
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
         useGetMovies({ params: filter })
+    const { data: genres } = useGetGenres({ params: { type: 'movie' } })
 
     const items = pageItemsFlatten(data)
     const { getItemProps, portal } = useHoverCard<Movie>((movie) => (
@@ -73,7 +84,7 @@ export function Component() {
 
     return (
         <Flex direction="column" gap="1rem">
-            <Flex gap="0.5rem" wrap="wrap" align="center">
+            <div className={classes.filterBar}>
                 <Select
                     size="xs"
                     value={sort}
@@ -81,36 +92,69 @@ export function Component() {
                     data={SORT_OPTIONS}
                     w={170}
                     allowDeselect={false}
+                    radius="xl"
                 />
-                <Chip
+                <Divider orientation="vertical" h={20} my="auto" />
+                <Button
                     size="xs"
-                    checked={userCanWatch}
-                    onChange={(v) => set('user_can_watch', v ? '1' : null)}
+                    radius="xl"
+                    variant={userCanWatch ? 'filled' : 'default'}
+                    onClick={() => set('user_can_watch', userCanWatch ? null : '1')}
                 >
                     Available
-                </Chip>
-                <Chip
+                </Button>
+                <Button
                     size="xs"
-                    checked={userWatchlist}
-                    onChange={(v) => set('user_watchlist', v ? '1' : null)}
+                    radius="xl"
+                    variant={userWatchlist ? 'filled' : 'default'}
+                    onClick={() => set('user_watchlist', userWatchlist ? null : '1')}
                 >
                     Watchlist
-                </Chip>
-                <Chip
+                </Button>
+                <Button
                     size="xs"
-                    checked={userFavorites}
-                    onChange={(v) => set('user_favorites', v ? '1' : null)}
+                    radius="xl"
+                    variant={userFavorites ? 'filled' : 'default'}
+                    onClick={() => set('user_favorites', userFavorites ? null : '1')}
                 >
                     Favorites
-                </Chip>
-                <Chip
+                </Button>
+                <Button
                     size="xs"
-                    checked={unwatchedOnly}
-                    onChange={(v) => set('user_has_watched', v ? 'false' : null)}
+                    radius="xl"
+                    variant={unwatchedOnly ? 'filled' : 'default'}
+                    onClick={() => set('user_has_watched', unwatchedOnly ? null : 'false')}
                 >
                     Unwatched
-                </Chip>
-            </Flex>
+                </Button>
+                {genres && genres.length > 0 && (
+                    <>
+                        <Divider orientation="vertical" h={20} my="auto" />
+                        <Popover position="bottom-start" shadow="md" withinPortal>
+                            <Popover.Target>
+                                <Button size="xs" radius="xl" variant={genreIds.length > 0 ? 'filled' : 'default'}>
+                                    {genreIds.length > 0 ? `Genres (${genreIds.length})` : 'Genres'}
+                                </Button>
+                            </Popover.Target>
+                            <Popover.Dropdown p="xs">
+                                <ScrollArea.Autosize mah={280}>
+                                    <Stack gap={6} pr="xs">
+                                        {genres.map((genre) => (
+                                            <Checkbox
+                                                key={genre.id}
+                                                size="xs"
+                                                label={genre.name}
+                                                checked={genreIds.includes(genre.id)}
+                                                onChange={() => toggleGenre(genre.id)}
+                                            />
+                                        ))}
+                                    </Stack>
+                                </ScrollArea.Autosize>
+                            </Popover.Dropdown>
+                        </Popover>
+                    </>
+                )}
+            </div>
 
             {isLoading ? (
                 <Loader m="auto" mt="xl" />
