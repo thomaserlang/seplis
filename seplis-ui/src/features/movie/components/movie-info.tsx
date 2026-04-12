@@ -1,4 +1,5 @@
 import { MediaInfo, MediaMetaItem, MediaStatus } from '@/components/media-info'
+import { mediaTypes } from '@/features/media-type'
 import { langCodeToLang } from '@/utils/language.utils'
 import { Flex } from '@mantine/core'
 import { Movie } from '../types/movie.types'
@@ -19,7 +20,7 @@ export function MovieInfo({ movie }: Props) {
                     ? `${movie.poster_image.url}@SX320.webp`
                     : undefined
             }
-            accentHue={30}
+            accentHue={mediaTypes['movie'].accentHue}
             status={movie.status != null ? STATUS[movie.status] : undefined}
             title={movie.title || movie.original_title || 'Unknown title'}
             originalTitle={movie.original_title}

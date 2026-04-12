@@ -2,7 +2,6 @@ import { Genre } from '@/types/genre.types'
 import { Flex, Text } from '@mantine/core'
 import { Genres } from '../genres'
 import { MediaMetaItem } from './media-info'
-import classes from './media-info.module.css'
 
 export interface MediaInfoHoverCardProps {
     posterUrl?: string
@@ -24,29 +23,29 @@ export function MediaInfoHoverCard({
     children,
 }: MediaInfoHoverCardProps) {
     return (
-        <div>
+        <div
+            style={{
+                '--accent-hue': accentHue,
+                background: `linear-gradient(155deg, color-mix(in oklab, var(--card) 85%, oklch(0.55 0.18 ${accentHue})) 0%, var(--card) 55%)`,
+            } as React.CSSProperties}
+        >
             <div
-                className={classes.root}
-                style={{ '--accent-hue': accentHue } as React.CSSProperties}
+                style={{
+                    width: '100%',
+                    height: '5rem',
+                    overflow: 'hidden',
+                }}
             >
-                <div
+                <img
+                    src={posterUrl}
                     style={{
                         width: '100%',
-                        height: '5rem',
-                        overflow: 'hidden',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'center top',
+                        display: 'block',
                     }}
-                >
-                    <img
-                        src={posterUrl}
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            objectPosition: 'center top',
-                            display: 'block',
-                        }}
-                    />
-                </div>
+                />
             </div>
 
             <Flex direction="column" gap="0.45rem" p="0.75rem">

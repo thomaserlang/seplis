@@ -1,4 +1,5 @@
 import { MediaInfoHoverCard } from '@/components/media-info'
+import { mediaTypes } from '@/features/media-type'
 import { Flex } from '@mantine/core'
 import { Movie } from '../types/movie.types'
 import { MovieFavoriteButton } from './movie-favorite-button'
@@ -16,6 +17,7 @@ export function MovieHoverCard({ movie }: Props) {
         <MediaInfoHoverCard
             posterUrl={movie.poster_image?.url}
             title={movie.title || movie.original_title || 'Untitled'}
+            accentHue={mediaTypes['movie'].accentHue}
             metaItems={MovieMetaItems({
                 movie,
                 showReleaseDate: true,

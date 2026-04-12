@@ -7,6 +7,7 @@ export const movieMediaInfo: MediaTypeInfo<Movie> = {
     name: 'Movie',
     color: 'orange',
     mediaType: 'movie',
+    accentHue: 30,
     render: ({ itemId }) => <MovieContainer movieId={Number(itemId)} />,
     renderHoverCard: ({ data }) => <MovieHoverCard movie={data} />,
 }

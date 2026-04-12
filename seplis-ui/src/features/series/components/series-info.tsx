@@ -1,4 +1,5 @@
 import { MediaInfo, MediaMetaItem, MediaStatus } from '@/components/media-info'
+import { mediaTypes } from '@/features/media-type'
 import {
     EpisodeLastWatchedCard,
     EpisodeToWatchCard,
@@ -30,7 +31,7 @@ export function SeriesInfo({ series }: Props) {
                     ? `${series.poster_image.url}@SX320.webp`
                     : undefined
             }
-            accentHue={250}
+            accentHue={mediaTypes['series'].accentHue}
             status={series.status != null ? STATUS[series.status] : undefined}
             title={series.title || series.original_title || 'Unknown title'}
             originalTitle={series.original_title}

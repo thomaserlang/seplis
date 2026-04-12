@@ -7,6 +7,7 @@ export const seriesMediaInfo: MediaTypeInfo<Series> = {
     name: 'Series',
     color: 'blue',
     mediaType: 'series',
+    accentHue: 250,
     render: ({ itemId }) => <SeriesContainer seriesId={Number(itemId)} />,
     renderHoverCard: ({ data }) => <SeriesHoverCard series={data} />,
 }

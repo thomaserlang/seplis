@@ -1,4 +1,5 @@
 import { MediaInfoHoverCard } from '@/components/media-info'
+import { mediaTypes } from '@/features/media-type'
 import { EpisodeToWatchCard } from '@/features/series-episode'
 import { Box, Flex } from '@mantine/core'
 import { Series } from '../types/series.types'
@@ -14,6 +15,7 @@ export function SeriesHoverCard({ series }: Props) {
     return (
         <MediaInfoHoverCard
             posterUrl={series.poster_image?.url}
+            accentHue={mediaTypes['series'].accentHue}
             title={series.title || series.original_title || 'Untitled'}
             metaItems={SeriesMetaItems({
                 series,
