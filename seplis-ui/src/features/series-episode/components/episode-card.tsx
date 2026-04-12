@@ -41,14 +41,7 @@ export function EpisodeCard({
     return (
         <Box>
             {title && (
-                <Text
-                    size="xs"
-                    tt="uppercase"
-                    fw={700}
-                    c="dimmed"
-                    mb={6}
-                    lts={0.5}
-                >
+                <Text size="xs" tt="uppercase" fw={700} c="dimmed" mb={2}>
                     {title}
                 </Text>
             )}
@@ -66,43 +59,6 @@ export function EpisodeCard({
                 />
             )}
         </Box>
-    )
-}
-
-export function EpisodeCardSkeleton({
-    size = 'md',
-}: {
-    size?: EpisodeCardSize
-}) {
-    const sm = size === 'sm'
-    return (
-        <Paper withBorder p={sm ? '0.4rem' : '0.5rem'}>
-            <Flex direction="column" gap={sm ? 5 : 'xs'}>
-                <Skeleton height={sm ? 14 : 18} width={55} radius="xl" />
-                <Skeleton height={sm ? 12 : 14} width="80%" />
-                <Flex gap="xs" mt={2}>
-                    <Skeleton height={sm ? 26 : 30} width={85} radius="sm" />
-                    <Skeleton height={sm ? 26 : 30} width={85} radius="sm" />
-                </Flex>
-            </Flex>
-        </Paper>
-    )
-}
-
-function EpisodeCardEmpty({
-    fz = 'sm',
-    noEpisodeText,
-}: {
-    fz?: MantineFontSize
-    noEpisodeText?: string
-}) {
-    return (
-        <Paper withBorder p="sm">
-            <Flex align="center" gap="sm" c="dimmed">
-                <TelevisionSimpleIcon size={28} />
-                <Text size={fz}>{noEpisodeText || 'No episode to watch'}</Text>
-            </Flex>
-        </Paper>
     )
 }
 
@@ -166,6 +122,43 @@ function EpisodeCardContent({
                         size={buttonSize}
                     />
                 </Flex>
+            </Flex>
+        </Paper>
+    )
+}
+
+export function EpisodeCardSkeleton({
+    size = 'md',
+}: {
+    size?: EpisodeCardSize
+}) {
+    const sm = size === 'sm'
+    return (
+        <Paper withBorder p={sm ? '0.4rem' : '0.5rem'}>
+            <Flex direction="column" gap={sm ? 5 : 'xs'}>
+                <Skeleton height={sm ? 14 : 18} width={55} radius="xl" />
+                <Skeleton height={sm ? 12 : 14} width="80%" />
+                <Flex gap="xs" mt={2}>
+                    <Skeleton height={sm ? 26 : 30} width={85} radius="sm" />
+                    <Skeleton height={sm ? 26 : 30} width={85} radius="sm" />
+                </Flex>
+            </Flex>
+        </Paper>
+    )
+}
+
+function EpisodeCardEmpty({
+    fz = 'sm',
+    noEpisodeText,
+}: {
+    fz?: MantineFontSize
+    noEpisodeText?: string
+}) {
+    return (
+        <Paper withBorder p="sm">
+            <Flex align="center" gap="sm" c="dimmed">
+                <TelevisionSimpleIcon size={28} />
+                <Text size={fz}>{noEpisodeText || 'No episode to watch'}</Text>
             </Flex>
         </Paper>
     )
