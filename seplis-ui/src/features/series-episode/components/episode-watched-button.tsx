@@ -1,8 +1,11 @@
 import { WatchedButton } from '@/components/watched-button'
 import { useActiveUser } from '@/features/user'
+import { queryClient } from '@/queryclient'
 import { toastError } from '@/utils/toast'
 import { ButtonSize } from '@mantine/core'
+import { useEffect } from 'react'
 import {
+    getEpisodeWatchedQueryKey,
     useDecrementEpisodeWatched,
     useGetEpisodeWatched,
     useIncrementEpisodeWatched,
@@ -23,11 +26,22 @@ export function EpisodeWatchedButton({
     size,
 }: Props) {
     const [user] = useActiveUser()
+
+    useEffect(() => {
+        if (episode?.user_watched !== undefined) {
+            queryClient.setQueryData(
+                getEpisodeWatchedQueryKey({ seriesId, episodeNumber }),
+                episode.user_watched,
+            )
+        }
+    }, [episode?.user_watched, seriesId, episodeNumber])
+
     const { data, isLoading } = useGetEpisodeWatched({
         seriesId,
         episodeNumber,
         options: {
             enabled: !!user && episode?.user_watched === undefined,
+            initialData: episode?.user_watched ?? undefined,
         },
     })
     const increment = useIncrementEpisodeWatched({
@@ -41,12 +55,10 @@ export function EpisodeWatchedButton({
         },
     })
 
-    const watchedData = data ?? episode?.user_watched
-
     return (
         <WatchedButton
-            times={watchedData?.times ?? 0}
-            position={watchedData?.position ?? 0}
+            times={data?.times ?? 0}
+            position={data?.position ?? 0}
             duration={episode?.runtime ?? 0}
             loading={isLoading}
             size={size}

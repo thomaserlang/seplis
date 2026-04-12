@@ -1,5 +1,6 @@
 import { queryClient } from '@/queryclient'
 import { MutationApiHelperProps, useMutationApiHelper } from '@/utils/api-crud'
+import { EpisodeWatched } from '../types/episode.types'
 import { episodeLastWatchedQueryKey } from './episode-last-watched.api'
 import { episodeToWatchQueryKey } from './episode-to-watch.api'
 import { getEpisodeWatchedQueryKey } from './episode-watched.api'
@@ -19,12 +20,19 @@ export const {
     url: ({ seriesId, episodeNumber }) =>
         `2/series/${seriesId}/episodes/${episodeNumber}/watched-position`,
     onSuccess: ({ variables }) => {
-        queryClient.invalidateQueries({
-            queryKey: getEpisodeWatchedQueryKey({
+        queryClient.setQueryData<EpisodeWatched>(
+            getEpisodeWatchedQueryKey({
                 seriesId: variables.seriesId,
                 episodeNumber: variables.episodeNumber,
             }),
-        })
+            (oldData) =>
+                oldData
+                    ? {
+                          ...oldData,
+                          position: variables.data!.position,
+                      }
+                    : oldData,
+        )
         queryClient.invalidateQueries({
             queryKey: episodeLastWatchedQueryKey({
                 seriesId: variables.seriesId,
