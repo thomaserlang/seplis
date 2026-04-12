@@ -31,7 +31,7 @@ export type MutationProps<DataT = unknown, VarT = unknown> = {
     onError?: (error: any, variables: VarT) => void
 }
 
-interface PageParams extends QueryParams {
+interface PageParams {
     cursor?: string
     per_page?: number
 }
@@ -70,7 +70,7 @@ export function useApiHelper<T, TGetProps extends ApiHelperProps>({
         return apiClient
             .get(url(props), {
                 searchParams: toSearchParams(
-                    formatParams ? formatParams(props) : props.params,
+                    formatParams ? formatParams(props) : (props.params as QueryParams),
                 ),
                 signal: props.signal,
             })
@@ -201,7 +201,7 @@ export function useMutationApiHelper<
             method: method.toLowerCase(),
             json: props.data,
             searchParams: toSearchParams(
-                formatParams ? formatParams(props) : props.params,
+                formatParams ? formatParams(props) : (props.params as QueryParams),
             ),
             signal: props.signal,
         })

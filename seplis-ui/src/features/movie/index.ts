@@ -1,2 +1,5 @@
+export * from './api/movies.api'
+export * from './components/movies-slider'
 export * from './constants/movie-media-info.constants'
 export * from './types/movie.types'
+export * from './types/movies.types'

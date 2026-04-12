@@ -1,14 +1,16 @@
 import { Slider } from '@/components/slider'
 import { mediaTypes } from '@/features/media-type'
 import { useGetUserWatched } from '@/features/user'
+import { UserWatched } from '@/features/user/types/user-watched.types'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import { Image } from '@mantine/core'
-import { useSearchParams } from 'react-router-dom'
 
-interface Props {}
+interface Props {
+    onClick?: (item: UserWatched) => void
+    title?: string
+}
 
-export function SliderWatched({}: Props) {
-    const [_, setParams] = useSearchParams()
+export function SliderWatched({ onClick, title }: Props) {
     const { data, isLoading, fetchNextPage } = useGetUserWatched({
         params: {
             user_can_watch: true,
@@ -16,23 +18,18 @@ export function SliderWatched({}: Props) {
     })
     const items = pageItemsFlatten(data)
 
-    const handleClick = (item: (typeof items)[number]) => {
-        setParams((params) => {
-            params.set('mid', `${item.type}-${item.data.id}`)
-            return params
-        })
-    }
-
     return (
         <Slider
+            title={title}
             items={items}
             isLoading={isLoading}
             onLoadMore={fetchNextPage}
+            onClick={onClick}
+            emptyMessage="You haven't watched anything that's available on a play server."
             renderItem={(item) => (
                 <Image
                     src={`${item.data.poster_image?.url}@SX320.webp`}
                     radius="sm"
-                    onClick={() => handleClick(item)}
                 />
             )}
             renderHoverCard={(item) =>

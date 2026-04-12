@@ -24,7 +24,7 @@ export function SeriesHoverCard({ series }: Props) {
 
     return (
         <MediaInfoHoverCard
-            posterUrl={series.poster_image?.url}
+            posterUrl={`${series.poster_image?.url}@SX320.webp`}
             accentHue={mediaTypes['series'].accentHue}
             title={series.title || series.original_title || 'Untitled'}
             metaItems={SeriesMetaItems({

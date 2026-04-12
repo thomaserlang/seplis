@@ -24,7 +24,7 @@ export function MovieHoverCard({ movie }: Props) {
     }
     return (
         <MediaInfoHoverCard
-            posterUrl={movie.poster_image?.url}
+            posterUrl={`${movie.poster_image?.url}@SX320.webp`}
             title={movie.title || movie.original_title || 'Untitled'}
             accentHue={mediaTypes['movie'].accentHue}
             metaItems={MovieMetaItems({

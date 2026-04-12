@@ -7,6 +7,8 @@ export interface SliderProps<T> {
     title?: React.ReactNode
     skeletonCount?: number
     itemWidth?: string
+    onClick?: (item: T) => void
+    emptyMessage?: React.ReactNode
 }
 
 export interface HoverState<T> {

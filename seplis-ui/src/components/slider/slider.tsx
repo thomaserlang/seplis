@@ -18,6 +18,8 @@ export function Slider<T>({
     title,
     skeletonCount = 24,
     itemWidth,
+    onClick,
+    emptyMessage,
 }: SliderProps<T>) {
     const scrollRef = useRef<HTMLDivElement>(null)
     const sentinelRef = useRef<HTMLDivElement>(null)
@@ -136,6 +138,10 @@ export function Slider<T>({
         }
     }, [clearTimers])
 
+    const isEmpty = !isLoading && items.length === 0
+
+    if (isEmpty && !emptyMessage) return null
+
     const style = itemWidth
         ? ({ '--slider-item-width': itemWidth } as React.CSSProperties)
         : undefined
@@ -143,6 +149,9 @@ export function Slider<T>({
     return (
         <div className={classes.root} style={style}>
             {title && <div className={classes.title}>{title}</div>}
+            {isEmpty && (
+                <div className={classes.emptyMessage}>{emptyMessage}</div>
+            )}
             <div className={classes.track}>
                 {canScrollLeft && (
                     <button
@@ -165,6 +174,8 @@ export function Slider<T>({
                                           handleItemEnter(item, e.currentTarget)
                                     : undefined
                             }
+                            onClick={onClick ? () => onClick(item) : undefined}
+                            style={{ cursor: onClick ? 'pointer' : undefined }}
                             onMouseLeave={
                                 renderHoverCard ? handleLeave : undefined
                             }
