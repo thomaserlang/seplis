@@ -24,15 +24,17 @@ export function MediaInfoHoverCard({
 }: MediaInfoHoverCardProps) {
     return (
         <div
-            style={{
-                '--accent-hue': accentHue,
-                background: `linear-gradient(155deg, color-mix(in oklab, var(--card) 85%, oklch(0.55 0.18 ${accentHue})) 0%, var(--card) 55%)`,
-            } as React.CSSProperties}
+            style={
+                {
+                    '--accent-hue': accentHue,
+                    background: `linear-gradient(155deg, color-mix(in oklab, var(--card) 85%, oklch(0.55 0.18 ${accentHue})) 0%, var(--card) 55%)`,
+                } as React.CSSProperties
+            }
         >
             <div
                 style={{
                     width: '100%',
-                    height: '5rem',
+                    height: '7rem',
                     overflow: 'hidden',
                 }}
             >
@@ -48,16 +50,18 @@ export function MediaInfoHoverCard({
                 />
             </div>
 
-            <Flex direction="column" gap="0.45rem" p="0.75rem">
-                <Text fw={700} size="sm" lh={1.25}>
-                    {title || originalTitle}
-                </Text>
-                {metaItems && metaItems.length > 0 && (
-                    <Text size="xs" c="dimmed">
-                        {metaItems.map((item) => item.value).join(' · ')}
+            <Flex direction="column" gap="0.5rem" p="0.75rem" pt="0.5rem">
+                <Flex direction="column">
+                    <Text fw={700} size="sm" lh={1.25}>
+                        {title || originalTitle}
                     </Text>
-                )}
-                <Genres genres={genres} size="xs" />
+                    {metaItems && metaItems.length > 0 && (
+                        <Text size="xs" c="dimmed">
+                            {metaItems.map((item) => item.value).join(' · ')}
+                        </Text>
+                    )}
+                    <Genres genres={genres} size="xs" />
+                </Flex>
                 {children}
             </Flex>
         </div>

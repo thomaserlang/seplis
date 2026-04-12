@@ -9,7 +9,7 @@ export function Genres({ genres, ...props }: Props) {
     if (!genres || genres.length === 0) return null
 
     return (
-        <Flex gap="0.35rem" wrap="wrap" align="center">
+        <Flex columnGap="0.35rem" rowGap="0" wrap="wrap" align="center">
             {genres.flatMap((g, i) => [
                 i > 0 ? (
                     <Text key={`dot-${g.id}`} {...props} c="dimmed">

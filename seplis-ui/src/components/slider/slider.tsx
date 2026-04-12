@@ -6,8 +6,8 @@ import { SliderHoverCard } from './slider-hover-card'
 import classes from './slider.module.css'
 import { HoverState, SliderProps } from './slider.types'
 
-const SHOW_DELAY = 500
-const HIDE_DELAY = 500
+const SHOW_DELAY = 700
+const HIDE_DELAY = 700
 
 export function Slider<T>({
     items,
