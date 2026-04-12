@@ -613,11 +613,11 @@
 
   &[data-orientation="horizontal"] {
     width: 100%;
-    height: calc(var(--media-icon-size) * 0.08);
+    height: calc(var(--media-icon-size) * 0.12);
   }
 
   &[data-orientation="vertical"] {
-    width: calc(var(--media-icon-size) * 0.08);
+    width: calc(var(--media-icon-size) * 0.12);
     height: 100%;
   }
 }
@@ -627,8 +627,8 @@
   z-index: 10;
   position: absolute;
   translate: -50% -50%;
-  width: calc(var(--media-icon-size) * 0.2);
-  height: calc(var(--media-icon-size) * 0.2);
+  width: calc(var(--media-icon-size) * 0.4);
+  height: calc(var(--media-icon-size) * 0.4);
   background-color: currentColor;
   border-radius: calc(infinity * 1px);
   box-shadow:
