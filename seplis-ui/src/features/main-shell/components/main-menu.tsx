@@ -10,11 +10,8 @@ export function MainMenu() {
     return (
         <>
             <MenuButton label="Home" to="/" end />
-            <MenuButton
-                label="Series"
-                to="/series"
-                items={[{ label: 'All Series', to: '/series' }]}
-            />
+            <MenuButton label="Series" to="/series" />
+            <MenuButton label="Movies" to="/movies" />
             <SearchTrigger
                 onSelected={(item) => {
                     setParams((params) => {

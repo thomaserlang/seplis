@@ -73,6 +73,14 @@ export const router = createBrowserRouter([
                         path: '/',
                         lazy: () => import('./features/home/home.page'),
                     },
+                    {
+                        path: '/series',
+                        lazy: () => import('./features/series/series.page'),
+                    },
+                    {
+                        path: '/movies',
+                        lazy: () => import('./features/movie/movies.page'),
+                    },
                 ],
             },
         ],
