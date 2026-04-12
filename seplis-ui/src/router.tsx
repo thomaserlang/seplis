@@ -35,37 +35,46 @@ export const router = createBrowserRouter([
                 </Container>
             )
         },
-    },
-    {
-        path: '/login',
-        lazy: () => import('./features/user/login.page'),
-    },
-    {
-        path: '/request-reset-password',
-        lazy: () => import('./features/user/request-reset-password.page'),
-    },
-    {
-        path: '/users/reset-password/:key',
-        lazy: () => import('./features/user/reset-password.page'),
-    },
-    {
-        path: '/signup',
-        lazy: () => import('./features/user/signup.page'),
-    },
-    {
-        path: '/series/:seriesId/episodes/:episodeNumber/play',
-        lazy: () => import('./features/series-episode/episode-play.page'),
-    },
-    {
-        path: '/movies/:movieId/play',
-        lazy: () => import('./features/movie/movie-play.page'),
-    },
-    {
-        path: '/',
-        element: (
-            <MainShell>
-                <Outlet />
-            </MainShell>
-        ),
+        children: [
+            {
+                path: '/login',
+                lazy: () => import('./features/user/login.page'),
+            },
+            {
+                path: '/request-reset-password',
+                lazy: () =>
+                    import('./features/user/request-reset-password.page'),
+            },
+            {
+                path: '/users/reset-password/:key',
+                lazy: () => import('./features/user/reset-password.page'),
+            },
+            {
+                path: '/signup',
+                lazy: () => import('./features/user/signup.page'),
+            },
+            {
+                path: '/series/:seriesId/episodes/:episodeNumber/play',
+                lazy: () =>
+                    import('./features/series-episode/episode-play.page'),
+            },
+            {
+                path: '/movies/:movieId/play',
+                lazy: () => import('./features/movie/movie-play.page'),
+            },
+            {
+                element: (
+                    <MainShell>
+                        <Outlet />
+                    </MainShell>
+                ),
+                children: [
+                    {
+                        path: '/',
+                        lazy: () => import('./features/home/home.page'),
+                    },
+                ],
+            },
+        ],
     },
 ])

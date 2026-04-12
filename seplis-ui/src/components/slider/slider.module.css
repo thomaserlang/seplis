@@ -1,0 +1,111 @@
+.root {
+  --slider-item-width: min(10.5rem, 28vw);
+  position: relative;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0 0.5rem 0.5rem;
+}
+
+.track {
+  position: relative;
+}
+
+.scroll {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  overflow-y: clip;
+  padding: 0.25rem 0.5rem 0.5rem;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.item,
+.skeletonItem {
+  flex: 0 0 var(--slider-item-width);
+  min-width: 0;
+}
+
+.skeletonItem {
+  aspect-ratio: 2/3;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.sentinel {
+  flex: 0 0 1px;
+  width: 1px;
+}
+
+/* ── Arrow buttons ────────────────────────────────────────────── */
+
+.arrow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 10;
+  width: 3.5rem;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.track:hover .arrow {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.arrowLeft {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--background) 90%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.arrowRight {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    color-mix(in oklab, var(--background) 90%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.arrowLeft:hover {
+  background: linear-gradient(
+    to right,
+    color-mix(in oklab, var(--background) 98%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+.arrowRight:hover {
+  background: linear-gradient(
+    to left,
+    color-mix(in oklab, var(--background) 98%, transparent) 0%,
+    transparent 100%
+  );
+}
+
+/* Never show arrows on touch devices — native swipe handles it */
+@media (pointer: coarse) {
+  .arrow {
+    display: none !important;
+  }
+}
