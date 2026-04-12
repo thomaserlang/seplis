@@ -14,7 +14,6 @@
    ========================================================================== */
 
 :root {
-  --media-border-radius: 0;
   --media-icon-size: 3rem;
 }
 
@@ -49,7 +48,7 @@
   display: block;
   height: 100%;
   width: 100%;
-  border-radius: var(--media-border-radius, 2rem);
+  outline: none;
   font-family:
     Inter Variable,
     Inter,
@@ -1025,10 +1024,6 @@
     border-radius: inherit;
     box-shadow: inset 0 0 0 1px var(--media-border-color);
     pointer-events: none;
-  }
-
-  &:fullscreen {
-    --media-border-radius: 0;
   }
 }
 
