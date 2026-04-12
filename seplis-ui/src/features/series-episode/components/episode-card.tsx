@@ -152,7 +152,7 @@ function EpisodeCardContent({
                     )}
                 </Box>
 
-                <Flex gap="xs" wrap="wrap">
+                <Flex gap="0.5rem" wrap="wrap">
                     <EpisodePlayButton
                         seriesId={seriesId}
                         episodeNumber={episode.number}

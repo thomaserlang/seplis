@@ -18,7 +18,10 @@ export function HoverCard({
     const hoverWidth = rect.width * 1.6
     const margin = 8
     let left = rect.left + rect.width / 2 - hoverWidth / 2
-    left = Math.max(margin, Math.min(left, window.innerWidth - hoverWidth - margin))
+    left = Math.max(
+        margin,
+        Math.min(left, window.innerWidth - hoverWidth - margin),
+    )
 
     const originX = ((rect.left + rect.width / 2 - left) / hoverWidth) * 100
 
