@@ -10,9 +10,3 @@ export interface SliderProps<T> {
     onClick?: (item: T) => void
     emptyMessage?: React.ReactNode
 }
-
-export interface HoverState<T> {
-    item: T
-    rect: DOMRect
-    isLeaving: boolean
-}

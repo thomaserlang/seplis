@@ -1,3 +1,4 @@
+import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { PosterImage } from '@/components/poster-image/poster-image'
 import classes from '@/components/poster-page.module.css'
 import { pageItemsFlatten } from '@/utils/api-crud'
@@ -5,7 +6,9 @@ import { Chip, Flex, Loader, Select } from '@mantine/core'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useGetSeriesList } from './api/series-list.api'
-import { SeriesUserSortType, SeriesListGetParams } from './types/series-list.types'
+import { SeriesHoverCard } from './components/series-hover-card'
+import { SeriesListGetParams, SeriesUserSortType } from './types/series-list.types'
+import { Series } from './types/series.types'
 
 const SORT_OPTIONS: { value: SeriesUserSortType; label: string }[] = [
     { value: 'popularity_desc', label: 'Popular' },
@@ -48,6 +51,9 @@ export function Component() {
         useGetSeriesList({ params: filter })
 
     const items = pageItemsFlatten(data)
+    const { getItemProps, portal } = useHoverCard<Series>((series) => (
+        <SeriesHoverCard series={series} />
+    ))
     const sentinelRef = useRef<HTMLDivElement>(null)
     const canFetchRef = useRef(false)
     canFetchRef.current = hasNextPage && !isFetchingNextPage
@@ -115,6 +121,7 @@ export function Component() {
                             key={series.id}
                             className={classes.item}
                             onClick={() => set('mid', `series-${series.id}`)}
+                            {...getItemProps(series)}
                         >
                             <PosterImage
                                 posterImage={series.poster_image}
@@ -126,6 +133,7 @@ export function Component() {
             )}
 
             <div ref={sentinelRef} />
+            {portal}
         </Flex>
     )
 }

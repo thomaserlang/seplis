@@ -1,13 +1,9 @@
+import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { Skeleton } from '@mantine/core'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
-import { SliderHoverCard } from './slider-hover-card'
 import classes from './slider.module.css'
-import { HoverState, SliderProps } from './slider.types'
-
-const SHOW_DELAY = 700
-const HIDE_DELAY = 700
+import { SliderProps } from './slider.types'
 
 export function Slider<T>({
     items,
@@ -24,30 +20,15 @@ export function Slider<T>({
     const scrollRef = useRef<HTMLDivElement>(null)
     const sentinelRef = useRef<HTMLDivElement>(null)
     const isLoadingRef = useRef(isLoading)
-    const isHoveringRef = useRef(false)
-    const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const [canScrollLeft, setCanScrollLeft] = useState(false)
     const [canScrollRight, setCanScrollRight] = useState(false)
-    const [hover, setHover] = useState<HoverState<T> | null>(null)
-    const hoverRef = useRef(hover)
-    hoverRef.current = hover
+
+    const { getItemProps, portal, dismiss } = useHoverCard(renderHoverCard)
 
     useEffect(() => {
         isLoadingRef.current = isLoading
     }, [isLoading])
-
-    const clearTimers = useCallback(() => {
-        if (showTimerRef.current) {
-            clearTimeout(showTimerRef.current)
-            showTimerRef.current = null
-        }
-        if (hideTimerRef.current) {
-            clearTimeout(hideTimerRef.current)
-            hideTimerRef.current = null
-        }
-    }, [])
 
     const syncScrollState = useCallback(() => {
         const el = scrollRef.current
@@ -66,9 +47,7 @@ export function Slider<T>({
         if (!el) return
         const onScroll = () => {
             syncScrollState()
-            clearTimers()
-            isHoveringRef.current = false
-            setHover(null)
+            dismiss()
         }
         el.addEventListener('scroll', onScroll, { passive: true })
         const ro = new ResizeObserver(syncScrollState)
@@ -77,7 +56,7 @@ export function Slider<T>({
             el.removeEventListener('scroll', onScroll)
             ro.disconnect()
         }
-    }, [syncScrollState, clearTimers])
+    }, [syncScrollState, dismiss])
 
     useEffect(() => {
         const sentinel = sentinelRef.current
@@ -104,39 +83,6 @@ export function Slider<T>({
             behavior: 'smooth',
         })
     }, [])
-
-    const handleItemEnter = useCallback(
-        (item: T, el: HTMLElement) => {
-            if (!renderHoverCard) return
-            clearTimers()
-            const delay = isHoveringRef.current ? HIDE_DELAY : SHOW_DELAY
-            showTimerRef.current = setTimeout(() => {
-                const rect = el.getBoundingClientRect()
-                isHoveringRef.current = true
-                setHover({ item, rect, isLeaving: false })
-            }, delay)
-        },
-        [clearTimers, renderHoverCard],
-    )
-
-    const handleLeave = useCallback(() => {
-        clearTimers()
-        setHover((h) => (h ? { ...h, isLeaving: true } : null))
-        hideTimerRef.current = setTimeout(() => {
-            isHoveringRef.current = false
-            setHover(null)
-        }, HIDE_DELAY)
-    }, [clearTimers])
-
-    const handleHoverCardEnter = useCallback(() => {
-        clearTimers()
-        if (hoverRef.current?.isLeaving) {
-            isHoveringRef.current = false
-            setHover(null)
-        } else {
-            setHover((h) => (h ? { ...h, isLeaving: false } : null))
-        }
-    }, [clearTimers])
 
     const isEmpty = !isLoading && items.length === 0
 
@@ -168,17 +114,9 @@ export function Slider<T>({
                         <div
                             key={index}
                             className={classes.item}
-                            onMouseEnter={
-                                renderHoverCard
-                                    ? (e) =>
-                                          handleItemEnter(item, e.currentTarget)
-                                    : undefined
-                            }
+                            {...getItemProps(item)}
                             onClick={onClick ? () => onClick(item) : undefined}
                             style={{ cursor: onClick ? 'pointer' : undefined }}
-                            onMouseLeave={
-                                renderHoverCard ? handleLeave : undefined
-                            }
                         >
                             {renderItem(item, index)}
                         </div>
@@ -214,19 +152,7 @@ export function Slider<T>({
                 )}
             </div>
 
-            {hover &&
-                renderHoverCard &&
-                createPortal(
-                    <SliderHoverCard
-                        rect={hover.rect}
-                        isLeaving={hover.isLeaving}
-                        onMouseEnter={handleHoverCardEnter}
-                        onMouseLeave={handleLeave}
-                    >
-                        {renderHoverCard(hover.item)}
-                    </SliderHoverCard>,
-                    document.body,
-                )}
+            {portal}
         </div>
     )
 }

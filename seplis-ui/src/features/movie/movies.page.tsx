@@ -1,3 +1,4 @@
+import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { PosterImage } from '@/components/poster-image/poster-image'
 import classes from '@/components/poster-page.module.css'
 import { pageItemsFlatten } from '@/utils/api-crud'
@@ -5,6 +6,8 @@ import { Chip, Flex, Loader, Select } from '@mantine/core'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useGetMovies } from './api/movies.api'
+import { MovieHoverCard } from './components/movie-hover-card'
+import { Movie } from './types/movie.types'
 import { MovieUserSortType, MoviesGetParams } from './types/movies.types'
 
 const SORT_OPTIONS: { value: MovieUserSortType; label: string }[] = [
@@ -48,6 +51,9 @@ export function Component() {
         useGetMovies({ params: filter })
 
     const items = pageItemsFlatten(data)
+    const { getItemProps, portal } = useHoverCard<Movie>((movie) => (
+        <MovieHoverCard movie={movie} />
+    ))
     const sentinelRef = useRef<HTMLDivElement>(null)
     const canFetchRef = useRef(false)
     canFetchRef.current = hasNextPage && !isFetchingNextPage
@@ -115,6 +121,7 @@ export function Component() {
                             key={movie.id}
                             className={classes.item}
                             onClick={() => set('mid', `movie-${movie.id}`)}
+                            {...getItemProps(movie)}
                         >
                             <PosterImage
                                 posterImage={movie.poster_image}
@@ -126,6 +133,7 @@ export function Component() {
             )}
 
             <div ref={sentinelRef} />
+            {portal}
         </Flex>
     )
 }
