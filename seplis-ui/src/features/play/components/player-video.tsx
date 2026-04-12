@@ -141,7 +141,7 @@ export function PlayerVideo({
     useEffect(() => {
         if (!data?.keep_alive_url) return
         const id = setInterval(() => {
-            void fetch(data.keep_alive_url)
+            fetch(data.keep_alive_url)
                 .then((response) => {
                     if (response.status === 404) {
                         clearInterval(id)
@@ -149,7 +149,10 @@ export function PlayerVideo({
                 })
                 .catch(() => {})
         }, 5000)
-        return () => clearInterval(id)
+        return () => {
+            clearInterval(id)
+            fetch(data.close_session_url).catch(() => {})
+        }
     }, [data?.keep_alive_url || ''])
 
     useEffect(() => {
