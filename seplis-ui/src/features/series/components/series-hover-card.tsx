@@ -2,6 +2,7 @@ import { MediaInfoHoverCard } from '@/components/media-info'
 import { mediaTypes } from '@/features/media-type'
 import { EpisodeToWatchCard } from '@/features/series-episode'
 import { Box, Flex } from '@mantine/core'
+import { useSearchParams } from 'react-router-dom'
 import { Series } from '../types/series.types'
 import { SeriesFavoriteButton } from './series-favorite-button'
 import { SeriesMetaItems } from './series-info'
@@ -12,6 +13,15 @@ interface Props {
 }
 
 export function SeriesHoverCard({ series }: Props) {
+    const [_, setParams] = useSearchParams()
+
+    const handleClick = () => {
+        setParams((params) => {
+            params.set('mid', `series-${series.id}`)
+            return params
+        })
+    }
+
     return (
         <MediaInfoHoverCard
             posterUrl={series.poster_image?.url}
@@ -25,18 +35,9 @@ export function SeriesHoverCard({ series }: Props) {
                 showRating: true,
             })}
             genres={series.genres}
+            onInfoClick={handleClick}
         >
             <Flex gap="0.5rem" direction="column">
-                <Flex gap="0.5rem" wrap="wrap">
-                    <SeriesWatchlistButton
-                        seriesId={series.id}
-                        size="compact-sm"
-                    />
-                    <SeriesFavoriteButton
-                        seriesId={series.id}
-                        size="compact-sm"
-                    />
-                </Flex>
                 <Flex gap="0.5rem" wrap="wrap">
                     <Box style={{ flex: '1 1 18rem' }} miw="0">
                         <EpisodeToWatchCard
@@ -46,6 +47,16 @@ export function SeriesHoverCard({ series }: Props) {
                             size="sm"
                         />
                     </Box>
+                </Flex>
+                <Flex gap="0.5rem" wrap="wrap">
+                    <SeriesWatchlistButton
+                        seriesId={series.id}
+                        size="compact-sm"
+                    />
+                    <SeriesFavoriteButton
+                        seriesId={series.id}
+                        size="compact-sm"
+                    />
                 </Flex>
             </Flex>
         </MediaInfoHoverCard>
