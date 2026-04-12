@@ -57,7 +57,7 @@ export function PlayerView({
             if (currentTime >= duration * 0.9) {
                 finishedFiredRef.current = true
                 onFinished?.()
-            } else if (currentTime - lastSaveTimeRef.current >= 10) {
+            } else if (Math.abs(currentTime - lastSaveTimeRef.current) >= 10) {
                 lastSaveTimeRef.current = currentTime
                 onSavePosition?.(Math.round(currentTime))
             }
