@@ -240,18 +240,14 @@ export function PlayerVideo({
             <BufferingIndicator
                 render={() => (
                     <div className="media-buffering-indicator">
-                        <div className="media-surface">
-                            <PageLoader />
-                        </div>
+                        <PageLoader />
                     </div>
                 )}
             />
 
             {(isLoading || isRefetching || videoLoading) && (
                 <div className="media-buffering-indicator" data-visible="">
-                    <div className="media-surface">
-                        <PageLoader />
-                    </div>
+                    <PageLoader />
                 </div>
             )}
 
