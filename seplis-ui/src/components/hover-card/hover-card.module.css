@@ -1,5 +1,5 @@
 .hoverCard {
-  position: fixed;
+  position: absolute;
   z-index: 150;
   background: var(--card);
   border-radius: var(--radius);

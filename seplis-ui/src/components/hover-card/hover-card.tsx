@@ -28,7 +28,7 @@ export function HoverCard({
     const style: React.CSSProperties = {
         left,
         width: `clamp(16.875rem, ${hoverWidth}px, 100%)`,
-        top: rect.top + rect.height / 2,
+        top: rect.top + window.scrollY + rect.height / 2,
         transformOrigin: `${originX}% 50%`,
     }
 
