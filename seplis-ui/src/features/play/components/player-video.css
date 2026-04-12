@@ -831,6 +831,11 @@
 .media-default-skin .media-popover--settings {
   border-radius: 0.5rem;
   width: 18rem;
+  max-width: calc(100vw - 1rem);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .media-default-skin .media-tooltip {

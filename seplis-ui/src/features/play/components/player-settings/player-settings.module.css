@@ -1,11 +1,18 @@
 .settings {
   font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
 }
 
 .settingsBody {
   display: flex;
   flex-direction: column;
   padding: 0.3rem 0;
+  flex: 1;
+  min-height: 0;
 
   overflow-y: auto;
   overflow-x: hidden;
