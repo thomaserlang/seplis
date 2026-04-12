@@ -1,6 +1,6 @@
+import { PosterImage } from '@/components/poster-image/poster-image'
 import { Slider } from '@/components/slider'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Image } from '@mantine/core'
 import { useGetSeriesList } from '../api/series-list.api'
 import { SeriesListGetParams } from '../types/series-list.types'
 import { Series } from '../types/series.types'
@@ -26,9 +26,9 @@ export function SeriesSlider({ onClick, params, title }: Props) {
             onLoadMore={fetchNextPage}
             onClick={onClick}
             renderItem={(item) => (
-                <Image
-                    src={`${item.poster_image?.url}@SX320.webp`}
-                    radius="sm"
+                <PosterImage
+                    posterImage={item.poster_image}
+                    title={item.title}
                 />
             )}
             renderHoverCard={(item) => <SeriesHoverCard series={item} />}

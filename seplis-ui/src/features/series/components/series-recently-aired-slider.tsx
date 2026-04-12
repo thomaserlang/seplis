@@ -1,6 +1,6 @@
+import { PosterImage } from '@/components/poster-image/poster-image'
 import { Slider } from '@/components/slider'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Image } from '@mantine/core'
 import {
     SeriesRecentlyAiredGetParams,
     useGetSeriesRecentlyAired,
@@ -28,9 +28,9 @@ export function SeriesRecentlyAiredSlider({ onClick, params, title }: Props) {
             onLoadMore={fetchNextPage}
             onClick={onClick}
             renderItem={(item) => (
-                <Image
-                    src={`${item.series.poster_image?.url}@SX320.webp`}
-                    radius="sm"
+                <PosterImage
+                    posterImage={item.series.poster_image}
+                    title={item.series.title}
                 />
             )}
             renderHoverCard={(item) => <SeriesHoverCard series={item.series} />}

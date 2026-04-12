@@ -1,6 +1,6 @@
+import { PosterImage } from '@/components/poster-image/poster-image'
 import { Slider } from '@/components/slider'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Image } from '@mantine/core'
 import { useGetMovies } from '../api/movies.api'
 import { Movie } from '../types/movie.types'
 import { MoviesGetParams } from '../types/movies.types'
@@ -26,9 +26,9 @@ export function MoviesSlider({ onClick, params, title }: Props) {
             onLoadMore={fetchNextPage}
             onClick={onClick}
             renderItem={(item) => (
-                <Image
-                    src={`${item.poster_image?.url}@SX320.webp`}
-                    radius="sm"
+                <PosterImage
+                    posterImage={item.poster_image}
+                    title={item.title}
                 />
             )}
             renderHoverCard={(item) => <MovieHoverCard movie={item} />}

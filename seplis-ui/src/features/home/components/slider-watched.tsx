@@ -1,9 +1,9 @@
+import { PosterImage } from '@/components/poster-image/poster-image'
 import { Slider } from '@/components/slider'
 import { mediaTypes } from '@/features/media-type'
 import { useGetUserWatched } from '@/features/user'
 import { UserWatched } from '@/features/user/types/user-watched.types'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Image } from '@mantine/core'
 
 interface Props {
     onClick?: (item: UserWatched) => void
@@ -27,9 +27,9 @@ export function SliderWatched({ onClick, title }: Props) {
             onClick={onClick}
             emptyMessage="You haven't watched anything that's available on a play server."
             renderItem={(item) => (
-                <Image
-                    src={`${item.data.poster_image?.url}@SX320.webp`}
-                    radius="sm"
+                <PosterImage
+                    posterImage={item.data.poster_image}
+                    title={item.data.title}
                 />
             )}
             renderHoverCard={(item) =>

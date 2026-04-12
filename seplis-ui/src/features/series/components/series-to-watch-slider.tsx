@@ -1,6 +1,6 @@
+import { PosterImage } from '@/components/poster-image/poster-image'
 import { Slider } from '@/components/slider'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Image } from '@mantine/core'
 import { useGetSeriesToWatch } from '../api/series-to-watch.api'
 import { SeriesListGetParams } from '../types/series-list.types'
 import { SeriesAndEpisode } from '../types/series.types'
@@ -26,9 +26,9 @@ export function SeriesToWatchSlider({ onClick, params, title }: Props) {
             onLoadMore={fetchNextPage}
             onClick={onClick}
             renderItem={(item) => (
-                <Image
-                    src={`${item.series.poster_image?.url}@SX320.webp`}
-                    radius="sm"
+                <PosterImage
+                    posterImage={item.series.poster_image}
+                    title={item.series.title}
                 />
             )}
             renderHoverCard={(item) => <SeriesHoverCard series={item.series} />}
