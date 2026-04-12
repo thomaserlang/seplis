@@ -5,7 +5,7 @@ import {
     useChromecast,
 } from '@/features/play/components/chromecast/providers/chromecast-provider'
 import { Container } from '@mantine/core'
-import { useEffect, useRef } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGetPlayRequestSources } from '../api/play-request-sources.api'
 import { PlayRequest, PlayRequestSources } from '../types/play-source.types'
@@ -38,7 +38,9 @@ export function PlayerContainer({ playRequests, ...props }: Props) {
 
     return (
         <ChromecastProvider receiverApplicationId={CHROMECAST_APP_ID}>
-            <PlayerSwitch playRequestsSources={data} {...props} />
+            <Suspense>
+                <PlayerSwitch playRequestsSources={data} {...props} />
+            </Suspense>
         </ChromecastProvider>
     )
 }

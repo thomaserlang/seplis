@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { use, useMemo, useState } from 'react'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import {
     AudioCodec,
@@ -14,6 +14,8 @@ import {
     getSupportedVideoCodecs,
     getSupportedVideoContainers,
 } from '../utils/video.utils'
+
+const hdrTypesPromise = getSupportedHDRTypes()
 
 export interface PlaySettings {
     maxBitrate: number
@@ -48,10 +50,7 @@ export function usePlaySettings(
         () => getSupportedVideoContainers(),
         [],
     )
-    const [browserHdrTypes, setBrowserHdrTypes] = useState<HDRType[]>([])
-    useEffect(() => {
-        getSupportedHDRTypes().then(setBrowserHdrTypes)
-    }, [])
+    const browserHdrTypes = use(hdrTypesPromise)
 
     const [overrides, setOverrides] = useState<PlaySettingsOverrides>(() => {
         try {
