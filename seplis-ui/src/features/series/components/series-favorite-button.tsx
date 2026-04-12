@@ -1,4 +1,5 @@
 import { FavoriteButton } from '@/components/favorite-button'
+import { WatchlistButtonProps } from '@/components/watchlist-button'
 import { useActiveUser } from '@/features/user/api/active-user.api'
 import { toastError } from '@/utils/toast'
 import {
@@ -7,11 +8,11 @@ import {
     useGetSeriesFavorite,
 } from '../api/series-favorite.api'
 
-interface Props {
+interface Props extends Partial<WatchlistButtonProps> {
     seriesId: number
 }
 
-export function SeriesFavoriteButton({ seriesId }: Props) {
+export function SeriesFavoriteButton({ seriesId, ...props }: Props) {
     const [user] = useActiveUser()
     const create = useCreateSeriesFavorite({
         onError: (e) => {
@@ -47,6 +48,7 @@ export function SeriesFavoriteButton({ seriesId }: Props) {
             active={!!data?.favorite}
             loading={isLoading || create.isPending || deleteFavorite.isPending}
             onClick={toggleFavorite}
+            {...props}
         />
     )
 }

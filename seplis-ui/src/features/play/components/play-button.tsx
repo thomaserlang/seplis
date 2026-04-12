@@ -1,13 +1,12 @@
-import { Button, ButtonProps, ButtonSize } from '@mantine/core'
+import { Button, ButtonProps } from '@mantine/core'
 import { CaretDownIcon, PlayIcon } from '@phosphor-icons/react'
 import { PlayRequest } from '../types/play-source.types'
 import { PlaySourceDownloadMenu } from './play-source-download-menu'
 
-interface Props extends ButtonProps {
+export interface PlayButtonProps extends ButtonProps {
     playRequests: PlayRequest[] | undefined
     getPlayRequests: () => void
     onClick?: () => void
-    size?: ButtonSize
 }
 
 export function PlayButton({
@@ -15,7 +14,7 @@ export function PlayButton({
     getPlayRequests,
     size = 'compact-md',
     ...props
-}: Props) {
+}: PlayButtonProps) {
     return (
         <Button.Group>
             <Button

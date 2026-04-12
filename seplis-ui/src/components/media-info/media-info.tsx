@@ -1,6 +1,7 @@
 import { Genre } from '@/types/genre.types'
-import { Flex, Pill, Text, UnstyledButton } from '@mantine/core'
+import { Flex, Text, UnstyledButton } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
+import { Genres } from '../genres'
 import classes from './media-info.module.css'
 
 export interface MediaInfoProps {
@@ -13,7 +14,7 @@ export interface MediaInfoProps {
     metaItems: MediaMetaItem[]
     genres: Genre[]
     plot?: string | null
-    renderMainButtons?: () => React.ReactNode
+    children: React.ReactNode
 }
 
 export function MediaInfo({
@@ -26,7 +27,7 @@ export function MediaInfo({
     metaItems,
     genres,
     plot,
-    renderMainButtons,
+    children,
 }: MediaInfoProps) {
     return (
         <div
@@ -108,28 +109,11 @@ export function MediaInfo({
                     </>
                 )}
 
-                {genres.length > 0 && (
-                    <>
-                        <Flex gap="0.35rem" wrap="wrap">
-                            {genres.map((g) => (
-                                <Pill
-                                    key={g.id}
-                                    size="sm"
-                                    fw={600}
-                                    style={{
-                                        backgroundColor: 'var(--secondary)',
-                                    }}
-                                >
-                                    {g.name}
-                                </Pill>
-                            ))}
-                        </Flex>
-                    </>
-                )}
+                <Genres genres={genres} size="sm" />
 
                 {plot && <PlotText plot={plot} />}
 
-                {renderMainButtons && renderMainButtons()}
+                {children}
             </div>
         </div>
     )

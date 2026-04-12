@@ -10,7 +10,7 @@ import { useDisclosure } from '@mantine/hooks'
 import { CheckIcon, MinusIcon, PlusIcon } from '@phosphor-icons/react'
 import classes from './watched-button.module.css'
 
-interface Props {
+export interface WatchedButtonProps {
     times?: number
     position?: number
     duration?: number | null
@@ -28,7 +28,7 @@ export function WatchedButton({
     duration,
     loading = false,
     size = 'compact-md',
-}: Props) {
+}: WatchedButtonProps) {
     const [opened, { toggle, close }] = useDisclosure(false)
 
     const handleMainClick = times === 0 && position === 0 ? onIncrement : toggle

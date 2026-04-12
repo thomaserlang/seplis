@@ -1,16 +1,27 @@
-import { Badge, Box, Flex, Paper, Skeleton, Text } from '@mantine/core'
+import {
+    Badge,
+    Box,
+    ButtonSize,
+    Flex,
+    MantineFontSize,
+    Paper,
+    Skeleton,
+    Text,
+} from '@mantine/core'
 import { TelevisionSimpleIcon } from '@phosphor-icons/react'
 import { Episode } from '../types/episode.types'
 import { EpisodePlayButton } from './episode-play-button'
 import { EpisodeWatchedButton } from './episode-watched-button'
 
-interface Props {
+export interface EpisodeCardProps {
     seriesId: number
     episode: Episode | null | undefined
     loading: boolean
     title?: string
     accentColor?: string
     noEpisodeText?: string
+    buttonSize?: ButtonSize
+    fz?: MantineFontSize
 }
 
 export function EpisodeCard({
@@ -20,7 +31,9 @@ export function EpisodeCard({
     title,
     accentColor = 'oklch(0.55 0.22 250)',
     noEpisodeText,
-}: Props) {
+    buttonSize,
+    ...props
+}: EpisodeCardProps) {
     return (
         <Box>
             {title && (
@@ -37,13 +50,15 @@ export function EpisodeCard({
             )}
             {loading && <EpisodeCardSkeleton />}
             {!loading && !episode && (
-                <EpisodeCardEmpty noEpisodeText={noEpisodeText} />
+                <EpisodeCardEmpty fz={props.fz} noEpisodeText={noEpisodeText} />
             )}
             {!loading && episode && (
                 <EpisodeCardContent
+                    {...props}
                     seriesId={seriesId}
                     episode={episode}
                     accentColor={accentColor}
+                    buttonSize={buttonSize}
                 />
             )}
         </Box>
@@ -66,12 +81,18 @@ function EpisodeCardSkeleton() {
     )
 }
 
-function EpisodeCardEmpty({ noEpisodeText }: { noEpisodeText?: string }) {
+function EpisodeCardEmpty({
+    fz = 'sm',
+    noEpisodeText,
+}: {
+    fz?: MantineFontSize
+    noEpisodeText?: string
+}) {
     return (
         <Paper withBorder p="sm">
             <Flex align="center" gap="sm" c="dimmed">
                 <TelevisionSimpleIcon size={28} />
-                <Text size="sm">{noEpisodeText || 'No episode to watch'}</Text>
+                <Text size={fz}>{noEpisodeText || 'No episode to watch'}</Text>
             </Flex>
         </Paper>
     )
@@ -81,11 +102,9 @@ function EpisodeCardContent({
     seriesId,
     episode,
     accentColor,
-}: {
-    seriesId: number
-    episode: Episode
-    accentColor: string
-}) {
+    buttonSize,
+    fz = 'md',
+}: Partial<EpisodeCardProps> & { seriesId: number; episode: Episode }) {
     const episodeLabel =
         episode.season != null && episode.episode != null
             ? `S${episode.season}E${episode.episode}`
@@ -111,7 +130,7 @@ function EpisodeCardContent({
 
                 <Box>
                     <Text
-                        size="md"
+                        size={fz}
                         fw={600}
                         title={episode.title || ''}
                         truncate
@@ -130,11 +149,13 @@ function EpisodeCardContent({
                         seriesId={seriesId}
                         episodeNumber={episode.number}
                         canPlay={episode.user_can_watch?.on_play_server}
+                        size={buttonSize}
                     />
                     <EpisodeWatchedButton
                         seriesId={seriesId}
                         episodeNumber={episode.number}
                         episode={episode}
+                        size={buttonSize}
                     />
                 </Flex>
             </Flex>

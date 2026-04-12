@@ -11,6 +11,87 @@ interface Props {
     movie: Movie
 }
 
+export function MovieInfo({ movie }: Props) {
+    return (
+        <MediaInfo
+            posterUrl={
+                movie.poster_image
+                    ? `${movie.poster_image.url}@SX320.webp`
+                    : undefined
+            }
+            accentHue={30}
+            status={movie.status != null ? STATUS[movie.status] : undefined}
+            title={movie.title || movie.original_title || 'Unknown title'}
+            originalTitle={movie.original_title}
+            tagline={movie.tagline}
+            metaItems={MovieMetaItems({
+                movie,
+                showReleaseDate: true,
+                showRuntime: true,
+                showLanguage: true,
+                showRating: true,
+                showBudget: true,
+                showRevenue: true,
+            })}
+            genres={movie.genres}
+            plot={movie.plot}
+        >
+            <Flex gap="0.5rem" wrap="wrap">
+                <MoviePlayButton movieId={movie.id} />
+                <MovieWatchedButton
+                    movieId={movie.id}
+                    duration={movie.runtime}
+                />
+                <MovieWatchlistButton movieId={movie.id} />
+                <MovieFavoriteButton movieId={movie.id} />
+            </Flex>
+        </MediaInfo>
+    )
+}
+
+export function MovieMetaItems({
+    movie,
+    showReleaseDate,
+    showRuntime,
+    showLanguage,
+    showRating,
+    showBudget,
+    showRevenue,
+}: {
+    movie: Movie
+    showReleaseDate?: boolean
+    showRuntime?: boolean
+    showLanguage?: boolean
+    showRating?: boolean
+    showBudget?: boolean
+    showRevenue?: boolean
+}): MediaMetaItem[] {
+    return [
+        showReleaseDate && movie.release_date
+            ? { label: 'Year', value: movie.release_date.substring(0, 4) }
+            : null,
+        showRuntime && movie.runtime
+            ? { label: 'Runtime', value: formatRuntime(movie.runtime) }
+            : null,
+        showLanguage && movie.language
+            ? { label: 'Language', value: langCodeToLang(movie.language) }
+            : null,
+        showRating && movie.rating != null
+            ? {
+                  label: 'IMDb',
+                  value: `★ ${movie.rating.toFixed(1)}`,
+                  color: 'oklch(0.82 0.18 85)',
+              }
+            : null,
+        showBudget && movie.budget
+            ? { label: 'Budget', value: formatMoney(movie.budget) }
+            : null,
+        showRevenue && movie.revenue
+            ? { label: 'Revenue', value: formatMoney(movie.revenue) }
+            : null,
+    ].filter(Boolean) as MediaMetaItem[]
+}
+
 const STATUS: Record<number, MediaStatus> = {
     0: { label: 'Unknown', dot: 'oklch(0.6 0 0)' },
     1: { label: 'Released', dot: 'oklch(0.7 0.17 175)' },
@@ -33,60 +114,4 @@ function formatMoney(amount: number) {
         return `$${(amount / 1_000_000_000).toFixed(1)}B`
     if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(0)}M`
     return `$${amount.toLocaleString()}`
-}
-
-export function MovieInfo({ movie }: Props) {
-    const metaItems: MediaMetaItem[] = [
-        movie.release_date
-            ? { label: 'Year', value: movie.release_date.substring(0, 4) }
-            : null,
-        movie.runtime
-            ? { label: 'Runtime', value: formatRuntime(movie.runtime) }
-            : null,
-        movie.language
-            ? { label: 'Language', value: langCodeToLang(movie.language) }
-            : null,
-        movie.rating != null
-            ? {
-                  label: 'IMDb',
-                  value: `★ ${movie.rating.toFixed(1)}`,
-                  color: 'oklch(0.82 0.18 85)',
-              }
-            : null,
-        movie.budget
-            ? { label: 'Budget', value: formatMoney(movie.budget) }
-            : null,
-        movie.revenue
-            ? { label: 'Revenue', value: formatMoney(movie.revenue) }
-            : null,
-    ].filter(Boolean) as MediaMetaItem[]
-
-    return (
-        <MediaInfo
-            posterUrl={
-                movie.poster_image
-                    ? `${movie.poster_image.url}@SX320.webp`
-                    : undefined
-            }
-            accentHue={30}
-            status={movie.status != null ? STATUS[movie.status] : undefined}
-            title={movie.title || movie.original_title || 'Unknown title'}
-            originalTitle={movie.original_title}
-            tagline={movie.tagline}
-            metaItems={metaItems}
-            genres={movie.genres}
-            plot={movie.plot}
-            renderMainButtons={() => (
-                <Flex gap="0.5rem" wrap="wrap">
-                    <MovieWatchlistButton movieId={movie.id} />
-                    <MovieFavoriteButton movieId={movie.id} />
-                    <MovieWatchedButton
-                        movieId={movie.id}
-                        duration={movie.runtime}
-                    />
-                    <MoviePlayButton movieId={movie.id} />
-                </Flex>
-            )}
-        />
-    )
 }

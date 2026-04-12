@@ -1,12 +1,13 @@
-import { Button, ButtonProps } from '@mantine/core'
+import { Button, ButtonProps, ButtonSize } from '@mantine/core'
 import { BookmarkSimpleIcon } from '@phosphor-icons/react'
 
-interface Props extends ButtonProps {
-    active: boolean
+export interface WatchlistButtonProps extends ButtonProps {
+    active?: boolean
     onClick?: () => void
+    size?: ButtonSize
 }
 
-export function WatchlistButton({ active, ...props }: Props) {
+export function WatchlistButton({ active, ...props }: WatchlistButtonProps) {
     return (
         <Button
             style={

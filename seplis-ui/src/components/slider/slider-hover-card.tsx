@@ -2,7 +2,6 @@ import classes from './slider.module.css'
 
 interface Props {
     rect: DOMRect
-    showAbove: boolean
     isLeaving: boolean
     onMouseEnter: () => void
     onMouseLeave: () => void
@@ -11,7 +10,6 @@ interface Props {
 
 export function SliderHoverCard({
     rect,
-    showAbove,
     isLeaving,
     onMouseEnter,
     onMouseLeave,
@@ -22,15 +20,14 @@ export function SliderHoverCard({
     let left = rect.left + rect.width / 2 - hoverWidth / 2
     left = Math.max(margin, Math.min(left, window.innerWidth - hoverWidth - margin))
 
+    // Scale origin aligns horizontally with the original card's center
     const originX = ((rect.left + rect.width / 2 - left) / hoverWidth) * 100
 
     const style: React.CSSProperties = {
         left,
         width: hoverWidth,
-        transformOrigin: `${originX}% ${showAbove ? 'bottom' : 'top'}`,
-        ...(showAbove
-            ? { bottom: window.innerHeight - rect.top + 4 }
-            : { top: rect.top }),
+        top: rect.top + rect.height / 2,
+        transformOrigin: `${originX}% 50%`,
     }
 
     return (

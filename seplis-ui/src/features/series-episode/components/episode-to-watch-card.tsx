@@ -1,14 +1,23 @@
 import { useActiveUser } from '@/features/user'
-import { Button, Flex, Paper, Text } from '@mantine/core'
+import {
+    Button,
+    ButtonSize,
+    Flex,
+    MantineFontSize,
+    Paper,
+    Text,
+} from '@mantine/core'
 import { Link } from 'react-router-dom'
 import { useGetEpisodeToWatch } from '../api/episode-to-watch.api'
 import { EpisodeCard } from './episode-card'
 
 interface Props {
     seriesId: number
+    buttonSize?: ButtonSize
+    fz?: MantineFontSize
 }
 
-export function EpisodeToWatchCard({ seriesId }: Props) {
+export function EpisodeToWatchCard({ seriesId, buttonSize, fz }: Props) {
     const [user] = useActiveUser()
     const { data, isLoading } = useGetEpisodeToWatch({
         seriesId,
@@ -48,6 +57,8 @@ export function EpisodeToWatchCard({ seriesId }: Props) {
             }
             accentColor="oklch(0.65 0.13 65)"
             noEpisodeText="No episode to watch"
+            buttonSize={buttonSize}
+            fz={fz}
         />
     )
 }

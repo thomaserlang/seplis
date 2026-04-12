@@ -1,4 +1,7 @@
-import { FavoriteButton } from '@/components/favorite-button'
+import {
+    FavoriteButton,
+    FavoriteButtonProps,
+} from '@/components/favorite-button'
 import { useActiveUser } from '@/features/user/api/active-user.api'
 import { toastError } from '@/utils/toast'
 import {
@@ -7,11 +10,11 @@ import {
     useGetMovieFavorite,
 } from '../api/movie-favorite.api'
 
-interface Props {
+interface Props extends FavoriteButtonProps {
     movieId: number
 }
 
-export function MovieFavoriteButton({ movieId }: Props) {
+export function MovieFavoriteButton({ movieId, ...props }: Props) {
     const [user] = useActiveUser()
     const create = useCreateMovieFavorite({
         onError: (e) => {
@@ -47,6 +50,7 @@ export function MovieFavoriteButton({ movieId }: Props) {
             active={!!data?.favorite}
             loading={isLoading || create.isPending || deleteFavorite.isPending}
             onClick={toggleFavorite}
+            {...props}
         />
     )
 }

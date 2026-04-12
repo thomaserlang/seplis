@@ -1,4 +1,4 @@
-import { WatchedButton } from '@/components/watched-button'
+import { WatchedButton, WatchedButtonProps } from '@/components/watched-button'
 import { useActiveUser } from '@/features/user'
 import { toastError } from '@/utils/toast'
 import {
@@ -7,12 +7,11 @@ import {
     useIncrementMovieWatched,
 } from '../api/movie-watched.api'
 
-interface Props {
+interface Props extends WatchedButtonProps {
     movieId: number
-    duration?: number | null
 }
 
-export function MovieWatchedButton({ movieId, duration }: Props) {
+export function MovieWatchedButton({ movieId, ...props }: Props) {
     const [user] = useActiveUser()
     const { data, isLoading } = useGetMovieWatched({
         movieId,
@@ -35,10 +34,10 @@ export function MovieWatchedButton({ movieId, duration }: Props) {
         <WatchedButton
             times={data?.times ?? 0}
             position={data?.position ?? 0}
-            duration={duration}
             loading={isLoading}
             onIncrement={() => increment.mutate({ movieId })}
             onDecrement={() => decrement.mutate({ movieId })}
+            {...props}
         />
     )
 }

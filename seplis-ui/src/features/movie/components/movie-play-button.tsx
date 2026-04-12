@@ -1,12 +1,12 @@
-import { PlayButton } from '@/features/play'
+import { PlayButton, PlayButtonProps } from '@/features/play'
 import { useNavigate } from 'react-router-dom'
 import { useGetMoviePlayRequests } from '../api/movie-play-requests.api'
 
-interface Props {
+interface Props extends Partial<PlayButtonProps> {
     movieId: number
 }
 
-export function MoviePlayButton({ movieId }: Props) {
+export function MoviePlayButton({ movieId, ...props }: Props) {
     const navigate = useNavigate()
     const { data, isLoading, refetch } = useGetMoviePlayRequests({
         movieId,
@@ -21,6 +21,7 @@ export function MoviePlayButton({ movieId }: Props) {
                 onClick={() => {
                     navigate(`/movies/${movieId}/play`)
                 }}
+                {...props}
             />
         )
     )

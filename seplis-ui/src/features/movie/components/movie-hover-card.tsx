@@ -1,0 +1,40 @@
+import { MediaInfoHoverCard } from '@/components/media-info'
+import { Flex } from '@mantine/core'
+import { Movie } from '../types/movie.types'
+import { MovieFavoriteButton } from './movie-favorite-button'
+import { MovieMetaItems } from './movie-info'
+import { MoviePlayButton } from './movie-play-button'
+import { MovieWatchedButton } from './movie-watched-button'
+import { MovieWatchlistButton } from './movie-watchlist-button'
+
+interface Props {
+    movie: Movie
+}
+
+export function MovieHoverCard({ movie }: Props) {
+    return (
+        <MediaInfoHoverCard
+            posterUrl={movie.poster_image?.url}
+            title={movie.title || movie.original_title || 'Untitled'}
+            metaItems={MovieMetaItems({
+                movie,
+                showReleaseDate: true,
+                showRuntime: true,
+                showLanguage: true,
+                showRating: true,
+            })}
+            genres={movie.genres}
+        >
+            <Flex gap="0.5rem" wrap="wrap">
+                <MovieWatchlistButton movieId={movie.id} size="compact-sm" />
+                <MovieFavoriteButton movieId={movie.id} size="compact-sm" />
+                <MoviePlayButton movieId={movie.id} size="compact-sm" />
+                <MovieWatchedButton
+                    movieId={movie.id}
+                    duration={movie.runtime}
+                    size="compact-sm"
+                />
+            </Flex>
+        </MediaInfoHoverCard>
+    )
+}

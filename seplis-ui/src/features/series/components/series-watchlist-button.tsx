@@ -1,4 +1,7 @@
-import { WatchlistButton } from '@/components/watchlist-button'
+import {
+    WatchlistButton,
+    WatchlistButtonProps,
+} from '@/components/watchlist-button'
 import { useActiveUser } from '@/features/user/api/active-user.api'
 import { toastError } from '@/utils/toast'
 import {
@@ -7,11 +10,11 @@ import {
     useGetSeriesWatchlist,
 } from '../api/series-watchlist.api'
 
-interface Props {
+interface Props extends Partial<WatchlistButtonProps> {
     seriesId: number
 }
 
-export function SeriesWatchlistButton({ seriesId }: Props) {
+export function SeriesWatchlistButton({ seriesId, ...props }: Props) {
     const [user] = useActiveUser()
     const create = useCreateSeriesWatchlist({
         onError: (e) => {
@@ -49,6 +52,7 @@ export function SeriesWatchlistButton({ seriesId }: Props) {
             onClick={() => {
                 toggleWatchlist()
             }}
+            {...props}
         />
     )
 }

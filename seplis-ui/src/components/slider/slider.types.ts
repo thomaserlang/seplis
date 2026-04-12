@@ -12,6 +12,5 @@ export interface SliderProps<T> {
 export interface HoverState<T> {
     item: T
     rect: DOMRect
-    showAbove: boolean
     isLeaving: boolean
 }

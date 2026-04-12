@@ -111,12 +111,7 @@ export function Slider<T>({
             showTimerRef.current = setTimeout(() => {
                 const rect = el.getBoundingClientRect()
                 isHoveringRef.current = true
-                setHover({
-                    item,
-                    rect,
-                    showAbove: window.innerHeight - rect.bottom < 220,
-                    isLeaving: false,
-                })
+                setHover({ item, rect, isLeaving: false })
             }, delay)
         },
         [clearTimers, renderHoverCard],
@@ -213,7 +208,6 @@ export function Slider<T>({
                 createPortal(
                     <SliderHoverCard
                         rect={hover.rect}
-                        showAbove={hover.showAbove}
                         isLeaving={hover.isLeaving}
                         onMouseEnter={handleHoverCardEnter}
                         onMouseLeave={handleLeave}

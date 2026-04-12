@@ -1,12 +1,12 @@
 import { Button, ButtonProps } from '@mantine/core'
 import { StarIcon } from '@phosphor-icons/react'
 
-interface Props extends ButtonProps {
-    active: boolean
+export interface FavoriteButtonProps extends ButtonProps {
+    active?: boolean
     onClick?: () => void
 }
 
-export function FavoriteButton({ active, ...props }: Props) {
+export function FavoriteButton({ active, ...props }: FavoriteButtonProps) {
     return (
         <Button
             style={
