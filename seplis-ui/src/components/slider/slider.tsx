@@ -1,4 +1,5 @@
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
+import posterClasses from '@/components/poster-page.module.css'
 import { Skeleton } from '@mantine/core'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -113,7 +114,7 @@ export function Slider<T>({
                     {items.map((item, index) => (
                         <div
                             key={index}
-                            className={classes.item}
+                            className={`${posterClasses.item} ${classes.item}`}
                             {...getItemProps(item)}
                             onClick={onClick ? () => onClick(item) : undefined}
                             style={{ cursor: onClick ? 'pointer' : undefined }}

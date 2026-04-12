@@ -12,4 +12,8 @@ export const {
     url: () => '/2/series',
     queryKey: (props) =>
         ['series-list', props.params].filter((f) => f !== undefined),
+    formatParams: (props) => ({
+        per_page: 100,
+        ...props.params,
+    }),
 })

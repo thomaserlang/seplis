@@ -129,9 +129,9 @@ export function usePageApiHelper<
         return apiClient
             .get(url(props), {
                 searchParams: toSearchParams({
-                    ...(formatParams ? formatParams(props) : props.params),
                     cursor: props.params?.cursor,
                     per_page: props.params?.per_page,
+                    ...(formatParams ? formatParams(props) : props.params),
                 }),
                 signal: props.signal,
             })
@@ -256,7 +256,7 @@ export async function fetchAllPages<
 
 type QueryParams = Record<
     string,
-    string | number | boolean | undefined | null | string[]
+    string | number | boolean | undefined | null | string[] | number[]
 >
 
 function toSearchParams(
