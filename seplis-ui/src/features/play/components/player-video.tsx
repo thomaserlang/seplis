@@ -191,6 +191,7 @@ export function PlayerVideo({
                             : data.hls_url
                     }#t=${resumtimeRef.current}`}
                     crossOrigin="anonymous"
+                    playsInline
                 >
                     {activeSubtitle && !isAssSubtitle && subtitleUrl && (
                         <track
