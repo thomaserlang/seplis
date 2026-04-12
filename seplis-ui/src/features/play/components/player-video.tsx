@@ -185,11 +185,11 @@ export function PlayerVideo({
         <Container className={`media-default-skin media-default-skin--video`}>
             {data && (
                 <Video
-                    src={
+                    src={`${
                         data.can_direct_play
                             ? data.direct_play_url
                             : data.hls_url
-                    }
+                    }#t=${resumtimeRef.current}`}
                     crossOrigin="anonymous"
                 >
                     {activeSubtitle && !isAssSubtitle && subtitleUrl && (
@@ -473,7 +473,6 @@ export function PlayerVideo({
 
             <AutoPlay />
             <MediaEventHandler
-                startTime={resumtimeRef.current}
                 onVideoReady={onVideoReady}
                 onVideoError={onVideoError}
                 onTimeUpdate={(currentTime, duration) => {
@@ -549,25 +548,18 @@ function AutoPlay(): ReactNode {
 }
 
 function MediaEventHandler({
-    startTime = 0,
     onVideoReady,
     onVideoError,
     onTimeUpdate,
 }: {
-    startTime?: number
     onVideoReady?: () => void
     onVideoError?: () => void
     onTimeUpdate?: (currentTime: number, duration: number) => void
 }): null {
     const media = useMedia()
-    const startTimeRef = useRef(startTime)
-    startTimeRef.current = startTime
 
     useEffect(() => {
         if (!media) return
-        media.onloadedmetadata = () => {
-            media.currentTime = startTimeRef.current
-        }
         media.oncanplay = () => onVideoReady?.()
         media.onerror = () => onVideoError?.()
         media.ontimeupdate = () => {
