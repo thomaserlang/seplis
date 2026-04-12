@@ -43,6 +43,7 @@ export function SeriesHoverCard({ series }: Props) {
                             seriesId={series.id}
                             buttonSize="compact-sm"
                             fz="xs"
+                            size="sm"
                         />
                     </Box>
                 </Flex>

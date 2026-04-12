@@ -13,6 +13,8 @@ import { Episode } from '../types/episode.types'
 import { EpisodePlayButton } from './episode-play-button'
 import { EpisodeWatchedButton } from './episode-watched-button'
 
+export type EpisodeCardSize = 'sm' | 'md'
+
 export interface EpisodeCardProps {
     seriesId: number
     episode: Episode | null | undefined
@@ -22,6 +24,7 @@ export interface EpisodeCardProps {
     noEpisodeText?: string
     buttonSize?: ButtonSize
     fz?: MantineFontSize
+    size?: EpisodeCardSize
 }
 
 export function EpisodeCard({
@@ -32,6 +35,7 @@ export function EpisodeCard({
     accentColor = 'oklch(0.55 0.22 250)',
     noEpisodeText,
     buttonSize,
+    size,
     ...props
 }: EpisodeCardProps) {
     return (
@@ -48,7 +52,7 @@ export function EpisodeCard({
                     {title}
                 </Text>
             )}
-            {loading && <EpisodeCardSkeleton />}
+            {loading && <EpisodeCardSkeleton size={size} />}
             {!loading && !episode && (
                 <EpisodeCardEmpty fz={props.fz} noEpisodeText={noEpisodeText} />
             )}
@@ -65,16 +69,20 @@ export function EpisodeCard({
     )
 }
 
-function EpisodeCardSkeleton() {
+export function EpisodeCardSkeleton({
+    size = 'md',
+}: {
+    size?: EpisodeCardSize
+}) {
+    const sm = size === 'sm'
     return (
-        <Paper withBorder p="sm">
-            <Flex direction="column" gap="xs">
-                <Skeleton height={18} width={60} radius="xl" />
-                <Skeleton height={14} width="80%" />
-                <Skeleton height={12} width={100} />
-                <Flex gap="xs" mt={4}>
-                    <Skeleton height={30} width={90} radius="sm" />
-                    <Skeleton height={30} width={90} radius="sm" />
+        <Paper withBorder p={sm ? '0.4rem' : '0.5rem'}>
+            <Flex direction="column" gap={sm ? 5 : 'xs'}>
+                <Skeleton height={sm ? 14 : 18} width={55} radius="xl" />
+                <Skeleton height={sm ? 12 : 14} width="80%" />
+                <Flex gap="xs" mt={2}>
+                    <Skeleton height={sm ? 26 : 30} width={85} radius="sm" />
+                    <Skeleton height={sm ? 26 : 30} width={85} radius="sm" />
                 </Flex>
             </Flex>
         </Paper>
