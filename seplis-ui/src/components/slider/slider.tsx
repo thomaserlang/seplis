@@ -1,21 +1,18 @@
 import { Skeleton } from '@mantine/core'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { SliderHoverCard } from './slider-hover-card'
 import classes from './slider.module.css'
+import { HoverState, SliderProps } from './slider.types'
 
-export interface SliderProps<T> {
-    items: T[]
-    renderItem: (item: T, index: number) => React.ReactNode
-    isLoading?: boolean
-    onLoadMore?: () => void
-    title?: React.ReactNode
-    skeletonCount?: number
-    itemWidth?: string
-}
+const SHOW_DELAY = 500
+const HIDE_DELAY = 500
 
 export function Slider<T>({
     items,
     renderItem,
+    renderHoverCard,
     isLoading = false,
     onLoadMore,
     title,
@@ -25,12 +22,30 @@ export function Slider<T>({
     const scrollRef = useRef<HTMLDivElement>(null)
     const sentinelRef = useRef<HTMLDivElement>(null)
     const isLoadingRef = useRef(isLoading)
+    const isHoveringRef = useRef(false)
+    const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
     const [canScrollLeft, setCanScrollLeft] = useState(false)
     const [canScrollRight, setCanScrollRight] = useState(false)
+    const [hover, setHover] = useState<HoverState<T> | null>(null)
+    const hoverRef = useRef(hover)
+    hoverRef.current = hover
 
     useEffect(() => {
         isLoadingRef.current = isLoading
     }, [isLoading])
+
+    const clearTimers = useCallback(() => {
+        if (showTimerRef.current) {
+            clearTimeout(showTimerRef.current)
+            showTimerRef.current = null
+        }
+        if (hideTimerRef.current) {
+            clearTimeout(hideTimerRef.current)
+            hideTimerRef.current = null
+        }
+    }, [])
 
     const syncScrollState = useCallback(() => {
         const el = scrollRef.current
@@ -39,7 +54,6 @@ export function Slider<T>({
         setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4)
     }, [])
 
-    // Recompute after DOM updates driven by items/loading changes
     useEffect(() => {
         const id = requestAnimationFrame(syncScrollState)
         return () => cancelAnimationFrame(id)
@@ -48,27 +62,28 @@ export function Slider<T>({
     useEffect(() => {
         const el = scrollRef.current
         if (!el) return
-        el.addEventListener('scroll', syncScrollState, { passive: true })
+        const onScroll = () => {
+            syncScrollState()
+            clearTimers()
+            isHoveringRef.current = false
+            setHover(null)
+        }
+        el.addEventListener('scroll', onScroll, { passive: true })
         const ro = new ResizeObserver(syncScrollState)
         ro.observe(el)
         return () => {
-            el.removeEventListener('scroll', syncScrollState)
+            el.removeEventListener('scroll', onScroll)
             ro.disconnect()
         }
-    }, [syncScrollState])
+    }, [syncScrollState, clearTimers])
 
-    // Infinite-scroll sentinel — uses a ref for isLoading to avoid
-    // recreating the observer on every load-state toggle
     useEffect(() => {
         const sentinel = sentinelRef.current
         const scroll = scrollRef.current
         if (!onLoadMore || !sentinel || !scroll) return
-
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting && !isLoadingRef.current) {
-                    onLoadMore()
-                }
+                if (entry.isIntersecting && !isLoadingRef.current) onLoadMore()
             },
             { root: scroll, rootMargin: '0px 300px 0px 0px', threshold: 0 },
         )
@@ -87,6 +102,44 @@ export function Slider<T>({
             behavior: 'smooth',
         })
     }, [])
+
+    const handleItemEnter = useCallback(
+        (item: T, el: HTMLElement) => {
+            if (!renderHoverCard) return
+            clearTimers()
+            const delay = isHoveringRef.current ? HIDE_DELAY : SHOW_DELAY
+            showTimerRef.current = setTimeout(() => {
+                const rect = el.getBoundingClientRect()
+                isHoveringRef.current = true
+                setHover({
+                    item,
+                    rect,
+                    showAbove: window.innerHeight - rect.bottom < 220,
+                    isLeaving: false,
+                })
+            }, delay)
+        },
+        [clearTimers, renderHoverCard],
+    )
+
+    const handleLeave = useCallback(() => {
+        clearTimers()
+        setHover((h) => (h ? { ...h, isLeaving: true } : null))
+        hideTimerRef.current = setTimeout(() => {
+            isHoveringRef.current = false
+            setHover(null)
+        }, HIDE_DELAY)
+    }, [clearTimers])
+
+    const handleHoverCardEnter = useCallback(() => {
+        clearTimers()
+        if (hoverRef.current?.isLeaving) {
+            isHoveringRef.current = false
+            setHover(null)
+        } else {
+            setHover((h) => (h ? { ...h, isLeaving: false } : null))
+        }
+    }, [clearTimers])
 
     const style = itemWidth
         ? ({ '--slider-item-width': itemWidth } as React.CSSProperties)
@@ -108,7 +161,19 @@ export function Slider<T>({
 
                 <div ref={scrollRef} className={classes.scroll}>
                     {items.map((item, index) => (
-                        <div key={index} className={classes.item}>
+                        <div
+                            key={index}
+                            className={classes.item}
+                            onMouseEnter={
+                                renderHoverCard
+                                    ? (e) =>
+                                          handleItemEnter(item, e.currentTarget)
+                                    : undefined
+                            }
+                            onMouseLeave={
+                                renderHoverCard ? handleLeave : undefined
+                            }
+                        >
                             {renderItem(item, index)}
                         </div>
                     ))}
@@ -142,6 +207,21 @@ export function Slider<T>({
                     </button>
                 )}
             </div>
+
+            {hover &&
+                renderHoverCard &&
+                createPortal(
+                    <SliderHoverCard
+                        rect={hover.rect}
+                        showAbove={hover.showAbove}
+                        isLeaving={hover.isLeaving}
+                        onMouseEnter={handleHoverCardEnter}
+                        onMouseLeave={handleLeave}
+                    >
+                        {renderHoverCard(hover.item)}
+                    </SliderHoverCard>,
+                    document.body,
+                )}
         </div>
     )
 }

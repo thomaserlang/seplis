@@ -23,6 +23,14 @@ export function SliderWatched({}: Props) {
                     radius="sm"
                 />
             )}
+            renderHoverCard={(item) => (
+                <div className="hoverCard">
+                    <Image
+                        src={`${item.data.poster_image?.url}@SX320.webp`}
+                        radius="sm"
+                    />
+                </div>
+            )}
         />
     )
 }
