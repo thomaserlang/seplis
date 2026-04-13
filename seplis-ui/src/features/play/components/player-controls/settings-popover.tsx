@@ -8,7 +8,7 @@ export interface SettingsPopoverProps extends PlayerSettingsProps {}
 
 export function SettingsPopover(props: SettingsPopoverProps): ReactNode {
     return (
-        <Popover.Root side="top" openOnHover delay={200} closeDelay={100}>
+        <Popover.Root side="top" delay={200} closeDelay={100}>
             <Popover.Trigger render={<SettingsButton />} />
             <Popover.Popup className="media-surface media-popover media-popover--settings">
                 <PlayerSettings {...props} />
