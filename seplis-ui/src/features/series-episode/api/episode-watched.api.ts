@@ -1,3 +1,4 @@
+import { getUserWatchedQueryKey } from '@/features/user'
 import { queryClient } from '@/queryclient'
 import {
     ApiHelperProps,
@@ -41,20 +42,10 @@ export const {
     url: ({ seriesId, episodeNumber }) =>
         `2/series/${seriesId}/episodes/${episodeNumber}/watched`,
     onSuccess: ({ data, variables }) => {
-        queryClient.setQueryData(
-            getEpisodeWatchedQueryKey({
-                seriesId: variables.seriesId,
-                episodeNumber: variables.episodeNumber,
-            }),
+        invalidateEpisodeWatched({
+            seriesId: variables.seriesId,
+            episodeNumber: variables.episodeNumber,
             data,
-        )
-        queryClient.invalidateQueries({
-            queryKey: episodeLastWatchedQueryKey({
-                seriesId: variables.seriesId,
-            }),
-        })
-        queryClient.invalidateQueries({
-            queryKey: episodeToWatchQueryKey({ seriesId: variables.seriesId }),
         })
     },
 })
@@ -72,20 +63,43 @@ export const {
     url: ({ seriesId, episodeNumber }) =>
         `2/series/${seriesId}/episodes/${episodeNumber}/watched`,
     onSuccess: ({ data, variables }) => {
-        queryClient.setQueryData(
-            getEpisodeWatchedQueryKey({
-                seriesId: variables.seriesId,
-                episodeNumber: variables.episodeNumber,
-            }),
+        invalidateEpisodeWatched({
+            seriesId: variables.seriesId,
+            episodeNumber: variables.episodeNumber,
             data,
-        )
-        queryClient.invalidateQueries({
-            queryKey: episodeLastWatchedQueryKey({
-                seriesId: variables.seriesId,
-            }),
-        })
-        queryClient.invalidateQueries({
-            queryKey: episodeToWatchQueryKey({ seriesId: variables.seriesId }),
         })
     },
 })
+
+export function invalidateEpisodeWatched({
+    seriesId,
+    episodeNumber,
+    data,
+}: {
+    seriesId: number
+    episodeNumber: number
+    data?: EpisodeWatched
+}) {
+    if (data) {
+        queryClient.setQueryData(
+            getEpisodeWatchedQueryKey({
+                seriesId,
+                episodeNumber,
+            }),
+            data,
+        )
+    } else {
+        queryClient.invalidateQueries({
+            queryKey: getEpisodeWatchedQueryKey({ seriesId, episodeNumber }),
+        })
+    }
+    queryClient.invalidateQueries({
+        queryKey: episodeLastWatchedQueryKey({ seriesId }),
+    })
+    queryClient.invalidateQueries({
+        queryKey: episodeToWatchQueryKey({ seriesId }),
+    })
+    queryClient.invalidateQueries({
+        queryKey: getUserWatchedQueryKey({}),
+    })
+}

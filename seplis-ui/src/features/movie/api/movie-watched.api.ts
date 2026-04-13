@@ -1,3 +1,4 @@
+import { getUserWatchedQueryKey } from '@/features/user'
 import { queryClient } from '@/queryclient'
 import {
     ApiHelperProps,
@@ -32,12 +33,9 @@ export const {
     method: 'POST',
     url: ({ movieId }) => `2/movies/${movieId}/watched`,
     onSuccess: ({ data, variables }) => {
-        queryClient.setQueryData(
-            movieWatchedQueryKey({ movieId: variables.movieId }),
+        invalidateMovieWatched({
+            movieId: variables.movieId,
             data,
-        )
-        queryClient.invalidateQueries({
-            queryKey: movieWatchlistQueryKey({ movieId: variables.movieId }),
         })
     },
 })
@@ -53,12 +51,31 @@ export const {
     method: 'DELETE',
     url: ({ movieId }) => `2/movies/${movieId}/watched`,
     onSuccess: ({ data, variables }) => {
-        queryClient.setQueryData(
-            movieWatchedQueryKey({ movieId: variables.movieId }),
+        invalidateMovieWatched({
+            movieId: variables.movieId,
             data,
-        )
-        queryClient.invalidateQueries({
-            queryKey: movieWatchlistQueryKey({ movieId: variables.movieId }),
         })
     },
 })
+
+export function invalidateMovieWatched({
+    movieId,
+    data,
+}: {
+    movieId: number
+    data?: MovieWatched
+}) {
+    if (data) {
+        queryClient.setQueryData(movieWatchedQueryKey({ movieId }), data)
+    } else {
+        queryClient.invalidateQueries({
+            queryKey: movieWatchedQueryKey({ movieId }),
+        })
+    }
+    queryClient.invalidateQueries({
+        queryKey: movieWatchlistQueryKey({ movieId }),
+    })
+    queryClient.invalidateQueries({
+        queryKey: getUserWatchedQueryKey({}),
+    })
+}
