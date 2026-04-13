@@ -1,14 +1,17 @@
+import { GenreFilter } from '@/components/genre-filter'
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { PosterImage } from '@/components/poster-image/poster-image'
 import classes from '@/components/poster-page.module.css'
-import { useGetGenres } from '@/features/genres'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Button, Checkbox, Divider, Flex, Loader, Popover, ScrollArea, Select, Stack } from '@mantine/core'
+import { Button, Divider, Flex, Loader, Select } from '@mantine/core'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useGetSeriesList } from './api/series-list.api'
 import { SeriesHoverCard } from './components/series-hover-card'
-import { SeriesListGetParams, SeriesUserSortType } from './types/series-list.types'
+import {
+    SeriesListGetParams,
+    SeriesUserSortType,
+} from './types/series-list.types'
 import { Series } from './types/series.types'
 
 const SORT_OPTIONS: { value: SeriesUserSortType; label: string }[] = [
@@ -30,7 +33,8 @@ export function Component() {
     const userWatchlist = params.get('user_watchlist') === '1'
     const userFavorites = params.get('user_favorites') === '1'
     const unwatchedOnly = params.get('user_has_watched') === 'false'
-    const genreIds = params.get('genre_id')?.split(',').map(Number).filter(Boolean) ?? []
+    const genreIds =
+        params.get('genre_id')?.split(',').map(Number).filter(Boolean) ?? []
 
     function set(key: string, value: string | null) {
         setParams((prev) => {
@@ -41,11 +45,8 @@ export function Component() {
         })
     }
 
-    function toggleGenre(id: number) {
-        const next = genreIds.includes(id)
-            ? genreIds.filter((g) => g !== id)
-            : [...genreIds, id]
-        set('genre_id', next.length ? next.join(',') : null)
+    function setGenres(ids: number[]) {
+        set('genre_id', ids.length ? ids.join(',') : null)
     }
 
     const filter: SeriesListGetParams = {
@@ -59,7 +60,6 @@ export function Component() {
 
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
         useGetSeriesList({ params: filter })
-    const { data: genres } = useGetGenres({ params: { type: 'series' } })
 
     const items = pageItemsFlatten(data)
     const { getItemProps, portal } = useHoverCard<Series>((series) => (
@@ -99,7 +99,9 @@ export function Component() {
                     size="xs"
                     radius="xl"
                     variant={userCanWatch ? 'filled' : 'default'}
-                    onClick={() => set('user_can_watch', userCanWatch ? null : '1')}
+                    onClick={() =>
+                        set('user_can_watch', userCanWatch ? null : '1')
+                    }
                 >
                     Available
                 </Button>
@@ -107,7 +109,9 @@ export function Component() {
                     size="xs"
                     radius="xl"
                     variant={userWatchlist ? 'filled' : 'default'}
-                    onClick={() => set('user_watchlist', userWatchlist ? null : '1')}
+                    onClick={() =>
+                        set('user_watchlist', userWatchlist ? null : '1')
+                    }
                 >
                     Watchlist
                 </Button>
@@ -115,7 +119,9 @@ export function Component() {
                     size="xs"
                     radius="xl"
                     variant={userFavorites ? 'filled' : 'default'}
-                    onClick={() => set('user_favorites', userFavorites ? null : '1')}
+                    onClick={() =>
+                        set('user_favorites', userFavorites ? null : '1')
+                    }
                 >
                     Favorites
                 </Button>
@@ -123,37 +129,18 @@ export function Component() {
                     size="xs"
                     radius="xl"
                     variant={unwatchedOnly ? 'filled' : 'default'}
-                    onClick={() => set('user_has_watched', unwatchedOnly ? null : 'false')}
+                    onClick={() =>
+                        set('user_has_watched', unwatchedOnly ? null : 'false')
+                    }
                 >
                     Unwatched
                 </Button>
-                {genres && genres.length > 0 && (
-                    <>
-                        <Divider orientation="vertical" h={20} my="auto" />
-                        <Popover position="bottom-start" shadow="md" withinPortal>
-                            <Popover.Target>
-                                <Button size="xs" radius="xl" variant={genreIds.length > 0 ? 'filled' : 'default'}>
-                                    {genreIds.length > 0 ? `Genres (${genreIds.length})` : 'Genres'}
-                                </Button>
-                            </Popover.Target>
-                            <Popover.Dropdown p="xs">
-                                <ScrollArea.Autosize mah={280}>
-                                    <Stack gap={6} pr="xs">
-                                        {genres.map((genre) => (
-                                            <Checkbox
-                                                key={genre.id}
-                                                size="xs"
-                                                label={genre.name}
-                                                checked={genreIds.includes(genre.id)}
-                                                onChange={() => toggleGenre(genre.id)}
-                                            />
-                                        ))}
-                                    </Stack>
-                                </ScrollArea.Autosize>
-                            </Popover.Dropdown>
-                        </Popover>
-                    </>
-                )}
+                <Divider orientation="vertical" h={20} my="auto" />
+                <GenreFilter
+                    type="series"
+                    selectedIds={genreIds}
+                    onSelected={setGenres}
+                />
             </div>
 
             {isLoading ? (
