@@ -1,33 +1,26 @@
 import { GearIcon } from '@phosphor-icons/react'
-import { Popover, usePlayer } from '@videojs/react'
-import { ReactNode, useEffect, useState } from 'react'
+import { Popover } from '@videojs/react'
+import { ComponentProps, ReactNode } from 'react'
 import { PlayerSettings, PlayerSettingsProps } from '../player-settings'
 import { Button } from './button'
 
 export interface SettingsPopoverProps extends PlayerSettingsProps {}
 
 export function SettingsPopover(props: SettingsPopoverProps): ReactNode {
-    const [open, setOpen] = useState(false)
-    const controlsVisible = usePlayer((s) => s.controlsVisible)
-
-    const gearButton = (
-        <Button aria-label="Settings">
-            <GearIcon className="media-icon" weight="bold" />
-        </Button>
-    )
-
-    useEffect(() => {
-        if (!controlsVisible && open) {
-            setOpen(false)
-        }
-    }, [controlsVisible, open])
-
     return (
-        <Popover.Root side="top" open={open} onOpenChange={setOpen}>
-            <Popover.Trigger render={gearButton} />
+        <Popover.Root side="top" openOnHover delay={200} closeDelay={100}>
+            <Popover.Trigger render={<SettingsButton />} />
             <Popover.Popup className="media-surface media-popover media-popover--settings">
-                <PlayerSettings {...props} onClose={() => setOpen(false)} />
+                <PlayerSettings {...props} />
             </Popover.Popup>
         </Popover.Root>
+    )
+}
+
+function SettingsButton(props: ComponentProps<'button'>) {
+    return (
+        <Button className="media-button--settings" {...props}>
+            <GearIcon className="media-icon media-icon--settings" />
+        </Button>
     )
 }
