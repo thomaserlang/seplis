@@ -552,6 +552,7 @@ function MediaEventHandler({
 }): null {
     const media = useMedia()
     const resumtimeRef = useRef<number>(startTime)
+    resumtimeRef.current = startTime
 
     useEffect(() => {
         if (!media) return
