@@ -39,7 +39,7 @@ body {
   --mantine-color-text: var(--foreground);
   --mantine-color-dimmed: var(--muted-foreground);
   --mantine-color-default-hover: var(--accent);
-  
+
   --mantine-primary-color-filled: var(--primary);
   --mantine-primary-color-filled-hover: color-mix(
     in oklab,
@@ -196,6 +196,12 @@ body {
 .mantine-Menu-dropdown {
   background-color: var(--popover);
   color: var(--popover-foreground);
+}
+
+.mantine-Popover-dropdown {
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  border-color: var(--border-color);
 }
 
 .mantine-Menu-item {
