@@ -40,6 +40,7 @@ import {
 import {
     PlayRequestSource,
     PlayRequestSources,
+    PlayServerMedia,
 } from '../types/play-source.types'
 import {
     AirPlayButton,
@@ -48,6 +49,7 @@ import {
     VolumePopover,
 } from './player-controls'
 
+import { HlsVideo } from '@videojs/react/media/hls-video'
 import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
 import { UsePlaySettings } from '../hooks/use-play-settings'
 import { SettingsPopover } from './player-controls/settings-popover'
@@ -183,37 +185,21 @@ export function PlayerVideo({
 
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
-            {data && (
-                <Video
-                    src={`${
-                        data.can_direct_play
-                            ? data.direct_play_url
-                            : data.hls_url
-                    }#t=${resumtimeRef.current}`}
-                    crossOrigin="anonymous"
-                    playsInline
-                    autoPlay
-                >
-                    {activeSubtitle && !isAssSubtitle && subtitleUrl && (
-                        <track
-                            key={activeSubtitleKey}
-                            kind="subtitles"
-                            label={
-                                activeSubtitle.title || activeSubtitle.language
-                            }
-                            srcLang={activeSubtitle.language}
-                            src={subtitleUrl}
-                            default
-                        />
-                    )}
-                    {isAssSubtitle && subtitleUrl && (
-                        <AssSubtitle
-                            subUrl={subtitleUrl}
-                            offset={subtitleOffset}
-                        />
-                    )}
-                </Video>
-            )}
+            <MediaVideo data={data}>
+                {activeSubtitle && !isAssSubtitle && subtitleUrl && (
+                    <track
+                        key={activeSubtitleKey}
+                        kind="subtitles"
+                        label={activeSubtitle.title || activeSubtitle.language}
+                        srcLang={activeSubtitle.language}
+                        src={subtitleUrl}
+                        default
+                    />
+                )}
+                {isAssSubtitle && subtitleUrl && (
+                    <AssSubtitle subUrl={subtitleUrl} offset={subtitleOffset} />
+                )}
+            </MediaVideo>
 
             {activeSubtitleKey && !isAssSubtitle && (
                 <SubtitleOffsetApplier offset={subtitleOffset} />
@@ -536,6 +522,38 @@ export function PlayerVideo({
                 region="right"
             />
         </Container>
+    )
+}
+
+function MediaVideo({
+    data,
+    children,
+}: {
+    data?: PlayServerMedia
+    children: ReactNode
+}) {
+    if (!data) return null
+    if (data.can_direct_play) {
+        return (
+            <Video
+                src={data.direct_play_url}
+                crossOrigin="anonymous"
+                playsInline
+                autoPlay
+            >
+                {children}
+            </Video>
+        )
+    }
+    return (
+        <HlsVideo
+            src={data.hls_url}
+            crossOrigin="anonymous"
+            playsInline
+            autoPlay
+        >
+            {children}
+        </HlsVideo>
     )
 }
 
