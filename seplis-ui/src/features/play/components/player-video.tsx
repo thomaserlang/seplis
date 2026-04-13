@@ -192,6 +192,7 @@ export function PlayerVideo({
                     }#t=${resumtimeRef.current}`}
                     crossOrigin="anonymous"
                     playsInline
+                    autoPlay
                 >
                     {activeSubtitle && !isAssSubtitle && subtitleUrl && (
                         <track
@@ -472,7 +473,6 @@ export function PlayerVideo({
                 </Tooltip.Provider>
             </Controls.Root>
 
-            <AutoPlay />
             <MediaEventHandler
                 onVideoReady={onVideoReady}
                 onVideoError={onVideoError}
@@ -482,6 +482,7 @@ export function PlayerVideo({
                         setVideoLoading(false)
                     }
                 }}
+                startTime={resumtimeRef.current}
             />
 
             {data && (
@@ -538,26 +539,19 @@ export function PlayerVideo({
     )
 }
 
-function AutoPlay(): ReactNode {
-    const media = useMedia()
-    useEffect(() => {
-        if (!media) return
-        media.play().catch(() => {})
-    }, [media])
-
-    return null
-}
-
 function MediaEventHandler({
     onVideoReady,
     onVideoError,
     onTimeUpdate,
+    startTime,
 }: {
     onVideoReady?: () => void
     onVideoError?: () => void
     onTimeUpdate?: (currentTime: number, duration: number) => void
+    startTime: number
 }): null {
     const media = useMedia()
+    const resumtimeRef = useRef<number>(startTime)
 
     useEffect(() => {
         if (!media) return
@@ -574,6 +568,12 @@ function MediaEventHandler({
                 String(Math.round(media.volume * 100) / 100),
             )
         }
+        const handleMetadataLoaded = () => {
+            media.currentTime = resumtimeRef.current
+        }
+        const handleSeeked = () => {
+            if (media.paused) media.play().catch(() => {})
+        }
 
         const savedVolume = localStorage.getItem('player-volume')
         media.volume = savedVolume !== null ? parseFloat(savedVolume) : 0.5
@@ -582,12 +582,16 @@ function MediaEventHandler({
         media.addEventListener('error', handleError)
         media.addEventListener('timeupdate', handleTimeUpdate)
         media.addEventListener('volumechange', handleVolumeChange)
+        media.addEventListener('loadedmetadata', handleMetadataLoaded)
+        media.addEventListener('seeked', handleSeeked)
 
         return () => {
             media.removeEventListener('canplay', handleCanPlay)
             media.removeEventListener('error', handleError)
             media.removeEventListener('timeupdate', handleTimeUpdate)
             media.removeEventListener('volumechange', handleVolumeChange)
+            media.removeEventListener('loadedmetadata', handleMetadataLoaded)
+            media.removeEventListener('seeked', handleSeeked)
         }
     }, [media])
 
