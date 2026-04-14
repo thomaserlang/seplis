@@ -14,7 +14,10 @@ interface Props {
 
 export function SeriesSlider({ onClick, params, title }: Props) {
     const { data, isLoading, fetchNextPage } = useGetSeriesList({
-        params,
+        params: {
+            ...params,
+            per_page: 24,
+        },
     })
     const items = pageItemsFlatten(data)
 

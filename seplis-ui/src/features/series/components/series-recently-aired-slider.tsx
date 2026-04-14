@@ -16,7 +16,10 @@ interface Props {
 
 export function SeriesRecentlyAiredSlider({ onClick, params, title }: Props) {
     const { data, isLoading, fetchNextPage } = useGetSeriesRecentlyAired({
-        params,
+        params: {
+            ...params,
+            per_page: 24,
+        },
     })
     const items = pageItemsFlatten(data)
 

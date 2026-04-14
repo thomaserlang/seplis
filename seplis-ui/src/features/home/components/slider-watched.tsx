@@ -14,6 +14,7 @@ export function SliderWatched({ onClick, title }: Props) {
     const { data, isLoading, fetchNextPage } = useGetUserWatched({
         params: {
             user_can_watch: true,
+            per_page: 24,
         },
     })
     const items = pageItemsFlatten(data)

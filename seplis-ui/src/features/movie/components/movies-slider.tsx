@@ -14,7 +14,10 @@ interface Props {
 
 export function MoviesSlider({ onClick, params, title }: Props) {
     const { data, isLoading, fetchNextPage } = useGetMovies({
-        params,
+        params: {
+            ...params,
+            per_page: 24,
+        },
     })
     const items = pageItemsFlatten(data)
 
