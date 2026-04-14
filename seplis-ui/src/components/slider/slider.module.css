@@ -113,8 +113,7 @@
 
 /* Never show arrows on touch devices — native swipe handles it */
 @media (pointer: coarse) {
-  .arrow {
+  .arrow svg {
     display: none !important;
   }
 }
-
