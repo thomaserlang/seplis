@@ -1,14 +1,12 @@
-import { useHoverCard } from '@/components/hover-card/use-hover-card'
-import { PosterImage } from '@/components/poster-image/poster-image'
-import classes from '@/components/poster-page.module.css'
+import { PosterImage } from '@/components/poster-image'
+import { PosterPage } from '@/components/poster-page/poster-page'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import {
     isEmpty,
     strListToNumList,
     strToBoolUndefined,
 } from '@/utils/str.utils'
-import { Flex, Loader } from '@mantine/core'
-import { useEffect, useRef } from 'react'
+import { Flex } from '@mantine/core'
 import { useSearchParams } from 'react-router-dom'
 import { useGetSeriesList } from './api/series-list.api'
 import { SeriesFilterbar } from './components/series-filterbar'
@@ -17,7 +15,6 @@ import {
     SeriesListGetParams,
     SeriesUserSortType,
 } from './types/series-list.types'
-import { Series } from './types/series.types'
 
 export function Component() {
     const [params, setParams] = useSearchParams()
@@ -51,83 +48,47 @@ export function Component() {
         language: params.getAll('language'),
     }
 
-    const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    const { data, isLoading, fetchNextPage, isFetchingNextPage } =
         useGetSeriesList({ params: filter })
 
     const items = pageItemsFlatten(data)
-    const { getItemProps, portal } = useHoverCard<Series>((series) => (
-        <SeriesHoverCard series={series} />
-    ))
-    const sentinelRef = useRef<HTMLDivElement>(null)
-    const canFetchRef = useRef(false)
-    canFetchRef.current = hasNextPage && !isFetchingNextPage
-
-    useEffect(() => {
-        const el = sentinelRef.current
-        if (!el) return
-        const ob = new IntersectionObserver(
-            ([e]) => {
-                if (e.isIntersecting && canFetchRef.current) fetchNextPage()
-            },
-            { rootMargin: '0px 0px 400px 0px' },
-        )
-        ob.observe(el)
-        return () => ob.disconnect()
-    }, [fetchNextPage])
 
     return (
-        <Flex direction="column" gap="1rem">
-            <div className={classes.filterBar}>
-                <SeriesFilterbar
-                    filter={filter}
-                    setFilter={(f) => {
-                        setParams((params) => {
-                            Object.entries(f).forEach(([key, value]) => {
-                                if (isEmpty(value)) {
+        <Flex direction="column" gap="1rem" h="var(--content-height)">
+            <SeriesFilterbar
+                filter={filter}
+                setFilter={(f) => {
+                    setParams((params) => {
+                        Object.entries(f).forEach(([key, value]) => {
+                            if (isEmpty(value)) {
+                                params.delete(key)
+                            } else {
+                                if (Array.isArray(value)) {
                                     params.delete(key)
-                                } else {
-                                    if (Array.isArray(value)) {
-                                        params.delete(key)
-                                        value.forEach((v) =>
-                                            params.append(key, String(v)),
-                                        )
-                                        return
-                                    }
-                                    params.set(key, value)
+                                    value.forEach((v) =>
+                                        params.append(key, String(v)),
+                                    )
+                                    return
                                 }
-                            })
-                            return params
-                        })
-                    }}
-                />
-            </div>
-            {isLoading ? (
-                <Loader m="auto" mt="xl" />
-            ) : (
-                <div className={classes.grid}>
-                    {items.map((series) => (
-                        <div
-                            key={series.id}
-                            className={classes.item}
-                            onClick={() =>
-                                setParams((params) => {
-                                    params.set('mid', `series-${series.id}`)
-                                    return params
-                                })
+                                params.set(key, value)
                             }
-                            {...getItemProps(series)}
-                        >
-                            <PosterImage
-                                posterImage={series.poster_image}
-                                title={series.title}
-                            />
-                        </div>
-                    ))}
-                </div>
-            )}
-
-            <div ref={sentinelRef} />
-            {portal}
+                        })
+                        return params
+                    })
+                }}
+            />
+            <PosterPage
+                items={items}
+                renderItem={(series) => (
+                    <PosterImage posterImage={series.poster_image} />
+                )}
+                renderHoverCard={(series) => (
+                    <SeriesHoverCard series={series} />
+                )}
+                onClick={() => {}}
+                onLoadMore={fetchNextPage}
+                isLoading={isLoading || isFetchingNextPage}
+            />
         </Flex>
     )
 }

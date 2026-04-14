@@ -1,5 +1,5 @@
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
-import posterClasses from '@/components/poster-page.module.css'
+import posterClasses from '@/components/poster-page/poster-page.module.css'
 import { Skeleton } from '@mantine/core'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -129,7 +129,7 @@ export function Slider<T>({
                                 key={`sk-${i}`}
                                 className={classes.skeletonItem}
                             >
-                                <Skeleton height="100%" radius="md" />
+                                <Skeleton height="100%" radius="sm" />
                             </div>
                         ))}
 

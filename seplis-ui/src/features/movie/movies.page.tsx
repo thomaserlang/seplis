@@ -1,7 +1,7 @@
 import { GenreSelect } from '@/components/genre-select'
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { PosterImage } from '@/components/poster-image/poster-image'
-import classes from '@/components/poster-page.module.css'
+import classes from '@/components/poster-page/poster-page.module.css'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import { Button, Divider, Flex, Loader, Select } from '@mantine/core'
 import { useEffect, useRef } from 'react'
@@ -137,7 +137,11 @@ export function Component() {
                     type="movie"
                     selectedIds={genreIds}
                     onSelected={setGenres}
-                />
+                >
+                    <Button size="xs" radius="xl" variant="outline">
+                        Genres
+                    </Button>
+                </GenreSelect>
             </div>
 
             {isLoading ? (
