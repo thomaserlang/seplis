@@ -1,12 +1,12 @@
 import { GenreSelect } from '@/components/genre-select'
 import { LanguageSelect } from '@/components/language-select'
+import classes from '@/components/poster-page/poster-page.module.css'
 import { isEmpty } from '@/utils/str.utils'
 import {
     Button,
     ButtonProps,
     Divider,
     Drawer,
-    Flex,
     ScrollArea,
     Select,
 } from '@mantine/core'
@@ -27,7 +27,7 @@ export function SeriesFilterbar({ filter, setFilter }: Props) {
 
     return (
         <>
-            <Flex align="center" gap="0.5rem" wrap="nowrap">
+            <div className={classes.filterBar}>
                 <Select
                     size="xs"
                     value={filter.sort?.[0] ?? 'popularity_desc'}
@@ -35,7 +35,7 @@ export function SeriesFilterbar({ filter, setFilter }: Props) {
                         setFilter({ ...filter, sort: v ? [v] : undefined })
                     }
                     data={SERIES_SORT_OPTIONS}
-                    w={130}
+                    w={160}
                     allowDeselect={false}
                     radius="xl"
                 />
@@ -135,7 +135,7 @@ export function SeriesFilterbar({ filter, setFilter }: Props) {
                 <FilterButton onClick={() => setShowFilter(!showFilter)}>
                     Advanced
                 </FilterButton>
-            </Flex>
+            </div>
             <Drawer
                 opened={showFilter}
                 onClose={() => setShowFilter(false)}

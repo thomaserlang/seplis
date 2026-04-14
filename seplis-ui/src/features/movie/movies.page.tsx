@@ -1,4 +1,4 @@
-import { PosterImage } from '@/components/poster-image/poster-image'
+import { PosterImage } from '@/components/poster-image'
 import { PosterPage } from '@/components/poster-page'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import {
