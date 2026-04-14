@@ -34,6 +34,7 @@ export function PosterPage<T>({
                             onClick?.(item)
                             dismiss()
                         }}
+                        className={classes.item}
                     >
                         {renderItem(item)}
                     </div>

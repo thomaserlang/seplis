@@ -11,18 +11,15 @@ import {
     Select,
 } from '@mantine/core'
 import { useState } from 'react'
-import {
-    SERIES_SORT_OPTIONS,
-    SeriesListGetParams,
-} from '../types/series-list.types'
-import { SeriesFilterForm } from './series-filter-form'
+import { MOVIE_SORT_OPTIONS, MoviesGetParams } from '../types/movies.types'
+import { MoviesFilterForm } from './movies-filter-form'
 
 interface Props {
-    filter: SeriesListGetParams
-    setFilter: (filter: SeriesListGetParams) => void
+    filter: MoviesGetParams
+    setFilter: (filter: MoviesGetParams) => void
 }
 
-export function SeriesFilterbar({ filter, setFilter }: Props) {
+export function MoviesFilterbar({ filter, setFilter }: Props) {
     const [showFilter, setShowFilter] = useState(false)
 
     return (
@@ -34,8 +31,8 @@ export function SeriesFilterbar({ filter, setFilter }: Props) {
                     onChange={(v) =>
                         setFilter({ ...filter, sort: v ? [v] : undefined })
                     }
-                    data={SERIES_SORT_OPTIONS}
-                    w={130}
+                    data={MOVIE_SORT_OPTIONS}
+                    w={160}
                     allowDeselect={false}
                     radius="xl"
                 />
@@ -99,7 +96,7 @@ export function SeriesFilterbar({ filter, setFilter }: Props) {
                 <Divider orientation="vertical" h={20} my="auto" />
 
                 <GenreSelect
-                    type="series"
+                    type="movie"
                     selectedIds={filter.genre_id ?? []}
                     onSelected={(ids) =>
                         setFilter({
@@ -143,7 +140,7 @@ export function SeriesFilterbar({ filter, setFilter }: Props) {
                 position="right"
                 scrollAreaComponent={ScrollArea.Autosize}
             >
-                <SeriesFilterForm filter={filter} setFilter={setFilter} />
+                <MoviesFilterForm filter={filter} setFilter={setFilter} />
             </Drawer>
         </>
     )

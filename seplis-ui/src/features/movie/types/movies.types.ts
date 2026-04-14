@@ -14,6 +14,18 @@ export type MovieUserSortType =
     | 'user_play_server_movie_added_asc'
     | 'user_play_server_movie_added_desc'
 
+export const MOVIE_SORT_OPTIONS: { value: MovieUserSortType; label: string }[] =
+    [
+        { value: 'popularity_desc', label: 'Popular' },
+        { value: 'release_date_desc', label: 'Newest' },
+        { value: 'release_date_asc', label: 'Oldest' },
+        { value: 'rating_desc', label: 'Top Rated' },
+        { value: 'user_play_server_movie_added_desc', label: 'Recently Added' },
+        { value: 'user_last_watched_at_desc', label: 'Recently Watched' },
+        { value: 'user_watchlist_added_at_desc', label: 'Watchlist Added' },
+        { value: 'user_favorite_added_at_desc', label: 'Favorites Added' },
+    ]
+
 export type MovieExpand =
     | 'user_watchlist'
     | 'user_favorite'

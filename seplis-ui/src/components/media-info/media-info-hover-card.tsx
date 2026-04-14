@@ -1,11 +1,12 @@
 import { Genre } from '@/types/genre.types'
+import { IImage } from '@/types/image.types'
 import { Button, Flex, Text } from '@mantine/core'
 import { CornersOutIcon } from '@phosphor-icons/react'
 import { Genres } from '../genres'
 import { MediaMetaItem } from './media-info'
 
 export interface MediaInfoHoverCardProps {
-    posterUrl?: string
+    poster?: IImage | null
     accentHue?: number
     title: string
     originalTitle?: string | null
@@ -16,7 +17,7 @@ export interface MediaInfoHoverCardProps {
 }
 
 export function MediaInfoHoverCard({
-    posterUrl,
+    poster,
     accentHue = 250,
     title,
     originalTitle,
@@ -43,16 +44,18 @@ export function MediaInfoHoverCard({
                 }}
                 onClick={onInfoClick}
             >
-                <img
-                    src={posterUrl}
-                    style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        objectPosition: 'center top',
-                        display: 'block',
-                    }}
-                />
+                {poster && (
+                    <img
+                        src={`${poster.url}@SX320.webp`}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: 'center top',
+                            display: 'block',
+                        }}
+                    />
+                )}
             </div>
 
             <Flex direction="column" gap="0.5rem" p="0.75rem" pt="0.5rem">

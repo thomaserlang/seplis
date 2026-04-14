@@ -19,12 +19,11 @@ import {
 export function Component() {
     const [params, setParams] = useSearchParams()
 
+    const sort = params
+        .getAll('sort')
+        .filter((v): v is SeriesUserSortType => !!v) as SeriesUserSortType[]
     const filter: SeriesListGetParams = {
-        sort: params
-            .getAll('sort')
-            .filter(
-                (v): v is SeriesUserSortType => !!v,
-            ) as SeriesUserSortType[],
+        sort: !isEmpty(sort) ? sort : ['popularity_desc'],
         genre_id: strListToNumList(params.getAll('genre_id')),
         not_genre_id: strListToNumList(params.getAll('not_genre_id')),
         user_can_watch: strToBoolUndefined(params.get('user_can_watch')),
@@ -80,12 +79,20 @@ export function Component() {
             <PosterPage
                 items={items}
                 renderItem={(series) => (
-                    <PosterImage posterImage={series.poster_image} />
+                    <PosterImage
+                        posterImage={series.poster_image}
+                        title={series.title}
+                    />
                 )}
                 renderHoverCard={(series) => (
                     <SeriesHoverCard series={series} />
                 )}
-                onClick={() => {}}
+                onClick={(series) => {
+                    setParams((params) => {
+                        params.set('mid', `series-${series.id}`)
+                        return params
+                    })
+                }}
                 onLoadMore={fetchNextPage}
                 isLoading={isLoading || isFetchingNextPage}
             />

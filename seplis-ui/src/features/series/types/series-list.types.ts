@@ -16,7 +16,10 @@ export type SeriesUserSortType =
     | 'premiered_asc'
     | 'premiered_desc'
 
-export const SORT_OPTIONS: { value: SeriesUserSortType; label: string }[] = [
+export const SERIES_SORT_OPTIONS: {
+    value: SeriesUserSortType
+    label: string
+}[] = [
     { value: 'popularity_desc', label: 'Popular' },
     { value: 'premiered_desc', label: 'Newest' },
     { value: 'premiered_asc', label: 'Oldest' },
