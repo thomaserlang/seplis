@@ -16,9 +16,17 @@ interface Props {
     type: MediaType
     selectedIds: number[]
     onSelected: (ids: number[]) => void
+    children: React.ReactElement<{
+        onClick: () => void
+    }>
 }
 
-export function GenreFilter({ type, selectedIds, onSelected }: Props) {
+export function GenreSelect({
+    type,
+    selectedIds,
+    onSelected,
+    children,
+}: Props) {
     const [search, setSearch] = useState('')
     const { data: genres } = useGetGenres({ params: { type } })
 
@@ -45,17 +53,7 @@ export function GenreFilter({ type, selectedIds, onSelected }: Props) {
                 withinPortal
                 onClose={() => setSearch('')}
             >
-                <Popover.Target>
-                    <Button
-                        size="xs"
-                        radius="xl"
-                        variant={selectedIds.length > 0 ? 'filled' : 'default'}
-                    >
-                        {selectedIds.length > 0
-                            ? `Genres (${selectedIds.length})`
-                            : 'Genres'}
-                    </Button>
-                </Popover.Target>
+                <Popover.Target>{children}</Popover.Target>
                 <Popover.Dropdown p="xs">
                     <Group gap="xs" mb="xs" wrap="nowrap">
                         <TextInput

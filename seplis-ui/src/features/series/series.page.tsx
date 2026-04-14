@@ -1,12 +1,17 @@
-import { GenreFilter } from '@/components/genre-filter'
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { PosterImage } from '@/components/poster-image/poster-image'
 import classes from '@/components/poster-page.module.css'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Button, Divider, Flex, Loader, Select } from '@mantine/core'
+import {
+    isEmpty,
+    strListToNumList,
+    strToBoolUndefined,
+} from '@/utils/str.utils'
+import { Flex, Loader } from '@mantine/core'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useGetSeriesList } from './api/series-list.api'
+import { SeriesFilterbar } from './components/series-filterbar'
 import { SeriesHoverCard } from './components/series-hover-card'
 import {
     SeriesListGetParams,
@@ -14,48 +19,36 @@ import {
 } from './types/series-list.types'
 import { Series } from './types/series.types'
 
-const SORT_OPTIONS: { value: SeriesUserSortType; label: string }[] = [
-    { value: 'popularity_desc', label: 'Popular' },
-    { value: 'premiered_desc', label: 'Newest' },
-    { value: 'premiered_asc', label: 'Oldest' },
-    { value: 'rating_desc', label: 'Top Rated' },
-    { value: 'user_play_server_series_added_desc', label: 'Recently Added' },
-    { value: 'user_last_episode_watched_at_desc', label: 'Recently Watched' },
-    { value: 'user_watchlist_added_at_desc', label: 'Watchlist Added' },
-    { value: 'user_favorite_added_at_desc', label: 'Favorites Added' },
-]
-
 export function Component() {
     const [params, setParams] = useSearchParams()
 
-    const sort = (params.get('sort') as SeriesUserSortType) ?? 'popularity_desc'
-    const userCanWatch = params.get('user_can_watch') === '1'
-    const userWatchlist = params.get('user_watchlist') === '1'
-    const userFavorites = params.get('user_favorites') === '1'
-    const unwatchedOnly = params.get('user_has_watched') === 'false'
-    const genreIds =
-        params.get('genre_id')?.split(',').map(Number).filter(Boolean) ?? []
-
-    function set(key: string, value: string | null) {
-        setParams((prev) => {
-            const next = new URLSearchParams(prev)
-            if (value === null) next.delete(key)
-            else next.set(key, value)
-            return next
-        })
-    }
-
-    function setGenres(ids: number[]) {
-        set('genre_id', ids.length ? ids.join(',') : null)
-    }
-
     const filter: SeriesListGetParams = {
-        sort: [sort],
-        genre_id: genreIds.length ? genreIds : undefined,
-        user_can_watch: userCanWatch || undefined,
-        user_watchlist: userWatchlist || undefined,
-        user_favorites: userFavorites || undefined,
-        user_has_watched: unwatchedOnly ? false : undefined,
+        sort: params
+            .getAll('sort')
+            .filter(
+                (v): v is SeriesUserSortType => !!v,
+            ) as SeriesUserSortType[],
+        genre_id: strListToNumList(params.getAll('genre_id')),
+        not_genre_id: strListToNumList(params.getAll('not_genre_id')),
+        user_can_watch: strToBoolUndefined(params.get('user_can_watch')),
+        user_watchlist: strToBoolUndefined(params.get('user_watchlist')),
+        user_favorites: strToBoolUndefined(params.get('user_favorites')),
+        user_has_watched: strToBoolUndefined(params.get('user_has_watched')),
+        premiered_gt: params.get('premiered_gt') ?? undefined,
+        premiered_lt: params.get('premiered_lt') ?? undefined,
+        rating_gt: params.get('rating_gt')
+            ? Number(params.get('rating_gt'))
+            : undefined,
+        rating_lt: params.get('rating_lt')
+            ? Number(params.get('rating_lt'))
+            : undefined,
+        rating_votes_gt: params.get('rating_votes_gt')
+            ? Number(params.get('rating_votes_gt'))
+            : undefined,
+        rating_votes_lt: params.get('rating_votes_lt')
+            ? Number(params.get('rating_votes_lt'))
+            : undefined,
+        language: params.getAll('language'),
     }
 
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
@@ -85,64 +78,29 @@ export function Component() {
     return (
         <Flex direction="column" gap="1rem">
             <div className={classes.filterBar}>
-                <Select
-                    size="xs"
-                    value={sort}
-                    onChange={(v) => set('sort', v)}
-                    data={SORT_OPTIONS}
-                    w={170}
-                    allowDeselect={false}
-                    radius="xl"
-                />
-                <Divider orientation="vertical" h={20} my="auto" />
-                <Button
-                    size="xs"
-                    radius="xl"
-                    variant={userCanWatch ? 'filled' : 'default'}
-                    onClick={() =>
-                        set('user_can_watch', userCanWatch ? null : '1')
-                    }
-                >
-                    Available
-                </Button>
-                <Button
-                    size="xs"
-                    radius="xl"
-                    variant={userWatchlist ? 'filled' : 'default'}
-                    onClick={() =>
-                        set('user_watchlist', userWatchlist ? null : '1')
-                    }
-                >
-                    Watchlist
-                </Button>
-                <Button
-                    size="xs"
-                    radius="xl"
-                    variant={userFavorites ? 'filled' : 'default'}
-                    onClick={() =>
-                        set('user_favorites', userFavorites ? null : '1')
-                    }
-                >
-                    Favorites
-                </Button>
-                <Button
-                    size="xs"
-                    radius="xl"
-                    variant={unwatchedOnly ? 'filled' : 'default'}
-                    onClick={() =>
-                        set('user_has_watched', unwatchedOnly ? null : 'false')
-                    }
-                >
-                    Unwatched
-                </Button>
-                <Divider orientation="vertical" h={20} my="auto" />
-                <GenreFilter
-                    type="series"
-                    selectedIds={genreIds}
-                    onSelected={setGenres}
+                <SeriesFilterbar
+                    filter={filter}
+                    setFilter={(f) => {
+                        setParams((params) => {
+                            Object.entries(f).forEach(([key, value]) => {
+                                if (isEmpty(value)) {
+                                    params.delete(key)
+                                } else {
+                                    if (Array.isArray(value)) {
+                                        params.delete(key)
+                                        value.forEach((v) =>
+                                            params.append(key, String(v)),
+                                        )
+                                        return
+                                    }
+                                    params.set(key, value)
+                                }
+                            })
+                            return params
+                        })
+                    }}
                 />
             </div>
-
             {isLoading ? (
                 <Loader m="auto" mt="xl" />
             ) : (
@@ -151,7 +109,12 @@ export function Component() {
                         <div
                             key={series.id}
                             className={classes.item}
-                            onClick={() => set('mid', `series-${series.id}`)}
+                            onClick={() =>
+                                setParams((params) => {
+                                    params.set('mid', `series-${series.id}`)
+                                    return params
+                                })
+                            }
                             {...getItemProps(series)}
                         >
                             <PosterImage

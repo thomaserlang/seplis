@@ -1,4 +1,4 @@
-import { GenreFilter } from '@/components/genre-filter'
+import { GenreSelect } from '@/components/genre-select'
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import { PosterImage } from '@/components/poster-image/poster-image'
 import classes from '@/components/poster-page.module.css'
@@ -133,7 +133,7 @@ export function Component() {
                     Unwatched
                 </Button>
                 <Divider orientation="vertical" h={20} my="auto" />
-                <GenreFilter
+                <GenreSelect
                     type="movie"
                     selectedIds={genreIds}
                     onSelected={setGenres}

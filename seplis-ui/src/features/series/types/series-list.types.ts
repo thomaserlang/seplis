@@ -16,6 +16,17 @@ export type SeriesUserSortType =
     | 'premiered_asc'
     | 'premiered_desc'
 
+export const SORT_OPTIONS: { value: SeriesUserSortType; label: string }[] = [
+    { value: 'popularity_desc', label: 'Popular' },
+    { value: 'premiered_desc', label: 'Newest' },
+    { value: 'premiered_asc', label: 'Oldest' },
+    { value: 'rating_desc', label: 'Top Rated' },
+    { value: 'user_play_server_series_added_desc', label: 'Recently Added' },
+    { value: 'user_last_episode_watched_at_desc', label: 'Recently Watched' },
+    { value: 'user_watchlist_added_at_desc', label: 'Watchlist Added' },
+    { value: 'user_favorite_added_at_desc', label: 'Favorites Added' },
+]
+
 export type SeriesExpand =
     | 'user_watchlist'
     | 'user_favorite'
