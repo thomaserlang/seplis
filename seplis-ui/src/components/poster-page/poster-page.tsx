@@ -41,11 +41,9 @@ export function PosterPage<T>({
                 ))}
                 {portal}
                 {isLoading &&
-                    new Array(skeletonCount)
-                        .fill(0)
-                        .map((_, i) => (
-                            <Skeleton key={i} height="100%" radius="sm" />
-                        ))}
+                    Array.from({ length: skeletonCount }, (_, i) => (
+                        <Skeleton key={i} height="100%" radius="sm" />
+                    ))}
             </div>
         </ScrollArea>
     )
