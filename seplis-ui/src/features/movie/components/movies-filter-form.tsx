@@ -97,7 +97,7 @@ export function MoviesFilterForm({ filter, setFilter }: Props) {
                             data={Array.from({ length: 10 }, (_, i) => ({
                                 value: i,
                                 label: String(i + 1),
-                            }))}
+                            })).reverse()}
                             onChange={(e) =>
                                 setFilter({
                                     ...filter,
@@ -113,7 +113,7 @@ export function MoviesFilterForm({ filter, setFilter }: Props) {
                             data={Array.from({ length: 10 }, (_, i) => ({
                                 value: i + 1,
                                 label: String(i + 1),
-                            }))}
+                            })).reverse()}
                             onChange={(e) =>
                                 setFilter({
                                     ...filter,
