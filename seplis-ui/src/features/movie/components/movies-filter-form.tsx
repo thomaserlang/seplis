@@ -96,12 +96,13 @@ export function MoviesFilterForm({ filter, setFilter }: Props) {
                             value={filter.rating_gt ?? ''}
                             data={Array.from({ length: 10 }, (_, i) => ({
                                 value: i,
-                                label: String(i + 1),
+                                label: String(i),
                             })).reverse()}
                             onChange={(e) =>
                                 setFilter({
                                     ...filter,
                                     rating_gt: e || undefined,
+                                    rating_votes_gt: e ? 1000 : undefined,
                                 })
                             }
                             clearable
@@ -118,6 +119,7 @@ export function MoviesFilterForm({ filter, setFilter }: Props) {
                                 setFilter({
                                     ...filter,
                                     rating_lt: e || undefined,
+                                    rating_votes_gt: e ? 1000 : undefined,
                                 })
                             }
                             clearable
