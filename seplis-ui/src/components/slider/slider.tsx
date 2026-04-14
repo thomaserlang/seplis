@@ -25,7 +25,7 @@ export function Slider<T>({
     const [canScrollLeft, setCanScrollLeft] = useState(false)
     const [canScrollRight, setCanScrollRight] = useState(false)
 
-    const { getItemProps, portal, dismiss } = useHoverCard(renderHoverCard)
+    const { getItemProps, portal } = useHoverCard(renderHoverCard)
 
     useEffect(() => {
         isLoadingRef.current = isLoading
@@ -42,22 +42,6 @@ export function Slider<T>({
         const id = requestAnimationFrame(syncScrollState)
         return () => cancelAnimationFrame(id)
     }, [items, isLoading, syncScrollState])
-
-    useEffect(() => {
-        const el = scrollRef.current
-        if (!el) return
-        const onScroll = () => {
-            syncScrollState()
-            dismiss()
-        }
-        el.addEventListener('scroll', onScroll, { passive: true })
-        const ro = new ResizeObserver(syncScrollState)
-        ro.observe(el)
-        return () => {
-            el.removeEventListener('scroll', onScroll)
-            ro.disconnect()
-        }
-    }, [syncScrollState, dismiss])
 
     useEffect(() => {
         const sentinel = sentinelRef.current
