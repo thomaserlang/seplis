@@ -66,14 +66,15 @@
   align-items: center;
   justify-content: center;
   color: var(--foreground);
+}
+
+.arrow svg {
   opacity: 0;
-  pointer-events: none;
   transition: opacity 200ms ease;
 }
 
-.track:hover .arrow {
+.track:hover .arrow svg {
   opacity: 1;
-  pointer-events: auto;
 }
 
 .arrowLeft {
