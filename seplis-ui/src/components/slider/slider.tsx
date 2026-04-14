@@ -20,12 +20,13 @@ export function Slider<T>({
 }: SliderProps<T>) {
     const scrollRef = useRef<HTMLDivElement>(null)
     const sentinelRef = useRef<HTMLDivElement>(null)
+    const rootRef = useRef<HTMLDivElement>(null)
     const isLoadingRef = useRef(isLoading)
 
     const [canScrollLeft, setCanScrollLeft] = useState(false)
     const [canScrollRight, setCanScrollRight] = useState(false)
 
-    const { getItemProps, portal } = useHoverCard(renderHoverCard)
+    const { getItemProps, portal } = useHoverCard(renderHoverCard, rootRef)
 
     useEffect(() => {
         isLoadingRef.current = isLoading
@@ -93,7 +94,7 @@ export function Slider<T>({
         : undefined
 
     return (
-        <div className={classes.root} style={style}>
+        <div ref={rootRef} className={classes.root} style={style}>
             {title && <div className={classes.title}>{title}</div>}
             {isEmpty && (
                 <div className={classes.emptyMessage}>{emptyMessage}</div>

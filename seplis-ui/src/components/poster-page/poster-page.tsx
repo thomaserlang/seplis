@@ -1,4 +1,5 @@
 import { ScrollArea, Skeleton } from '@mantine/core'
+import { useRef } from 'react'
 import { useHoverCard } from '../hover-card/use-hover-card'
 import classes from './poster-page.module.css'
 
@@ -21,11 +22,12 @@ export function PosterPage<T>({
     onClick,
     skeletonCount = 9,
 }: Props<T>) {
-    const { getItemProps, portal, dismiss } = useHoverCard(renderHoverCard)
+    const containerRef = useRef<HTMLDivElement>(null)
+    const { getItemProps, portal, dismiss } = useHoverCard(renderHoverCard, containerRef)
 
     return (
         <ScrollArea onBottomReached={onLoadMore}>
-            <div className={classes.grid}>
+            <div ref={containerRef} className={classes.grid}>
                 {items.map((item, index) => (
                     <div
                         key={index}

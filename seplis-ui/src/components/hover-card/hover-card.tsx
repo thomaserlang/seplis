@@ -2,6 +2,7 @@ import classes from './hover-card.module.css'
 
 interface Props {
     rect: DOMRect
+    containerRect: DOMRect
     isLeaving: boolean
     onMouseEnter: () => void
     onMouseLeave: () => void
@@ -10,25 +11,25 @@ interface Props {
 
 export function HoverCard({
     rect,
+    containerRect,
     isLeaving,
     onMouseEnter,
     onMouseLeave,
     children,
 }: Props) {
     const hoverWidth = rect.width * 1.6
-    const margin = 8
-    let left = rect.left + rect.width / 2 - hoverWidth / 2
-    left = Math.max(
-        margin,
-        Math.min(left, window.innerWidth - hoverWidth - margin),
-    )
+    let left = rect.left - containerRect.left + rect.width / 2 - hoverWidth / 2
+    left = Math.max(0, Math.min(left, containerRect.width - hoverWidth))
 
-    const originX = ((rect.left + rect.width / 2 - left) / hoverWidth) * 100
+    const originX =
+        ((rect.left - containerRect.left + rect.width / 2 - left) /
+            hoverWidth) *
+        100
 
     const style: React.CSSProperties = {
         left,
         width: `clamp(16.875rem, ${hoverWidth}px, 100%)`,
-        top: rect.top + window.scrollY + rect.height / 2,
+        top: rect.top - containerRect.top + rect.height / 2,
         transformOrigin: `${originX}% 50%`,
     }
 

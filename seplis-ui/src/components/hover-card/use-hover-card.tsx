@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { HoverCard } from './hover-card'
 
 const SHOW_DELAY = 700
@@ -8,10 +7,14 @@ const HIDE_DELAY = 700
 interface HoverState<T> {
     item: T
     rect: DOMRect
+    containerRect: DOMRect
     isLeaving: boolean
 }
 
-export function useHoverCard<T>(renderContent?: (item: T) => React.ReactNode) {
+export function useHoverCard<T>(
+    renderContent?: (item: T) => React.ReactNode,
+    containerRef?: React.RefObject<HTMLElement | null>,
+) {
     const isHoveringRef = useRef(false)
     const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -37,11 +40,14 @@ export function useHoverCard<T>(renderContent?: (item: T) => React.ReactNode) {
             const delay = isHoveringRef.current ? HIDE_DELAY : SHOW_DELAY
             showTimerRef.current = setTimeout(() => {
                 const rect = el.getBoundingClientRect()
+                const containerRect =
+                    containerRef?.current?.getBoundingClientRect() ??
+                    new DOMRect(0, 0, window.innerWidth, window.innerHeight)
                 isHoveringRef.current = true
-                setHover({ item, rect, isLeaving: false })
+                setHover({ item, rect, containerRect, isLeaving: false })
             }, delay)
         },
-        [clearTimers, renderContent],
+        [clearTimers, renderContent, containerRef],
     )
 
     const onItemLeave = useCallback(() => {
@@ -82,19 +88,17 @@ export function useHoverCard<T>(renderContent?: (item: T) => React.ReactNode) {
     )
 
     const portal =
-        hover && renderContent
-            ? createPortal(
-                  <HoverCard
-                      rect={hover.rect}
-                      isLeaving={hover.isLeaving}
-                      onMouseEnter={onCardEnter}
-                      onMouseLeave={onItemLeave}
-                  >
-                      {renderContent(hover.item)}
-                  </HoverCard>,
-                  document.body,
-              )
-            : null
+        hover && renderContent ? (
+            <HoverCard
+                rect={hover.rect}
+                containerRect={hover.containerRect}
+                isLeaving={hover.isLeaving}
+                onMouseEnter={onCardEnter}
+                onMouseLeave={onItemLeave}
+            >
+                {renderContent(hover.item)}
+            </HoverCard>
+        ) : null
 
     return { getItemProps, portal, dismiss }
 }
