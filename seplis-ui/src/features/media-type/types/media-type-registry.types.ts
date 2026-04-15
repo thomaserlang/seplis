@@ -1,4 +1,4 @@
-export type MediaType = 'series' | 'movie'
+export type MediaType = 'series' | 'movie' | 'episode'
 
 export interface MediaTypeRender {
     itemId: string

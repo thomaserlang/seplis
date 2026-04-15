@@ -35,6 +35,7 @@ export function SliderWatched({ onClick, title }: Props) {
             )}
             renderHoverCard={(item) =>
                 mediaTypes[item.type].renderHoverCard({
+                    // @ts-ignore
                     data: item[item.type],
                 })
             }
