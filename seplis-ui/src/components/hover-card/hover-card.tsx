@@ -7,6 +7,7 @@ interface Props {
     onMouseEnter: () => void
     onMouseLeave: () => void
     children: React.ReactNode
+    minWidth?: number
 }
 
 export function HoverCard({
@@ -16,8 +17,9 @@ export function HoverCard({
     onMouseEnter,
     onMouseLeave,
     children,
+    minWidth = 270,
 }: Props) {
-    const hoverWidth = rect.width * 1.6
+    const hoverWidth = Math.max(rect.width * 1.6, minWidth)
     let left = rect.left - containerRect.left + rect.width / 2 - hoverWidth / 2
     left = Math.max(0, Math.min(left, containerRect.width - hoverWidth))
 
@@ -28,7 +30,7 @@ export function HoverCard({
 
     const style: React.CSSProperties = {
         left,
-        width: `clamp(16.875rem, ${hoverWidth}px, 100%)`,
+        width: `clamp(${minWidth}px, ${hoverWidth}px, 100%)`,
         top: rect.top - containerRect.top + rect.height / 2,
         transformOrigin: `${originX}% 50%`,
     }
