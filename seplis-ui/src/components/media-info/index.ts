@@ -6,4 +6,3 @@ export type {
     MediaStatus,
 } from './media-info'
 export { MediaInfoHoverCard } from './media-info-hover-card'
-export { MediaInfoModal } from './media-info-modal'

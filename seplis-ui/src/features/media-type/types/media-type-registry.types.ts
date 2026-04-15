@@ -15,4 +15,8 @@ export interface MediaTypeInfo<T = any> {
     mediaType: MediaType
     render: (props: MediaTypeRender) => React.ReactElement
     renderHoverCard: (props: MediaTypeHoverCard<T>) => React.ReactElement
+    player?: (props: {
+        itemId: string
+        onClose: () => void
+    }) => React.ReactElement
 }

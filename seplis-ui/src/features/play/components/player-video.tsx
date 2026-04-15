@@ -479,23 +479,67 @@ export function PlayerVideo({
             )}
             <div className="media-overlay" />
 
-            <MediaHotkey keys="Space" action="togglePaused" />
-            <MediaHotkey keys="k" action="togglePaused" />
-            <MediaHotkey keys="m" action="toggleMuted" />
-            <MediaHotkey keys="f" action="toggleFullscreen" />
-            <MediaHotkey keys="c" action="toggleSubtitles" />
-            <MediaHotkey keys="i" action="togglePictureInPicture" />
-            <MediaHotkey keys="ArrowRight" action="seekStep" value={5} />
-            <MediaHotkey keys="ArrowLeft" action="seekStep" value={-5} />
-            <MediaHotkey keys="l" action="seekStep" value={10} />
-            <MediaHotkey keys="j" action="seekStep" value={-10} />
-            <MediaHotkey keys="ArrowUp" action="volumeStep" value={0.05} />
-            <MediaHotkey keys="ArrowDown" action="volumeStep" value={-0.05} />
-            <MediaHotkey keys="0-9" action="seekToPercent" />
-            <MediaHotkey keys="Home" action="seekToPercent" value={0} />
-            <MediaHotkey keys="End" action="seekToPercent" value={100} />
-            <MediaHotkey keys=">" action="speedUp" />
-            <MediaHotkey keys="<" action="speedDown" />
+            <MediaHotkey keys="Space" action="togglePaused" target="document" />
+            <MediaHotkey keys="k" action="togglePaused" target="document" />
+            <MediaHotkey keys="m" action="toggleMuted" target="document" />
+            <MediaHotkey keys="f" action="toggleFullscreen" target="document" />
+            <MediaHotkey keys="c" action="toggleSubtitles" target="document" />
+            <MediaHotkey
+                keys="i"
+                action="togglePictureInPicture"
+                target="document"
+            />
+            <MediaHotkey
+                keys="ArrowRight"
+                action="seekStep"
+                value={5}
+                target="document"
+            />
+            <MediaHotkey
+                keys="ArrowLeft"
+                action="seekStep"
+                value={-5}
+                target="document"
+            />
+            <MediaHotkey
+                keys="l"
+                action="seekStep"
+                value={10}
+                target="document"
+            />
+            <MediaHotkey
+                keys="j"
+                action="seekStep"
+                value={-10}
+                target="document"
+            />
+            <MediaHotkey
+                keys="ArrowUp"
+                action="volumeStep"
+                value={0.05}
+                target="document"
+            />
+            <MediaHotkey
+                keys="ArrowDown"
+                action="volumeStep"
+                value={-0.05}
+                target="document"
+            />
+            <MediaHotkey keys="0-9" action="seekToPercent" target="document" />
+            <MediaHotkey
+                keys="Home"
+                action="seekToPercent"
+                value={0}
+                target="document"
+            />
+            <MediaHotkey
+                keys="End"
+                action="seekToPercent"
+                value={100}
+                target="document"
+            />
+            <MediaHotkey keys=">" action="speedUp" target="document" />
+            <MediaHotkey keys="<" action="speedDown" target="document" />
 
             <MediaGesture
                 type="tap"

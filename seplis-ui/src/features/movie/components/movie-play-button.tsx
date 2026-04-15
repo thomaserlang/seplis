@@ -1,5 +1,5 @@
 import { PlayButton, PlayButtonProps } from '@/features/play'
-import { useNavigate } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useGetMoviePlayRequests } from '../api/movie-play-requests.api'
 
 interface Props extends Partial<PlayButtonProps> {
@@ -7,7 +7,7 @@ interface Props extends Partial<PlayButtonProps> {
 }
 
 export function MoviePlayButton({ movieId, ...props }: Props) {
-    const navigate = useNavigate()
+    const [_, setParams] = useSearchParams()
     const { data, isLoading, refetch } = useGetMoviePlayRequests({
         movieId,
     })
@@ -19,7 +19,10 @@ export function MoviePlayButton({ movieId, ...props }: Props) {
                 loading={isLoading}
                 disabled={!data || data.length === 0}
                 onClick={() => {
-                    navigate(`/movies/${movieId}/play`)
+                    setParams((params) => {
+                        params.set('pid', `movie-${movieId}`)
+                        return params
+                    })
                 }}
                 {...props}
             />

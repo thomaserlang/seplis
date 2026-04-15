@@ -1,4 +1,5 @@
-import { MediaInfoModal } from '@/components/media-info'
+import { MediaInfoModal } from '@/features/media-type/components/media-info-modal'
+import { MediaPlayerModal } from '@/features/media-type/components/media-player-modal'
 import { UserMenu } from '@/features/user/components/user-menu'
 import { AppShell, Box, Flex } from '@mantine/core'
 import { ReactNode } from 'react'
@@ -23,6 +24,7 @@ export function MainShell({ children }: Props) {
             </AppShell.Header>
             <AppShell.Main>{children}</AppShell.Main>
             <MediaInfoModal />
+            <MediaPlayerModal />
         </AppShell>
     )
 }
