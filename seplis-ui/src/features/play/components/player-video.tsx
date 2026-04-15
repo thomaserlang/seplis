@@ -40,7 +40,6 @@ import {
 import {
     PlayRequestSource,
     PlayRequestSources,
-    PlayServerMedia,
 } from '../types/play-source.types'
 import {
     AirPlayButton,
@@ -49,7 +48,6 @@ import {
     VolumePopover,
 } from './player-controls'
 
-import { HlsVideo } from '@videojs/react/media/hls-video'
 import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
 import { UsePlaySettings } from '../hooks/use-play-settings'
 import { SettingsPopover } from './player-controls/settings-popover'
@@ -185,21 +183,37 @@ export function PlayerVideo({
 
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
-            <MediaVideo data={data}>
-                {activeSubtitle && !isAssSubtitle && subtitleUrl && (
-                    <track
-                        key={activeSubtitleKey}
-                        kind="subtitles"
-                        label={activeSubtitle.title || activeSubtitle.language}
-                        srcLang={activeSubtitle.language}
-                        src={subtitleUrl}
-                        default
-                    />
-                )}
-                {isAssSubtitle && subtitleUrl && (
-                    <AssSubtitle subUrl={subtitleUrl} offset={subtitleOffset} />
-                )}
-            </MediaVideo>
+            {data && (
+                <Video
+                    src={`${
+                        data.can_direct_play
+                            ? data.direct_play_url
+                            : data.hls_url
+                    }#t=${resumtimeRef.current}`}
+                    crossOrigin="anonymous"
+                    playsInline
+                    autoPlay
+                >
+                    {activeSubtitle && !isAssSubtitle && subtitleUrl && (
+                        <track
+                            key={activeSubtitleKey}
+                            kind="subtitles"
+                            label={
+                                activeSubtitle.title || activeSubtitle.language
+                            }
+                            srcLang={activeSubtitle.language}
+                            src={subtitleUrl}
+                            default
+                        />
+                    )}
+                    {isAssSubtitle && subtitleUrl && (
+                        <AssSubtitle
+                            subUrl={subtitleUrl}
+                            offset={subtitleOffset}
+                        />
+                    )}
+                </Video>
+            )}
 
             {activeSubtitleKey && !isAssSubtitle && (
                 <SubtitleOffsetApplier offset={subtitleOffset} />
@@ -489,42 +503,12 @@ export function PlayerVideo({
                 action="togglePictureInPicture"
                 target="document"
             />
-            <MediaHotkey
-                keys="ArrowRight"
-                action="seekStep"
-                value={5}
-                target="document"
-            />
-            <MediaHotkey
-                keys="ArrowLeft"
-                action="seekStep"
-                value={-5}
-                target="document"
-            />
-            <MediaHotkey
-                keys="l"
-                action="seekStep"
-                value={10}
-                target="document"
-            />
-            <MediaHotkey
-                keys="j"
-                action="seekStep"
-                value={-10}
-                target="document"
-            />
-            <MediaHotkey
-                keys="ArrowUp"
-                action="volumeStep"
-                value={0.05}
-                target="document"
-            />
-            <MediaHotkey
-                keys="ArrowDown"
-                action="volumeStep"
-                value={-0.05}
-                target="document"
-            />
+            <MediaHotkey keys="ArrowRight" action="seekStep" value={5} />
+            <MediaHotkey keys="ArrowLeft" action="seekStep" value={-5} />
+            <MediaHotkey keys="l" action="seekStep" value={10} />
+            <MediaHotkey keys="j" action="seekStep" value={-10} />
+            <MediaHotkey keys="ArrowUp" action="volumeStep" value={0.05} />
+            <MediaHotkey keys="ArrowDown" action="volumeStep" value={-0.05} />
             <MediaHotkey keys="0-9" action="seekToPercent" target="document" />
             <MediaHotkey
                 keys="Home"
@@ -566,38 +550,6 @@ export function PlayerVideo({
                 region="right"
             />
         </Container>
-    )
-}
-
-function MediaVideo({
-    data,
-    children,
-}: {
-    data?: PlayServerMedia
-    children: ReactNode
-}) {
-    if (!data) return null
-    if (data.can_direct_play) {
-        return (
-            <Video
-                src={data.direct_play_url}
-                crossOrigin="anonymous"
-                playsInline
-                autoPlay
-            >
-                {children}
-            </Video>
-        )
-    }
-    return (
-        <HlsVideo
-            src={data.hls_url}
-            crossOrigin="anonymous"
-            playsInline
-            autoPlay
-        >
-            {children}
-        </HlsVideo>
     )
 }
 
