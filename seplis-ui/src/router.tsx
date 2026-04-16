@@ -89,9 +89,7 @@ export const router = createBrowserRouter([
                     {
                         path: '/play-servers/accept-invite',
                         lazy: () =>
-                            import(
-                                './features/play-server/play-server-accept-invite.page'
-                            ),
+                            import('./features/play-server/play-server-accept-invite.page'),
                     },
                     {
                         path: '/play-servers/:playServerId',

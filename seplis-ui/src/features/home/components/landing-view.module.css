@@ -1,0 +1,254 @@
+.page {
+  padding-top: clamp(1.5rem, 3vw, 2.5rem);
+  padding-bottom: 4rem;
+}
+
+.hero {
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in oklab, var(--card) 98%, black),
+      color-mix(in oklab, var(--background) 88%, black)
+    );
+}
+
+.heroInner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(20rem, 0.9fr);
+  gap: 2.5rem;
+  align-items: center;
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.copy {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--foreground);
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  margin-bottom: 1rem;
+  color: var(--foreground);
+  font-size: clamp(1.65rem, 3vw, 2.55rem);
+  line-height: 1.1;
+}
+
+.description {
+  max-width: 40rem;
+  color: var(--muted-foreground);
+  font-size: 1.06rem;
+  line-height: 1.7;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 0.25rem;
+}
+
+.metaItem {
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
+}
+
+.metaItem::before {
+  content: "•";
+  margin-right: 0.5rem;
+  color: var(--foreground);
+}
+
+.heroArt {
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  background: color-mix(in oklab, var(--background) 32%, var(--card));
+  padding: 1rem;
+}
+
+.previewTopbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.2rem;
+}
+
+.previewTitle {
+  color: var(--foreground);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.previewMeta {
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+}
+
+.previewFeature {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(11rem, 1fr);
+  gap: 0.75rem;
+  padding: 0.7rem;
+}
+
+.previewFallback {
+  aspect-ratio: 16 / 9;
+  background: color-mix(in oklab, var(--foreground) 8%, var(--card));
+}
+
+.previewInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.previewInfoLineLg,
+.previewInfoLine,
+.previewInfoLineShort {
+  height: 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--foreground) 12%, var(--card));
+}
+
+.previewInfoLineLg {
+  width: 84%;
+}
+
+.previewInfoLine {
+  width: 72%;
+}
+
+.previewInfoLineShort {
+  width: 42%;
+}
+
+.previewStats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.previewStatPill,
+.previewStatPillMuted {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--border-color);
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.previewStatPill {
+  background: var(--foreground);
+  color: var(--card);
+}
+
+.previewStatPillMuted {
+  color: var(--muted-foreground);
+}
+
+.illustration {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.popularSection {
+  margin-top: 3rem;
+}
+
+.popularSliders {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-inline: -0.5rem;
+}
+
+.section {
+  margin-top: 3.5rem;
+}
+
+.sectionHeader {
+  max-width: 42rem;
+  margin-bottom: 2rem;
+}
+
+.sectionEyebrow {
+  margin-bottom: 0.5rem;
+  color: var(--muted-foreground);
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+  letter-spacing: -0.04em;
+}
+
+.sectionDescription {
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+
+.feature {
+  border-top: 1px solid var(--border-color);
+  padding-top: 1.25rem;
+}
+
+.featureIllustration {
+  margin-bottom: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.9rem;
+  background: color-mix(in oklab, var(--background) 28%, var(--card));
+  padding: 0.75rem;
+}
+
+.featureIcon {
+  background: color-mix(in oklab, var(--foreground) 14%, var(--card));
+  color: var(--foreground);
+}
+
+.featureTitle {
+  color: var(--foreground);
+  letter-spacing: -0.03em;
+}
+
+.featureDescription {
+  color: var(--muted-foreground);
+  line-height: 1.7;
+}
+
+@media (max-width: 62rem) {
+  .heroInner {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .title {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 40rem) {
+  .page {
+    padding-top: 1rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .heroInner {
+    padding: 1rem;
+  }
+
+  .previewFeature {
+    grid-template-columns: 1fr;
+  }
+}
