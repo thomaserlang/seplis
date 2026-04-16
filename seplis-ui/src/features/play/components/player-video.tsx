@@ -49,6 +49,7 @@ import {
 } from './player-controls'
 
 import type { Video as VideoMedia } from '@videojs/core'
+import Hls from 'hls.js'
 import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
 import { UsePlaySettings } from '../hooks/use-play-settings'
 import { SettingsPopover } from './player-controls/settings-popover'
@@ -129,6 +130,12 @@ export function PlayerVideo({
         },
     })
 
+    const needsHlsJs =
+        data != null &&
+        !data.can_direct_play &&
+        !hasNativeHls &&
+        Hls.isSupported()
+
     const [activeSubtitleKey, setActiveSubtitleKey] = useState<
         string | undefined
     >(defaultSubtitle)
@@ -156,8 +163,11 @@ export function PlayerVideo({
         }
     }, [data?.keep_alive_url || ''])
 
+    if (media?.currentTime) {
+        resumtimeRef.current = media.currentTime
+    }
+
     useEffect(() => {
-        resumtimeRef.current = media?.currentTime ?? resumtimeRef.current
         setVideoLoading(true)
     }, [data])
 
@@ -186,11 +196,15 @@ export function PlayerVideo({
         <Container className={`media-default-skin media-default-skin--video`}>
             {data && (
                 <Video
-                    src={`${
-                        data.can_direct_play
-                            ? data.direct_play_url
-                            : data.hls_url
-                    }#t=${resumtimeRef.current}`}
+                    src={
+                        needsHlsJs
+                            ? undefined
+                            : `${
+                                  data.can_direct_play
+                                      ? data.direct_play_url
+                                      : data.hls_url
+                              }#t=${resumtimeRef.current}`
+                    }
                     crossOrigin="anonymous"
                     playsInline
                     autoPlay
@@ -211,6 +225,12 @@ export function PlayerVideo({
                         <AssSubtitle
                             subUrl={subtitleUrl}
                             offset={subtitleOffset}
+                        />
+                    )}
+                    {needsHlsJs && (
+                        <HlsPlayer
+                            src={data.hls_url}
+                            startTime={resumtimeRef.current}
                         />
                     )}
                 </Video>
@@ -554,6 +574,11 @@ export function PlayerVideo({
     )
 }
 
+const hasNativeHls = (() => {
+    const video = document.createElement('video')
+    return !!video.canPlayType('application/vnd.apple.mpegurl')
+})()
+
 function MediaEventHandler({
     onVideoReady,
     onVideoError,
@@ -725,6 +750,28 @@ function PlayErrorHandler({
             media.removeEventListener('error', clearAll)
         }
     }, [media])
+
+    return null
+}
+
+function HlsPlayer({
+    src,
+    startTime = 0,
+}: {
+    src: string
+    startTime?: number
+}): null {
+    const media = useMedia() as VideoMedia | null
+
+    useEffect(() => {
+        if (!media) return
+        const hls = new Hls({ startPosition: startTime })
+        hls.loadSource(src)
+        hls.attachMedia(media as unknown as HTMLVideoElement)
+        return () => {
+            hls.destroy()
+        }
+    }, [media, src])
 
     return null
 }
