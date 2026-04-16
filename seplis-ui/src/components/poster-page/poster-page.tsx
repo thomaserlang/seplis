@@ -68,7 +68,9 @@ export function PosterPage<T>({
             {portal}
             {isLoading &&
                 Array.from({ length: skeletonCount }, (_, i) => (
-                    <Skeleton key={i} height="100%" radius="sm" />
+                    <div key={i} className={classes.skeletonItem}>
+                        <Skeleton height="100%" radius="sm" />
+                    </div>
                 ))}
             {hasMore && (
                 <div ref={loadMoreRef} className={classes.loadMoreTrigger} />
