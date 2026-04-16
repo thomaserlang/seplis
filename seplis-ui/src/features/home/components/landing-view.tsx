@@ -118,27 +118,6 @@ export function LandingView() {
                 </div>
             </section>
 
-            <section className={classes.popularSection}>
-                <div className={classes.popularSliders}>
-                    <SeriesSlider
-                        title="Popular series"
-                        onClick={() => navigate('/login')}
-                        params={{
-                            sort: ['popularity_desc'],
-                            language: ['en'],
-                        }}
-                    />
-                    <MoviesSlider
-                        title="Popular movies"
-                        onClick={() => navigate('/login')}
-                        params={{
-                            sort: ['popularity_desc'],
-                            language: ['en'],
-                        }}
-                    />
-                </div>
-            </section>
-
             <section className={classes.section}>
                 <div className={classes.sectionHeader}>
                     <Text className={classes.sectionEyebrow}>How it works</Text>
@@ -182,6 +161,27 @@ export function LandingView() {
                         </article>
                     ))}
                 </SimpleGrid>
+            </section>
+
+            <section className={classes.popularSection}>
+                <div className={classes.popularSliders}>
+                    <SeriesSlider
+                        title="Popular series"
+                        onClick={() => navigate('/login')}
+                        params={{
+                            sort: ['popularity_desc'],
+                            language: ['en'],
+                        }}
+                    />
+                    <MoviesSlider
+                        title="Popular movies"
+                        onClick={() => navigate('/login')}
+                        params={{
+                            sort: ['popularity_desc'],
+                            language: ['en'],
+                        }}
+                    />
+                </div>
             </section>
         </Container>
     )
