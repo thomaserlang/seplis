@@ -10,7 +10,10 @@
   align-items: start;
   padding: 0.65rem 1rem;
   border-bottom: 1px solid var(--border);
-  transition: background 120ms ease;
+}
+
+.episode:first-child {
+  border-top: 1px solid var(--border);
 }
 
 .episode:last-child {

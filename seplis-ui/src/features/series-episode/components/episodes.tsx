@@ -8,7 +8,7 @@ import {
 import { useActiveUser } from '@/features/user'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import { Button, Center, Flex, Text } from '@mantine/core'
-import classes from './series-episodes.module.css'
+import classes from './episodes.module.css'
 
 interface Props {
     seriesId: number
@@ -16,11 +16,7 @@ interface Props {
     loadMoreButton?: boolean
 }
 
-export function SeriesEpisodes({
-    seriesId,
-    season = 1,
-    loadMoreButton,
-}: Props) {
+export function Episodes({ seriesId, season = 1, loadMoreButton }: Props) {
     const [user] = useActiveUser()
     const {
         data,

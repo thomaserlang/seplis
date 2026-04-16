@@ -1,4 +1,4 @@
-import { SeriesEpisodesModal } from '@/features/series-episode'
+import { EpisodesModal } from '@/features/series-episode'
 import { Button, Flex, Text } from '@mantine/core'
 import { ListIcon } from '@phosphor-icons/react'
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr'
@@ -51,7 +51,7 @@ export function SeriesView({ series }: Props) {
                 </Flex>
             </Flex>
 
-            <SeriesEpisodesModal
+            <EpisodesModal
                 seriesId={series.id}
                 seasons={series.seasons}
                 opened={modal === 'episodes'}

@@ -3,7 +3,7 @@ import { HomeView } from './components/home-view'
 
 export function Component() {
     return (
-        <Box mt="-0.5rem">
+        <Box mt="-0.25rem">
             <HomeView />
         </Box>
     )
