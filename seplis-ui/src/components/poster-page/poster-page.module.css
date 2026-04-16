@@ -6,6 +6,12 @@
   gap: 0.5rem;
   overflow-x: auto;
   scrollbar-width: none;
+
+  position: sticky;
+  top: var(--app-shell-header-offset, 0px);
+  z-index: 10;
+  background: var(--background-color);
+  padding-block: 0.5rem;
 }
 
 .grid {
@@ -25,4 +31,8 @@
 .item:hover {
   transform: scale(1.03);
   opacity: 0.9;
+}
+
+.loadMoreTrigger {
+  height: 1px;
 }

@@ -11,7 +11,7 @@ interface Props {
 
 export function MainShell({ children }: Props) {
     return (
-        <AppShell padding="md" header={{ height: 45 }}>
+        <AppShell padding="xs" header={{ height: 45 }}>
             <AppShell.Header>
                 <Flex h="100%" align="center" p="0.5rem">
                     <Flex gap="0.5rem">

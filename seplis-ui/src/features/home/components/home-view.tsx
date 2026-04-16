@@ -22,7 +22,7 @@ export function HomeView({}: Props) {
     }
 
     return (
-        <Flex direction="column" gap="1rem" mx="-0.5rem">
+        <Flex direction="column" gap="0.25rem" mx="-0.5rem">
             <SliderWatched
                 title="Watched"
                 onClick={(item) => handleClick(item.type, item.data.id)}

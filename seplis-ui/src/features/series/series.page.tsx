@@ -1,5 +1,5 @@
 import { PosterImage } from '@/components/poster-image'
-import { PosterPage } from '@/components/poster-page/poster-page'
+import { PosterPage } from '@/components/poster-page'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import {
     isEmpty,
@@ -47,13 +47,13 @@ export function Component() {
         language: params.getAll('language'),
     }
 
-    const { data, isLoading, fetchNextPage, isFetchingNextPage } =
+    const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
         useGetSeriesList({ params: filter })
 
     const items = pageItemsFlatten(data)
 
     return (
-        <Flex direction="column" gap="1rem" h="var(--content-height)">
+        <Flex direction="column" gap="0.25rem" mt="-0.5rem">
             <SeriesFilterbar
                 filter={filter}
                 setFilter={(f) => {
@@ -94,6 +94,7 @@ export function Component() {
                     })
                 }}
                 onLoadMore={fetchNextPage}
+                hasMore={hasNextPage}
                 isLoading={isLoading || isFetchingNextPage}
             />
         </Flex>

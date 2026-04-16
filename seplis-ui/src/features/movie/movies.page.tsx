@@ -43,14 +43,15 @@ export function Component() {
         language: params.getAll('language'),
     }
 
-    const { data, isLoading, fetchNextPage, isFetchingNextPage } = useGetMovies(
-        { params: filter },
-    )
+    const { data, isLoading, fetchNextPage, isFetchingNextPage, hasNextPage } =
+        useGetMovies({
+            params: filter,
+        })
 
     const items = pageItemsFlatten(data)
 
     return (
-        <Flex direction="column" gap="1rem" h="var(--content-height)">
+        <Flex direction="column" gap="0.25rem" mt="-0.5rem">
             <MoviesFilterbar
                 filter={filter}
                 setFilter={(f) => {
@@ -89,6 +90,7 @@ export function Component() {
                     })
                 }}
                 onLoadMore={fetchNextPage}
+                hasMore={hasNextPage}
                 isLoading={isLoading || isFetchingNextPage}
             />
         </Flex>
