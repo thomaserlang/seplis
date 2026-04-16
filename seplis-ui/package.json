@@ -32,7 +32,7 @@
     "@mantine/notifications": "^9.0.1",
     "@phosphor-icons/react": "2.1.10",
     "@tanstack/react-query": "^5.99.0",
-    "@videojs/react": "^10.0.0-beta.17",
+    "@videojs/react": "^10.0.0-beta.21",
     "jassub": "^2.4.2",
     "ky": "^2.0.0",
     "pretty-bytes": "^7.1.0",

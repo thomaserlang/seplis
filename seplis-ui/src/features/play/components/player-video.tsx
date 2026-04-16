@@ -48,6 +48,7 @@ import {
     VolumePopover,
 } from './player-controls'
 
+import type { Video as VideoMedia } from '@videojs/core'
 import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
 import { UsePlaySettings } from '../hooks/use-play-settings'
 import { SettingsPopover } from './player-controls/settings-popover'
@@ -113,7 +114,7 @@ export function PlayerVideo({
     onTimeUpdate,
     playSettings,
 }: VideoPlayerProps): ReactNode {
-    const media = useMedia()
+    const media = useMedia() as VideoMedia | null
     const resumtimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
     const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
@@ -564,7 +565,7 @@ function MediaEventHandler({
     onTimeUpdate?: (currentTime: number, duration: number) => void
     startTime: number
 }): null {
-    const media = useMedia()
+    const media = useMedia() as VideoMedia | null
     const resumtimeRef = useRef<number>(startTime)
     resumtimeRef.current = startTime
 
@@ -620,7 +621,7 @@ function AssSubtitle({
     subUrl: string
     offset: number
 }): ReactNode {
-    const media = useMedia()
+    const media = useMedia() as VideoMedia | null
     const jassubRef = useRef<JASSUB | null>(null)
 
     useEffect(() => {
@@ -644,7 +645,7 @@ function AssSubtitle({
 }
 
 function SubtitleOffsetApplier({ offset }: { offset: number }): ReactNode {
-    const media = useMedia()
+    const media = useMedia() as VideoMedia | null
 
     useEffect(() => {
         if (!media) return
@@ -652,14 +653,13 @@ function SubtitleOffsetApplier({ offset }: { offset: number }): ReactNode {
         for (let i = 0; i < tracks.length; i++) {
             const track = tracks[i]
             if (track.kind !== 'subtitles' || !track.cues) continue
-            for (let j = 0; j < track.cues.length; j++) {
-                const cue = track.cues[j]
+            for (const cue of track.cues) {
                 if (!('_originalStart' in cue)) {
                     ;(cue as any)._originalStart = cue.startTime
                     ;(cue as any)._originalEnd = cue.endTime
                 }
-                cue.startTime = (cue as any)._originalStart + offset
-                cue.endTime = (cue as any)._originalEnd + offset
+                ;(cue as any).startTime = (cue as any)._originalStart + offset
+                ;(cue as any).endTime = (cue as any)._originalEnd + offset
             }
         }
     }, [media, offset])
@@ -674,7 +674,7 @@ function PlayErrorHandler({
     src: string | undefined
     onPlayError?: (event: PlayErrorEvent) => void
 }): null {
-    const media = useMedia()
+    const media = useMedia() as VideoMedia | null
     const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
         undefined,
     )
