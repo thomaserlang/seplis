@@ -18,6 +18,10 @@
   margin-right: -0.5rem;
 }
 
+.filterBar > * {
+  flex: 0 0 auto;
+}
+
 .grid {
   position: relative;
   display: grid;
