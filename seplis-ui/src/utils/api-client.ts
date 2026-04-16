@@ -14,13 +14,21 @@ const apiClient = ky.create({
     hooks: {
         beforeError: [
             async ({ error }) => {
-                if (
-                    isHTTPError(error) &&
-                    error.response.headers
-                        .get('content-type')
-                        ?.includes('application/json')
-                ) {
-                    error.data = await error.response.clone().json()
+                if (isHTTPError(error)) {
+                    try {
+                        const response = error.response.clone()
+                        const contentType =
+                            response.headers.get('content-type') || ''
+
+                        if (contentType.includes('application/json')) {
+                            error.data = await response.json()
+                        } else {
+                            const text = await response.text()
+                            if (text) error.data = text
+                        }
+                    } catch {
+                        // Ignore secondary body-read errors and keep the original HTTP error.
+                    }
                 }
                 return error
             },

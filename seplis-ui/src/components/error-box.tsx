@@ -24,16 +24,25 @@ export function errorMessageFromResponse(errorObj: any): ReactNode {
     if (typeof errorObj === 'string') return <>{errorObj}</>
 
     if (errorObj instanceof HTTPError) {
-        if (
-            errorObj.response.headers
-                .get('content-type')
-                ?.includes('application/json')
-        ) {
-            // @ts-ignore
-            const error = errorObj.data as APIError
-            if (error && error.message) return error.message
-            return <pre>{JSON.stringify(error, null, 2)}</pre>
+        const error = errorObj.data as APIError
+
+        if (typeof errorObj.data === 'string' && errorObj.data) {
+            return <>{errorObj.data}</>
         }
+
+        if (error && error.message) return error.message
+        if (errorObj.data) return <pre>{JSON.stringify(errorObj.data, null, 2)}</pre>
+
+        return <>{errorObj.message}</>
     }
-    return <>{errorObj.message}</>
+
+    if (
+        typeof errorObj === 'object' &&
+        'message' in errorObj &&
+        typeof errorObj.message === 'string'
+    ) {
+        return <>{errorObj.message}</>
+    }
+
+    return <>{String(errorObj)}</>
 }
