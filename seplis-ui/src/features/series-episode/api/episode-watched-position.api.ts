@@ -2,7 +2,7 @@ import { queryClient } from '@/queryclient'
 import { MutationApiHelperProps, useMutationApiHelper } from '@/utils/api-crud'
 import { EpisodeWatched } from '../types/episode.types'
 import { episodeLastWatchedQueryKey } from './episode-last-watched.api'
-import { episodeToWatchQueryKey } from './episode-to-watch.api'
+import { getEpisodeToWatchQueryKey } from './episode-to-watch.api'
 import { getEpisodeWatchedQueryKey } from './episode-watched.api'
 
 interface EpisodeWatchedPositionUpdateProps extends MutationApiHelperProps<{
@@ -39,7 +39,9 @@ export const {
             }),
         })
         queryClient.invalidateQueries({
-            queryKey: episodeToWatchQueryKey({ seriesId: variables.seriesId }),
+            queryKey: getEpisodeToWatchQueryKey({
+                seriesId: variables.seriesId,
+            }),
         })
     },
 })

@@ -1,5 +1,5 @@
 import { Select } from '@mantine/core'
-import { SeriesSeason } from '../types/series.types'
+import { SeriesSeason } from '../types/series-season.types'
 
 interface Props extends React.ComponentPropsWithoutRef<typeof Select> {
     seasons: SeriesSeason[]

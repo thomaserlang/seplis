@@ -18,7 +18,11 @@ export const {
     url: (props) =>
         `2/series/${props.seriesId}/episodes/${props.episodeNumber}`,
     queryKey: (props) =>
-        ['episode', props.seriesId, props.episodeNumber, props.params].filter(
-            (f) => f !== undefined,
-        ),
+        [
+            'series',
+            props.seriesId,
+            'episode',
+            props.episodeNumber,
+            props.params,
+        ].filter((f) => f !== undefined),
 })

@@ -24,7 +24,7 @@ export const {
 } = usePageApiHelper<Episode, EpisodesProps>({
     url: (props) => `2/series/${props.seriesId}/episodes`,
     queryKey: (props) =>
-        ['episodes', props.seriesId, props.params].filter(
+        ['series', props.seriesId, 'episodes', props.params].filter(
             (f) => f !== undefined,
         ),
 })

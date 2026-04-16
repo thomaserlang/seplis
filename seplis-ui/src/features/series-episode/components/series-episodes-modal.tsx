@@ -1,17 +1,23 @@
 import { Flex, Modal } from '@mantine/core'
 import { useState } from 'react'
-import { Series } from '../types/series.types'
+import { SeriesEpisodes } from '../components/series-episodes'
+import { SeriesSeason } from '../types/series-season.types'
 import { SeasonSelect } from './season-select'
-import { SeriesEpisodes } from './series-episodes'
 
 interface Props {
-    series: Series
+    seriesId: number
+    seasons: SeriesSeason[]
     opened: boolean
     onClose: () => void
 }
 
-export function SeriesEpisodesModal({ series, opened, onClose }: Props) {
-    const [season, setSeason] = useState(series.seasons[0]?.season ?? 1)
+export function SeriesEpisodesModal({
+    seriesId,
+    seasons,
+    opened,
+    onClose,
+}: Props) {
+    const [season, setSeason] = useState(seasons[0]?.season ?? 1)
 
     return (
         <Modal
@@ -21,16 +27,16 @@ export function SeriesEpisodesModal({ series, opened, onClose }: Props) {
             title={
                 <Flex gap="1rem" align="center">
                     <SeasonSelect
-                        seasons={series.seasons}
+                        seasons={seasons}
                         value={season}
                         onChange={(value) => setSeason(Number(value))}
                         size="sm"
                     />
-                    {series.seasons?.[season - 1]?.total} Episodes
+                    {seasons?.[season - 1]?.total} Episodes
                 </Flex>
             }
         >
-            {opened && <SeriesEpisodes seriesId={series.id} season={season} />}
+            {opened && <SeriesEpisodes seriesId={seriesId} season={season} />}
         </Modal>
     )
 }

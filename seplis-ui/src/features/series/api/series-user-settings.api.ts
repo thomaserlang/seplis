@@ -19,7 +19,7 @@ export const {
     queryKey: seriesUserSettingsQueryKey,
 } = useApiHelper<SeriesUserSettings, SeriesUserSettingsGetProps>({
     url: ({ seriesId }) => `2/series/${seriesId}/user-settings`,
-    queryKey: ({ seriesId }) => ['series-user-settings', seriesId],
+    queryKey: ({ seriesId }) => ['series', seriesId, 'user-settings'],
 })
 
 interface SeriesUserSettingsUpdateProps extends MutationApiHelperProps<SeriesUserSettingsUpdate> {

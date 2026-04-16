@@ -20,7 +20,7 @@ export const {
 } = useApiHelper<SeriesWatchlist, SeriesWatchlistGetProps>({
     url: (props) => `2/series/${props.seriesId}/watchlist`,
     queryKey: (props) =>
-        ['series-watchlist', props.seriesId, props.params].filter(
+        ['series', props.seriesId, 'watchlist', props.params].filter(
             (f) => f !== undefined,
         ),
 })

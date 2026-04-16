@@ -8,8 +8,8 @@ interface EpisodeToWatchProps extends ApiHelperProps<{}> {
 export const {
     get: getEpisodeToWatch,
     useGet: useGetEpisodeToWatch,
-    queryKey: episodeToWatchQueryKey,
+    queryKey: getEpisodeToWatchQueryKey,
 } = useApiHelper<Episode | null, EpisodeToWatchProps>({
     url: ({ seriesId }) => `2/series/${seriesId}/episode-to-watch`,
-    queryKey: ({ seriesId }) => ['episode-to-watch', seriesId],
+    queryKey: ({ seriesId }) => ['series', seriesId, 'episode-to-watch'],
 })

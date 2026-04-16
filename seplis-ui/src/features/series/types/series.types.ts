@@ -1,9 +1,10 @@
 import { Genre } from '@/features/genres/types/genre.types'
-import { IImage } from '@/types/image.types'
 import {
     Episode,
+    SeriesSeason,
     UserCanWatchEpisode,
-} from '../../series-episode/types/episode.types'
+} from '@/features/series-episode'
+import { IImage } from '@/types/image.types'
 
 export interface Series {
     id: number
@@ -46,13 +47,6 @@ export interface SeriesUserRatingUpdate {
 
 export interface SeriesUserRating {
     rating: number | null
-}
-
-export interface SeriesSeason {
-    season: number
-    from: number
-    to: number
-    total: number
 }
 
 export interface SeriesUserStats {

@@ -1,3 +1,4 @@
+import { SeriesEpisodesModal } from '@/features/series-episode'
 import { Button, Flex, Text } from '@mantine/core'
 import { ListIcon } from '@phosphor-icons/react'
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr'
@@ -5,7 +6,6 @@ import { useState } from 'react'
 import { Series } from '../types/series.types'
 import { SeriesCast } from './series-cast'
 import { SeriesCastModal } from './series-cast-modal'
-import { SeriesEpisodesModal } from './series-episodes-modal'
 import { SeriesInfo } from './series-info'
 
 interface Props {
@@ -50,8 +50,10 @@ export function SeriesView({ series }: Props) {
                     />
                 </Flex>
             </Flex>
+
             <SeriesEpisodesModal
-                series={series}
+                seriesId={series.id}
+                seasons={series.seasons}
                 opened={modal === 'episodes'}
                 onClose={() => setModal(undefined)}
             />

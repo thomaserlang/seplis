@@ -8,7 +8,7 @@ import {
 } from '@/utils/api-crud'
 import { EpisodeWatched } from '../types/episode.types'
 import { episodeLastWatchedQueryKey } from './episode-last-watched.api'
-import { episodeToWatchQueryKey } from './episode-to-watch.api'
+import { getEpisodeToWatchQueryKey } from './episode-to-watch.api'
 
 interface EpisodeWatchedGetProps extends ApiHelperProps<{}> {
     seriesId: number
@@ -23,8 +23,9 @@ export const {
     url: ({ seriesId, episodeNumber }) =>
         `2/series/${seriesId}/episodes/${episodeNumber}/watched`,
     queryKey: ({ seriesId, episodeNumber }) => [
-        'episode-watched',
+        'series',
         seriesId,
+        'episode-watched',
         episodeNumber,
     ],
 })
@@ -97,7 +98,7 @@ export function invalidateEpisodeWatched({
         queryKey: episodeLastWatchedQueryKey({ seriesId }),
     })
     queryClient.invalidateQueries({
-        queryKey: episodeToWatchQueryKey({ seriesId }),
+        queryKey: getEpisodeToWatchQueryKey({ seriesId }),
     })
     queryClient.invalidateQueries({
         queryKey: getUserWatchedQueryKey({}),
