@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom'
 import { ErrorBox } from './components/error-box'
 import { Logo } from './components/logo'
-import { MainShell } from './features/main-shell/components/main-shell'
+import { MainShell } from './components/main-shell'
 
 export const router = createBrowserRouter([
     {
@@ -80,6 +80,23 @@ export const router = createBrowserRouter([
                     {
                         path: '/movies',
                         lazy: () => import('./features/movie/movies.page'),
+                    },
+                    {
+                        path: '/play-servers',
+                        lazy: () =>
+                            import('./features/play-server/play-servers.page'),
+                    },
+                    {
+                        path: '/play-servers/accept-invite',
+                        lazy: () =>
+                            import(
+                                './features/play-server/play-server-accept-invite.page'
+                            ),
+                    },
+                    {
+                        path: '/play-servers/:playServerId',
+                        lazy: () =>
+                            import('./features/play-server/play-server.page'),
                     },
                 ],
             },

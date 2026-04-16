@@ -121,6 +121,39 @@ class MPlayServerAccess(Base):
             await session.commit()
             return True
 
+    @staticmethod
+    async def leave(play_server_id: str, user_id: int | str) -> bool:
+        async with database.session() as session:
+            play_server = await session.scalar(
+                sa.select(MPlayServer).where(
+                    MPlayServer.id == play_server_id,
+                )
+            )
+            if not play_server:
+                raise exceptions.Play_server_unknown()
+            if play_server.user_id == user_id:
+                raise exceptions.Forbidden(
+                    'Owner cannot remove their own access from the play server'
+                )
+
+            has_access = await session.scalar(
+                sa.select(MPlayServerAccess.play_server_id).where(
+                    MPlayServerAccess.play_server_id == play_server_id,
+                    MPlayServerAccess.user_id == user_id,
+                )
+            )
+            if not has_access:
+                raise exceptions.Play_server_access_user_no_access()
+
+            await session.execute(
+                sa.delete(MPlayServerAccess).where(
+                    MPlayServerAccess.play_server_id == play_server_id,
+                    MPlayServerAccess.user_id == user_id,
+                )
+            )
+            await session.commit()
+            return True
+
 
 class MPlayServerInvite(Base):
     __tablename__ = 'play_server_invites'

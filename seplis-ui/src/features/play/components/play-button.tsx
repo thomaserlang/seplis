@@ -1,6 +1,6 @@
 import { Button, ButtonProps } from '@mantine/core'
 import { CaretDownIcon, PlayIcon } from '@phosphor-icons/react'
-import { PlayRequest } from '../types/play-source.types'
+import { PlayRequest } from '../types/play-request.types'
 import { PlaySourceDownloadMenu } from './play-source-download-menu'
 
 export interface PlayButtonProps extends ButtonProps {

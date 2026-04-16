@@ -1,5 +1,5 @@
 import { Avatar, Flex, Menu } from '@mantine/core'
-import { SignOutIcon } from '@phosphor-icons/react'
+import { HardDrivesIcon, SignOutIcon } from '@phosphor-icons/react'
 import { useNavigate } from 'react-router-dom'
 import { logout, useActiveUser } from '../api/active-user.api'
 
@@ -24,6 +24,14 @@ export function UserMenu() {
                 </Flex>
             </Menu.Target>
             <Menu.Dropdown>
+                <Menu.Item
+                    leftSection={<HardDrivesIcon size={14} />}
+                    onClick={() => {
+                        navigate('/play-servers')
+                    }}
+                >
+                    Play servers
+                </Menu.Item>
                 <Menu.Item
                     leftSection={<SignOutIcon size={14} />}
                     onClick={() => {

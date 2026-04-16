@@ -73,6 +73,27 @@ async def get_play_server_invites(
     return p
 
 
+@router.delete(
+    '/{play_server_id}/invites/{user_id}',
+    status_code=204,
+    description="""
+            **Scope required:** `user:manage_play_servers`
+            """,
+)
+async def delete_play_server_invite(
+    play_server_id: str,
+    user_id: int,
+    user: schemas.User_authenticated = Security(
+        authenticated, scopes=['user:manage_play_servers']
+    ),
+) -> None:
+    await models.MPlayServerInvite.delete_invite(
+        play_server_id=play_server_id,
+        owner_user_id=user.id,
+        user_id=user_id,
+    )
+
+
 @router.post(
     '/accept-invite',
     status_code=204,

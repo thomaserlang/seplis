@@ -5,6 +5,11 @@ export interface User {
     scopes: string
 }
 
+export interface UserPublic {
+    id: number
+    username: string
+}
+
 export interface UserCreate {
     username: string
     password: string

@@ -1,7 +1,4 @@
-export interface PlayRequest {
-    play_id: string
-    play_url: string
-}
+import { PlayRequest } from './play-request.types'
 
 export interface PlaySourceStream {
     title: string
