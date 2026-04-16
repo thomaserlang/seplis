@@ -44,7 +44,9 @@ export function PosterImage({ posterImage, title, sizeX = 320 }: Props) {
                     }}
                 >
                     {title && (
-                        <span className={classes.placeholderTitle}>{title}</span>
+                        <span className={classes.placeholderTitle}>
+                            {title}
+                        </span>
                     )}
                 </div>
             )}
