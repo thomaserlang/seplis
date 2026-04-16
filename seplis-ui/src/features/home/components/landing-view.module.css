@@ -36,7 +36,7 @@
 .title {
   margin-bottom: 1rem;
   color: var(--foreground);
-  font-size: clamp(1.65rem, 3vw, 2.55rem);
+  font-size: clamp(1.65rem, 3vw, 2.2rem);
   line-height: 1.1;
 }
 

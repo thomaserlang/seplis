@@ -125,6 +125,7 @@ export function LandingView() {
                         onClick={() => navigate('/login')}
                         params={{
                             sort: ['popularity_desc'],
+                            language: ['en'],
                         }}
                     />
                     <MoviesSlider
@@ -132,6 +133,7 @@ export function LandingView() {
                         onClick={() => navigate('/login')}
                         params={{
                             sort: ['popularity_desc'],
+                            language: ['en'],
                         }}
                     />
                 </div>
@@ -190,12 +192,14 @@ function LandingContentPreview() {
         params: {
             per_page: 1,
             sort: ['popularity_desc'],
+            language: ['en'],
         },
     })
     const { data: moviesData } = useGetMovies({
         params: {
             per_page: 1,
             sort: ['popularity_desc'],
+            language: ['en'],
         },
     })
 
@@ -207,7 +211,7 @@ function LandingContentPreview() {
         .map(toPreviewItem)
         .filter(isPreviewItem)
         .slice(0, 6)
-    const featured = movies[0] || series[0]
+    const featured = series[0] || movies[0]
 
     return (
         <div className={classes.previewFeature}>
@@ -227,9 +231,9 @@ function LandingContentPreview() {
                 <div className={classes.previewInfoLine} />
                 <div className={classes.previewInfoLineShort} />
                 <div className={classes.previewStats}>
-                    <span className={classes.previewStatPill}>watched 12x</span>
+                    <span className={classes.previewStatPill}>Watched</span>
                     <span className={classes.previewStatPillMuted}>
-                        on watchlist
+                        Watchlist
                     </span>
                 </div>
             </div>
