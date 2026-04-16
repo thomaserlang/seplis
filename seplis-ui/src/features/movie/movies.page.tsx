@@ -70,6 +70,7 @@ export function Component() {
                                 params.set(key, value)
                             }
                         })
+                        scrollTo({ top: 0, behavior: 'smooth' })
                         return params
                     })
                 }}
