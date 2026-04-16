@@ -1,10 +1,9 @@
 import { EpisodesModal } from '@/features/series-episode'
-import { Button, Flex, Text } from '@mantine/core'
+import { Button, Flex } from '@mantine/core'
 import { ListIcon } from '@phosphor-icons/react'
 import { UsersIcon } from '@phosphor-icons/react/dist/ssr'
 import { useState } from 'react'
 import { Series } from '../types/series.types'
-import { SeriesCast } from './series-cast'
 import { SeriesCastModal } from './series-cast-modal'
 import { SeriesInfo } from './series-info'
 
@@ -39,15 +38,6 @@ export function SeriesView({ series }: Props) {
                             Cast
                         </Button>
                     </Flex>
-                    <SeriesCast
-                        seriesId={series.id}
-                        maxCast={14}
-                        title={
-                            <Text size="md" fw="600">
-                                Top Cast
-                            </Text>
-                        }
-                    />
                 </Flex>
             </Flex>
 
