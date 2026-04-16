@@ -364,7 +364,7 @@ function ServerIllustration() {
                     />
                     <circle
                         cx="118"
-                        cy={y + 30}
+                        cy={y + 5}
                         r="5"
                         fill="var(--foreground)"
                     />
@@ -382,7 +382,7 @@ function ServerIllustration() {
                     />
                     <circle
                         cx="230"
-                        cy={y + 30}
+                        cy={y + 5}
                         r="5"
                         fill="var(--foreground)"
                     />
