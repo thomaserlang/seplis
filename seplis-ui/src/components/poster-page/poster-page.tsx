@@ -26,7 +26,10 @@ export function PosterPage<T>({
 }: Props<T>) {
     const containerRef = useRef<HTMLDivElement>(null)
     const loadMoreRef = useRef<HTMLDivElement>(null)
-    const { getItemProps, portal, dismiss } = useHoverCard(renderHoverCard, containerRef)
+    const { getItemProps, portal, dismiss } = useHoverCard({
+        renderContent: renderHoverCard,
+        containerRef,
+    })
 
     useEffect(() => {
         if (!onLoadMore || !hasMore || isLoading || !loadMoreRef.current) return
@@ -67,7 +70,9 @@ export function PosterPage<T>({
                 Array.from({ length: skeletonCount }, (_, i) => (
                     <Skeleton key={i} height="100%" radius="sm" />
                 ))}
-            {hasMore && <div ref={loadMoreRef} className={classes.loadMoreTrigger} />}
+            {hasMore && (
+                <div ref={loadMoreRef} className={classes.loadMoreTrigger} />
+            )}
         </div>
     )
 }

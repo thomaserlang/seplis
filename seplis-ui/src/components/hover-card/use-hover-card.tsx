@@ -11,10 +11,13 @@ interface HoverState<T> {
     isLeaving: boolean
 }
 
-export function useHoverCard<T>(
-    renderContent?: (item: T) => React.ReactNode,
-    containerRef?: React.RefObject<HTMLElement | null>,
-) {
+export function useHoverCard<T>({
+    renderContent,
+    containerRef,
+}: {
+    renderContent?: (item: T) => React.ReactNode
+    containerRef?: React.RefObject<HTMLElement | null>
+}) {
     const isHoveringRef = useRef(false)
     const showTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
