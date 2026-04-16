@@ -7,7 +7,7 @@ import {
 } from '@/features/series-episode'
 import { useActiveUser } from '@/features/user'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Button, Center, Flex, ScrollArea, Text } from '@mantine/core'
+import { Button, Center, Flex, Text } from '@mantine/core'
 import classes from './series-episodes.module.css'
 
 interface Props {
@@ -42,86 +42,80 @@ export function SeriesEpisodes({
 
     return (
         <>
-            <ScrollArea h="100%" onBottomReached={fetchNextPage}>
-                {(isLoading || isFetchingNextPage) && <PageLoader />}
+            {(isLoading || isFetchingNextPage) && <PageLoader />}
 
-                {error && !data && <ErrorBox errorObj={error} />}
+            {error && !data && <ErrorBox errorObj={error} />}
 
-                {episodes.map((ep) => (
-                    <div key={ep.number} className={classes.episode}>
-                        <div className={classes.epNumber}>
-                            <Text size="sm" fw={700} c="dimmed">
-                                {ep.episode ?? ep.number}
+            {episodes.map((ep) => (
+                <div key={ep.number} className={classes.episode}>
+                    <div className={classes.epNumber}>
+                        <Text size="sm" fw={700} c="dimmed">
+                            {ep.episode ?? ep.number}
+                        </Text>
+                        {ep.episode != null && ep.episode !== ep.number && (
+                            <Text size="xs" c="dimmed">
+                                {ep.number}
                             </Text>
-                            {ep.episode != null && ep.episode !== ep.number && (
-                                <Text size="xs" c="dimmed">
-                                    {ep.number}
-                                </Text>
-                            )}
-                        </div>
-                        <div className={classes.epMain}>
-                            <Text size="sm" fw={600}>
-                                {ep.title ||
-                                    `Episode ${ep.episode ?? ep.number}`}
+                        )}
+                    </div>
+                    <div className={classes.epMain}>
+                        <Text size="sm" fw={600}>
+                            {ep.title || `Episode ${ep.episode ?? ep.number}`}
+                        </Text>
+                        {ep.plot && (
+                            <Text size="xs" c="dimmed">
+                                {ep.plot}
                             </Text>
-                            {ep.plot && (
-                                <Text size="xs" c="dimmed">
-                                    {ep.plot}
-                                </Text>
-                            )}
+                        )}
 
-                            <Flex
-                                mt="0.25rem"
-                                gap="0.5rem"
-                                direction="row"
-                                wrap="wrap"
-                                w="100%"
-                            >
-                                <EpisodePlayButton
-                                    size="compact-sm"
-                                    seriesId={seriesId}
-                                    episodeNumber={ep.number}
-                                    canPlay={ep.user_can_watch?.on_play_server}
-                                />
-                                <EpisodeWatchedButton
-                                    seriesId={seriesId}
-                                    episodeNumber={ep.number}
-                                    episode={ep}
-                                    size="compact-sm"
-                                />
-                            </Flex>
-                        </div>
                         <Flex
-                            direction="column"
-                            align="flex-end"
-                            gap="0.2rem"
-                            className={classes.epMeta}
+                            mt="0.25rem"
+                            gap="0.5rem"
+                            direction="row"
+                            wrap="wrap"
+                            w="100%"
                         >
-                            {ep.air_date && (
-                                <Text size="xs" c="dimmed">
-                                    {ep.air_date.substring(0, 10)}
-                                </Text>
-                            )}
-                            {ep.runtime && (
-                                <Text size="xs" c="dimmed">
-                                    {ep.runtime} min
-                                </Text>
-                            )}
+                            <EpisodePlayButton
+                                size="compact-sm"
+                                seriesId={seriesId}
+                                episodeNumber={ep.number}
+                                canPlay={ep.user_can_watch?.on_play_server}
+                            />
+                            <EpisodeWatchedButton
+                                seriesId={seriesId}
+                                episodeNumber={ep.number}
+                                episode={ep}
+                                size="compact-sm"
+                            />
                         </Flex>
                     </div>
-                ))}
+                    <Flex
+                        direction="column"
+                        align="flex-end"
+                        gap="0.2rem"
+                        className={classes.epMeta}
+                    >
+                        {ep.air_date && (
+                            <Text size="xs" c="dimmed">
+                                {ep.air_date.substring(0, 10)}
+                            </Text>
+                        )}
+                        {ep.runtime && (
+                            <Text size="xs" c="dimmed">
+                                {ep.runtime} min
+                            </Text>
+                        )}
+                    </Flex>
+                </div>
+            ))}
 
-                <Center mt="1rem">
-                    {loadMoreButton && !isFetchingNextPage && hasNextPage && (
-                        <Button
-                            variant="default"
-                            onClick={() => fetchNextPage()}
-                        >
-                            Load more
-                        </Button>
-                    )}
-                </Center>
-            </ScrollArea>
+            <Center mt="1rem">
+                {loadMoreButton && !isFetchingNextPage && hasNextPage && (
+                    <Button variant="default" onClick={() => fetchNextPage()}>
+                        Load more
+                    </Button>
+                )}
+            </Center>
         </>
     )
 }
