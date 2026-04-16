@@ -19,6 +19,7 @@ export function MediaPlayerModal() {
 
     return (
         <Modal
+            zIndex="calc(var(--overlay-z-index, 200) + 1)"
             opened={!!Player}
             trapFocus={true}
             autoFocus={true}

@@ -1,4 +1,4 @@
-import { Genre } from '@/types/genre.types'
+import { Genre } from '@/features/genres/types/genre.types'
 import { Flex, Text } from '@mantine/core'
 
 interface Props extends Text.Props {

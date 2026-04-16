@@ -1,4 +1,4 @@
-import { Genre } from '@/types/genre.types'
+import { Genre } from '@/features/genres/types/genre.types'
 import { Flex, Text, UnstyledButton } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
 import { Genres } from '../genres'

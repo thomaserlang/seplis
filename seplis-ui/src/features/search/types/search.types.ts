@@ -1,5 +1,5 @@
+import { Genre } from '@/features/genres/types/genre.types'
 import { MediaType } from '@/features/media-type'
-import { Genre } from '@/types/genre.types'
 import { IImage } from '@/types/image.types'
 
 export interface SearchResult {

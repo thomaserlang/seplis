@@ -1,4 +1,4 @@
-import { Genre } from '@/types/genre.types'
+import { Genre } from '@/features/genres/types/genre.types'
 import { IImage } from '@/types/image.types'
 import { Button, Flex, Text } from '@mantine/core'
 import { CornersOutIcon } from '@phosphor-icons/react'
