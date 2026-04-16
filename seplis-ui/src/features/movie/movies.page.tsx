@@ -51,7 +51,7 @@ export function Component() {
     const items = pageItemsFlatten(data)
 
     return (
-        <Flex direction="column" mt="-0.75rem">
+        <Flex direction="column">
             <MoviesFilterbar
                 filter={filter}
                 setFilter={(f) => {
