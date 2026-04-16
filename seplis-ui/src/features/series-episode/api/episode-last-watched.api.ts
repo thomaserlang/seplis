@@ -11,5 +11,5 @@ export const {
     queryKey: episodeLastWatchedQueryKey,
 } = useApiHelper<Episode | null, EpisodeLastWatchedGetProps>({
     url: ({ seriesId }) => `2/series/${seriesId}/episode-last-watched`,
-    queryKey: ({ seriesId }) => ['episode-last-watched', seriesId],
+    queryKey: ({ seriesId }) => ['series', seriesId, 'episode-last-watched'],
 })
