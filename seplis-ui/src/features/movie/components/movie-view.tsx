@@ -19,7 +19,7 @@ export function MovieView({ movie }: Props) {
                 <title>{movie.title}</title>
                 <MovieInfo movie={movie} />
 
-                <Flex gap="0.5rem" p="1rem" direction="column">
+                <Flex gap="0.5rem" p="1rem" pt="0.5rem" direction="column">
                     <Flex gap="0.5rem">
                         <Button
                             variant="default"
