@@ -10,7 +10,17 @@ interface Props {
 export function MovieCastModal({ movieId, opened, onClose }: Props) {
     return (
         <Modal opened={opened} onClose={onClose} size="xl" title="Cast">
-            {opened && <MovieCast movieId={movieId} loadMoreButton />}
+            {opened && (
+                <MovieCast
+                    movieId={movieId}
+                    cols={{
+                        base: 2,
+                        xs: 3,
+                        sm: 4,
+                        md: 5,
+                    }}
+                />
+            )}
         </Modal>
     )
 }

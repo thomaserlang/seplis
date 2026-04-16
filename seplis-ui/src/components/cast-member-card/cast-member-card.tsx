@@ -4,6 +4,7 @@ import classes from './cast-member-card.module.css'
 
 interface Props {
     castMember: CastMember
+    showTotalEpisodes?: boolean
 }
 
 function initials(name: string) {
@@ -15,7 +16,7 @@ function initials(name: string) {
         .join('')
 }
 
-export function CastMemberCard({ castMember }: Props) {
+export function CastMemberCard({ castMember, showTotalEpisodes }: Props) {
     const { person, roles, character } = castMember
     const characterDisplay =
         roles && roles.length > 0
@@ -37,6 +38,12 @@ export function CastMemberCard({ castMember }: Props) {
                         {characterDisplay}
                     </span>
                 )}
+                {showTotalEpisodes &&
+                    castMember.total_episodes !== undefined && (
+                        <span className={classes.character}>
+                            {castMember.total_episodes} episodes
+                        </span>
+                    )}
             </div>
         </div>
     )

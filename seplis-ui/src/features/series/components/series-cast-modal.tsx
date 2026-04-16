@@ -10,7 +10,18 @@ interface Props {
 export function SeriesCastModal({ seriesId, opened, onClose }: Props) {
     return (
         <Modal opened={opened} onClose={onClose} size="xl" title="Cast">
-            {opened && <SeriesCast seriesId={seriesId} loadMoreButton />}
+            {opened && (
+                <SeriesCast
+                    seriesId={seriesId}
+                    loadMoreButton
+                    cols={{
+                        base: 2,
+                        xs: 3,
+                        sm: 4,
+                        md: 5,
+                    }}
+                />
+            )}
         </Modal>
     )
 }

@@ -2,7 +2,13 @@ import { CastMemberCard } from '@/components/cast-member-card'
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { pageItemsFlatten } from '@/utils/api-crud'
-import { Button, Center, ScrollArea, SimpleGrid } from '@mantine/core'
+import {
+    Button,
+    Center,
+    ScrollArea,
+    SimpleGrid,
+    StyleProp,
+} from '@mantine/core'
 import { ReactNode } from 'react'
 import { useGetSeriesCast } from '../api/series-cast.api'
 
@@ -11,6 +17,8 @@ interface Props {
     maxCast?: number
     title?: ReactNode
     loadMoreButton?: boolean
+    cols?: StyleProp<number>
+    showTotalEpisodes?: boolean
 }
 
 export function SeriesCast({
@@ -18,6 +26,8 @@ export function SeriesCast({
     maxCast,
     title,
     loadMoreButton,
+    cols = { base: 3, xs: 4, sm: 5, md: 6, lg: 7 },
+    showTotalEpisodes,
 }: Props) {
     const {
         data,
@@ -41,14 +51,12 @@ export function SeriesCast({
             {error && !data && <ErrorBox errorObj={error} />}
             {isLoading && <PageLoader />}
             {cast.length > 0 && title}
-            <SimpleGrid
-                cols={{ base: 3, xs: 4, sm: 5, md: 6, lg: 7 }}
-                spacing="0.5rem"
-            >
+            <SimpleGrid cols={cols} spacing="0.5rem">
                 {cast.map((person) => (
                     <CastMemberCard
                         key={person.person.id}
                         castMember={person}
+                        showTotalEpisodes={showTotalEpisodes}
                     />
                 ))}
             </SimpleGrid>
