@@ -695,6 +695,11 @@ function SubtitleOffsetApplier({ offset }: { offset: number }): ReactNode {
     return null
 }
 
+function getBufferEnd(media: VideoMedia): number {
+    if (media.buffered.length === 0) return 0
+    return media.buffered.end(media.buffered.length - 1)
+}
+
 function PlayErrorHandler({
     src,
     onPlayError,
@@ -732,23 +737,29 @@ function PlayErrorHandler({
         if (!media) return
         const onWaiting = () => {
             clearTimeout(stallTimeoutRef.current)
-            stallTimeoutRef.current = setTimeout(
-                () => fireError('stall_timeout'),
-                STALL_LOAD_TIMEOUT,
-            )
+            const currentTimeAtWait = media.currentTime
+            const bufferEndAtWait = getBufferEnd(media)
+            stallTimeoutRef.current = setTimeout(() => {
+                // Don't fire if the video has resumed playing
+                if (media.currentTime > currentTimeAtWait) return
+                // Don't fire if the buffer is still growing (slow connection, not a stall)
+                if (getBufferEnd(media) > bufferEndAtWait) return
+                fireError('stall_timeout')
+            }, STALL_LOAD_TIMEOUT)
         }
-        const onPlaying = () => clearTimeout(stallTimeoutRef.current)
         const clearAll = () => {
             clearTimeout(loadTimeoutRef.current)
             clearTimeout(stallTimeoutRef.current)
         }
         media.addEventListener('waiting', onWaiting)
-        media.addEventListener('playing', onPlaying)
+        media.addEventListener('playing', clearAll)
+        media.addEventListener('timeupdate', clearAll)
         media.addEventListener('canplay', clearAll)
         media.addEventListener('error', clearAll)
         return () => {
             media.removeEventListener('waiting', onWaiting)
-            media.removeEventListener('playing', onPlaying)
+            media.removeEventListener('playing', clearAll)
+            media.removeEventListener('timeupdate', clearAll)
             media.removeEventListener('canplay', clearAll)
             media.removeEventListener('error', clearAll)
         }
