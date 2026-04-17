@@ -10,9 +10,19 @@ interface Props {
     onClick: (movie: Movie) => void
     params: MoviesGetParams
     title?: string
+    itemWidth?: string
+    startPadding?: string
+    background?: string
 }
 
-export function MoviesSlider({ onClick, params, title }: Props) {
+export function MoviesSlider({
+    onClick,
+    params,
+    title,
+    itemWidth,
+    startPadding = '0.5rem',
+    background,
+}: Props) {
     const { data, isLoading, fetchNextPage } = useGetMovies({
         params: {
             ...params,
@@ -28,7 +38,9 @@ export function MoviesSlider({ onClick, params, title }: Props) {
             isLoading={isLoading}
             onLoadMore={fetchNextPage}
             onClick={onClick}
-            startPadding="0.5rem"
+            itemWidth={itemWidth}
+            startPadding={startPadding}
+            background={background}
             renderItem={(item) => (
                 <PosterImage
                     posterImage={item.poster_image}
