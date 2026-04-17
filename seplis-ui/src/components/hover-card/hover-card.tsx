@@ -18,7 +18,7 @@ export function HoverCard({
     onMouseEnter,
     onMouseLeave,
     children,
-    minWidth = 270,
+    minWidth = 275,
 }: Props) {
     const hoverWidth = Math.max(rect.width * 1.6, minWidth)
     let left = rect.left - containerRect.left + rect.width / 2 - hoverWidth / 2
