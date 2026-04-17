@@ -16,7 +16,7 @@ interface MovieWatchedGetProps extends ApiHelperProps<{}> {
 export const {
     get: getMovieWatched,
     useGet: useGetMovieWatched,
-    queryKey: movieWatchedQueryKey,
+    queryKey: getMovieWatchedQueryKey,
 } = useApiHelper<MovieWatched, MovieWatchedGetProps>({
     url: ({ movieId }) => `2/movies/${movieId}/watched`,
     queryKey: ({ movieId }) => ['movie-watched', movieId],
@@ -66,10 +66,10 @@ export function invalidateMovieWatched({
     data?: MovieWatched
 }) {
     if (data) {
-        queryClient.setQueryData(movieWatchedQueryKey({ movieId }), data)
+        queryClient.setQueryData(getMovieWatchedQueryKey({ movieId }), data)
     } else {
         queryClient.invalidateQueries({
-            queryKey: movieWatchedQueryKey({ movieId }),
+            queryKey: getMovieWatchedQueryKey({ movieId }),
         })
     }
     queryClient.invalidateQueries({
