@@ -51,7 +51,10 @@ export function MovieCast({
             {error && !data && <ErrorBox errorObj={error} />}
             {isLoading && <PageLoader />}
             {cast.length > 0 && title}
-            <SimpleGrid cols={cols} spacing="0.5rem">
+            <SimpleGrid
+                cols={cols}
+                spacing={{ base: '0.75rem', sm: '0.9rem', lg: '1rem' }}
+            >
                 {cast.map((person) => (
                     <CastMemberCard
                         key={person.person.id}

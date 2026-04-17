@@ -34,13 +34,11 @@ export function CastMemberCard({ castMember, showTotalEpisodes }: Props) {
             <div className={classes.info}>
                 <span className={classes.name}>{person.name}</span>
                 {characterDisplay && (
-                    <span className={classes.character}>
-                        {characterDisplay}
-                    </span>
+                    <span className={classes.character}>{characterDisplay}</span>
                 )}
                 {showTotalEpisodes &&
                     castMember.total_episodes !== undefined && (
-                        <span className={classes.character}>
+                        <span className={classes.episodeCount}>
                             {castMember.total_episodes} episodes
                         </span>
                     )}

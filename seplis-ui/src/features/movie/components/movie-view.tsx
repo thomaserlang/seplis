@@ -34,7 +34,7 @@ export function MovieView({ movie }: Props) {
                         movieId={movie.id}
                         maxCast={14}
                         title={
-                            <Text size="lg" fw="600" mb="0.25rem">
+                            <Text size="md" fw="700" mb="0.4rem">
                                 Top Cast
                             </Text>
                         }
