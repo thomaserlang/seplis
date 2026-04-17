@@ -165,7 +165,9 @@ export function PlayerVideo({
     }, [data?.keep_alive_url || ''])
 
     useLayoutEffect(() => {
-        resumtimeRef.current = media?.currentTime ?? resumtimeRef.current
+        if (media?.currentTime) {
+            resumtimeRef.current = media.currentTime
+        }
     }, [data])
 
     useEffect(() => {
