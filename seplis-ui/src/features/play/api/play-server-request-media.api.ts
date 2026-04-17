@@ -92,10 +92,9 @@ export const {
                                   transcodeVideoCodec,
                               )
                             : undefined,
-                        // TODO: bug on the play server preventing multiple HDR formats to be sent
                         supported_hdr_formats:
                             hdrEnabled && supportedHdrFormats?.length
-                                ? supportedHdrFormats[0]
+                                ? String(supportedHdrFormats)
                                 : undefined,
                     }).filter(
                         ([, value]) => value !== undefined && value !== null,
