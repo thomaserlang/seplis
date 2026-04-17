@@ -32,6 +32,7 @@ export function SeriesView({ series }: Props) {
                                 Episodes
                             </Button>
                         </Flex>
+
                         <SeriesCastSlider
                             seriesId={series.id}
                             maxCast={22}
@@ -58,6 +59,7 @@ export function SeriesView({ series }: Props) {
                 opened={modal === 'episodes'}
                 onClose={() => setModal(undefined)}
             />
+
             <SeriesCastModal
                 seriesId={series.id}
                 opened={modal === 'cast'}

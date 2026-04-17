@@ -39,7 +39,7 @@ export function EpisodeCard({
     ...props
 }: EpisodeCardProps) {
     return (
-        <Box>
+        <Flex direction="column" h="100%">
             {title && (
                 <Text size="xs" tt="uppercase" fw={700} c="dimmed" mb={2}>
                     {title}
@@ -58,7 +58,7 @@ export function EpisodeCard({
                     buttonSize={buttonSize}
                 />
             )}
-        </Box>
+        </Flex>
     )
 }
 
@@ -155,9 +155,16 @@ function EpisodeCardEmpty({
     noEpisodeText?: string
 }) {
     return (
-        <Paper withBorder p="sm">
-            <Flex align="center" gap="sm" c="dimmed">
-                <TelevisionSimpleIcon size={28} />
+        <Paper withBorder p="sm" h="100%">
+            <Flex
+                align="center"
+                gap="sm"
+                c="dimmed"
+                h="100%"
+                justify="center"
+                direction="column"
+            >
+                <TelevisionSimpleIcon size={36} />
                 <Text size={fz}>{noEpisodeText || 'No episode to watch'}</Text>
             </Flex>
         </Paper>
