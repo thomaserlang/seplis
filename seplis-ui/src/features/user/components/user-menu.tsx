@@ -36,7 +36,7 @@ export function UserMenu() {
                     leftSection={<SignOutIcon size={14} />}
                     onClick={() => {
                         logout()
-                        navigate('/login')
+                        navigate('/')
                     }}
                 >
                     Logout
