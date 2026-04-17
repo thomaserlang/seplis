@@ -161,7 +161,6 @@ export function pickStartSubtitle({
     if (preferredSubtitleLangs?.length) {
         for (const lang of preferredSubtitleLangs) {
             const match = streams.find((s) => languageMatch(s.language, lang))
-            console.log(match)
             if (match) {
                 if (
                     !defaultSubtitle &&
