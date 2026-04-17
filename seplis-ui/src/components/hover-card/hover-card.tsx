@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react'
 import classes from './hover-card.module.css'
 
 interface Props {
@@ -28,15 +29,28 @@ export function HoverCard({
             hoverWidth) *
         100
 
+    const baseTop = rect.top - containerRect.top + rect.height / 2
+    const cardRef = useRef<HTMLDivElement>(null)
+    const [topAdjust, setTopAdjust] = useState(0)
+
+    useLayoutEffect(() => {
+        if (!cardRef.current) return
+        const cardHeight = cardRef.current.offsetHeight
+        const topInViewport = containerRect.top + baseTop - cardHeight / 2
+        const overflow = topInViewport + cardHeight - window.innerHeight
+        setTopAdjust(overflow > 0 ? overflow : 0)
+    }, [baseTop, containerRect.top])
+
     const style: React.CSSProperties = {
         left,
         width: `clamp(${minWidth}px, ${hoverWidth}px, 100%)`,
-        top: rect.top - containerRect.top + rect.height / 2,
+        top: baseTop - topAdjust,
         transformOrigin: `${originX}% 50%`,
     }
 
     return (
         <div
+            ref={cardRef}
             className={`${classes.hoverCard} ${isLeaving ? classes.hoverCardLeaving : ''}`}
             style={style}
             onMouseEnter={onMouseEnter}
