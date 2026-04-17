@@ -1,7 +1,12 @@
 import { Logo } from '@/components/logo'
+import { PageLoader } from '@/components/page-loader'
 import { PosterImage } from '@/components/poster-image/poster-image'
+import { Slider } from '@/components/slider'
+import { mediaTypes } from '@/features/media-type'
 import { MoviesSlider, useGetMovies } from '@/features/movie'
+import { Movie } from '@/features/movie/types/movie.types'
 import { SeriesSlider, useGetSeriesList } from '@/features/series'
+import { Series } from '@/features/series/types/series.types'
 import { IImage } from '@/types/image.types'
 import { pageItemsFlatten } from '@/utils/api-crud'
 import {
@@ -20,11 +25,13 @@ import {
     DevicesIcon,
     UsersThreeIcon,
 } from '@phosphor-icons/react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import classes from './landing-view.module.css'
 
 type PreviewItem = {
     id: number
+    type: 'movie' | 'series'
+    data: Movie | Series
     poster_image: IImage | null
     title: string | null
 }
@@ -61,7 +68,7 @@ export function LandingView() {
             <section className={classes.hero}>
                 <div className={classes.heroInner}>
                     <Stack gap="lg" className={classes.copy}>
-                        <Group gap="lg">
+                        <Group gap="lg" className={classes.brandRow}>
                             <Logo size="3.25rem" />
                             <Text className={classes.eyebrow}>SEPLIS</Text>
                         </Group>
@@ -80,7 +87,7 @@ export function LandingView() {
                             </Text>
                         </div>
 
-                        <Group gap="sm">
+                        <Group gap="sm" className={classes.ctaRow}>
                             <Button
                                 component={Link}
                                 to="/signup"
@@ -188,72 +195,107 @@ export function LandingView() {
 }
 
 function LandingContentPreview() {
+    const [_, setParams] = useSearchParams()
     const { data: seriesData } = useGetSeriesList({
         params: {
-            per_page: 1,
+            per_page: 12,
             sort: ['popularity_desc'],
             language: ['en'],
         },
     })
     const { data: moviesData } = useGetMovies({
         params: {
-            per_page: 1,
+            per_page: 12,
             sort: ['popularity_desc'],
             language: ['en'],
         },
     })
 
     const series = pageItemsFlatten(seriesData)
-        .map(toPreviewItem)
+        .map((item) => toPreviewItem(item, 'series'))
         .filter(isPreviewItem)
-        .slice(0, 6)
     const movies = pageItemsFlatten(moviesData)
-        .map(toPreviewItem)
+        .map((item) => toPreviewItem(item, 'movie'))
         .filter(isPreviewItem)
-        .slice(0, 6)
-    const featured = series[0] || movies[0]
+
+    const watched = [...movies.slice(0, 4), ...series.slice(0, 6)].slice(0, 10)
+    const seriesToWatch = series.slice(0, 10)
+    const movieWatchlist = movies.slice(0, 10)
+    const popular = [...series.slice(2), ...movies.slice(2)].slice(0, 10)
+    const rows = [
+        { title: 'Watched', items: watched },
+        { title: 'Series to Watch', items: seriesToWatch },
+        { title: 'Movie watchlist', items: movieWatchlist },
+        { title: 'Popular movies', items: popular },
+    ].filter((row) => row.items.length > 0)
+
+    function handleOpen(item: PreviewItem) {
+        setParams((params) => {
+            params.set('mid', `${item.type}-${item.id}`)
+            return params
+        })
+    }
 
     return (
-        <div className={classes.previewFeature}>
-            <div className={classes.previewPlayer}>
-                {featured ? (
-                    <PosterImage
-                        posterImage={featured.poster_image}
-                        title={featured.title}
+        <div className={classes.previewViewport}>
+            {rows.length > 0 ? (
+                rows.map((row) => (
+                    <LandingPreviewSliderRow
+                        key={row.title}
+                        title={row.title}
+                        items={row.items}
+                        onClick={handleOpen}
                     />
-                ) : (
-                    <div className={classes.previewFallback} />
-                )}
-            </div>
-
-            <div className={classes.previewInfo}>
-                <div className={classes.previewInfoLineLg} />
-                <div className={classes.previewInfoLine} />
-                <div className={classes.previewInfoLineShort} />
-                <div className={classes.previewStats}>
-                    <span className={classes.previewStatPill}>Watched</span>
-                    <span className={classes.previewStatPillMuted}>
-                        Watchlist
-                    </span>
+                ))
+            ) : (
+                <div className={classes.previewEmptyState}>
+                    <PageLoader />
                 </div>
-            </div>
+            )}
+        </div>
+    )
+}
+
+function LandingPreviewSliderRow({
+    title,
+    items,
+    onClick,
+}: {
+    title: string
+    items: PreviewItem[]
+    onClick: (item: PreviewItem) => void
+}) {
+    return (
+        <div className={classes.previewSliderRow}>
+            <Slider
+                title={title}
+                items={items}
+                itemWidth="2.8rem"
+                onClick={onClick}
+                renderItem={(item) => (
+                    <PosterImage
+                        posterImage={item.poster_image}
+                        title={item.title}
+                        sizeX={180}
+                    />
+                )}
+                renderHoverCard={(item) =>
+                    mediaTypes[item.type].renderHoverCard({ data: item.data })
+                }
+            />
         </div>
     )
 }
 
 function toPreviewItem(
-    item:
-        | {
-              id: number
-              poster_image: IImage | null
-              title: string | null
-          }
-        | null
-        | undefined,
+    item: Movie | Series | null | undefined,
+    type: 'movie' | 'series',
 ): PreviewItem | null {
     if (!item) return null
     return {
         id: item.id,
+        type,
+        data: item,
         poster_image: item.poster_image,
         title: item.title,
     }
