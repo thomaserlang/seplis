@@ -32,6 +32,7 @@ import JASSUB from 'jassub'
 import {
     useEffect,
     useEffectEvent,
+    useLayoutEffect,
     useRef,
     useState,
     type CSSProperties,
@@ -163,9 +164,9 @@ export function PlayerVideo({
         }
     }, [data?.keep_alive_url || ''])
 
-    if (media?.currentTime) {
-        resumtimeRef.current = media.currentTime
-    }
+    useLayoutEffect(() => {
+        resumtimeRef.current = media?.currentTime ?? resumtimeRef.current
+    }, [data])
 
     useEffect(() => {
         setVideoLoading(true)
@@ -230,7 +231,7 @@ export function PlayerVideo({
                     {needsHlsJs && (
                         <HlsPlayer
                             src={data.hls_url}
-                            startTime={resumtimeRef.current}
+                            startTimeRef={resumtimeRef}
                         />
                     )}
                 </Video>
@@ -756,16 +757,16 @@ function PlayErrorHandler({
 
 function HlsPlayer({
     src,
-    startTime = 0,
+    startTimeRef,
 }: {
     src: string
-    startTime?: number
+    startTimeRef: { current: number }
 }): null {
     const media = useMedia() as VideoMedia | null
 
     useEffect(() => {
         if (!media) return
-        const hls = new Hls({ startPosition: startTime })
+        const hls = new Hls({ startPosition: startTimeRef.current })
         hls.loadSource(src)
         hls.attachMedia(media as unknown as HTMLVideoElement)
         return () => {
