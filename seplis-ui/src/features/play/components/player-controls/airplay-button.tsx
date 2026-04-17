@@ -1,37 +1,70 @@
 import { AirplayIcon } from '@phosphor-icons/react'
+import type { Video as VideoMedia } from '@videojs/core'
 import { Tooltip, useMedia } from '@videojs/react'
 import { useEffect, useState, type ReactNode } from 'react'
 
+type AirPlayAvailability = 'available' | 'not-available'
+
+interface WebKitAvailabilityEvent extends Event {
+    availability?: AirPlayAvailability
+}
+
+interface AirPlayMedia extends VideoMedia {
+    webkitCurrentPlaybackTargetIsWireless?: boolean
+    webkitShowPlaybackTargetPicker: () => void
+    addEventListener(
+        type: 'webkitplaybacktargetavailabilitychanged',
+        listener: (event: WebKitAvailabilityEvent) => void,
+        options?: boolean | AddEventListenerOptions,
+    ): void
+    addEventListener(
+        type: 'webkitcurrentplaybacktargetiswirelesschanged',
+        listener: EventListener,
+        options?: boolean | AddEventListenerOptions,
+    ): void
+    removeEventListener(
+        type: 'webkitplaybacktargetavailabilitychanged',
+        listener: (event: WebKitAvailabilityEvent) => void,
+        options?: boolean | EventListenerOptions,
+    ): void
+    removeEventListener(
+        type: 'webkitcurrentplaybacktargetiswirelesschanged',
+        listener: EventListener,
+        options?: boolean | EventListenerOptions,
+    ): void
+}
+
 export function AirPlayButton(): ReactNode {
-    const media = useMedia()
+    const media = useMedia() as VideoMedia | null
     const [available, setAvailable] = useState(false)
     const [active, setActive] = useState(false)
 
     useEffect(() => {
         if (!media || !('webkitShowPlaybackTargetPicker' in media)) return
 
-        const onAvailability = (e: Event) => {
-            const availability = (e as any).availability
-            setAvailable(availability === 'available')
+        const airplayMedia = media as AirPlayMedia
+
+        const onAvailability = (event: WebKitAvailabilityEvent) => {
+            setAvailable(event.availability === 'available')
         }
         const onConnectionChanged = () => {
-            setActive(!!(media as any).webkitCurrentPlaybackTargetIsWireless)
+            setActive(!!airplayMedia.webkitCurrentPlaybackTargetIsWireless)
         }
 
-        media.addEventListener(
+        airplayMedia.addEventListener(
             'webkitplaybacktargetavailabilitychanged',
             onAvailability,
         )
-        media.addEventListener(
+        airplayMedia.addEventListener(
             'webkitcurrentplaybacktargetiswirelesschanged',
             onConnectionChanged,
         )
         return () => {
-            media.removeEventListener(
+            airplayMedia.removeEventListener(
                 'webkitplaybacktargetavailabilitychanged',
                 onAvailability,
             )
-            media.removeEventListener(
+            airplayMedia.removeEventListener(
                 'webkitcurrentplaybacktargetiswirelesschanged',
                 onConnectionChanged,
             )
@@ -49,7 +82,9 @@ export function AirPlayButton(): ReactNode {
                         aria-label="AirPlay"
                         className={`media-button media-button--subtle media-button--icon${active ? ' media-button--airplay-active' : ''}`}
                         onClick={() =>
-                            (media as any)?.webkitShowPlaybackTargetPicker()
+                            (
+                                media as AirPlayMedia | null
+                            )?.webkitShowPlaybackTargetPicker()
                         }
                     >
                         <AirplayIcon
