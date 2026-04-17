@@ -8,7 +8,48 @@ interface HoverState<T> {
     item: T
     rect: DOMRect
     containerRect: DOMRect
+    viewportRect: DOMRect
     isLeaving: boolean
+}
+
+function intersectRect(base: DOMRect, next: DOMRect) {
+    const top = Math.max(base.top, next.top)
+    const bottom = Math.min(base.bottom, next.bottom)
+    const left = Math.max(base.left, next.left)
+    const right = Math.min(base.right, next.right)
+
+    return new DOMRect(
+        left,
+        top,
+        Math.max(0, right - left),
+        Math.max(0, bottom - top),
+    )
+}
+
+function getViewportRect(el: HTMLElement, containerRect: DOMRect) {
+    let viewportRect = intersectRect(
+        new DOMRect(0, 0, window.innerWidth, window.innerHeight),
+        containerRect,
+    )
+    let current: HTMLElement | null = el.parentElement
+
+    while (current) {
+        const style = window.getComputedStyle(current)
+        const clipsVertical =
+            /(auto|scroll|hidden|clip)/.test(style.overflowY) ||
+            /(auto|scroll|hidden|clip)/.test(style.overflow)
+
+        if (clipsVertical) {
+            viewportRect = intersectRect(
+                viewportRect,
+                current.getBoundingClientRect(),
+            )
+        }
+
+        current = current.parentElement
+    }
+
+    return viewportRect
 }
 
 export function useHoverCard<T>({
@@ -50,8 +91,15 @@ export function useHoverCard<T>({
                 const containerRect =
                     containerRef?.current?.getBoundingClientRect() ??
                     new DOMRect(0, 0, window.innerWidth, window.innerHeight)
+                const viewportRect = getViewportRect(el, containerRect)
                 isHoveringRef.current = true
-                setHover({ item, rect, containerRect, isLeaving: false })
+                setHover({
+                    item,
+                    rect,
+                    containerRect,
+                    viewportRect,
+                    isLeaving: false,
+                })
             }, SHOW_DELAY)
         },
         [clearTimers, renderContent, containerRef],
@@ -94,6 +142,7 @@ export function useHoverCard<T>({
             <HoverCard
                 rect={hover.rect}
                 containerRect={hover.containerRect}
+                viewportRect={hover.viewportRect}
                 isLeaving={hover.isLeaving}
                 onMouseEnter={onCardEnter}
                 onMouseLeave={onItemLeave}

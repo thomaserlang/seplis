@@ -4,6 +4,7 @@ import classes from './hover-card.module.css'
 interface Props {
     rect: DOMRect
     containerRect: DOMRect
+    viewportRect: DOMRect
     isLeaving: boolean
     onMouseEnter: () => void
     onMouseLeave: () => void
@@ -14,6 +15,7 @@ interface Props {
 export function HoverCard({
     rect,
     containerRect,
+    viewportRect,
     isLeaving,
     onMouseEnter,
     onMouseLeave,
@@ -37,9 +39,12 @@ export function HoverCard({
         if (!cardRef.current) return
         const cardHeight = cardRef.current.offsetHeight
         const topInViewport = containerRect.top + baseTop - cardHeight / 2
-        const overflow = topInViewport + cardHeight - window.innerHeight
-        setTopAdjust(overflow > 0 ? overflow : 0)
-    }, [baseTop, containerRect.top])
+        const bottomOverflow = topInViewport + cardHeight - viewportRect.bottom
+        const topOverflow = viewportRect.top - topInViewport
+        setTopAdjust(
+            bottomOverflow > 0 ? bottomOverflow : topOverflow > 0 ? -topOverflow : 0,
+        )
+    }, [baseTop, containerRect.top, viewportRect.bottom, viewportRect.top])
 
     const style: React.CSSProperties = {
         left,
