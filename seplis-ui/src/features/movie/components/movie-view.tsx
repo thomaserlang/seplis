@@ -17,9 +17,7 @@ export function MovieView({ movie }: Props) {
         <>
             <Flex direction="column">
                 <title>{movie.title}</title>
-                <MovieInfo movie={movie} />
-
-                <Flex gap="0.5rem" p="1rem" pt="0.5rem" direction="column">
+                <MovieInfo movie={movie}>
                     <Flex gap="0.5rem">
                         <Button
                             variant="default"
@@ -29,11 +27,14 @@ export function MovieView({ movie }: Props) {
                             Cast
                         </Button>
                     </Flex>
+                </MovieInfo>
+
+                <Flex gap="0.5rem" p="1rem" pt="0.5rem" direction="column">
                     <MovieCast
                         movieId={movie.id}
                         maxCast={14}
                         title={
-                            <Text size="md" fw="600" mb="0.25rem">
+                            <Text size="lg" fw="600" mb="0.25rem">
                                 Top Cast
                             </Text>
                         }

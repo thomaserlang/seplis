@@ -10,9 +10,10 @@ import { MovieWatchlistButton } from './movie-watchlist-button'
 
 interface Props {
     movie: Movie
+    children?: React.ReactNode
 }
 
-export function MovieInfo({ movie }: Props) {
+export function MovieInfo({ movie, children }: Props) {
     return (
         <MediaInfo
             posterUrl={
@@ -46,6 +47,7 @@ export function MovieInfo({ movie }: Props) {
                 <MovieWatchlistButton movieId={movie.id} />
                 <MovieFavoriteButton movieId={movie.id} />
             </Flex>
+            {children}
         </MediaInfo>
     )
 }

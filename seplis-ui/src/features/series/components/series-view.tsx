@@ -20,25 +20,28 @@ export function SeriesView({ series }: Props) {
         <>
             <Flex direction="column">
                 <title>{series.title}</title>
-                <SeriesInfo series={series} />
-                <Flex gap="0.5rem" p="1rem" pt="0.5rem" direction="column">
-                    <Flex gap="0.5rem">
-                        <Button
-                            variant="default"
-                            leftSection={<ListIcon />}
-                            onClick={() => setModal('episodes')}
-                        >
-                            Episodes
-                        </Button>
-                        <Button
-                            variant="default"
-                            leftSection={<UsersIcon />}
-                            onClick={() => setModal('cast')}
-                        >
-                            Cast
-                        </Button>
+                <SeriesInfo series={series}>
+                    <Flex gap="0.5rem" direction="column">
+                        <Flex gap="0.5rem">
+                            <Button
+                                variant="default"
+                                size="compact-md"
+                                leftSection={<ListIcon />}
+                                onClick={() => setModal('episodes')}
+                            >
+                                Episodes
+                            </Button>
+                            <Button
+                                variant="default"
+                                size="compact-md"
+                                leftSection={<UsersIcon />}
+                                onClick={() => setModal('cast')}
+                            >
+                                Cast
+                            </Button>
+                        </Flex>
                     </Flex>
-                </Flex>
+                </SeriesInfo>
             </Flex>
 
             <EpisodesModal

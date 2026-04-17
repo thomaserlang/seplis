@@ -12,6 +12,7 @@ import { SeriesWatchlistButton } from './series-watchlist-button'
 
 interface Props {
     series: Series
+    children?: React.ReactNode
 }
 
 const STATUS: Record<number, MediaStatus> = {
@@ -23,7 +24,7 @@ const STATUS: Record<number, MediaStatus> = {
     5: { label: 'Planned', dot: 'oklch(0.55 0.22 295)' },
 }
 
-export function SeriesInfo({ series }: Props) {
+export function SeriesInfo({ series, children }: Props) {
     return (
         <MediaInfo
             posterUrl={
@@ -61,6 +62,8 @@ export function SeriesInfo({ series }: Props) {
                         <EpisodeLastWatchedCard seriesId={series.id} />
                     </Box>
                 </Flex>
+
+                {children}
             </Flex>
         </MediaInfo>
     )
