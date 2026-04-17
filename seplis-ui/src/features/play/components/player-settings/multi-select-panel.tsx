@@ -6,7 +6,7 @@ import { SubMenuHeader } from './sub-menu-header'
 
 interface Props<T extends string> {
     title: string
-    options: T[]
+    options: { value: T; label: string }[]
     selected: T[]
     onApply: (next: T[] | undefined) => void
     back: () => void
@@ -38,11 +38,11 @@ export function MultiSelectPanel<T extends string>({
             <SettingsBody>
                 {options.map((option) => (
                     <OptionItem
-                        key={option}
-                        active={local.includes(option)}
-                        onClick={() => toggle(option)}
+                        key={option.value}
+                        active={local.includes(option.value)}
+                        onClick={() => toggle(option.value)}
                     >
-                        {option}
+                        {option.label}
                     </OptionItem>
                 ))}
             </SettingsBody>

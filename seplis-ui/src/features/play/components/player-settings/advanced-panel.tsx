@@ -7,9 +7,12 @@ import {
 import { channelLabel } from '../../utils/play-audio.utils'
 
 import {
+    AUDIO_CODEC_LABELS,
     AUDIO_CODECS,
+    HDR_FORMAT_LABELS,
     HDR_FORMATS,
     STREAM_FORMATS,
+    VIDEO_CODEC_LABELS,
     VIDEO_CODECS,
     VIDEO_CONTAINERS,
 } from '../../types/media.types'
@@ -47,7 +50,10 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
         return (
             <MultiSelectPanel
                 title="Video Codecs"
-                options={VIDEO_CODECS}
+                options={VIDEO_CODECS.map((c) => ({
+                    value: c,
+                    label: VIDEO_CODEC_LABELS[c],
+                }))}
                 selected={playSettings.settings.supportedVideoCodecs}
                 onApply={(next) => {
                     const changes: Partial<PlaySettingsOverrides> = {
@@ -67,7 +73,10 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
         return (
             <MultiSelectPanel
                 title="HDR Formats"
-                options={HDR_FORMATS}
+                options={HDR_FORMATS.map((f) => ({
+                    value: f,
+                    label: HDR_FORMAT_LABELS[f],
+                }))}
                 selected={settings.supportedHdrFormats}
                 onApply={(next) =>
                     playSettings.update({ supportedHdrFormats: next })
@@ -87,6 +96,7 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
                     playSettings.update({ transcodeVideoCodec: v })
                 }
                 back={toMain}
+                renderOption={(v) => VIDEO_CODEC_LABELS[v]}
             />
         )
     }
@@ -95,7 +105,10 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
         return (
             <MultiSelectPanel
                 title="Audio Codecs"
-                options={AUDIO_CODECS}
+                options={AUDIO_CODECS.map((c) => ({
+                    value: c,
+                    label: AUDIO_CODEC_LABELS[c],
+                }))}
                 selected={settings.supportedAudioCodecs}
                 onApply={(next) => {
                     const changes: Partial<PlaySettingsOverrides> = {
@@ -121,6 +134,7 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
                     playSettings.update({ transcodeAudioCodec: v })
                 }
                 back={toMain}
+                renderOption={(v) => AUDIO_CODEC_LABELS[v]}
             />
         )
     }
@@ -142,7 +156,10 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
         return (
             <MultiSelectPanel
                 title="Video Containers"
-                options={VIDEO_CONTAINERS}
+                options={VIDEO_CONTAINERS.map((c) => ({
+                    value: c,
+                    label: c,
+                }))}
                 selected={settings.supportedVideoContainers}
                 onApply={(next) =>
                     playSettings.update({ supportedVideoContainers: next })
@@ -170,17 +187,21 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
             <SettingsBody mah="">
                 <MainItem
                     label="Transcode Video Codec"
-                    value={settings.transcodeVideoCodec}
+                    value={VIDEO_CODEC_LABELS[settings.transcodeVideoCodec]}
                     onClick={() => setSubPanel('transcode-video')}
                 />
                 <MainItem
                     label="Video Codecs"
-                    value={settings.supportedVideoCodecs.join(', ')}
+                    value={settings.supportedVideoCodecs
+                        .map((c) => VIDEO_CODEC_LABELS[c])
+                        .join(', ')}
                     onClick={() => setSubPanel('video-codecs')}
                 />
                 <MainItem
                     label="HDR Formats"
-                    value={settings.supportedHdrFormats?.join(', ')}
+                    value={settings.supportedHdrFormats
+                        ?.map((f) => HDR_FORMAT_LABELS[f])
+                        .join(', ')}
                     onClick={() => setSubPanel('hdr-formats')}
                 />
                 <MainItem
@@ -190,12 +211,14 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
                 />
                 <MainItem
                     label="Audio Codecs"
-                    value={settings.supportedAudioCodecs.join(', ')}
+                    value={settings.supportedAudioCodecs
+                        .map((c) => AUDIO_CODEC_LABELS[c])
+                        .join(', ')}
                     onClick={() => setSubPanel('audio-codecs')}
                 />
                 <MainItem
                     label="Transcode Audio Codec"
-                    value={settings.transcodeAudioCodec}
+                    value={AUDIO_CODEC_LABELS[settings.transcodeAudioCodec]}
                     onClick={() => setSubPanel('transcode-audio')}
                 />
                 <MainItem
