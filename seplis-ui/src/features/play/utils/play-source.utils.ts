@@ -5,6 +5,7 @@ import {
     PlaySource,
     PlaySourceStream,
 } from '../types/play-source.types'
+import { languageMatch } from './language-match'
 
 export function iso6392ToDisplayName(iso6392: string): string | undefined {
     if (typeof navigator === 'undefined') return undefined
@@ -104,7 +105,7 @@ export function pickStartAudio({
     }
     if (preferredAudioLangs?.length) {
         for (const lang of preferredAudioLangs) {
-            const match = streams.find((s) => s.language === lang)
+            const match = streams.find((s) => languageMatch(s.language, lang))
             if (match) return toLangIndex(match)
         }
     }
@@ -152,29 +153,33 @@ export function pickStartSubtitle({
 
     if (defaultSubtitle) {
         const match = findByLangIndex(streams, defaultSubtitle)
-        return match ? toLangIndex(match) : undefined
+        if (match) return toLangIndex(match)
     }
 
     const audioLang = audio ? parseLangIndex(audio).lang : undefined
 
-    // Pick a forced subtitle only if it matches the audio language.
-    if (audioLang) {
-        const forcedMatch = streams.find(
-            (s) => s.forced && s.language === audioLang,
-        )
-        if (forcedMatch) return toLangIndex(forcedMatch)
-    }
-
     if (preferredSubtitleLangs?.length) {
         for (const lang of preferredSubtitleLangs) {
-            const match = streams.find((s) => s.language === lang)
+            const match = streams.find((s) => languageMatch(s.language, lang))
+            console.log(match)
             if (match) {
-                // No subtitle needed when the preferred language matches the
-                // audio — the user already understands the audio track.
-                if (audioLang && match.language === audioLang) return undefined
+                if (
+                    !defaultSubtitle &&
+                    audioLang &&
+                    languageMatch(match.language, audioLang)
+                )
+                    return undefined
                 return toLangIndex(match)
             }
         }
+    }
+
+    // Pick a forced subtitle only if it matches the audio language.
+    if (audioLang) {
+        const forcedMatch = streams.find(
+            (s) => s.forced && languageMatch(s.language, audioLang),
+        )
+        if (forcedMatch) return toLangIndex(forcedMatch)
     }
 
     return undefined

@@ -41,7 +41,7 @@ export function PlayerView({
     const [audio, setAudioLang] = useState<string | undefined>(
         pickStartAudio({
             playSource: source.source,
-            defaultAudio,
+            defaultAudio: defaultAudio ?? playSettings.settings.defaultAudio,
             preferredAudioLangs: PREFERRED_AUDIO_LANGS,
         }),
     )
@@ -84,6 +84,9 @@ export function PlayerView({
                 onSourceChange={setSource}
                 onAudioChange={(audio) => {
                     setAudioLang(audio)
+                    playSettings.update({
+                        defaultAudio: audio,
+                    })
                     onAudioChange?.(audio)
                 }}
                 onPlayError={handlePlayError}
@@ -92,12 +95,17 @@ export function PlayerView({
                 onTimeUpdate={handleTimeUpdate}
                 defaultSubtitle={pickStartSubtitle({
                     playSource: source.source,
-                    defaultSubtitle,
+                    defaultSubtitle:
+                        defaultSubtitle ??
+                        playSettings.settings.defaultSubtitle,
                     preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
                     audio,
                 })}
-                onSubtitleChange={(s) => {
-                    onSubtitleChange?.(s)
+                onSubtitleChange={(subtitle) => {
+                    onSubtitleChange?.(subtitle)
+                    playSettings.update({
+                        defaultSubtitle: subtitle,
+                    })
                 }}
                 preferredAudioLangs={PREFERRED_AUDIO_LANGS}
                 preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
