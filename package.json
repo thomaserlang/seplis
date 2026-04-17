@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@videojs/react": "^10.0.0-beta.15",
-    "ky": "^1.14.3"
-  }
-}
