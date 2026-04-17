@@ -1,6 +1,6 @@
 import { GearIcon } from '@phosphor-icons/react'
-import { Popover, usePlayer } from '@videojs/react'
-import { ReactNode, useEffect, useState } from 'react'
+import { Popover } from '@videojs/react'
+import { ReactNode, useState } from 'react'
 import { PlayerSettings, PlayerSettingsProps } from '../player-settings'
 import { Button } from './button'
 
@@ -8,19 +8,12 @@ export interface SettingsPopoverProps extends PlayerSettingsProps {}
 
 export function SettingsPopover(props: SettingsPopoverProps): ReactNode {
     const [open, setOpen] = useState(false)
-    const controlsVisible = usePlayer((s) => s.controlsVisible)
 
     const gearButton = (
         <Button aria-label="Settings">
             <GearIcon className="media-icon" weight="bold" />
         </Button>
     )
-
-    useEffect(() => {
-        if (!controlsVisible && open) {
-            setOpen(false)
-        }
-    }, [controlsVisible, open])
 
     return (
         <Popover.Root side="top" open={open} onOpenChange={setOpen}>
