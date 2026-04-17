@@ -9,6 +9,7 @@ interface Props {
     maxCast?: number
     title?: ReactNode
     background?: string
+    startPadding?: string
     onClick?: () => void
 }
 
@@ -18,6 +19,7 @@ export function MovieCastSlider({
     title,
     onClick,
     background,
+    startPadding,
 }: Props) {
     const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
         useGetMovieCast({
@@ -41,6 +43,7 @@ export function MovieCastSlider({
             skeletonCount={maxCast ? Math.min(maxCast, 8) : 8}
             onClick={onClick}
             background={background}
+            startPadding={startPadding}
             renderItem={(item) => (
                 <PosterImage
                     posterImage={item.person.profile_image}
