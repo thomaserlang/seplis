@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
 import { PlayRequestSource } from '../../types/play-source.types'
+import { languageMatch } from '../../utils/language-match'
 import { AudioTrackLabel } from './audio-track-label'
 import { OptionItem } from './option-item'
 import { SettingsBody } from './settings-body'
@@ -26,10 +27,15 @@ export function AudioPanel({
     const audioKey = (t: { language: string; index: number }) =>
         `${t.language}:${t.index}`
     const preferred = currentSource.audio.filter((t) =>
-        preferredAudioLangs?.includes(t.language),
+        preferredAudioLangs
+            ?.map((l) => languageMatch(t.language, l))
+            .includes(true),
     )
     const other = currentSource.audio.filter(
-        (t) => !preferredAudioLangs?.includes(t.language),
+        (t) =>
+            !preferredAudioLangs
+                ?.map((l) => languageMatch(t.language, l))
+                .includes(true),
     )
     return (
         <>
