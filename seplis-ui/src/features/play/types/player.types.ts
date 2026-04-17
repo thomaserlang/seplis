@@ -7,6 +7,7 @@ export interface PlayerProps {
     title?: string
     secondaryTitle?: string
     onClose?: () => void
+    onPlayNext?: () => void
     onSavePosition?: (position: number) => void
     onFinished?: () => void
     defaultAudio?: string

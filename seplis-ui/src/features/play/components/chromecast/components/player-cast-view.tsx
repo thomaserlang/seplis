@@ -30,6 +30,7 @@ export function PlayerCastView({
     title,
     secondaryTitle,
     onClose,
+    onPlayNext,
     defaultAudio,
     defaultSubtitle,
     defaultStartTime,
@@ -182,6 +183,7 @@ export function PlayerCastView({
                         title={title}
                         secondaryTitle={secondaryTitle}
                         onClose={onClose}
+                        onPlayNext={onPlayNext}
                         playRequestSource={source}
                         playRequestsSources={playRequestsSources}
                         audio={audio}

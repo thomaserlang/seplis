@@ -26,6 +26,7 @@ export function PlayerView({
     title,
     secondaryTitle,
     onClose,
+    onPlayNext,
     onSavePosition,
     onFinished,
     defaultAudio,
@@ -84,6 +85,7 @@ export function PlayerView({
                 title={title}
                 secondaryTitle={secondaryTitle}
                 onClose={onClose}
+                onPlayNext={onPlayNext}
                 audio={audio}
                 forceTranscode={forceTranscode}
                 defaultStartTime={defaultStartTime}

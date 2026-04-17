@@ -1,5 +1,5 @@
 import { Box } from '@mantine/core'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { EpisodePlayView } from './components/episode-play-view'
 
 export function Component() {
@@ -7,7 +7,7 @@ export function Component() {
         seriesId?: string
         episodeNumber?: string
     }>()
-    const navigate = useNavigate()
+    const [_, setParams] = useSearchParams()
 
     if (!seriesId) throw new Error('Missing seriesId')
     if (!episodeNumber) throw new Error('Missing episodeNumber')
@@ -21,7 +21,12 @@ export function Component() {
                 key={`${sid}-${epNum}`}
                 seriesId={sid}
                 episodeNumber={epNum}
-                onClose={() => navigate(-1)}
+                onClose={() =>
+                    setParams((params) => {
+                        params.delete('pid')
+                        return params
+                    })
+                }
             />
         </Box>
     )

@@ -8,6 +8,7 @@ import {
     PauseIcon,
     PictureInPictureIcon,
     PlayIcon,
+    SkipForwardIcon,
 } from '@phosphor-icons/react'
 import {
     BufferingIndicator,
@@ -74,6 +75,7 @@ export interface VideoPlayerProps {
     title?: string
     secondaryTitle?: string
     onClose?: () => void
+    onPlayNext?: () => void
     playRequestsSources: PlayRequestSources[]
     audio: string | undefined
     forceTranscode: boolean
@@ -98,6 +100,7 @@ export function PlayerVideo({
     title,
     secondaryTitle,
     onClose,
+    onPlayNext,
     playRequestsSources,
     audio,
     forceTranscode,
@@ -403,6 +406,28 @@ export function PlayerVideo({
                                 Seek forward {SEEK_TIME} seconds
                             </Tooltip.Popup>
                         </Tooltip.Root>
+
+                        {onPlayNext && (
+                            <Tooltip.Root side="top">
+                                <Tooltip.Trigger
+                                    render={
+                                        <Button
+                                            className="media-button--seek"
+                                            onClick={onPlayNext}
+                                            aria-label="Play next episode"
+                                        >
+                                            <SkipForwardIcon
+                                                className="media-icon media-icon--seek"
+                                                weight="fill"
+                                            />
+                                        </Button>
+                                    }
+                                />
+                                <Tooltip.Popup className="media-surface media-tooltip">
+                                    Play next episode
+                                </Tooltip.Popup>
+                            </Tooltip.Root>
+                        )}
                     </div>
 
                     <div className="media-time-controls">

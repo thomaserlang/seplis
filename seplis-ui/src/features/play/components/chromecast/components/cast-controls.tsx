@@ -10,6 +10,7 @@ import {
     PauseIcon,
     PlayIcon,
     ScreencastIcon,
+    SkipForwardIcon,
 } from '@phosphor-icons/react'
 import type { ReactNode } from 'react'
 
@@ -23,6 +24,7 @@ interface Props extends PlayerSettingsProps {
     isConnected: boolean
     onSeek: (time: number) => void
     onPlayPause: () => void
+    onPlayNext?: () => void
     onSettingsOpenChange: (open: boolean) => void
     onDisconnect: () => void
 }
@@ -35,6 +37,7 @@ export function CastControls({
     isConnected,
     onSeek,
     onPlayPause,
+    onPlayNext,
     onSettingsOpenChange,
     onDisconnect,
     ...settingsProps
@@ -79,6 +82,18 @@ export function CastControls({
                         <ArrowClockwiseIcon size={22} weight="bold" />
                     </ActionIcon>
                 </Tooltip>
+                {onPlayNext && (
+                    <Tooltip label="Play next episode" position="top">
+                        <ActionIcon
+                            variant="subtle"
+                            size="xl"
+                            aria-label="Play next episode"
+                            onClick={onPlayNext}
+                        >
+                            <SkipForwardIcon size={22} weight="fill" />
+                        </ActionIcon>
+                    </Tooltip>
+                )}
             </Group>
 
             <Group gap={4} justify="center">

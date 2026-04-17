@@ -7,6 +7,8 @@ import {
     updateSeriesUserSettings,
 } from '@/features/series'
 import { useQuery } from '@tanstack/react-query'
+import { isHTTPError } from 'ky'
+import { useSearchParams } from 'react-router-dom'
 import { getEpisodePlayRequests } from '../api/episode-play-requests.api'
 import { updateEpisodeWatchedPosition } from '../api/episode-watched-position.api'
 import {
@@ -22,18 +24,29 @@ interface Props {
 }
 
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
+    const [_, setParams] = useSearchParams()
     const data = useQuery({
         queryKey: ['episode-play-view', seriesId, episodeNumber],
         queryFn: async () => {
             const [
                 series,
                 episode,
+                nextEpisode,
                 playRequests,
                 episodeWatched,
                 userSettings,
             ] = await Promise.all([
                 getSeries({ seriesId }),
                 getEpisode({ seriesId, episodeNumber }),
+                getEpisode({
+                    seriesId,
+                    episodeNumber: episodeNumber + 1,
+                }).catch((error) => {
+                    if (isHTTPError(error) && error.response.status === 404) {
+                        return null
+                    }
+                    throw error
+                }),
                 getEpisodePlayRequests({
                     seriesId,
                     episodeNumber,
@@ -47,6 +60,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             return {
                 series,
                 episode,
+                nextEpisode,
                 playRequests,
                 episodeWatched,
                 userSettings,
@@ -58,8 +72,14 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
     if (data.isLoading) return <PageLoader />
     if (data.error) return <ErrorBox errorObj={data.error} />
 
-    const { series, episode, playRequests, episodeWatched, userSettings } =
-        data.data || {}
+    const {
+        series,
+        episode,
+        nextEpisode,
+        playRequests,
+        episodeWatched,
+        userSettings,
+    } = data.data || {}
 
     if (!series) return <ErrorBox message="Series not found" />
     if (!episode) return <ErrorBox message="Episode not found" />
@@ -74,6 +94,18 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             title={title}
             secondaryTitle={secondaryTitle}
             onClose={onClose}
+            onPlayNext={
+                nextEpisode
+                    ? () =>
+                          setParams((params) => {
+                              params.set(
+                                  'pid',
+                                  `episode-${seriesId}:${nextEpisode.number}`,
+                              )
+                              return params
+                          })
+                    : undefined
+            }
             defaultStartTime={episodeWatched?.position ?? 0}
             defaultAudio={userSettings?.audio_lang ?? undefined}
             defaultSubtitle={userSettings?.subtitle_lang ?? undefined}

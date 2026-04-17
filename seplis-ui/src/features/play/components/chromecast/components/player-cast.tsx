@@ -17,6 +17,7 @@ interface Props {
     title?: string
     secondaryTitle?: string
     onClose?: () => void
+    onPlayNext?: () => void
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
     audio: string | undefined
@@ -35,6 +36,7 @@ export function PlayerCast({
     title,
     secondaryTitle,
     onClose,
+    onPlayNext,
     playRequestSource,
     playRequestsSources,
     audio,
@@ -148,6 +150,7 @@ export function PlayerCast({
                 isConnected={isConnected}
                 onSeek={seek}
                 onPlayPause={() => playerController?.playOrPause()}
+                onPlayNext={onPlayNext}
                 onSettingsOpenChange={setSettingsOpen}
                 onDisconnect={() => endSession(true)}
                 playRequestSource={playRequestSource}
