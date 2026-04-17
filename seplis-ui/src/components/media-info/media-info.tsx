@@ -34,7 +34,10 @@ export function MediaInfo({
             className={classes.root}
             style={{ '--accent-hue': accentHue } as React.CSSProperties}
         >
-            <div className={classes.posterPanel}>
+            <div
+                className={classes.posterPanel}
+                style={{ '--poster-url': posterUrl ? `url(${posterUrl})` : 'none' } as React.CSSProperties}
+            >
                 {posterUrl && (
                     <img src={posterUrl} className={classes.posterImg} />
                 )}
