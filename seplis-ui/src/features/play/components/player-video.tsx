@@ -58,9 +58,9 @@ import { PlayerError } from './player-error'
 import './player-video.css'
 
 const SEEK_TIME = 10
-const STALL_LOAD_TIMEOUT = 10_000
+const STALL_TIMEOUT = 3_000
 
-export type PlayErrorType = 'load_timeout' | 'stall_timeout'
+export type PlayErrorType = 'stall_timeout'
 
 export interface PlayErrorEvent {
     type: PlayErrorType
@@ -194,6 +194,23 @@ export function PlayerVideo({
           `&lang=${activeSubtitleKey}` +
           (isAssSubtitle ? `&output_format=ass` : '')
         : undefined
+    const currentSrc = data
+        ? data.can_direct_play
+            ? data.direct_play_url
+            : data.hls_url
+        : undefined
+    const playErrorCountsRef = useRef<Record<PlayErrorType, number>>({
+        stall_timeout: 0,
+    })
+    useEffect(() => {
+        playErrorCountsRef.current = {
+            stall_timeout: 0,
+        }
+    }, [currentSrc])
+    const emitPlayError = useEffectEvent((type: PlayErrorType) => {
+        playErrorCountsRef.current[type]++
+        onPlayError?.({ type, count: playErrorCountsRef.current[type] })
+    })
 
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
@@ -231,10 +248,7 @@ export function PlayerVideo({
                         />
                     )}
                     {needsHlsJs && (
-                        <HlsPlayer
-                            src={data.hls_url}
-                            startTimeRef={resumtimeRef}
-                        />
+                        <HlsPlayer src={data.hls_url} startTimeRef={resumtimeRef} />
                     )}
                 </Video>
             )}
@@ -511,8 +525,9 @@ export function PlayerVideo({
 
             {data && (
                 <PlayErrorHandler
-                    src={data.hls_url}
-                    onPlayError={onPlayError}
+                    src={currentSrc}
+                    isVideoLoading={videoLoading || isLoading || isRefetching}
+                    onPlayError={emitPlayError}
                 />
             )}
             <div className="media-overlay" />
@@ -702,68 +717,131 @@ function getBufferEnd(media: VideoMedia): number {
 
 function PlayErrorHandler({
     src,
+    isVideoLoading,
     onPlayError,
 }: {
     src: string | undefined
-    onPlayError?: (event: PlayErrorEvent) => void
+    isVideoLoading: boolean
+    onPlayError?: (type: PlayErrorType) => void
 }): null {
     const media = useMedia() as VideoMedia | null
-    const loadTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-        undefined,
-    )
-    const stallTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(
-        undefined,
-    )
-    const countsRef = useRef<Record<PlayErrorType, number>>({
-        load_timeout: 0,
-        stall_timeout: 0,
-    })
+    const hasStartedPlaybackRef = useRef(false)
+    const lastCurrentTimeRef = useRef(0)
+    const lastPlaybackProgressAtRef = useRef(0)
+    const lastProgressAtRef = useRef(0)
+    const lastBufferEndRef = useRef(0)
+    const stallReportedRef = useRef(false)
 
     const fireError = useEffectEvent((type: PlayErrorType) => {
-        countsRef.current[type]++
-        onPlayError?.({ type, count: countsRef.current[type] })
+        onPlayError?.(type)
     })
 
     useEffect(() => {
-        clearTimeout(loadTimeoutRef.current)
-        loadTimeoutRef.current = setTimeout(
-            () => fireError('load_timeout'),
-            STALL_LOAD_TIMEOUT,
-        )
-        return () => clearTimeout(loadTimeoutRef.current)
+        hasStartedPlaybackRef.current = false
+        lastCurrentTimeRef.current = 0
+        lastPlaybackProgressAtRef.current = 0
+        lastProgressAtRef.current = 0
+        lastBufferEndRef.current = 0
+        stallReportedRef.current = false
     }, [src])
 
     useEffect(() => {
+        if (!isVideoLoading) return
+        hasStartedPlaybackRef.current = false
+        stallReportedRef.current = false
+    }, [isVideoLoading, src])
+
+    useEffect(() => {
         if (!media) return
-        const onWaiting = () => {
-            clearTimeout(stallTimeoutRef.current)
-            const currentTimeAtWait = media.currentTime
-            const bufferEndAtWait = getBufferEnd(media)
-            stallTimeoutRef.current = setTimeout(() => {
-                // Don't fire if the video has resumed playing
-                if (media.currentTime > currentTimeAtWait) return
-                // Don't fire if the buffer is still growing (slow connection, not a stall)
-                if (getBufferEnd(media) > bufferEndAtWait) return
+        const videoEl = media as unknown as HTMLVideoElement
+        const markPlaybackProgress = () => {
+            lastCurrentTimeRef.current = media.currentTime
+            lastPlaybackProgressAtRef.current = performance.now()
+            stallReportedRef.current = false
+        }
+        const markNetworkProgress = () => {
+            lastProgressAtRef.current = performance.now()
+            lastBufferEndRef.current = getBufferEnd(media)
+            stallReportedRef.current = false
+        }
+        const shouldSkipStallCheck = () =>
+            isVideoLoading ||
+            !hasStartedPlaybackRef.current ||
+            media.paused ||
+            media.seeking ||
+            media.ended
+        const markPlaybackStarted = () => {
+            hasStartedPlaybackRef.current = true
+            markPlaybackProgress()
+            markNetworkProgress()
+        }
+        const handleTimeUpdate = () => {
+            if (!hasStartedPlaybackRef.current) return
+            if (media.currentTime > lastCurrentTimeRef.current + 0.01) {
+                markPlaybackProgress()
+            }
+        }
+        const handleSeeking = () => {
+            lastCurrentTimeRef.current = media.currentTime
+            lastPlaybackProgressAtRef.current = performance.now()
+            stallReportedRef.current = false
+        }
+        const handlePause = () => {
+            stallReportedRef.current = false
+        }
+        const intervalId = window.setInterval(() => {
+            if (shouldSkipStallCheck()) return
+
+            const now = performance.now()
+            const bufferEnd = getBufferEnd(media)
+
+            if (media.currentTime > lastCurrentTimeRef.current + 0.01) {
+                markPlaybackProgress()
+                return
+            }
+
+            if (bufferEnd > lastBufferEndRef.current + 0.01) {
+                markNetworkProgress()
+                return
+            }
+
+            if (media.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+                stallReportedRef.current = false
+                return
+            }
+
+            if (videoEl.networkState === HTMLMediaElement.NETWORK_LOADING) {
+                return
+            }
+
+            if (now - lastProgressAtRef.current < STALL_TIMEOUT) {
+                return
+            }
+
+            if (now - lastPlaybackProgressAtRef.current < STALL_TIMEOUT) {
+                return
+            }
+
+            if (!stallReportedRef.current) {
+                stallReportedRef.current = true
                 fireError('stall_timeout')
-            }, STALL_LOAD_TIMEOUT)
-        }
-        const clearAll = () => {
-            clearTimeout(loadTimeoutRef.current)
-            clearTimeout(stallTimeoutRef.current)
-        }
-        media.addEventListener('waiting', onWaiting)
-        media.addEventListener('playing', clearAll)
-        media.addEventListener('timeupdate', clearAll)
-        media.addEventListener('canplay', clearAll)
-        media.addEventListener('error', clearAll)
+            }
+        }, 250)
+
+        media.addEventListener('playing', markPlaybackStarted)
+        media.addEventListener('timeupdate', handleTimeUpdate)
+        media.addEventListener('progress', markNetworkProgress)
+        media.addEventListener('seeking', handleSeeking)
+        media.addEventListener('pause', handlePause)
         return () => {
-            media.removeEventListener('waiting', onWaiting)
-            media.removeEventListener('playing', clearAll)
-            media.removeEventListener('timeupdate', clearAll)
-            media.removeEventListener('canplay', clearAll)
-            media.removeEventListener('error', clearAll)
+            window.clearInterval(intervalId)
+            media.removeEventListener('playing', markPlaybackStarted)
+            media.removeEventListener('timeupdate', handleTimeUpdate)
+            media.removeEventListener('progress', markNetworkProgress)
+            media.removeEventListener('seeking', handleSeeking)
+            media.removeEventListener('pause', handlePause)
         }
-    }, [media])
+    }, [isVideoLoading, media])
 
     return null
 }

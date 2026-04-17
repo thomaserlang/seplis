@@ -15,7 +15,7 @@ import {
     pickStartSource,
     pickStartSubtitle,
 } from '../utils/play-source.utils'
-import { Player, PlayerVideo } from './player-video'
+import { Player, PlayerVideo, type PlayErrorEvent } from './player-video'
 
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
@@ -64,11 +64,17 @@ export function PlayerView({
         },
     )
 
-    const handlePlayError = () => {
+    const handlePlayError = useEffectEvent((event: PlayErrorEvent) => {
+        if (forceTranscode) return
+        if (event.type !== 'stall_timeout') return
+        setForceTranscode(true)
+    })
+
+    const handleVideoError = useEffectEvent(() => {
         if (!forceTranscode) {
             setForceTranscode(true)
         }
-    }
+    })
 
     return (
         <Player.Provider>
@@ -91,7 +97,7 @@ export function PlayerView({
                 }}
                 onPlayError={handlePlayError}
                 onForceTranscodeChange={setForceTranscode}
-                onVideoError={handlePlayError}
+                onVideoError={handleVideoError}
                 onTimeUpdate={handleTimeUpdate}
                 defaultSubtitle={pickStartSubtitle({
                     playSource: source.source,
