@@ -117,7 +117,7 @@ export function PlayerVideo({
     playSettings,
 }: VideoPlayerProps): ReactNode {
     const media = useMedia() as VideoMedia | null
-    const resumtimeRef = useRef<number>(defaultStartTime)
+    const resumeTimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
     const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
         playRequestSource,
@@ -146,9 +146,21 @@ export function PlayerVideo({
         onSubtitleChange?.(key)
     }
     const [subtitleOffset, setSubtitleOffset] = useState(0)
+    const currentSrc = data
+        ? data.can_direct_play
+            ? data.direct_play_url
+            : data.hls_url
+        : undefined
+    const videoSrc = needsHlsJs
+        ? undefined
+        : currentSrc
+          ? `${currentSrc}#t=${resumeTimeRef.current}`
+          : undefined
+    const isPlayerLoading = videoLoading || isLoading || isRefetching
 
     useEffect(() => {
-        if (!data?.keep_alive_url) return
+        if (!data) return
+
         const id = setInterval(() => {
             fetch(data.keep_alive_url)
                 .then((response) => {
@@ -162,11 +174,11 @@ export function PlayerVideo({
             clearInterval(id)
             fetch(data.close_session_url).catch(() => {})
         }
-    }, [data?.keep_alive_url || ''])
+    }, [data])
 
     useLayoutEffect(() => {
         if (media?.currentTime) {
-            resumtimeRef.current = media.currentTime
+            resumeTimeRef.current = media.currentTime
         }
     }, [data])
 
@@ -194,11 +206,6 @@ export function PlayerVideo({
           `&lang=${activeSubtitleKey}` +
           (isAssSubtitle ? `&output_format=ass` : '')
         : undefined
-    const currentSrc = data
-        ? data.can_direct_play
-            ? data.direct_play_url
-            : data.hls_url
-        : undefined
     const playErrorCountsRef = useRef<Record<PlayErrorType, number>>({
         stall_timeout: 0,
     })
@@ -216,15 +223,7 @@ export function PlayerVideo({
         <Container className={`media-default-skin media-default-skin--video`}>
             {data && (
                 <Video
-                    src={
-                        needsHlsJs
-                            ? undefined
-                            : `${
-                                  data.can_direct_play
-                                      ? data.direct_play_url
-                                      : data.hls_url
-                              }#t=${resumtimeRef.current}`
-                    }
+                    src={videoSrc}
                     crossOrigin="anonymous"
                     playsInline
                     autoPlay
@@ -248,7 +247,10 @@ export function PlayerVideo({
                         />
                     )}
                     {needsHlsJs && (
-                        <HlsPlayer src={data.hls_url} startTimeRef={resumtimeRef} />
+                        <HlsPlayer
+                            src={data.hls_url}
+                            startTimeRef={resumeTimeRef}
+                        />
                     )}
                 </Video>
             )}
@@ -288,7 +290,7 @@ export function PlayerVideo({
                 )}
             />
 
-            {(isLoading || isRefetching || videoLoading) && (
+            {isPlayerLoading && (
                 <div className="media-buffering-indicator" data-visible="">
                     <PageLoader />
                 </div>
@@ -520,13 +522,13 @@ export function PlayerVideo({
                         setVideoLoading(false)
                     }
                 }}
-                startTime={resumtimeRef.current}
+                startTime={resumeTimeRef.current}
             />
 
             {data && (
                 <PlayErrorHandler
                     src={currentSrc}
-                    isVideoLoading={videoLoading || isLoading || isRefetching}
+                    isVideoLoading={isPlayerLoading}
                     onPlayError={emitPlayError}
                 />
             )}
@@ -609,8 +611,8 @@ function MediaEventHandler({
     startTime: number
 }): null {
     const media = useMedia() as VideoMedia | null
-    const resumtimeRef = useRef<number>(startTime)
-    resumtimeRef.current = startTime
+    const resumeTimeRef = useRef<number>(startTime)
+    resumeTimeRef.current = startTime
 
     useEffect(() => {
         if (!media) return
@@ -628,7 +630,7 @@ function MediaEventHandler({
             )
         }
         const handleMetadataLoaded = () => {
-            media.currentTime = resumtimeRef.current
+            media.currentTime = resumeTimeRef.current
         }
         const handleSeeked = () => {
             if (media.paused) media.play().catch(() => {})
