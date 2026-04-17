@@ -67,3 +67,4 @@ workspace.code-workspace
 .python-version
 dist/
 seplis-ui/.env
+.env
