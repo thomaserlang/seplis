@@ -27,6 +27,7 @@ export function SliderWatched({ onClick, title }: Props) {
             onLoadMore={fetchNextPage}
             onClick={onClick}
             emptyMessage="You haven't watched anything that's available on a play server."
+            startPadding="0.5rem"
             renderItem={(item) => (
                 <PosterImage
                     posterImage={item.data.poster_image}

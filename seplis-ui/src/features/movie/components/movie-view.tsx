@@ -1,9 +1,8 @@
-import { Button, Flex, Text } from '@mantine/core'
-import { UsersIcon } from '@phosphor-icons/react'
+import { Flex, Text } from '@mantine/core'
 import { useState } from 'react'
 import { Movie } from '../types/movie.types'
-import { MovieCast } from './movie-cast'
 import { MovieCastModal } from './movie-cast-modal'
+import { MovieCastSlider } from './movie-cast-slider'
 import { MovieInfo } from './movie-info'
 
 interface Props {
@@ -18,29 +17,23 @@ export function MovieView({ movie }: Props) {
             <Flex direction="column">
                 <title>{movie.title}</title>
                 <MovieInfo movie={movie}>
-                    <Flex gap="0.5rem">
-                        <Button
-                            variant="default"
-                            leftSection={<UsersIcon />}
-                            onClick={() => setModal('cast')}
-                        >
-                            Cast
-                        </Button>
-                    </Flex>
-                </MovieInfo>
-
-                <Flex gap="0.5rem" p="1rem" pt="0.5rem" direction="column">
-                    <MovieCast
+                    <MovieCastSlider
                         movieId={movie.id}
-                        maxCast={14}
-                        cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 3 }}
+                        maxCast={22}
+                        background="var(--card)"
                         title={
-                            <Text size="md" fw="700" mb="0.4rem">
+                            <Text
+                                onClick={() => setModal('cast')}
+                                size="md"
+                                fw="700"
+                                style={{ cursor: 'pointer' }}
+                            >
                                 Top Cast
                             </Text>
                         }
+                        onClick={() => setModal('cast')}
                     />
-                </Flex>
+                </MovieInfo>
             </Flex>
             <MovieCastModal
                 movieId={movie.id}

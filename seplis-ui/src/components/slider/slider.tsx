@@ -1,6 +1,6 @@
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import posterClasses from '@/components/poster-page/poster-page.module.css'
-import { Skeleton } from '@mantine/core'
+import { MantineStyleProp, Skeleton } from '@mantine/core'
 import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import classes from './slider.module.css'
@@ -14,7 +14,10 @@ export function Slider<T>({
     onLoadMore,
     title,
     skeletonCount = 24,
+    skeletonAspectRatio,
     itemWidth,
+    startPadding,
+    background,
     onClick,
     emptyMessage,
 }: SliderProps<T>) {
@@ -92,8 +95,24 @@ export function Slider<T>({
 
     if (isEmpty && !emptyMessage) return null
 
-    const style = itemWidth
-        ? ({ '--slider-item-width': itemWidth } as React.CSSProperties)
+    const styleVars: MantineStyleProp = {}
+
+    if (itemWidth) {
+        styleVars['--slider-item-width'] = itemWidth
+    }
+    if (startPadding) {
+        styleVars['--slider-start-padding'] = startPadding
+    }
+    if (background) {
+        styleVars['--slider-background'] = background
+    }
+
+    const style =
+        Object.keys(styleVars).length > 0
+            ? (styleVars as React.CSSProperties)
+            : undefined
+    const skeletonStyle = skeletonAspectRatio
+        ? ({ aspectRatio: skeletonAspectRatio } as React.CSSProperties)
         : undefined
 
     return (
@@ -131,6 +150,7 @@ export function Slider<T>({
                             <div
                                 key={`sk-${i}`}
                                 className={classes.skeletonItem}
+                                style={skeletonStyle}
                             >
                                 <Skeleton height="100%" radius="sm" />
                             </div>

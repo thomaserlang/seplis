@@ -6,7 +6,10 @@ export interface SliderProps<T> {
     onLoadMore?: () => void
     title?: React.ReactNode
     skeletonCount?: number
+    skeletonAspectRatio?: string
     itemWidth?: string
+    startPadding?: string
+    background?: string
     onClick?: (item: T) => void
     emptyMessage?: React.ReactNode
 }

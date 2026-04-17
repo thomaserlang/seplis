@@ -1,12 +1,14 @@
 .root {
   --slider-item-width: min(10.5rem, 28vw);
+  --slider-start-padding: 0;
+  --slider-background: var(--background);
   position: relative;
 }
 
 .title {
   font-weight: 500;
   font-size: 1rem;
-  padding: 0 0.5rem ;
+  padding: 0 var(--slider-start-padding);
   opacity: 0.7;
 }
 
@@ -25,7 +27,7 @@
   gap: 0.5rem;
   overflow-x: auto;
   overflow-y: clip;
-  padding: 0.25rem 0.5rem 0.5rem;
+  padding: 0.25rem 0 0.25rem var(--slider-start-padding);
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -81,7 +83,7 @@
   left: 0;
   background: linear-gradient(
     to right,
-    color-mix(in oklab, var(--background) 90%, transparent) 0%,
+    color-mix(in oklab, var(--slider-background) 90%, transparent) 0%,
     transparent 100%
   );
 }
@@ -90,7 +92,7 @@
   right: 0;
   background: linear-gradient(
     to left,
-    color-mix(in oklab, var(--background) 90%, transparent) 0%,
+    color-mix(in oklab, var(--slider-background) 90%, transparent) 0%,
     transparent 100%
   );
 }
@@ -98,7 +100,7 @@
 .arrowLeft:hover {
   background: linear-gradient(
     to right,
-    color-mix(in oklab, var(--background) 98%, transparent) 0%,
+    color-mix(in oklab, var(--slider-background) 98%, transparent) 0%,
     transparent 100%
   );
 }
@@ -106,7 +108,7 @@
 .arrowRight:hover {
   background: linear-gradient(
     to left,
-    color-mix(in oklab, var(--background) 98%, transparent) 0%,
+    color-mix(in oklab, var(--slider-background) 98%, transparent) 0%,
     transparent 100%
   );
 }

@@ -30,6 +30,7 @@ export function SeriesRecentlyAiredSlider({ onClick, params, title }: Props) {
             isLoading={isLoading}
             onLoadMore={fetchNextPage}
             onClick={onClick}
+            startPadding="0.5rem"
             renderItem={(item) => (
                 <PosterImage
                     posterImage={item.series.poster_image}
