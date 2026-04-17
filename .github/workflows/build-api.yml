@@ -3,7 +3,7 @@ name: build api
 on:
   push:
     tags:
-      - "v*"
+      - "api-v*"
   workflow_dispatch:
 
 jobs:
@@ -13,3 +13,4 @@ jobs:
     with:
       image_name: ${{ github.repository }}-api
       context: .
+      tag_prefix: api-v

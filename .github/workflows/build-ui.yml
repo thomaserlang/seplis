@@ -3,7 +3,7 @@ name: build ui
 on:
   push:
     tags:
-      - "v*"
+      - "ui-v*"
 
 jobs:
   build-and-push-image:
@@ -13,3 +13,4 @@ jobs:
       image_name: ${{ github.repository }}-ui
       context: ./seplis-ui
       dockerfile: seplis-ui/Dockerfile
+      tag_prefix: ui-v
