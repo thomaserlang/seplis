@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react'
 import { HoverCard } from './hover-card'
 
 const SHOW_DELAY = 700
-const HIDE_DELAY = 700
+const HIDE_DELAY = 200
 
 interface HoverState<T> {
     item: T
@@ -40,7 +40,11 @@ export function useHoverCard<T>({
         (item: T, el: HTMLElement) => {
             if (!renderContent) return
             clearTimers()
-            const delay = isHoveringRef.current ? HIDE_DELAY : SHOW_DELAY
+            if (hoverRef.current) {
+                isHoveringRef.current = false
+                setHover((h) => (h ? { ...h, isLeaving: true } : null))
+                hideTimerRef.current = setTimeout(() => setHover(null), HIDE_DELAY)
+            }
             showTimerRef.current = setTimeout(() => {
                 const rect = el.getBoundingClientRect()
                 const containerRect =
@@ -48,7 +52,7 @@ export function useHoverCard<T>({
                     new DOMRect(0, 0, window.innerWidth, window.innerHeight)
                 isHoveringRef.current = true
                 setHover({ item, rect, containerRect, isLeaving: false })
-            }, delay)
+            }, SHOW_DELAY)
         },
         [clearTimers, renderContent, containerRef],
     )
@@ -64,12 +68,7 @@ export function useHoverCard<T>({
 
     const onCardEnter = useCallback(() => {
         clearTimers()
-        if (hoverRef.current?.isLeaving) {
-            isHoveringRef.current = false
-            setHover(null)
-        } else {
-            setHover((h) => (h ? { ...h, isLeaving: false } : null))
-        }
+        setHover((h) => (h ? { ...h, isLeaving: false } : null))
     }, [clearTimers])
 
     const dismiss = useCallback(() => {
