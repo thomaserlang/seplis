@@ -15,10 +15,11 @@ export function SeriesCastModal({ seriesId, opened, onClose }: Props) {
                     seriesId={seriesId}
                     loadMoreButton
                     cols={{
-                        base: 2,
-                        xs: 3,
-                        sm: 4,
-                        md: 5,
+                        base: 1,
+                        xs: 1,
+                        sm: 2,
+                        md: 2,
+                        lg: 3,
                     }}
                 />
             )}

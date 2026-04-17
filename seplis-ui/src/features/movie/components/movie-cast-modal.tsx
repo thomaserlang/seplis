@@ -14,10 +14,11 @@ export function MovieCastModal({ movieId, opened, onClose }: Props) {
                 <MovieCast
                     movieId={movieId}
                     cols={{
-                        base: 2,
-                        xs: 3,
-                        sm: 4,
-                        md: 5,
+                        base: 1,
+                        xs: 1,
+                        sm: 2,
+                        md: 2,
+                        lg: 3,
                     }}
                 />
             )}

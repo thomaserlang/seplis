@@ -33,6 +33,7 @@ export function MovieView({ movie }: Props) {
                     <MovieCast
                         movieId={movie.id}
                         maxCast={14}
+                        cols={{ base: 1, xs: 2, sm: 2, md: 3, lg: 3 }}
                         title={
                             <Text size="md" fw="700" mb="0.4rem">
                                 Top Cast

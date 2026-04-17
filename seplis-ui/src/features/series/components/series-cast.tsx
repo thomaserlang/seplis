@@ -26,7 +26,7 @@ export function SeriesCast({
     maxCast,
     title,
     loadMoreButton,
-    cols = { base: 3, xs: 4, sm: 5, md: 6, lg: 7 },
+    cols = { base: 1, xs: 2, sm: 2, md: 3, lg: 4 },
     showTotalEpisodes,
 }: Props) {
     const {
@@ -53,7 +53,7 @@ export function SeriesCast({
             {cast.length > 0 && title}
             <SimpleGrid
                 cols={cols}
-                spacing={{ base: '0.75rem', sm: '0.9rem', lg: '1rem' }}
+                spacing={{ base: '0.65rem', sm: '0.75rem', lg: '0.9rem' }}
             >
                 {cast.map((person) => (
                     <CastMemberCard

@@ -1,29 +1,37 @@
 .card {
     display: flex;
-    flex-direction: column;
-    gap: 0;
+    align-items: stretch;
+    gap: 0.75rem;
     cursor: default;
     width: 100%;
     height: 100%;
+    min-width: 0;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: calc(var(--radius) + 0.35rem);
+    background: color-mix(in oklab, var(--card) 96%, var(--background));
+    box-shadow: 0 0.4rem 1rem oklch(0 0 0 / 0.04);
     transition:
         transform 0.18s ease,
         border-color 0.18s ease,
-        box-shadow 0.18s ease;
+        box-shadow 0.18s ease,
+        background 0.18s ease;
 }
 
 .card:hover {
     transform: translateY(-0.1rem);
+    border-color: color-mix(in oklab, var(--foreground) 10%, var(--border));
+    background: color-mix(in oklab, var(--card) 92%, var(--background));
+    box-shadow: 0 0.75rem 1.5rem oklch(0 0 0 / 0.06);
 }
 
 .imageWrap {
     position: relative;
+    flex: 0 0 4.8rem;
+    width: 4.8rem;
     overflow: hidden;
-    border-radius: calc(var(--radius) + 0.35rem)
-        calc(var(--radius) + 0.35rem) 0 0;
-    border: 1px solid var(--border);
-    border-bottom: none;
+    border-radius: calc(var(--radius) + 0.1rem);
     background: color-mix(in oklab, var(--card) 80%, var(--foreground));
-    box-shadow: 0 0.5rem 1.25rem oklch(0 0 0 / 0.04);
 }
 
 .imageWrap > * {
@@ -56,38 +64,25 @@
 .info {
     display: flex;
     flex-direction: column;
-    gap: 0.22rem;
+    justify-content: center;
+    gap: 0.18rem;
     min-width: 0;
     flex: 1;
-    padding: 0.72rem 0.8rem 0.82rem;
-    border: 1px solid var(--border);
-    border-radius: 0 0 calc(var(--radius) + 0.35rem)
-        calc(var(--radius) + 0.35rem);
-    background: color-mix(in oklab, var(--card) 97%, var(--background));
-    box-shadow: 0 0.5rem 1.25rem oklch(0 0 0 / 0.04);
-    transition:
-        border-color 0.18s ease,
-        background 0.18s ease,
-        box-shadow 0.18s ease;
-}
-
-.card:hover .info {
-    border-color: color-mix(in oklab, var(--foreground) 10%, var(--border));
-    background: color-mix(in oklab, var(--card) 93%, var(--background));
-    box-shadow: 0 0.8rem 1.75rem oklch(0 0 0 / 0.06);
+    padding: 0.15rem 0.15rem 0.15rem 0;
 }
 
 .name {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    line-height: 1.25;
+    line-height: 1.2;
     color: var(--foreground);
     overflow: hidden;
-    line-clamp: 2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .character {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     line-height: 1.35;
     color: var(--muted-foreground);
     overflow: hidden;
@@ -95,9 +90,29 @@
 }
 
 .episodeCount {
-    margin-top: 0.18rem;
+    margin-top: 0.12rem;
     font-size: 0.72rem;
     font-weight: 600;
     line-height: 1.3;
     color: color-mix(in oklab, var(--muted-foreground) 92%, var(--foreground));
+}
+
+@media (max-width: 36em) {
+    .card {
+        gap: 0.65rem;
+        padding: 0.45rem;
+    }
+
+    .imageWrap {
+        flex-basis: 4.2rem;
+        width: 4.2rem;
+    }
+
+    .name {
+        font-size: 0.85rem;
+    }
+
+    .character {
+        font-size: 0.74rem;
+    }
 }
