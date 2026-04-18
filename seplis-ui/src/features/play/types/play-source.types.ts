@@ -25,6 +25,7 @@ export interface PlaySource {
     size: number
     bit_rate: number
     format: string
+    media_type: string | null
 }
 
 export interface PlayRequestSource {
@@ -40,9 +41,6 @@ export interface PlayRequestSources {
 export interface PlayServerMedia {
     direct_play_url: string
     can_direct_play: boolean
-    direct_play_media_type: string | null
-    video_media_type: string | null
-    audio_media_type: string | null
     hls_url: string
     keep_alive_url: string
     close_session_url: string

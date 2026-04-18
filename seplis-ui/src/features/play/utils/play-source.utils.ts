@@ -1,11 +1,11 @@
 import { BCP47_TO_ISO6392 } from '../constants/iso6392.constants'
 import {
-    PlayRequestSource,
     PlayRequestSources,
     PlaySource,
     PlaySourceStream,
 } from '../types/play-source.types'
 import { languageMatch } from './language-match'
+import { canPlayMediaType } from './video.utils'
 
 export function iso6392ToDisplayName(iso6392: string): string | undefined {
     if (typeof navigator === 'undefined') return undefined
@@ -49,18 +49,30 @@ export function pickStartSource(
     playServers: PlayRequestSources[],
     defaultMaxBitrate: number,
 ) {
-    let s: PlayRequestSource = {
-        request: playServers[0].request,
-        source: playServers[0].sources[0],
-    }
-    for (const playServer of playServers.reverse())
-        for (const source of playServer.sources)
-            if (source.bit_rate <= defaultMaxBitrate)
-                s = {
-                    request: playServer.request,
-                    source: source,
-                }
-    return s
+    const candidates = playServers.toReversed().flatMap((playServer) =>
+        playServer.sources.map((source) => ({
+            request: playServer.request,
+            source,
+        })),
+    )
+
+    const bestDirectPlay = candidates.find(
+        ({ source }) =>
+            source.bit_rate <= defaultMaxBitrate &&
+            source.media_type != null &&
+            canPlayMediaType(source.media_type),
+    )
+    if (bestDirectPlay) return bestDirectPlay
+
+    const bestWithinBitrate = candidates.find(
+        ({ source }) => source.bit_rate <= defaultMaxBitrate,
+    )
+    return (
+        bestWithinBitrate ?? {
+            request: playServers[0].request,
+            source: playServers[0].sources[0],
+        }
+    )
 }
 
 function toLangIndex(stream: PlaySourceStream): string {

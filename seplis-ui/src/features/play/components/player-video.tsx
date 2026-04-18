@@ -138,8 +138,8 @@ export function PlayerVideo({
 
     const canDirectPlay =
         data?.can_direct_play === true &&
-        data.direct_play_media_type != null &&
-        canPlayMediaType(data.direct_play_media_type)
+        playRequestSource.source.media_type != null &&
+        canPlayMediaType(playRequestSource.source.media_type)
 
     const needsHlsJs =
         data != null && !canDirectPlay && !hasNativeHls && Hls.isSupported()
