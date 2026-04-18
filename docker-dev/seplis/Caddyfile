@@ -5,7 +5,7 @@
 	}
 }
 
-http://seplis.local, http://localhost {
+http://localhost {
 	log {
 		output stdout
 		format json
@@ -13,28 +13,12 @@ http://seplis.local, http://localhost {
 	reverse_proxy host.docker.internal:8001
 }
 
-http://api.seplis.local {
-	log {
-		output stdout
-		format json
-	}
-	reverse_proxy host.docker.internal:8002
-}
-
-http://play.seplis.local {
+http://test.0101dev.net {
 	log {
 		output stdout
 		format json
 	}
 	reverse_proxy host.docker.internal:8003
-}
-
-http://images.seplis.local {
-	log {
-		output stdout
-		format json
-	}
-	reverse_proxy host.docker.internal:3000
 }
 
 http://test.seplis.net {

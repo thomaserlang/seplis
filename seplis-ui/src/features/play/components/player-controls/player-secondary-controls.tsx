@@ -22,11 +22,13 @@ type SecondaryControlsProps = Pick<
     | 'playRequestsSources'
     | 'audio'
     | 'forceTranscode'
+    | 'isAirPlayActive'
     | 'activeSubtitleKey'
     | 'subtitleOffset'
     | 'onSourceChange'
     | 'onAudioChange'
     | 'onForceTranscodeChange'
+    | 'onAirPlayActiveChange'
     | 'onSubtitleChange'
     | 'onSubtitleOffsetChange'
     | 'preferredAudioLangs'
@@ -39,11 +41,13 @@ export function PlayerSecondaryControls({
     playRequestsSources,
     audio,
     forceTranscode,
+    isAirPlayActive,
     activeSubtitleKey,
     subtitleOffset,
     onSourceChange,
     onAudioChange,
     onForceTranscodeChange,
+    onAirPlayActiveChange,
     onSubtitleChange,
     onSubtitleOffsetChange,
     preferredAudioLangs,
@@ -85,7 +89,10 @@ export function PlayerSecondaryControls({
                 playSettings={playSettings}
             />
 
-            <AirPlayButton />
+            <AirPlayButton
+                active={isAirPlayActive}
+                onActiveChange={onAirPlayActiveChange}
+            />
             <ChromecastButton />
             <PictureInPictureToggle />
             <FullscreenToggle />

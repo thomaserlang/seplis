@@ -32,11 +32,13 @@ export function PlayerVideoControls({
     playRequestsSources,
     audio,
     forceTranscode,
+    isAirPlayActive,
     activeSubtitleKey,
     subtitleOffset,
     onSourceChange,
     onAudioChange,
     onForceTranscodeChange,
+    onAirPlayActiveChange,
     onSubtitleChange,
     onSubtitleOffsetChange,
     preferredAudioLangs,
@@ -60,11 +62,13 @@ export function PlayerVideoControls({
                         playRequestsSources={playRequestsSources}
                         audio={audio}
                         forceTranscode={forceTranscode}
+                        isAirPlayActive={isAirPlayActive}
                         activeSubtitleKey={activeSubtitleKey}
                         subtitleOffset={subtitleOffset}
                         onSourceChange={onSourceChange}
                         onAudioChange={onAudioChange}
                         onForceTranscodeChange={onForceTranscodeChange}
+                        onAirPlayActiveChange={onAirPlayActiveChange}
                         onSubtitleChange={onSubtitleChange}
                         onSubtitleOffsetChange={onSubtitleOffsetChange}
                         preferredAudioLangs={preferredAudioLangs}

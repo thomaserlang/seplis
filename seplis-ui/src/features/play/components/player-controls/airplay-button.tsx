@@ -34,13 +34,23 @@ interface AirPlayMedia extends VideoMedia {
     ): void
 }
 
-export function AirPlayButton(): ReactNode {
+interface AirPlayButtonProps {
+    active: boolean
+    onActiveChange: (value: boolean) => void
+}
+
+export function AirPlayButton({
+    active,
+    onActiveChange,
+}: AirPlayButtonProps): ReactNode {
     const media = useMedia() as VideoMedia | null
     const [available, setAvailable] = useState(false)
-    const [active, setActive] = useState(false)
 
     useEffect(() => {
-        if (!media || !('webkitShowPlaybackTargetPicker' in media)) return
+        if (!media || !('webkitShowPlaybackTargetPicker' in media)) {
+            onActiveChange(false)
+            return
+        }
 
         const airplayMedia = media as AirPlayMedia
 
@@ -48,9 +58,10 @@ export function AirPlayButton(): ReactNode {
             setAvailable(event.availability === 'available')
         }
         const onConnectionChanged = () => {
-            setActive(!!airplayMedia.webkitCurrentPlaybackTargetIsWireless)
+            onActiveChange(!!airplayMedia.webkitCurrentPlaybackTargetIsWireless)
         }
 
+        onConnectionChanged()
         airplayMedia.addEventListener(
             'webkitplaybacktargetavailabilitychanged',
             onAvailability,
@@ -69,7 +80,7 @@ export function AirPlayButton(): ReactNode {
                 onConnectionChanged,
             )
         }
-    }, [media])
+    }, [media, onActiveChange])
 
     if (!available) return null
 

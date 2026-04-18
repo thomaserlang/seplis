@@ -56,17 +56,39 @@ export function PlayerVideo({
     const media = useMedia() as VideoMedia | null
     const resumeTimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
+    const [isAirPlayActive, setIsAirPlayActive] = useState(false)
+    const [useAirPlayHlsSubtitles, setUseAirPlayHlsSubtitles] = useState(false)
+    const [activeSubtitleKey, setActiveSubtitleKey] = useState<
+        string | undefined
+    >(defaultSubtitle)
+    const [subtitleOffset, setSubtitleOffset] = useState(0)
     const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
         playRequestSource,
         audio,
         forceTranscode,
         ...playSettings.settings,
+        ...(useAirPlayHlsSubtitles
+            ? {
+                  hlsSubtitleLang: activeSubtitleKey,
+                  hlsIncludeAllSubtitles: true,
+              }
+            : {}),
         options: {
             refetchOnWindowFocus: false,
             // 6 hours
             staleTime: 6 * 60 * 60 * 1000,
         },
     })
+
+    useEffect(() => {
+        if (isAirPlayActive) {
+            setUseAirPlayHlsSubtitles(true)
+        }
+    }, [isAirPlayActive])
+
+    useEffect(() => {
+        setUseAirPlayHlsSubtitles(false)
+    }, [playRequestSource, audio, forceTranscode])
 
     const canDirectPlay =
         data?.can_direct_play === true &&
@@ -76,15 +98,10 @@ export function PlayerVideo({
     const needsHlsJs =
         data != null && !canDirectPlay && !hasNativeHls && Hls.isSupported()
 
-    const [activeSubtitleKey, setActiveSubtitleKey] = useState<
-        string | undefined
-    >(defaultSubtitle)
-
     const handleSubtitleChange = (key: string | undefined) => {
         setActiveSubtitleKey(key)
         onSubtitleChange?.(key)
     }
-    const [subtitleOffset, setSubtitleOffset] = useState(0)
     const currentSrc = data
         ? canDirectPlay
             ? data.direct_play_url
@@ -219,11 +236,13 @@ export function PlayerVideo({
                 playRequestsSources={playRequestsSources}
                 audio={audio}
                 forceTranscode={forceTranscode}
+                isAirPlayActive={isAirPlayActive}
                 activeSubtitleKey={activeSubtitleKey}
                 subtitleOffset={subtitleOffset}
                 onSourceChange={onSourceChange}
                 onAudioChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
+                onAirPlayActiveChange={setIsAirPlayActive}
                 onSubtitleChange={handleSubtitleChange}
                 onSubtitleOffsetChange={setSubtitleOffset}
                 preferredAudioLangs={preferredAudioLangs}

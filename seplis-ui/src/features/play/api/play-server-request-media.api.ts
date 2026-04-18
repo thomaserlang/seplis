@@ -20,6 +20,9 @@ export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     format: string
     supportedHdrFormats: HDRType[]
     hdrEnabled: boolean
+    hlsIncludeAllSubtitles?: boolean
+    hlsSubtitleLang?: string
+    hlsSubtitleOffset?: number
 }
 
 export const {
@@ -46,6 +49,9 @@ export const {
             props.format,
             props.supportedHdrFormats,
             props.hdrEnabled,
+            props.hlsIncludeAllSubtitles,
+            props.hlsSubtitleLang,
+            props.hlsSubtitleOffset,
         ].filter((x) => x !== undefined),
     getFn: async ({
         playRequestSource,
@@ -63,6 +69,9 @@ export const {
         format,
         supportedHdrFormats,
         hdrEnabled,
+        hlsIncludeAllSubtitles,
+        hlsSubtitleLang,
+        hlsSubtitleOffset,
         signal,
     }) => {
         if (supportedVideoCodecs.length === 0)
@@ -101,6 +110,11 @@ export const {
                             hdrEnabled && supportedHdrFormats?.length
                                 ? String(supportedHdrFormats)
                                 : undefined,
+                        hls_include_all_subtitles: hlsIncludeAllSubtitles
+                            ? 'true'
+                            : undefined,
+                        hls_subtitle_lang: hlsSubtitleLang,
+                        hls_subtitle_offset: hlsSubtitleOffset,
                     }).filter(
                         ([, value]) => value !== undefined && value !== null,
                     ) as [string, string | number | boolean][],

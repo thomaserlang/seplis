@@ -74,11 +74,13 @@ export interface PlayerVideoControlsProps {
     playRequestsSources: PlayRequestSources[]
     audio: string | undefined
     forceTranscode: boolean
+    isAirPlayActive: boolean
     activeSubtitleKey?: string
     subtitleOffset: number
     onSourceChange: (source: PlayRequestSource) => void
     onAudioChange: (audio: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
+    onAirPlayActiveChange: (value: boolean) => void
     onSubtitleChange: (subtitle: string | undefined) => void
     onSubtitleOffsetChange: (value: number) => void
     preferredAudioLangs?: string[]
