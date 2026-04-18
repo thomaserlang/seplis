@@ -19,10 +19,21 @@ import {
 import { Container, Paper } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
 import { useChromecast } from '../providers/chromecast-provider'
+import { ChromecastCapabilities } from '../types'
 import { PlayerCast } from './player-cast'
 
 interface Props extends PlayerProps {
     playRequestsSources: PlayRequestSources[]
+}
+
+const FALLBACK_CAPABILITIES: ChromecastCapabilities = {
+    supportedVideoCodecs: ['h264'],
+    supportedAudioCodecs: ['aac', 'opus', 'flac'],
+    supportedVideoContainers: ['mp4'],
+    supportedHdrFormats: [],
+    hdrEnabled: false,
+    maxAudioChannels: 2,
+    maxWidth: 1920,
 }
 
 export function PlayerCastView({
@@ -38,15 +49,85 @@ export function PlayerCastView({
     onSubtitleChange,
     castInfo,
 }: Props) {
+    const { capabilities } = useChromecast()
+    const [capabilitiesTimedOut, setCapabilitiesTimedOut] = useState(false)
+
+    useEffect(() => {
+        if (capabilities) {
+            setCapabilitiesTimedOut(false)
+            return
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            setCapabilitiesTimedOut(true)
+        }, 3000)
+
+        return () => {
+            window.clearTimeout(timeoutId)
+        }
+    }, [capabilities])
+
+    const resolvedCapabilities =
+        capabilities ?? (capabilitiesTimedOut ? FALLBACK_CAPABILITIES : null)
+
+    return (
+        <Container size="xs" pt="2rem">
+            <Paper withBorder radius="1rem" p="1rem" bg="transparent">
+                <PlayerCastViewReady
+                    playRequestsSources={playRequestsSources}
+                    title={title}
+                    secondaryTitle={secondaryTitle}
+                    onClose={onClose}
+                    onPlayNext={onPlayNext}
+                    defaultAudio={defaultAudio}
+                    defaultSubtitle={defaultSubtitle}
+                    defaultStartTime={defaultStartTime}
+                    onAudioChange={onAudioChange}
+                    onSubtitleChange={onSubtitleChange}
+                    castInfo={castInfo}
+                    capabilities={resolvedCapabilities ?? FALLBACK_CAPABILITIES}
+                    shouldRequestMedia={resolvedCapabilities != null}
+                    capabilitiesPending={resolvedCapabilities == null}
+                />
+            </Paper>
+        </Container>
+    )
+}
+
+interface ReadyProps extends Props {
+    capabilities: ChromecastCapabilities
+    shouldRequestMedia: boolean
+    capabilitiesPending: boolean
+}
+
+function PlayerCastViewReady({
+    playRequestsSources,
+    title,
+    secondaryTitle,
+    onClose,
+    onPlayNext,
+    defaultAudio,
+    defaultSubtitle,
+    defaultStartTime,
+    onAudioChange,
+    onSubtitleChange,
+    castInfo,
+    capabilities,
+    shouldRequestMedia,
+    capabilitiesPending,
+}: ReadyProps) {
+    const { castSession, player: castPlayer, playbackError } = useChromecast()
     const playSettings = usePlaySettings('cast-settings', {
-        supportedVideoCodecs: ['h264'],
-        supportedAudioCodecs: ['aac', 'opus', 'flac'],
-        transcodeVideoCodec: 'h264',
-        transcodeAudioCodec: 'aac',
-        supportedVideoContainers: ['mp4'],
-        maxAudioChannels: 2,
+        supportedVideoCodecs: capabilities.supportedVideoCodecs,
+        supportedAudioCodecs: capabilities.supportedAudioCodecs,
+        transcodeVideoCodec: capabilities.supportedVideoCodecs[0] ?? 'h264',
+        transcodeAudioCodec: capabilities.supportedAudioCodecs[0] ?? 'aac',
+        supportedVideoContainers: capabilities.supportedVideoContainers,
+        maxAudioChannels: capabilities.maxAudioChannels,
+        supportedHdrFormats: capabilities.supportedHdrFormats,
+        hdrEnabled: capabilities.hdrEnabled,
+        maxWidth: capabilities.maxWidth,
     })
-    const { castSession, player: castPlayer } = useChromecast()
     const [source, setSource] = useState<PlayRequestSource>(() =>
         pickStartSource(playRequestsSources, playSettings.settings.maxBitrate),
     )
@@ -68,6 +149,9 @@ export function PlayerCastView({
             audio,
         }),
     )
+    const canUseDirectPlay =
+        source.source.format === 'mp4' &&
+        source.source.media_type?.startsWith('video/mp4') === true
 
     const startTimeRef = useRef<number>(defaultStartTime ?? 0)
     const lastLoadedUrlRef = useRef<string | null>(null)
@@ -78,15 +162,26 @@ export function PlayerCastView({
         forceTranscode,
         ...playSettings.settings,
         options: {
+            enabled: shouldRequestMedia,
             refetchOnWindowFocus: false,
             staleTime: 6 * 60 * 60 * 1000, // 6 hours
         },
     })
 
     useEffect(() => {
+        if (!playbackError) return
+        if (forceTranscode) return
+        setForceTranscode(true)
+    }, [playbackError, forceTranscode])
+
+    useEffect(() => {
         if (!data || !castSession) return
-        if (data.hls_url === lastLoadedUrlRef.current) return
-        lastLoadedUrlRef.current = data.hls_url
+        const contentUrl =
+            data.can_direct_play && canUseDirectPlay && source.source.media_type
+                ? data.direct_play_url
+                : data.hls_url
+        if (contentUrl === lastLoadedUrlRef.current) return
+        lastLoadedUrlRef.current = contentUrl
 
         const subtitleTracks = source.source.subtitles.map((sub, i) => {
             const key = `${sub.language}:${sub.index}`
@@ -112,13 +207,17 @@ export function PlayerCastView({
         metadata.subtitle = secondaryTitle ?? ''
 
         const mediaInfo = new chrome.cast.media.MediaInfo(
-            data.hls_url,
-            'application/x-mpegurl',
+            contentUrl,
+            data.can_direct_play && canUseDirectPlay && source.source.media_type
+                ? source.source.media_type
+                : 'application/x-mpegurl',
         )
-        // @ts-ignore
-        mediaInfo.hlsVideoSegmentFormat = // @ts-ignore
-            chrome.cast.media.HlsSegmentFormat.FMP4
-        ;(mediaInfo as any).contentUrl = data.hls_url
+        if (!(data.can_direct_play && canUseDirectPlay)) {
+            // @ts-ignore
+            mediaInfo.hlsVideoSegmentFormat = // @ts-ignore
+                chrome.cast.media.HlsSegmentFormat.FMP4
+        }
+        ;(mediaInfo as any).contentUrl = contentUrl
         mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED
         mediaInfo.metadata = metadata
         mediaInfo.tracks = subtitleTracks
@@ -147,7 +246,24 @@ export function PlayerCastView({
         }
 
         castSession.loadMedia(request)
-    }, [data, castSession])
+    }, [
+        data,
+        castSession,
+        canUseDirectPlay,
+        source.source.media_type,
+        source.source.subtitles,
+        source.request.play_id,
+        source.request.play_url,
+        source.source.index,
+        title,
+        secondaryTitle,
+        castPlayer?.isMediaLoaded,
+        castPlayer?.currentTime,
+        activeSubtitleKey,
+        castInfo?.savePositionUrl,
+        castInfo?.watchedUrl,
+        source.source.duration,
+    ])
 
     useEffect(() => {
         if (!castSession) return
@@ -171,40 +287,37 @@ export function PlayerCastView({
     }, [activeSubtitleKey, castSession])
 
     return (
-        <Container size="xs" pt="2rem">
-            <Paper withBorder radius="1rem" p="1rem" bg="transparent">
-                {isLoading && <PageLoader />}
-                {error && <ErrorBox errorObj={error} />}
-                {!data && !isLoading && (
-                    <ErrorBox message="No playable source found" />
-                )}
-                {data && (
-                    <PlayerCast
-                        title={title}
-                        secondaryTitle={secondaryTitle}
-                        onClose={onClose}
-                        onPlayNext={onPlayNext}
-                        playRequestSource={source}
-                        playRequestsSources={playRequestsSources}
-                        audio={audio}
-                        forceTranscode={forceTranscode}
-                        activeSubtitleKey={activeSubtitleKey}
-                        onSourceChange={setSource}
-                        onAudioChange={(a) => {
-                            setAudioLang(a)
-                            onAudioChange?.(a)
-                        }}
-                        onForceTranscodeChange={setForceTranscode}
-                        onSubtitleChange={(s) => {
-                            setActiveSubtitleKey(s)
-                            onSubtitleChange?.(s)
-                        }}
-                        preferredAudioLangs={PREFERRED_AUDIO_LANGS}
-                        preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
-                        playSettings={playSettings}
-                    />
-                )}
-            </Paper>
-        </Container>
+        <>
+            {capabilitiesPending && <PageLoader />}
+            {!capabilitiesPending && isLoading && <PageLoader />}
+            {!capabilitiesPending && error && <ErrorBox errorObj={error} />}
+            {!capabilitiesPending && !data && !isLoading && (
+                <ErrorBox message="No playable source found" />
+            )}
+            <PlayerCast
+                title={title}
+                secondaryTitle={secondaryTitle}
+                onClose={onClose}
+                onPlayNext={onPlayNext}
+                playRequestSource={source}
+                playRequestsSources={playRequestsSources}
+                audio={audio}
+                forceTranscode={forceTranscode}
+                activeSubtitleKey={activeSubtitleKey}
+                onSourceChange={setSource}
+                onAudioChange={(a) => {
+                    setAudioLang(a)
+                    onAudioChange?.(a)
+                }}
+                onForceTranscodeChange={setForceTranscode}
+                onSubtitleChange={(s) => {
+                    setActiveSubtitleKey(s)
+                    onSubtitleChange?.(s)
+                }}
+                preferredAudioLangs={PREFERRED_AUDIO_LANGS}
+                preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
+                playSettings={playSettings}
+            />
+        </>
     )
 }

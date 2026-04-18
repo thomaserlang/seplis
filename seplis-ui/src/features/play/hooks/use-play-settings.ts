@@ -27,6 +27,7 @@ function loadVideoCodecs() {
 
 export interface PlaySettings {
     maxBitrate: number
+    maxWidth?: number
     supportedVideoCodecs: VideoCodec[]
     supportedAudioCodecs: AudioCodec[]
     transcodeVideoCodec: VideoCodec
@@ -86,6 +87,7 @@ export function usePlaySettings(
 
     const settings: PlaySettings = {
         maxBitrate: overrides.maxBitrate ?? defaults?.maxBitrate ?? MAX_BITRATE,
+        maxWidth: overrides.maxWidth ?? defaults?.maxWidth,
         supportedVideoCodecs: videoCodecs,
         supportedAudioCodecs: audioCodecs,
         transcodeVideoCodec:
@@ -121,11 +123,13 @@ export function usePlaySettings(
                 ;(next as Record<string, unknown>)[k] = v
             }
         }
-        setOverrides(next)
-        if (Object.keys(next).length === 0) {
+        const sanitizedNext = sanitizeOverrides(storageKey, next)
+
+        setOverrides(sanitizedNext)
+        if (Object.keys(sanitizedNext).length === 0) {
             localStorage.removeItem(storageKey)
         } else {
-            localStorage.setItem(storageKey, JSON.stringify(next))
+            localStorage.setItem(storageKey, JSON.stringify(sanitizedNext))
         }
     }
 

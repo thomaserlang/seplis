@@ -8,6 +8,7 @@ export interface PlaySourceStream {
     codec: string | null
     forced: boolean
     default: boolean
+    channels: number | null
 }
 
 export interface PlaySource {

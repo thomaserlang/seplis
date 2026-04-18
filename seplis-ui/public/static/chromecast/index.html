@@ -53,8 +53,19 @@
 
       const context = cast.framework.CastReceiverContext.getInstance();
       const playerManager = context.getPlayerManager();
-
       const CAST_NAMESPACE = "urn:x-cast:seplis.player";
+      const VIDEO_CODEC_TYPES = {
+        'video/mp4; codecs="avc1.42E01E"': "h264",
+        'video/mp4; codecs="av01.0.08M.08"': "av1",
+        'video/mp4; codecs="hvc1"': "hevc",
+        'video/mp4; codecs="hev1.1.6.L93.90"': "hevc",
+      };
+      const AUDIO_CODEC_TYPES = {
+        'audio/mp4; codecs="mp4a.40.2"': "aac",
+        'audio/mp4; codecs="ec-3"': "eac3",
+        'audio/mp4; codecs="ac-3"': "ac3",
+        'audio/mp4; codecs="ac-4"': "ac4",
+      };
 
       let currentSubtitleOffset = 0;
       let offsetPollInterval = null;
@@ -123,6 +134,190 @@
       let keepAliveTimer = null;
       let lastSavedPosition = 0;
       let watchedIncremented = false;
+      let capabilitiesPromise = null;
+
+      function sendToAllSenders(message) {
+        for (const sender of context.getSenders()) {
+          context.sendCustomMessage(CAST_NAMESPACE, sender.senderId, message);
+        }
+      }
+
+      function splitMimeAndCodecs(contentType) {
+        const [mimeType, codecsPart] = contentType.split(";");
+        const codecsMatch = codecsPart?.match(/codecs="([^"]+)"/);
+        return {
+          mimeType,
+          codecs: codecsMatch?.[1],
+        };
+      }
+
+      function canDisplayContentType(contentType, mediaType) {
+        const { mimeType, codecs } = splitMimeAndCodecs(contentType);
+
+        if (mediaType === "video") {
+          return context.canDisplayType(mimeType, codecs, 1920, 1080, 24);
+        }
+
+        return context.canDisplayType(mimeType, codecs);
+      }
+
+      async function getSupportedVideoCodecs() {
+        const video = document.createElement("video");
+        const codecCandidates = Object.entries(VIDEO_CODEC_TYPES).filter(
+          ([mime]) => video.canPlayType(mime),
+        );
+        const codecs = [];
+
+        for (const [mime, codec] of codecCandidates) {
+          const isSupported = canDisplayContentType(mime, "video");
+          if (isSupported) codecs.push(codec);
+        }
+
+        return [...new Set(codecs)];
+      }
+
+      async function getSupportedAudioCodecs() {
+        const audio = document.createElement("audio");
+        const codecCandidates = Object.entries(AUDIO_CODEC_TYPES).filter(
+          ([mime]) => audio.canPlayType(mime),
+        );
+        const codecs = [];
+
+        for (const [mime, codec] of codecCandidates) {
+          const isSupported = canDisplayContentType(mime, "audio");
+          if (isSupported) codecs.push(codec);
+        }
+
+        return [...new Set(codecs)];
+      }
+
+      function getSupportedVideoContainers() {
+        const video = document.createElement("video");
+        return ["video/mp4"]
+          .filter((mime) => video.canPlayType(mime))
+          .map(() => "mp4");
+      }
+
+      function getHdrSupport(supportedHdrFormats) {
+        const deviceCapabilities = context.getDeviceCapabilities();
+        if (deviceCapabilities) {
+          if (
+            deviceCapabilities[
+              cast.framework.system.DeviceCapabilities.IS_HDR_SUPPORTED
+            ]
+          ) {
+            return true;
+          }
+          if (
+            deviceCapabilities[
+              cast.framework.system.DeviceCapabilities.IS_DV_SUPPORTED
+            ]
+          ) {
+            return true;
+          }
+        }
+
+        return supportedHdrFormats.length > 0;
+      }
+
+      function getMaxWidth(supportedVideoCodecs, supportedHdrFormats) {
+        const deviceCapabilities = context.getDeviceCapabilities();
+        const hasHdrOutput =
+          !!deviceCapabilities?.[
+            cast.framework.system.DeviceCapabilities.IS_HDR_SUPPORTED
+          ] ||
+          !!deviceCapabilities?.[
+            cast.framework.system.DeviceCapabilities.IS_DV_SUPPORTED
+          ] ||
+          supportedHdrFormats.length > 0;
+
+        if (
+          hasHdrOutput ||
+          supportedVideoCodecs.includes("hevc") ||
+          supportedVideoCodecs.includes("av1")
+        ) {
+          return 3840;
+        }
+
+        return 1920;
+      }
+
+      async function getSupportedHDRTypes() {
+        if (!("mediaCapabilities" in navigator)) return [];
+
+        const check = (codec, transfer) =>
+          navigator.mediaCapabilities
+            .decodingInfo({
+              type: "media-source",
+              video: {
+                contentType: `video/mp4; codecs="${codec}"`,
+                width: 3840,
+                height: 2160,
+                framerate: 30,
+                bitrate: 20_000_000,
+                transferFunction: transfer,
+              },
+            })
+            .then((result) => result.supported)
+            .catch(() => false);
+
+        const checks = [
+          ["dovi", "dvh1.05.07", "pq"],
+          ["hdr10", "hev1.2.4.L153.B0", "pq"],
+          ["hlg", "hev1.2.4.L153.B0", "hlg"],
+        ];
+
+        const results = await Promise.all(
+          checks.map(([, codec, transfer]) => check(codec, transfer)),
+        );
+
+        return checks.filter((_, i) => results[i]).map(([name]) => name);
+      }
+
+      async function getCapabilities() {
+        const supportedVideoCodecs = await getSupportedVideoCodecs();
+        const supportedAudioCodecs = await getSupportedAudioCodecs();
+        const supportedVideoContainers = getSupportedVideoContainers();
+        const supportedHdrFormats = await getSupportedHDRTypes();
+
+        return {
+          supportedVideoCodecs,
+          supportedAudioCodecs,
+          supportedVideoContainers,
+          supportedHdrFormats,
+          hdrEnabled: getHdrSupport(supportedHdrFormats),
+          maxWidth: getMaxWidth(supportedVideoCodecs, supportedHdrFormats),
+          maxAudioChannels: supportedAudioCodecs.some((codec) =>
+            ["eac3", "ac3", "ac4", "dtsc", "dtse", "dtsx"].includes(codec),
+          )
+            ? 6
+            : 2,
+        };
+      }
+
+      function loadCapabilities() {
+        if (capabilitiesPromise === null) {
+          capabilitiesPromise = getCapabilities().catch(() => ({
+            supportedVideoCodecs: ["h264"],
+            supportedAudioCodecs: ["aac", "opus", "flac"],
+            supportedVideoContainers: ["mp4"],
+            supportedHdrFormats: [],
+            hdrEnabled: false,
+            maxWidth: 1920,
+            maxAudioChannels: 2,
+          }));
+        }
+        return capabilitiesPromise;
+      }
+
+      function sendCapabilities(senderId) {
+        loadCapabilities().then((capabilities) => {
+          context.sendCustomMessage(CAST_NAMESPACE, senderId, {
+            type: "capabilities",
+            payload: capabilities,
+          });
+        });
+      }
 
       function startKeepAlive(url) {
         if (keepAliveTimer) clearInterval(keepAliveTimer);
@@ -173,6 +368,24 @@
           if (customData?.keep_alive_url) {
             startKeepAlive(customData.keep_alive_url);
           }
+
+          sendToAllSenders({
+            type: "playbackError",
+            payload: null,
+          });
+        },
+      );
+
+      playerManager.addEventListener(
+        cast.framework.events.EventType.ERROR,
+        (event) => {
+          sendToAllSenders({
+            type: "playbackError",
+            payload: {
+              reason: event.reason,
+              detailedErrorCode: event.detailedErrorCode,
+            },
+          });
         },
       );
 
@@ -201,6 +414,7 @@
         cast.framework.system.EventType.SENDER_CONNECTED,
         (event) => {
           dbg("Sender connected" + event.senderId);
+          sendCapabilities(event.senderId);
         },
       );
 
@@ -218,6 +432,8 @@
         if (data.type === "subtitleOffset") {
           dbg("Offset message received");
           applySubtitleOffset(data.offset);
+        } else if (data.type === "getCapabilities") {
+          sendCapabilities(event.senderId);
         }
       });
 

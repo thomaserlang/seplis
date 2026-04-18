@@ -6,6 +6,14 @@ import {
     useState,
     type ReactNode,
 } from 'react'
+import { CAST_NAMESPACE } from '../constants'
+import type {
+    ChromecastCapabilities,
+    ChromecastCapabilitiesMessage,
+    ChromecastMessage,
+    ChromecastPlaybackError,
+    ChromecastPlaybackErrorMessage,
+} from '../types'
 import { useChromecastCafSender } from '../utils/react-chromecast-caf'
 
 interface ChromecastContextValue {
@@ -16,6 +24,8 @@ interface ChromecastContextValue {
     playerController: cast.framework.RemotePlayerController | null
     isAvailable: boolean
     isConnected: boolean
+    capabilities: ChromecastCapabilities | null
+    playbackError: ChromecastPlaybackError | null
     requestSession: () => Promise<chrome.cast.ErrorCode | undefined>
     endSession: (stopCasting?: boolean) => void
     sendMessage: (namespace: string, message: unknown) => Promise<void>
@@ -37,6 +47,10 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
         useState<cast.framework.SessionState | null>(null)
     const [castSession, setCastSession] =
         useState<cast.framework.CastSession | null>(null)
+    const [capabilities, setCapabilities] =
+        useState<ChromecastCapabilities | null>(null)
+    const [playbackError, setPlaybackError] =
+        useState<ChromecastPlaybackError | null>(null)
     const playerRef = useRef<cast.framework.RemotePlayer | null>(null)
     const playerControllerRef =
         useRef<cast.framework.RemotePlayerController | null>(null)
@@ -71,6 +85,15 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
         ) => {
             setSessionState(e.sessionState)
             setCastSession(castContext.getCurrentSession())
+            if (
+                e.sessionState ===
+                    senderCast.framework.SessionState.SESSION_ENDED ||
+                e.sessionState ===
+                    senderCast.framework.SessionState.NO_SESSION
+            ) {
+                setCapabilities(null)
+                setPlaybackError(null)
+            }
         }
         const onPlayerChange = () => {
             setPlayerRevision((r) => r + 1)
@@ -106,6 +129,53 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
             playerControllerRef.current = null
         }
     }, [senderCast, senderChrome, receiverApplicationId])
+
+    useEffect(() => {
+        if (!castSession) {
+            setCapabilities(null)
+            setPlaybackError(null)
+            return
+        }
+
+        setCapabilities(null)
+        setPlaybackError(null)
+
+        const handleMessage = (
+            namespace: string,
+            message: ChromecastMessage | string,
+        ) => {
+            if (namespace !== CAST_NAMESPACE) return
+
+            let data: ChromecastMessage
+            try {
+                data =
+                    typeof message === 'string'
+                        ? (JSON.parse(message) as ChromecastMessage)
+                        : message
+            } catch {
+                return
+            }
+
+            if (data.type === 'capabilities') {
+                setCapabilities(
+                    (data as ChromecastCapabilitiesMessage).payload,
+                )
+            } else if (data.type === 'playbackError') {
+                setPlaybackError(
+                    (data as ChromecastPlaybackErrorMessage).payload,
+                )
+            }
+        }
+
+        castSession.addMessageListener(CAST_NAMESPACE, handleMessage)
+        castSession
+            .sendMessage(CAST_NAMESPACE, { type: 'getCapabilities' })
+            .catch(() => {})
+
+        return () => {
+            castSession.removeMessageListener(CAST_NAMESPACE, handleMessage)
+        }
+    }, [castSession])
 
     const requestSession = () => {
         if (!senderCast)
@@ -145,6 +215,8 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
                 playerController: playerControllerRef.current,
                 isAvailable,
                 isConnected,
+                capabilities,
+                playbackError,
                 requestSession,
                 endSession,
                 sendMessage,

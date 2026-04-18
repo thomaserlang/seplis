@@ -9,6 +9,7 @@ export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     startTime?: number
     audio?: string
     maxBitrate?: number
+    maxWidth?: number
     forceTranscode?: boolean
     maxAudioChannels: number
     supportedVideoCodecs: string[]
@@ -34,6 +35,7 @@ export const {
             props.startTime,
             props.audio,
             props.maxBitrate,
+            props.maxWidth,
             props.forceTranscode,
             props.maxAudioChannels,
             props.supportedVideoCodecs,
@@ -50,6 +52,7 @@ export const {
         startTime,
         audio,
         maxBitrate,
+        maxWidth,
         forceTranscode = false,
         maxAudioChannels,
         supportedVideoCodecs,
@@ -86,12 +89,14 @@ export const {
                             supportedVideoContainers,
                         ),
                         force_transcode: forceTranscode ? 'true' : 'false',
-                        max_width: maxBitrate
-                            ? recommendResolution(
-                                  maxBitrate,
-                                  transcodeVideoCodec,
-                              )
-                            : undefined,
+                        max_width:
+                            maxWidth ??
+                            (maxBitrate
+                                ? recommendResolution(
+                                      maxBitrate,
+                                      transcodeVideoCodec,
+                                  )
+                                : undefined),
                         supported_hdr_formats:
                             hdrEnabled && supportedHdrFormats?.length
                                 ? String(supportedHdrFormats)

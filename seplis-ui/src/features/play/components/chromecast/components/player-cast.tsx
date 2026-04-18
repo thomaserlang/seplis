@@ -6,12 +6,11 @@ import {
 import { ActionIcon, Flex, Tooltip } from '@mantine/core'
 import { ArrowLeftIcon } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { CAST_NAMESPACE } from '../constants'
 import { useChromecast } from '../providers/chromecast-provider'
 import { CastControls } from './cast-controls'
 import { CastIdentity } from './cast-identity'
 import { CastProgress } from './cast-progress'
-
-const CAST_NAMESPACE = 'urn:x-cast:seplis.player'
 
 interface Props {
     title?: string
@@ -66,7 +65,7 @@ export function PlayerCast({
         sendMessage(CAST_NAMESPACE, {
             type: 'subtitleOffset',
             offset,
-        })
+        }).catch(() => {})
     }
 
     const [dragTime, setDragTime] = useState<number | null>(null)
