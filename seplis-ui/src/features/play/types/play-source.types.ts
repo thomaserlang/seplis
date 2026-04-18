@@ -48,5 +48,19 @@ export interface PlayServerMedia {
     hls_url: string
     keep_alive_url: string
     close_session_url: string
-    transcode_decision_url: string
+    transcode_decision: TranscodeDecision
+}
+
+export interface TranscodeDecisionCheck {
+    suppoprted: boolean
+    reasons: string[]
+}
+
+export interface TranscodeDecision {
+    video_copy: TranscodeDecisionCheck
+    audio_copy: TranscodeDecisionCheck
+    direct_play: TranscodeDecisionCheck
+    video_transcode_required: boolean
+    audio_transcode_required: boolean
+    transcode_required: boolean
 }
