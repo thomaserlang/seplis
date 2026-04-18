@@ -40,12 +40,12 @@ export function PlayerSettings({
     const { source: currentSource, request: currentRequest } = playRequestSource
 
     const availableBitrates = BITRATE_OPTIONS.filter(
-        (b) => b === MAX_BITRATE || b < currentSource.bit_rate,
+        (b) => b === MAX_BITRATE || b < currentSource.bitrate,
     )
 
     const currentBitrateLabel =
         playSettings.settings.maxBitrate === MAX_BITRATE
-            ? `Max (${bitratePretty(currentSource.bit_rate)})`
+            ? `Max (${bitratePretty(currentSource.bitrate)})`
             : bitratePretty(playSettings.settings.maxBitrate)
 
     const currentAudioLabel = (() => {
@@ -112,7 +112,7 @@ export function PlayerSettings({
                     maxBitrate={playSettings.settings.maxBitrate}
                     currentSource={currentSource}
                     onBitrateChange={(bitrate) => {
-                        if (bitrate >= currentSource.bit_rate) {
+                        if (bitrate >= currentSource.bitrate) {
                             playSettings.update({ maxBitrate: undefined })
                         } else {
                             playSettings.update({ maxBitrate: bitrate })

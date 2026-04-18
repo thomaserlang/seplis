@@ -41,8 +41,8 @@ export function BitratePanel({
                         }}
                     >
                         {bitrate === MAX_BITRATE ||
-                        bitrate >= currentSource.bit_rate
-                            ? `Max (${bitratePretty(currentSource.bit_rate)})`
+                        bitrate >= currentSource.bitrate
+                            ? `Max (${bitratePretty(currentSource.bitrate)})`
                             : playSourceBitrateStr(bitrate, currentSource)}
                     </OptionItem>
                 ))}

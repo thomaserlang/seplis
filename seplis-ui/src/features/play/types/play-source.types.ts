@@ -18,14 +18,18 @@ export interface PlaySource {
     resolution: string
     audio: PlaySourceStream[]
     subtitles: PlaySourceStream[]
-    video_color_bit_depth: number
     video_color_range: string
     video_color_range_type: string
     index: number
     size: number
-    bit_rate: number
+    bitrate: number
     format: string
     media_type: string | null
+    fps: number
+    pixel_format: string
+    color_transfer: string
+    color_primaries: string
+    is_hdr: boolean
 }
 
 export interface PlayRequestSource {

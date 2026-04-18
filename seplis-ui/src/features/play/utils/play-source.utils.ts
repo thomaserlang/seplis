@@ -58,14 +58,14 @@ export function pickStartSource(
 
     const bestDirectPlay = candidates.find(
         ({ source }) =>
-            source.bit_rate <= defaultMaxBitrate &&
+            source.bitrate <= defaultMaxBitrate &&
             source.media_type != null &&
             canPlayMediaType(source.media_type),
     )
     if (bestDirectPlay) return bestDirectPlay
 
     const bestWithinBitrate = candidates.find(
-        ({ source }) => source.bit_rate <= defaultMaxBitrate,
+        ({ source }) => source.bitrate <= defaultMaxBitrate,
     )
     return (
         bestWithinBitrate ?? {

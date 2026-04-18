@@ -1,8 +1,8 @@
 import { PlaySource } from '../types/play-source.types'
 
 export function playSourceBitrateStr(bitrate: number, source: PlaySource) {
-    if (bitrate < source.bit_rate) return bitratePretty(bitrate)
-    return `${bitratePretty(source.bit_rate)} (source)`
+    if (bitrate < source.bitrate) return bitratePretty(bitrate)
+    return `${bitratePretty(source.bitrate)} (source)`
 }
 
 export function bitratePretty(bitrate: number) {
