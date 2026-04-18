@@ -29,7 +29,6 @@ export interface PlaySource {
     pixel_format: string
     color_transfer: string
     color_primaries: string
-    is_hdr: boolean
 }
 
 export interface PlayRequestSource {
