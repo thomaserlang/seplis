@@ -123,13 +123,12 @@ export function usePlaySettings(
                 ;(next as Record<string, unknown>)[k] = v
             }
         }
-        const sanitizedNext = sanitizeOverrides(storageKey, next)
 
-        setOverrides(sanitizedNext)
-        if (Object.keys(sanitizedNext).length === 0) {
+        setOverrides(next)
+        if (Object.keys(next).length === 0) {
             localStorage.removeItem(storageKey)
         } else {
-            localStorage.setItem(storageKey, JSON.stringify(sanitizedNext))
+            localStorage.setItem(storageKey, JSON.stringify(next))
         }
     }
 
