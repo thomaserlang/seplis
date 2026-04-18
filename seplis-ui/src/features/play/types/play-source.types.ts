@@ -40,7 +40,11 @@ export interface PlayRequestSources {
 export interface PlayServerMedia {
     direct_play_url: string
     can_direct_play: boolean
+    direct_play_media_type: string | null
+    video_media_type: string | null
+    audio_media_type: string | null
     hls_url: string
     keep_alive_url: string
     close_session_url: string
+    transcode_decision_url: string
 }

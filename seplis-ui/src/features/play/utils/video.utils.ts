@@ -5,16 +5,57 @@ import {
     VideoContainer,
 } from '../types/media.types'
 
-export function getSupportedVideoCodecs(): VideoCodec[] {
-    const video = document.createElement('video')
-    const types: { [key: string]: VideoCodec } = {
-        'video/mp4; codecs="hvc1"': 'hevc',
-        'video/mp4; codecs="hev1.1.6.L93.90"': 'hevc',
-        'video/mp4; codecs="av01.0.08M.08"': 'av1',
-        'video/mp4; codecs="avc1.42E01E"': 'h264',
+const VIDEO_CODEC_TYPES: Record<string, VideoCodec> = {
+    'video/mp4; codecs="hvc1"': 'hevc',
+    'video/mp4; codecs="hev1.1.6.L93.90"': 'hevc',
+    'video/mp4; codecs="av01.0.08M.08"': 'av1',
+    'video/mp4; codecs="avc1.42E01E"': 'h264',
+}
+
+async function hasSmoothMediaDecodingSupport(contentType: string) {
+    if (!('mediaCapabilities' in navigator)) return true
+
+    try {
+        const result = await navigator.mediaCapabilities.decodingInfo({
+            type: 'media-source',
+            video: {
+                contentType,
+                width: 1920,
+                height: 1080,
+                framerate: 24,
+                bitrate: 8_000_000,
+            },
+        })
+
+        return result.supported && result.smooth
+    } catch {
+        return false
     }
-    const codecs: VideoCodec[] = []
-    for (const key in types) if (video.canPlayType(key)) codecs.push(types[key])
+}
+
+export function canPlayMediaType(
+    mediaType: string,
+    kind: 'video' | 'audio' = 'video',
+) {
+    const media = document.createElement(kind)
+    return !!media.canPlayType(mediaType)
+}
+
+export async function getSupportedVideoCodecs(): Promise<VideoCodec[]> {
+    const video = document.createElement('video')
+    const codecs = Object.entries(VIDEO_CODEC_TYPES)
+        .filter(([mime]) => video.canPlayType(mime))
+        .map(([, codec]) => codec)
+
+    if (codecs.includes('av1')) {
+        const av1Supported = await hasSmoothMediaDecodingSupport(
+            'video/mp4; codecs="av01.0.08M.08"',
+        )
+        if (!av1Supported) {
+            return codecs.filter((codec) => codec !== 'av1')
+        }
+    }
+
     return [...new Set(codecs)]
 }
 

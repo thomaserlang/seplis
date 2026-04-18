@@ -16,6 +16,14 @@ import {
 } from '../utils/video.utils'
 
 const hdrTypesPromise = getSupportedHDRTypes()
+let videoCodecsPromise: Promise<VideoCodec[]> | null = null
+
+function loadVideoCodecs() {
+    if (videoCodecsPromise === null) {
+        videoCodecsPromise = getSupportedVideoCodecs()
+    }
+    return videoCodecsPromise
+}
 
 export interface PlaySettings {
     maxBitrate: number
@@ -46,7 +54,7 @@ export function usePlaySettings(
     storageKey: string,
     defaults?: Partial<PlaySettings>,
 ): UsePlaySettings {
-    const browserVideoCodecs = useMemo(() => getSupportedVideoCodecs(), [])
+    const browserVideoCodecs = use(loadVideoCodecs())
     const browserAudioCodecs = useMemo(() => getSupportedAudioCodecs(), [])
     const browserVideoContainers = useMemo(
         () => getSupportedVideoContainers(),
