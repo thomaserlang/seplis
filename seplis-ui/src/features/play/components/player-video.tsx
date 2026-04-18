@@ -13,7 +13,7 @@ import {
 import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
 import { canPlayMediaType } from '../utils/video.utils'
 import { PlayErrorHandler } from './player-error-handler'
-import { HlsPlayer, hasNativeHls } from './player-hls'
+import { HlsJsPlayer, hasNativeHls } from './player-hlsjs'
 import { MediaEventHandler } from './player-media-events'
 import { AssSubtitle, SubtitleOffsetApplier } from './player-subtitles'
 import {
@@ -197,7 +197,7 @@ export function PlayerVideo({
                         />
                     )}
                     {needsHlsJs && (
-                        <HlsPlayer
+                        <HlsJsPlayer
                             src={data.hls_url}
                             startTimeRef={resumeTimeRef}
                         />

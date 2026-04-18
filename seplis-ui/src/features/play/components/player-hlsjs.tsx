@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { useMedia } from '@videojs/react'
 import type { Video as VideoMedia } from '@videojs/core'
+import { useMedia } from '@videojs/react'
 import Hls from 'hls.js'
+import { useEffect } from 'react'
 import type { PlayerVideoHlsProps } from './player-video.types'
 
 export const hasNativeHls = (() => {
@@ -9,7 +9,7 @@ export const hasNativeHls = (() => {
     return !!video.canPlayType('application/vnd.apple.mpegurl')
 })()
 
-export function HlsPlayer({ src, startTimeRef }: PlayerVideoHlsProps): null {
+export function HlsJsPlayer({ src, startTimeRef }: PlayerVideoHlsProps): null {
     const media = useMedia() as VideoMedia | null
 
     useEffect(() => {
