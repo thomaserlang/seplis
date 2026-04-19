@@ -8,6 +8,7 @@ import { queryClient } from './queryclient'
 import { router } from './router'
 
 import { ModalsProvider } from '@mantine/modals'
+import { SessionProvider } from './features/user/api/session.store'
 import { theme } from './theme'
 import './theme.css'
 
@@ -16,9 +17,11 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <MantineProvider theme={theme} forceColorScheme={'dark'}>
             <Notifications position="top-right" />
             <QueryClientProvider client={queryClient}>
-                <ModalsProvider>
-                    <RouterProvider router={router} />
-                </ModalsProvider>
+                <SessionProvider>
+                    <ModalsProvider>
+                        <RouterProvider router={router} />
+                    </ModalsProvider>
+                </SessionProvider>
             </QueryClientProvider>
         </MantineProvider>
     </React.StrictMode>,

@@ -1,6 +1,6 @@
 import { FavoriteButton } from '@/components/favorite-button'
 import { WatchlistButtonProps } from '@/components/watchlist-button'
-import { useActiveUser } from '@/features/user/api/active-user.api'
+import { useActiveUser } from '@/features/user/api/session.store'
 import { toastError } from '@/utils/toast'
 import {
     useCreateSeriesFavorite,

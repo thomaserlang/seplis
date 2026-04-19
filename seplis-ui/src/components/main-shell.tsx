@@ -1,6 +1,6 @@
 import { MediaInfoModal } from '@/features/media-type/components/media-info-modal'
 import { MediaPlayerModal } from '@/features/media-type/components/media-player-modal'
-import { useActiveUser } from '@/features/user/api/active-user.api'
+import { useActiveUser } from '@/features/user/api/session.store'
 import { UserMenu } from '@/features/user/components/user-menu'
 import { AppShell, Box, Button, Flex } from '@mantine/core'
 import { ReactNode } from 'react'

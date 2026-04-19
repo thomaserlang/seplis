@@ -1,5 +1,5 @@
 import { Box } from '@mantine/core'
-import { useActiveUser } from '../user/api/active-user.api'
+import { useActiveUser } from '../user/api/session.store'
 import { HomeView } from './components/home-view'
 import { LandingView } from './components/landing-view'
 

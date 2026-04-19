@@ -3,13 +3,14 @@ import { Logo } from '@/components/logo'
 import { PageLoader } from '@/components/page-loader'
 import { Container, Flex, Paper, Title } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
-import { setActiveUser } from './api/active-user.api'
+import { useSessionActions } from './api/session.store'
 import { useCreateToken } from './api/token.api'
 import { UserCreateForm } from './components/user-create-form'
 import { User } from './types/user.types'
 
 export function Component() {
     const navigate = useNavigate()
+    const { setActiveUser } = useSessionActions()
     const token = useCreateToken({})
 
     const handleSuccess = async ({
