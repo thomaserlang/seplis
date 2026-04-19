@@ -154,14 +154,15 @@ export function PlayerCast({
                 onDisconnect={() => endSession(true)}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
-                audioLang={audio}
+                audioKey={audio}
                 forceTranscode={forceTranscode}
                 activeSubtitleKey={activeSubtitleKey}
                 subtitleOffset={subtitleOffset}
+                canAdjustSubtitleOffset
                 onSourceChange={onSourceChange}
                 onAudioLangChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
-                onSubtitleChange={onSubtitleChange}
+                onSubtitleKeyChange={onSubtitleChange}
                 onSubtitleOffsetChange={(offset) => {
                     setSubtitleOffset(offset)
                     sendSubtitleOffset(offset)

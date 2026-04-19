@@ -37,8 +37,8 @@ export interface PlaySettings {
     supportedHdrFormats: HDRType[]
     hdrEnabled: boolean
     format: StreamFormat
-    defaultAudio?: string
-    defaultSubtitle?: string
+    defaultAudioKey?: string
+    defaultSubtitleKey?: string
 }
 
 export interface PlaySettingsOverrides extends Partial<PlaySettings> {}
@@ -81,9 +81,10 @@ export function usePlaySettings(
     const videoCodecs = overrides.supportedVideoCodecs ?? defaultVideoCodecs
     const audioCodecs = overrides.supportedAudioCodecs ?? defaultAudioCodecs
 
-    const defaultAudio = overrides.defaultAudio ?? defaults?.defaultAudio
-    const defaultSubtitle =
-        overrides.defaultSubtitle ?? defaults?.defaultSubtitle
+    const defaultAudioKey =
+        overrides.defaultAudioKey ?? defaults?.defaultAudioKey
+    const defaultSubtitleKey =
+        overrides.defaultSubtitleKey ?? defaults?.defaultSubtitleKey
 
     const settings: PlaySettings = {
         maxBitrate: overrides.maxBitrate ?? defaults?.maxBitrate ?? MAX_BITRATE,
@@ -110,8 +111,8 @@ export function usePlaySettings(
             browserHdrTypes,
         hdrEnabled:
             overrides.hdrEnabled ?? defaults?.hdrEnabled ?? getHdrSupport(),
-        defaultAudio,
-        defaultSubtitle,
+        defaultAudioKey: defaultAudioKey,
+        defaultSubtitleKey: defaultSubtitleKey,
     }
 
     const update = (changes: Partial<PlaySettingsOverrides>) => {

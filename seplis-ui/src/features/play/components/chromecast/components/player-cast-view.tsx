@@ -15,6 +15,7 @@ import {
     pickStartAudio,
     pickStartSource,
     pickStartSubtitle,
+    toLangKey,
 } from '@/features/play/utils/play-source.utils'
 import { Container, Paper } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
@@ -184,7 +185,7 @@ function PlayerCastViewReady({
         lastLoadedUrlRef.current = contentUrl
 
         const subtitleTracks = source.source.subtitles.map((sub, i) => {
-            const key = `${sub.language}:${sub.index}`
+            const key = toLangKey(sub)
             const subtitleUrl =
                 `${source.request.play_url}/subtitle-file` +
                 `?play_id=${source.request.play_id}` +
@@ -273,7 +274,7 @@ function PlayerCastViewReady({
         const activeTrackIds = (() => {
             if (!activeSubtitleKey) return []
             const idx = source.source.subtitles.findIndex(
-                (s) => `${s.language}:${s.index}` === activeSubtitleKey,
+                (s) => toLangKey(s) === activeSubtitleKey,
             )
             return idx >= 0 ? [idx + 1] : []
         })()

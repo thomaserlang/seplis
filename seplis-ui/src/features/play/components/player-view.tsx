@@ -11,9 +11,9 @@ import {
 import { usePlaySettings } from '../hooks/use-play-settings'
 import { PlayerProps } from '../types/player.types'
 import {
-    pickStartAudio,
+    pickStartAudio as pickStartAudioKey,
     pickStartSource,
-    pickStartSubtitle,
+    pickStartSubtitle as pickStartSubtitleKey,
 } from '../utils/play-source.utils'
 import { Player, PlayerVideo, type PlayErrorEvent } from './player-video'
 
@@ -33,16 +33,16 @@ export function PlayerView({
     defaultSubtitle,
     defaultStartTime,
     onAudioChange,
-    onSubtitleChange,
+    onSubtitleChange: onSubtitleKeyChange,
 }: Props) {
     const playSettings = usePlaySettings('play-settings')
     const [source, setSource] = useState<PlayRequestSource>(() =>
         pickStartSource(playRequestsSources, playSettings.settings.maxBitrate),
     )
-    const [audio, setAudioLang] = useState<string | undefined>(
-        pickStartAudio({
+    const [audioKey, setAudioLang] = useState<string | undefined>(
+        pickStartAudioKey({
             playSource: source.source,
-            defaultAudio: defaultAudio ?? playSettings.settings.defaultAudio,
+            defaultAudio: defaultAudio ?? playSettings.settings.defaultAudioKey,
             preferredAudioLangs: PREFERRED_AUDIO_LANGS,
         }),
     )
@@ -86,33 +86,33 @@ export function PlayerView({
                 secondaryTitle={secondaryTitle}
                 onClose={onClose}
                 onPlayNext={onPlayNext}
-                audio={audio}
+                audioKey={audioKey}
                 forceTranscode={forceTranscode}
                 defaultStartTime={defaultStartTime}
                 onSourceChange={setSource}
-                onAudioChange={(audio) => {
-                    setAudioLang(audio)
+                onAudioKeyChange={(audioKey) => {
+                    setAudioLang(audioKey)
                     playSettings.update({
-                        defaultAudio: audio,
+                        defaultAudioKey: audioKey,
                     })
-                    onAudioChange?.(audio)
+                    onAudioChange?.(audioKey)
                 }}
                 onPlayError={handlePlayError}
                 onForceTranscodeChange={setForceTranscode}
                 onVideoError={handleVideoError}
                 onTimeUpdate={handleTimeUpdate}
-                defaultSubtitle={pickStartSubtitle({
+                defaultSubtitleKey={pickStartSubtitleKey({
                     playSource: source.source,
                     defaultSubtitle:
                         defaultSubtitle ??
-                        playSettings.settings.defaultSubtitle,
+                        playSettings.settings.defaultSubtitleKey,
                     preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
-                    audio,
+                    audio: audioKey,
                 })}
-                onSubtitleChange={(subtitle) => {
-                    onSubtitleChange?.(subtitle)
+                onSubtitleKeyChange={(subtitleKey) => {
+                    onSubtitleKeyChange?.(subtitleKey)
                     playSettings.update({
-                        defaultSubtitle: subtitle,
+                        defaultSubtitleKey: subtitleKey,
                     })
                 }}
                 preferredAudioLangs={PREFERRED_AUDIO_LANGS}

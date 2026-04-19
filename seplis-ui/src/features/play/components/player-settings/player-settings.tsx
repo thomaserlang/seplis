@@ -14,6 +14,7 @@ import { SourcePanel } from './source-panel'
 import { SubtitleSyncPanel } from './subtitle-sync-panel'
 import { SubtitlesPanel } from './subtitles-panel'
 
+import { parseLangKey } from '../../utils/play-source.utils'
 import { trackLabel } from '../../utils/play-track.utils'
 import classes from './player-settings.module.css'
 
@@ -22,14 +23,15 @@ interface Props extends PlayerSettingsProps {}
 export function PlayerSettings({
     playRequestSource,
     playRequestsSources,
-    audioLang,
+    audioKey,
     forceTranscode,
     activeSubtitleKey,
     subtitleOffset,
+    canAdjustSubtitleOffset,
     onSourceChange,
     onAudioLangChange,
     onForceTranscodeChange,
-    onSubtitleChange,
+    onSubtitleKeyChange,
     onSubtitleOffsetChange,
     preferredAudioLangs,
     preferredSubtitleLangs,
@@ -49,22 +51,22 @@ export function PlayerSettings({
             : bitratePretty(playSettings.settings.maxBitrate)
 
     const currentAudioLabel = (() => {
-        if (!audioLang) return 'Default'
-        const [lang, idxStr] = audioLang.split(':')
+        if (!audioKey) return 'Default'
+        const [lang, idxStr] = audioKey.split(':')
         const index = parseInt(idxStr, 10)
         const track =
             currentSource.audio.find(
                 (a) => a.language === lang && a.index === index,
             ) ?? currentSource.audio.find((a) => a.language === lang)
-        if (!track) return audioLang
+        if (!track) return audioKey
         return <AudioTrackLabel track={track} />
     })()
 
     const subtitleLabel = (() => {
         if (!activeSubtitleKey) return 'Off'
-        const [lang, idxStr] = activeSubtitleKey.split(':')
+        const { lang, index } = parseLangKey(activeSubtitleKey)
         const sub = currentSource.subtitles.find(
-            (s) => s.language === lang && s.index === parseInt(idxStr),
+            (s) => s.language === lang && s.group_index === index,
         )
         if (!sub) return lang
         return (
@@ -87,6 +89,7 @@ export function PlayerSettings({
                     currentAudioLabel={currentAudioLabel}
                     subtitleLabel={subtitleLabel}
                     subtitleOffset={subtitleOffset}
+                    canAdjustSubtitleOffset={canAdjustSubtitleOffset}
                     forceTranscode={forceTranscode}
                     onForceTranscodeChange={onForceTranscodeChange}
                     setPanel={setPanel}
@@ -125,7 +128,7 @@ export function PlayerSettings({
             {panel === 'audio' && (
                 <AudioPanel
                     currentSource={currentSource}
-                    audioLang={audioLang}
+                    audioLang={audioKey}
                     preferredAudioLangs={preferredAudioLangs}
                     onAudioLangChange={onAudioLangChange}
                     back={back}
@@ -137,7 +140,7 @@ export function PlayerSettings({
                     currentSource={currentSource}
                     activeSubtitleKey={activeSubtitleKey}
                     preferredSubtitleLangs={preferredSubtitleLangs}
-                    onSubtitleChange={onSubtitleChange}
+                    onSubtitleChange={onSubtitleKeyChange}
                     back={back}
                     onClose={onClose}
                 />

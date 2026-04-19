@@ -7,14 +7,15 @@ import {
 export interface PlayerSettingsProps {
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
-    audioLang: string | undefined
+    audioKey: string | undefined
     forceTranscode: boolean
     activeSubtitleKey: string | undefined
     subtitleOffset: number
+    canAdjustSubtitleOffset: boolean
     onSourceChange: (source: PlayRequestSource) => void
     onAudioLangChange: (lang: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
-    onSubtitleChange: (key: string | undefined) => void
+    onSubtitleKeyChange: (key: string | undefined) => void
     onSubtitleOffsetChange: (offset: number) => void
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]

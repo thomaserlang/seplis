@@ -1,20 +1,18 @@
 import { Controls, Tooltip } from '@videojs/react'
 import {
     PlayerHeader,
+    PlayerVideoInteractions as PlayerInteractions,
     PlayerPrimaryControls,
     PlayerSecondaryControls,
-    PlayerTimeControls,
-    PlayerVideoInteractions as PlayerInteractions,
     PlayerVideoStatus as PlayerStatus,
+    PlayerTimeControls,
 } from './player-controls'
 import type {
     PlayerVideoControlsProps,
     PlayerVideoStatusProps,
 } from './player-video.types'
 
-export function PlayerVideoStatus({
-    ...props
-}: PlayerVideoStatusProps) {
+export function PlayerVideoStatus({ ...props }: PlayerVideoStatusProps) {
     return <PlayerStatus {...props} />
 }
 
@@ -32,13 +30,12 @@ export function PlayerVideoControls({
     playRequestsSources,
     audio,
     forceTranscode,
-    isAirPlayActive,
     activeSubtitleKey,
     subtitleOffset,
+    canAdjustSubtitleOffset,
     onSourceChange,
     onAudioChange,
     onForceTranscodeChange,
-    onAirPlayActiveChange,
     onSubtitleChange,
     onSubtitleOffsetChange,
     preferredAudioLangs,
@@ -62,13 +59,12 @@ export function PlayerVideoControls({
                         playRequestsSources={playRequestsSources}
                         audio={audio}
                         forceTranscode={forceTranscode}
-                        isAirPlayActive={isAirPlayActive}
                         activeSubtitleKey={activeSubtitleKey}
                         subtitleOffset={subtitleOffset}
+                        canAdjustSubtitleOffset={canAdjustSubtitleOffset}
                         onSourceChange={onSourceChange}
                         onAudioChange={onAudioChange}
                         onForceTranscodeChange={onForceTranscodeChange}
-                        onAirPlayActiveChange={onAirPlayActiveChange}
                         onSubtitleChange={onSubtitleChange}
                         onSubtitleOffsetChange={onSubtitleOffsetChange}
                         preferredAudioLangs={preferredAudioLangs}

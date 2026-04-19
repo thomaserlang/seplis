@@ -9,12 +9,12 @@ import {
     PlaybackRateButton,
     Tooltip,
 } from '@videojs/react'
+import type { PlayerVideoControlsProps } from '../player-video.types'
 import { AirPlayButton } from './airplay-button'
 import { Button } from './button'
 import { ChromecastButton } from './chromecast-button'
 import { SettingsPopover } from './settings-popover'
 import { VolumePopover } from './volume-popover'
-import type { PlayerVideoControlsProps } from '../player-video.types'
 
 type SecondaryControlsProps = Pick<
     PlayerVideoControlsProps,
@@ -22,13 +22,12 @@ type SecondaryControlsProps = Pick<
     | 'playRequestsSources'
     | 'audio'
     | 'forceTranscode'
-    | 'isAirPlayActive'
     | 'activeSubtitleKey'
     | 'subtitleOffset'
+    | 'canAdjustSubtitleOffset'
     | 'onSourceChange'
     | 'onAudioChange'
     | 'onForceTranscodeChange'
-    | 'onAirPlayActiveChange'
     | 'onSubtitleChange'
     | 'onSubtitleOffsetChange'
     | 'preferredAudioLangs'
@@ -41,13 +40,12 @@ export function PlayerSecondaryControls({
     playRequestsSources,
     audio,
     forceTranscode,
-    isAirPlayActive,
     activeSubtitleKey,
     subtitleOffset,
+    canAdjustSubtitleOffset,
     onSourceChange,
     onAudioChange,
     onForceTranscodeChange,
-    onAirPlayActiveChange,
     onSubtitleChange,
     onSubtitleOffsetChange,
     preferredAudioLangs,
@@ -75,24 +73,22 @@ export function PlayerSecondaryControls({
             <SettingsPopover
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
-                audioLang={audio}
+                audioKey={audio}
                 forceTranscode={forceTranscode}
                 activeSubtitleKey={activeSubtitleKey}
                 subtitleOffset={subtitleOffset}
+                canAdjustSubtitleOffset={canAdjustSubtitleOffset}
                 onSourceChange={onSourceChange}
                 onAudioLangChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
-                onSubtitleChange={onSubtitleChange}
+                onSubtitleKeyChange={onSubtitleChange}
                 onSubtitleOffsetChange={onSubtitleOffsetChange}
                 preferredAudioLangs={preferredAudioLangs}
                 preferredSubtitleLangs={preferredSubtitleLangs}
                 playSettings={playSettings}
             />
 
-            <AirPlayButton
-                active={isAirPlayActive}
-                onActiveChange={onAirPlayActiveChange}
-            />
+            <AirPlayButton />
             <ChromecastButton />
             <PictureInPictureToggle />
             <FullscreenToggle />
@@ -105,7 +101,10 @@ function PictureInPictureToggle() {
         <Tooltip.Root side="top">
             <Tooltip.Trigger
                 render={
-                    <PiPButton className="media-button--pip" render={<Button />}>
+                    <PiPButton
+                        className="media-button--pip"
+                        render={<Button />}
+                    >
                         <PictureInPictureIcon
                             className="media-icon media-icon--pip-enter"
                             weight="regular"

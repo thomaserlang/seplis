@@ -11,10 +11,12 @@ import {
     type ReactNode,
 } from 'react'
 import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
+import { parseLangKey } from '../utils/play-source.utils'
 import { canPlayMediaType } from '../utils/video.utils'
 import { PlayErrorHandler } from './player-error-handler'
 import { HlsJsPlayer, hasNativeHls } from './player-hlsjs'
 import { MediaEventHandler } from './player-media-events'
+import { PlayerNativeSubtitles } from './player-native-subtitles'
 import { AssSubtitle, SubtitleOffsetApplier } from './player-subtitles'
 import {
     PlayerVideoControls,
@@ -36,15 +38,15 @@ export function PlayerVideo({
     onClose,
     onPlayNext,
     playRequestsSources,
-    audio,
+    audioKey,
     forceTranscode,
     onSourceChange,
-    onAudioChange,
+    onAudioKeyChange: onAudioChange,
     onForceTranscodeChange,
-    onSubtitleChange,
+    onSubtitleKeyChange: onSubtitleChange,
     onPlayError,
     timeSliderStyle,
-    defaultSubtitle,
+    defaultSubtitleKey,
     preferredAudioLangs,
     preferredSubtitleLangs,
     defaultStartTime = 0,
@@ -56,21 +58,20 @@ export function PlayerVideo({
     const media = useMedia() as VideoMedia | null
     const resumeTimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
-    const [isAirPlayActive, setIsAirPlayActive] = useState(false)
-    const [useAirPlayHlsSubtitles, setUseAirPlayHlsSubtitles] = useState(false)
-    const [activeSubtitleKey, setActiveSubtitleKey] = useState<
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    const [currentSubtitle, setCurrentSubtitleKey] = useState<
         string | undefined
-    >(defaultSubtitle)
+    >(defaultSubtitleKey)
     const [subtitleOffset, setSubtitleOffset] = useState(0)
     const { data, isLoading, error, isRefetching } = useGetPlayServerMedia({
         playRequestSource,
-        audio,
+        audio: audioKey,
         forceTranscode,
         ...playSettings.settings,
-        ...(useAirPlayHlsSubtitles
+        ...(isSafari
             ? {
-                  hlsSubtitleLang: activeSubtitleKey,
                   hlsIncludeAllSubtitles: true,
+                  hlsSubtitleLang: defaultSubtitleKey,
               }
             : {}),
         options: {
@@ -79,16 +80,6 @@ export function PlayerVideo({
             staleTime: 6 * 60 * 60 * 1000,
         },
     })
-
-    useEffect(() => {
-        if (isAirPlayActive) {
-            setUseAirPlayHlsSubtitles(true)
-        }
-    }, [isAirPlayActive])
-
-    useEffect(() => {
-        setUseAirPlayHlsSubtitles(false)
-    }, [playRequestSource, audio, forceTranscode])
 
     const canDirectPlay =
         data?.can_direct_play === true &&
@@ -99,11 +90,11 @@ export function PlayerVideo({
         data != null && !canDirectPlay && !hasNativeHls && Hls.isSupported()
 
     const handleSubtitleChange = (key: string | undefined) => {
-        setActiveSubtitleKey(key)
+        setCurrentSubtitleKey(key)
         onSubtitleChange?.(key)
     }
     const currentSrc = data
-        ? canDirectPlay
+        ? canDirectPlay && !isSafari
             ? data.direct_play_url
             : data.hls_url
         : undefined
@@ -113,6 +104,14 @@ export function PlayerVideo({
           ? `${currentSrc}#t=${resumeTimeRef.current}`
           : undefined
     const isPlayerLoading = videoLoading || isLoading || isRefetching
+
+    useEffect(() => {
+        setCurrentSubtitleKey(defaultSubtitleKey)
+    }, [
+        defaultSubtitleKey,
+        playRequestSource.request.play_id,
+        playRequestSource.source.index,
+    ])
 
     useEffect(() => {
         if (!data) return
@@ -142,24 +141,23 @@ export function PlayerVideo({
         setVideoLoading(true)
     }, [data])
 
-    const activeSubtitle = activeSubtitleKey
+    const subtitleStream = currentSubtitle
         ? playRequestSource.source.subtitles.find((s) => {
-              const [lang, idxStr] = activeSubtitleKey.split(':')
-              return s.language === lang && s.index === parseInt(idxStr)
+              const { lang, index } = parseLangKey(currentSubtitle)
+              return s.language === lang && s.group_index === index
           })
         : undefined
+    const canAdjustSubtitleOffset = !isSafari
 
-    // TODO: JASSUB does not render in Safari, fall back to browser <track> for ASS/SSA
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     const isAssSubtitle =
         !isSafari &&
-        (activeSubtitle?.codec === 'ass' || activeSubtitle?.codec === 'ssa')
+        (subtitleStream?.codec === 'ass' || subtitleStream?.codec === 'ssa')
 
-    const subtitleUrl = activeSubtitleKey
+    const subtitleUrl = currentSubtitle
         ? `${playRequestSource.request.play_url}/subtitle-file` +
           `?play_id=${playRequestSource.request.play_id}` +
           `&source_index=${playRequestSource.source.index}` +
-          `&lang=${activeSubtitleKey}` +
+          `&lang=${currentSubtitle}` +
           (isAssSubtitle ? `&output_format=ass` : '')
         : undefined
     const playErrorCountsRef = useRef<Record<PlayErrorType, number>>({
@@ -170,6 +168,7 @@ export function PlayerVideo({
             stall_timeout: 0,
         }
     }, [currentSrc])
+
     const emitPlayError = useEffectEvent((type: PlayErrorType) => {
         playErrorCountsRef.current[type]++
         onPlayError?.({ type, count: playErrorCountsRef.current[type] })
@@ -186,6 +185,9 @@ export function PlayerVideo({
         }
     }, [currentSrc, emitPlayError, isLoading, isRefetching, videoLoading])
 
+    const addTrackEnabled =
+        !isSafari && subtitleStream && !isAssSubtitle && subtitleUrl
+
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
             {data && (
@@ -195,14 +197,14 @@ export function PlayerVideo({
                     playsInline
                     autoPlay
                 >
-                    {activeSubtitle && !isAssSubtitle && subtitleUrl && (
+                    {addTrackEnabled && (
                         <track
-                            key={activeSubtitleKey}
+                            key={currentSubtitle}
                             kind="subtitles"
                             label={
-                                activeSubtitle.title || activeSubtitle.language
+                                subtitleStream.title || subtitleStream.language
                             }
-                            srcLang={activeSubtitle.language}
+                            srcLang={subtitleStream.language}
                             src={subtitleUrl}
                             default
                         />
@@ -222,9 +224,13 @@ export function PlayerVideo({
                 </Video>
             )}
 
-            {activeSubtitleKey && !isAssSubtitle && (
+            {canAdjustSubtitleOffset && currentSubtitle && !isAssSubtitle && (
                 <SubtitleOffsetApplier offset={subtitleOffset} />
             )}
+            <PlayerNativeSubtitles
+                subtitleKey={currentSubtitle}
+                isSafari={isSafari}
+            />
 
             <PlayerVideoControls
                 onClose={onClose}
@@ -234,15 +240,14 @@ export function PlayerVideo({
                 timeSliderStyle={timeSliderStyle}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
-                audio={audio}
+                audio={audioKey}
                 forceTranscode={forceTranscode}
-                isAirPlayActive={isAirPlayActive}
-                activeSubtitleKey={activeSubtitleKey}
+                activeSubtitleKey={currentSubtitle}
                 subtitleOffset={subtitleOffset}
+                canAdjustSubtitleOffset={canAdjustSubtitleOffset}
                 onSourceChange={onSourceChange}
                 onAudioChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
-                onAirPlayActiveChange={setIsAirPlayActive}
                 onSubtitleChange={handleSubtitleChange}
                 onSubtitleOffsetChange={setSubtitleOffset}
                 preferredAudioLangs={preferredAudioLangs}

@@ -3,52 +3,16 @@ import type { Video as VideoMedia } from '@videojs/core'
 import { Tooltip, useMedia } from '@videojs/react'
 import { useEffect, useState, type ReactNode } from 'react'
 
-type AirPlayAvailability = 'available' | 'not-available'
+interface AirPlayButtonProps {}
 
-interface WebKitAvailabilityEvent extends Event {
-    availability?: AirPlayAvailability
-}
-
-interface AirPlayMedia extends VideoMedia {
-    webkitCurrentPlaybackTargetIsWireless?: boolean
-    webkitShowPlaybackTargetPicker: () => void
-    addEventListener(
-        type: 'webkitplaybacktargetavailabilitychanged',
-        listener: (event: WebKitAvailabilityEvent) => void,
-        options?: boolean | AddEventListenerOptions,
-    ): void
-    addEventListener(
-        type: 'webkitcurrentplaybacktargetiswirelesschanged',
-        listener: EventListener,
-        options?: boolean | AddEventListenerOptions,
-    ): void
-    removeEventListener(
-        type: 'webkitplaybacktargetavailabilitychanged',
-        listener: (event: WebKitAvailabilityEvent) => void,
-        options?: boolean | EventListenerOptions,
-    ): void
-    removeEventListener(
-        type: 'webkitcurrentplaybacktargetiswirelesschanged',
-        listener: EventListener,
-        options?: boolean | EventListenerOptions,
-    ): void
-}
-
-interface AirPlayButtonProps {
-    active: boolean
-    onActiveChange: (value: boolean) => void
-}
-
-export function AirPlayButton({
-    active,
-    onActiveChange,
-}: AirPlayButtonProps): ReactNode {
+export function AirPlayButton({}: AirPlayButtonProps): ReactNode {
     const media = useMedia() as VideoMedia | null
     const [available, setAvailable] = useState(false)
+    const [active, setActive] = useState(false)
 
     useEffect(() => {
         if (!media || !('webkitShowPlaybackTargetPicker' in media)) {
-            onActiveChange(false)
+            setActive(false)
             return
         }
 
@@ -58,7 +22,7 @@ export function AirPlayButton({
             setAvailable(event.availability === 'available')
         }
         const onConnectionChanged = () => {
-            onActiveChange(!!airplayMedia.webkitCurrentPlaybackTargetIsWireless)
+            setActive(!!airplayMedia.webkitCurrentPlaybackTargetIsWireless)
         }
 
         onConnectionChanged()
@@ -80,7 +44,7 @@ export function AirPlayButton({
                 onConnectionChanged,
             )
         }
-    }, [media, onActiveChange])
+    }, [media])
 
     if (!available) return null
 
@@ -110,4 +74,35 @@ export function AirPlayButton({
             </Tooltip.Popup>
         </Tooltip.Root>
     )
+}
+
+type AirPlayAvailability = 'available' | 'not-available'
+
+interface WebKitAvailabilityEvent extends Event {
+    availability?: AirPlayAvailability
+}
+
+interface AirPlayMedia extends VideoMedia {
+    webkitCurrentPlaybackTargetIsWireless?: boolean
+    webkitShowPlaybackTargetPicker: () => void
+    addEventListener(
+        type: 'webkitplaybacktargetavailabilitychanged',
+        listener: (event: WebKitAvailabilityEvent) => void,
+        options?: boolean | AddEventListenerOptions,
+    ): void
+    addEventListener(
+        type: 'webkitcurrentplaybacktargetiswirelesschanged',
+        listener: EventListener,
+        options?: boolean | AddEventListenerOptions,
+    ): void
+    removeEventListener(
+        type: 'webkitplaybacktargetavailabilitychanged',
+        listener: (event: WebKitAvailabilityEvent) => void,
+        options?: boolean | EventListenerOptions,
+    ): void
+    removeEventListener(
+        type: 'webkitcurrentplaybacktargetiswirelesschanged',
+        listener: EventListener,
+        options?: boolean | EventListenerOptions,
+    ): void
 }

@@ -19,15 +19,15 @@ export interface VideoPlayerProps {
     onClose?: () => void
     onPlayNext?: () => void
     playRequestsSources: PlayRequestSources[]
-    audio: string | undefined
+    audioKey: string | undefined
     forceTranscode: boolean
     onSourceChange: (source: PlayRequestSource) => void
-    onAudioChange: (audio: string | undefined) => void
+    onAudioKeyChange: (audio: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
-    onSubtitleChange?: (subtitle: string | undefined) => void
+    onSubtitleKeyChange?: (subtitle: string | undefined) => void
     onPlayError?: (event: PlayErrorEvent) => void
     timeSliderStyle?: CSSProperties
-    defaultSubtitle?: string
+    defaultSubtitleKey?: string
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
     defaultStartTime?: number
@@ -74,13 +74,12 @@ export interface PlayerVideoControlsProps {
     playRequestsSources: PlayRequestSources[]
     audio: string | undefined
     forceTranscode: boolean
-    isAirPlayActive: boolean
     activeSubtitleKey?: string
     subtitleOffset: number
+    canAdjustSubtitleOffset: boolean
     onSourceChange: (source: PlayRequestSource) => void
     onAudioChange: (audio: string | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
-    onAirPlayActiveChange: (value: boolean) => void
     onSubtitleChange: (subtitle: string | undefined) => void
     onSubtitleOffsetChange: (value: number) => void
     preferredAudioLangs?: string[]

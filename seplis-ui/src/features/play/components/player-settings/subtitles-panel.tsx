@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { PlayRequestSource } from '../../types/play-source.types'
 import { languageMatch } from '../../utils/language-match'
+import { toLangKey } from '../../utils/play-source.utils'
 import { trackLabel } from '../../utils/play-track.utils'
 import { OptionItem } from './option-item'
 import { SettingsBody } from './settings-body'
@@ -39,7 +40,7 @@ export function SubtitlesPanel({
                 ?.map((l) => languageMatch(t.language, l))
                 .includes(true),
     )
-    console.log(preferred)
+
     return (
         <>
             <SubMenuHeader title="Subtitles" onBack={back} />
@@ -52,7 +53,7 @@ export function SubtitlesPanel({
                     Off
                 </OptionItem>
                 {preferred.map((track) => {
-                    const key = `${track.language}:${track.index}`
+                    const key = toLangKey(track)
                     return (
                         <OptionItem
                             key={key}
@@ -69,7 +70,7 @@ export function SubtitlesPanel({
                     <SettingsGroupDivider />
                 )}
                 {other.map((track) => {
-                    const key = `${track.language}:${track.index}`
+                    const key = toLangKey(track)
                     return (
                         <OptionItem
                             key={key}

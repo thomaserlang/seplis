@@ -24,6 +24,7 @@ interface Props {
     currentAudioLabel: ReactNode
     subtitleLabel: ReactNode
     subtitleOffset: number
+    canAdjustSubtitleOffset: boolean
     forceTranscode: boolean
     onForceTranscodeChange: (value: boolean) => void
     hdrEnabled: boolean
@@ -38,6 +39,7 @@ export function MainPanel({
     currentAudioLabel,
     subtitleLabel,
     subtitleOffset,
+    canAdjustSubtitleOffset,
     forceTranscode,
     onForceTranscodeChange,
     setPanel,
@@ -90,11 +92,14 @@ export function MainPanel({
             <MainItem
                 label="Subtitle Sync"
                 value={
-                    subtitleOffset === 0
-                        ? '0s'
-                        : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`
+                    !canAdjustSubtitleOffset
+                        ? 'Unavailable'
+                        : subtitleOffset === 0
+                          ? '0s'
+                          : `${subtitleOffset > 0 ? '+' : ''}${subtitleOffset.toFixed(1)}s`
                 }
                 onClick={() => setPanel('subtitle-sync')}
+                disabled={!canAdjustSubtitleOffset}
             />
         </SettingsBody>
     )

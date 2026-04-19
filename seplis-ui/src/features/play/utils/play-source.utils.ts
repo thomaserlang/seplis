@@ -75,24 +75,27 @@ export function pickStartSource(
     )
 }
 
-function toLangIndex(stream: PlaySourceStream): string {
-    return `${stream.language}:${stream.index}`
+export function toLangKey(stream: PlaySourceStream): string {
+    return `${stream.language}:${stream.group_index}`
 }
 
-function parseLangIndex(value: string): { lang: string; index: number | null } {
+export function parseLangKey(value: string): {
+    lang: string
+    index: number | null
+} {
     const parts = value.split(':')
     const index = parts[1] !== undefined ? parseInt(parts[1], 10) : null
     return { lang: parts[0], index: isNaN(index as number) ? null : index }
 }
 
-function findByLangIndex(
+function findByLangKey(
     streams: PlaySourceStream[],
-    langIndex: string,
+    langKey: string,
 ): PlaySourceStream | undefined {
-    const { lang, index } = parseLangIndex(langIndex)
+    const { lang, index } = parseLangKey(langKey)
     if (index !== null) {
         const exact = streams.find(
-            (s) => s.language === lang && s.index === index,
+            (s) => s.language === lang && s.group_index === index,
         )
         if (exact) return exact
     }
@@ -112,17 +115,17 @@ export function pickStartAudio({
     if (!streams?.length) return undefined
 
     if (defaultAudio) {
-        const match = findByLangIndex(streams, defaultAudio)
-        if (match) return toLangIndex(match)
+        const match = findByLangKey(streams, defaultAudio)
+        if (match) return toLangKey(match)
     }
     if (preferredAudioLangs?.length) {
         for (const lang of preferredAudioLangs) {
             const match = streams.find((s) => languageMatch(s.language, lang))
-            if (match) return toLangIndex(match)
+            if (match) return toLangKey(match)
         }
     }
 
-    return toLangIndex(streams[0])
+    return toLangKey(streams[0])
 }
 
 export function audioCodecLabel(
@@ -164,11 +167,11 @@ export function pickStartSubtitle({
     if (!streams?.length) return undefined
 
     if (defaultSubtitle) {
-        const match = findByLangIndex(streams, defaultSubtitle)
-        if (match) return toLangIndex(match)
+        const match = findByLangKey(streams, defaultSubtitle)
+        if (match) return toLangKey(match)
     }
 
-    const audioLang = audio ? parseLangIndex(audio).lang : undefined
+    const audioLang = audio ? parseLangKey(audio).lang : undefined
 
     if (preferredSubtitleLangs?.length) {
         for (const lang of preferredSubtitleLangs) {
@@ -180,7 +183,7 @@ export function pickStartSubtitle({
                     languageMatch(match.language, audioLang)
                 )
                     return undefined
-                return toLangIndex(match)
+                return toLangKey(match)
             }
         }
     }
@@ -190,7 +193,7 @@ export function pickStartSubtitle({
         const forcedMatch = streams.find(
             (s) => s.forced && languageMatch(s.language, audioLang),
         )
-        if (forcedMatch) return toLangIndex(forcedMatch)
+        if (forcedMatch) return toLangKey(forcedMatch)
     }
 
     return undefined
