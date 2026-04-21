@@ -15,12 +15,14 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.create_table('episodes_watched_history',
+    op.create_table(
+        'episodes_watched_history',
         sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
-        sa.Column('series_id',
-            sa.Integer, 
+        sa.Column(
+            'series_id',
+            sa.Integer,
             sa.ForeignKey(
-                'shows.id', 
+                'shows.id',
                 onupdate='cascade',
                 ondelete='cascade',
             ),
@@ -28,10 +30,11 @@ def upgrade() -> None:
             autoincrement=False,
         ),
         sa.Column('episode_number', sa.Integer),
-        sa.Column('user_id',
-            sa.Integer, 
+        sa.Column(
+            'user_id',
+            sa.Integer,
             sa.ForeignKey(
-                'users.id', 
+                'users.id',
                 onupdate='cascade',
                 ondelete='cascade',
             ),
@@ -40,27 +43,36 @@ def upgrade() -> None:
         ),
         sa.Column('watched_at', sa.DateTime),
     )
-    op.create_index('ix_episodes_watched_history_user_id_series_id_episode_number', 'episodes_watched_history', ['user_id', 'series_id', 'episode_number'])
+    op.create_index(
+        'ix_episodes_watched_history_user_id_series_id_episode_number',
+        'episodes_watched_history',
+        ['user_id', 'series_id', 'episode_number'],
+    )
 
     conn = op.get_bind()
-    episodes_watched = conn.execute(sa.text('''
+    episodes_watched = conn.execute(
+        sa.text("""
         SELECT show_id, user_id, episode_number, times, position, watched_at
         FROM episodes_watched 
         WHERE times>0
         ORDER BY user_id, show_id, episode_number;
-    ''')).all()
+    """)
+    ).all()
 
     history = []
     for ew in episodes_watched:
         for _i in range(ew['times']):
-            history.append({
-                'user_id': ew['user_id'],
-                'series_id': ew['show_id'],
-                'episode_number': ew['episode_number'],
-                'watched_at': ew['watched_at'],
-            })
+            history.append(
+                {
+                    'user_id': ew['user_id'],
+                    'series_id': ew['show_id'],
+                    'episode_number': ew['episode_number'],
+                    'watched_at': ew['watched_at'],
+                }
+            )
 
-    episode_watched_history = sa.sql.table('episodes_watched_history',
+    episode_watched_history = sa.sql.table(
+        'episodes_watched_history',
         sa.sql.column('series_id', sa.Integer),
         sa.sql.column('episode_number', sa.Integer),
         sa.sql.column('user_id', sa.Integer),

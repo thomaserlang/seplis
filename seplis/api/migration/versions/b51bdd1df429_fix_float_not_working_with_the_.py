@@ -15,8 +15,22 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.alter_column('series', 'rating_weighted', type_=sa.DECIMAL(precision=12, scale=4), existing_type=sa.Float, existing_nullable=False, existing_server_default='0')
-    op.alter_column('movies', 'rating_weighted', type_=sa.DECIMAL(precision=12, scale=4), existing_type=sa.Float, existing_nullable=False, existing_server_default='0')
+    op.alter_column(
+        'series',
+        'rating_weighted',
+        type_=sa.DECIMAL(precision=12, scale=4),
+        existing_type=sa.Float,
+        existing_nullable=False,
+        existing_server_default='0',
+    )
+    op.alter_column(
+        'movies',
+        'rating_weighted',
+        type_=sa.DECIMAL(precision=12, scale=4),
+        existing_type=sa.Float,
+        existing_nullable=False,
+        existing_server_default='0',
+    )
 
 
 def downgrade() -> None:

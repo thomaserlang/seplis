@@ -15,7 +15,9 @@ from ...expand.episodes import expand_episodes
 from .router import router
 
 
-@router.get('/{series_id}/episodes', response_model=schemas.Page_cursor_result[schemas.Episode])
+@router.get(
+    '/{series_id}/episodes', response_model=schemas.Page_cursor_result[schemas.Episode]
+)
 async def get_episodes(
     series_id: int,
     season: int | None = None,
@@ -25,14 +27,16 @@ async def get_episodes(
     air_date_ge: date | None = None,
     air_date_le: date | None = None,
     expand: list[str] | None = Depends(get_expand),
-    user: schemas.User_authenticated | None = Depends(get_current_user_no_raise),
+    user: User_authenticated | None = Depends(get_current_user_no_raise),
     page_cursor: schemas.Page_cursor_query = Depends(),
     session: AsyncSession = Depends(get_session),
 ):
-    query = sa.select(models.MEpisode).where(
-        models.MEpisode.series_id == series_id,
-    ).order_by(
-        models.MEpisode.number
+    query = (
+        sa.select(models.MEpisode)
+        .where(
+            models.MEpisode.series_id == series_id,
+        )
+        .order_by(models.MEpisode.number)
     )
     if season:
         query = query.where(models.MEpisode.season == season)
@@ -48,7 +52,7 @@ async def get_episodes(
         query = query.where(models.MEpisode.air_date <= air_date_le)
 
     p = await utils.sqlalchemy.paginate_cursor(
-        session=session, 
+        session=session,
         query=query,
         page_query=page_cursor,
     )

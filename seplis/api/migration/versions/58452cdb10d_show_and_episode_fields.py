@@ -15,17 +15,21 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('shows',
+    op.add_column(
+        'shows',
         sa.Column('runtime', sa.Integer),
     )
-    op.add_column('shows',
+    op.add_column(
+        'shows',
         sa.Column('genres', sa.Text),
     )
-    op.add_column('shows',
+    op.add_column(
+        'shows',
         sa.Column('alternative_titles', sa.Text),
     )
 
-    op.add_column('episodes',
+    op.add_column(
+        'episodes',
         sa.Column('runtime', sa.Integer),
     )
 

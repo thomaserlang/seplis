@@ -15,7 +15,8 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('shows',
+    op.add_column(
+        'shows',
         sa.Column('episode_type', sa.Integer, server_default='2'),
     )
 

@@ -14,7 +14,8 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.rename_table('show_followers', 'show_fans')   
+    op.rename_table('show_followers', 'show_fans')
 
-def downgrade() -> None:    
-    op.rename_table('show_fans', 'show_followers')   
+
+def downgrade() -> None:
+    op.rename_table('show_fans', 'show_followers')

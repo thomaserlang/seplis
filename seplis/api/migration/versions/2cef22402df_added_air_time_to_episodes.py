@@ -15,7 +15,8 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('episodes',
+    op.add_column(
+        'episodes',
         sa.Column('air_time', sa.Time),
     )
 

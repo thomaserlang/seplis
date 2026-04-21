@@ -17,16 +17,20 @@ from alembic import op
 def reverse_uuid7_mariadb(s) -> str:
     return f'{s[24:32]}-{s[32:36]}-{s[19:23]}-{s[14:18]}-{s[0:8]}{s[9:13]}'
 
+
 def upgrade() -> None:
     ids = {}
     conn = op.get_bind()
     old_ids = conn.scalars(sa.text('select id from play_servers'))
     for id_ in old_ids:
         ids[id_] = reverse_uuid7_mariadb(id_)
-        conn.execute(sa.text('UPDATE play_servers SET id=:new_id WHERE id=:id'), {
-            'id': id_, 
-            'new_id': ids[id_],
-        })
+        conn.execute(
+            sa.text('UPDATE play_servers SET id=:new_id WHERE id=:id'),
+            {
+                'id': id_,
+                'new_id': ids[id_],
+            },
+        )
 
 
 def downgrade() -> None:

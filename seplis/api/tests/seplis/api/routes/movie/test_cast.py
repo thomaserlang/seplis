@@ -8,26 +8,36 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_movie_cast(client: AsyncClient) -> None:
     await user_signin(client, ['movie:edit'])
 
-    movie = await models.MMovie.save(schemas.Movie_create(
-        title='Test movie',
-    ))
+    movie = await models.MMovie.save(
+        schemas.Movie_create(
+            title='Test movie',
+        )
+    )
 
-    person = await models.MPerson.save(schemas.Person_create(
-        name='Test person',
-    ))
+    person = await models.MPerson.save(
+        schemas.Person_create(
+            name='Test person',
+        )
+    )
 
     # add cast member
-    r = await client.put(f'/2/movies/{movie.id}/cast', json={
-        'person_id': person.id,
-        'character': 'Test character',
-    })
+    r = await client.put(
+        f'/2/movies/{movie.id}/cast',
+        json={
+            'person_id': person.id,
+            'character': 'Test character',
+        },
+    )
     assert r.status_code == 204
 
     # add cast member again
-    r = await client.put(f'/2/movies/{movie.id}/cast', json={
-        'person_id': person.id,
-        'character': 'Test character',
-    })
+    r = await client.put(
+        f'/2/movies/{movie.id}/cast',
+        json={
+            'person_id': person.id,
+            'character': 'Test character',
+        },
+    )
     assert r.status_code == 204
 
     # get cast members

@@ -15,13 +15,17 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.alter_column('movies', 'revenue', 
-        existing_nullable=True, 
+    op.alter_column(
+        'movies',
+        'revenue',
+        existing_nullable=True,
         existing_type=sa.Integer,
         type_=sa.BIGINT,
     )
-    op.alter_column('movies', 'budget', 
-        existing_nullable=True, 
+    op.alter_column(
+        'movies',
+        'budget',
+        existing_nullable=True,
         existing_type=sa.Integer,
         type_=sa.BIGINT,
     )

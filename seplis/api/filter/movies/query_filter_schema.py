@@ -6,7 +6,7 @@ from pydantic import Field
 from pydantic.dataclasses import dataclass
 
 from ... import schemas
-from ...dependencies import get_current_user_no_raise
+from ...dependencies import UserAuthenticated, get_current_user_no_raise
 
 
 @dataclass
@@ -22,9 +22,7 @@ class Movie_query_filter:
     user_watchlist: Annotated[bool | None, Query()] = None
     user_favorites: Annotated[bool | None, Query()] = None
     user_has_watched: Annotated[bool | None, Query()] = None
-    user: Annotated[
-        schemas.User_authenticated | None, Depends(get_current_user_no_raise)
-    ] = None
+    user: Annotated[UserAuthenticated | None, Depends(get_current_user_no_raise)] = None
     expand: Annotated[list[schemas.MOVIE_EXPAND] | None, Query()] = None
     release_date_gt: Annotated[date | None, Query()] = None
     release_date_lt: Annotated[date | None, Query()] = None

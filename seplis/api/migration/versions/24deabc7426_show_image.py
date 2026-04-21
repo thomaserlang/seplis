@@ -15,16 +15,17 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('shows',
+    op.add_column(
+        'shows',
         sa.Column(
-            'poster_image_id', 
-            sa.Integer, 
+            'poster_image_id',
+            sa.Integer,
             sa.ForeignKey(
-                'images.id', 
+                'images.id',
                 onupdate='cascade',
                 ondelete='set null',
-            )
-        )
+            ),
+        ),
     )
 
 

@@ -8,14 +8,20 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_movie_watched(client: AsyncClient) -> None:
     await user_signin(client)
 
-    movie1: schemas.Movie = await models.MMovie.save(schemas.Movie_create(
-        title='Movie 1',
-    ), movie_id=None)
+    movie1: schemas.Movie = await models.MMovie.save(
+        schemas.Movie_create(
+            title='Movie 1',
+        ),
+        movie_id=None,
+    )
 
-    movie2: schemas.Movie = await models.MMovie.save(schemas.Movie_create(
-        title='Movie 2',
-    ), movie_id=None)
-    
+    movie2: schemas.Movie = await models.MMovie.save(
+        schemas.Movie_create(
+            title='Movie 2',
+        ),
+        movie_id=None,
+    )
+
     r = await client.get('/2/movies?user_has_watched=true')
     assert r.status_code == 200
     data = schemas.Page_cursor_result[schemas.Movie].model_validate(r.json())
@@ -26,7 +32,7 @@ async def test_movie_watched(client: AsyncClient) -> None:
 
     r = await client.post(f'/2/movies/{movie2.id}/watched')
     assert r.status_code == 200, r.body
-    
+
     r = await client.get('/2/movies?user_has_watched=true&expand=user_watched')
     assert r.status_code == 200, r.content
     data = schemas.Page_cursor_result[schemas.Movie].model_validate(r.json())
@@ -35,7 +41,7 @@ async def test_movie_watched(client: AsyncClient) -> None:
     assert data.items[0].user_watched.times == 1
     assert data.items[1].title == 'Movie 2'
     assert data.items[1].user_watched.times == 1
-    
+
 
 if __name__ == '__main__':
     run_file(__file__)

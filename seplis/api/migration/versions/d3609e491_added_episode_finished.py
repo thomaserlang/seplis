@@ -15,10 +15,12 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('episodes_watched',
+    op.add_column(
+        'episodes_watched',
         sa.Column('completed', sa.Enum('Y', 'N'), server_default='N'),
     )
     op.drop_table('shows_watched')
+
 
 def downgrade():
     raise NotImplementedError()

@@ -3,35 +3,42 @@ import sqlalchemy as sa
 from fastapi import Depends, Security
 
 from ... import models, schemas
-from ...dependencies import AsyncSession, authenticated, get_session
+from ...dependencies import AsyncSession, UserAuthenticated, authenticated, get_session
 from .router import router
 
 
-@router.get('/{movie_id}/play-servers', response_model=list[schemas.Play_request],
-            description='''
+@router.get(
+    '/{movie_id}/play-servers',
+    response_model=list[schemas.Play_request],
+    description="""
             **Scope required:** `user:play`
-            ''')
+            """,
+)
 async def get_movie_play_servers(
     movie_id: int,
-    session: AsyncSession=Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=['user:play']),
+    session: AsyncSession = Depends(get_session),
+    user: UserAuthenticated = Security(authenticated, scopes=['user:play']),
 ):
-    query: list[models.MPlayServer] = await session.scalars(sa.select(models.MPlayServer).where(
-        models.MPlayServerAccess.user_id == user.id,
-        models.MPlayServer.id == models.MPlayServerAccess.play_server_id,
-        models.MPlayServerMovie.play_server_id == models.MPlayServer.id,
-        models.MPlayServerMovie.movie_id == movie_id,
-    ))
+    query: list[models.MPlayServer] = await session.scalars(
+        sa.select(models.MPlayServer).where(
+            models.MPlayServerAccess.user_id == user.id,
+            models.MPlayServer.id == models.MPlayServerAccess.play_server_id,
+            models.MPlayServerMovie.play_server_id == models.MPlayServer.id,
+            models.MPlayServerMovie.movie_id == movie_id,
+        )
+    )
     play_ids: list[schemas.Play_request] = []
     for row in query:
-        play_ids.append(schemas.Play_request(
-            play_id=jwt.encode(
-                schemas.Play_id_info_movie(
-                    movie_id=movie_id,
-                ).model_dump(),
-                row.secret,
-                algorithm='HS256',
-            ),
-            play_url=row.url,
-        ))
+        play_ids.append(
+            schemas.Play_request(
+                play_id=jwt.encode(
+                    schemas.Play_id_info_movie(
+                        movie_id=movie_id,
+                    ).model_dump(),
+                    row.secret,
+                    algorithm='HS256',
+                ),
+                play_url=row.url,
+            )
+        )
     return play_ids

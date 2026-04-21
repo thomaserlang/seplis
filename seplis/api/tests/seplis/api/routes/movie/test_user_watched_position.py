@@ -8,9 +8,12 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_movie_watched_position(client: AsyncClient) -> None:
     await user_signin(client)
 
-    movie: schemas.Movie = await models.MMovie.save(schemas.Movie_create(
-        title='Test movie',
-    ), movie_id=None)
+    movie: schemas.Movie = await models.MMovie.save(
+        schemas.Movie_create(
+            title='Test movie',
+        ),
+        movie_id=None,
+    )
 
     url = f'/2/movies/{movie.id}/watched-position'
     # Return 204 if the episode has not been watched
@@ -34,7 +37,7 @@ async def test_movie_watched_position(client: AsyncClient) -> None:
     assert r.status_code == 200
     w = schemas.Movie_watched.model_validate(r.json())
     assert w.times == 0
-    assert w.position == 201       
+    assert w.position == 201
     assert w.watched_at is not None
 
     r = await client.delete(url)
@@ -69,7 +72,7 @@ async def test_movie_watched_position(client: AsyncClient) -> None:
 
     r = await client.delete(url)
     assert r.status_code == 204, r.content
-    
+
     r = await client.get(url)
     w = schemas.Movie_watched.model_validate(r.json())
     assert w.times == 1

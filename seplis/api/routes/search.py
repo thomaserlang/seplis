@@ -32,13 +32,17 @@ async def search(
                     'term': {
                         'type': type,
                     }
-                }
+                },
             }
         }
 
-    r = await database.es.search(index=config.api.elasticsearch.index_prefix+'titles', query=q)
-    return [schemas.Search_title_document.model_validate(a['_source'])
-            for a in r['hits']['hits']]
+    r = await database.es.search(
+        index=config.api.elasticsearch.index_prefix + 'titles', query=q
+    )
+    return [
+        schemas.Search_title_document.model_validate(a['_source'])
+        for a in r['hits']['hits']
+    ]
 
 
 def get_by_query(title: str):
@@ -67,7 +71,7 @@ def get_by_query(title: str):
                                                     ],
                                                 },
                                             },
-                                            {        
+                                            {
                                                 'term': {
                                                     'titles.title.exact': {
                                                         'value': title,
@@ -89,7 +93,7 @@ def get_by_query(title: str):
                 'modifier': 'log1p',
                 'factor': 2,
                 'missing': 0,
-            }
+            },
         }
     }
 
@@ -100,31 +104,33 @@ def get_by_title(title: str):
             'query': {
                 'dis_max': {
                     'queries': [
-                        {'nested': {
-                            'path': 'titles',
-                            'score_mode': 'max',
-                            'query': {
-                                'bool': {
-                                    'should': [
-                                        {        
-                                            'match_phrase': {
-                                                'titles.title': {
-                                                    'query': title,
+                        {
+                            'nested': {
+                                'path': 'titles',
+                                'score_mode': 'max',
+                                'query': {
+                                    'bool': {
+                                        'should': [
+                                            {
+                                                'match_phrase': {
+                                                    'titles.title': {
+                                                        'query': title,
+                                                    }
                                                 }
-                                            }
-                                        },
-                                        {        
-                                            'term': {
-                                                'titles.title.exact': {
-                                                    'value': title,
-                                                    'boost': 2,
+                                            },
+                                            {
+                                                'term': {
+                                                    'titles.title.exact': {
+                                                        'value': title,
+                                                        'boost': 2,
+                                                    }
                                                 }
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                        }},
+                                            },
+                                        ]
+                                    }
+                                },
+                            }
+                        },
                         {'term': {'imdb': title}},
                     ]
                 }
@@ -134,6 +140,6 @@ def get_by_title(title: str):
                 'modifier': 'log1p',
                 'factor': 0.1,
                 'missing': 0,
-            }
+            },
         }
     }

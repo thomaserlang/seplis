@@ -6,6 +6,7 @@ from ... import models, schemas
 from ...database import database
 from ...dependencies import (
     AsyncSession,
+    UserAuthenticated,
     authenticated,
     get_current_user_no_raise,
     get_expand,
@@ -36,75 +37,87 @@ async def get_movie(
     movie_id: int,
     session: AsyncSession = Depends(get_session),
     expand: list[str] | None = Depends(get_expand),
-    user: schemas.User_authenticated | None = Depends(
-        get_current_user_no_raise),
+    user: UserAuthenticated | None = Depends(get_current_user_no_raise),
 ):
-    movie = await session.scalar(sa.select(models.MMovie).where(models.MMovie.id == movie_id))
+    movie = await session.scalar(
+        sa.select(models.MMovie).where(models.MMovie.id == movie_id)
+    )
     if not movie:
         raise HTTPException(404, 'Unknown movie')
     await expand_movies(movies=[movie], user=user, expand=expand)
     return movie
 
 
-@router.post('', status_code=201, response_model=schemas.Movie,
-            description='''
+@router.post(
+    '',
+    status_code=201,
+    response_model=schemas.Movie,
+    description="""
             **Scope required:** `movie:create`
-            ''')
+            """,
+)
 async def create_movie(
     data: schemas.Movie_create,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['movie:create']),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:create']),
 ):
     movie = await models.MMovie.save(data, movie_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_movie', int(movie.id))
     return movie
 
 
-@router.put('/{movie_id}', response_model=schemas.Movie,
-            description='''
+@router.put(
+    '/{movie_id}',
+    response_model=schemas.Movie,
+    description="""
             **Scope required:** `movie:edit`
-            ''')
+            """,
+)
 async def update_movie(
     movie_id: int,
     data: schemas.Movie_update,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['movie:edit']),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:edit']),
 ):
     return await models.MMovie.save(movie_id=movie_id, data=data, patch=False)
 
 
-@router.patch('/{movie_id}', response_model=schemas.Movie,
-            description='''
+@router.patch(
+    '/{movie_id}',
+    response_model=schemas.Movie,
+    description="""
             **Scope required:** `movie:edit`
-            ''')
+            """,
+)
 async def patch_movie(
     movie_id: int,
     data: schemas.Movie_update,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['movie:edit']),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:edit']),
 ):
     return await models.MMovie.save(movie_id=movie_id, data=data, patch=True)
 
 
-@router.delete('/{movie_id}', status_code=204,
-            description='''
+@router.delete(
+    '/{movie_id}',
+    status_code=204,
+    description="""
             **Scope required:** `movie:delete`
-            ''')
+            """,
+)
 async def delete_movie(
     movie_id: int,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['movie:delete']),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:delete']),
 ) -> None:
     await models.MMovie.delete(movie_id=movie_id)
 
 
-@router.post('/{movie_id}/update', status_code=204,
-            description='''
+@router.post(
+    '/{movie_id}/update',
+    status_code=204,
+    description="""
             **Scope required:** `movie:update`
-            ''')
+            """,
+)
 async def request_update(
     movie_id: int,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['movie:update']),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:update']),
 ) -> None:
     await database.redis_queue.enqueue_job('update_movie', movie_id)

@@ -33,5 +33,5 @@ class Series_cast_person(BaseModel):
     roles: list[Series_cast_role] = []
     order: int | None = None
     total_episodes: int | None = 0
-    
+
     model_config = ConfigDict(from_attributes=True)

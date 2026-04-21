@@ -8,16 +8,18 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_episode_watched(client: AsyncClient) -> None:
     await user_signin(client)
 
-    series: schemas.Series = await models.MSeries.save(schemas.Series_create(
-        title='Test series',
-        runtime=30,
-        episodes=[
-            schemas.Episode_create(number=1, title='1'),
-            schemas.Episode_create(number=2, title='2'),
-            schemas.Episode_create(number=3, title='3', runtime=40),
-        ]
-    ), series_id=None)
-
+    series: schemas.Series = await models.MSeries.save(
+        schemas.Series_create(
+            title='Test series',
+            runtime=30,
+            episodes=[
+                schemas.Episode_create(number=1, title='1'),
+                schemas.Episode_create(number=2, title='2'),
+                schemas.Episode_create(number=3, title='3', runtime=40),
+            ],
+        ),
+        series_id=None,
+    )
 
     r = await client.post(f'/2/series/{series.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
@@ -27,7 +29,6 @@ async def test_episode_watched(client: AsyncClient) -> None:
     assert data.times == 2
     assert data.position == 0
     assert data.watched_at is not None
-
 
     r = await client.get(f'/2/series/{series.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
@@ -36,7 +37,6 @@ async def test_episode_watched(client: AsyncClient) -> None:
     assert data.position == 0
     assert data.watched_at is not None
 
-    
     r = await client.delete(f'/2/series/{series.id}/episodes/1/watched')
     assert r.status_code == 200, r.content
     data = schemas.Episode_watched.model_validate(r.json())
@@ -50,19 +50,19 @@ async def test_episode_watched(client: AsyncClient) -> None:
     assert data.position == 0
     assert data.watched_at is None
 
-
     r = await client.get(f'/2/series/{series.id}/episodes/1/watched')
     data = schemas.Episode_watched.model_validate(r.json())
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at is None
 
-
-
-    r = await client.post(f'/2/series/{series.id}/episodes/watched-range', json={
-        'from_episode_number': 1,
-        'to_episode_number': 3,
-    })
+    r = await client.post(
+        f'/2/series/{series.id}/episodes/watched-range',
+        json={
+            'from_episode_number': 1,
+            'to_episode_number': 3,
+        },
+    )
     assert r.status_code == 204, r.content
 
     r = await client.get(f'/2/series/{series.id}/episodes/1/watched')

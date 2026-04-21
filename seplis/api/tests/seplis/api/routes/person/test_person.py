@@ -6,16 +6,21 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 
 @pytest.mark.asyncio
 async def test_person(client: AsyncClient) -> None:
-    await user_signin(client, ['person:create', 'person:edit', 'person:delete', 'person:manage_images'])
+    await user_signin(
+        client, ['person:create', 'person:edit', 'person:delete', 'person:manage_images']
+    )
 
     # create person
-    r = await client.post('/2/people', json={
-        'name': 'Test person',
-        'birthday': '1990-01-01',
-        'externals': {
-            'imdb': 'nm0000001',
-        }
-    })
+    r = await client.post(
+        '/2/people',
+        json={
+            'name': 'Test person',
+            'birthday': '1990-01-01',
+            'externals': {
+                'imdb': 'nm0000001',
+            },
+        },
+    )
     assert r.status_code == 201
     person = schemas.Person.model_validate(r.json())
 
@@ -27,12 +32,15 @@ async def test_person(client: AsyncClient) -> None:
     assert person.externals['imdb'] == 'nm0000001'
 
     # update person
-    r = await client.put(f'/2/people/{person.id}', json={
-        'name': 'Test person 2',
-        'externals': {
-            'themoviedb': '123',
-        }
-    })
+    r = await client.put(
+        f'/2/people/{person.id}',
+        json={
+            'name': 'Test person 2',
+            'externals': {
+                'themoviedb': '123',
+            },
+        },
+    )
     assert r.status_code == 200, r.content
 
     # get person
@@ -44,17 +52,19 @@ async def test_person(client: AsyncClient) -> None:
     assert 'imdb' not in person.externals
 
     # test updating a person with patch
-    r = await client.patch(f'/2/people/{person.id}', json={
-        'externals': {
-            'imdb': 'nm0000001',
-        }
-    })
+    r = await client.patch(
+        f'/2/people/{person.id}',
+        json={
+            'externals': {
+                'imdb': 'nm0000001',
+            }
+        },
+    )
     assert r.status_code == 200
     person = schemas.Person.model_validate(r.json())
     assert person.name == 'Test person 2'
     assert person.externals['themoviedb'] == '123'
     assert person.externals['imdb'] == 'nm0000001'
-
 
     # delete person
     r = await client.delete(f'/2/people/{person.id}')

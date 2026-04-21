@@ -13,7 +13,7 @@ class Tvmaze(Series_importer_base):
         'episodes',
         'images',
     )
-    
+
     _url = 'http://api.tvmaze.com/shows/{external_id}'
     _url_episodes = 'http://api.tvmaze.com/shows/{external_id}/episodes'
     _url_update = 'http://api.tvmaze.com/updates/shows'
@@ -23,12 +23,22 @@ class Tvmaze(Series_importer_base):
         if r.status_code != 200:
             return None
         series = r.json()
-        externals = {key: str(series['externals'][key]) for key in series['externals'] if series['externals'][key]}
+        externals = {
+            key: str(series['externals'][key])
+            for key in series['externals']
+            if series['externals'][key]
+        }
         externals[self.external_name] = str(series['id'])
         return schemas.Series_update(
             title=series['name'][:200],
             original_title=series['name'][:200],
-            plot=series['summary'][:2000].replace('<p>', '').replace('</p>', '').replace('<b>', '').replace('</b>', '') if series['summary'] else None,
+            plot=series['summary'][:2000]
+            .replace('<p>', '')
+            .replace('</p>', '')
+            .replace('<b>', '')
+            .replace('</b>', '')
+            if series['summary']
+            else None,
             externals=externals,
             status=self.parse_status(series['status']),
             runtime=series['runtime'],
@@ -54,12 +64,14 @@ class Tvmaze(Series_importer_base):
             return None
         if not data['image']['original']:
             return None
-        return [schemas.Image_import(
-            external_name='tvmaze',
-            external_id=str(data['id']),
-            source_url=data['image']['original'],
-            type='poster',
-        )]
+        return [
+            schemas.Image_import(
+                external_name='tvmaze',
+                external_id=str(data['id']),
+                source_url=data['image']['original'],
+                type='poster',
+            )
+        ]
 
     async def episodes(self, external_id) -> list[schemas.Episode_update]:
         r = requests.get(self._url_episodes.format(external_id=external_id))
@@ -74,16 +86,24 @@ class Tvmaze(Series_importer_base):
             if episode['number'] == 0:
                 continue
             i += 1
-            episodes.append(schemas.Episode_update(
-                number=i,
-                title=episode['name'][:200],
-                original_title=episode['name'][:200],
-                season=episode['season'],
-                episode=episode['number'],
-                air_date=episode['airdate'] if episode['airdate'] else None,
-                air_datetime=episode['airstamp'] if episode['airstamp'] else None,
-                plot=episode['summary'][:2000].replace('<p>', '').replace('</p>', '').replace('<b>', '').replace('</b>', '') if episode['summary'] else None
-            ))
+            episodes.append(
+                schemas.Episode_update(
+                    number=i,
+                    title=episode['name'][:200],
+                    original_title=episode['name'][:200],
+                    season=episode['season'],
+                    episode=episode['number'],
+                    air_date=episode['airdate'] if episode['airdate'] else None,
+                    air_datetime=episode['airstamp'] if episode['airstamp'] else None,
+                    plot=episode['summary'][:2000]
+                    .replace('<p>', '')
+                    .replace('</p>', '')
+                    .replace('<b>', '')
+                    .replace('</b>', '')
+                    if episode['summary']
+                    else None,
+                )
+            )
         return episodes
 
     async def incremental_updates(self) -> list[str]:
@@ -98,5 +118,6 @@ class Tvmaze(Series_importer_base):
                 continue
             ids.append(key)
         return ids
+
 
 register_importer(Tvmaze())

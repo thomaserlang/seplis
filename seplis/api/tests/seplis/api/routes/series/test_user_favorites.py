@@ -8,12 +8,18 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_user_series_favorites(client: AsyncClient) -> None:
     await user_signin(client)
 
-    series1: schemas.Series = await models.MSeries.save(schemas.Series_create(
-        title='Test series',
-    ), series_id=None)
-    series2: schemas.Series = await models.MSeries.save(schemas.Series_create(
-        title='Test series 2',
-    ), series_id=None)
+    series1: schemas.Series = await models.MSeries.save(
+        schemas.Series_create(
+            title='Test series',
+        ),
+        series_id=None,
+    )
+    series2: schemas.Series = await models.MSeries.save(
+        schemas.Series_create(
+            title='Test series 2',
+        ),
+        series_id=None,
+    )
 
     r = await client.put(f'/2/series/{series1.id}/favorite')
     assert r.status_code == 204
@@ -27,17 +33,22 @@ async def test_user_series_favorites(client: AsyncClient) -> None:
     r = await client.put(f'/2/series/{series2.id}/favorite')
     assert r.status_code == 204
 
-    r = await client.get('/2/series?user_favorites=true&per_page=1&sort=user_favorite_added_at_asc')
+    r = await client.get(
+        '/2/series?user_favorites=true&per_page=1&sort=user_favorite_added_at_asc'
+    )
     assert r.status_code == 200, r.content
     data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1
     assert data.items[0].id == series1.id
 
-    r = await client.get('/2/series?user_favorites=true', params={
-        'cursor': data.cursor,
-        'per_page': 1,
-        'sort': 'user_favorite_added_at_asc',
-    })
+    r = await client.get(
+        '/2/series?user_favorites=true',
+        params={
+            'cursor': data.cursor,
+            'per_page': 1,
+            'sort': 'user_favorite_added_at_asc',
+        },
+    )
     assert r.status_code == 200
     data = schemas.Page_cursor_total_result[schemas.Series].model_validate(r.json())
     assert len(data.items) == 1

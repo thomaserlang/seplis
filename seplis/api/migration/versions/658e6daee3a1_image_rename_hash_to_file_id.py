@@ -16,9 +16,9 @@ from alembic import op
 
 def upgrade() -> None:
     op.alter_column(
-        'images', 
-        'hash', 
-        new_column_name='file_id', 
+        'images',
+        'hash',
+        new_column_name='file_id',
         existing_type=sa.String(64),
     )
 

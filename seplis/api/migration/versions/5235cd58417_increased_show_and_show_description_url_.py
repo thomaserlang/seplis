@@ -16,15 +16,16 @@ from alembic import op
 
 def upgrade() -> None:
     op.alter_column(
-        'shows', 
+        'shows',
         'description_url',
         type_=sa.String(300),
     )
     op.alter_column(
-        'episodes', 
+        'episodes',
         'description_url',
         type_=sa.String(300),
     )
+
 
 def downgrade():
     raise NotImplementedError()

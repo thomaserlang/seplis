@@ -3,7 +3,7 @@ from fastapi import Depends, Security
 
 from .... import utils
 from ... import models, schemas
-from ...dependencies import AsyncSession, authenticated, get_session
+from ...dependencies import AsyncSession, UserAuthenticated, authenticated, get_session
 from .router import router
 
 
@@ -17,7 +17,7 @@ from .router import router
 async def movie_cast_add(
     movie_id: int,
     data: schemas.Movie_cast_person_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:edit']),
 ) -> None:
     data.movie_id = movie_id
     await models.MMovieCast.save(data=data)
@@ -27,7 +27,7 @@ async def movie_cast_add(
 async def movie_cast_delete(
     movie_id: int,
     person_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['movie:edit']),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:edit']),
 ) -> None:
     await models.MMovieCast.delete(
         movie_id=movie_id,

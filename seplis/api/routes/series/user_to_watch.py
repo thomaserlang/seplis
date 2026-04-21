@@ -19,9 +19,7 @@ from .router import router
             """,
 )
 async def get_user_series_to_watch(
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['user:view_lists']
-    ),
+    user: User_authenticated = Security(authenticated, scopes=['user:view_lists']),
     session: AsyncSession = Depends(get_session),
     page_cursor: schemas.Page_cursor_query = Depends(),
     filter_query: Series_query_filter = Depends(),

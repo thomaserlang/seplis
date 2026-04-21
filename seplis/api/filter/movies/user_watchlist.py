@@ -5,8 +5,10 @@ from .query_filter_schema import Movie_query_filter
 
 
 def filter_user_watchlist(query, filter_query: Movie_query_filter):
-    has_sort = ('user_watchlist_added_at_asc' in filter_query.sort or
-                'user_watchlist_added_at_desc' in filter_query.sort)
+    has_sort = (
+        'user_watchlist_added_at_asc' in filter_query.sort
+        or 'user_watchlist_added_at_desc' in filter_query.sort
+    )
     if filter_query.user_watchlist is None and not has_sort:
         return query
     if not filter_query.user:

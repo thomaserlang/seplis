@@ -31,7 +31,11 @@ class Thetvdb(Series_importer_base):
             'Accept': 'application/json',
             'Content-Type': 'application/json',
         }
-        r = requests.post(self._url+'/login', data=json.dumps({'apikey': self.apikey}), headers=headers)
+        r = requests.post(
+            self._url + '/login',
+            data=json.dumps({'apikey': self.apikey}),
+            headers=headers,
+        )
         if r.status_code == 401:
             raise Exception(r.content)
         if r.status_code == 200:
@@ -41,7 +45,7 @@ class Thetvdb(Series_importer_base):
 
     async def info(self, external_id: int) -> schemas.Series_update:
         r = requests.get(
-            self._url+f'/series/{external_id}',
+            self._url + f'/series/{external_id}',
             headers=self.login_headers(),
         )
         if r.status_code == 200:
@@ -67,10 +71,13 @@ class Thetvdb(Series_importer_base):
     async def episodes(self, external_id: int) -> list[schemas.Episode_update]:
         headers = self.login_headers()
         episodes: list[schemas.Episode_update] = []
-        data = {'links': { 'next': 1 } }
+        data = {'links': {'next': 1}}
         while data['links']['next']:
             r = requests.get(
-                self._url+'/series/{}/episodes?page={}'.format(external_id, data['links']['next']),
+                self._url
+                + '/series/{}/episodes?page={}'.format(
+                    external_id, data['links']['next']
+                ),
                 headers=headers,
             )
             if r.status_code == 200:
@@ -86,7 +93,7 @@ class Thetvdb(Series_importer_base):
 
     async def images(self, external_id: int) -> list[schemas.Image_import]:
         r = requests.get(
-            self._url+f'/series/{external_id}/images/query',
+            self._url + f'/series/{external_id}/images/query',
             params={
                 'keyType': 'poster',
                 'resolution': '680x1000',
@@ -98,19 +105,23 @@ class Thetvdb(Series_importer_base):
             data = r.json()['data']
             if not data:
                 return images
-            for image in sorted(data, reverse=True, key=lambda img: float(img['ratingsInfo']['average'])):
-                images.append(schemas.Image_import(
-                    external_name='thetvdb',
-                    external_id=str(image['id']),
-                    source_url=f'http://thetvdb.com/banners/{image["fileName"]}',
-                    type='poster',
-                ))
+            for image in sorted(
+                data, reverse=True, key=lambda img: float(img['ratingsInfo']['average'])
+            ):
+                images.append(
+                    schemas.Image_import(
+                        external_name='thetvdb',
+                        external_id=str(image['id']),
+                        source_url=f'http://thetvdb.com/banners/{image["fileName"]}',
+                        type='poster',
+                    )
+                )
         return images
 
     async def incremental_updates(self) -> list[str]:
         timestamp = self.last_update_timestamp()
         r = requests.get(
-            self._url+'/updated/query',
+            self._url + '/updated/query',
             params={'fromTime': timestamp},
             headers=self.login_headers(),
         )
@@ -120,7 +131,6 @@ class Thetvdb(Series_importer_base):
         if not data:
             return None
         return [str(s['id']) for s in data]
-
 
     def parse_status(self, status_str) -> int:
         if status_str == 'Ended':
@@ -152,7 +162,9 @@ class Thetvdb(Series_importer_base):
             number=episode['absoluteNumber'],
             season=episode['airedSeason'],
             episode=episode['airedEpisodeNumber'],
-            air_date=self.parse_date(episode['firstAired']) if episode['firstAired'] else None,
+            air_date=self.parse_date(episode['firstAired'])
+            if episode['firstAired']
+            else None,
         )
 
     def parse_date(self, date):
@@ -165,5 +177,6 @@ class Thetvdb(Series_importer_base):
         except ValueError:
             logger.exception(f'Parsing date "{date}"')
         return None
-        
+
+
 register_importer(Thetvdb())

@@ -16,7 +16,7 @@ from alembic import op
 
 def upgrade() -> None:
     op.create_table(
-        'people', 
+        'people',
         sa.Column('id', sa.Integer, autoincrement=True, primary_key=True),
         sa.Column('created_at', sa.DateTime),
         sa.Column('updated_at', sa.DateTime),
@@ -29,12 +29,22 @@ def upgrade() -> None:
         sa.Column('place_of_birth', sa.String(100)),
         sa.Column('popularity', sa.DECIMAL(precision=12, scale=4)),
         sa.Column('externals', sa.JSON, nullable=False, server_default='{}'),
-        sa.Column('profile_image_id', sa.Integer, sa.ForeignKey('images.id', onupdate='cascade', ondelete='set null'))
+        sa.Column(
+            'profile_image_id',
+            sa.Integer,
+            sa.ForeignKey('images.id', onupdate='cascade', ondelete='set null'),
+        ),
     )
 
     op.create_table(
         'person_externals',
-        sa.Column('person_id', sa.Integer, sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        sa.Column(
+            'person_id',
+            sa.Integer,
+            sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('title', sa.String(45), primary_key=True),
         sa.Column('value', sa.String(45)),
     )
@@ -42,17 +52,41 @@ def upgrade() -> None:
 
     op.create_table(
         'series_cast',
-        sa.Column('series_id', sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
-        sa.Column('person_id', sa.Integer, sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        sa.Column(
+            'series_id',
+            sa.Integer,
+            sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
+        sa.Column(
+            'person_id',
+            sa.Integer,
+            sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('roles', sa.JSON, nullable=False, server_default='[]'),
         sa.Column('order', sa.Integer),
         sa.Column('total_episodes', sa.Integer, nullable=False, server_default='0'),
     )
-    
+
     op.create_table(
         'episode_cast',
-        sa.Column('person_id', sa.Integer, sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
-        sa.Column('series_id', sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        sa.Column(
+            'person_id',
+            sa.Integer,
+            sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
+        sa.Column(
+            'series_id',
+            sa.Integer,
+            sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('episode_number', sa.Integer, primary_key=True, autoincrement=False),
         sa.Column('character', sa.String(200)),
         sa.Column('order', sa.Integer),
@@ -60,12 +94,24 @@ def upgrade() -> None:
 
     op.create_table(
         'movie_cast',
-        sa.Column('movie_id', sa.Integer, sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
-        sa.Column('person_id', sa.Integer, sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        sa.Column(
+            'movie_id',
+            sa.Integer,
+            sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
+        sa.Column(
+            'person_id',
+            sa.Integer,
+            sa.ForeignKey('people.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('character', sa.String(100)),
         sa.Column('order', sa.Integer),
     )
-    
+
 
 def downgrade() -> None:
     pass

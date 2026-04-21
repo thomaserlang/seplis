@@ -30,7 +30,7 @@ episodes the result will be empty 204`.
 )
 async def get_episode_to_watch(
     series_id: int | str,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
+    user: User_authenticated = Security(authenticated, scopes=['user:progress']),
     session: AsyncSession = Depends(get_session),
 ):
     ew = await session.execute(

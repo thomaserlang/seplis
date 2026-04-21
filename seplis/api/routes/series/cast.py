@@ -17,7 +17,7 @@ from .router import router
 async def series_cast_add(
     series_id: int,
     cast_member: schemas.Series_cast_person_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
+    user: User_authenticated = Security(authenticated, scopes=['series:edit']),
 ) -> None:
     cast_member.series_id = series_id
     await models.MSeriesCast.save(data=cast_member)
@@ -33,7 +33,7 @@ async def series_cast_add(
 async def series_cast_delete(
     series_id: int,
     person_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['series:edit']),
+    user: User_authenticated = Security(authenticated, scopes=['series:edit']),
 ) -> None:
     await models.MSeriesCast.delete(
         series_id=series_id,

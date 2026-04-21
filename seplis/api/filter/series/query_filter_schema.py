@@ -6,7 +6,7 @@ from pydantic import Field
 from pydantic.dataclasses import dataclass
 
 from ... import schemas
-from ...dependencies import get_current_user_no_raise
+from ...dependencies import UserAuthenticated, get_current_user_no_raise
 
 
 @dataclass
@@ -15,9 +15,7 @@ class Series_query_filter:
         list[schemas.SERIES_USER_SORT_TYPE],
         Query(default_factory=lambda: ['popularity_desc']),
     ]
-    user: Annotated[
-        schemas.User_authenticated | None, Depends(get_current_user_no_raise)
-    ] = None
+    user: Annotated[UserAuthenticated | None, Depends(get_current_user_no_raise)] = None
     genre_id: Annotated[list[int] | None, Query()] = None
     not_genre_id: Annotated[list[int] | None, Query()] = None
     user_can_watch: Annotated[bool | None, Query()] = None

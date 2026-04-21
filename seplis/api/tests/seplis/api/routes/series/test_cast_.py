@@ -8,36 +8,49 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_series_cast(client: AsyncClient) -> None:
     await user_signin(client, ['series:edit'])
 
-    series = await models.MSeries.save(schemas.Series_create(
-        title='Test series',
-        episodes=[
-            schemas.Episode_create(number=1, title='Test episode'),
-        ]
-    ))
+    series = await models.MSeries.save(
+        schemas.Series_create(
+            title='Test series',
+            episodes=[
+                schemas.Episode_create(number=1, title='Test episode'),
+            ],
+        )
+    )
 
-    person = await models.MPerson.save(schemas.Person_create(
-        name='Test person',
-    ))
-
+    person = await models.MPerson.save(
+        schemas.Person_create(
+            name='Test person',
+        )
+    )
 
     # add cast member
-    r = await client.put(f'/2/series/{series.id}/cast', json={
-        'person_id': person.id,
-        'roles': [{
-            'character': 'Test character',
-            'total_episodes': 1,
-        }]
-    })
+    r = await client.put(
+        f'/2/series/{series.id}/cast',
+        json={
+            'person_id': person.id,
+            'roles': [
+                {
+                    'character': 'Test character',
+                    'total_episodes': 1,
+                }
+            ],
+        },
+    )
     assert r.status_code == 204, r.content
 
     # add cast member again
-    r = await client.put(f'/2/series/{series.id}/cast', json={
-        'person_id': person.id,        
-        'roles': [{
-            'character': 'Test character',
-            'total_episodes': 1,
-        }]
-    })
+    r = await client.put(
+        f'/2/series/{series.id}/cast',
+        json={
+            'person_id': person.id,
+            'roles': [
+                {
+                    'character': 'Test character',
+                    'total_episodes': 1,
+                }
+            ],
+        },
+    )
     assert r.status_code == 204
 
     # get cast members

@@ -15,11 +15,12 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('shows',
+    op.add_column(
+        'shows',
         sa.Column(
-            'language', 
+            'language',
             sa.String(100),
-        )
+        ),
     )
 
 

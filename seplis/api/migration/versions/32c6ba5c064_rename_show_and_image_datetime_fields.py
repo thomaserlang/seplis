@@ -16,19 +16,19 @@ from alembic import op
 
 def upgrade() -> None:
     op.alter_column(
-        'shows', 
+        'shows',
         'updated',
         new_column_name='updated_at',
         existing_type=sa.DateTime,
     )
     op.alter_column(
-        'shows', 
+        'shows',
         'created',
         new_column_name='created_at',
         existing_type=sa.DateTime,
     )
     op.alter_column(
-        'images', 
+        'images',
         'created',
         new_column_name='created_at',
         existing_type=sa.DateTime,

@@ -8,10 +8,12 @@ from seplis.api.database import database
 
 router = APIRouter(prefix='/health', tags=['Health'])
 
+
 class Health_response(BaseModel):
     error: bool
     message: str
     service: str
+
 
 @router.get('', response_model=list[Health_response])
 async def check_health(response: Response):
@@ -23,6 +25,7 @@ async def check_health(response: Response):
     if any([r.error for r in result]):
         response.status_code = 500
     return result
+
 
 async def db_check() -> Health_response:
     r = Health_response(
@@ -38,6 +41,7 @@ async def db_check() -> Health_response:
         r.message = f'Error: {str(e)}'
     return r
 
+
 async def redis_check() -> Health_response:
     r = Health_response(
         error=False,
@@ -50,6 +54,7 @@ async def redis_check() -> Health_response:
         r.error = True
         r.message = f'Error: {str(e)}'
     return r
+
 
 async def elasticsearch_check() -> Health_response:
     r = Health_response(

@@ -14,11 +14,10 @@ import sqlalchemy as sa
 from alembic import op
 
 
-def upgrade() -> None:    
-    op.add_column('shows',
-        sa.Column('index_images', sa.String(50))
-    )
-    op.create_table('images',
+def upgrade() -> None:
+    op.add_column('shows', sa.Column('index_images', sa.String(50)))
+    op.create_table(
+        'images',
         sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('relation_type', sa.Integer, nullable=False),
         sa.Column('relation_id', sa.Integer, nullable=False),
@@ -29,19 +28,19 @@ def upgrade() -> None:
         sa.Column('hash', sa.String(64)),
         sa.Column('source_title', sa.String(200)),
         sa.Column('source_url', sa.String(200)),
-        sa.Column('created', sa.DateTime),   
+        sa.Column('created', sa.DateTime),
         sa.Column('type', sa.Integer),
     )
 
-    op.create_index(
-        'ix_relation_type_id',
+    op.create_index('ix_relation_type_id', 'images', ['relation_type', 'relation_id'])
+    op.create_unique_constraint(
+        'uq_external_name_id',
         'images',
-        ['relation_type', 'relation_id']
+        [
+            'external_name',
+            'external_id',
+        ],
     )
-    op.create_unique_constraint('uq_external_name_id', 'images', [
-        'external_name',
-        'external_id',
-    ])
 
 
 def downgrade():

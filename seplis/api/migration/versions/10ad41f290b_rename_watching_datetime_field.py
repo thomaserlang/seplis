@@ -16,13 +16,13 @@ from alembic import op
 
 def upgrade() -> None:
     op.alter_column(
-        'shows_watched', 
+        'shows_watched',
         'datetime',
         new_column_name='updated_at',
         existing_type=sa.DateTime,
     )
     op.alter_column(
-        'episodes_watched', 
+        'episodes_watched',
         'datetime',
         new_column_name='updated_at',
         existing_type=sa.DateTime,

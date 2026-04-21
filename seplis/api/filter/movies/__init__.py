@@ -13,7 +13,12 @@ from .user_has_watched import filter_user_has_watched
 from .user_watchlist import filter_user_watchlist
 
 
-async def filter_movies(session, query: any, filter_query: Movie_query_filter, page_cursor: schemas.Page_cursor_query):
+async def filter_movies(
+    session,
+    query: any,
+    filter_query: Movie_query_filter,
+    page_cursor: schemas.Page_cursor_query,
+):
     p = await utils.sqlalchemy.paginate_cursor(
         query=filter_movies_query(query, filter_query),
         page_query=page_cursor,

@@ -5,26 +5,28 @@ from fastapi import APIRouter, Depends, Request, Security
 from passlib.hash import pbkdf2_sha256
 from starlette.concurrency import run_in_threadpool
 
-from seplis.api.send_email import send_new_login
+from seplis.api.user import Token, TokenCreate, UserAuthenticated
 
-from .. import exceptions, models, schemas
+from .. import exceptions
 from ..dependencies import AsyncSession, authenticated, get_session
+from ..user.actions.token_actions import create_token
+from ..user.models.user_model import MUser
 
 router = APIRouter(prefix='/2', tags=['Login'])
 
 
 @router.post('/token', status_code=201)
 async def create_token_route(
-    data: schemas.Token_create,
+    data: TokenCreate,
     request: Request,
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> schemas.Token:
+) -> Token:
 
     user = await session.scalar(
-        sa.select(models.MUser).where(
+        sa.select(MUser).where(
             sa.or_(
-                models.MUser.email == data.login,
-                models.MUser.username == data.login,
+                MUser.email == data.login,
+                MUser.username == data.login,
             )
         )
     )
@@ -41,22 +43,14 @@ async def create_token_route(
     if not matches:
         raise exceptions.Wrong_login_or_password()
 
-    token = await models.MToken.new_token(user_id=user.id, scopes=user.scopes)
+    token = await create_token(user_id=user.id, scopes=user.scopes)
 
-    await send_new_login(
-        to=user.email, ip=request.client.host if request.client else 'unknown'
-    )
-
-    return schemas.Token(access_token=token)
+    return Token(access_token=token)
 
 
 @router.post('/progress-token', status_code=201)
 async def create_progress_token_route(
-    user: Annotated[
-        schemas.User_authenticated, Security(authenticated, scopes=['user:progress'])
-    ],
-) -> schemas.Token:
-    token = await models.MToken.new_token(
-        user_id=user.id, scopes=['user:progress'], expires_days=1
-    )
-    return schemas.Token(access_token=token)
+    user: Annotated[UserAuthenticated, Security(authenticated, scopes=['user:progress'])],
+) -> Token:
+    token = await create_token(user_id=user.id, scopes=['user:progress'], expires_days=1)
+    return Token(access_token=token)

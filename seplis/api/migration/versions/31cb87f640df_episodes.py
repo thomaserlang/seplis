@@ -17,8 +17,14 @@ from alembic import op
 def upgrade() -> None:
     op.create_table(
         'episodes',
-        sa.Column('show_id', sa.Integer, sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False), 
-        sa.Column('number', sa.Integer, primary_key=True, autoincrement=False),        
+        sa.Column(
+            'show_id',
+            sa.Integer,
+            sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
+        sa.Column('number', sa.Integer, primary_key=True, autoincrement=False),
         sa.Column('title', sa.String(200)),
         sa.Column('air_date', sa.Date()),
         sa.Column('description_text', sa.Text),
@@ -27,6 +33,7 @@ def upgrade() -> None:
         sa.Column('season', sa.Integer),
         sa.Column('episode', sa.Integer),
     )
-    
+
+
 def downgrade() -> None:
     op.drop_table('episodes')

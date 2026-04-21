@@ -20,9 +20,7 @@ def upgrade() -> None:
     op.execute('UPDATE images SET relation_type="series" WHERE relation_type="show"')
     op.drop_index('ix_relation_type_id', 'images')
     op.create_index(
-        'ix_relation_type_id_type',
-        'images',
-        ['relation_type', 'relation_id', 'type']
+        'ix_relation_type_id_type', 'images', ['relation_type', 'relation_id', 'type']
     )
     op.drop_column('images', 'source_title')
     op.drop_column('images', 'source_url')

@@ -12,5 +12,4 @@ from .play_server import *
 from .search import *
 from .series import *
 from .series_cast import *
-from .user import *
 from .user_watched import *

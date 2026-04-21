@@ -15,11 +15,10 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('shows',
-        sa.Column('total_episodes', sa.Integer, server_default='0')
-    )
+    op.add_column('shows', sa.Column('total_episodes', sa.Integer, server_default='0'))
     conn = op.get_bind()
-    conn.execute(sa.text('''
+    conn.execute(
+        sa.text("""
         UPDATE 
             shows s, 
             (select show_id, count(number) as total_episodes FROM episodes GROUP BY show_id) e
@@ -27,7 +26,9 @@ def upgrade() -> None:
             s.total_episodes=e.total_episodes
         WHERE
             e.show_id=s.id;
-    '''))
+    """)
+    )
+
 
 def downgrade() -> None:
     pass

@@ -12,5 +12,5 @@ def filter_premiered(query, filter_query: Series_query_filter):
         query = query.where(
             models.MSeries.premiered <= filter_query.premiered_lt,
         )
-    
+
     return query

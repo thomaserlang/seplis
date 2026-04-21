@@ -21,9 +21,7 @@ async def create_image(
     external_name: str | None = Form(default=None, min_length=1, max_length=50),
     external_id: str | None = Form(default=None, min_length=1, max_length=50),
     type: schemas.IMAGE_TYPES = Form(),
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['series:manage_images']
-    ),
+    user: User_authenticated = Security(authenticated, scopes=['series:manage_images']),
 ):
     image_data = schemas.Image_import(
         external_name=external_name,
@@ -49,9 +47,7 @@ async def delete_image(
     series_id: int,
     image_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['series:manage_images']
-    ),
+    user: User_authenticated = Security(authenticated, scopes=['series:manage_images']),
 ) -> None:
     await session.execute(
         sa.update(models.MSeries)

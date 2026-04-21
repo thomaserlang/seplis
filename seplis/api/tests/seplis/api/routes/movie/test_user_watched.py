@@ -12,9 +12,12 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_movie_watched(client: AsyncClient) -> None:
     user_id = await user_signin(client)
 
-    movie = await models.MMovie.save(schemas.Movie_create(
-        title='Movie',
-    ), movie_id=None)
+    movie = await models.MMovie.save(
+        schemas.Movie_create(
+            title='Movie',
+        ),
+        movie_id=None,
+    )
 
     await models.MMovieWatchlist.add(user_id, movie.id)
 
@@ -29,7 +32,7 @@ async def test_movie_watched(client: AsyncClient) -> None:
     data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 1
     assert data.watched_at is not None
-    
+
     r = await client.get(f'/2/movies/{movie.id}/watched')
     assert r.status_code == 200
     data = schemas.Movie_watched.model_validate(r.json())
@@ -37,21 +40,27 @@ async def test_movie_watched(client: AsyncClient) -> None:
     assert data.position == 0
     assert data.watched_at is not None
 
-    r = await client.post(f'/2/movies/{movie.id}/watched', json={
-        'watched_at': '2022-06-05T22:00:00+02:00',
-    })
+    r = await client.post(
+        f'/2/movies/{movie.id}/watched',
+        json={
+            'watched_at': '2022-06-05T22:00:00+02:00',
+        },
+    )
     assert r.status_code == 200
     data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 2
     assert data.watched_at == datetime(2022, 6, 5, 20, 0, tzinfo=UTC), data.watched_at
-    
+
     r = await client.get('/2/movies?user_watchlist=true')
     assert r.status_code == 200, r.content
     assert len(r.json()['items']) == 0
 
-    r = await client.post(f'/2/movies/{movie.id}/watched', json={
-        'watched_at': '2022-06-05T21:00:00Z',
-    })
+    r = await client.post(
+        f'/2/movies/{movie.id}/watched',
+        json={
+            'watched_at': '2022-06-05T21:00:00Z',
+        },
+    )
     assert r.status_code == 200
     data = schemas.Movie_watched.model_validate(r.json())
     assert data.times == 3
@@ -96,7 +105,7 @@ async def test_movie_watched(client: AsyncClient) -> None:
     assert data.times == 0
     assert data.position == 0
     assert data.watched_at is None
-    
+
 
 if __name__ == '__main__':
     run_file(__file__)

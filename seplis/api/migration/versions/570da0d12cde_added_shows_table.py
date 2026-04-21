@@ -21,7 +21,6 @@ def upgrade() -> None:
         sa.Column('created', sa.DateTime),
         sa.Column('updated', sa.DateTime),
         sa.Column('status', sa.Integer, server_default='0', nullable=False),
-
         sa.Column('title', sa.String(200), unique=True),
         sa.Column('description_text', sa.Text),
         sa.Column('description_title', sa.String(45)),
@@ -33,6 +32,7 @@ def upgrade() -> None:
         sa.Column('index_episodes', sa.String(50)),
         sa.Column('seasons', sa.Text),
     )
+
 
 def downgrade() -> None:
     op.drop_table('shows')

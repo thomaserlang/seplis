@@ -15,7 +15,9 @@ from alembic import op
 
 def upgrade() -> None:
     op.execute('ALTER TABLE series_followers DROP COLUMN IF EXISTS datetime;')
-    op.execute('update series_followers set created_at="2011-01-01 00:00:00" where isnull(created_at)')
+    op.execute(
+        'update series_followers set created_at="2011-01-01 00:00:00" where isnull(created_at)'
+    )
 
 
 def downgrade() -> None:

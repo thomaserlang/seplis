@@ -10,6 +10,7 @@ statuses = {
     'Canceled': 3,
 }
 
+
 class TheMovieDB(Series_importer_base):
     display_name = 'TheMovieDB'
     external_name = 'themoviedb'
@@ -22,11 +23,14 @@ class TheMovieDB(Series_importer_base):
     )
 
     async def info(self, external_id: str) -> schemas.Series_update:
-        r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.client.themoviedb,
-            'language': 'en-US',
-            'append_to_response': 'external_ids,alternative_titles,keywords',
-        })
+        r = await client.get(
+            f'https://api.themoviedb.org/3/tv/{external_id}',
+            params={
+                'api_key': config.client.themoviedb,
+                'language': 'en-US',
+                'append_to_response': 'external_ids,alternative_titles,keywords',
+            },
+        )
         if r.status_code != 200:
             return None
         series = r.json()
@@ -46,7 +50,9 @@ class TheMovieDB(Series_importer_base):
 
         return schemas.Series_update(
             title=series['name'][:200],
-            original_title=series['original_name'][:200] if series['original_name'] else None,
+            original_title=series['original_name'][:200]
+            if series['original_name']
+            else None,
             plot=series['overview'][:2000] if series['overview'] else None,
             externals=externals,
             status=statuses.get(series['status'], 0),
@@ -56,48 +62,71 @@ class TheMovieDB(Series_importer_base):
             language=series['original_language'] if series['original_language'] else None,
             popularity=series['popularity'],
             tagline=series['tagline'] if series['tagline'] else None,
-            alternative_titles=[a['title'][:200] for a in series.get('alternative_titles', {}).get('results', [])],
+            alternative_titles=[
+                a['title'][:200]
+                for a in series.get('alternative_titles', {}).get('results', [])
+            ],
         )
 
     async def images(self, external_id: str) -> list[schemas.Image_import]:
-        r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.client.themoviedb,
-            'language': 'en-US',
-            'append_to_response': 'images',
-        })
+        r = await client.get(
+            f'https://api.themoviedb.org/3/tv/{external_id}',
+            params={
+                'api_key': config.client.themoviedb,
+                'language': 'en-US',
+                'append_to_response': 'images',
+            },
+        )
         if r.status_code != 200:
             return None
         data = r.json()
         images: list[schemas.Image_import] = []
         if data['poster_path']:
-            images.append(schemas.Image_import(
-                external_name='themoviedb',
-                external_id=data['poster_path'],
-                type='poster',
-                source_url=f'https://image.tmdb.org/t/p/original{data["poster_path"]}',
-            ))
-        images.extend([schemas.Image_import(
-            external_name='themoviedb',
-            external_id=image['file_path'],
-            type='poster',
-            source_url=f'https://image.tmdb.org/t/p/original{image["file_path"]}',
-        ) for image in sorted(data['images']['posters'], reverse=True, key=lambda img: float(img['vote_average']))])
+            images.append(
+                schemas.Image_import(
+                    external_name='themoviedb',
+                    external_id=data['poster_path'],
+                    type='poster',
+                    source_url=f'https://image.tmdb.org/t/p/original{data["poster_path"]}',
+                )
+            )
+        images.extend(
+            [
+                schemas.Image_import(
+                    external_name='themoviedb',
+                    external_id=image['file_path'],
+                    type='poster',
+                    source_url=f'https://image.tmdb.org/t/p/original{image["file_path"]}',
+                )
+                for image in sorted(
+                    data['images']['posters'],
+                    reverse=True,
+                    key=lambda img: float(img['vote_average']),
+                )
+            ]
+        )
         return images
 
     async def episodes(self, external_id) -> list[schemas.Episode_update]:
-        r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.client.themoviedb,
-            'language': 'en-US',
-        })
+        r = await client.get(
+            f'https://api.themoviedb.org/3/tv/{external_id}',
+            params={
+                'api_key': config.client.themoviedb,
+                'language': 'en-US',
+            },
+        )
         if r.status_code != 200:
             return None
         series = r.json()
         episodes_data = []
-        for i in range(1, series['number_of_seasons']+1):
-            r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}/season/{i}', params={
-                'api_key': config.client.themoviedb,
-                'language': 'en-US',
-            })
+        for i in range(1, series['number_of_seasons'] + 1):
+            r = await client.get(
+                f'https://api.themoviedb.org/3/tv/{external_id}/season/{i}',
+                params={
+                    'api_key': config.client.themoviedb,
+                    'language': 'en-US',
+                },
+            )
             if r.status_code == 200:
                 episodes_data.extend(r.json()['episodes'])
         episodes: list[schemas.Episode_update] = []
@@ -108,42 +137,62 @@ class TheMovieDB(Series_importer_base):
             if episode['episode_number'] == 0:
                 continue
             i += 1
-            episodes.append(schemas.Episode_update(
-                number=i,
-                title=episode['name'][:200],
-                original_title=episode['name'][:200],
-                season=episode['season_number'],
-                episode=episode['episode_number'],
-                air_date=episode['air_date'] if episode['air_date'] else None,
-                air_datetime=episode['air_date']+'T00:00:00Z' if episode['air_date'] else None,
-                plot=episode['overview'][:2000] if episode['overview'] else None
-            ))
+            episodes.append(
+                schemas.Episode_update(
+                    number=i,
+                    title=episode['name'][:200],
+                    original_title=episode['name'][:200],
+                    season=episode['season_number'],
+                    episode=episode['episode_number'],
+                    air_date=episode['air_date'] if episode['air_date'] else None,
+                    air_datetime=episode['air_date'] + 'T00:00:00Z'
+                    if episode['air_date']
+                    else None,
+                    plot=episode['overview'][:2000] if episode['overview'] else None,
+                )
+            )
         return episodes
-    
+
     async def cast(self, external_id: str):
-        r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}/aggregate_credits', params={
-            'api_key': config.client.themoviedb,
-            'language': 'en-US',
-        })
+        r = await client.get(
+            f'https://api.themoviedb.org/3/tv/{external_id}/aggregate_credits',
+            params={
+                'api_key': config.client.themoviedb,
+                'language': 'en-US',
+            },
+        )
         if r.status_code != 200:
             return None
         data = r.json()
-        return [schemas.Series_cast_person_import(
-            external_name=self.external_name,
-            external_id=str(person['id']),
-            roles=[schemas.Series_cast_role(
-                character=role['character'][:200] if role['character'] else None,
-                total_episodes=role['episode_count'] if role['episode_count'] else 0,
-            ) for role in person['roles']],
-            order=person['order'],
-            total_episodes=person['total_episode_count'] if person['total_episode_count'] else 0,
-        ) for person in data['cast']]
-    
+        return [
+            schemas.Series_cast_person_import(
+                external_name=self.external_name,
+                external_id=str(person['id']),
+                roles=[
+                    schemas.Series_cast_role(
+                        character=role['character'][:200] if role['character'] else None,
+                        total_episodes=role['episode_count']
+                        if role['episode_count']
+                        else 0,
+                    )
+                    for role in person['roles']
+                ],
+                order=person['order'],
+                total_episodes=person['total_episode_count']
+                if person['total_episode_count']
+                else 0,
+            )
+            for person in data['cast']
+        ]
+
     async def poster(self, external_id):
-        r = await client.get(f'https://api.themoviedb.org/3/tv/{external_id}', params={
-            'api_key': config.client.themoviedb,
-            'language': 'en-US',
-        })
+        r = await client.get(
+            f'https://api.themoviedb.org/3/tv/{external_id}',
+            params={
+                'api_key': config.client.themoviedb,
+                'language': 'en-US',
+            },
+        )
         if r.status_code != 200:
             return None
         data = r.json()
@@ -160,10 +209,13 @@ class TheMovieDB(Series_importer_base):
         page = 1
         ids: list[str] = []
         while True:
-            r = await client.get('https://api.themoviedb.org/3/tv/changes', params={
-                'api_key': config.client.themoviedb,
-                'page': page,
-            })
+            r = await client.get(
+                'https://api.themoviedb.org/3/tv/changes',
+                params={
+                    'api_key': config.client.themoviedb,
+                    'page': page,
+                },
+            )
             r.raise_for_status()
             data = r.json()
             if not data or not data['results']:
@@ -172,13 +224,16 @@ class TheMovieDB(Series_importer_base):
             if page == data['total_pages']:
                 break
             page += 1
-        return ids    
+        return ids
 
     async def lookup_from_imdb(self, imdb: str):
-        r = await client.get(f'https://api.themoviedb.org/3/find/{imdb}', params={
-            'api_key': config.client.themoviedb,
-            'external_source': 'imdb_id',
-        })
+        r = await client.get(
+            f'https://api.themoviedb.org/3/find/{imdb}',
+            params={
+                'api_key': config.client.themoviedb,
+                'external_source': 'imdb_id',
+            },
+        )
         if r.status_code == 200:
             data = r.json()
             if not data['tv_results']:

@@ -11,5 +11,5 @@ class User_watched(BaseModel):
     data: Movie | Series
     movie: Movie | None = None
     series: Series | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)

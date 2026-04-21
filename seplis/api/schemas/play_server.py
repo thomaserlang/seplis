@@ -3,10 +3,10 @@ from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, Field, conint, constr
 
+from seplis.api.user import UserPublic
 from seplis.utils import datetime_now
 
 from .helper import default_datetime
-from .user import User_public
 
 
 class Play_server_create(BaseModel):
@@ -69,7 +69,7 @@ class Play_server_invite_id(BaseModel):
 
 
 class Play_server_invite(BaseModel):
-    user: User_public
+    user: UserPublic
     created_at: datetime
     expires_at: datetime
 
@@ -77,7 +77,7 @@ class Play_server_invite(BaseModel):
 
 
 class Play_server_access(BaseModel):
-    user: User_public
+    user: UserPublic
     created_at: datetime
 
 

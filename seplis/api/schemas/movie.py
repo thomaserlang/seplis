@@ -9,15 +9,27 @@ from .image import Image
 from .movie_collection import MMovieCollection
 
 
-class Movie_create(BaseModel, extra='forbid', validate_assignment=True):   
+class Movie_create(BaseModel, extra='forbid', validate_assignment=True):
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None = None
-    original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None = None
-    alternative_titles: list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None = None
+    original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None = (
+        None
+    )
+    alternative_titles: (
+        list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None
+    ) = None
     status: conint(gt=-1, lt=5) | None = None
     plot: constr(min_length=0, max_length=2000, strip_whitespace=True) | None = None
     tagline: constr(min_length=0, max_length=500, strip_whitespace=True) | None = None
-    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True), constr(min_length=0, max_length=45, strip_whitespace=True) | None] | None = None
-    status: conint(ge=0, le=6) | None # Status: 0: Unknown, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production, 6: Canceled,
+    externals: (
+        dict[
+            constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True),
+            constr(min_length=0, max_length=45, strip_whitespace=True) | None,
+        ]
+        | None
+    ) = None
+    status: (
+        conint(ge=0, le=6) | None
+    )  # Status: 0: Unknown, 1: Released, 2: Rumored, 3: Planned, 4: In production, 5: Post production, 6: Canceled,
     language: constr(min_length=1, max_length=20) | None = None
     runtime: conint(ge=0) | None = None
     release_date: date | None = None
@@ -41,7 +53,7 @@ class Movie_create(BaseModel, extra='forbid', validate_assignment=True):
 
 class Movie_update(Movie_create):
     pass
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -53,21 +65,21 @@ class Movie_watched(BaseModel):
     times: int = 0
     position: int = 0
     watched_at: datetime | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class Movie_watchlist(BaseModel):
     created_at: datetime | None = None
     on_watchlist: bool = False
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class Movie_favorite(BaseModel):
     created_at: datetime | None = None
     favorite: bool = False
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -101,7 +113,7 @@ class Movie(BaseModel):
         data.genre_names = [g.name for g in self.genres]
         data.collection_name = self.collection.name if self.collection else None
         return data
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 

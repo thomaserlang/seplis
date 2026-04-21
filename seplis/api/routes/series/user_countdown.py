@@ -17,9 +17,7 @@ from .router import router
             """,
 )
 async def series_countdown(
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['user:view_lists']
-    ),
+    user: User_authenticated = Security(authenticated, scopes=['user:view_lists']),
     session: AsyncSession = Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):

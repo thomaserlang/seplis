@@ -250,7 +250,9 @@ class MSeries(Base):
             )
         rr = await session.scalars(
             sa.select(MGenre)
-            .where(Series_genre.series_id == series_id, MGenre.id == Series_genre.genre_id)
+            .where(
+                Series_genre.series_id == series_id, MGenre.id == Series_genre.genre_id
+            )
             .order_by(MGenre.name)
         )
         return [schemas.Genre.model_validate(r) for r in rr]

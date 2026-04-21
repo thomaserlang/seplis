@@ -8,15 +8,18 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_series_user_stats(client: AsyncClient) -> None:
     await user_signin(client)
 
-    series: schemas.Series = await models.MSeries.save(schemas.Series_create(
-        title='Test series',
-        runtime=30,
-        episodes=[
-            schemas.Episode_create(number=1, title='1'),
-            schemas.Episode_create(number=2, title='2'),
-            schemas.Episode_create(number=3, title='3', runtime=40),
-        ]
-    ), series_id=None)
+    series: schemas.Series = await models.MSeries.save(
+        schemas.Series_create(
+            title='Test series',
+            runtime=30,
+            episodes=[
+                schemas.Episode_create(number=1, title='1'),
+                schemas.Episode_create(number=2, title='2'),
+                schemas.Episode_create(number=3, title='3', runtime=40),
+            ],
+        ),
+        series_id=None,
+    )
 
     r = await client.get(f'/2/series/{series.id}/user-stats')
     assert r.status_code == 200

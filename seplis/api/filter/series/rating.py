@@ -17,5 +17,5 @@ def filter_rating(query, filter_query: Series_query_filter):
         query = query.where(
             models.MSeries.rating_votes >= filter_query.rating_votes_gt,
         )
-    
+
     return query

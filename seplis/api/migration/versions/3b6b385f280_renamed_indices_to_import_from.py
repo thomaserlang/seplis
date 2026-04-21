@@ -16,24 +16,23 @@ from alembic import op
 
 def upgrade() -> None:
     op.alter_column(
-        'shows', 
+        'shows',
         'index_info',
         new_column_name='importer_info',
         existing_type=sa.String(50),
     )
     op.alter_column(
-        'shows', 
+        'shows',
         'index_episodes',
         new_column_name='importer_episodes',
         existing_type=sa.String(50),
     )
     op.alter_column(
-        'shows', 
+        'shows',
         'index_images',
         new_column_name='importer_images',
         existing_type=sa.String(50),
     )
-
 
 
 def downgrade():

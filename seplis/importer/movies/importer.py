@@ -25,7 +25,9 @@ client = httpx.AsyncClient()
 async def update_movie(movie_id=None, movie: schemas.Movie | None = None) -> None:
     if movie_id:
         async with database.session() as session:
-            result = await session.scalar(sa.select(models.MMovie).where(models.MMovie.id == movie_id))
+            result = await session.scalar(
+                sa.select(models.MMovie).where(models.MMovie.id == movie_id)
+            )
             if not result:
                 logger.error(f'Unknown movie: {movie_id}')
                 return
@@ -49,8 +51,10 @@ async def update_movies_bulk(from_movie_id=0, do_async=False) -> None:
                 if not do_async:
                     await update_movie(movie=schemas.Movie.model_validate(movie))
                 else:
-                    await database.redis_queue.enqueue_job('update_movie', movie_id=movie.Movie.id)
-            except (KeyboardInterrupt, SystemExit):
+                    await database.redis_queue.enqueue_job(
+                        'update_movie', movie_id=movie.Movie.id
+                    )
+            except KeyboardInterrupt, SystemExit:
                 break
             except exceptions.API_exception as e:
                 logger.info(e.message)
@@ -71,10 +75,13 @@ async def update_incremental() -> None:
     page = 1
     logger.info('Incremental update running')
     while True:
-        r = await client.get('https://api.themoviedb.org/3/movie/changes', params={
-            'api_key': config.client.themoviedb,
-            'page': page,
-        })
+        r = await client.get(
+            'https://api.themoviedb.org/3/movie/changes',
+            params={
+                'api_key': config.client.themoviedb,
+                'page': page,
+            },
+        )
         r.raise_for_status()
         data = r.json()
         if not data or not data['results']:
@@ -82,18 +89,20 @@ async def update_incremental() -> None:
         async with database.session() as session:
             for r in data['results']:
                 logger.info(f'Checking: {r["id"]}')
-                result = await session.scalar(sa.select(models.MMovie).where(
-                    models.Movie_external.title == 'themoviedb',
-                    models.Movie_external.value == r['id'],
-                    models.MMovie.id == models.Movie_external.movie_id,
-                ))
+                result = await session.scalar(
+                    sa.select(models.MMovie).where(
+                        models.Movie_external.title == 'themoviedb',
+                        models.Movie_external.value == r['id'],
+                        models.MMovie.id == models.Movie_external.movie_id,
+                    )
+                )
                 if not result:
                     continue
                 movie = schemas.Movie.model_validate(result)
                 if movie:
                     try:
                         await update_movie(movie=movie)
-                    except (KeyboardInterrupt, SystemExit):
+                    except KeyboardInterrupt, SystemExit:
                         break
                     except exceptions.API_exception as e:
                         logger.error(e.message)
@@ -109,23 +118,25 @@ async def update_movie_metadata(movie: schemas.Movie) -> None:
     themoviedb = movie.externals.get('themoviedb')
     if not themoviedb:
         if not movie.externals.get('imdb'):
-            logger.info(f'[Movie: {movie.id}] externals.imdb doesn\'t exist')
+            logger.info(f"[Movie: {movie.id}] externals.imdb doesn't exist")
             return
         r = await client.get(
             f'https://api.themoviedb.org/3/find/{movie.externals["imdb"]}',
             params={
                 'api_key': config.client.themoviedb,
                 'external_source': 'imdb_id',
-            }
+            },
         )
         if r.status_code >= 400:
             logger.error(
-                f'[Movie: {movie.id}] Failed to get movie "{movie.externals["imdb"]}" by imdb: {r.content}')
+                f'[Movie: {movie.id}] Failed to get movie "{movie.externals["imdb"]}" by imdb: {r.content}'
+            )
             return
         r = r.json()
         if not r['movie_results']:
             logger.warning(
-                f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"')
+                f'[Movie: {movie.id}] No movie found with imdb: "{movie.externals["imdb"]}"'
+            )
             return
         themoviedb = r['movie_results'][0]['id']
     new_data = await get_movie_data(themoviedb)
@@ -133,30 +144,43 @@ async def update_movie_metadata(movie: schemas.Movie) -> None:
         return
     old_data = movie.to_request()
     data = compare(new_data, old_data, skip_keys=['alternative_titles'])
-    missing_alternative_titles = [x for x in new_data.alternative_titles if x not in old_data.alternative_titles]
+    missing_alternative_titles = [
+        x for x in new_data.alternative_titles if x not in old_data.alternative_titles
+    ]
     if new_data.alternative_titles and missing_alternative_titles:
         data['alternative_titles'] = new_data.alternative_titles
     if data:
         logger.debug(f'[Movie: {movie.id}] Updating: {data}')
-        await models.MMovie.save(data=schemas.Movie_update.model_validate(data), movie_id=movie.id, patch=True, overwrite_genres=True)
+        await models.MMovie.save(
+            data=schemas.Movie_update.model_validate(data),
+            movie_id=movie.id,
+            patch=True,
+            overwrite_genres=True,
+        )
     else:
         logger.debug(f'[Movie: {movie.id}] No metadata updates')
 
 
 async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
-    r = await client.get(f'https://api.themoviedb.org/3/movie/{themoviedb}', params={
-        'api_key': config.client.themoviedb,
-        'append_to_response': 'alternative_titles,keywords',
-    })
+    r = await client.get(
+        f'https://api.themoviedb.org/3/movie/{themoviedb}',
+        params={
+            'api_key': config.client.themoviedb,
+            'append_to_response': 'alternative_titles,keywords',
+        },
+    )
     if r.status_code >= 400:
         logger.info(
-            f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}')
+            f'[Movie] Failed to get movie from themoviedb ({themoviedb}): {r.content}'
+        )
         error = r.json()
         if error['status_code'] == 34:
             m = await models.MMovie.get_from_external('themoviedb', themoviedb)
             if m:
                 await models.MMovie.delete(movie_id=m.id)
-                logger.info(f'Movie not found on TMDB, deleteing: TMDB {themoviedb} from the database')
+                logger.info(
+                    f'Movie not found on TMDB, deleteing: TMDB {themoviedb} from the database'
+                )
         return None
     r = r.json()
 
@@ -175,7 +199,9 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     data.tagline = r['tagline'] or None
     data.language = r['original_language']
     if 'alternative_titles' in r:
-        data.alternative_titles = [a['title'][:200] for a in r['alternative_titles']['titles']]
+        data.alternative_titles = [
+            a['title'][:200] for a in r['alternative_titles']['titles']
+        ]
     genres = [genre['name'] for genre in r['genres']]
     if r.get('keywords'):
         for keyword in r['keywords'].get('keywords', []):
@@ -185,7 +211,9 @@ async def get_movie_data(themoviedb: int) -> schemas.Movie_update:
     data.popularity = r['popularity']
     data.revenue = r['revenue']
     data.budget = r['budget']
-    data.collection_name = r['belongs_to_collection']['name'] if r['belongs_to_collection'] else None
+    data.collection_name = (
+        r['belongs_to_collection']['name'] if r['belongs_to_collection'] else None
+    )
     return data
 
 
@@ -196,27 +224,36 @@ async def update_images(movie: schemas.Movie) -> None:
         return
 
     async with database.session() as session:
-        result = await session.scalars(sa.select(models.MImage).where(
-            models.MImage.relation_type == 'movie',
-            models.MImage.relation_id == movie.id,
-        ))
+        result = await session.scalars(
+            sa.select(models.MImage).where(
+                models.MImage.relation_type == 'movie',
+                models.MImage.relation_id == movie.id,
+            )
+        )
         image_external_ids = {
-            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
+            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(
+                image
+            )
+            for image in result
+        }
 
-    r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}', params={
-        'append_to_response': 'images',
-        'api_key': config.client.themoviedb,
-    })
+    r = await client.get(
+        f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}',
+        params={
+            'append_to_response': 'images',
+            'api_key': config.client.themoviedb,
+        },
+    )
     if r.status_code >= 400:
         logger.error(
-            f'[Movie: {movie.id}] Failed to get movie images for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}')
+            f'[Movie: {movie.id}] Failed to get movie images for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}'
+        )
         return
     m = r.json()
     if 'images' not in m:
-        logger.debug(f'[Movie: {movie.id}] Didn\'t find any images')
+        logger.debug(f"[Movie: {movie.id}] Didn't find any images")
         return
-    logger.debug(
-        f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
+    logger.debug(f'[Movie: {movie.id}] Found {len(m["images"]["posters"])} posters')
 
     async def save_image(image) -> None:
         try:
@@ -232,10 +269,10 @@ async def update_images(movie: schemas.Movie) -> None:
                         external_id=image['file_path'],
                         type='poster',
                         source_url=source_url,
-                    )
+                    ),
                 )
                 image_external_ids[key] = saved_image
-        except (KeyboardInterrupt, SystemExit):
+        except KeyboardInterrupt, SystemExit:
             raise
         except Exception:
             logger.exception(f'[Movie: {movie.id}] Failed saving image')
@@ -249,10 +286,14 @@ async def update_images(movie: schemas.Movie) -> None:
             return
         if not movie.poster_image or movie.poster_image.id != image_external_ids[key].id:
             logger.info(
-                f'[Movie: {movie.id}] Setting primary image: {image_external_ids[key].id}')
-            await models.MMovie.save(data=schemas.Movie_update(
-                poster_image_id=image_external_ids[key].id,
-            ), movie_id=movie.id)
+                f'[Movie: {movie.id}] Setting primary image: {image_external_ids[key].id}'
+            )
+            await models.MMovie.save(
+                data=schemas.Movie_update(
+                    poster_image_id=image_external_ids[key].id,
+                ),
+                movie_id=movie.id,
+            )
 
 
 async def update_cast(movie: schemas.Movie) -> None:
@@ -263,24 +304,34 @@ async def update_cast(movie: schemas.Movie) -> None:
 
     # Get existing cast
     async with database.session() as session:
-        result = await session.scalars(sa.select(models.MMovieCast).where(
-            models.MMovieCast.movie_id == movie.id,
-        ))
-        cast: dict[str, schemas.Movie_cast_person] = {f'themoviedb-{cast.person.externals["themoviedb"]}': 
-                schemas.Movie_cast_person.model_validate(cast) for cast in result \
-                    if cast.person.externals.get("themoviedb")}
+        result = await session.scalars(
+            sa.select(models.MMovieCast).where(
+                models.MMovieCast.movie_id == movie.id,
+            )
+        )
+        cast: dict[str, schemas.Movie_cast_person] = {
+            f'themoviedb-{cast.person.externals["themoviedb"]}': schemas.Movie_cast_person.model_validate(
+                cast
+            )
+            for cast in result
+            if cast.person.externals.get('themoviedb')
+        }
 
-    r = await client.get(f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}/credits', params={
-        'api_key': config.client.themoviedb,
-        'language': 'en-US',
-    })
+    r = await client.get(
+        f'https://api.themoviedb.org/3/movie/{movie.externals["themoviedb"]}/credits',
+        params={
+            'api_key': config.client.themoviedb,
+            'language': 'en-US',
+        },
+    )
     if r.status_code >= 400:
         logger.error(
-            f'[Movie: {movie.id}] Failed to get movie credits for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}')
+            f'[Movie: {movie.id}] Failed to get movie credits for "{movie.externals["themoviedb"]}" from themoviedb: {r.content}'
+        )
         return
     m = r.json()
     if 'cast' not in m:
-        logger.info(f'[Movie: {movie.id}] Didn\'t find any cast')
+        logger.info(f"[Movie: {movie.id}] Didn't find any cast")
         return
     logger.debug(f'[Movie: {movie.id}] Found {len(m["cast"])} cast members')
 
@@ -289,7 +340,9 @@ async def update_cast(movie: schemas.Movie) -> None:
             key = f'themoviedb-{member["id"]}'
             if key not in cast:
                 # Create the person if they don't "exist"
-                person = await models.MPerson.get_from_external('themoviedb', member['id'])
+                person = await models.MPerson.get_from_external(
+                    'themoviedb', member['id']
+                )
                 if not person:
                     person = await create_person('themoviedb', member['id'])
                 cast[key] = schemas.Movie_cast_person(
@@ -298,9 +351,13 @@ async def update_cast(movie: schemas.Movie) -> None:
                     character=None,
                 )
 
-            if cast[key].character != member['character'][:200] or \
-                cast[key].order != member['order']:
-                logger.debug(f'[Movie: {movie.id}] Saving cast: {member["name"]} ({member["id"]})')
+            if (
+                cast[key].character != member['character'][:200]
+                or cast[key].order != member['order']
+            ):
+                logger.debug(
+                    f'[Movie: {movie.id}] Saving cast: {member["name"]} ({member["id"]})'
+                )
                 await models.MMovieCast.save(
                     data=schemas.Movie_cast_person_update(
                         movie_id=movie.id,
@@ -309,15 +366,19 @@ async def update_cast(movie: schemas.Movie) -> None:
                         character=member['character'][:200] or None,
                     )
                 )
-        except (KeyboardInterrupt, SystemExit):
+        except KeyboardInterrupt, SystemExit:
             raise
         except Exception:
-            logger.exception(f'[Movie: {movie.id}] Failed saving cast: {member["name"]} ({member["id"]})')
+            logger.exception(
+                f'[Movie: {movie.id}] Failed saving cast: {member["name"]} ({member["id"]})'
+            )
 
     await asyncio.gather(*[save_cast(member) for member in m['cast']])
 
     # Delete any cast members that don't exist anymore
     for _, member in cast.items():
-        if not any(member.person.externals.get('themoviedb') == str(m['id']) for m in m['cast']):
+        if not any(
+            member.person.externals.get('themoviedb') == str(m['id']) for m in m['cast']
+        ):
             logger.debug(f'[Movie: {movie.id}] Deleting cast: {member.person.name}')
             await models.MMovieCast.delete(movie_id=movie.id, person_id=member.person.id)

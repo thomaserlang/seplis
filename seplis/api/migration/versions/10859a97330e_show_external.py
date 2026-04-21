@@ -17,12 +17,19 @@ from alembic import op
 def upgrade() -> None:
     op.create_table(
         'show_externals',
-        sa.Column('show_id', sa.Integer, sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        sa.Column(
+            'show_id',
+            sa.Integer,
+            sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('title', sa.String(45), primary_key=True),
         sa.Column('value', sa.String(45)),
     )
 
     op.create_unique_constraint('uq_title_value', 'show_externals', ['title', 'value'])
+
 
 def downgrade() -> None:
     op.drop_table('show_externals')

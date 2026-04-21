@@ -15,7 +15,9 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.alter_column('tokens', 'token',
+    op.alter_column(
+        'tokens',
+        'token',
         existing_type=sa.String(45),
         type_=sa.String(512),
     )

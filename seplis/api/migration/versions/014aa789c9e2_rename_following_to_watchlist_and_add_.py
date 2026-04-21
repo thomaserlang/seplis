@@ -16,29 +16,33 @@ from alembic import op
 
 def upgrade() -> None:
     op.rename_table('series_followers', 'series_watchlist')
-    op.create_table('series_favorites', 
-        sa.Column('series_id',
-            sa.Integer, 
+    op.create_table(
+        'series_favorites',
+        sa.Column(
+            'series_id',
+            sa.Integer,
             sa.ForeignKey(
-                'series.id', 
+                'series.id',
                 onupdate='cascade',
                 ondelete='cascade',
             ),
             primary_key=True,
             autoincrement=False,
         ),
-        sa.Column('user_id',
-            sa.Integer, 
+        sa.Column(
+            'user_id',
+            sa.Integer,
             sa.ForeignKey(
-                'users.id', 
+                'users.id',
                 onupdate='cascade',
                 ondelete='cascade',
             ),
             primary_key=True,
             autoincrement=False,
         ),
-        sa.Column('created_at', sa.DateTime),     
+        sa.Column('created_at', sa.DateTime),
     )
+
 
 def downgrade() -> None:
     pass

@@ -33,7 +33,9 @@ async def register_play_server_episode_patch(
     )
 
 
-@router.delete('/{play_server_id}/series/{series_id}/episodes/{episode_number}', status_code=204)
+@router.delete(
+    '/{play_server_id}/series/{series_id}/episodes/{episode_number}', status_code=204
+)
 async def delete_episode_from_play_server(
     play_server_id: str,
     series_id: int,

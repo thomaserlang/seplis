@@ -9,6 +9,7 @@ from .image import Image
 class Search_title_document_title(BaseModel):
     title: str
 
+
 class Search_title_document(BaseModel):
     type: str
     id: int
@@ -25,5 +26,5 @@ class Search_title_document(BaseModel):
     episodes: int | None = None
     runtime: int | None = None
     language: str | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)

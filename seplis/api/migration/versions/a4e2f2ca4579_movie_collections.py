@@ -15,16 +15,21 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.create_table('movie_collections',
-        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True), 
+    op.create_table(
+        'movie_collections',
+        sa.Column('id', sa.Integer, primary_key=True, autoincrement=True),
         sa.Column('name', sa.String(200)),
     )
-    op.add_column('movies', sa.Column('collection_id', 
-                                      sa.Integer, 
-                                      sa.ForeignKey("movie_collections.id", ondelete='cascade', onupdate='cascade'), 
-                                      nullable=True, 
-                                      server_default=None,
-                                      ))
+    op.add_column(
+        'movies',
+        sa.Column(
+            'collection_id',
+            sa.Integer,
+            sa.ForeignKey('movie_collections.id', ondelete='cascade', onupdate='cascade'),
+            nullable=True,
+            server_default=None,
+        ),
+    )
 
 
 def downgrade() -> None:

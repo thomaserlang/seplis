@@ -11,9 +11,9 @@ revision = '4ea430899ae'
 down_revision = '5a0ca3c7327'
 
 
-
 def upgrade() -> None:
     pass
+
 
 def downgrade():
     raise NotImplementedError()

@@ -21,4 +21,3 @@ from .series_popularity_history import *
 from .series_rating_history import *
 from .series_user_rating import *
 from .series_watchlist import *
-from .user import *

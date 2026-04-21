@@ -1,6 +1,8 @@
 import sqlalchemy as sa
 from fastapi import Depends, Security
 
+from seplis.api.user.models.user_model import MUserPublic
+
 from .... import utils
 from ... import models, schemas
 from ...dependencies import AsyncSession, authenticated, get_session
@@ -15,9 +17,7 @@ from .router import router
             """,
 )
 async def get_play_servers_with_access(
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['user:list_play_servers']
-    ),
+    user: User_authenticated = Security(authenticated, scopes=['user:list_play_servers']),
     session: AsyncSession = Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):
@@ -47,21 +47,21 @@ async def get_play_servers_with_access(
 )
 async def get_users_with_access(
     play_server_id: str,
-    user: schemas.User_authenticated = Security(
+    user: User_authenticated = Security(
         authenticated, scopes=['user:manage_play_servers']
     ),
     session: AsyncSession = Depends(get_session),
     page_query: schemas.Page_cursor_query = Depends(),
 ):
     query = (
-        sa.select(models.MPlayServerAccess.created_at, models.MUserPublic)
+        sa.select(models.MPlayServerAccess.created_at, MUserPublic)
         .where(
             models.MPlayServer.user_id == user.id,
             models.MPlayServer.id == play_server_id,
             models.MPlayServerAccess.play_server_id == models.MPlayServer.id,
-            models.MUserPublic.id == models.MPlayServerAccess.user_id,
+            MUserPublic.id == models.MPlayServerAccess.user_id,
         )
-        .order_by(sa.asc(models.MUserPublic.username), sa.asc(models.MUserPublic.id))
+        .order_by(sa.asc(MUserPublic.username), sa.asc(MUserPublic.id))
     )
 
     p = await utils.sqlalchemy.paginate_cursor_total(
@@ -70,7 +70,7 @@ async def get_users_with_access(
     p.items = [
         schemas.Play_server_access(
             created_at=r.created_at,
-            user=schemas.User_public.model_validate(r.MUserPublic),
+            user=schemas.UserPublic.model_validate(r.MUserPublic),
         )
         for r in p.items
     ]
@@ -87,7 +87,7 @@ async def get_users_with_access(
 async def remove_user_access(
     play_server_id: str,
     user_id: str,
-    user: schemas.User_authenticated = Security(
+    user: User_authenticated = Security(
         authenticated, scopes=['user:manage_play_servers']
     ),
 ) -> None:
@@ -107,9 +107,7 @@ async def remove_user_access(
 )
 async def leave_play_server(
     play_server_id: str,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['user:list_play_servers']
-    ),
+    user: User_authenticated = Security(authenticated, scopes=['user:list_play_servers']),
 ) -> None:
     await models.MPlayServerAccess.leave(
         play_server_id=play_server_id,

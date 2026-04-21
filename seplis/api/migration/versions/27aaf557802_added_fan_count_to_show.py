@@ -15,15 +15,10 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.add_column('shows',
-        sa.Column('fans', sa.Integer, server_default='0')
-    )
-    op.add_column('users',
-        sa.Column('fan_of', sa.Integer, server_default='0')
-    )
-    op.add_column('users',
-        sa.Column('watched', sa.Integer, server_default='0')
-    )
+    op.add_column('shows', sa.Column('fans', sa.Integer, server_default='0'))
+    op.add_column('users', sa.Column('fan_of', sa.Integer, server_default='0'))
+    op.add_column('users', sa.Column('watched', sa.Integer, server_default='0'))
+
 
 def downgrade():
     raise NotImplementedError()

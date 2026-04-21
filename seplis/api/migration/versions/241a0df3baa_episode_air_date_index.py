@@ -14,11 +14,7 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.create_index(
-        'ix_episodes_show_id_air_date',
-        'episodes',
-        ['show_id', 'air_date']
-    )
+    op.create_index('ix_episodes_show_id_air_date', 'episodes', ['show_id', 'air_date'])
 
 
 def downgrade() -> None:

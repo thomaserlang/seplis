@@ -8,6 +8,7 @@ from .helper import default_datetime
 class Episode_watched_increment(BaseModel):
     watched_at: datetime = default_datetime
 
+
 class Episode_watched(BaseModel):
     episode_number: int
     times: int = 0

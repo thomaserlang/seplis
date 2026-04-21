@@ -22,7 +22,9 @@ class Id_data(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 
 
-async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterator[Id_data]:
+async def get_ids(
+    export: Literal['movie_ids', 'tv_series_ids'],
+) -> AsyncIterator[Id_data]:
     url = await _get_url(export=export)
     if not url:
         return
@@ -43,7 +45,7 @@ async def get_ids(export: Literal['movie_ids', 'tv_series_ids']) -> AsyncIterato
 async def _get_url(export):
     dts = [
         datetime.now(tz=UTC).strftime('%m_%d_%Y'),
-        (datetime.now(tz=UTC)-timedelta(days=1)).strftime('%m_%d_%Y'),
+        (datetime.now(tz=UTC) - timedelta(days=1)).strftime('%m_%d_%Y'),
     ]
     for dt in dts:
         url = f'http://files.tmdb.org/p/exports/{export}_{dt}.json.gz'

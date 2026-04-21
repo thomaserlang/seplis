@@ -12,14 +12,16 @@ importers = {}
 
 client = httpx.AsyncClient()
 
+
 def register_importer(obj) -> None:
     if not isinstance(obj, Importer_base):
         raise Exception('The object must be an instance of `Show_importer_base()`')
     if not obj.external_name:
-        raise Exception('The importer external_name can\'t be `None`')
+        raise Exception("The importer external_name can't be `None`")
     if obj.external_name in importers:
         raise Exception(f'{obj.external_name} is already registered as an indexer')
     importers[obj.external_name] = obj
+
 
 class Importer_base:
     display_name: str
@@ -54,11 +56,13 @@ class Importer_base:
 
         :returns: int
         """
-        path = os.path.expanduser(os.path.join(
-            config.data_dir,
-            'importer',
-            self.external_name+'.timestamp',
-        ))
+        path = os.path.expanduser(
+            os.path.join(
+                config.data_dir,
+                'importer',
+                self.external_name + '.timestamp',
+            )
+        )
         if not os.path.isfile(path):
             return int(time.time()) - 86400
         with open(path) as f:
@@ -77,15 +81,17 @@ class Importer_base:
         self.save_timestamp(ttime)
         ```
         """
-        path = os.path.expanduser(os.path.join(
-            config.data_dir,
-            'importer',
-        ))
+        path = os.path.expanduser(
+            os.path.join(
+                config.data_dir,
+                'importer',
+            )
+        )
         if not os.path.exists(path):
             os.makedirs(path)
         path = os.path.join(
             path,
-            self.external_name+'.timestamp',
+            self.external_name + '.timestamp',
         )
         if not timestamp:
             timestamp = int(time.time())

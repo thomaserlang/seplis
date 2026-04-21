@@ -10,92 +10,125 @@ from seplis.api.testbase import AsyncClient, run_file, user_signin
 async def test_play_server_register_episodes(client: AsyncClient) -> None:
     user_id = await user_signin(client)
 
-    play_server: schemas.Play_server = await models.MPlayServer.save(data=schemas.Play_server_create(
-        name='Test play',
-        url='http://example.net',
-        secret='2'*20
-    ), user_id=user_id)
+    play_server: schemas.Play_server = await models.MPlayServer.save(
+        data=schemas.Play_server_create(
+            name='Test play', url='http://example.net', secret='2' * 20
+        ),
+        user_id=user_id,
+    )
 
-    series1: schemas.Series = await models.MSeries.save(data=schemas.Series_create(
-        title='Test 1',
-        episodes=[schemas.Episode_create(title='EP', number=1)]
-    ))    
-    series2: schemas.Series = await models.MSeries.save(data=schemas.Series_create(
-        title='Test 2',
-        episodes=[schemas.Episode_create(title='EP2', number=1)]
-    ))    
+    series1: schemas.Series = await models.MSeries.save(
+        data=schemas.Series_create(
+            title='Test 1', episodes=[schemas.Episode_create(title='EP', number=1)]
+        )
+    )
+    series2: schemas.Series = await models.MSeries.save(
+        data=schemas.Series_create(
+            title='Test 2', episodes=[schemas.Episode_create(title='EP2', number=1)]
+        )
+    )
 
     # Invalid series
-    r = await client.put(f'/2/play-servers/{play_server.id}/episodes', json=[
-        {'series_id': 0, 'episode_number': 1},
-    ], headers={
-        'Authorization': f'Secret {"2"*20}',
-    })
+    r = await client.put(
+        f'/2/play-servers/{play_server.id}/episodes',
+        json=[
+            {'series_id': 0, 'episode_number': 1},
+        ],
+        headers={
+            'Authorization': f'Secret {"2" * 20}',
+        },
+    )
     assert r.status_code == 400, r.content
 
-    r = await client.put(f'/2/play-servers/{play_server.id}/episodes', json=[
-        {'series_id': series1.id, 'episode_number': 1},
-    ], headers={
-        'Authorization': f'Secret {"2"*20}',
-    })
+    r = await client.put(
+        f'/2/play-servers/{play_server.id}/episodes',
+        json=[
+            {'series_id': series1.id, 'episode_number': 1},
+        ],
+        headers={
+            'Authorization': f'Secret {"2" * 20}',
+        },
+    )
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
         r = await session.scalars(sa.select(models.MPlayServerEpisode))
         assert r.all()[0].series_id == series1.id
 
-    r = await client.patch(f'/2/play-servers/{play_server.id}/episodes', json=[
-        {'series_id': series2.id, 'episode_number': 1},
-    ], headers={
-        'Authorization': f'Secret {"2"*20}',
-    })
+    r = await client.patch(
+        f'/2/play-servers/{play_server.id}/episodes',
+        json=[
+            {'series_id': series2.id, 'episode_number': 1},
+        ],
+        headers={
+            'Authorization': f'Secret {"2" * 20}',
+        },
+    )
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
-            models.MPlayServerEpisode.play_server_id == play_server.id
-        ))
+        r = await session.scalars(
+            sa.select(models.MPlayServerEpisode).where(
+                models.MPlayServerEpisode.play_server_id == play_server.id
+            )
+        )
         r = r.all()
         assert r[0].series_id == series1.id
         assert r[1].series_id == series2.id
 
-
-    r = await client.patch(f'/2/play-servers/{play_server.id}/episodes', json=[
-        {'series_id': series2.id, 'episode_number': 1},
-    ], headers={
-        'Authorization': f'Secret {"2"*20}',
-    })
+    r = await client.patch(
+        f'/2/play-servers/{play_server.id}/episodes',
+        json=[
+            {'series_id': series2.id, 'episode_number': 1},
+        ],
+        headers={
+            'Authorization': f'Secret {"2" * 20}',
+        },
+    )
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
-            models.MPlayServerEpisode.play_server_id == play_server.id
-        ))
+        r = await session.scalars(
+            sa.select(models.MPlayServerEpisode).where(
+                models.MPlayServerEpisode.play_server_id == play_server.id
+            )
+        )
         r = r.all()
         assert r[0].series_id == series1.id
         assert r[1].series_id == series2.id
 
-    r = await client.delete(f'/2/play-servers/{play_server.id}/series/{series1.id}/episodes/1', headers={
-        'Authorization': f'Secret {"2"*20}',
-    })
+    r = await client.delete(
+        f'/2/play-servers/{play_server.id}/series/{series1.id}/episodes/1',
+        headers={
+            'Authorization': f'Secret {"2" * 20}',
+        },
+    )
     assert r.status_code == 204
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
-            models.MPlayServerEpisode.play_server_id == play_server.id
-        ))
+        r = await session.scalars(
+            sa.select(models.MPlayServerEpisode).where(
+                models.MPlayServerEpisode.play_server_id == play_server.id
+            )
+        )
         r = r.all()
         assert r[0].series_id == series2.id
 
-    r = await client.put(f'/2/play-servers/{play_server.id}/episodes', json=[], headers={
-        'Authorization': f'Secret {"2"*20}',
-    })
+    r = await client.put(
+        f'/2/play-servers/{play_server.id}/episodes',
+        json=[],
+        headers={
+            'Authorization': f'Secret {"2" * 20}',
+        },
+    )
     assert r.status_code == 204, r.content
 
     async with database.session() as session:
-        r = await session.scalars(sa.select(models.MPlayServerEpisode).where(
-            models.MPlayServerEpisode.play_server_id == play_server.id
-        ))
+        r = await session.scalars(
+            sa.select(models.MPlayServerEpisode).where(
+                models.MPlayServerEpisode.play_server_id == play_server.id
+            )
+        )
         assert len(r.all()) == 0
 
 

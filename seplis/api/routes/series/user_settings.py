@@ -1,59 +1,79 @@
 import sqlalchemy as sa
 from fastapi import Depends, Security
 
-from ... import models, schemas
-from ...dependencies import AsyncSession, authenticated, get_session
+from seplis.api.user import UserSeriesSettings, UserSeriesSettingsUpdate
+from seplis.api.user.models.user_series_settings_model import MUserSeriesSettings
+
+from ...dependencies import AsyncSession, UserAuthenticated, authenticated, get_session
 from .router import router
 
 
-@router.get('/{series_id}/user-settings', response_model=schemas.User_series_settings,
-            description='''
+@router.get(
+    '/{series_id}/user-settings',
+    response_model=UserSeriesSettings,
+    description="""
             **Scope required:** `user:progress`
-            ''')
+            """,
+)
 async def get_series_user_settings(
     series_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
+    user: UserAuthenticated = Security(authenticated, scopes=['user:progress']),
 ):
-    settings = await session.scalar(sa.select(models.MUserSeriesSettings).where(
-        models.MUserSeriesSettings.user_id == user.id,
-        models.MUserSeriesSettings.series_id == series_id,
-    ))
+    settings = await session.scalar(
+        sa.select(MUserSeriesSettings).where(
+            MUserSeriesSettings.user_id == user.id,
+            MUserSeriesSettings.series_id == series_id,
+        )
+    )
     if not settings:
-        return schemas.User_series_settings()
+        return UserSeriesSettings()
     return settings
 
 
-@router.put('/{series_id}/user-settings', response_model=schemas.User_series_settings,
-            description='''
+@router.put(
+    '/{series_id}/user-settings',
+    response_model=UserSeriesSettings,
+    description="""
             **Scope required:** `user:manage_play_settings`
-            ''')
+            """,
+)
 async def set_series_user_settings(
     series_id: int,
-    data: schemas.User_series_settings_update,
+    data: UserSeriesSettingsUpdate,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(authenticated, scopes=['user:manage_play_settings']),
+    user: UserAuthenticated = Security(
+        authenticated, scopes=['user:manage_play_settings']
+    ),
 ):
-    settings = await session.scalar(sa.select(models.MUserSeriesSettings).where(
-        models.MUserSeriesSettings.user_id == user.id,
-        models.MUserSeriesSettings.series_id == series_id,
-    ))
+    settings = await session.scalar(
+        sa.select(MUserSeriesSettings).where(
+            MUserSeriesSettings.user_id == user.id,
+            MUserSeriesSettings.series_id == series_id,
+        )
+    )
     if not settings:
-        await session.execute(sa.insert(models.MUserSeriesSettings).values(
-            series_id=series_id,
-            user_id=user.id,
-            **data.model_dump(exclude_unset=True)
-        ))
+        await session.execute(
+            sa.insert(MUserSeriesSettings).values(
+                series_id=series_id,
+                user_id=user.id,
+                **data.model_dump(exclude_unset=True),
+            )
+        )
     else:
-        await session.execute(sa.update(models.MUserSeriesSettings).values(
-            **data.model_dump(exclude_unset=True)
-        ).where(
-            models.MUserSeriesSettings.user_id == user.id,
-            models.MUserSeriesSettings.series_id == series_id,
-        ))
-    settings = await session.scalar(sa.select(models.MUserSeriesSettings).where(
-        models.MUserSeriesSettings.user_id == user.id,
-        models.MUserSeriesSettings.series_id == series_id,
-    ))
+        await session.execute(
+            sa.update(MUserSeriesSettings)
+            .values(**data.model_dump(exclude_unset=True))
+            .where(
+                MUserSeriesSettings.user_id == user.id,
+                MUserSeriesSettings.series_id == series_id,
+            )
+        )
+    settings = await session.scalar(
+        sa.select(MUserSeriesSettings).where(
+            MUserSeriesSettings.user_id == user.id,
+            MUserSeriesSettings.series_id == series_id,
+        )
+    )
     await session.commit()
     return settings

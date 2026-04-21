@@ -21,7 +21,7 @@ The episode must be the latest completed.
 )
 async def get_last_watched_episode(
     series_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['user:progress']),
+    user: User_authenticated = Security(authenticated, scopes=['user:progress']),
     session: AsyncSession = Depends(get_session),
 ):
     eps = await session.execute(

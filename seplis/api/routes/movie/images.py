@@ -3,7 +3,7 @@ from fastapi import Depends, Form, Security, UploadFile
 
 from .... import utils
 from ... import models, schemas
-from ...dependencies import AsyncSession, authenticated, get_session
+from ...dependencies import AsyncSession, UserAuthenticated, authenticated, get_session
 from .router import router
 
 
@@ -21,9 +21,7 @@ async def create_image(
     type: schemas.IMAGE_TYPES = Form(),
     external_name: str = Form(default=None, min_length=1, max_length=50),
     external_id: str = Form(default=None, min_length=1, max_length=50),
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['movie:manage_images']
-    ),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:manage_images']),
 ):
     image_data = schemas.Image_import(
         external_name=external_name,
@@ -49,9 +47,7 @@ async def delete_image(
     movie_id: int,
     image_id: int,
     session: AsyncSession = Depends(get_session),
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['movie:manage_images']
-    ),
+    user: UserAuthenticated = Security(authenticated, scopes=['movie:manage_images']),
 ) -> None:
     await session.execute(
         sa.update(models.MMovie)

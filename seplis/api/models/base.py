@@ -1,18 +1,5 @@
-from sqlalchemy import MetaData, orm
-
-from seplis.utils import row_to_dict
+from sqlalchemy.orm import DeclarativeBase
 
 
-class Base_model:
-
-    def to_dict(self):
-        return row_to_dict(self)
-        
-    @property
-    def session(self):
-        if not hasattr(self, '_session'):
-            self._session = orm.Session.object_session(self)
-        return self._session
-
-Base = orm.declarative_base(cls=Base_model)
-metadata_obj = MetaData()
+class Base(DeclarativeBase):
+    pass

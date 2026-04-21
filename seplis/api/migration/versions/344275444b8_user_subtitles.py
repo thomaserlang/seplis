@@ -15,17 +15,18 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.create_table('user_show_subtitle_lang',
+    op.create_table(
+        'user_show_subtitle_lang',
         sa.Column(
-            'user_id', 
-            sa.Integer, 
-            sa.ForeignKey('users.id', onupdate='cascade', ondelete='cascade'), 
+            'user_id',
+            sa.Integer,
+            sa.ForeignKey('users.id', onupdate='cascade', ondelete='cascade'),
             primary_key=True,
         ),
         sa.Column(
-            'show_id', 
-            sa.Integer, 
-            sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'), 
+            'show_id',
+            sa.Integer,
+            sa.ForeignKey('shows.id', onupdate='cascade', ondelete='cascade'),
             primary_key=True,
         ),
         sa.Column('subtitle_lang', sa.String(20)),

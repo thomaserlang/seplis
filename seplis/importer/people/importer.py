@@ -12,7 +12,9 @@ from .base import importers
 
 async def update_person_by_id(person_id) -> None:
     async with database.session() as session:
-        result = await session.scalar(sa.select(models.MPerson).where(models.MPerson.id == person_id))
+        result = await session.scalar(
+            sa.select(models.MPerson).where(models.MPerson.id == person_id)
+        )
         if not result:
             logger.error(f'Unknown person: {person_id}')
             return
@@ -33,9 +35,14 @@ async def update_person(person: schemas.Person):
 
 async def create_person(external_name: str, external_id: str):
     logger.info(f'Creating person: {external_name} {external_id}')
-    return await update_person(person=schemas.Person(id=None, externals={
-        external_name: str(external_id),
-    }))
+    return await update_person(
+        person=schemas.Person(
+            id=None,
+            externals={
+                external_name: str(external_id),
+            },
+        )
+    )
 
 
 async def update_person_info(person: schemas.Person):
@@ -48,11 +55,17 @@ async def update_person_info(person: schemas.Person):
     )
     old_info = person.to_request() if person.id else schemas.Person_update()
     data = compare(info, old_info, skip_keys=['also_known_as'])
-    missing_also_known_as = [x for x in info.also_known_as if x not in old_info.also_known_as]
+    missing_also_known_as = [
+        x for x in info.also_known_as if x not in old_info.also_known_as
+    ]
     if info.also_known_as and missing_also_known_as:
         data['also_known_as'] = info.also_known_as
     if data:
-        return await models.MPerson.save(data=schemas.Person_update.model_validate(data), person_id=person.id, patch=True)
+        return await models.MPerson.save(
+            data=schemas.Person_update.model_validate(data),
+            person_id=person.id,
+            patch=True,
+        )
     logger.debug(f'[Person: {person.id}] No info updates')
     return None
 
@@ -61,23 +74,31 @@ async def update_person_images(person: schemas.Person) -> None:
     logger.debug(f'[Person: {person.id}] Updating images')
     imp_names = _importers_with_support(person.externals, 'images')
     async with database.session() as session:
-        result = await session.scalars(sa.select(models.MImage).where(
-            models.MImage.relation_id == person.id,
-            models.MImage.relation_type == 'person',
-        ))
+        result = await session.scalars(
+            sa.select(models.MImage).where(
+                models.MImage.relation_id == person.id,
+                models.MImage.relation_type == 'person',
+            )
+        )
         current_images = {
-            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(image) for image in result}
+            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(
+                image
+            )
+            for image in result
+        }
     images_added: list[schemas.Image] = []
 
     async def save_image(image) -> None:
         try:
             if f'{image.external_name}-{image.external_id}' not in current_images:
-                images_added.append(await models.MImage.save(
-                    relation_type='person',
-                    relation_id=person.id,
-                    image_data=image,
-                ))
-        except (KeyboardInterrupt, SystemExit):
+                images_added.append(
+                    await models.MImage.save(
+                        relation_type='person',
+                        relation_id=person.id,
+                        image_data=image,
+                    )
+                )
+        except KeyboardInterrupt, SystemExit:
             raise
         except Exception as e:
             logger.exception(e)
@@ -92,27 +113,24 @@ async def update_person_images(person: schemas.Person) -> None:
             if not imp_images:
                 continue
             await asyncio.gather(*[save_image(image) for image in imp_images])
-        except (KeyboardInterrupt, SystemExit):
+        except KeyboardInterrupt, SystemExit:
             raise
         except Exception:
             logger.exception(f'[Person: {person.id}] Failed saving image')
 
-    
-    logger.debug(
-        f'[Person: {person.id}] Found {len(imp_images)} images')
+    logger.debug(f'[Person: {person.id}] Found {len(imp_images)} images')
 
     if not person.profile_image:
         all_images: list[schemas.Image] = []
         all_images.extend(images_added)
         all_images.extend(current_images.values())
-        if all_images:            
+        if all_images:
             logger.info(
-                f'[Person: {person.id}] Setting new primary image: {all_images[0].id}')
+                f'[Person: {person.id}] Setting new primary image: {all_images[0].id}'
+            )
             await models.MPerson.save(
-                data=schemas.Person_update(
-                    profile_image_id=all_images[0].id
-                ),
-                person_id=person.id
+                data=schemas.Person_update(profile_image_id=all_images[0].id),
+                person_id=person.id,
             )
 
 

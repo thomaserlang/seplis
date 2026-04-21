@@ -24,18 +24,29 @@ class Series_importers(BaseModel):
 class Series_user_rating_update(BaseModel):
     rating: conint(ge=1, le=10)
 
+
 class Series_user_rating(BaseModel):
     rating: int | None = None
     updated_at: datetime | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class Series_create(BaseModel):
     title: constr(min_length=1, max_length=200, strip_whitespace=True) | None = None
-    original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None = None
-    alternative_titles: list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None = None
-    externals: dict[constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True), constr(min_length=0, max_length=45, strip_whitespace=True) | None] | None = {}
+    original_title: constr(min_length=1, max_length=200, strip_whitespace=True) | None = (
+        None
+    )
+    alternative_titles: (
+        list[constr(min_length=1, max_length=200, strip_whitespace=True)] | None
+    ) = None
+    externals: (
+        dict[
+            constr(min_length=1, max_length=45, strip_whitespace=True, to_lower=True),
+            constr(min_length=0, max_length=45, strip_whitespace=True) | None,
+        ]
+        | None
+    ) = {}
     status: conint(gt=-1) | None = None
     plot: constr(min_length=1, max_length=2000, strip_whitespace=True) | None = None
     tagline: constr(min_length=1, max_length=500, strip_whitespace=True) | None = None
@@ -51,7 +62,7 @@ class Series_create(BaseModel):
     rating: confloat(ge=0.0, le=10.0) | None = None
     rating_votes: conint(ge=0) | None = None
     episodes: list[Episode_create] | None = None
-    
+
     model_config = ConfigDict(
         validate_assignment=True,
         extra='forbid',
@@ -73,14 +84,14 @@ class Series_update(Series_create):
 class Series_watchlist(BaseModel):
     on_watchlist: bool = False
     created_at: datetime | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class Series_favorite(BaseModel):
     favorite: bool = False
     created_at: datetime | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -89,7 +100,7 @@ class Series_season(BaseModel):
     from_: int = Field(..., alias='from')
     to: int
     total: int
-    
+
     model_config = ConfigDict(populate_by_name=True)
 
 
@@ -122,7 +133,7 @@ class Series(BaseModel):
     user_last_episode_watched: Episode | None = None
     user_rating: Series_user_rating | None = None
     user_can_watch: User_can_watch | None = None
-    
+
     model_config = ConfigDict(from_attributes=True)
 
     def to_request(self) -> None:
@@ -130,19 +141,20 @@ class Series(BaseModel):
         data.poster_image_id = self.poster_image.id if self.poster_image else None
         data.genre_names = [g.name for g in self.genres]
 
+
 class Series_user_stats(BaseModel):
     episodes_watched: int = 0
     episodes_watched_minutes: int = 0
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 SERIES_USER_SORT_TYPE = Literal[
-    'user_watchlist_added_at_asc', 
-    'user_watchlist_added_at_desc', 
-    'user_favorite_added_at_asc', 
-    'user_favorite_added_at_desc', 
-    'user_rating_asc', 
+    'user_watchlist_added_at_asc',
+    'user_watchlist_added_at_desc',
+    'user_favorite_added_at_asc',
+    'user_favorite_added_at_desc',
+    'user_rating_asc',
     'user_rating_desc',
     'user_last_episode_watched_at_asc',
     'user_last_episode_watched_at_desc',
@@ -173,12 +185,12 @@ class Series_with_episodes(Series):
 class Series_and_episode(BaseModel):
     series: Series
     episode: Episode
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
 class Series_air_dates(BaseModel):
     air_date: date
     series: list[Series_with_episodes]
-    
+
     model_config = ConfigDict(from_attributes=True)

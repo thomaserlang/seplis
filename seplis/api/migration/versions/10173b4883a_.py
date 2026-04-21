@@ -17,12 +17,13 @@ from alembic import op
 
 def upgrade() -> None:
     op.alter_column(
-        'images', 
+        'images',
         'relation_type',
         nullable=False,
         type_=sa.String(20),
     )
     op.get_bind().execute(sa.text('update images set relation_type="show";'))
+
 
 def downgrade() -> None:
     pass

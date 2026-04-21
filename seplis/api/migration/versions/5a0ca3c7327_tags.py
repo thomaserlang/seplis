@@ -26,11 +26,24 @@ def upgrade() -> None:
 
     op.create_table(
         'tag_relations',
-        sa.Column('user_id', sa.Integer, sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'), autoincrement=False, primary_key=True),
+        sa.Column(
+            'user_id',
+            sa.Integer,
+            sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'),
+            autoincrement=False,
+            primary_key=True,
+        ),
         sa.Column('type', sa.String(50), primary_key=True),
         sa.Column('relation_id', sa.Integer, autoincrement=False, primary_key=True),
-        sa.Column('tag_id', sa.Integer, sa.ForeignKey('tags.id', ondelete='cascade', onupdate='cascade'), autoincrement=False, primary_key=True),
+        sa.Column(
+            'tag_id',
+            sa.Integer,
+            sa.ForeignKey('tags.id', ondelete='cascade', onupdate='cascade'),
+            autoincrement=False,
+            primary_key=True,
+        ),
     )
+
 
 def downgrade() -> None:
     op.drop_table('tag_relations')

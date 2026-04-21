@@ -15,7 +15,13 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.alter_column('movies', 'runtime', type_=sa.Integer(), existing_type=sa.SmallInteger(), existing_nullable=True)
+    op.alter_column(
+        'movies',
+        'runtime',
+        type_=sa.Integer(),
+        existing_type=sa.SmallInteger(),
+        existing_nullable=True,
+    )
 
 
 def downgrade() -> None:

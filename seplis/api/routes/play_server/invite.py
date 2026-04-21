@@ -1,6 +1,8 @@
 import sqlalchemy as sa
 from fastapi import Depends, Security
 
+from seplis.api.user.models.user_model import MUserPublic
+
 from .... import utils
 from ... import models, schemas
 from ...dependencies import AsyncSession, authenticated, get_session
@@ -18,7 +20,7 @@ from .router import router
 async def create_play_server_invite(
     play_server_id: str,
     data: schemas.Play_server_invite_create,
-    user: schemas.User_authenticated = Security(
+    user: User_authenticated = Security(
         authenticated, scopes=['user:manage_play_servers']
     ),
 ):
@@ -38,7 +40,7 @@ async def create_play_server_invite(
 )
 async def get_play_server_invites(
     play_server_id: str,
-    user: schemas.User_authenticated = Security(
+    user: User_authenticated = Security(
         authenticated, scopes=['user:manage_play_servers']
     ),
     session: AsyncSession = Depends(get_session),
@@ -48,13 +50,13 @@ async def get_play_server_invites(
         sa.select(
             models.MPlayServerInvite.created_at,
             models.MPlayServerInvite.expires_at,
-            models.MUserPublic,
+            MUserPublic,
         )
         .where(
             models.MPlayServer.user_id == user.id,
             models.MPlayServer.id == play_server_id,
             models.MPlayServerInvite.play_server_id == models.MPlayServer.id,
-            models.MUserPublic.id == models.MPlayServerInvite.user_id,
+            MUserPublic.id == models.MPlayServerInvite.user_id,
         )
         .order_by(sa.asc(models.MPlayServer.name))
     )
@@ -66,7 +68,7 @@ async def get_play_server_invites(
         schemas.Play_server_invite(
             created_at=r.created_at,
             expires_at=r.expires_at,
-            user=schemas.User_public.model_validate(r.MUserPublic),
+            user=schemas.UserPublic.model_validate(r.MUserPublic),
         )
         for r in p.items
     ]
@@ -83,7 +85,7 @@ async def get_play_server_invites(
 async def delete_play_server_invite(
     play_server_id: str,
     user_id: int,
-    user: schemas.User_authenticated = Security(
+    user: User_authenticated = Security(
         authenticated, scopes=['user:manage_play_servers']
     ),
 ) -> None:
@@ -103,7 +105,7 @@ async def delete_play_server_invite(
 )
 async def accept_play_server_invite(
     data: schemas.Play_server_invite_id,
-    user: schemas.User_authenticated = Security(
+    user: User_authenticated = Security(
         authenticated, scopes=['user:manage_play_servers']
     ),
 ) -> None:

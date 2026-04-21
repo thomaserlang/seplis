@@ -18,21 +18,44 @@ from seplis.utils.sqlalchemy import UUID
 
 def upgrade() -> None:
     op.create_table(
-        'play_server_movies', 
-        sa.Column('play_server_id', UUID, sa.ForeignKey('play_servers.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
-        sa.Column('movie_id', sa.Integer, sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        'play_server_movies',
+        sa.Column(
+            'play_server_id',
+            UUID,
+            sa.ForeignKey('play_servers.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+        ),
+        sa.Column(
+            'movie_id',
+            sa.Integer,
+            sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('created_at', sa.DateTime, nullable=False),
         sa.Column('updated_at', sa.DateTime, nullable=False),
     )
 
     op.create_table(
-        'play_server_episodes', 
-        sa.Column('play_server_id', UUID, sa.ForeignKey('play_servers.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
-        sa.Column('series_id', sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        'play_server_episodes',
+        sa.Column(
+            'play_server_id',
+            UUID,
+            sa.ForeignKey('play_servers.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+        ),
+        sa.Column(
+            'series_id',
+            sa.Integer,
+            sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('episode_number', sa.Integer, primary_key=True, autoincrement=False),
         sa.Column('created_at', sa.DateTime, nullable=False),
         sa.Column('updated_at', sa.DateTime, nullable=False),
     )
+
 
 def downgrade() -> None:
     pass

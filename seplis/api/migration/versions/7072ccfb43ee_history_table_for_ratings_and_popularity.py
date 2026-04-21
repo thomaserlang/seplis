@@ -15,28 +15,52 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.create_table('series_rating_history', 
-        sa.Column('series_id', sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
+    op.create_table(
+        'series_rating_history',
+        sa.Column(
+            'series_id',
+            sa.Integer,
+            sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+        ),
         sa.Column('date', sa.Date, primary_key=True),
         sa.Column('rating', sa.DECIMAL(4, 2), nullable=False),
         sa.Column('votes', sa.Integer, nullable=False),
     )
 
-    op.create_table('movie_rating_history', 
-        sa.Column('movie_id', sa.Integer, sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
+    op.create_table(
+        'movie_rating_history',
+        sa.Column(
+            'movie_id',
+            sa.Integer,
+            sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+        ),
         sa.Column('date', sa.Date, primary_key=True),
         sa.Column('rating', sa.DECIMAL(4, 2), nullable=False),
         sa.Column('votes', sa.Integer, nullable=False),
     )
 
-    op.create_table('series_popularity_history', 
-        sa.Column('series_id', sa.Integer, sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
+    op.create_table(
+        'series_popularity_history',
+        sa.Column(
+            'series_id',
+            sa.Integer,
+            sa.ForeignKey('series.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+        ),
         sa.Column('date', sa.Date, primary_key=True),
         sa.Column('popularity', sa.DECIMAL(precision=12, scale=4), nullable=False),
     )
 
-    op.create_table('movie_popularity_history', 
-        sa.Column('movie_id', sa.Integer, sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'), primary_key=True),
+    op.create_table(
+        'movie_popularity_history',
+        sa.Column(
+            'movie_id',
+            sa.Integer,
+            sa.ForeignKey('movies.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+        ),
         sa.Column('date', sa.Date, primary_key=True),
         sa.Column('popularity', sa.DECIMAL(precision=12, scale=4), nullable=False),
     )

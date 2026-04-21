@@ -5,25 +5,32 @@ from ...dependencies import authenticated
 from .router import router
 
 
-@router.post('', response_model=schemas.Person, status_code=201,
-            description='''
+@router.post(
+    '',
+    response_model=schemas.Person,
+    status_code=201,
+    description="""
             **Scope required:** `person:create`
-            ''')
+            """,
+)
 async def person_create(
     data: schemas.Person_create,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['person:create']),
+    user: User_authenticated = Security(authenticated, scopes=['person:create']),
 ):
     return await models.MPerson.save(data=data)
 
 
-@router.put('/{person_id}', response_model=schemas.Person,
-            description='''
+@router.put(
+    '/{person_id}',
+    response_model=schemas.Person,
+    description="""
             **Scope required:** `person:edit`
-            ''')
+            """,
+)
 async def person_update(
     person_id: int,
     data: schemas.Person_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['person:edit']),
+    user: User_authenticated = Security(authenticated, scopes=['person:edit']),
 ):
     return await models.MPerson.save(
         person_id=person_id,
@@ -32,14 +39,17 @@ async def person_update(
     )
 
 
-@router.patch('/{person_id}', response_model=schemas.Person,
-            description='''
+@router.patch(
+    '/{person_id}',
+    response_model=schemas.Person,
+    description="""
             **Scope required:** `person:edit`
-            ''')
+            """,
+)
 async def person_patch(
     person_id: int,
     data: schemas.Person_update,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['person:edit']),
+    user: User_authenticated = Security(authenticated, scopes=['person:edit']),
 ):
     return await models.MPerson.save(
         person_id=person_id,
@@ -48,10 +58,13 @@ async def person_patch(
     )
 
 
-@router.get('/{person_id}', response_model=schemas.Person,
-            description='''
+@router.get(
+    '/{person_id}',
+    response_model=schemas.Person,
+    description="""
             **Scope required:** `person:read`
-            ''')
+            """,
+)
 async def person_get(
     person_id: int,
 ):
@@ -61,12 +74,15 @@ async def person_get(
     return person
 
 
-@router.delete('/{person_id}', status_code=204,
-            description='''
+@router.delete(
+    '/{person_id}',
+    status_code=204,
+    description="""
             **Scope required:** `person:delete`
-            ''')
+            """,
+)
 async def person_delete(
     person_id: int,
-    user: schemas.User_authenticated = Security(authenticated, scopes=['person:delete']),
+    user: User_authenticated = Security(authenticated, scopes=['person:delete']),
 ) -> None:
     await models.MPerson.delete(person_id=person_id)

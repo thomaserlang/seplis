@@ -17,7 +17,7 @@ from sqlalchemy.sql import text
 
 def upgrade() -> None:
     op.alter_column(
-        'episodes_watched', 
+        'episodes_watched',
         'updated_at',
         new_column_name='watched_at',
         existing_type=sa.DateTime,
@@ -25,15 +25,29 @@ def upgrade() -> None:
 
     op.drop_column('episodes_watched', 'completed')
 
-    op.create_table('episode_watching',
-        sa.Column('user_id', sa.Integer, sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False),
-        sa.Column('show_id', sa.Integer, sa.ForeignKey('shows.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False), 
+    op.create_table(
+        'episode_watching',
+        sa.Column(
+            'user_id',
+            sa.Integer,
+            sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
+        sa.Column(
+            'show_id',
+            sa.Integer,
+            sa.ForeignKey('shows.id', ondelete='cascade', onupdate='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('episode_number', sa.Integer),
     )
 
     con = op.get_bind()
     if con.engine.name == 'mysql':
-        con.execute(text('''
+        con.execute(
+            text("""
             INSERT INTO episode_watching (show_id, episode_number, user_id)
             SELECT show_id, episode_number, user_id FROM (
                 SELECT 
@@ -43,7 +57,9 @@ def upgrade() -> None:
                 ORDER BY user_id, show_id, watched_at DESC, 
                 episode_number ASC LIMIT 18446744073709551615
             ) as ew GROUP BY user_id, show_id;
-        '''))
+        """)
+        )
 
-def downgrade():    
+
+def downgrade():
     raise NotImplementedError()

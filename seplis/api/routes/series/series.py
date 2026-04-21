@@ -36,10 +36,11 @@ async def get_series_one(
     series_id: int,
     session: AsyncSession = Depends(get_session),
     expand: list[str] | None = Depends(get_expand),
-    user: schemas.User_authenticated | None = Depends(
-        get_current_user_no_raise),
+    user: User_authenticated | None = Depends(get_current_user_no_raise),
 ):
-    series = await session.scalar(sa.select(models.MSeries).where(models.MSeries.id == series_id))
+    series = await session.scalar(
+        sa.select(models.MSeries).where(models.MSeries.id == series_id)
+    )
     if not series:
         raise HTTPException(404, 'Unknown series')
     s = schemas.Series.model_validate(series)
@@ -53,75 +54,88 @@ async def get_series_by_external(
     external_id: str,
     session: AsyncSession = Depends(get_session),
 ):
-    series = await session.scalar(sa.select(models.MSeries).where(
-        models.MSeriesExternal.title == external_name,
-        models.MSeriesExternal.value == external_id,
-        models.MSeries.id == models.MSeriesExternal.series_id,
-    ))
+    series = await session.scalar(
+        sa.select(models.MSeries).where(
+            models.MSeriesExternal.title == external_name,
+            models.MSeriesExternal.value == external_id,
+            models.MSeries.id == models.MSeriesExternal.series_id,
+        )
+    )
     if not series:
         raise HTTPException(404, 'Unknown series')
     return schemas.Series.model_validate(series)
 
 
-@router.post('', status_code=201, response_model=schemas.Series,
-            description='''
+@router.post(
+    '',
+    status_code=201,
+    response_model=schemas.Series,
+    description="""
             **Scope required:** `series:create`
-            ''')
+            """,
+)
 async def create_series(
     data: schemas.Series_create,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['series:create']),
+    user: User_authenticated = Security(authenticated, scopes=['series:create']),
 ):
     series = await models.MSeries.save(data, series_id=None, patch=False)
     await database.redis_queue.enqueue_job('update_series', int(series.id))
     return series
 
 
-@router.put('/{series_id}', response_model=schemas.Series,
-            description='''
+@router.put(
+    '/{series_id}',
+    response_model=schemas.Series,
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def update_series(
     series_id: int,
     data: schemas.Series_update,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['series:edit']),
+    user: User_authenticated = Security(authenticated, scopes=['series:edit']),
 ):
     return await models.MSeries.save(series_id=series_id, data=data, patch=False)
 
 
-@router.patch('/{series_id}', response_model=schemas.Series,
-            description='''
+@router.patch(
+    '/{series_id}',
+    response_model=schemas.Series,
+    description="""
             **Scope required:** `series:edit`
-            ''')
+            """,
+)
 async def patch_series(
     series_id: int,
     data: schemas.Series_update,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['series:edit']),
+    user: User_authenticated = Security(authenticated, scopes=['series:edit']),
 ):
     return await models.MSeries.save(series_id=series_id, data=data, patch=True)
 
 
-@router.delete('/{series_id}', status_code=204,
-            description='''
+@router.delete(
+    '/{series_id}',
+    status_code=204,
+    description="""
             **Scope required:** `series:delete`
-            ''')
+            """,
+)
 async def delete_series(
     series_id: int,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['series:delete']),
+    user: User_authenticated = Security(authenticated, scopes=['series:delete']),
 ) -> None:
     await models.MSeries.delete(series_id)
 
 
-@router.post('/{series_id}/update', status_code=204,
-            description='''
+@router.post(
+    '/{series_id}/update',
+    status_code=204,
+    description="""
             **Scope required:** `series:update`
-            ''')
+            """,
+)
 async def request_update(
     series_id: int,
-    user: schemas.User_authenticated = Security(
-        authenticated, scopes=['series:update']),
+    user: User_authenticated = Security(authenticated, scopes=['series:update']),
 ) -> None:
     await database.redis_queue.enqueue_job('update_series', series_id)

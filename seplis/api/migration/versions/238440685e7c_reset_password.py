@@ -17,7 +17,13 @@ from alembic import op
 def upgrade() -> None:
     op.create_table(
         'reset_password',
-        sa.Column('user_id', sa.Integer, sa.ForeignKey('users.id', onupdate='cascade', ondelete='cascade'), primary_key=True, autoincrement=False),
+        sa.Column(
+            'user_id',
+            sa.Integer,
+            sa.ForeignKey('users.id', onupdate='cascade', ondelete='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('key', sa.String(64), primary_key=True, unique=True),
         sa.Column('expires', sa.DateTime()),
     )

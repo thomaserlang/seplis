@@ -16,5 +16,6 @@ from alembic import op
 def upgrade() -> None:
     op.drop_index('title', table_name='shows')
 
+
 def downgrade():
     raise NotImplementedError()

@@ -22,6 +22,7 @@ from .routes.person.router import router as person_router
 from .routes.play_server.router import router as play_server_router
 from .routes.series.router import router as series_router
 from .routes.user.router import router as user_router
+from .user.routes.auth_code_routes import router as auth_code_router
 
 set_logger(f'api-{config.api.port}.log')
 
@@ -41,6 +42,7 @@ app.include_router(movie_router)
 app.include_router(play_server_router)
 app.include_router(person_router)
 app.include_router(user_router)
+app.include_router(auth_code_router)
 app.include_router(genres.router)
 app.include_router(health.router)
 

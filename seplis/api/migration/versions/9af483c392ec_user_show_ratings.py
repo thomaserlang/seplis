@@ -15,11 +15,24 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.create_table('user_show_ratings',
-        sa.Column('user_id', sa.Integer, sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False),
-        sa.Column('show_id', sa.Integer, sa.ForeignKey('shows.id', ondelete='cascade', onupdate='cascade'), primary_key=True, autoincrement=False), 
+    op.create_table(
+        'user_show_ratings',
+        sa.Column(
+            'user_id',
+            sa.Integer,
+            sa.ForeignKey('users.id', ondelete='cascade', onupdate='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
+        sa.Column(
+            'show_id',
+            sa.Integer,
+            sa.ForeignKey('shows.id', ondelete='cascade', onupdate='cascade'),
+            primary_key=True,
+            autoincrement=False,
+        ),
         sa.Column('rating', sa.Integer),
-        sa.Column('updated_at', sa.DateTime)
+        sa.Column('updated_at', sa.DateTime),
     )
 
 

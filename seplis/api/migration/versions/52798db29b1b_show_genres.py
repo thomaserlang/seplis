@@ -15,13 +15,16 @@ from alembic import op
 
 
 def upgrade() -> None:
-    op.create_table('show_genres',
+    op.create_table(
+        'show_genres',
         sa.Column('show_id', sa.Integer, primary_key=True, autoincrement=False),
         sa.Column('genre', sa.String(100), primary_key=True),
     )
-    op.create_table('genres',         
+    op.create_table(
+        'genres',
         sa.Column('genre', sa.String(100), primary_key=True),
     )
+
 
 def downgrade():
     raise NotImplementedError()

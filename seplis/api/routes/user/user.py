@@ -1,20 +1,21 @@
 import sqlalchemy as sa
 from fastapi import Depends
 
-from ... import models, schemas
+from seplis.api.user import MUser, User, UserBasic, UserCreate, UserPublic, create_user
+
 from ...dependencies import AsyncSession, get_session
 from .router import router
 
 
-@router.post('', response_model=schemas.User, status_code=201)
-async def create_user(user_data: schemas.User_create) -> schemas.User_basic:
-    return await models.MUser.save(user_data)
+@router.post('', response_model=User, status_code=201)
+async def create_user_route(user_data: UserCreate) -> UserBasic:
+    return await create_user(user_data)
 
 
-@router.get('', response_model=list[schemas.User_public])
+@router.get('', response_model=list[UserPublic])
 async def get_users(
     username: str,
     session: AsyncSession = Depends(get_session),
-):
-    users = await session.scalars(sa.select(models.MUser).where(models.MUser.username == username))
-    return [schemas.User_public.model_validate(u) for u in users]
+) -> list[UserPublic]:
+    users = await session.scalars(sa.select(MUser).where(MUser.username == username))
+    return [UserPublic.model_validate(u) for u in users]

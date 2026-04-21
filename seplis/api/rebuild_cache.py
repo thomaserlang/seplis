@@ -5,7 +5,7 @@ from seplis.api import elasticcreate
 from seplis.api.database import database
 from seplis.api.models.movie import rebuild_movies
 from seplis.api.models.series import rebuild_series
-from seplis.api.models.user import rebuild_tokens
+from seplis.api.user.actions.user_actions import rebuild_tokens
 
 
 async def rebuild() -> None:

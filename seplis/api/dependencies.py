@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import exceptions
 from .database import database
-from .models.user import MToken
-from .schemas.user import User_authenticated
+from .user import UserAuthenticated
+from .user.actions.token_actions import get_authenticated_user
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/2/token')
 oauth2_scheme_no_raise = OAuth2PasswordBearer(tokenUrl='/2/token', auto_error=False)
@@ -24,8 +24,8 @@ async def get_session() -> AsyncGenerator[AsyncSession]:
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
-) -> User_authenticated:
-    user = await MToken.get(token)
+) -> UserAuthenticated:
+    user = await get_authenticated_user(token)
     if not user:
         raise exceptions.Not_signed_in_exception()
     return user
@@ -33,14 +33,14 @@ async def get_current_user(
 
 async def get_current_user_no_raise(
     token: Annotated[str, Depends(oauth2_scheme_no_raise)],
-) -> User_authenticated | None:
-    return await MToken.get(token)
+) -> UserAuthenticated | None:
+    return await get_authenticated_user(token)
 
 
 async def authenticated(
     security_scopes: SecurityScopes,
-    user: Annotated[User_authenticated, Depends(get_current_user)],
-) -> User_authenticated:
+    user: Annotated[UserAuthenticated, Depends(get_current_user)],
+) -> UserAuthenticated:
     for scope in security_scopes.scopes:
         if user.scopes and scope in user.scopes:
             break
