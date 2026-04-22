@@ -26,8 +26,6 @@ import {
 import './player-video.css'
 import type { PlayErrorType, VideoPlayerProps } from './player-video.types'
 
-const STARTUP_TIMEOUT = 8_000
-
 export const Player = createPlayer({ features: videoFeatures })
 export type { PlayErrorEvent } from './player-video.types'
 
@@ -173,17 +171,6 @@ export function PlayerVideo({
         playErrorCountsRef.current[type]++
         onPlayError?.({ type, count: playErrorCountsRef.current[type] })
     })
-    useEffect(() => {
-        if (!currentSrc || isLoading || isRefetching || !videoLoading) return
-
-        const timeoutId = window.setTimeout(() => {
-            emitPlayError('stall_timeout')
-        }, STARTUP_TIMEOUT)
-
-        return () => {
-            window.clearTimeout(timeoutId)
-        }
-    }, [currentSrc, emitPlayError, isLoading, isRefetching, videoLoading])
 
     const addTrackEnabled =
         !isSafari && subtitleStream && !isAssSubtitle && subtitleUrl
