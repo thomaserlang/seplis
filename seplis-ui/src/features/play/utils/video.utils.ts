@@ -99,11 +99,14 @@ export function getSupportedVideoContainers(): VideoContainer[] {
     const video = document.createElement('video')
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     const isFirefox = /firefox/i.test(navigator.userAgent)
+
+    const hasWebmByteRangeIssues = isSafari || isFirefox
+
     const containers: { [key: string]: VideoContainer } = {
         'video/mp4': 'mp4',
     }
-    if (!isSafari && !isFirefox) {
-        containers['video/webm'] = 'webm' // TODO: Safari and Firefox give issues with byte ranges
+    if (!hasWebmByteRangeIssues) {
+        containers['video/webm'] = 'webm'
     }
     return Object.entries(containers)
         .filter(([mime]) => video.canPlayType(mime))
