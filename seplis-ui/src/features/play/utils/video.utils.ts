@@ -98,11 +98,12 @@ export async function getSupportedHDRTypes(): Promise<HDRType[]> {
 export function getSupportedVideoContainers(): VideoContainer[] {
     const video = document.createElement('video')
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    const isFirefox = /firefox/i.test(navigator.userAgent)
     const containers: { [key: string]: VideoContainer } = {
         'video/mp4': 'mp4',
     }
-    if (!isSafari) {
-        containers['video/webm'] = 'webm' // TODO: safari gives issues with byte ranges
+    if (!isSafari && !isFirefox) {
+        containers['video/webm'] = 'webm' // TODO: Safari and Firefox give issues with byte ranges
     }
     return Object.entries(containers)
         .filter(([mime]) => video.canPlayType(mime))
