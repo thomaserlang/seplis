@@ -1,4 +1,5 @@
 import {
+    AUDIO_CODEC_CHECK_TYPE,
     AudioCodec,
     HDRType,
     VideoCodec,
@@ -115,18 +116,13 @@ export function getSupportedVideoContainers(): VideoContainer[] {
 
 export function getSupportedAudioCodecs(): AudioCodec[] {
     const video = document.createElement('video')
-    const types: { [key: string]: AudioCodec } = {
-        'audio/aac': 'aac',
-        'audio/mp4; codecs="ec-3"': 'eac3',
-        'audio/mp4; codecs="ac-3"': 'ac3',
-        'audio/mp4; codecs="ac-4"': 'ac4',
-        'audio/mp4; codecs="opus"': 'opus',
-        'audio/mp4; codecs="flac"': 'flac',
-        'audio/mp4; codecs="dtsc"': 'dtsc',
-        'audio/mp4; codecs="dtse"': 'dtse',
-        'audio/mp4; codecs="dtsx"': 'dtsx',
-    }
+
     const codecs: AudioCodec[] = []
-    for (const key in types) if (video.canPlayType(key)) codecs.push(types[key])
+    for (const [codec, mimeType] of Object.entries(AUDIO_CODEC_CHECK_TYPE) as [
+        AudioCodec,
+        string,
+    ][]) {
+        if (video.canPlayType(mimeType)) codecs.push(codec)
+    }
     return [...new Set(codecs)]
 }

@@ -47,6 +47,18 @@ export const AUDIO_CODEC_LABELS: Record<AudioCodec, string> = {
     dtsx: 'DTS:X',
 }
 
+export const AUDIO_CODEC_CHECK_TYPE: { [key in AudioCodec]: string } = {
+    aac: 'audio/mp4; codecs="aac"',
+    eac3: 'audio/mp4; codecs="ec-3"',
+    ac3: 'audio/mp4; codecs="ac-3"',
+    ac4: 'audio/mp4; codecs="ac-4"',
+    opus: 'audio/mp4; codecs="opus"',
+    flac: 'audio/mp4; codecs="flac"',
+    dtsc: 'audio/mp4; codecs="dtsc"',
+    dtse: 'audio/mp4; codecs="dtse"',
+    dtsx: 'audio/mp4; codecs="dtsx"',
+} as const
+
 export type VideoContainer = 'mp4' | 'webm'
 export const VIDEO_CONTAINERS: VideoContainer[] = ['mp4', 'webm']
 

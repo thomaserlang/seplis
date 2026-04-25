@@ -128,30 +128,6 @@ export function pickStartAudio({
     return toLangKey(streams[0])
 }
 
-export function audioCodecLabel(
-    codec: string | null,
-    title?: string,
-): string | null {
-    if (!codec) return null
-    const c = codec.toLowerCase()
-    const t = (title ?? '').toLowerCase()
-    const hasAtmos = t.includes('atmos')
-    const hasDtsX = t.includes('dts:x') || t.includes('dtsx')
-    if (c === 'truehd') return hasAtmos ? 'Atmos' : 'TrueHD'
-    if (c === 'eac3') return hasAtmos ? 'Atmos' : 'DD+'
-    if (c === 'ac3') return 'Dolby Digital'
-    if (c === 'dts') return hasDtsX ? 'DTS:X' : 'DTS'
-    if (c === 'dca') return 'DTS'
-    if (c.includes('dts-hd') || c.includes('dtshd')) return 'DTS-HD MA'
-    if (c === 'aac') return 'AAC'
-    if (c === 'mp3') return 'MP3'
-    if (c === 'flac') return 'FLAC'
-    if (c === 'opus') return 'Opus'
-    if (c === 'vorbis') return 'Vorbis'
-    if (c.startsWith('pcm_')) return 'PCM'
-    return null
-}
-
 export function pickStartSubtitle({
     playSource,
     defaultSubtitle,
