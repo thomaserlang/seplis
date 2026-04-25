@@ -1,6 +1,6 @@
 import { ApiHelperProps, useApiHelper } from '@/utils/api-crud'
 import ky from 'ky'
-import { HDRType } from '../types/media.types'
+import type { HDRType } from '../types/media.types'
 import { PlayRequestSource, PlayServerMedia } from '../types/play-source.types'
 import { recommendResolution } from '../utils/play-resolution.utils'
 

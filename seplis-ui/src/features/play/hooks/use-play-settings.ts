@@ -1,6 +1,6 @@
 import { use, useMemo, useState } from 'react'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
-import {
+import type {
     AudioCodec,
     HDRType,
     StreamFormat,

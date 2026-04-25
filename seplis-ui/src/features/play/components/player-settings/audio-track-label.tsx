@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react'
-import { AUDIO_CODEC_LABELS, AudioCodec } from '../../types/media.types'
+import { AUDIO_CODEC_LABELS } from '../../constants/media.constants'
+import type { AudioCodec } from '../../types/media.types'
 import { trackLabel } from '../../utils/play-track.utils'
 import classes from './player-settings.module.css'
 

@@ -1,5 +1,5 @@
-import {
-    AUDIO_CODEC_CHECK_TYPE,
+import { AUDIO_CODEC_CHECK_TYPE } from '../constants/media.constants'
+import type {
     AudioCodec,
     HDRType,
     VideoCodec,

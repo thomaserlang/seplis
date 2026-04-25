@@ -15,7 +15,7 @@ import {
     VIDEO_CODEC_LABELS,
     VIDEO_CODECS,
     VIDEO_CONTAINERS,
-} from '../../types/media.types'
+} from '../../constants/media.constants'
 import { MainItem } from './main-item'
 import { MultiSelectPanel } from './multi-select-panel'
 import classes from './player-settings.module.css'
