@@ -50,3 +50,5 @@ export const AUDIO_CODEC_CHECK_TYPE = {
 export const VIDEO_CONTAINERS = ['mp4', 'webm'] as const
 
 export const STREAM_FORMATS = ['hls'] as const
+
+export const AUDIO_CHANNELS = [2, 6, 8] as const

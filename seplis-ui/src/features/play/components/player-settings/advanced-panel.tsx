@@ -1,12 +1,12 @@
 import { useState, type ReactNode } from 'react'
-import { ALL_AUDIO_CHANNELS } from '../../constants/play-audio.constants'
 import {
     UsePlaySettings,
     type PlaySettingsOverrides,
 } from '../../hooks/use-play-settings'
-import { channelLabel } from '../../utils/play-audio.utils'
+import { audioChannelLabel } from '../../utils/play-audio.utils'
 
 import {
+    AUDIO_CHANNELS,
     AUDIO_CODEC_LABELS,
     AUDIO_CODECS,
     HDR_FORMAT_LABELS,
@@ -143,11 +143,11 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
         return (
             <SingleSelectPanel
                 title="Max Audio Channels"
-                options={ALL_AUDIO_CHANNELS}
+                options={AUDIO_CHANNELS}
                 value={settings.maxAudioChannels}
                 onSelect={(v) => playSettings.update({ maxAudioChannels: v })}
                 back={toMain}
-                renderOption={channelLabel}
+                renderOption={audioChannelLabel}
             />
         )
     }
@@ -223,7 +223,7 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
                 />
                 <MainItem
                     label="Max Audio Channels"
-                    value={channelLabel(settings.maxAudioChannels)}
+                    value={audioChannelLabel(settings.maxAudioChannels)}
                     onClick={() => setSubPanel('channels')}
                 />
                 <MainItem

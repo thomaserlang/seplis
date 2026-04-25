@@ -1,4 +1,5 @@
 import type {
+    AUDIO_CHANNELS,
     AUDIO_CODECS,
     HDR_FORMATS,
     STREAM_FORMATS,
@@ -15,3 +16,5 @@ export type AudioCodec = (typeof AUDIO_CODECS)[number]
 export type VideoContainer = (typeof VIDEO_CONTAINERS)[number]
 
 export type StreamFormat = (typeof STREAM_FORMATS)[number]
+
+export type AudioChannel = (typeof AUDIO_CHANNELS)[number]
