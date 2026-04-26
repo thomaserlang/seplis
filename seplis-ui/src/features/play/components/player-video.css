@@ -135,10 +135,9 @@
       oklch(0 0 0 / 0.3) 25%,
       oklch(0 0 0 / 0) 50%
     );
-  backdrop-filter: blur(0) saturate(1);
   opacity: 0;
   pointer-events: none;
-  transition-property: opacity, backdrop-filter;
+  transition-property: opacity;
   transition-duration: var(--media-controls-transition-duration);
   transition-timing-function: ease-out;
 }
@@ -156,6 +155,7 @@
 
 .media-default-skin .media-error[data-open] ~ .media-overlay {
   backdrop-filter: blur(16px) saturate(1.5);
+  transition-property: opacity, backdrop-filter;
 }
 
 /* ==========================================================================
