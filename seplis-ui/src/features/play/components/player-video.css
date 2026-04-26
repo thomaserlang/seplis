@@ -284,10 +284,6 @@
   }
 }
 
-.media-default-skin .media-error[data-open] ~ .media-controls * {
-  visibility: hidden;
-}
-
 /* ==========================================================================
    Controls
    ========================================================================== */
@@ -1044,6 +1040,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
 .media-default-skin--video .media-error__dialog {
@@ -1061,6 +1058,7 @@
   transition-timing-function: var(
     --media-error-dialog-transition-timing-function
   );
+  pointer-events: auto;
 }
 
 .media-default-skin--video
@@ -1177,13 +1175,21 @@
   }
 }
 
-.media-default-skin--video .media-error[data-open] ~ .media-controls {
-  display: none;
-}
-
 /* Hide cursor when controls are hidden */
 .media-default-skin--video:has(.media-controls:not([data-visible])) {
   cursor: none;
+}
+
+.media-default-skin--video:has(.media-error[data-open]) {
+  cursor: auto;
+}
+
+.media-default-skin--video:has(.media-error[data-open]) .media-controls {
+  z-index: 30;
+  opacity: 1;
+  scale: 1;
+  filter: none;
+  pointer-events: auto;
 }
 
 /* ==========================================================================
