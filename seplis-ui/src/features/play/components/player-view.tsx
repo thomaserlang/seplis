@@ -12,7 +12,7 @@ import {
 import { usePlaySettings } from '../hooks/use-play-settings'
 import { PlayerProps } from '../types/player.types'
 import {
-    pickStartAudio as pickStartAudioKey,
+    pickStartAudio,
     pickStartSource,
     pickStartSubtitle,
     toLangKey,
@@ -41,12 +41,21 @@ export function PlayerView({
     const [source, setSource] = useState<PlayRequestSource>(() =>
         pickStartSource(playRequestsSources, playSettings.settings.maxBitrate),
     )
-    const [audio, setAudioLang] = useState<PlaySourceStream | undefined>(
-        pickStartAudioKey({
+    const [audio, setAudio] = useState<PlaySourceStream | undefined>(
+        pickStartAudio({
             playSource: source.source,
             defaultAudioKey:
                 defaultAudioKey ?? playSettings.settings.defaultAudioKey,
             preferredAudioLangs: PREFERRED_AUDIO_LANGS,
+        }),
+    )
+    const [defaultSubtitle] = useState<PlaySourceStream | undefined>(
+        pickStartSubtitle({
+            playSource: source.source,
+            defaultSubtitleKey:
+                defaultSubtitleKey ?? playSettings.settings.defaultSubtitleKey,
+            preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
+            audio,
         }),
     )
     const [forceTranscode, setForceTranscode] = useState(false)
@@ -94,7 +103,7 @@ export function PlayerView({
                 defaultStartTime={defaultStartTime}
                 onSourceChange={setSource}
                 onAudioChange={(audio) => {
-                    setAudioLang(audio)
+                    setAudio(audio)
                     playSettings.update({
                         defaultAudioKey: toLangKey(audio),
                     })
@@ -104,14 +113,7 @@ export function PlayerView({
                 onForceTranscodeChange={setForceTranscode}
                 onVideoError={handleVideoError}
                 onTimeUpdate={handleTimeUpdate}
-                defaultSubtitle={pickStartSubtitle({
-                    playSource: source.source,
-                    defaultSubtitleKey:
-                        defaultSubtitleKey ??
-                        playSettings.settings.defaultSubtitleKey,
-                    preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
-                    audio,
-                })}
+                defaultSubtitle={defaultSubtitle}
                 onSubtitleChange={(subtitle) => {
                     onSubtitleChange?.(subtitle)
                     playSettings.update({
