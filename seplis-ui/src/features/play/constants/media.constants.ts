@@ -36,7 +36,7 @@ export const AUDIO_CODEC_LABELS = {
 } satisfies Record<(typeof AUDIO_CODECS)[number], string>
 
 export const AUDIO_CODEC_CHECK_TYPE = {
-    aac: 'audio/mp4; codecs="aac"',
+    aac: 'audio/aac',
     eac3: 'audio/mp4; codecs="ec-3"',
     ac3: 'audio/mp4; codecs="ac-3"',
     ac4: 'audio/mp4; codecs="ac-4"',

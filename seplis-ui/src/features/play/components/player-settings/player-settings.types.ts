@@ -1,8 +1,12 @@
-import { UsePlaySettings } from '../../hooks/use-play-settings'
-import {
+import type { UsePlaySettings } from '../../hooks/use-play-settings'
+import type {
     PlayRequestSource,
     PlayRequestSources,
 } from '../../types/play-source.types'
+import type {
+    PlaybackTransport,
+    TranscodeDecision,
+} from '../../types/transcode-decision.types'
 
 export interface PlayerSettingsProps {
     playRequestSource: PlayRequestSource
@@ -21,4 +25,6 @@ export interface PlayerSettingsProps {
     preferredSubtitleLangs?: string[]
     onClose?: () => void
     playSettings: UsePlaySettings
+    transcodeDecision?: TranscodeDecision
+    playbackTransport?: PlaybackTransport
 }

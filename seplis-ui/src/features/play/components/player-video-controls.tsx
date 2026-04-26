@@ -41,6 +41,8 @@ export function PlayerVideoControls({
     preferredAudioLangs,
     preferredSubtitleLangs,
     playSettings,
+    transcodeDecision,
+    playbackTransport,
 }: PlayerVideoControlsProps) {
     return (
         <>
@@ -70,6 +72,8 @@ export function PlayerVideoControls({
                         preferredAudioLangs={preferredAudioLangs}
                         preferredSubtitleLangs={preferredSubtitleLangs}
                         playSettings={playSettings}
+                        transcodeDecision={transcodeDecision}
+                        playbackTransport={playbackTransport}
                     />
                 </Tooltip.Provider>
             </Controls.Root>

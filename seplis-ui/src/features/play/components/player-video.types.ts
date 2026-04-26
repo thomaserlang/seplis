@@ -4,6 +4,10 @@ import type {
     PlayRequestSource,
     PlayRequestSources,
 } from '../types/play-source.types'
+import type {
+    PlaybackTransport,
+    TranscodeDecision,
+} from '../types/transcode-decision.types'
 
 export type PlayErrorType = 'stall_timeout'
 
@@ -85,6 +89,8 @@ export interface PlayerVideoControlsProps {
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
     playSettings: UsePlaySettings
+    transcodeDecision?: TranscodeDecision
+    playbackTransport?: PlaybackTransport
 }
 
 export interface PlayerVideoStatusProps {

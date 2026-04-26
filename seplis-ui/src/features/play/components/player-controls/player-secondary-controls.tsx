@@ -33,6 +33,8 @@ type SecondaryControlsProps = Pick<
     | 'preferredAudioLangs'
     | 'preferredSubtitleLangs'
     | 'playSettings'
+    | 'transcodeDecision'
+    | 'playbackTransport'
 >
 
 export function PlayerSecondaryControls({
@@ -51,6 +53,8 @@ export function PlayerSecondaryControls({
     preferredAudioLangs,
     preferredSubtitleLangs,
     playSettings,
+    transcodeDecision,
+    playbackTransport,
 }: SecondaryControlsProps) {
     return (
         <div className="media-button-group" style={{ marginLeft: 'auto' }}>
@@ -86,6 +90,8 @@ export function PlayerSecondaryControls({
                 preferredAudioLangs={preferredAudioLangs}
                 preferredSubtitleLangs={preferredSubtitleLangs}
                 playSettings={playSettings}
+                transcodeDecision={transcodeDecision}
+                playbackTransport={playbackTransport}
             />
 
             <AirPlayButton />

@@ -1,4 +1,5 @@
 import { PlayRequest } from './play-request.types'
+import { TranscodeDecision } from './transcode-decision.types'
 
 export interface PlaySourceStream {
     title: string
@@ -49,18 +50,4 @@ export interface PlayServerMedia {
     keep_alive_url: string
     close_session_url: string
     transcode_decision: TranscodeDecision
-}
-
-export interface TranscodeDecisionCheck {
-    suppoprted: boolean
-    reasons: string[]
-}
-
-export interface TranscodeDecision {
-    video_copy: TranscodeDecisionCheck
-    audio_copy: TranscodeDecisionCheck
-    direct_play: TranscodeDecisionCheck
-    video_transcode_required: boolean
-    audio_transcode_required: boolean
-    transcode_required: boolean
 }

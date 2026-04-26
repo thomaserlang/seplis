@@ -99,6 +99,7 @@ export function usePlaySettings(
         transcodeAudioCodec:
             overrides.transcodeAudioCodec ??
             defaults?.transcodeAudioCodec ??
+            audioCodecs[0] ??
             'aac',
         supportedVideoContainers:
             overrides.supportedVideoContainers ?? defaultVideoContainers,

@@ -13,6 +13,7 @@ import { PlayerSettingsProps } from './player-settings.types'
 import { SourcePanel } from './source-panel'
 import { SubtitleSyncPanel } from './subtitle-sync-panel'
 import { SubtitlesPanel } from './subtitles-panel'
+import { TranscodeDecisionPanel } from './transcode-decision-panel'
 
 import { parseLangKey } from '../../utils/play-source.utils'
 import { trackLabel } from '../../utils/play-track.utils'
@@ -37,6 +38,8 @@ export function PlayerSettings({
     preferredSubtitleLangs,
     onClose,
     playSettings,
+    transcodeDecision,
+    playbackTransport,
 }: Props): ReactNode {
     const [panel, setPanel] = useState<SettingsPanel>('main')
     const { source: currentSource, request: currentRequest } = playRequestSource
@@ -92,6 +95,8 @@ export function PlayerSettings({
                     canAdjustSubtitleOffset={canAdjustSubtitleOffset}
                     forceTranscode={forceTranscode}
                     onForceTranscodeChange={onForceTranscodeChange}
+                    transcodeDecision={transcodeDecision}
+                    playbackTransport={playbackTransport}
                     setPanel={setPanel}
                     hdrEnabled={playSettings.settings.hdrEnabled}
                     onHdrChange={(value) =>
@@ -149,6 +154,13 @@ export function PlayerSettings({
                 <SubtitleSyncPanel
                     subtitleOffset={subtitleOffset}
                     onSubtitleOffsetChange={onSubtitleOffsetChange}
+                    back={back}
+                />
+            )}
+            {panel === 'transcode-decision' && transcodeDecision && (
+                <TranscodeDecisionPanel
+                    transcodeDecision={transcodeDecision}
+                    playbackTransport={playbackTransport}
                     back={back}
                 />
             )}

@@ -96,6 +96,11 @@ export function PlayerVideo({
             ? data.direct_play_url
             : data.hls_url
         : undefined
+    const playbackTransport = data
+        ? canDirectPlay && !isSafari
+            ? 'direct_play'
+            : 'hls'
+        : undefined
     const videoSrc = needsHlsJs
         ? undefined
         : currentSrc
@@ -240,6 +245,8 @@ export function PlayerVideo({
                 preferredAudioLangs={preferredAudioLangs}
                 preferredSubtitleLangs={preferredSubtitleLangs}
                 playSettings={playSettings}
+                transcodeDecision={data?.transcode_decision}
+                playbackTransport={playbackTransport}
             />
 
             <PlayerVideoStatus

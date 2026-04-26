@@ -1,12 +1,17 @@
 import { type ReactNode } from 'react'
-import {
+import type {
     PlayRequestSource,
     PlayRequestSources,
 } from '../../types/play-source.types'
+import type {
+    PlaybackTransport,
+    TranscodeDecision,
+} from '../../types/transcode-decision.types'
 import { playSourceStr } from '../../utils/play-source.utils'
 import { MainItem } from './main-item'
 import { SettingsBody } from './settings-body'
 import { ToggleItem } from './toggle-item'
+import { transcodeDecisionLabel } from './transcode-decision-panel'
 
 export type SettingsPanel =
     | 'main'
@@ -15,6 +20,7 @@ export type SettingsPanel =
     | 'audio'
     | 'subtitles'
     | 'subtitle-sync'
+    | 'transcode-decision'
     | 'advanced'
 
 interface Props {
@@ -27,6 +33,8 @@ interface Props {
     canAdjustSubtitleOffset: boolean
     forceTranscode: boolean
     onForceTranscodeChange: (value: boolean) => void
+    transcodeDecision?: TranscodeDecision
+    playbackTransport?: PlaybackTransport
     hdrEnabled: boolean
     onHdrChange: (value: boolean) => void
     setPanel: (panel: SettingsPanel) => void
@@ -42,6 +50,8 @@ export function MainPanel({
     canAdjustSubtitleOffset,
     forceTranscode,
     onForceTranscodeChange,
+    transcodeDecision,
+    playbackTransport,
     setPanel,
     hdrEnabled,
     onHdrChange,
@@ -60,6 +70,15 @@ export function MainPanel({
                 label="Force Transcode"
                 value={forceTranscode}
                 onToggle={() => onForceTranscodeChange(!forceTranscode)}
+            />
+            <MainItem
+                label="Playback Decision"
+                value={transcodeDecisionLabel(
+                    transcodeDecision,
+                    playbackTransport,
+                )}
+                onClick={() => setPanel('transcode-decision')}
+                disabled={!transcodeDecision}
             />
             <MainItem
                 label="Source"
