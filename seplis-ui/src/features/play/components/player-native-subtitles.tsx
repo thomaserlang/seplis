@@ -1,15 +1,15 @@
 import type { Video as VideoMedia } from '@videojs/core'
 import { useMedia } from '@videojs/react'
 import { useEffect, type ReactNode } from 'react'
+import { PlaySourceStream } from '../types/play-source.types'
 import { languageMatch } from '../utils/language-match'
-import { parseLangKey } from '../utils/play-source.utils'
 
 interface PlayerNativeSubtitlesProps {
-    subtitleKey: string | undefined
+    subtitle: PlaySourceStream | undefined
     isSafari: boolean
 }
 export function PlayerNativeSubtitles({
-    subtitleKey,
+    subtitle,
     isSafari,
 }: PlayerNativeSubtitlesProps): ReactNode {
     const media = useMedia() as VideoMedia | null
@@ -20,14 +20,14 @@ export function PlayerNativeSubtitles({
         const applyNativeSubtitleSelection = () => {
             const subtitleTracks = getSubtitleTracks(textTracks)
 
-            if (!subtitleKey) {
+            if (!subtitle) {
                 subtitleTracks.forEach(({ track }) => {
                     track.mode = 'disabled'
                 })
                 return
             }
 
-            const resolvedTrack = findSubtitleTrack(subtitleTracks, subtitleKey)
+            const resolvedTrack = findSubtitleTrack(subtitleTracks, subtitle)
 
             subtitleTracks.forEach(({ track, index: trackIndex }) => {
                 track.mode =
@@ -38,7 +38,7 @@ export function PlayerNativeSubtitles({
         }
 
         applyNativeSubtitleSelection()
-    }, [subtitleKey, isSafari, media])
+    }, [subtitle, isSafari, media])
 
     return null
 }
@@ -75,17 +75,15 @@ function getSubtitleTracks(
 
 function findSubtitleTrack(
     subtitleTracks: IndexedTextTrack[],
-    subtitleKey: string,
+    subtitle: PlaySourceStream,
 ): IndexedTextTrack | undefined {
-    const { lang, index } = parseLangKey(subtitleKey)
-    const indexedTrack =
-        index !== null
-            ? subtitleTracks.find((t) => t.index === index)
-            : undefined
+    const indexedTrack = subtitleTracks.find(
+        (t) => t.index === subtitle.group_index,
+    )
 
     if (
         indexedTrack?.track.language &&
-        languageMatch(indexedTrack.track.language, lang)
+        languageMatch(indexedTrack.track.language, subtitle.language)
     ) {
         return indexedTrack
     }
@@ -93,12 +91,13 @@ function findSubtitleTrack(
     return subtitleTracks
         .filter(
             ({ track }) =>
-                track.language && languageMatch(track.language, lang),
+                track.language &&
+                languageMatch(track.language, subtitle.language),
         )
         .toSorted((a, b) => {
-            if (index === null) return a.index - b.index
             return (
-                Math.abs(a.index - index) - Math.abs(b.index - index) ||
+                Math.abs(a.index - (subtitle.group_index || 0)) -
+                    Math.abs(b.index - (subtitle.group_index || 0)) ||
                 a.index - b.index
             )
         })[0]

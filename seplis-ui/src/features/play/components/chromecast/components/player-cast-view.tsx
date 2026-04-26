@@ -9,6 +9,7 @@ import { usePlaySettings } from '@/features/play/hooks/use-play-settings'
 import {
     PlayRequestSource,
     PlayRequestSources,
+    PlaySourceStream,
 } from '@/features/play/types/play-source.types'
 import { PlayerProps } from '@/features/play/types/player.types'
 import {
@@ -43,8 +44,8 @@ export function PlayerCastView({
     secondaryTitle,
     onClose,
     onPlayNext,
-    defaultAudio,
-    defaultSubtitle,
+    defaultAudioKey,
+    defaultSubtitleKey,
     defaultStartTime,
     onAudioChange,
     onSubtitleChange,
@@ -80,8 +81,8 @@ export function PlayerCastView({
                     secondaryTitle={secondaryTitle}
                     onClose={onClose}
                     onPlayNext={onPlayNext}
-                    defaultAudio={defaultAudio}
-                    defaultSubtitle={defaultSubtitle}
+                    defaultAudioKey={defaultAudioKey}
+                    defaultSubtitleKey={defaultSubtitleKey}
                     defaultStartTime={defaultStartTime}
                     onAudioChange={onAudioChange}
                     onSubtitleChange={onSubtitleChange}
@@ -107,8 +108,8 @@ function PlayerCastViewReady({
     secondaryTitle,
     onClose,
     onPlayNext,
-    defaultAudio,
-    defaultSubtitle,
+    defaultAudioKey,
+    defaultSubtitleKey,
     defaultStartTime,
     onAudioChange,
     onSubtitleChange,
@@ -132,20 +133,18 @@ function PlayerCastViewReady({
     const [source, setSource] = useState<PlayRequestSource>(() =>
         pickStartSource(playRequestsSources, playSettings.settings.maxBitrate),
     )
-    const [audio, setAudioLang] = useState<string | undefined>(
+    const [audio, setAudioLang] = useState<PlaySourceStream | undefined>(
         pickStartAudio({
             playSource: source.source,
-            defaultAudio,
+            defaultAudioKey: defaultAudioKey,
             preferredAudioLangs: PREFERRED_AUDIO_LANGS,
         }),
     )
     const [forceTranscode, setForceTranscode] = useState(false)
-    const [activeSubtitleKey, setActiveSubtitleKey] = useState<
-        string | undefined
-    >(() =>
+    const [subtitle, setSubtitle] = useState<PlaySourceStream | undefined>(() =>
         pickStartSubtitle({
             playSource: source.source,
-            defaultSubtitle,
+            defaultSubtitleKey: defaultSubtitleKey,
             preferredSubtitleLangs: PREFERRED_SUBTITLE_LANGS,
             audio,
         }),
@@ -159,7 +158,7 @@ function PlayerCastViewReady({
 
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
-        audio,
+        audio: toLangKey(audio),
         forceTranscode,
         ...playSettings.settings,
         options: {
@@ -231,9 +230,9 @@ function PlayerCastViewReady({
                 ? castPlayer.currentTime
                 : startTimeRef.current
 
-        if (activeSubtitleKey) {
+        if (subtitle) {
             const idx = source.source.subtitles.findIndex(
-                (s) => `${s.language}:${s.index}` === activeSubtitleKey,
+                (s) => s.group_index === subtitle.group_index,
             )
             if (idx >= 0) request.activeTrackIds = [idx + 1]
         }
@@ -260,7 +259,7 @@ function PlayerCastViewReady({
         secondaryTitle,
         castPlayer?.isMediaLoaded,
         castPlayer?.currentTime,
-        activeSubtitleKey,
+        subtitle,
         castInfo?.savePositionUrl,
         castInfo?.watchedUrl,
         source.source.duration,
@@ -272,9 +271,9 @@ function PlayerCastViewReady({
         if (!mediaSession) return
 
         const activeTrackIds = (() => {
-            if (!activeSubtitleKey) return []
+            if (!subtitle) return []
             const idx = source.source.subtitles.findIndex(
-                (s) => toLangKey(s) === activeSubtitleKey,
+                (s) => s.group_index === subtitle.group_index,
             )
             return idx >= 0 ? [idx + 1] : []
         })()
@@ -285,7 +284,7 @@ function PlayerCastViewReady({
             () => {},
             () => {},
         )
-    }, [activeSubtitleKey, castSession])
+    }, [subtitle, castSession])
 
     return (
         <>
@@ -304,7 +303,7 @@ function PlayerCastViewReady({
                 playRequestsSources={playRequestsSources}
                 audio={audio}
                 forceTranscode={forceTranscode}
-                activeSubtitleKey={activeSubtitleKey}
+                subtitle={subtitle}
                 onSourceChange={setSource}
                 onAudioChange={(a) => {
                     setAudioLang(a)
@@ -312,7 +311,7 @@ function PlayerCastViewReady({
                 }}
                 onForceTranscodeChange={setForceTranscode}
                 onSubtitleChange={(s) => {
-                    setActiveSubtitleKey(s)
+                    setSubtitle(s)
                     onSubtitleChange?.(s)
                 }}
                 preferredAudioLangs={PREFERRED_AUDIO_LANGS}

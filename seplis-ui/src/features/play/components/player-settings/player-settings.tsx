@@ -5,8 +5,8 @@ import {
 } from '../../constants/play-bitrate.constants'
 import { bitratePretty } from '../../utils/play-bitrate.utils'
 import { AdvancedPanel } from './advanced-panel'
+import { AudioLabel } from './audio-label'
 import { AudioPanel } from './audio-panel'
-import { AudioTrackLabel } from './audio-track-label'
 import { BitratePanel } from './bitrate-panel'
 import { MainPanel, SettingsPanel } from './main-panel'
 import { PlayerSettingsProps } from './player-settings.types'
@@ -15,7 +15,6 @@ import { SubtitleSyncPanel } from './subtitle-sync-panel'
 import { SubtitlesPanel } from './subtitles-panel'
 import { TranscodeDecisionPanel } from './transcode-decision-panel'
 
-import { parseLangKey } from '../../utils/play-source.utils'
 import { trackLabel } from '../../utils/play-track.utils'
 import classes from './player-settings.module.css'
 
@@ -24,15 +23,15 @@ interface Props extends PlayerSettingsProps {}
 export function PlayerSettings({
     playRequestSource,
     playRequestsSources,
-    audioKey,
+    audio,
     forceTranscode,
-    activeSubtitleKey,
+    subtitle,
     subtitleOffset,
     canAdjustSubtitleOffset,
     onSourceChange,
-    onAudioLangChange,
+    onAudioChange,
     onForceTranscodeChange,
-    onSubtitleKeyChange,
+    onSubtitleChange,
     onSubtitleOffsetChange,
     preferredAudioLangs,
     preferredSubtitleLangs,
@@ -54,28 +53,16 @@ export function PlayerSettings({
             : bitratePretty(playSettings.settings.maxBitrate)
 
     const currentAudioLabel = (() => {
-        if (!audioKey) return 'Default'
-        const [lang, idxStr] = audioKey.split(':')
-        const index = parseInt(idxStr, 10)
-        const track =
-            currentSource.audio.find(
-                (a) => a.language === lang && a.index === index,
-            ) ?? currentSource.audio.find((a) => a.language === lang)
-        if (!track) return audioKey
-        return <AudioTrackLabel track={track} />
+        if (!audio) return 'Default'
+        return <AudioLabel source={audio} />
     })()
 
     const subtitleLabel = (() => {
-        if (!activeSubtitleKey) return 'Off'
-        const { lang, index } = parseLangKey(activeSubtitleKey)
-        const sub = currentSource.subtitles.find(
-            (s) => s.language === lang && s.group_index === index,
-        )
-        if (!sub) return lang
+        if (!subtitle) return 'Off'
         return (
             <>
-                {trackLabel(sub.title, sub.language)}
-                {sub.forced && ' (Forced)'}
+                {trackLabel(subtitle.title, subtitle.language)}
+                {subtitle.forced && ' (Forced)'}
             </>
         )
     })()
@@ -133,9 +120,9 @@ export function PlayerSettings({
             {panel === 'audio' && (
                 <AudioPanel
                     currentSource={currentSource}
-                    audioLang={audioKey}
+                    audio={audio}
                     preferredAudioLangs={preferredAudioLangs}
-                    onAudioLangChange={onAudioLangChange}
+                    onAudioChange={onAudioChange}
                     back={back}
                     onClose={onClose}
                 />
@@ -143,9 +130,9 @@ export function PlayerSettings({
             {panel === 'subtitles' && (
                 <SubtitlesPanel
                     currentSource={currentSource}
-                    activeSubtitleKey={activeSubtitleKey}
+                    subtitle={subtitle}
                     preferredSubtitleLangs={preferredSubtitleLangs}
-                    onSubtitleChange={onSubtitleKeyChange}
+                    onSubtitleChange={onSubtitleChange}
                     back={back}
                     onClose={onClose}
                 />

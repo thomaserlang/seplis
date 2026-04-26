@@ -30,7 +30,7 @@ export function PlayerVideoControls({
     playRequestsSources,
     audio,
     forceTranscode,
-    activeSubtitleKey,
+    subtitle,
     subtitleOffset,
     canAdjustSubtitleOffset,
     onSourceChange,
@@ -61,7 +61,7 @@ export function PlayerVideoControls({
                         playRequestsSources={playRequestsSources}
                         audio={audio}
                         forceTranscode={forceTranscode}
-                        activeSubtitleKey={activeSubtitleKey}
+                        subtitle={subtitle}
                         subtitleOffset={subtitleOffset}
                         canAdjustSubtitleOffset={canAdjustSubtitleOffset}
                         onSourceChange={onSourceChange}

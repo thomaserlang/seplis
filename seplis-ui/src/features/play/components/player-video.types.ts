@@ -3,6 +3,7 @@ import type { UsePlaySettings } from '../hooks/use-play-settings'
 import type {
     PlayRequestSource,
     PlayRequestSources,
+    PlaySourceStream,
 } from '../types/play-source.types'
 import type {
     PlaybackTransport,
@@ -23,15 +24,15 @@ export interface VideoPlayerProps {
     onClose?: () => void
     onPlayNext?: () => void
     playRequestsSources: PlayRequestSources[]
-    audioKey: string | undefined
+    audio: PlaySourceStream | undefined
     forceTranscode: boolean
     onSourceChange: (source: PlayRequestSource) => void
-    onAudioKeyChange: (audio: string | undefined) => void
+    onAudioChange: (source: PlaySourceStream | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
-    onSubtitleKeyChange?: (subtitle: string | undefined) => void
+    onSubtitleChange?: (source: PlaySourceStream | undefined) => void
     onPlayError?: (event: PlayErrorEvent) => void
     timeSliderStyle?: CSSProperties
-    defaultSubtitleKey?: string
+    defaultSubtitle?: PlaySourceStream
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
     defaultStartTime?: number
@@ -76,15 +77,15 @@ export interface PlayerVideoControlsProps {
     timeSliderStyle?: CSSProperties
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
-    audio: string | undefined
+    audio?: PlaySourceStream
     forceTranscode: boolean
-    activeSubtitleKey?: string
+    subtitle?: PlaySourceStream
     subtitleOffset: number
     canAdjustSubtitleOffset: boolean
     onSourceChange: (source: PlayRequestSource) => void
-    onAudioChange: (audio: string | undefined) => void
+    onAudioChange: (source: PlaySourceStream | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
-    onSubtitleChange: (subtitle: string | undefined) => void
+    onSubtitleChange: (source: PlaySourceStream | undefined) => void
     onSubtitleOffsetChange: (value: number) => void
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]

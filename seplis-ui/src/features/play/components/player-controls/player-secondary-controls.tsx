@@ -22,7 +22,7 @@ type SecondaryControlsProps = Pick<
     | 'playRequestsSources'
     | 'audio'
     | 'forceTranscode'
-    | 'activeSubtitleKey'
+    | 'subtitle'
     | 'subtitleOffset'
     | 'canAdjustSubtitleOffset'
     | 'onSourceChange'
@@ -42,7 +42,7 @@ export function PlayerSecondaryControls({
     playRequestsSources,
     audio,
     forceTranscode,
-    activeSubtitleKey,
+    subtitle,
     subtitleOffset,
     canAdjustSubtitleOffset,
     onSourceChange,
@@ -77,15 +77,15 @@ export function PlayerSecondaryControls({
             <SettingsPopover
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
-                audioKey={audio}
+                audio={audio}
                 forceTranscode={forceTranscode}
-                activeSubtitleKey={activeSubtitleKey}
+                subtitle={subtitle}
                 subtitleOffset={subtitleOffset}
                 canAdjustSubtitleOffset={canAdjustSubtitleOffset}
                 onSourceChange={onSourceChange}
-                onAudioLangChange={onAudioChange}
+                onAudioChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
-                onSubtitleKeyChange={onSubtitleChange}
+                onSubtitleChange={onSubtitleChange}
                 onSubtitleOffsetChange={onSubtitleOffsetChange}
                 preferredAudioLangs={preferredAudioLangs}
                 preferredSubtitleLangs={preferredSubtitleLangs}

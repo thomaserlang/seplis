@@ -2,6 +2,7 @@ import type { UsePlaySettings } from '../../hooks/use-play-settings'
 import type {
     PlayRequestSource,
     PlayRequestSources,
+    PlaySourceStream,
 } from '../../types/play-source.types'
 import type {
     PlaybackTransport,
@@ -11,15 +12,15 @@ import type {
 export interface PlayerSettingsProps {
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
-    audioKey: string | undefined
+    audio: PlaySourceStream | undefined
     forceTranscode: boolean
-    activeSubtitleKey: string | undefined
+    subtitle: PlaySourceStream | undefined
     subtitleOffset: number
     canAdjustSubtitleOffset: boolean
     onSourceChange: (source: PlayRequestSource) => void
-    onAudioLangChange: (lang: string | undefined) => void
+    onAudioChange: (source: PlaySourceStream | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
-    onSubtitleKeyChange: (key: string | undefined) => void
+    onSubtitleChange: (source: PlaySourceStream | undefined) => void
     onSubtitleOffsetChange: (offset: number) => void
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]

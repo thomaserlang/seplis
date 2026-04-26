@@ -1,3 +1,5 @@
+import { PlaySourceStream } from './play-source.types'
+
 export interface CastInfo {
     savePositionUrl: string
     watchedUrl: string
@@ -10,10 +12,10 @@ export interface PlayerProps {
     onPlayNext?: () => void
     onSavePosition?: (position: number) => void
     onFinished?: () => void
-    defaultAudio?: string
-    onAudioChange?: (audio: string | undefined) => void
-    defaultSubtitle?: string
-    onSubtitleChange?: (subtitle: string | undefined) => void
+    defaultAudioKey?: string
+    onAudioChange?: (audio: PlaySourceStream | undefined) => void
+    defaultSubtitleKey?: string
+    onSubtitleChange?: (subtitle: PlaySourceStream | undefined) => void
     defaultStartTime?: number
     castInfo?: CastInfo
 }

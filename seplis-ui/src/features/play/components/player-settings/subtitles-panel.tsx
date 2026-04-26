@@ -1,5 +1,8 @@
 import { type ReactNode } from 'react'
-import { PlayRequestSource } from '../../types/play-source.types'
+import {
+    PlayRequestSource,
+    PlaySourceStream,
+} from '../../types/play-source.types'
 import { languageMatch } from '../../utils/language-match'
 import { toLangKey } from '../../utils/play-source.utils'
 import { trackLabel } from '../../utils/play-track.utils'
@@ -10,23 +13,23 @@ import { SubMenuHeader } from './sub-menu-header'
 
 interface Props {
     currentSource: PlayRequestSource['source']
-    activeSubtitleKey: string | undefined
+    subtitle: PlaySourceStream | undefined
     preferredSubtitleLangs: string[] | undefined
-    onSubtitleChange: (key: string | undefined) => void
+    onSubtitleChange: (source: PlaySourceStream | undefined) => void
     back: () => void
     onClose?: () => void
 }
 
 export function SubtitlesPanel({
     currentSource,
-    activeSubtitleKey,
+    subtitle,
     preferredSubtitleLangs,
     onSubtitleChange,
     back,
     onClose,
 }: Props): ReactNode {
-    const setSubtitle = (key: string | undefined) => {
-        onSubtitleChange(key)
+    const setSubtitle = (source: PlaySourceStream | undefined) => {
+        onSubtitleChange(source)
         back()
     }
     const preferred = currentSource.subtitles.filter((t) =>
@@ -46,40 +49,44 @@ export function SubtitlesPanel({
             <SubMenuHeader title="Subtitles" onBack={back} />
             <SettingsBody>
                 <OptionItem
-                    active={!activeSubtitleKey}
+                    active={!subtitle}
                     onClose={onClose}
                     onClick={() => setSubtitle(undefined)}
                 >
                     Off
                 </OptionItem>
-                {preferred.map((track) => {
-                    const key = toLangKey(track)
+                {preferred.map((source) => {
+                    const key = toLangKey(source)
                     return (
                         <OptionItem
                             key={key}
-                            active={activeSubtitleKey === key}
+                            active={
+                                subtitle?.group_index === source.group_index
+                            }
                             onClose={onClose}
-                            onClick={() => setSubtitle(key)}
+                            onClick={() => setSubtitle(source)}
                         >
-                            {trackLabel(track.title, track.language)}
-                            {track.forced && ' (Forced)'}
+                            {trackLabel(source.title, source.language)}
+                            {source.forced && ' (Forced)'}
                         </OptionItem>
                     )
                 })}
                 {preferred.length > 0 && other.length > 0 && (
                     <SettingsGroupDivider />
                 )}
-                {other.map((track) => {
-                    const key = toLangKey(track)
+                {other.map((source) => {
+                    const key = toLangKey(source)
                     return (
                         <OptionItem
                             key={key}
-                            active={activeSubtitleKey === key}
+                            active={
+                                subtitle?.group_index === source.group_index
+                            }
                             onClose={onClose}
-                            onClick={() => setSubtitle(key)}
+                            onClick={() => setSubtitle(source)}
                         >
-                            {trackLabel(track.title, track.language)}
-                            {track.forced && ' (Forced)'}
+                            {trackLabel(source.title, source.language)}
+                            {source.forced && ' (Forced)'}
                         </OptionItem>
                     )
                 })}

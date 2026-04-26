@@ -1,7 +1,10 @@
 import { type ReactNode } from 'react'
-import { PlayRequestSource } from '../../types/play-source.types'
+import {
+    PlayRequestSource,
+    PlaySourceStream,
+} from '../../types/play-source.types'
 import { languageMatch } from '../../utils/language-match'
-import { AudioTrackLabel } from './audio-track-label'
+import { AudioLabel } from './audio-label'
 import { OptionItem } from './option-item'
 import { SettingsBody } from './settings-body'
 import { SettingsGroupDivider } from './settings-group-divider'
@@ -9,23 +12,21 @@ import { SubMenuHeader } from './sub-menu-header'
 
 interface Props {
     currentSource: PlayRequestSource['source']
-    audioLang: string | undefined
+    audio: PlaySourceStream | undefined
     preferredAudioLangs: string[] | undefined
-    onAudioLangChange: (lang: string | undefined) => void
+    onAudioChange: (source: PlaySourceStream | undefined) => void
     back: () => void
     onClose?: () => void
 }
 
 export function AudioPanel({
     currentSource,
-    audioLang,
+    audio,
     preferredAudioLangs,
-    onAudioLangChange,
+    onAudioChange,
     back,
     onClose,
 }: Props): ReactNode {
-    const audioKey = (t: { language: string; index: number }) =>
-        `${t.language}:${t.index}`
     const preferred = currentSource.audio.filter((t) =>
         preferredAudioLangs
             ?.map((l) => languageMatch(t.language, l))
@@ -41,33 +42,33 @@ export function AudioPanel({
         <>
             <SubMenuHeader title="Audio" onBack={back} />
             <SettingsBody>
-                {preferred.map((track) => (
+                {preferred.map((source) => (
                     <OptionItem
-                        key={track.index}
-                        active={audioLang === audioKey(track)}
+                        key={source.index}
+                        active={audio?.group_index === source.group_index}
                         onClose={onClose}
                         onClick={() => {
-                            onAudioLangChange(audioKey(track))
+                            onAudioChange(source)
                             back()
                         }}
                     >
-                        <AudioTrackLabel track={track} />
+                        <AudioLabel source={source} />
                     </OptionItem>
                 ))}
                 {preferred.length > 0 && other.length > 0 && (
                     <SettingsGroupDivider />
                 )}
-                {other.map((track) => (
+                {other.map((source) => (
                     <OptionItem
-                        key={track.index}
-                        active={audioLang === audioKey(track)}
+                        key={source.index}
+                        active={audio?.group_index === source.group_index}
                         onClose={onClose}
                         onClick={() => {
-                            onAudioLangChange(audioKey(track))
+                            onAudioChange(source)
                             back()
                         }}
                     >
-                        <AudioTrackLabel track={track} />
+                        <AudioLabel source={source} />
                     </OptionItem>
                 ))}
             </SettingsBody>

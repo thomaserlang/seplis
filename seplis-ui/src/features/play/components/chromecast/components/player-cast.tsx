@@ -2,6 +2,7 @@ import { UsePlaySettings } from '@/features/play/hooks/use-play-settings'
 import {
     PlayRequestSource,
     PlayRequestSources,
+    PlaySourceStream,
 } from '@/features/play/types/play-source.types'
 import { ActionIcon, Flex, Tooltip } from '@mantine/core'
 import { ArrowLeftIcon } from '@phosphor-icons/react'
@@ -19,13 +20,13 @@ interface Props {
     onPlayNext?: () => void
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
-    audio: string | undefined
+    audio?: PlaySourceStream
     forceTranscode: boolean
-    activeSubtitleKey: string | undefined
+    subtitle?: PlaySourceStream
     onSourceChange: (source: PlayRequestSource) => void
-    onAudioChange: (audio: string | undefined) => void
+    onAudioChange: (audio: PlaySourceStream | undefined) => void
     onForceTranscodeChange: (value: boolean) => void
-    onSubtitleChange: (key: string | undefined) => void
+    onSubtitleChange: (subtitle: PlaySourceStream | undefined) => void
     preferredAudioLangs?: string[]
     preferredSubtitleLangs?: string[]
     playSettings: UsePlaySettings
@@ -40,7 +41,7 @@ export function PlayerCast({
     playRequestsSources,
     audio,
     forceTranscode,
-    activeSubtitleKey,
+    subtitle,
     onSourceChange,
     onAudioChange,
     onForceTranscodeChange,
@@ -154,15 +155,15 @@ export function PlayerCast({
                 onDisconnect={() => endSession(true)}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
-                audioKey={audio}
+                audio={audio}
                 forceTranscode={forceTranscode}
-                activeSubtitleKey={activeSubtitleKey}
+                subtitle={subtitle}
                 subtitleOffset={subtitleOffset}
                 canAdjustSubtitleOffset
                 onSourceChange={onSourceChange}
-                onAudioLangChange={onAudioChange}
+                onAudioChange={onAudioChange}
                 onForceTranscodeChange={onForceTranscodeChange}
-                onSubtitleKeyChange={onSubtitleChange}
+                onSubtitleChange={onSubtitleChange}
                 onSubtitleOffsetChange={(offset) => {
                     setSubtitleOffset(offset)
                     sendSubtitleOffset(offset)

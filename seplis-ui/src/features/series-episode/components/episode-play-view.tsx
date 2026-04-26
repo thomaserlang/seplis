@@ -1,6 +1,7 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { PlayerContainer } from '@/features/play'
+import { toLangKey } from '@/features/play/utils/play-source.utils'
 import {
     getSeries,
     getSeriesUserSettings,
@@ -107,8 +108,8 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                     : undefined
             }
             defaultStartTime={episodeWatched?.position ?? 0}
-            defaultAudio={userSettings?.audio_lang ?? undefined}
-            defaultSubtitle={userSettings?.subtitle_lang ?? undefined}
+            defaultAudioKey={userSettings?.audio_lang ?? undefined}
+            defaultSubtitleKey={userSettings?.subtitle_lang ?? undefined}
             onSavePosition={(position) =>
                 updateEpisodeWatchedPosition({
                     seriesId,
@@ -129,7 +130,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                 updateSeriesUserSettings({
                     seriesId,
                     data: {
-                        subtitle_lang: subtitle || null,
+                        subtitle_lang: toLangKey(subtitle) || null,
                     },
                 })
             }}
@@ -137,7 +138,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                 updateSeriesUserSettings({
                     seriesId,
                     data: {
-                        audio_lang: audio || null,
+                        audio_lang: toLangKey(audio) || null,
                     },
                 })
             }}
