@@ -4,7 +4,7 @@ ENV LC_ALL=C.UTF-8
 RUN mkdir /app
 WORKDIR /app
 COPY . .
-RUN npm ci; npm run build
+RUN corepack enable && pnpm install --frozen-lockfile && pnpm run build
 
 FROM nginxinc/nginx-unprivileged:alpine
 ENV LANG=C.UTF-8

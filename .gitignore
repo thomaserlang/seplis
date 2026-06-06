@@ -45,6 +45,8 @@ coverage.xml
 *.sublime-workspace
 *.db
 node_modules/
+.pnpm-store/
+pnpm-debug.log*
 
 
 # Rope
