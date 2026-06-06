@@ -1,6 +1,6 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { PlayerContainer } from '@/features/play'
+import { getPlayRequestSources, PlayerContainer } from '@/features/play'
 import { toLangKey } from '@/features/play/utils/play-source.utils'
 import {
     getSeries,
@@ -58,11 +58,22 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                 }),
                 getSeriesUserSettings({ seriesId }),
             ])
+            const nextPlayRequests = nextEpisode
+                ? await getEpisodePlayRequests({
+                      seriesId,
+                      episodeNumber: nextEpisode.number,
+                  })
+                : []
+            const nextPlayRequestSources = nextPlayRequests.length
+                ? await getPlayRequestSources({ playRequests: nextPlayRequests })
+                : []
+
             return {
                 series,
                 episode,
                 nextEpisode,
                 playRequests,
+                nextPlayRequestSources,
                 episodeWatched,
                 userSettings,
             }
@@ -78,6 +89,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
         episode,
         nextEpisode,
         playRequests,
+        nextPlayRequestSources,
         episodeWatched,
         userSettings,
     } = data.data || {}
@@ -88,6 +100,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
 
     const title = series.title || 'Unknown Title'
     const secondaryTitle = `S${episode.season} E${episode.episode}${episode?.title ? ` - ${episode?.title}` : ''}`
+    const canPlayNext = nextEpisode && nextPlayRequestSources?.length
 
     return (
         <PlayerContainer
@@ -96,7 +109,7 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             secondaryTitle={secondaryTitle}
             onClose={onClose}
             onPlayNext={
-                nextEpisode
+                canPlayNext
                     ? () =>
                           setParams((params) => {
                               params.set(
