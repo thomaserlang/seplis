@@ -1,7 +1,7 @@
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import posterClasses from '@/components/poster-page/poster-page.module.css'
 import { MantineStyleProp, Skeleton } from '@mantine/core'
-import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
+import { CaretLeftIcon, CaretRightIcon, InfoIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import classes from './slider.module.css'
 import { SliderProps } from './slider.types'
@@ -29,7 +29,7 @@ export function Slider<T>({
     const [canScrollLeft, setCanScrollLeft] = useState(false)
     const [canScrollRight, setCanScrollRight] = useState(false)
 
-    const { getItemProps, portal } = useHoverCard({
+    const { getContainerProps, getTriggerProps, portal } = useHoverCard({
         renderContent: renderHoverCard,
         containerRef,
     })
@@ -137,11 +137,22 @@ export function Slider<T>({
                         <div
                             key={index}
                             className={`${posterClasses.item} ${classes.item}`}
-                            {...getItemProps(item)}
+                            {...getContainerProps()}
                             onClick={onClick ? () => onClick(item) : undefined}
                             style={{ cursor: onClick ? 'pointer' : undefined }}
+                            data-hover-item
                         >
                             {renderItem(item, index)}
+                            {renderHoverCard && (
+                                <button
+                                    className={classes.infoTrigger}
+                                    {...getTriggerProps(item)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    aria-label="More info"
+                                >
+                                    <InfoIcon size={14} weight="bold" />
+                                </button>
+                            )}
                         </div>
                     ))}
 

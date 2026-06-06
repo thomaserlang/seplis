@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { HoverCard } from './hover-card'
 
-const SHOW_DELAY = 700
+const SHOW_DELAY = 500
 const HIDE_DELAY = 200
 
 interface HoverState<T> {
@@ -84,7 +84,10 @@ export function useHoverCard<T>({
             if (hoverRef.current) {
                 isHoveringRef.current = false
                 setHover((h) => (h ? { ...h, isLeaving: true } : null))
-                hideTimerRef.current = setTimeout(() => setHover(null), HIDE_DELAY)
+                hideTimerRef.current = setTimeout(
+                    () => setHover(null),
+                    HIDE_DELAY,
+                )
             }
             showTimerRef.current = setTimeout(() => {
                 const rect = el.getBoundingClientRect()
@@ -137,6 +140,27 @@ export function useHoverCard<T>({
         [onItemEnter, onItemLeave, renderContent],
     )
 
+    const getContainerProps = useCallback(
+        () => (renderContent ? { onMouseLeave: onItemLeave } : {}),
+        [onItemLeave, renderContent],
+    )
+
+    const getTriggerProps = useCallback(
+        (item: T) =>
+            renderContent
+                ? {
+                      onMouseEnter: (e: React.MouseEvent<HTMLElement>) =>
+                          onItemEnter(
+                              item,
+                              (e.currentTarget.closest(
+                                  '[data-hover-item]',
+                              ) as HTMLElement) ?? e.currentTarget,
+                          ),
+                  }
+                : {},
+        [onItemEnter, renderContent],
+    )
+
     const portal =
         hover && renderContent ? (
             <HoverCard
@@ -151,5 +175,5 @@ export function useHoverCard<T>({
             </HoverCard>
         ) : null
 
-    return { getItemProps, portal, dismiss }
+    return { getItemProps, getContainerProps, getTriggerProps, portal, dismiss }
 }
