@@ -1,24 +1,11 @@
 import { Controls, Tooltip } from '@videojs/react'
 import {
     PlayerHeader,
-    PlayerVideoInteractions as PlayerInteractions,
     PlayerPrimaryControls,
     PlayerSecondaryControls,
-    PlayerVideoStatus as PlayerStatus,
     PlayerTimeControls,
 } from './player-controls'
-import type {
-    PlayerVideoControlsProps,
-    PlayerVideoStatusProps,
-} from './player-video.types'
-
-export function PlayerVideoStatus({ ...props }: PlayerVideoStatusProps) {
-    return <PlayerStatus {...props} />
-}
-
-export function PlayerVideoInteractions() {
-    return <PlayerInteractions />
-}
+import type { PlayerVideoControlsProps } from './player-video.types'
 
 export function PlayerVideoControls({
     onClose,

@@ -20,10 +20,10 @@ import { MediaEventHandler } from './player-media-events'
 import { PlayerNativeSubtitles } from './player-native-subtitles'
 import { AssSubtitle, SubtitleOffsetApplier } from './player-subtitles'
 import {
-    PlayerVideoControls,
     PlayerVideoInteractions,
     PlayerVideoStatus,
-} from './player-video-controls'
+} from './player-controls'
+import { PlayerVideoControls } from './player-video-controls'
 import './player-video.css'
 import type { PlayErrorType, VideoPlayerProps } from './player-video.types'
 

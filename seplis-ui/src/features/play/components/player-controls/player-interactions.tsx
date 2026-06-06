@@ -1,39 +1,39 @@
-import { MediaGesture, MediaHotkey } from '@videojs/react'
+import { Hotkey, MediaGesture } from '@videojs/react'
 
 export function PlayerVideoInteractions() {
     return (
         <>
-            <MediaHotkey keys="Space" action="togglePaused" target="document" />
-            <MediaHotkey keys="k" action="togglePaused" target="document" />
-            <MediaHotkey keys="m" action="toggleMuted" target="document" />
-            <MediaHotkey keys="f" action="toggleFullscreen" target="document" />
-            <MediaHotkey keys="c" action="toggleSubtitles" target="document" />
-            <MediaHotkey
+            <Hotkey keys="Space" action="togglePaused" target="document" />
+            <Hotkey keys="k" action="togglePaused" target="document" />
+            <Hotkey keys="m" action="toggleMuted" target="document" />
+            <Hotkey keys="f" action="toggleFullscreen" target="document" />
+            <Hotkey keys="c" action="toggleSubtitles" target="document" />
+            <Hotkey
                 keys="i"
                 action="togglePictureInPicture"
                 target="document"
             />
-            <MediaHotkey keys="ArrowRight" action="seekStep" value={5} />
-            <MediaHotkey keys="ArrowLeft" action="seekStep" value={-5} />
-            <MediaHotkey keys="l" action="seekStep" value={10} />
-            <MediaHotkey keys="j" action="seekStep" value={-10} />
-            <MediaHotkey keys="ArrowUp" action="volumeStep" value={0.05} />
-            <MediaHotkey keys="ArrowDown" action="volumeStep" value={-0.05} />
-            <MediaHotkey keys="0-9" action="seekToPercent" target="document" />
-            <MediaHotkey
+            <Hotkey keys="ArrowRight" action="seekStep" value={5} />
+            <Hotkey keys="ArrowLeft" action="seekStep" value={-5} />
+            <Hotkey keys="l" action="seekStep" value={10} />
+            <Hotkey keys="j" action="seekStep" value={-10} />
+            <Hotkey keys="ArrowUp" action="volumeStep" value={0.05} />
+            <Hotkey keys="ArrowDown" action="volumeStep" value={-0.05} />
+            <Hotkey keys="0-9" action="seekToPercent" target="document" />
+            <Hotkey
                 keys="Home"
                 action="seekToPercent"
                 value={0}
                 target="document"
             />
-            <MediaHotkey
+            <Hotkey
                 keys="End"
                 action="seekToPercent"
                 value={100}
                 target="document"
             />
-            <MediaHotkey keys=">" action="speedUp" target="document" />
-            <MediaHotkey keys="<" action="speedDown" target="document" />
+            <Hotkey keys=">" action="speedUp" target="document" />
+            <Hotkey keys="<" action="speedDown" target="document" />
 
             <MediaGesture
                 type="tap"
