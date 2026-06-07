@@ -1,0 +1,431 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.14"
+# dependencies = [
+#   "textual>=0.89",
+# ]
+# ///
+from __future__ import annotations
+
+import datetime as dt
+import fnmatch
+import subprocess
+from dataclasses import dataclass
+
+from textual import on  # ty: ignore[unresolved-import]
+from textual.app import App, ComposeResult  # ty: ignore[unresolved-import]
+from textual.binding import Binding  # ty: ignore[unresolved-import]
+from textual.containers import (  # ty: ignore[unresolved-import]
+    Container,
+    Horizontal,
+    Vertical,
+)
+from textual.screen import ModalScreen  # ty: ignore[unresolved-import]
+from textual.widgets import (  # ty: ignore[unresolved-import]
+    Button,
+    DataTable,
+    Header,
+    Label,
+    Static,
+)
+
+
+@dataclass(frozen=True, slots=True)
+class Service:
+    name: str
+    paths: tuple[str, ...]
+
+
+@dataclass(slots=True)
+class ServiceStatus:
+    service: Service
+    latest_tag: str | None
+    changes: list[str]
+    next_tag: str
+
+    @property
+    def suggested(self) -> bool:
+        return bool(self.changes)
+
+
+@dataclass(frozen=True, slots=True)
+class BranchSyncStatus:
+    branch: str
+    upstream: str | None
+    ahead: int
+    behind: int
+
+    @property
+    def needs_push(self) -> bool:
+        return self.ahead > 0
+
+    @property
+    def needs_pull(self) -> bool:
+        return self.behind > 0
+
+
+SERVICES = (
+    Service(
+        name='api',
+        paths=(
+            'seplis/**',
+            'MANIFEST.in',
+            'pyproject.toml',
+            'uv.lock',
+            'Dockerfile',
+            '.github/workflows/build-api.yml',
+            '.github/workflows/_docker-build.yml',
+            'docker-dev/seplis/**',
+        ),
+    ),
+    Service(
+        name='ui',
+        paths=(
+            'seplis-ui/**',
+            '.github/workflows/build-ui.yml',
+            '.github/workflows/_docker-build.yml',
+        ),
+    ),
+)
+
+CSS = """
+Screen {
+    background: #101418;
+}
+
+#layout {
+    height: 100%;
+}
+
+#table {
+    height: auto;
+    max-height: 11;
+    margin: 1 2 0 2;
+}
+
+#release-button {
+    min-width: 12;
+    max-width: 14;
+    margin-right: 2;
+}
+
+#status {
+    height: auto;
+    padding: 0 2;
+    color: #f3d48b;
+}
+
+#actions {
+    height: auto;
+    margin: 1 2 0 2;
+}
+
+#footer {
+    dock: bottom;
+    height: 1;
+    padding: 0 1;
+    background: #2d2d2d;
+    color: #e0e0e0;
+}
+
+ModalScreen {
+    align: center middle;
+}
+
+#dialog {
+    width: 58;
+    max-width: 90%;
+    border: round #7aa2f7;
+    background: #171c22;
+    padding: 0 1;
+}
+
+#dialog-title {
+    text-style: bold;
+    margin-bottom: 0;
+}
+
+#dialog-buttons {
+    height: auto;
+    margin-top: 0;
+}
+
+Button {
+    min-width: 10;
+    margin-right: 1;
+}
+"""
+
+
+def run_git(*args: str, check: bool = True) -> str:
+    result = subprocess.run(
+        ('git', *args),
+        check=check,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
+def fetch_tags() -> None:
+    subprocess.run(
+        ('git', 'fetch', '--tags', '--quiet', 'origin'),
+        check=False,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+
+def branch_sync_status() -> BranchSyncStatus:
+    branch = run_git('branch', '--show-current') or 'HEAD'
+    upstream = run_git(
+        'rev-parse',
+        '--abbrev-ref',
+        '--symbolic-full-name',
+        '@{upstream}',
+        check=False,
+    )
+    if not upstream:
+        return BranchSyncStatus(branch=branch, upstream=None, ahead=0, behind=0)
+
+    counts = run_git('rev-list', '--left-right', '--count', f'HEAD...{upstream}')
+    ahead_text, behind_text = counts.split()
+    return BranchSyncStatus(
+        branch=branch,
+        upstream=upstream,
+        ahead=int(ahead_text),
+        behind=int(behind_text),
+    )
+
+
+def branch_sync_block_message(status: BranchSyncStatus) -> str | None:
+    if status.branch != 'main':
+        return f'Refusing release: current branch is {status.branch}, expected main.'
+
+    if status.upstream is None:
+        return f'Refusing release: {status.branch} has no upstream branch.'
+
+    missing: list[str] = []
+    if status.needs_pull:
+        missing.append(f'pull {status.behind} commit(s)')
+    if status.needs_push:
+        missing.append(f'push {status.ahead} commit(s)')
+
+    if not missing:
+        return None
+
+    return (
+        f'Refusing release: {status.branch} is out of sync with {status.upstream}; '
+        f'missing {" and ".join(missing)}.'
+    )
+
+
+def latest_release_tag(service: Service) -> str | None:
+    tags = run_git('tag', '--list', f'{service.name}-v*', '--sort=-version:refname')
+    return tags.splitlines()[0] if tags else None
+
+
+def changed_paths_since(tag: str | None) -> list[str]:
+    if tag is None:
+        return ['no previous release']
+    output = run_git('diff', '--name-only', f'{tag}..HEAD')
+    return output.splitlines()
+
+
+def service_changes(service: Service) -> tuple[str | None, list[str]]:
+    tag = latest_release_tag(service)
+    changed_paths = changed_paths_since(tag)
+    if tag is None:
+        return tag, changed_paths
+
+    matches = [
+        path
+        for path in changed_paths
+        if any(fnmatch.fnmatchcase(path, pattern) for pattern in service.paths)
+    ]
+    return tag, matches
+
+
+def next_release_tag(service: Service) -> str:
+    release_date = dt.date.today().strftime('%Y.%m.%d')
+    base_tag = f'{service.name}-v{release_date}'
+    tags = set(run_git('tag', '--list', f'{base_tag}*').splitlines())
+
+    if base_tag not in tags:
+        return base_tag
+
+    suffixes: list[int] = []
+    prefix = f'{base_tag}.'
+    for tag in tags:
+        if tag.startswith(prefix):
+            suffix = tag.removeprefix(prefix)
+            if suffix.isdigit():
+                suffixes.append(int(suffix))
+
+    next_patch = (max(suffixes) + 1) if suffixes else 1
+    return f'{base_tag}.{next_patch:02d}'
+
+
+def load_statuses() -> list[ServiceStatus]:
+    statuses: list[ServiceStatus] = []
+    for service in SERVICES:
+        latest_tag, changes = service_changes(service)
+        statuses.append(
+            ServiceStatus(
+                service=service,
+                latest_tag=latest_tag,
+                changes=changes,
+                next_tag=next_release_tag(service),
+            )
+        )
+    return statuses
+
+
+class ConfirmScreen(ModalScreen[bool]):
+    def __init__(self, title: str, body: str) -> None:
+        super().__init__()
+        self.title_text = title
+        self.body = body
+
+    def compose(self) -> ComposeResult:
+        with Vertical(id='dialog'):
+            yield Label(self.title_text, id='dialog-title')
+            yield Static(self.body)
+            with Horizontal(id='dialog-buttons'):
+                yield Button('Yes', variant='primary', id='confirm')
+                yield Button('No', id='cancel')
+
+    @on(Button.Pressed, '#confirm')
+    def confirm(self) -> None:
+        self.dismiss(True)
+
+    @on(Button.Pressed, '#cancel')
+    def cancel(self) -> None:
+        self.dismiss(False)
+
+
+class ReleaseApp(App[None]):
+    TITLE = 'Seplis release'
+    CSS = CSS
+    BINDINGS = [
+        Binding('q', 'quit', 'Quit'),
+        Binding('escape', 'quit', show=False),
+        Binding('ctrl+c', 'quit', show=False),
+        Binding('space', 'toggle', 'Select'),
+        Binding('r', 'release', 'Release'),
+    ]
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.statuses: list[ServiceStatus] = []
+        self.selected: set[str] = set()
+
+    def compose(self) -> ComposeResult:
+        yield Header()
+        with Container(id='layout'):
+            yield DataTable(id='table')
+            with Horizontal(id='actions'):
+                yield Button('Release', variant='primary', id='release-button')
+                yield Static('', id='status')
+        yield Static('esc Quit   space Select   r Release', id='footer')
+
+    def on_mount(self) -> None:
+        fetch_tags()
+        self.reload()
+
+    def reload(self) -> None:
+        self.statuses = load_statuses()
+        self.selected = {
+            status.service.name for status in self.statuses if status.suggested
+        }
+        table = self.query_one('#table', DataTable)
+        table.clear(columns=True)
+        table.cursor_type = 'row'
+        table.add_columns('Sel', 'Service', 'Status', 'Latest tag', 'Next tag')
+
+        for status in self.statuses:
+            table.add_row(
+                self.marker(status.service.name),
+                status.service.name,
+                'suggested' if status.suggested else 'no changes',
+                status.latest_tag or '-',
+                status.next_tag,
+                key=status.service.name,
+            )
+        table.focus()
+
+    def marker(self, service_name: str) -> str:
+        return '[green]✓[/]' if service_name in self.selected else ''
+
+    def current_status(self) -> ServiceStatus:
+        table = self.query_one('#table', DataTable)
+        row_index = table.cursor_row
+        return self.statuses[row_index]
+
+    def update_table_markers(self) -> None:
+        table = self.query_one('#table', DataTable)
+        for row_index, status in enumerate(self.statuses):
+            table.update_cell_at(
+                (row_index, 0),
+                self.marker(status.service.name),
+            )
+
+    def action_toggle(self) -> None:
+        status = self.current_status()
+        if status.service.name in self.selected:
+            self.selected.remove(status.service.name)
+        else:
+            self.selected.add(status.service.name)
+        self.update_table_markers()
+
+    def action_release(self) -> None:
+        fetch_tags()
+        block_message = branch_sync_block_message(branch_sync_status())
+        if block_message is not None:
+            self.query_one('#status', Static).update(block_message)
+            return
+
+        statuses = [
+            status for status in self.statuses if status.service.name in self.selected
+        ]
+        if not statuses:
+            self.query_one('#status', Static).update('No services selected.')
+            return
+
+        unchanged = [status.service.name for status in statuses if not status.suggested]
+        tags = [status.next_tag for status in statuses]
+        warning = ''
+        if unchanged:
+            warning = f'\n\nNo detected service changes: {", ".join(unchanged)}'
+
+        self.push_screen(
+            ConfirmScreen(
+                'Create and push tags?',
+                '\n'.join(tags) + warning,
+            ),
+            lambda confirmed: self.create_and_push_tags(tags) if confirmed else None,
+        )
+
+    @on(Button.Pressed, '#release-button')
+    def release_button_pressed(self) -> None:
+        self.action_release()
+
+    def create_and_push_tags(self, tags: list[str]) -> None:
+        try:
+            for tag in tags:
+                run_git('tag', tag)
+            subprocess.run(('git', 'push', 'origin', *tags), check=True)
+            self.after_tag(tags)
+        except subprocess.CalledProcessError as exc:
+            self.query_one('#status', Static).update(
+                f'Command failed: git {" ".join(exc.cmd[1:])}'
+            )
+
+    def after_tag(self, tags: list[str]) -> None:
+        fetch_tags()
+        self.reload()
+        self.query_one('#status', Static).update(f'Created and pushed: {", ".join(tags)}')
+
+
+if __name__ == '__main__':
+    ReleaseApp().run()
