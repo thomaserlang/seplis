@@ -20,7 +20,6 @@ export interface EpisodeCardProps {
     episode: Episode | null | undefined
     loading: boolean
     title?: string
-    accentColor?: string
     noEpisodeText?: string
     buttonSize?: ButtonSize
     fz?: MantineFontSize
@@ -32,7 +31,6 @@ export function EpisodeCard({
     episode,
     loading,
     title,
-    accentColor = 'oklch(0.55 0.22 250)',
     noEpisodeText,
     buttonSize,
     size,
@@ -54,7 +52,6 @@ export function EpisodeCard({
                     {...props}
                     seriesId={seriesId}
                     episode={episode}
-                    accentColor={accentColor}
                     buttonSize={buttonSize}
                 />
             )}
@@ -65,7 +62,6 @@ export function EpisodeCard({
 function EpisodeCardContent({
     seriesId,
     episode,
-    accentColor,
     buttonSize,
     fz = 'md',
 }: Partial<EpisodeCardProps> & { seriesId: number; episode: Episode }) {

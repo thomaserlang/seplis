@@ -56,7 +56,6 @@ export function EpisodeToWatchCard({ seriesId, buttonSize, fz, size }: Props) {
                     ? 'Next to watch'
                     : 'Continue watching'
             }
-            accentColor="oklch(0.65 0.13 65)"
             noEpisodeText="No episode to watch"
             buttonSize={buttonSize}
             fz={fz}

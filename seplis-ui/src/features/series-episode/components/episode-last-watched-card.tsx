@@ -23,7 +23,6 @@ export function EpisodeLastWatchedCard({ seriesId }: Props) {
             episode={data}
             loading={isLoading}
             title="Last watched"
-            accentColor="oklch(0.4 0.07 240)"
             noEpisodeText="No episode watched yet"
         />
     )
