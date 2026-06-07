@@ -25,7 +25,7 @@ interface Props {
 }
 
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
-    const [_, setParams] = useSearchParams()
+    const [params, setParams] = useSearchParams()
     const data = useQuery({
         queryKey: ['episode-play-view', seriesId, episodeNumber],
         queryFn: async () => {
@@ -101,6 +101,13 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
     const title = series.title || 'Unknown Title'
     const secondaryTitle = `S${episode.season} E${episode.episode}${episode?.title ? ` - ${episode?.title}` : ''}`
     const canPlayNext = nextEpisode && nextPlayRequestSources?.length
+    const urlPositionParam = params.get('position')
+    const urlPosition =
+        urlPositionParam === null ? undefined : Number(urlPositionParam)
+    const startPosition =
+        urlPosition !== undefined && Number.isFinite(urlPosition)
+        ? urlPosition
+        : (episodeWatched?.position ?? 0)
 
     return (
         <PlayerContainer
@@ -116,11 +123,12 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                                   'pid',
                                   `episode-${seriesId}:${nextEpisode.number}`,
                               )
+                              params.set('position', '0')
                               return params
                           })
                     : undefined
             }
-            defaultStartTime={episodeWatched?.position ?? 0}
+            defaultStartTime={startPosition}
             defaultAudioKey={userSettings?.audio_lang ?? undefined}
             defaultSubtitleKey={userSettings?.subtitle_lang ?? undefined}
             onSavePosition={(position) =>
