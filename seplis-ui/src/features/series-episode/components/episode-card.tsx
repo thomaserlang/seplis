@@ -75,11 +75,7 @@ function EpisodeCardContent({
             : `Ep ${episode.number}`
 
     return (
-        <Paper
-            withBorder
-            p="0.5rem"
-            style={{ borderLeft: `3px solid ${accentColor}` }}
-        >
+        <Paper withBorder p="0.5rem">
             <Flex direction="column" gap="0.25rem">
                 <Flex align="center" gap="xs">
                     <Badge size="md" variant="light" color="blue">
