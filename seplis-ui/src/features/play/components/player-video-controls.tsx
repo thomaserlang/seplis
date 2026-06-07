@@ -1,4 +1,5 @@
 import { Controls, Tooltip } from '@videojs/react'
+import { useEffect, useRef } from 'react'
 import {
     PlayerHeader,
     PlayerPrimaryControls,
@@ -31,6 +32,20 @@ export function PlayerVideoControls({
     transcodeDecision,
     playbackTransport,
 }: PlayerVideoControlsProps) {
+    const controlsRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const el = controlsRef.current
+        if (!el) return
+        const stop = (e: PointerEvent) => e.stopPropagation()
+        el.addEventListener('pointerdown', stop)
+        el.addEventListener('pointerup', stop)
+        return () => {
+            el.removeEventListener('pointerdown', stop)
+            el.removeEventListener('pointerup', stop)
+        }
+    }, [])
+
     return (
         <>
             <PlayerHeader
@@ -39,7 +54,10 @@ export function PlayerVideoControls({
                 secondaryTitle={secondaryTitle}
             />
 
-            <Controls.Root className="media-surface media-controls">
+            <Controls.Root
+                ref={controlsRef}
+                className="media-surface media-controls"
+            >
                 <Tooltip.Provider>
                     <PlayerPrimaryControls onPlayNext={onPlayNext} />
                     <PlayerTimeControls timeSliderStyle={timeSliderStyle} />
