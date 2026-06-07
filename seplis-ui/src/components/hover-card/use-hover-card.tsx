@@ -128,18 +128,6 @@ export function useHoverCard<T>({
         setHover(null)
     }, [clearTimers])
 
-    const getItemProps = useCallback(
-        (item: T) =>
-            renderContent
-                ? {
-                      onMouseEnter: (e: React.MouseEvent<HTMLElement>) =>
-                          onItemEnter(item, e.currentTarget),
-                      onMouseLeave: onItemLeave,
-                  }
-                : {},
-        [onItemEnter, onItemLeave, renderContent],
-    )
-
     const getContainerProps = useCallback(
         () => (renderContent ? { onMouseLeave: onItemLeave } : {}),
         [onItemLeave, renderContent],
@@ -175,5 +163,5 @@ export function useHoverCard<T>({
             </HoverCard>
         ) : null
 
-    return { getItemProps, getContainerProps, getTriggerProps, portal, dismiss }
+    return { getContainerProps, getTriggerProps, portal, dismiss }
 }

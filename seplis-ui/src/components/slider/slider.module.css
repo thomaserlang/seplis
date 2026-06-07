@@ -57,31 +57,6 @@
   width: 1px;
 }
 
-.infoTrigger {
-  position: absolute;
-  top: 0.35rem;
-  right: 0.35rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 50%;
-  background: color-mix(in oklab, black 55%, transparent);
-  border: none;
-  color: white;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 150ms ease;
-  z-index: 2;
-  padding: 0;
-  backdrop-filter: blur(4px);
-}
-
-.item:hover .infoTrigger {
-  opacity: 1;
-}
-
 /* ── Arrow buttons ────────────────────────────────────────────── */
 
 .arrow {

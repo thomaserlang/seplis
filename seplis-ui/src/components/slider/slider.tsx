@@ -1,7 +1,8 @@
+import { HoverCardTriggerButton } from '@/components/hover-card/hover-card-trigger-button'
 import { useHoverCard } from '@/components/hover-card/use-hover-card'
 import posterClasses from '@/components/poster-page/poster-page.module.css'
 import { MantineStyleProp, Skeleton } from '@mantine/core'
-import { CaretLeftIcon, CaretRightIcon, InfoIcon } from '@phosphor-icons/react'
+import { CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import classes from './slider.module.css'
 import { SliderProps } from './slider.types'
@@ -144,14 +145,7 @@ export function Slider<T>({
                         >
                             {renderItem(item, index)}
                             {renderHoverCard && (
-                                <button
-                                    className={classes.infoTrigger}
-                                    {...getTriggerProps(item)}
-                                    onClick={(e) => e.stopPropagation()}
-                                    aria-label="More info"
-                                >
-                                    <InfoIcon size={14} weight="bold" />
-                                </button>
+                                <HoverCardTriggerButton {...getTriggerProps(item)} />
                             )}
                         </div>
                     ))}

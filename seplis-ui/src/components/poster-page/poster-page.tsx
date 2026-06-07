@@ -1,5 +1,6 @@
 import { Skeleton } from '@mantine/core'
 import { useEffect, useRef } from 'react'
+import { HoverCardTriggerButton } from '../hover-card/hover-card-trigger-button'
 import { useHoverCard } from '../hover-card/use-hover-card'
 import classes from './poster-page.module.css'
 
@@ -26,7 +27,7 @@ export function PosterPage<T>({
 }: Props<T>) {
     const containerRef = useRef<HTMLDivElement>(null)
     const loadMoreRef = useRef<HTMLDivElement>(null)
-    const { getItemProps, portal, dismiss } = useHoverCard({
+    const { getContainerProps, getTriggerProps, portal, dismiss } = useHoverCard({
         renderContent: renderHoverCard,
         containerRef,
     })
@@ -55,14 +56,18 @@ export function PosterPage<T>({
             {items.map((item, index) => (
                 <div
                     key={index}
-                    {...getItemProps(item)}
+                    {...getContainerProps()}
                     onClick={() => {
                         onClick?.(item)
                         dismiss()
                     }}
                     className={classes.item}
+                    data-hover-item
                 >
                     {renderItem(item)}
+                    {renderHoverCard && (
+                        <HoverCardTriggerButton {...getTriggerProps(item)} />
+                    )}
                 </div>
             ))}
             {portal}
