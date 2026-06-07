@@ -27,7 +27,7 @@ export function EpisodesModal({ seriesId, seasons, opened, onClose }: Props) {
                         seasons={seasons}
                         value={season}
                         onChange={(value) => setSeason(Number(value))}
-                        size="xs"
+                        size="sm"
                     />
                     <Text span size="sm" fw={600}>
                         {currentSeason?.total ?? 0} Episodes
@@ -40,7 +40,7 @@ export function EpisodesModal({ seriesId, seasons, opened, onClose }: Props) {
                         >
                             <Button
                                 variant="default"
-                                size="xs"
+                                size="sm"
                                 disabled={!currentSeason?.total}
                             >
                                 Mark range watched
