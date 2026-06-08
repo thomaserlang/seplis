@@ -173,6 +173,12 @@
   padding: calc(var(--media-icon-size) * 0.3)
     calc(var(--media-icon-size) * 0.35);
   color: oklch(1 0 0);
+  background: linear-gradient(
+    to bottom,
+    oklch(0 0 0 / 0.64),
+    oklch(0 0 0 / 0.42) 72%,
+    oklch(0 0 0 / 0)
+  );
   transition-property: opacity;
   transition-duration: var(--media-controls-transition-duration);
   transition-timing-function: var(--media-controls-transition-timing-function);
@@ -1103,7 +1109,12 @@
   transition-timing-function: var(--media-controls-transition-timing-function);
   transform-origin: bottom;
   border-radius: 0;
-  background: transparent;
+  background: linear-gradient(
+    to top,
+    oklch(0 0 0 / 0.72),
+    oklch(0 0 0 / 0.48) 76%,
+    oklch(0 0 0 / 0)
+  );
   backdrop-filter: none;
   box-shadow: none;
   padding: calc(var(--media-icon-size) * 0.15)
