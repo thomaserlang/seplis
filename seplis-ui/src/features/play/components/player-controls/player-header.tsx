@@ -1,5 +1,4 @@
 import { ArrowLeftIcon } from '@phosphor-icons/react'
-import { Controls } from '@videojs/react'
 
 interface PlayerHeaderProps {
     onClose?: () => void
@@ -13,7 +12,7 @@ export function PlayerHeader({
     secondaryTitle,
 }: PlayerHeaderProps) {
     return (
-        <Controls.Root className="media-header">
+        <div className="media-header">
             {onClose && (
                 <button
                     type="button"
@@ -34,6 +33,6 @@ export function PlayerHeader({
                     )}
                 </div>
             )}
-        </Controls.Root>
+        </div>
     )
 }

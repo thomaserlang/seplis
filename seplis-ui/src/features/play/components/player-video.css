@@ -148,7 +148,6 @@
 }
 
 .media-default-skin .media-controls[data-visible] ~ .media-overlay,
-.media-default-skin .media-header[data-visible] ~ .media-overlay,
 .media-default-skin .media-error[data-open] ~ .media-overlay {
   opacity: 1;
 }
@@ -182,11 +181,13 @@
   transition-property: opacity;
   transition-duration: var(--media-controls-transition-duration);
   transition-timing-function: var(--media-controls-transition-timing-function);
+  opacity: 0;
+  pointer-events: none;
+}
 
-  &:not([data-visible]) {
-    opacity: 0;
-    pointer-events: none;
-  }
+.media-default-skin .media-controls[data-visible] ~ .media-header {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .media-default-skin .media-header__close {

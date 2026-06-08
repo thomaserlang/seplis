@@ -33,12 +33,6 @@ export function PlayerVideoControls({
 }: PlayerVideoControlsProps) {
     return (
         <>
-            <PlayerHeader
-                onClose={onClose}
-                title={title}
-                secondaryTitle={secondaryTitle}
-            />
-
             <Controls.Root className="media-surface media-controls">
                 <Tooltip.Provider>
                     <PlayerPrimaryControls onPlayNext={onPlayNext} />
@@ -64,6 +58,12 @@ export function PlayerVideoControls({
                     />
                 </Tooltip.Provider>
             </Controls.Root>
+
+            <PlayerHeader
+                onClose={onClose}
+                title={title}
+                secondaryTitle={secondaryTitle}
+            />
         </>
     )
 }
