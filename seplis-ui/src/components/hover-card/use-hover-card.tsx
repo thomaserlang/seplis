@@ -137,13 +137,15 @@ export function useHoverCard<T>({
         (item: T) =>
             renderContent
                 ? {
-                      onMouseEnter: (e: React.MouseEvent<HTMLElement>) =>
+                      onPointerEnter: (e: React.PointerEvent<HTMLElement>) => {
+                          if (e.pointerType !== 'mouse') return
                           onItemEnter(
                               item,
                               (e.currentTarget.closest(
                                   '[data-hover-item]',
                               ) as HTMLElement) ?? e.currentTarget,
-                          ),
+                          )
+                      },
                   }
                 : {},
         [onItemEnter, renderContent],

@@ -22,3 +22,9 @@
 [data-hover-item]:hover .trigger {
   opacity: 1;
 }
+
+@media (hover: none), (pointer: coarse) {
+  .trigger {
+    display: none;
+  }
+}

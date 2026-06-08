@@ -2,14 +2,14 @@ import { InfoIcon } from '@phosphor-icons/react'
 import classes from './hover-card-trigger-button.module.css'
 
 interface Props {
-    onMouseEnter?: (e: React.MouseEvent<HTMLButtonElement>) => void
+    onPointerEnter?: (e: React.PointerEvent<HTMLButtonElement>) => void
 }
 
-export function HoverCardTriggerButton({ onMouseEnter }: Props) {
+export function HoverCardTriggerButton({ onPointerEnter }: Props) {
     return (
         <button
             className={classes.trigger}
-            onMouseEnter={onMouseEnter}
+            onPointerEnter={onPointerEnter}
             onClick={(e) => e.stopPropagation()}
             aria-label="More info"
         >
