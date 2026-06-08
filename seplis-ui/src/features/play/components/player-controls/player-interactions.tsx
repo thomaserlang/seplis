@@ -1,4 +1,4 @@
-import { Hotkey, MediaGesture } from '@videojs/react'
+import { Gesture, Hotkey } from '@videojs/react'
 
 export function PlayerVideoInteractions() {
     return (
@@ -35,25 +35,25 @@ export function PlayerVideoInteractions() {
             <Hotkey keys=">" action="speedUp" target="document" />
             <Hotkey keys="<" action="speedDown" target="document" />
 
-            <MediaGesture
+            <Gesture
                 type="tap"
                 action="togglePaused"
                 pointer="mouse"
                 region="center"
             />
-            <MediaGesture type="tap" action="toggleControls" pointer="touch" />
-            <MediaGesture
+            <Gesture type="tap" action="toggleControls" pointer="touch" />
+            <Gesture
                 type="doubletap"
                 action="seekStep"
                 value={-10}
                 region="left"
             />
-            <MediaGesture
+            <Gesture
                 type="doubletap"
                 action="toggleFullscreen"
                 region="center"
             />
-            <MediaGesture
+            <Gesture
                 type="doubletap"
                 action="seekStep"
                 value={10}
