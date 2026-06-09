@@ -24,6 +24,7 @@ export function Component() {
                 onClose={() =>
                     setParams((params) => {
                         params.delete('pid')
+                        params.delete('position')
                         return params
                     })
                 }

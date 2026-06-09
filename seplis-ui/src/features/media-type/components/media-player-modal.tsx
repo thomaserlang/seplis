@@ -14,6 +14,7 @@ export function MediaPlayerModal() {
     const closePlayer = () =>
         setParams((params) => {
             params.delete('pid')
+            params.delete('position')
             return params
         })
 

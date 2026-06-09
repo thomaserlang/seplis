@@ -9,6 +9,7 @@ import {
 } from '@/features/series'
 import { useQuery } from '@tanstack/react-query'
 import { isHTTPError } from 'ky'
+import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getEpisodePlayRequests } from '../api/episode-play-requests.api'
 import { updateEpisodeWatchedPosition } from '../api/episode-watched-position.api'
@@ -26,6 +27,27 @@ interface Props {
 
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
     const [params, setParams] = useSearchParams()
+    const [urlPosition] = useState(() => {
+        const urlPositionParam = params.get('position')
+        if (urlPositionParam === null) return undefined
+
+        const value = Number(urlPositionParam)
+        return Number.isFinite(value) ? value : undefined
+    })
+
+    useEffect(() => {
+        if (!params.has('position')) return
+
+        setParams(
+            (currentParams) => {
+                const nextParams = new URLSearchParams(currentParams)
+                nextParams.delete('position')
+                return nextParams
+            },
+            { replace: true },
+        )
+    }, [params, setParams])
+
     const data = useQuery({
         queryKey: ['episode-play-view', seriesId, episodeNumber],
         queryFn: async () => {
@@ -65,7 +87,9 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
                   })
                 : []
             const nextPlayRequestSources = nextPlayRequests.length
-                ? await getPlayRequestSources({ playRequests: nextPlayRequests })
+                ? await getPlayRequestSources({
+                      playRequests: nextPlayRequests,
+                  })
                 : []
 
             return {
@@ -101,13 +125,10 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
     const title = series.title || 'Unknown Title'
     const secondaryTitle = `S${episode.season} E${episode.episode}${episode?.title ? ` - ${episode?.title}` : ''}`
     const canPlayNext = nextEpisode && nextPlayRequestSources?.length
-    const urlPositionParam = params.get('position')
-    const urlPosition =
-        urlPositionParam === null ? undefined : Number(urlPositionParam)
     const startPosition =
-        urlPosition !== undefined && Number.isFinite(urlPosition)
-        ? urlPosition
-        : (episodeWatched?.position ?? 0)
+        urlPosition !== undefined
+            ? urlPosition
+            : (episodeWatched?.position ?? 0)
 
     return (
         <PlayerContainer

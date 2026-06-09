@@ -39,6 +39,7 @@ export function EpisodePlayButton({
             onClick={() => {
                 setParams((params) => {
                     params.set('pid', `episode-${seriesId}:${episodeNumber}`)
+                    params.delete('position')
                     return params
                 })
             }}
