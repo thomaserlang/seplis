@@ -40,7 +40,7 @@
     "@videojs/react": "10.0.0-beta.24",
     "clsx": "2.1.1",
     "hls.js": "1.6.16",
-    "jassub": "2.5.5",
+    "jassub": "2.5.6",
     "ky": "2.0.2",
     "pretty-bytes": "7.1.0",
     "react": "19.2.7",

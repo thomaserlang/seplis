@@ -45,8 +45,8 @@ importers:
         specifier: 1.6.16
         version: 1.6.16
       jassub:
-        specifier: 2.5.5
-        version: 2.5.5
+        specifier: 2.5.6
+        version: 2.5.6
       ky:
         specifier: 2.0.2
         version: 2.0.2
@@ -517,8 +517,8 @@ packages:
   imsc@1.1.5:
     resolution: {integrity: sha512-V8je+CGkcvGhgl2C1GlhqFFiUOIEdwXbXLiu1Fcubvvbo+g9inauqT3l0pNYXGoLPBj3jxtZz9t+wCopMkwadQ==}
 
-  jassub@2.5.5:
-    resolution: {integrity: sha512-FIbx556fivbOgb5QqNlcbZhSVOEfcZoyYH8XFBKeNdAVngyhBQk3wO42ymdtsKBw6Ca/hhGbaC2iFFY6DO9GcQ==}
+  jassub@2.5.6:
+    resolution: {integrity: sha512-jsbEPVR+JvcOcGa8PbyVvHmFol+rQtAfty7JDp1WWrS3GEfThitjI5sXT0VLfG6/BLuyIuv1+2qykWdWyLkpQw==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -1252,7 +1252,7 @@ snapshots:
     dependencies:
       sax: 1.2.1
 
-  jassub@2.5.5:
+  jassub@2.5.6:
     dependencies:
       abslink: 1.2.2
       lfa-ponyfill: 1.1.0

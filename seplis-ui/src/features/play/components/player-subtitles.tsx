@@ -7,6 +7,11 @@ import type {
     PlayerVideoSubtitleOffsetProps,
 } from './player-video.types'
 
+const robotoMediumFontUrl =
+    'https://fonts.gstatic.com/s/roboto/v51/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWub2bWmT.ttf'
+const robotoMediumItalicFontUrl =
+    'https://fonts.gstatic.com/s/roboto/v51/KFOKCnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmOClHrs6ljXfMMLrPQiA8.ttf'
+
 export function AssSubtitle({
     subUrl,
     offset,
@@ -19,6 +24,15 @@ export function AssSubtitle({
         const jassub = new JASSUB({
             video: media as unknown as HTMLVideoElement,
             subUrl,
+            fonts: [robotoMediumFontUrl, robotoMediumItalicFontUrl],
+            availableFonts: {
+                'Roboto Medium': robotoMediumFontUrl,
+                'Roboto Medium Italic': robotoMediumItalicFontUrl,
+                'Roboto Italic': robotoMediumItalicFontUrl,
+                Roboto: robotoMediumFontUrl,
+            },
+            defaultFont: 'Roboto Medium',
+            queryFonts: 'localandremote',
         })
         jassubRef.current = jassub
         return () => {
