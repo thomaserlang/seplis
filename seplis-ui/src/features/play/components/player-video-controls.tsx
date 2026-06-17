@@ -37,6 +37,7 @@ export function PlayerVideoControls({
         <>
             <Controls.Root
                 className="media-surface media-controls"
+                data-interactive=""
                 data-pinned={settingsOpen ? '' : undefined}
             >
                 <Tooltip.Provider>
