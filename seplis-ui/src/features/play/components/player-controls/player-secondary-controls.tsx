@@ -35,6 +35,8 @@ type SecondaryControlsProps = Pick<
     | 'playSettings'
     | 'transcodeDecision'
     | 'playbackTransport'
+    | 'settingsOpen'
+    | 'onSettingsOpenChange'
 >
 
 export function PlayerSecondaryControls({
@@ -55,6 +57,8 @@ export function PlayerSecondaryControls({
     playSettings,
     transcodeDecision,
     playbackTransport,
+    settingsOpen,
+    onSettingsOpenChange,
 }: SecondaryControlsProps) {
     return (
         <div className="media-button-group" style={{ marginLeft: 'auto' }}>
@@ -75,6 +79,8 @@ export function PlayerSecondaryControls({
             <VolumePopover />
 
             <SettingsPopover
+                open={settingsOpen}
+                onOpenChange={onSettingsOpenChange}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
                 audio={audio}

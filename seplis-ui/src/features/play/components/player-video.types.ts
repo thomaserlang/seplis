@@ -75,6 +75,8 @@ export interface PlayerVideoControlsProps {
     secondaryTitle?: string
     onPlayNext?: () => void
     timeSliderStyle?: CSSProperties
+    settingsOpen: boolean
+    onSettingsOpenChange: (open: boolean) => void
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
     audio?: PlaySourceStream

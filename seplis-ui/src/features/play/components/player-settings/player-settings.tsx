@@ -86,6 +86,7 @@ export function PlayerSettings({
                     playbackTransport={playbackTransport}
                     setPanel={setPanel}
                     hdrEnabled={playSettings.settings.hdrEnabled}
+                    onClose={onClose}
                     onHdrChange={(value) =>
                         playSettings.update({ hdrEnabled: value })
                     }

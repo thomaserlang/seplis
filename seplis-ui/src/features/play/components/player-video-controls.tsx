@@ -13,6 +13,8 @@ export function PlayerVideoControls({
     secondaryTitle,
     onPlayNext,
     timeSliderStyle,
+    settingsOpen,
+    onSettingsOpenChange,
     playRequestSource,
     playRequestsSources,
     audio,
@@ -33,7 +35,10 @@ export function PlayerVideoControls({
 }: PlayerVideoControlsProps) {
     return (
         <>
-            <Controls.Root className="media-surface media-controls">
+            <Controls.Root
+                className="media-surface media-controls"
+                data-pinned={settingsOpen ? '' : undefined}
+            >
                 <Tooltip.Provider>
                     <PlayerPrimaryControls onPlayNext={onPlayNext} />
                     <PlayerTimeControls timeSliderStyle={timeSliderStyle} />
@@ -55,6 +60,8 @@ export function PlayerVideoControls({
                         playSettings={playSettings}
                         transcodeDecision={transcodeDecision}
                         playbackTransport={playbackTransport}
+                        settingsOpen={settingsOpen}
+                        onSettingsOpenChange={onSettingsOpenChange}
                     />
                 </Tooltip.Provider>
             </Controls.Root>

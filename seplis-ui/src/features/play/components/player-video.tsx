@@ -14,15 +14,12 @@ import { useGetPlayServerMedia } from '../api/play-server-request-media.api'
 import { PlaySourceStream } from '../types/play-source.types'
 import { toLangKey } from '../utils/play-source.utils'
 import { canPlayMediaType } from '../utils/video.utils'
+import { PlayerVideoInteractions, PlayerVideoStatus } from './player-controls'
 import { PlayErrorHandler } from './player-error-handler'
 import { HlsJsPlayer, hasNativeHls } from './player-hlsjs'
 import { MediaEventHandler } from './player-media-events'
 import { PlayerNativeSubtitles } from './player-native-subtitles'
 import { AssSubtitle, SubtitleOffsetApplier } from './player-subtitles'
-import {
-    PlayerVideoInteractions,
-    PlayerVideoStatus,
-} from './player-controls'
 import { PlayerVideoControls } from './player-video-controls'
 import './player-video.css'
 import type { PlayErrorType, VideoPlayerProps } from './player-video.types'
@@ -57,6 +54,7 @@ export function PlayerVideo({
     const media = useMedia() as VideoMedia | null
     const resumeTimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
+    const [settingsOpen, setSettingsOpen] = useState(false)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     const [subtitle, setCurrentSubtitle] = useState<
         PlaySourceStream | undefined
@@ -219,6 +217,8 @@ export function PlayerVideo({
                 secondaryTitle={secondaryTitle}
                 onPlayNext={onPlayNext}
                 timeSliderStyle={timeSliderStyle}
+                settingsOpen={settingsOpen}
+                onSettingsOpenChange={setSettingsOpen}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
                 audio={audio}
