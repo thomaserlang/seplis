@@ -22,6 +22,16 @@ import { Container, Paper } from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
 import { useChromecast } from '../providers/chromecast-provider'
 import { ChromecastCapabilities } from '../types'
+import {
+    createChromecastLoadRequest,
+    getSubtitleTrackIds,
+} from '../utils/chromecast-load-request'
+import {
+    getCastMediaKey,
+    getCastVariantKey,
+    getCurrentCastMediaIdentity,
+    type SeplisCastMediaIdentity,
+} from '../utils/chromecast-media-identity'
 import { PlayerCast } from './player-cast'
 
 interface Props extends PlayerProps {
@@ -118,7 +128,16 @@ function PlayerCastViewReady({
     shouldRequestMedia,
     capabilitiesPending,
 }: ReadyProps) {
-    const { castSession, player: castPlayer, playbackError } = useChromecast()
+    const {
+        castSession,
+        sessionState,
+        mediaSession,
+        player: castPlayer,
+        playbackError,
+        loadError,
+        loadMedia,
+        editTracks,
+    } = useChromecast()
     const playSettings = usePlaySettings('cast-settings', {
         supportedVideoCodecs: capabilities.supportedVideoCodecs,
         supportedAudioCodecs: capabilities.supportedAudioCodecs,
@@ -154,7 +173,48 @@ function PlayerCastViewReady({
         source.source.media_type?.startsWith('video/mp4') === true
 
     const startTimeRef = useRef<number>(defaultStartTime ?? 0)
-    const lastLoadedUrlRef = useRef<string | null>(null)
+    const lastLoadedKeyRef = useRef<string | null>(null)
+    const inFlightLoadKeyRef = useRef<string | null>(null)
+    const [resumeMediaCheckTimedOut, setResumeMediaCheckTimedOut] =
+        useState(false)
+
+    const castSessionId = castSession?.getSessionId() ?? null
+    const castMediaKey = getCastMediaKey(source)
+    const castVariantKey = getCastVariantKey({
+        source,
+        audio,
+        forceTranscode,
+        settings: playSettings.settings,
+    })
+    const remoteMediaIdentity = getCurrentCastMediaIdentity({
+        mediaSession,
+        castPlayer,
+    })
+    const isAttachedToCurrentCastMedia =
+        remoteMediaIdentity?.mediaKey === castMediaKey &&
+        remoteMediaIdentity.variantKey === castVariantKey
+    const hasRemoteMediaStatus =
+        mediaSession?.media != null ||
+        castPlayer?.isMediaLoaded === true ||
+        castPlayer?.mediaInfo != null
+    const shouldWaitForResumedMedia =
+        sessionState === 'SESSION_RESUMED' &&
+        !resumeMediaCheckTimedOut &&
+        !isAttachedToCurrentCastMedia &&
+        (!hasRemoteMediaStatus || remoteMediaIdentity == null)
+
+    useEffect(() => {
+        setResumeMediaCheckTimedOut(false)
+        if (sessionState !== 'SESSION_RESUMED') return
+
+        const timeoutId = window.setTimeout(() => {
+            setResumeMediaCheckTimedOut(true)
+        }, 2000)
+
+        return () => {
+            window.clearTimeout(timeoutId)
+        }
+    }, [castSessionId, sessionState])
 
     const { data, isLoading, error } = useGetPlayServerMedia({
         playRequestSource: source,
@@ -162,7 +222,10 @@ function PlayerCastViewReady({
         forceTranscode,
         ...playSettings.settings,
         options: {
-            enabled: shouldRequestMedia,
+            enabled:
+                shouldRequestMedia &&
+                !isAttachedToCurrentCastMedia &&
+                !shouldWaitForResumedMedia,
             refetchOnWindowFocus: false,
             staleTime: 6 * 60 * 60 * 1000, // 6 hours
         },
@@ -175,90 +238,97 @@ function PlayerCastViewReady({
     }, [playbackError, forceTranscode])
 
     useEffect(() => {
+        if (isAttachedToCurrentCastMedia) {
+            lastLoadedKeyRef.current = castVariantKey
+            inFlightLoadKeyRef.current = null
+            return
+        }
+        if (shouldWaitForResumedMedia) return
         if (!data || !castSession) return
         const contentUrl =
             data.can_direct_play && canUseDirectPlay && source.source.media_type
                 ? data.direct_play_url
                 : data.hls_url
-        if (contentUrl === lastLoadedUrlRef.current) return
-        lastLoadedUrlRef.current = contentUrl
+        const loadKey = [contentUrl, castVariantKey].join('|')
+        if (
+            loadKey === lastLoadedKeyRef.current ||
+            loadKey === inFlightLoadKeyRef.current
+        ) {
+            return
+        }
+        inFlightLoadKeyRef.current = loadKey
 
-        const subtitleTracks = source.source.subtitles.map((sub, i) => {
-            const key = toLangKey(sub)
-            const subtitleUrl =
-                `${source.request.play_url}/subtitle-file` +
-                `?play_id=${source.request.play_id}` +
-                `&source_index=${source.source.index}` +
-                `&lang=${key}`
-            const track = new chrome.cast.media.Track(
-                i + 1,
-                chrome.cast.media.TrackType.TEXT,
-            )
-            track.trackContentId = subtitleUrl
-            track.trackContentType = 'text/vtt'
-            track.subtype = chrome.cast.media.TextTrackType.SUBTITLES
-            track.name = sub.title || sub.language
-            track.language = sub.language
-            return track
+        const directPlayContentType =
+            data.can_direct_play && canUseDirectPlay
+                ? (source.source.media_type ?? undefined)
+                : undefined
+        const seplisCastIdentity: SeplisCastMediaIdentity = {
+            version: 1,
+            mediaKey: castMediaKey,
+            variantKey: castVariantKey,
+        }
+        const remoteCurrentTime =
+            castPlayer?.isMediaLoaded &&
+            remoteMediaIdentity?.mediaKey === castMediaKey &&
+            (castPlayer.currentTime ?? 0) > 0
+                ? castPlayer.currentTime
+                : null
+
+        const request = createChromecastLoadRequest({
+            source,
+            contentUrl,
+            directPlayContentType,
+            title,
+            secondaryTitle,
+            subtitle,
+            currentTime: remoteCurrentTime ?? startTimeRef.current,
+            seplisCastIdentity,
+            customData: {
+                keep_alive_url: data.keep_alive_url,
+                save_position_url: castInfo?.savePositionUrl,
+                watched_url: castInfo?.watchedUrl,
+                token: localStorage.getItem('accessToken'),
+                duration: source.source.duration,
+            },
         })
 
-        const metadata = new chrome.cast.media.GenericMediaMetadata()
-        metadata.title = title ?? ''
-        metadata.subtitle = secondaryTitle ?? ''
-
-        const mediaInfo = new chrome.cast.media.MediaInfo(
-            contentUrl,
-            data.can_direct_play && canUseDirectPlay && source.source.media_type
-                ? source.source.media_type
-                : 'application/x-mpegurl',
-        )
-        if (!(data.can_direct_play && canUseDirectPlay)) {
-            // @ts-ignore
-            mediaInfo.hlsVideoSegmentFormat = // @ts-ignore
-                chrome.cast.media.HlsSegmentFormat.FMP4
-        }
-        ;(mediaInfo as any).contentUrl = contentUrl
-        mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED
-        mediaInfo.metadata = metadata
-        mediaInfo.tracks = subtitleTracks
-
-        const request = new chrome.cast.media.LoadRequest(mediaInfo)
-        request.autoplay = true
-
-        request.currentTime =
-            castPlayer?.isMediaLoaded && (castPlayer.currentTime ?? 0) > 0
-                ? castPlayer.currentTime
-                : startTimeRef.current
-
-        if (subtitle) {
-            const idx = source.source.subtitles.findIndex(
-                (s) => s.group_index === subtitle.group_index,
-            )
-            if (idx >= 0) request.activeTrackIds = [idx + 1]
-        }
-
-        request.customData = {
-            keep_alive_url: data.keep_alive_url,
-            save_position_url: castInfo?.savePositionUrl,
-            watched_url: castInfo?.watchedUrl,
-            token: localStorage.getItem('accessToken'),
-            duration: source.source.duration,
-        }
-
-        castSession.loadMedia(request)
+        loadMedia(request)
+            .then(() => {
+                if (inFlightLoadKeyRef.current === loadKey) {
+                    lastLoadedKeyRef.current = loadKey
+                }
+            })
+            .catch(() => {
+                if (inFlightLoadKeyRef.current === loadKey) {
+                    lastLoadedKeyRef.current = null
+                }
+            })
+            .finally(() => {
+                if (inFlightLoadKeyRef.current === loadKey) {
+                    inFlightLoadKeyRef.current = null
+                }
+            })
     }, [
         data,
         castSession,
+        loadMedia,
+        isAttachedToCurrentCastMedia,
+        shouldWaitForResumedMedia,
         canUseDirectPlay,
+        castMediaKey,
+        castVariantKey,
         source.source.media_type,
         source.source.subtitles,
         source.request.play_id,
         source.request.play_url,
         source.source.index,
+        audio,
+        forceTranscode,
         title,
         secondaryTitle,
         castPlayer?.isMediaLoaded,
         castPlayer?.currentTime,
+        remoteMediaIdentity?.mediaKey,
         subtitle,
         castInfo?.savePositionUrl,
         castInfo?.watchedUrl,
@@ -266,34 +336,33 @@ function PlayerCastViewReady({
     ])
 
     useEffect(() => {
-        if (!castSession) return
-        const mediaSession = castSession.getMediaSession()
         if (!mediaSession) return
 
-        const activeTrackIds = (() => {
-            if (!subtitle) return []
-            const idx = source.source.subtitles.findIndex(
-                (s) => s.group_index === subtitle.group_index,
-            )
-            return idx >= 0 ? [idx + 1] : []
-        })()
-
-        const req = new chrome.cast.media.EditTracksInfoRequest(activeTrackIds)
-        mediaSession.editTracksInfo(
-            req,
-            () => {},
-            () => {},
+        const activeTrackIds = getSubtitleTrackIds(
+            source.source.subtitles,
+            subtitle,
         )
-    }, [subtitle, castSession])
+        editTracks(activeTrackIds).catch(() => {})
+    }, [subtitle, mediaSession, editTracks, source.source.subtitles])
 
     return (
         <>
             {capabilitiesPending && <PageLoader />}
-            {!capabilitiesPending && isLoading && <PageLoader />}
-            {!capabilitiesPending && error && <ErrorBox errorObj={error} />}
-            {!capabilitiesPending && !data && !isLoading && (
-                <ErrorBox message="No playable source found" />
+            {!capabilitiesPending && shouldWaitForResumedMedia && (
+                <PageLoader />
             )}
+            {!capabilitiesPending &&
+                !isAttachedToCurrentCastMedia &&
+                isLoading && <PageLoader />}
+            {!capabilitiesPending && error && <ErrorBox errorObj={error} />}
+            {!capabilitiesPending &&
+                !isAttachedToCurrentCastMedia &&
+                loadError && <ErrorBox errorObj={loadError} />}
+            {!capabilitiesPending &&
+                !isAttachedToCurrentCastMedia &&
+                !shouldWaitForResumedMedia &&
+                !data &&
+                !isLoading && <ErrorBox message="No playable source found" />}
             <PlayerCast
                 title={title}
                 secondaryTitle={secondaryTitle}

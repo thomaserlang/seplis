@@ -82,21 +82,22 @@ export function CastControls({
                         <ArrowClockwiseIcon size={22} weight="bold" />
                     </ActionIcon>
                 </Tooltip>
+            </Group>
+
+            <Group gap={4} justify="center">
                 {onPlayNext && (
                     <Tooltip label="Play next episode" position="top">
                         <ActionIcon
                             variant="subtle"
-                            size="xl"
+                            size={44}
                             aria-label="Play next episode"
                             onClick={onPlayNext}
                         >
-                            <SkipForwardIcon size={22} weight="fill" />
+                            <SkipForwardIcon size={26} weight="fill" />
                         </ActionIcon>
                     </Tooltip>
                 )}
-            </Group>
 
-            <Group gap={4} justify="center">
                 {isConnected && (
                     <Tooltip label="Disconnect Chromecast" position="top">
                         <ActionIcon

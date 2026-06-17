@@ -61,7 +61,7 @@ interface SwitchProps extends PlayerProps {
 
 function PlayerSwitch({ playRequestsSources, ...props }: SwitchProps) {
     const wasConnectedRef = useRef(false)
-    const { isConnected } = useChromecast()
+    const { isConnected, isConnecting, isRecoveringSession } = useChromecast()
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -70,6 +70,9 @@ function PlayerSwitch({ playRequestsSources, ...props }: SwitchProps) {
             else navigate(-1)
         }
     }, [isConnected])
+
+    if ((isRecoveringSession || isConnecting) && !isConnected)
+        return <PageLoader />
 
     if (isConnected) {
         wasConnectedRef.current = true

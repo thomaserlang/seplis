@@ -9,6 +9,10 @@ import { ArrowLeftIcon } from '@phosphor-icons/react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { CAST_NAMESPACE } from '../constants'
 import { useChromecast } from '../providers/chromecast-provider'
+import {
+    getMediaSessionCanSeek,
+    getMediaSessionCurrentTime,
+} from '../utils/chromecast-media-session.utils'
 import { CastControls } from './cast-controls'
 import { CastIdentity } from './cast-identity'
 import { CastProgress } from './cast-progress'
@@ -52,9 +56,11 @@ export function PlayerCast({
 }: Props): ReactNode {
     const {
         player,
-        playerController,
+        mediaSession,
         castSession,
         endSession,
+        playPause,
+        seekMedia,
         isConnected,
         sendMessage,
     } = useChromecast()
@@ -72,12 +78,17 @@ export function PlayerCast({
     const [dragTime, setDragTime] = useState<number | null>(null)
     const [settingsOpen, setSettingsOpen] = useState(false)
 
-    const currentTime = dragTime ?? player?.currentTime ?? 0
-    const duration = player?.duration ?? 0
-    const isPaused = player?.isPaused ?? true
-    const canSeek = player?.canSeek ?? false
+    const mediaCurrentTime = getMediaSessionCurrentTime(mediaSession)
+    const currentTime = dragTime ?? mediaCurrentTime ?? player?.currentTime ?? 0
+    const duration = mediaSession?.media?.duration ?? player?.duration ?? 0
+    const isPaused = mediaSession
+        ? mediaSession.playerState !== chrome.cast.media.PlayerState.PLAYING &&
+          mediaSession.playerState !== chrome.cast.media.PlayerState.BUFFERING
+        : (player?.isPaused ?? true)
+    const canSeek =
+        getMediaSessionCanSeek(mediaSession) ?? player?.canSeek ?? false
     const deviceName = castSession?.getCastDevice().friendlyName ?? 'Chromecast'
-    const playerState = player?.playerState ?? null
+    const playerState = mediaSession?.playerState ?? player?.playerState ?? null
 
     const prevPlayerStateRef = useRef<string | null>(null)
     useEffect(() => {
@@ -95,9 +106,7 @@ export function PlayerCast({
     }
 
     const seek = (targetTime: number) => {
-        if (!player || !playerController) return
-        player.currentTime = Math.max(0, Math.min(targetTime, duration))
-        playerController.seek()
+        seekMedia(Math.max(0, Math.min(targetTime, duration))).catch(() => {})
     }
 
     return (
@@ -149,7 +158,7 @@ export function PlayerCast({
                 settingsOpen={settingsOpen}
                 isConnected={isConnected}
                 onSeek={seek}
-                onPlayPause={() => playerController?.playOrPause()}
+                onPlayPause={() => playPause().catch(() => {})}
                 onPlayNext={onPlayNext}
                 onSettingsOpenChange={setSettingsOpen}
                 onDisconnect={() => endSession(true)}

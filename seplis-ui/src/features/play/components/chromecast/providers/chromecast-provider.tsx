@@ -1,45 +1,31 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { RESUME_SYNC_DELAYS } from '../constants'
+import type { ChromecastCapabilities, ChromecastPlaybackError } from '../types'
 import {
-    createContext,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-    type ReactNode,
-} from 'react'
-import { CAST_NAMESPACE } from '../constants'
-import type {
-    ChromecastCapabilities,
-    ChromecastCapabilitiesMessage,
-    ChromecastMessage,
-    ChromecastPlaybackError,
-    ChromecastPlaybackErrorMessage,
-} from '../types'
+    getCastSessionMediaSession,
+    runMediaCommand,
+    stopMediaSession,
+} from '../utils/chromecast-media-session.utils'
+import {
+    getCastSessionObj,
+    isInactiveSessionState,
+    isPendingSessionState,
+    readStoredCastSession,
+    writeStoredCastSession,
+} from '../utils/chromecast-session.utils'
 import { useChromecastCafSender } from '../utils/react-chromecast-caf'
+import {
+    ChromecastContext,
+    type ChromecastProviderProps,
+} from './chromecast-context'
+import { useChromecastMediaSessionObserver } from './use-chromecast-media-session-observer'
+import { useChromecastReceiverMessages } from './use-chromecast-receiver-messages'
 
-interface ChromecastContextValue {
-    castState: cast.framework.CastState | null
-    sessionState: cast.framework.SessionState | null
-    castSession: cast.framework.CastSession | null
-    player: cast.framework.RemotePlayer | null
-    playerController: cast.framework.RemotePlayerController | null
-    isAvailable: boolean
-    isConnected: boolean
-    capabilities: ChromecastCapabilities | null
-    playbackError: ChromecastPlaybackError | null
-    requestSession: () => Promise<chrome.cast.ErrorCode | undefined>
-    endSession: (stopCasting?: boolean) => void
-    sendMessage: (namespace: string, message: unknown) => Promise<void>
-}
-
-const ChromecastContext = createContext<ChromecastContextValue | null>(null)
-
-interface Props {
-    children: ReactNode
-    receiverApplicationId?: string
-}
-
-export function ChromecastProvider({ children, receiverApplicationId }: Props) {
-    const { cast: senderCast, chrome: senderChrome } = useChromecastCafSender()
+export function ChromecastProvider({
+    children,
+    receiverApplicationId,
+}: ChromecastProviderProps) {
+    const sender = useChromecastCafSender()
     const [castState, setCastState] = useState<cast.framework.CastState | null>(
         null,
     )
@@ -47,163 +33,427 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
         useState<cast.framework.SessionState | null>(null)
     const [castSession, setCastSession] =
         useState<cast.framework.CastSession | null>(null)
+    const [mediaSession, setMediaSession] =
+        useState<chrome.cast.media.Media | null>(null)
     const [capabilities, setCapabilities] =
         useState<ChromecastCapabilities | null>(null)
     const [playbackError, setPlaybackError] =
         useState<ChromecastPlaybackError | null>(null)
+    const [loadError, setLoadError] = useState<unknown>(null)
+    const [isRecoveringSession, setIsRecoveringSession] = useState(
+        readStoredCastSession,
+    )
+    const [isRequestingSession, setIsRequestingSession] = useState(false)
+    const [, setPlayerRevision] = useState(0)
+
+    const castContextRef = useRef<cast.framework.CastContext | null>(null)
+    const castSessionRef = useRef<cast.framework.CastSession | null>(null)
+    const mediaSessionRef = useRef<chrome.cast.media.Media | null>(null)
     const playerRef = useRef<cast.framework.RemotePlayer | null>(null)
     const playerControllerRef =
         useRef<cast.framework.RemotePlayerController | null>(null)
-    const [, setPlayerRevision] = useState(0)
+
+    const setCurrentMediaSession = useCallback(
+        (nextMediaSession: chrome.cast.media.Media | null) => {
+            mediaSessionRef.current = nextMediaSession
+            setMediaSession(nextMediaSession)
+            setPlayerRevision((revision) => revision + 1)
+        },
+        [],
+    )
+
+    const clearReceiverState = useCallback(() => {
+        castSessionRef.current = null
+        mediaSessionRef.current = null
+        setCastSession(null)
+        setMediaSession(null)
+        setCapabilities(null)
+        setPlaybackError(null)
+        setLoadError(null)
+        setIsRecoveringSession(false)
+        setIsRequestingSession(false)
+        writeStoredCastSession(false)
+    }, [])
+
+    const getActiveMediaSession = useCallback(() => {
+        const session =
+            castSessionRef.current ??
+            castContextRef.current?.getCurrentSession() ??
+            null
+        const nextMediaSession =
+            getCastSessionMediaSession(session) ?? mediaSessionRef.current
+
+        if (nextMediaSession !== mediaSessionRef.current) {
+            setCurrentMediaSession(nextMediaSession)
+        }
+
+        return nextMediaSession
+    }, [setCurrentMediaSession])
+
+    const syncFromCastContext = useCallback(() => {
+        const castContext = castContextRef.current
+        if (!castContext) return null
+
+        const nextCastState = castContext.getCastState()
+        const nextSessionState = castContext.getSessionState()
+        const nextSession = castContext.getCurrentSession()
+        const nextMediaSession = getCastSessionMediaSession(nextSession)
+
+        castSessionRef.current = nextSession
+
+        setCastState(nextCastState)
+        setSessionState(nextSessionState)
+        setCastSession(nextSession)
+        setCurrentMediaSession(nextMediaSession)
+
+        if (nextSession) {
+            setIsRecoveringSession(false)
+            writeStoredCastSession(true)
+            return nextSession
+        }
+
+        if (isInactiveSessionState(nextSessionState)) {
+            clearReceiverState()
+        }
+
+        return null
+    }, [clearReceiverState, setCurrentMediaSession])
 
     useEffect(() => {
-        if (!senderCast || !senderChrome) return
+        if (sender.status === 'loading') return
 
-        const castContext = senderCast.framework.CastContext.getInstance()
-        castContext.setOptions({
-            receiverApplicationId:
-                receiverApplicationId ??
-                senderChrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
-            autoJoinPolicy: senderChrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-        })
-
-        const player = new senderCast.framework.RemotePlayer()
-        const playerController =
-            new senderCast.framework.RemotePlayerController(player)
-        playerRef.current = player
-        playerControllerRef.current = playerController
-
-        setCastState(castContext.getCastState())
-        setSessionState(castContext.getSessionState())
-        setCastSession(castContext.getCurrentSession())
-
-        const onCastStateChange = (e: cast.framework.CastStateEventData) => {
-            setCastState(e.castState)
-        }
-        const onSessionStateChange = (
-            e: cast.framework.SessionStateEventData,
-        ) => {
-            setSessionState(e.sessionState)
-            setCastSession(castContext.getCurrentSession())
-            if (
-                e.sessionState ===
-                    senderCast.framework.SessionState.SESSION_ENDED ||
-                e.sessionState ===
-                    senderCast.framework.SessionState.NO_SESSION
-            ) {
-                setCapabilities(null)
-                setPlaybackError(null)
-            }
-        }
-        const onPlayerChange = () => {
-            setPlayerRevision((r) => r + 1)
-        }
-
-        castContext.addEventListener(
-            senderCast.framework.CastContextEventType.CAST_STATE_CHANGED,
-            onCastStateChange,
-        )
-        castContext.addEventListener(
-            senderCast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-            onSessionStateChange,
-        )
-        playerController.addEventListener(
-            senderCast.framework.RemotePlayerEventType.ANY_CHANGE,
-            onPlayerChange,
-        )
-
-        return () => {
-            castContext.removeEventListener(
-                senderCast.framework.CastContextEventType.CAST_STATE_CHANGED,
-                onCastStateChange,
-            )
-            castContext.removeEventListener(
-                senderCast.framework.CastContextEventType.SESSION_STATE_CHANGED,
-                onSessionStateChange,
-            )
-            playerController.removeEventListener(
-                senderCast.framework.RemotePlayerEventType.ANY_CHANGE,
-                onPlayerChange,
-            )
-            playerRef.current = null
-            playerControllerRef.current = null
-        }
-    }, [senderCast, senderChrome, receiverApplicationId])
-
-    useEffect(() => {
-        if (!castSession) {
-            setCapabilities(null)
-            setPlaybackError(null)
+        if (sender.status !== 'ready') {
+            setCastState(null)
+            setSessionState(null)
+            clearReceiverState()
             return
         }
 
+        const castContext = sender.cast.framework.CastContext.getInstance()
+        castContextRef.current = castContext
+
+        const player = new sender.cast.framework.RemotePlayer()
+        const playerController =
+            new sender.cast.framework.RemotePlayerController(player)
+        playerRef.current = player
+        playerControllerRef.current = playerController
+
+        const onCastStateChange = (
+            event: cast.framework.CastStateEventData,
+        ) => {
+            setCastState(event.castState)
+            queueMicrotask(syncFromCastContext)
+        }
+
+        const onSessionStateChange = (
+            event: cast.framework.SessionStateEventData,
+        ) => {
+            setSessionState(event.sessionState)
+            queueMicrotask(syncFromCastContext)
+
+            if (isInactiveSessionState(event.sessionState)) {
+                clearReceiverState()
+            }
+        }
+
+        const onPlayerChange = () => {
+            const nextMediaSession = getCastSessionMediaSession(
+                castSessionRef.current,
+            )
+            setCurrentMediaSession(nextMediaSession)
+        }
+
+        castContext.addEventListener(
+            sender.cast.framework.CastContextEventType.CAST_STATE_CHANGED,
+            onCastStateChange,
+        )
+        castContext.addEventListener(
+            sender.cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
+            onSessionStateChange,
+        )
+        playerController.addEventListener(
+            sender.cast.framework.RemotePlayerEventType.ANY_CHANGE,
+            onPlayerChange,
+        )
+
+        castContext.setOptions({
+            receiverApplicationId:
+                receiverApplicationId ??
+                sender.chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
+            autoJoinPolicy: sender.chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+            resumeSavedSession: true,
+        })
+        syncFromCastContext()
+
+        const resumeTimers = RESUME_SYNC_DELAYS.map((delay) =>
+            window.setTimeout(syncFromCastContext, delay),
+        )
+
+        return () => {
+            for (const timer of resumeTimers) window.clearTimeout(timer)
+            castContext.removeEventListener(
+                sender.cast.framework.CastContextEventType.CAST_STATE_CHANGED,
+                onCastStateChange,
+            )
+            castContext.removeEventListener(
+                sender.cast.framework.CastContextEventType
+                    .SESSION_STATE_CHANGED,
+                onSessionStateChange,
+            )
+            playerController.removeEventListener(
+                sender.cast.framework.RemotePlayerEventType.ANY_CHANGE,
+                onPlayerChange,
+            )
+            castContextRef.current = null
+            castSessionRef.current = null
+            mediaSessionRef.current = null
+            playerRef.current = null
+            playerControllerRef.current = null
+        }
+    }, [
+        clearReceiverState,
+        receiverApplicationId,
+        sender,
+        setCurrentMediaSession,
+        syncFromCastContext,
+    ])
+
+    useEffect(() => {
+        castSessionRef.current = castSession
+
+        if (!castSession) {
+            setCurrentMediaSession(null)
+            setCapabilities(null)
+            setPlaybackError(null)
+        }
+    }, [castSession, setCurrentMediaSession])
+
+    const resetReceiverSessionState = useCallback(() => {
         setCapabilities(null)
         setPlaybackError(null)
+        setLoadError(null)
+    }, [])
 
-        const handleMessage = (
-            namespace: string,
-            message: ChromecastMessage | string,
-        ) => {
-            if (namespace !== CAST_NAMESPACE) return
+    useChromecastMediaSessionObserver({
+        castSession,
+        onMediaSessionChange: setCurrentMediaSession,
+    })
+    useChromecastReceiverMessages({
+        castSession,
+        onCapabilities: setCapabilities,
+        onPlaybackError: setPlaybackError,
+        onReset: resetReceiverSessionState,
+    })
 
-            let data: ChromecastMessage
+    const requestSession = useCallback(async () => {
+        if (sender.status !== 'ready') return undefined
+
+        const castContext =
+            castContextRef.current ??
+            sender.cast.framework.CastContext.getInstance()
+        castContextRef.current = castContext
+
+        try {
+            setIsRequestingSession(true)
+            const result = await castContext.requestSession()
+            syncFromCastContext()
+            return result
+        } catch (error) {
+            syncFromCastContext()
+            return error as chrome.cast.ErrorCode
+        } finally {
+            setIsRequestingSession(false)
+        }
+    }, [sender, syncFromCastContext])
+
+    const endSession = useCallback(
+        async (stopCasting = true) => {
+            if (sender.status !== 'ready') return
+
+            const castContext =
+                castContextRef.current ??
+                sender.cast.framework.CastContext.getInstance()
+            const session =
+                castSessionRef.current ?? castContext.getCurrentSession()
+            const sessionObj = getCastSessionObj(session)
+            const currentMediaSession = getActiveMediaSession()
+
             try {
-                data =
-                    typeof message === 'string'
-                        ? (JSON.parse(message) as ChromecastMessage)
-                        : message
-            } catch {
+                if (session) session.endSession(stopCasting)
+                else castContext.endCurrentSession(stopCasting)
+            } catch {}
+
+            try {
+                castContext.endCurrentSession(stopCasting)
+            } catch {}
+
+            try {
+                if (stopCasting) {
+                    sessionObj?.stop(
+                        () => {},
+                        () => {},
+                    )
+                } else {
+                    sessionObj?.leave(
+                        () => {},
+                        () => {},
+                    )
+                }
+            } catch {}
+
+            if (stopCasting) {
+                stopMediaSession(currentMediaSession)
+            }
+
+            clearReceiverState()
+            setCastState(castContext.getCastState())
+            setSessionState(castContext.getSessionState())
+            window.setTimeout(syncFromCastContext, 500)
+        },
+        [
+            clearReceiverState,
+            getActiveMediaSession,
+            sender,
+            syncFromCastContext,
+        ],
+    )
+
+    const playPause = useCallback(async () => {
+        const currentMediaSession = getActiveMediaSession()
+
+        if (!currentMediaSession) {
+            playerControllerRef.current?.playOrPause()
+            return
+        }
+
+        const shouldPlay =
+            currentMediaSession.playerState ===
+                chrome.cast.media.PlayerState.PAUSED ||
+            currentMediaSession.playerState ===
+                chrome.cast.media.PlayerState.IDLE
+
+        if (shouldPlay) {
+            await runMediaCommand((success, error) => {
+                currentMediaSession.play(
+                    new chrome.cast.media.PlayRequest(),
+                    success,
+                    error,
+                )
+            })
+        } else {
+            await runMediaCommand((success, error) => {
+                currentMediaSession.pause(
+                    new chrome.cast.media.PauseRequest(),
+                    success,
+                    error,
+                )
+            })
+        }
+
+        setCurrentMediaSession(currentMediaSession)
+    }, [getActiveMediaSession, setCurrentMediaSession])
+
+    const seekMedia = useCallback(
+        async (time: number) => {
+            const currentMediaSession = getActiveMediaSession()
+
+            if (!currentMediaSession) {
+                const player = playerRef.current
+                if (!player) return
+
+                player.currentTime = time
+                playerControllerRef.current?.seek()
                 return
             }
 
-            if (data.type === 'capabilities') {
-                setCapabilities(
-                    (data as ChromecastCapabilitiesMessage).payload,
-                )
-            } else if (data.type === 'playbackError') {
-                setPlaybackError(
-                    (data as ChromecastPlaybackErrorMessage).payload,
-                )
+            const request = new chrome.cast.media.SeekRequest()
+            request.currentTime = time
+            request.resumeState =
+                currentMediaSession.playerState ===
+                chrome.cast.media.PlayerState.PAUSED
+                    ? chrome.cast.media.ResumeState.PLAYBACK_PAUSE
+                    : chrome.cast.media.ResumeState.PLAYBACK_START
+
+            await runMediaCommand((success, error) => {
+                currentMediaSession.seek(request, success, error)
+            })
+
+            setCurrentMediaSession(currentMediaSession)
+        },
+        [getActiveMediaSession, setCurrentMediaSession],
+    )
+
+    const loadMedia = useCallback(
+        async (request: chrome.cast.media.LoadRequest) => {
+            const session =
+                castSessionRef.current ??
+                castContextRef.current?.getCurrentSession()
+
+            if (!session) {
+                const error = new Error('No active Chromecast session')
+                setLoadError(error)
+                throw error
             }
-        }
 
-        castSession.addMessageListener(CAST_NAMESPACE, handleMessage)
-        castSession
-            .sendMessage(CAST_NAMESPACE, { type: 'getCapabilities' })
-            .catch(() => {})
+            try {
+                setLoadError(null)
+                const result = await session.loadMedia(request)
+                const nextMediaSession = getCastSessionMediaSession(session)
+                setCurrentMediaSession(nextMediaSession)
+                return result
+            } catch (error) {
+                setLoadError(error)
+                throw error
+            }
+        },
+        [setCurrentMediaSession],
+    )
 
-        return () => {
-            castSession.removeMessageListener(CAST_NAMESPACE, handleMessage)
-        }
-    }, [castSession])
+    const editTracks = useCallback(
+        (activeTrackIds: number[]) => {
+            const currentMediaSession = getActiveMediaSession()
 
-    const requestSession = () => {
-        if (!senderCast)
-            return Promise.resolve(
-                undefined as unknown as chrome.cast.ErrorCode,
+            if (!currentMediaSession) return Promise.resolve()
+
+            const request = new chrome.cast.media.EditTracksInfoRequest(
+                activeTrackIds,
             )
-        return senderCast.framework.CastContext.getInstance().requestSession()
-    }
 
-    const endSession = (stopCasting = true) => {
-        if (!senderCast) return
-        senderCast.framework.CastContext.getInstance().endCurrentSession(
-            stopCasting,
-        )
-    }
+            return new Promise<void>((resolve, reject) => {
+                currentMediaSession.editTracksInfo(
+                    request,
+                    () => resolve(),
+                    (error) => reject(error),
+                )
+            })
+        },
+        [getActiveMediaSession],
+    )
 
-    const sendMessage = async (namespace: string, message: unknown) => {
-        if (!senderCast) return
-        const session =
-            senderCast.framework.CastContext.getInstance().getCurrentSession()
-        if (!session) return
-        await session.sendMessage(namespace, message)
-    }
+    const sendMessage = useCallback(
+        async (namespace: string, message: unknown) => {
+            const session =
+                castSessionRef.current ??
+                castContextRef.current?.getCurrentSession()
 
-    const isConnected = castState === senderCast?.framework.CastState.CONNECTED
+            if (!session) return
+            await session.sendMessage(namespace, message)
+        },
+        [],
+    )
+
+    const isReady = sender.status === 'ready'
+    const isConnected =
+        castSession != null && !isInactiveSessionState(sessionState)
+    const isConnecting =
+        isRequestingSession ||
+        isRecoveringSession ||
+        isPendingSessionState(sessionState) ||
+        castState === sender.cast?.framework.CastState.CONNECTING
     const isAvailable =
+        isReady &&
         castState !== null &&
-        castState !== senderCast?.framework.CastState.NO_DEVICES_AVAILABLE
+        castState !== sender.cast.framework.CastState.NO_DEVICES_AVAILABLE
 
     return (
         <ChromecastContext.Provider
@@ -211,14 +461,22 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
                 castState,
                 sessionState,
                 castSession,
+                mediaSession,
                 player: playerRef.current,
                 playerController: playerControllerRef.current,
                 isAvailable,
                 isConnected,
+                isConnecting,
+                isRecoveringSession,
                 capabilities,
                 playbackError,
+                loadError,
                 requestSession,
                 endSession,
+                playPause,
+                seekMedia,
+                loadMedia,
+                editTracks,
                 sendMessage,
             }}
         >
@@ -227,11 +485,4 @@ export function ChromecastProvider({ children, receiverApplicationId }: Props) {
     )
 }
 
-export function useChromecast() {
-    const ctx = useContext(ChromecastContext)
-    if (!ctx)
-        throw new Error(
-            'useChromecast must be used within a ChromecastProvider',
-        )
-    return ctx
-}
+export { useChromecast } from './chromecast-context'
