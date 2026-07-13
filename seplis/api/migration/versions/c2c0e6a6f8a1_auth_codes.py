@@ -1,3 +1,4 @@
+# ruff: noqa
 """auth codes
 
 Revision ID: c2c0e6a6f8a1

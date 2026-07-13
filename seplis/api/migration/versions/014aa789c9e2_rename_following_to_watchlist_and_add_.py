@@ -1,3 +1,4 @@
+# ruff: noqa
 """rename following to watchlist and add favorite
 
 Revision ID: 014aa789c9e2

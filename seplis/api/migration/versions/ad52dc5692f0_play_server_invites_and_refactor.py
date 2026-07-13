@@ -1,3 +1,4 @@
+# ruff: noqa
 """play server invites and refactor
 
 Revision ID: ad52dc5692f0

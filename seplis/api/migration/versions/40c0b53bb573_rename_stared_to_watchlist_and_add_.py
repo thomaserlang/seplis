@@ -1,3 +1,4 @@
+# ruff: noqa
 """rename stared to watchlist and add favorite
 
 Revision ID: 40c0b53bb573

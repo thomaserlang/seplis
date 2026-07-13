@@ -1,26 +1,29 @@
-from pydantic import BaseModel, ConfigDict, Field
+from dataclasses import dataclass
+from typing import Annotated, TypedDict
+
+from pydantic import Field
 
 from .user_field_constraints_schemas import PasswordStr
 
 
-class UserAuthenticated(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class UserAuthenticated:
     id: int
     token: str | None = None
     scopes: list[str] | None = None
 
-    model_config = ConfigDict(from_attributes=True)
 
-
-class UserChangePassword(BaseModel):
-    current_password: str = Field(min_length=1)
+class UserChangePassword(TypedDict):
+    current_password: Annotated[str, Field(min_length=1)]
     new_password: PasswordStr
 
 
-class TokenCreate(BaseModel):
+class TokenCreate(TypedDict):
     login: str
     password: str
 
 
-class Token(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class Token:
     access_token: str
     token_type: str = 'bearer'

@@ -1,3 +1,4 @@
+# ruff: noqa
 """user created field rename
 
 Revision ID: 6b61517732

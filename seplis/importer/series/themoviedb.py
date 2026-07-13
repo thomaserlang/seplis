@@ -1,7 +1,15 @@
-from seplis import config
-from seplis.api import schemas
+from typing import Any
 
-from .base import Series_importer_base, client, register_importer
+from seplis import config
+from seplis.api.image import ImageImport
+from seplis.api.series import (
+    EpisodeUpdate,
+    SeriesCastPersonImport,
+    SeriesCastRoleCreate,
+    SeriesUpdate,
+)
+
+from .base import SeriesImporterBase, client, register_importer
 
 statuses = {
     'Unknown': 0,
@@ -11,7 +19,7 @@ statuses = {
 }
 
 
-class TheMovieDB(Series_importer_base):
+class TheMovieDB(SeriesImporterBase):
     display_name = 'TheMovieDB'
     external_name = 'themoviedb'
     supported = (
@@ -22,7 +30,7 @@ class TheMovieDB(Series_importer_base):
         'poster',
     )
 
-    async def info(self, external_id: str) -> schemas.Series_update:
+    async def info(self, external_id: str) -> SeriesUpdate | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/tv/{external_id}',
             params={
@@ -48,7 +56,7 @@ class TheMovieDB(Series_importer_base):
             if keyword['name'].lower() == 'anime':
                 genres.append('Anime')
 
-        return schemas.Series_update(
+        return SeriesUpdate(
             title=series['name'][:200],
             original_title=series['original_name'][:200]
             if series['original_name']
@@ -68,7 +76,7 @@ class TheMovieDB(Series_importer_base):
             ],
         )
 
-    async def images(self, external_id: str) -> list[schemas.Image_import]:
+    async def images(self, external_id: str) -> list[ImageImport] | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/tv/{external_id}',
             params={
@@ -80,23 +88,27 @@ class TheMovieDB(Series_importer_base):
         if r.status_code != 200:
             return None
         data = r.json()
-        images: list[schemas.Image_import] = []
+        images: list[ImageImport] = []
         if data['poster_path']:
             images.append(
-                schemas.Image_import(
+                ImageImport(
                     external_name='themoviedb',
                     external_id=data['poster_path'],
                     type='poster',
-                    source_url=f'https://image.tmdb.org/t/p/original{data["poster_path"]}',
+                    source_url=(
+                        f'https://image.tmdb.org/t/p/original{data["poster_path"]}'
+                    ),
                 )
             )
         images.extend(
             [
-                schemas.Image_import(
+                ImageImport(
                     external_name='themoviedb',
                     external_id=image['file_path'],
                     type='poster',
-                    source_url=f'https://image.tmdb.org/t/p/original{image["file_path"]}',
+                    source_url=(
+                        f'https://image.tmdb.org/t/p/original{image["file_path"]}'
+                    ),
                 )
                 for image in sorted(
                     data['images']['posters'],
@@ -107,7 +119,7 @@ class TheMovieDB(Series_importer_base):
         )
         return images
 
-    async def episodes(self, external_id) -> list[schemas.Episode_update]:
+    async def episodes(self, external_id: str) -> list[EpisodeUpdate] | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/tv/{external_id}',
             params={
@@ -129,7 +141,7 @@ class TheMovieDB(Series_importer_base):
             )
             if r.status_code == 200:
                 episodes_data.extend(r.json()['episodes'])
-        episodes: list[schemas.Episode_update] = []
+        episodes: list[EpisodeUpdate] = []
         i = 0
         for episode in episodes_data:
             if episode['season_number'] == 0:
@@ -138,7 +150,7 @@ class TheMovieDB(Series_importer_base):
                 continue
             i += 1
             episodes.append(
-                schemas.Episode_update(
+                EpisodeUpdate(
                     number=i,
                     title=episode['name'][:200],
                     original_title=episode['name'][:200],
@@ -153,7 +165,7 @@ class TheMovieDB(Series_importer_base):
             )
         return episodes
 
-    async def cast(self, external_id: str):
+    async def cast(self, external_id: str) -> list[SeriesCastPersonImport] | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/tv/{external_id}/aggregate_credits',
             params={
@@ -165,12 +177,14 @@ class TheMovieDB(Series_importer_base):
             return None
         data = r.json()
         return [
-            schemas.Series_cast_person_import(
+            SeriesCastPersonImport(
                 external_name=self.external_name,
                 external_id=str(person['id']),
                 roles=[
-                    schemas.Series_cast_role(
-                        character=role['character'][:200] if role['character'] else None,
+                    SeriesCastRoleCreate(
+                        character=(
+                            role['character'][:200] if role['character'] else None
+                        ),
                         total_episodes=role['episode_count']
                         if role['episode_count']
                         else 0,
@@ -185,7 +199,7 @@ class TheMovieDB(Series_importer_base):
             for person in data['cast']
         ]
 
-    async def poster(self, external_id):
+    async def poster(self, external_id: str) -> ImageImport | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/tv/{external_id}',
             params={
@@ -197,11 +211,11 @@ class TheMovieDB(Series_importer_base):
             return None
         data = r.json()
         if data['poster_path']:
-            return schemas.Image_import(
+            return ImageImport(
                 external_name='themoviedb',
                 external_id=data['poster_path'],
                 type='poster',
-                source_url=f'https://image.tmdb.org/t/p/original{data["poster_path"]}',
+                source_url=(f'https://image.tmdb.org/t/p/original{data["poster_path"]}'),
             )
         return None
 
@@ -226,7 +240,7 @@ class TheMovieDB(Series_importer_base):
             page += 1
         return ids
 
-    async def lookup_from_imdb(self, imdb: str):
+    async def lookup_from_imdb(self, imdb: str) -> Any:
         r = await client.get(
             f'https://api.themoviedb.org/3/find/{imdb}',
             params={

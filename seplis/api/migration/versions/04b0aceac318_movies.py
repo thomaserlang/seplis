@@ -1,3 +1,4 @@
+# ruff: noqa
 """movies
 
 Revision ID: 04b0aceac318

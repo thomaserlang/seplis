@@ -1,3 +1,4 @@
+# ruff: noqa
 """Movie extra stuff
 
 Revision ID: f689fc38a115

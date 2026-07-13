@@ -10,7 +10,7 @@ from seplis.api.user.actions.token_actions import create_token
 from ..actions.auth_code_actions import create_auth_code, redeem_auth_code
 from ..schemas.auth_code_schemas import AuthCode, AuthCodeRedeem
 
-router = APIRouter(prefix='/2', tags=['Login'])
+router = APIRouter(tags=['Login'])
 
 
 @router.post('/auth-code', status_code=201)

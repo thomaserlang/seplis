@@ -13,4 +13,3 @@ async def get_session(
     else:
         async with database.session() as session:
             yield session
-            await session.commit()

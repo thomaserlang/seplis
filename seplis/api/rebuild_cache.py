@@ -3,9 +3,9 @@ import asyncio
 from seplis import logger
 from seplis.api import elasticcreate
 from seplis.api.database import database
-from seplis.api.models.movie import rebuild_movies
-from seplis.api.models.series import rebuild_series
-from seplis.api.user.actions.user_actions import rebuild_tokens
+from seplis.api.movie import rebuild_movies
+from seplis.api.series import rebuild_series
+from seplis.api.user.actions.token_actions import rebuild_tokens
 
 
 async def rebuild() -> None:

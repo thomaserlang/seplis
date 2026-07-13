@@ -1,3 +1,4 @@
+# ruff: noqa
 """User scopes
 
 Revision ID: ba4acf634b4d

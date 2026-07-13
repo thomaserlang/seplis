@@ -1,3 +1,4 @@
+# ruff: noqa
 """user show ratings
 
 Revision ID: 9af483c392ec

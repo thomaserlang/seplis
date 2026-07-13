@@ -1,3 +1,4 @@
+# ruff: noqa
 """added play servers
 
 Revision ID: 33c383c293b

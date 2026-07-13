@@ -1,3 +1,4 @@
+# ruff: noqa
 """renamed show_followers to show_fans
 
 Revision ID: 3e6d8210fa1

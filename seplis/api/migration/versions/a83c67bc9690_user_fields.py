@@ -1,3 +1,4 @@
+# ruff: noqa
 """user fields
 
 Revision ID: a83c67bc9690

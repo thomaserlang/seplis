@@ -1,3 +1,4 @@
+# ruff: noqa
 """added total episodes
 
 Revision ID: 1852cafc4891

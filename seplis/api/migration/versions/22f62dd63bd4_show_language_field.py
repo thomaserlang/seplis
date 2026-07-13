@@ -1,3 +1,4 @@
+# ruff: noqa
 """show language field
 
 Revision ID: 22f62dd63bd4

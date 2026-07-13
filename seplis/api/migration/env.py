@@ -9,7 +9,7 @@ config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-fileConfig(config.config_file_name, disable_existing_loggers=False)
+fileConfig(config.config_file_name, disable_existing_loggers=False)  # ty:ignore[invalid-argument-type]
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -55,7 +55,7 @@ def run_migrations_online() -> None:
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        config.get_section(config.config_ini_section),  # ty:ignore[invalid-argument-type]
         prefix='sqlalchemy.',
         poolclass=pool.NullPool,
     )

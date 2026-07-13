@@ -1,3 +1,4 @@
+# ruff: noqa
 """Increased show and show description url length
 
 Revision ID: 5235cd58417

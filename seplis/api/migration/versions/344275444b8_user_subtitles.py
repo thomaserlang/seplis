@@ -1,3 +1,4 @@
+# ruff: noqa
 """user_subtitles
 
 Revision ID: 344275444b8

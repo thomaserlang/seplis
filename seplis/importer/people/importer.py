@@ -1,27 +1,41 @@
 import asyncio
+from typing import Any
 
 import sqlalchemy as sa
 
 from seplis import logger
-from seplis.api import models, schemas
 from seplis.api.database import database
+from seplis.api.image import (
+    Image,
+    ImageImport,
+    MImage,
+    image_mapper,
+)
+from seplis.api.image import (
+    save_image as save_image_action,
+)
+from seplis.api.person import (
+    MPerson,
+    Person,
+    PersonUpdate,
+    person_mapper,
+    save_person,
+)
 from seplis.utils.compare import compare
 
 from .base import importers
 
 
-async def update_person_by_id(person_id) -> None:
+async def update_person_by_id(person_id: int) -> None:
     async with database.session() as session:
-        result = await session.scalar(
-            sa.select(models.MPerson).where(models.MPerson.id == person_id)
-        )
+        result = await session.scalar(sa.select(MPerson).where(MPerson.id == person_id))
         if not result:
             logger.error(f'Unknown person: {person_id}')
             return
-        await update_person(schemas.Person.model_validate(result))
+        await update_person(person_mapper(result))
 
 
-async def update_person(person: schemas.Person):
+async def update_person(person: Person) -> Person | None:
     if not person.externals:
         logger.warning(f'Person {person.id} has no externals')
         return None
@@ -33,10 +47,10 @@ async def update_person(person: schemas.Person):
     return person
 
 
-async def create_person(external_name: str, external_id: str):
+async def create_person(external_name: str, external_id: str) -> Person | None:
     logger.info(f'Creating person: {external_name} {external_id}')
     return await update_person(
-        person=schemas.Person(
+        person=Person(
             id=None,
             externals={
                 external_name: str(external_id),
@@ -45,24 +59,28 @@ async def create_person(external_name: str, external_id: str):
     )
 
 
-async def update_person_info(person: schemas.Person):
+async def update_person_info(person: Person) -> Person | None:
     # TODO: Add support for option to specify other importers like for series
     logger.debug(f'[Person: {person.id or "new"}] Updating info')
-    info: schemas.Person_update = await call_importer(
+    info: PersonUpdate = await call_importer(
         external_name='themoviedb',
         method='info',
         external_id=person.externals.get('themoviedb'),
     )
-    old_info = person.to_request() if person.id else schemas.Person_update()
+    if not info:
+        return None
+    old_info = person.to_request() if person.id else {}
     data = compare(info, old_info, skip_keys=['also_known_as'])
     missing_also_known_as = [
-        x for x in info.also_known_as if x not in old_info.also_known_as
+        x
+        for x in info.get('also_known_as') or []
+        if x not in (old_info.get('also_known_as') or [])
     ]
-    if info.also_known_as and missing_also_known_as:
-        data['also_known_as'] = info.also_known_as
+    if info.get('also_known_as') and missing_also_known_as:
+        data['also_known_as'] = info['also_known_as']
     if data:
-        return await models.MPerson.save(
-            data=schemas.Person_update.model_validate(data),
+        return await save_person(
+            data=PersonUpdate(**data),
             person_id=person.id,
             patch=True,
         )
@@ -70,31 +88,33 @@ async def update_person_info(person: schemas.Person):
     return None
 
 
-async def update_person_images(person: schemas.Person) -> None:
+async def update_person_images(person: Person) -> None:
     logger.debug(f'[Person: {person.id}] Updating images')
+    if person.id is None:
+        logger.warning('Cannot update images for person without id')
+        return
+    person_id = person.id
     imp_names = _importers_with_support(person.externals, 'images')
     async with database.session() as session:
         result = await session.scalars(
-            sa.select(models.MImage).where(
-                models.MImage.relation_id == person.id,
-                models.MImage.relation_type == 'person',
+            sa.select(MImage).where(
+                MImage.relation_id == person.id,
+                MImage.relation_type == 'person',
             )
         )
         current_images = {
-            f'{image.external_name}-{image.external_id}': schemas.Image.model_validate(
-                image
-            )
+            f'{image.external_name}-{image.external_id}': image_mapper(image)
             for image in result
         }
-    images_added: list[schemas.Image] = []
+    images_added: list[Image] = []
 
-    async def save_image(image) -> None:
+    async def save_image(image: ImageImport) -> None:
         try:
-            if f'{image.external_name}-{image.external_id}' not in current_images:
+            if f'{image["external_name"]}-{image["external_id"]}' not in current_images:
                 images_added.append(
-                    await models.MImage.save(
+                    await save_image_action(
                         relation_type='person',
-                        relation_id=person.id,
+                        relation_id=person_id,
                         image_data=image,
                     )
                 )
@@ -103,9 +123,10 @@ async def update_person_images(person: schemas.Person) -> None:
         except Exception as e:
             logger.exception(e)
 
+    imp_images: list[ImageImport] = []
     for name in imp_names:
         try:
-            imp_images: list[schemas.Image_import] = await call_importer(
+            imp_images: list[ImageImport] = await call_importer(
                 external_name=name,
                 method='images',
                 external_id=person.externals[name],
@@ -121,20 +142,22 @@ async def update_person_images(person: schemas.Person) -> None:
     logger.debug(f'[Person: {person.id}] Found {len(imp_images)} images')
 
     if not person.profile_image:
-        all_images: list[schemas.Image] = []
+        all_images: list[Image] = []
         all_images.extend(images_added)
         all_images.extend(current_images.values())
         if all_images:
             logger.info(
                 f'[Person: {person.id}] Setting new primary image: {all_images[0].id}'
             )
-            await models.MPerson.save(
-                data=schemas.Person_update(profile_image_id=all_images[0].id),
+            await save_person(
+                data=PersonUpdate(profile_image_id=all_images[0].id),
                 person_id=person.id,
             )
 
 
-async def call_importer(external_name: str, method: str, *args, **kwargs):
+async def call_importer(
+    external_name: str, method: str, *args: Any, **kwargs: Any
+) -> Any:
     """Calls a method in a registered importer"""
     im = importers.get(external_name)
     if not im:
@@ -149,10 +172,10 @@ async def call_importer(external_name: str, method: str, *args, **kwargs):
     return await m(*args, **kwargs)
 
 
-def _importers_with_support(externals: dict[str, str], support: str) -> list[str]:
+def _importers_with_support(externals: dict[str, str | None], support: str) -> list[str]:
     imp_names = []
     for name in importers:
-        if name not in externals:
+        if not externals.get(name):
             continue
         if support in importers[name].supported:
             imp_names.append(name)

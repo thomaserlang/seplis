@@ -1,3 +1,4 @@
+# ruff: noqa
 """expand token
 
 Revision ID: 9ba3d50cb498

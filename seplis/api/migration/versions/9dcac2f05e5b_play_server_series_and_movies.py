@@ -1,3 +1,4 @@
+# ruff: noqa
 """Play server series and movies
 
 Revision ID: 9dcac2f05e5b

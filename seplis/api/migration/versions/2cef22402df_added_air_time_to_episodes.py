@@ -1,3 +1,4 @@
+# ruff: noqa
 """Added air_time to episodes
 
 Revision ID: 2cef22402df

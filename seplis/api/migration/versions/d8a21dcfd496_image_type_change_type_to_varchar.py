@@ -1,3 +1,4 @@
+# ruff: noqa
 """image type change type to varchar
 
 Revision ID: d8a21dcfd496

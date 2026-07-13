@@ -1,3 +1,4 @@
+# ruff: noqa
 """Fix runtime type
 
 Revision ID: 80d7e0a4b3bf

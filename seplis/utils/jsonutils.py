@@ -1,5 +1,6 @@
 import decimal
 from collections import OrderedDict
+from dataclasses import asdict, is_dataclass
 from typing import Any
 
 import orjson
@@ -8,6 +9,8 @@ from sqlalchemy.engine import Row
 
 
 def default(obj: Any) -> Any:
+    if is_dataclass(obj):
+        return asdict(obj)
     if isinstance(obj, BaseModel):
         return obj.model_dump()
     if isinstance(obj, set):

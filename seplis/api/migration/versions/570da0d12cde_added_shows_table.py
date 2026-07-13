@@ -1,3 +1,4 @@
+# ruff: noqa
 """Added shows table
 
 Revision ID: 570da0d12cde

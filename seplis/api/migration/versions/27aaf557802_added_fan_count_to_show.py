@@ -1,3 +1,4 @@
+# ruff: noqa
 """added fan count to show
 
 Revision ID: 27aaf557802

@@ -1,3 +1,4 @@
+# ruff: noqa
 """episode air date index
 
 Revision ID: 241a0df3baa

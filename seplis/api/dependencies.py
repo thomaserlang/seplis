@@ -1,4 +1,3 @@
-from collections.abc import AsyncGenerator
 from typing import Annotated
 
 from fastapi import Depends, Request
@@ -6,20 +5,13 @@ from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from fastapi.security.base import SecurityBase
 from fastapi.security.utils import get_authorization_scheme_param
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import exceptions
-from .database import database
-from .user import UserAuthenticated
 from .user.actions.token_actions import get_authenticated_user
+from .user.schemas.user_authentication_schemas import UserAuthenticated
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/2/token')
 oauth2_scheme_no_raise = OAuth2PasswordBearer(tokenUrl='/2/token', auto_error=False)
-
-
-async def get_session() -> AsyncGenerator[AsyncSession]:
-    async with database.session() as session:
-        yield session
 
 
 async def get_current_user(
@@ -27,7 +19,7 @@ async def get_current_user(
 ) -> UserAuthenticated:
     user = await get_authenticated_user(token)
     if not user:
-        raise exceptions.Not_signed_in_exception()
+        raise exceptions.NotSignedInException()
     return user
 
 
@@ -57,7 +49,7 @@ async def get_expand(expand: str | None = None) -> list[str] | None:
     return None
 
 
-class Play_server_secret(SecurityBase):
+class PlayServerSecret(SecurityBase):
     def __init__(self) -> None:
         from fastapi.openapi.models import SecurityBase, SecuritySchemeType
 
@@ -75,7 +67,7 @@ class Play_server_secret(SecurityBase):
         return param
 
 
-play_server_secret = Play_server_secret()
+play_server_secret = PlayServerSecret()
 
 
 httpx_client = AsyncClient()

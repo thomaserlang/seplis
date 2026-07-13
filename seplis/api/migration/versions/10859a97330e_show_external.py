@@ -1,3 +1,4 @@
+# ruff: noqa
 """show_external
 
 Revision ID: 10859a97330e

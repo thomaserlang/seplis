@@ -1,3 +1,4 @@
+# ruff: noqa
 """Reverse the uuid back
 
 Revision ID: 62b9b42489ce

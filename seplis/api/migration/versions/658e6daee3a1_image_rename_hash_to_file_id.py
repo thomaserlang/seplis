@@ -1,3 +1,4 @@
+# ruff: noqa
 """Image rename hash to file_id
 
 Revision ID: 658e6daee3a1

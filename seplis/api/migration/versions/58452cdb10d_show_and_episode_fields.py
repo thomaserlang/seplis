@@ -1,3 +1,4 @@
+# ruff: noqa
 """show and episode fields
 
 Revision ID: 58452cdb10d

@@ -7,7 +7,7 @@ from seplis.api.database import database
 from seplis.api.main import app
 
 
-@pytest_asyncio.fixture(scope='function')  # type: ignore
+@pytest_asyncio.fixture(scope='function')
 async def client() -> AsyncGenerator[AsyncClient]:
     await database.setup_test()
     async with AsyncClient(
@@ -17,7 +17,7 @@ async def client() -> AsyncGenerator[AsyncClient]:
     await database.close_test()
 
 
-@pytest_asyncio.fixture(scope='function')  # type: ignore
+@pytest_asyncio.fixture(scope='function')
 async def db() -> AsyncGenerator[None]:
     await database.setup_test()
     yield

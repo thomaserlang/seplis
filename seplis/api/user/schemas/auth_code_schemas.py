@@ -1,14 +1,16 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, TypedDict
 
-from pydantic import BaseModel, ConfigDict, StringConstraints
+from pydantic import StringConstraints
 
 
-class AuthCode(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class AuthCode:
     code: str
     expires_at: datetime
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class AuthCodeRedeem(TypedDict):
@@ -20,8 +22,7 @@ class AuthCodeRedeem(TypedDict):
     ]
 
 
-class AuthCodeRedeemed(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class AuthCodeRedeemed:
     user_id: int
     scopes: list[str]
-
-    model_config = ConfigDict(from_attributes=True)

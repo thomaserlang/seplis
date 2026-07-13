@@ -3,28 +3,34 @@ import io
 import mimetypes
 import os
 import secrets
-import sys
 import uuid
+from collections.abc import Iterable, Iterator, Mapping, MutableMapping, Sequence
+from collections.abc import Set as AbstractSet
 from datetime import datetime
+from typing import Any
 
 import sqlalchemy as sa
+from sqlalchemy.engine import Dialect
 
 from . import sqlalchemy as sqlalchemy
 from .datetime_now_util import datetime_now as datetime_now
-from .jsonutils import *
+from .jsonutils import json_dumps as json_dumps
+from .jsonutils import json_loads as json_loads
 
 
-def random_key(nbytes=16):
+def random_key(nbytes: int = 16) -> str:
     return secrets.token_hex(nbytes)
 
 
-def parse_link_header(link_header):
+def parse_link_header(link_header: str) -> dict[str, str]:
     """
-    Parses a Link header into a dict according to: http://tools.ietf.org/html/rfc5988#page-6.
+    Parses a Link header into a dict according to:
+    http://tools.ietf.org/html/rfc5988#page-6.
 
     Example:
 
-        <https://api.example.com/1/users?page=2&per_page=1>; rel="next", <https://api.example.com/1/users?page=3&per_page=1>; rel="last"
+        <https://api.example.com/1/users?page=2&per_page=1>; rel="next",
+        <https://api.example.com/1/users?page=3&per_page=1>; rel="last"
 
     Turns into:
 
@@ -57,15 +63,15 @@ def parse_link_header(link_header):
     return parsed_links
 
 
-def flatten(d, parent_key='', sep='_'):
-    items = []
+def flatten(d: Mapping[str, Any], parent_key: str = '', sep: str = '_') -> dict[str, Any]:
+    items: list[tuple[str, Any]] = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
         items.append((new_key, v))
     return dict(items)
 
 
-def keys_to_remove(keys, d) -> None:
+def keys_to_remove(keys: Iterable[str], d: MutableMapping[str, Any]) -> None:
     """
     Removes one or more keys from a dict.
 
@@ -84,17 +90,20 @@ class MultipartFormdataEncoder:
         self.content_type = f'multipart/form-data; boundary={self.boundary}'
 
     @classmethod
-    def u(cls, s):
-        if sys.hexversion < 0x03000000 and isinstance(s, str):
-            s = s.decode('utf-8')
-        if sys.hexversion >= 0x03000000 and isinstance(s, bytes):
-            s = s.decode('utf-8')
+    def u(cls, s: str | bytes) -> str:
+        if isinstance(s, bytes):
+            return s.decode('utf-8')
         return s
 
-    def iter(self, fields, files):
+    def iter(
+        self,
+        fields: Sequence[tuple[str | bytes, str | bytes | int | float]],
+        files: Sequence[tuple[str | bytes, str | bytes, bytes]],
+    ) -> Iterator[tuple[bytes, int]]:
         """
         fields is a sequence of (name, value) elements for regular form fields.
-        files is a sequence of (name, filename, file-type) elements for data to be uploaded as files
+        files is a sequence of (name, filename, file-type) elements for data to be
+        uploaded as files
         Yield body's chunk as bytes
         """
         encoder = codecs.getencoder('utf-8')
@@ -128,14 +137,20 @@ class MultipartFormdataEncoder:
             yield encoder('\r\n')
         yield encoder(f'--{self.boundary}--\r\n')
 
-    def encode(self, fields, files):
+    def encode(
+        self,
+        fields: Sequence[tuple[str | bytes, str | bytes | int | float]],
+        files: Sequence[tuple[str | bytes, str | bytes, bytes]],
+    ) -> tuple[str, bytes]:
         body = io.BytesIO()
         for chunk, _chunk_len in self.iter(fields, files):
             body.write(chunk)
         return self.content_type, body.getvalue()
 
 
-def get_files(path, ext, skip=None):
+def get_files(
+    path: str, ext: str, skip: AbstractSet[str] | Sequence[str] | None = None
+) -> list[str]:
     if skip is None:
         skip = []
     files = []
@@ -155,24 +170,24 @@ def get_files(path, ext, skip=None):
 class JSONEncodedDict(sa.TypeDecorator):
     impl = sa.Text
 
-    def process_bind_param(self, value, dialect):
+    def process_bind_param(self, value: Any, dialect: Dialect) -> str | None:
         if value is None:
             return None
         if isinstance(value, str):
             return value
         return json_dumps(value)
 
-    def process_result_value(self, value, dialect):
+    def process_result_value(self, value: str | bytes | None, dialect: Dialect) -> Any:
         if not value:
             return None
         return json_loads(value)
 
     @classmethod
-    def empty_list(cls):
+    def empty_list(cls) -> list[Any]:
         return []
 
     @classmethod
-    def empty_dict(cls):
+    def empty_dict(cls) -> dict[str, Any]:
         return {}
 
 
@@ -181,15 +196,15 @@ class YesNoBoolean(sa.TypeDecorator):
     false_str = 'N'
     impl = sa.Enum(true_str, false_str)
 
-    def process_bind_param(self, value, dialect):
+    def process_bind_param(self, value: Any, dialect: Dialect) -> str:
         return self.true_str if value else self.false_str
 
-    def process_result_value(self, value, dialect) -> bool:
+    def process_result_value(self, value: str | None, dialect: Dialect) -> bool:
         return True if value == self.true_str else False
 
 
 class dotdict(dict):
-    def __getattr__(self, attr):
+    def __getattr__(self, attr: str) -> Any:
         return self.get(attr)
 
     __setattr__ = dict.__setitem__
@@ -197,14 +212,14 @@ class dotdict(dict):
     __delattr__ = dict.__delitem__
 
 
-def isoformat(dt):
+def isoformat(dt: datetime) -> str:
     r = dt.isoformat()
     if isinstance(dt, datetime) and not dt.tzinfo:
         r += 'Z'
     return r
 
 
-def row_to_dict(row):
+def row_to_dict(row: Any) -> dict[str, Any] | None:
     if not row:
         return None
     if isinstance(row, sa.engine.Row):
@@ -217,7 +232,7 @@ def row_to_dict(row):
             session.refresh(row)
     unloaded = ir.unloaded
     ignore = getattr(row, '__serialize_ignore__', None) or ()
-    d = {}
+    d: dict[str, Any] = {}
     for attr in ir.attrs:
         if attr.key.startswith('_') or attr.key in unloaded or attr.key in ignore:
             continue
@@ -230,7 +245,7 @@ def row_to_dict(row):
     return d
 
 
-def _None_check_str(v):
+def _None_check_str(v: Any) -> str | None:
     """Converts 'None' to None.
 
     :param v: str
@@ -241,13 +256,15 @@ def _None_check_str(v):
     return v
 
 
-def _None_check_int(v):
+def _None_check_int(v: Any) -> int | None:
     if v == 'None':
         return None
     return int(v)
 
 
-def redis_sa_model_dict(rd, cls):
+def redis_sa_model_dict(
+    rd: MutableMapping[str, Any], cls: Any
+) -> MutableMapping[str, Any]:
     """Takes a dict returned from redis and
     converts values to the same type as specified
     in the model.
@@ -271,7 +288,7 @@ def redis_sa_model_dict(rd, cls):
 
 def calculate_weighted_rating(
     rating: float, votes: int, min_votes: int = 3000, mean_vote_global: float = 6.9
-):
+) -> float:
     """True Bayesian Estimate"""
     return (votes / (votes + min_votes)) * rating + (
         min_votes / (votes + min_votes)

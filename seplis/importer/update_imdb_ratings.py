@@ -10,8 +10,9 @@ from aiofile import async_open
 from pydantic import BaseModel, ConfigDict
 
 from .. import logger
-from ..api import models
 from ..api.database import database
+from ..api.movie import MMovie, MMovieRatingHistory, rebuild_movies
+from ..api.series import MSeries, MSeriesRatingHistory, rebuild_series
 
 
 async def update_imdb_ratings() -> None:
@@ -23,10 +24,10 @@ async def update_imdb_ratings() -> None:
         logger.info('Updating imdb ratings for movies')
         result = await session.execute(
             sa.select(
-                models.MMovie.id,
-                models.MMovie.externals,
-                models.MMovie.rating,
-                models.MMovie.rating_votes,
+                MMovie.id,
+                MMovie.externals,
+                MMovie.rating,
+                MMovie.rating_votes,
             )
         )
         for movie in result:
@@ -46,42 +47,42 @@ async def update_imdb_ratings() -> None:
             )
             if len(insert_data) == 10000:
                 await session.execute(
-                    sa.insert(models.MMovieRatingHistory.__table__)
+                    sa.insert(MMovieRatingHistory.__table__)  # type: ignore
                     .prefix_with('IGNORE')
                     .values(insert_data),
                 )
                 insert_data = []
         if insert_data:
             await session.execute(
-                sa.insert(models.MMovieRatingHistory.__table__)
+                sa.insert(MMovieRatingHistory.__table__)  # type: ignore
                 .prefix_with('IGNORE')
                 .values(insert_data),
             )
         insert_data = []
         await session.execute(
-            sa.update(models.MMovie.__table__)
+            sa.update(MMovie.__table__)  # type: ignore
             .values(
                 {
-                    models.MMovie.rating: models.MMovieRatingHistory.rating,
-                    models.MMovie.rating_votes: models.MMovieRatingHistory.votes,
+                    MMovie.rating: MMovieRatingHistory.rating,
+                    MMovie.rating_votes: MMovieRatingHistory.votes,
                 }
             )
             .where(
-                models.MMovieRatingHistory.date == dt,
-                models.MMovieRatingHistory.movie_id == models.MMovie.id,
+                MMovieRatingHistory.date == dt,
+                MMovieRatingHistory.movie_id == MMovie.id,
             ),
         )
         await session.commit()
-        await models.rebuild_movies()
+        await rebuild_movies()
 
     async with database.session() as session:
         logger.info('Updating imdb ratings for series')
         result = await session.execute(
             sa.select(
-                models.MSeries.id,
-                models.MSeries.externals,
-                models.MSeries.rating,
-                models.MSeries.rating_votes,
+                MSeries.id,
+                MSeries.externals,
+                MSeries.rating,
+                MSeries.rating_votes,
             )
         )
         for s in result:
@@ -102,33 +103,33 @@ async def update_imdb_ratings() -> None:
 
             if len(insert_data) == 10000:
                 await session.execute(
-                    sa.insert(models.MSeriesRatingHistory.__table__)
+                    sa.insert(MSeriesRatingHistory.__table__)  # type: ignore
                     .prefix_with('IGNORE')
                     .values(insert_data),
                 )
                 insert_data = []
         if insert_data:
             await session.execute(
-                sa.insert(models.MSeriesRatingHistory.__table__)
+                sa.insert(MSeriesRatingHistory.__table__)  # type: ignore
                 .prefix_with('IGNORE')
                 .values(insert_data),
             )
         insert_data = []
         await session.execute(
-            sa.update(models.MSeries.__table__)
+            sa.update(MSeries.__table__)  # type: ignore
             .values(
                 {
-                    models.MSeries.rating: models.MSeriesRatingHistory.rating,
-                    models.MSeries.rating_votes: models.MSeriesRatingHistory.votes,
+                    MSeries.rating: MSeriesRatingHistory.rating,
+                    MSeries.rating_votes: MSeriesRatingHistory.votes,
                 }
             )
             .where(
-                models.MSeriesRatingHistory.date == dt,
-                models.MSeriesRatingHistory.series_id == models.MSeries.id,
+                MSeriesRatingHistory.date == dt,
+                MSeriesRatingHistory.series_id == MSeries.id,
             ),
         )
         await session.commit()
-        await models.rebuild_series()
+        await rebuild_series()
 
 
 class Rating(BaseModel):
@@ -138,7 +139,7 @@ class Rating(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-async def get_ratings():
+async def get_ratings() -> dict[str, Rating]:
     tmp = os.path.join(tempfile.mkdtemp('seplis'), 'data.gz')
     try:
         async with httpx.AsyncClient() as client:
@@ -151,6 +152,9 @@ async def get_ratings():
             with gzip.open(tmp, mode='rt') as f:
                 rows = csv.reader(f, delimiter='\t')
                 next(rows)
-                return {row[0]: Rating(rating=row[1], votes=row[2]) for row in rows}
+                return {
+                    row[0]: Rating(rating=float(row[1]), votes=int(row[2]))
+                    for row in rows
+                }
     finally:
         os.remove(tmp)

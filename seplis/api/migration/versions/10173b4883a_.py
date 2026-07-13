@@ -1,3 +1,4 @@
+# ruff: noqa
 """changes the image relation type to a varchar instead of int.
 Updates all 1's to show.
 

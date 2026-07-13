@@ -2,6 +2,7 @@ import os
 from email.header import Header
 from email.mime.text import MIMEText
 from email.utils import formataddr, parseaddr
+from typing import Any
 
 import aiosmtplib
 import jinja2
@@ -17,7 +18,7 @@ templateEnv = jinja2.Environment(
 )
 
 
-async def send_email(template_name: str, subject: str, to: str, **kwargs) -> None:
+async def send_email(template_name: str, subject: str, to: str, **kwargs: Any) -> None:
     if not config.smtp.from_email:
         logger.warning('No smtp server has been configured')
         return
@@ -33,7 +34,7 @@ async def send_email(template_name: str, subject: str, to: str, **kwargs) -> Non
         username=config.smtp.user,
         password=config.smtp.password,
         port=int(config.smtp.port),
-        use_tls=config.smtp.use_tls,
+        use_tls=bool(config.smtp.use_tls),
     )
 
 

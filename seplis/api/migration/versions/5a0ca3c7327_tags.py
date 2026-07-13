@@ -1,3 +1,4 @@
+# ruff: noqa
 """tags
 
 Revision ID: 5a0ca3c7327

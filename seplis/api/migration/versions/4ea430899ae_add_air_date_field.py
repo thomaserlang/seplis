@@ -1,3 +1,4 @@
+# ruff: noqa
 """add air_date field
 
 Revision ID: 4ea430899ae

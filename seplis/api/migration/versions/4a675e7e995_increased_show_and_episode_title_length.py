@@ -1,3 +1,4 @@
+# ruff: noqa
 """Increased show and episode title length
 
 Revision ID: 4a675e7e995

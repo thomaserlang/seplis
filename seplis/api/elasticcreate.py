@@ -1,7 +1,9 @@
+from typing import Any
+
 from seplis import config
 
 
-async def create_indices(es) -> None:
+async def create_indices(es: Any) -> None:
     await es.options(ignore_status=[400, 404]).indices.delete(
         index=config.api.elasticsearch.index_prefix + 'titles'
     )

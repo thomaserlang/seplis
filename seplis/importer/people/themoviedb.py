@@ -1,10 +1,11 @@
 from seplis import config
-from seplis.api import schemas
+from seplis.api.image import ImageImport
+from seplis.api.person import PersonUpdate
 
-from .base import Importer_base, client, register_importer
+from .base import ImporterBase, client, register_importer
 
 
-class TheMovieDB(Importer_base):
+class TheMovieDB(ImporterBase):
     display_name = 'TheMovieDB'
     external_name = 'themoviedb'
     supported = (
@@ -12,7 +13,7 @@ class TheMovieDB(Importer_base):
         'images',
     )
 
-    async def info(self, external_id: str) -> schemas.Person_update:
+    async def info(self, external_id: str) -> PersonUpdate | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/person/{external_id}',
             params={
@@ -29,7 +30,7 @@ class TheMovieDB(Importer_base):
         if person.get('imdb_id'):
             externals['imdb'] = person['imdb_id']
 
-        return schemas.Person_update(
+        return PersonUpdate(
             name=person['name'][:500],
             also_known_as=[aka[:500] for aka in person['also_known_as']]
             if person['also_known_as']
@@ -45,7 +46,7 @@ class TheMovieDB(Importer_base):
             externals=externals,
         )
 
-    async def images(self, external_id: str) -> list[schemas.Image_import]:
+    async def images(self, external_id: str) -> list[ImageImport] | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/person/{external_id}',
             params={
@@ -56,14 +57,16 @@ class TheMovieDB(Importer_base):
         if r.status_code != 200:
             return None
         person = r.json()
-        images: list[schemas.Image_import] = []
+        images: list[ImageImport] = []
         if person['profile_path']:
             images.append(
-                schemas.Image_import(
+                ImageImport(
                     external_name='themoviedb',
                     external_id=person['profile_path'],
                     type='profile',
-                    source_url=f'https://image.tmdb.org/t/p/original{person["profile_path"]}',
+                    source_url=(
+                        f'https://image.tmdb.org/t/p/original{person["profile_path"]}'
+                    ),
                 )
             )
         return images

@@ -1,3 +1,4 @@
+# ruff: noqa
 """show genres
 
 Revision ID: 52798db29b1b

@@ -1,20 +1,21 @@
 import os
 import os.path
 import time
-from typing import Literal
+from typing import Any, Literal
 
 import httpx
 
 from seplis import config
-from seplis.api import schemas
+from seplis.api.image import ImageImport
+from seplis.api.series import EpisodeUpdate, SeriesCastPersonImport, SeriesUpdate
 
-importers = {}
+importers: dict[str, SeriesImporterBase] = {}
 
 client = httpx.AsyncClient()
 
 
-def register_importer(obj) -> None:
-    if not isinstance(obj, Series_importer_base):
+def register_importer(obj: object) -> None:
+    if not isinstance(obj, SeriesImporterBase):
         raise Exception('The object must be an instance of `Show_importer_base()`')
     if not obj.external_name:
         raise Exception("The importer external_name can't be `None`")
@@ -23,44 +24,50 @@ def register_importer(obj) -> None:
     importers[obj.external_name] = obj
 
 
-class Series_importer_base:
+class SeriesImporterBase:
     display_name: str
     external_name: str
     supported: tuple[Literal['info', 'episodes', 'images', 'cast']]
 
-    async def info(self, external_id: str) -> schemas.Series_update:
+    async def info(self, external_id: Any) -> SeriesUpdate | None:
         """Override this function and return a show.
         The return result must match `schemas.Show`.
         """
+        raise NotImplementedError
 
-    async def episodes(self, external_id: str) -> list[schemas.Episode_update]:
+    async def episodes(self, external_id: Any) -> list[EpisodeUpdate] | None:
         """Override this function and return a list of episodes.
         The return result must match [`schemas.Episode`]
         """
+        raise NotImplementedError
 
-    async def images(self, external_id: str) -> list[schemas.Image_import]:
+    async def images(self, external_id: Any) -> list[ImageImport] | None:
         """Override this function and return a list of images
         of the show.
         The return result must match [`schemas.Image_required`].
 
         The image will be downloaded from url in `source_url`.
         """
+        raise NotImplementedError
 
-    async def cast(self, external_id: str) -> list[schemas.Series_cast_person_import]:
+    async def cast(self, external_id: Any) -> list[SeriesCastPersonImport] | None:
         """Override this function and return a list of cast."""
+        raise NotImplementedError
 
-    async def poster(self, external_id: str) -> schemas.Image_import:
+    async def poster(self, external_id: Any) -> ImageImport | None:
         """Override this function and return a poster image.
         The return result must match [`schemas.Image_required`].
 
         The image will be downloaded from url in `source_url`.
         """
+        raise NotImplementedError
 
-    async def incremental_updates(self) -> list[str]:
+    async def incremental_updates(self) -> list[str] | None:
         """Override this function and return a list of ids that has changed
         since last check.
         Use `last_update_timestamp` and `save_timestamp`.
         """
+        raise NotImplementedError
 
     def last_update_timestamp(self) -> int:
         """Get the unix timestamp from when `incremental_updates()` was last run.
@@ -83,7 +90,7 @@ class Series_importer_base:
         with open(path) as f:
             return int(f.readline())
 
-    def save_timestamp(self, timestamp) -> int:
+    def save_timestamp(self, timestamp: int | float | None) -> int:
         """Saves a timestamp in a file.
         If timestamp is `None` the current time will be used.
 
@@ -112,4 +119,4 @@ class Series_importer_base:
             timestamp = int(time.time())
         with open(path, 'w') as f:
             f.write(str(int(timestamp)))
-        return timestamp
+        return int(timestamp)

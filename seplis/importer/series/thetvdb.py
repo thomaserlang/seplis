@@ -1,15 +1,18 @@
 import json
+from datetime import date
+from typing import Any
 
 import requests
 from dateutil import parser
 
 from seplis import config, logger
-from seplis.api import schemas
+from seplis.api.image import ImageImport
+from seplis.api.series import EpisodeUpdate, SeriesUpdate
 
-from .base import Series_importer_base, register_importer
+from .base import SeriesImporterBase, register_importer
 
 
-class Thetvdb(Series_importer_base):
+class Thetvdb(SeriesImporterBase):
     display_name = 'TheTVDB'
     external_name = 'thetvdb'
     supported = (
@@ -19,14 +22,14 @@ class Thetvdb(Series_importer_base):
     )
     _url = 'https://api.thetvdb.com'
 
-    def __init__(self, apikey=None) -> None:
+    def __init__(self, apikey: str | None = None) -> None:
         super().__init__()
         self.apikey = apikey
         if not apikey:
             self.apikey = config.client.thetvdb
 
-    def login_headers(self):
-        headers = {
+    def login_headers(self) -> dict[str, str]:
+        headers: dict[str, str] = {
             'Accept-Language': 'en',
             'Accept': 'application/json',
             'Content-Type': 'application/json',
@@ -43,7 +46,7 @@ class Thetvdb(Series_importer_base):
             return headers
         raise Exception(f'Unknown status code from thetvdb: {r.status_code} {r.content}')
 
-    async def info(self, external_id: int) -> schemas.Series_update:
+    async def info(self, external_id: int) -> SeriesUpdate | None:
         r = requests.get(
             self._url + f'/series/{external_id}',
             headers=self.login_headers(),
@@ -56,7 +59,7 @@ class Thetvdb(Series_importer_base):
             if data['imdbId']:
                 externals['imdb'] = data['imdbId']
 
-            return schemas.Series_update(
+            return SeriesUpdate(
                 title=data['seriesName'][:200],
                 original_title=data['seriesName'][:200],
                 plot=data['summary'][:2000] if data.get('summary') else None,
@@ -68,9 +71,9 @@ class Thetvdb(Series_importer_base):
             )
         return None
 
-    async def episodes(self, external_id: int) -> list[schemas.Episode_update]:
+    async def episodes(self, external_id: int) -> list[EpisodeUpdate]:
         headers = self.login_headers()
-        episodes: list[schemas.Episode_update] = []
+        episodes: list[EpisodeUpdate] = []
         data = {'links': {'next': 1}}
         while data['links']['next']:
             r = requests.get(
@@ -86,12 +89,12 @@ class Thetvdb(Series_importer_base):
                     episodes.extend(self.parse_episodes(data['data']))
             else:
                 break
-        episodes = sorted(episodes, key=lambda k: (k.season, k.episode))
+        episodes = sorted(episodes, key=lambda k: (k['season'], k['episode']))
         for i, episode in enumerate(episodes):
-            episode.number = i + 1
+            episode['number'] = i + 1
         return episodes
 
-    async def images(self, external_id: int) -> list[schemas.Image_import]:
+    async def images(self, external_id: int) -> list[ImageImport]:
         r = requests.get(
             self._url + f'/series/{external_id}/images/query',
             params={
@@ -109,7 +112,7 @@ class Thetvdb(Series_importer_base):
                 data, reverse=True, key=lambda img: float(img['ratingsInfo']['average'])
             ):
                 images.append(
-                    schemas.Image_import(
+                    ImageImport(
                         external_name='thetvdb',
                         external_id=str(image['id']),
                         source_url=f'http://thetvdb.com/banners/{image["fileName"]}',
@@ -118,7 +121,7 @@ class Thetvdb(Series_importer_base):
                 )
         return images
 
-    async def incremental_updates(self) -> list[str]:
+    async def incremental_updates(self) -> list[str] | None:
         timestamp = self.last_update_timestamp()
         r = requests.get(
             self._url + '/updated/query',
@@ -132,14 +135,14 @@ class Thetvdb(Series_importer_base):
             return None
         return [str(s['id']) for s in data]
 
-    def parse_status(self, status_str) -> int:
+    def parse_status(self, status_str: str) -> int:
         if status_str == 'Ended':
             return 2
         if status_str == 'Continuing':
             return 1
         return 1
 
-    def parse_episodes(self, episodes) -> list[schemas.Episode_update]:
+    def parse_episodes(self, episodes: list[dict[str, Any]]) -> list[EpisodeUpdate]:
         _episodes = []
         for episode in episodes:
             try:
@@ -154,8 +157,8 @@ class Thetvdb(Series_importer_base):
                 logger.exception(f'Parsing episode "{episode}" faild with error: {e}')
         return _episodes
 
-    def parse_episode(self, episode) -> schemas.Episode_update:
-        return schemas.Episode_update(
+    def parse_episode(self, episode: dict[str, Any]) -> EpisodeUpdate:
+        return EpisodeUpdate(
             title=episode['episodeName'],
             original_title=episode['episodeName'],
             plot=episode.get('overview'),
@@ -167,15 +170,15 @@ class Thetvdb(Series_importer_base):
             else None,
         )
 
-    def parse_date(self, date):
-        if not date:
+    def parse_date(self, date_: str | None) -> date | None:
+        if not date_:
             return None
-        if date == '0000-00-00':
+        if date_ == '0000-00-00':
             return None
         try:
-            return parser.parse(date).date().isoformat()
+            return parser.parse(date_).date()
         except ValueError:
-            logger.exception(f'Parsing date "{date}"')
+            logger.exception(f'Parsing date "{date_}"')
         return None
 
 

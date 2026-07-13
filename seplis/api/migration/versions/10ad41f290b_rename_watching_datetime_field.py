@@ -1,3 +1,4 @@
+# ruff: noqa
 """rename watching datetime field
 
 Revision ID: 10ad41f290b

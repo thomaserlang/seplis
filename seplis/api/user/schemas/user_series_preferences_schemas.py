@@ -1,30 +1,30 @@
-from pydantic import BaseModel, ConfigDict
+from dataclasses import dataclass
+from typing import NotRequired, TypedDict
 
 from .user_field_constraints_schemas import ConstrainedLang
 
 
-class SubtitleLanguage(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class SubtitleLanguage:
     subtitle_lang: ConstrainedLang | None = None
     audio_lang: ConstrainedLang | None = None
 
 
-class UserSeriesSettingsUpdate(BaseModel):
-    subtitle_lang: ConstrainedLang | None = None
-    audio_lang: ConstrainedLang | None = None
+class UserSeriesSettingsUpdate(TypedDict, total=False):
+    subtitle_lang: NotRequired[ConstrainedLang | None]
+    audio_lang: NotRequired[ConstrainedLang | None]
 
 
-class UserSeriesSettings(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class UserSeriesSettings:
     subtitle_lang: str | None = None
     audio_lang: str | None = None
 
-    model_config = ConfigDict(from_attributes=True)
 
-
-class UserSeriesStats(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class UserSeriesStats:
     series_watchlist: int
     series_watched: int
     series_finished: int
     episodes_watched: int
     episodes_watched_minutes: int
-
-    model_config = ConfigDict(from_attributes=True)

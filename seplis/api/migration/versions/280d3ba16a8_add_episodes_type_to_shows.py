@@ -1,3 +1,4 @@
+# ruff: noqa
 """add episodes type to shows
 
 Revision ID: 280d3ba16a8

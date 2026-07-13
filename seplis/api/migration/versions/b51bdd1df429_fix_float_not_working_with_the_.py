@@ -1,3 +1,4 @@
+# ruff: noqa
 """Fix float not working with the pagination cursor
 
 Revision ID: b51bdd1df429

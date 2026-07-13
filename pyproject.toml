@@ -35,6 +35,7 @@ dependencies = [
     "respx>=0.20.2",
     "loguru>=0.7.3",
     "sqlakeyset>=2.0.1762907931",
+    "ty>=0.0.55",
 ]
 
 [dependency-groups]
@@ -45,6 +46,7 @@ dev = [
     "pytest>=9.0.2",
     "freezegun>=1.2.2",
     "ruff>=0.15.8",
+    "ty>=0.0.55",
 ]
 
 [build-system]
@@ -63,6 +65,9 @@ ignore = ['ANN401']
 
 [tool.uv.pip]
 exclude-newer = "7 days"
+
+[tool.ty.src]
+include = ["seplis", "scripts"]
 
 [tool.pytest.ini_options]
 asyncio_default_fixture_loop_scope = "function"

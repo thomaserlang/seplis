@@ -1,3 +1,4 @@
+# ruff: noqa
 """renamed indices to import_from
 
 Revision ID: 3b6b385f280

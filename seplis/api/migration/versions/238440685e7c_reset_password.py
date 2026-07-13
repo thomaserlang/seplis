@@ -1,3 +1,4 @@
+# ruff: noqa
 """reset password
 
 Revision ID: 238440685e7c

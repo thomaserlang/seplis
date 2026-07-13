@@ -1,3 +1,4 @@
+# ruff: noqa
 """Fix movie cast character length
 
 Revision ID: fb4ff7dc2ba0

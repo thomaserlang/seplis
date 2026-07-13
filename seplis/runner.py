@@ -3,7 +3,7 @@ import signal
 from collections.abc import Coroutine
 from pathlib import Path
 from types import FrameType
-from typing import Any
+from typing import Any, cast
 
 import click
 import uvicorn
@@ -23,7 +23,7 @@ async def run_task(*task: Coroutine[Any, Any, Any]) -> None:
             await asyncio.gather(*task)
         finally:
             await database.close()
-    except exceptions.API_exception as e:
+    except exceptions.APIException as e:
         logger.error(e.message)
 
 
@@ -41,7 +41,7 @@ def cli(log_path: str | None, log_level: str | None) -> None:
     if log_path is not None:
         config.logging.path = Path(log_path)
     if log_level:
-        config.logging.level = log_level  # type: ignore[assignment]
+        config.logging.level = cast(Any, log_level)
 
 
 @cli.command()
@@ -128,7 +128,7 @@ def update_series(series_id: str) -> None:
     import seplis.importer
 
     set_logger('importer_update_series_by_id.log')
-    asyncio.run(run_task(seplis.importer.series.update_series_by_id(series_id)))
+    asyncio.run(run_task(seplis.importer.series.update_series_by_id(int(series_id))))
 
 
 @cli.command()
@@ -149,7 +149,7 @@ def update_movie(movie_id: str) -> None:
     import seplis.importer
 
     set_logger('importer_update_movie.log')
-    asyncio.run(run_task(seplis.importer.movies.update_movie(movie_id=movie_id)))
+    asyncio.run(run_task(seplis.importer.movies.update_movie(movie_id=int(movie_id))))
 
 
 @cli.command()
@@ -178,7 +178,7 @@ def update_person(person_id: str) -> None:
     import seplis.importer
 
     set_logger('importer_update_series_by_id.log')
-    asyncio.run(run_task(seplis.importer.people.update_person_by_id(person_id)))
+    asyncio.run(run_task(seplis.importer.people.update_person_by_id(int(person_id))))
 
 
 @cli.command()

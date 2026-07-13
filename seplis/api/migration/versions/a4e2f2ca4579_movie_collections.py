@@ -1,3 +1,4 @@
+# ruff: noqa
 """Movie collections
 
 Revision ID: a4e2f2ca4579

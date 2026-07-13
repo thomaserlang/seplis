@@ -1,3 +1,4 @@
+# ruff: noqa
 """episode_watched_changes
 
 Revision ID: 22d4ef0f875

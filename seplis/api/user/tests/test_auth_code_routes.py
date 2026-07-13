@@ -1,7 +1,7 @@
 import pytest
 
-from seplis.api import schemas
-from seplis.api.testbase import AsyncClient, run_file, user_signin
+from seplis.api.common import Error
+from seplis.api.testbase import AsyncClient, parse_obj_as, run_file, user_signin
 from seplis.api.user import Token
 
 
@@ -19,12 +19,12 @@ async def test_auth_code_create_and_redeem(client: AsyncClient) -> None:
 
     r = await client.post('/2/auth-code/redeem', json={'code': code})
     assert r.status_code == 201, r.content
-    redeemed = Token.model_validate(r.json())
+    redeemed = parse_obj_as(Token, r.json())
     assert len(redeemed.access_token) > 1
 
     r = await client.post('/2/auth-code/redeem', json={'code': code})
     assert r.status_code == 403, r.content
-    error = schemas.Error.model_validate(r.json())
+    error = parse_obj_as(Error, r.json())
     assert error.code == 501
 
     client.headers['Authorization'] = f'Bearer {redeemed.access_token}'
@@ -38,7 +38,7 @@ async def test_auth_code_create_and_redeem(client: AsyncClient) -> None:
 async def test_auth_code_redeem_invalid(client: AsyncClient) -> None:
     r = await client.post('/2/auth-code/redeem', json={'code': '999999'})
     assert r.status_code == 403, r.content
-    error = schemas.Error.model_validate(r.json())
+    error = parse_obj_as(Error, r.json())
     assert error.code == 501
 
 

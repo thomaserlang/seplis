@@ -1,3 +1,4 @@
+# ruff: noqa
 """Split up movie and series genres
 
 Revision ID: 20559ab61113

@@ -1,3 +1,4 @@
+# ruff: noqa
 """added episode finished
 
 Revision ID: d3609e491

@@ -1,3 +1,4 @@
+# ruff: noqa
 """Rating weighted
 
 Revision ID: 46047fb08936

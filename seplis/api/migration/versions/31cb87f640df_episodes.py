@@ -1,3 +1,4 @@
+# ruff: noqa
 """episodes
 
 Revision ID: 31cb87f640df

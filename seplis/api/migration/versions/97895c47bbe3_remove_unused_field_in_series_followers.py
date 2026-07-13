@@ -1,3 +1,4 @@
+# ruff: noqa
 """Remove unused field in series_followers
 
 Revision ID: 97895c47bbe3

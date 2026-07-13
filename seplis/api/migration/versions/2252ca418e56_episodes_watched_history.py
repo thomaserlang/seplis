@@ -1,3 +1,4 @@
+# ruff: noqa
 """episode watched history
 
 Revision ID: 2252ca418e56
@@ -61,13 +62,13 @@ def upgrade() -> None:
 
     history = []
     for ew in episodes_watched:
-        for _i in range(ew['times']):
+        for _i in range(ew['times']):  # ty:ignore[invalid-argument-type]
             history.append(
                 {
-                    'user_id': ew['user_id'],
-                    'series_id': ew['show_id'],
-                    'episode_number': ew['episode_number'],
-                    'watched_at': ew['watched_at'],
+                    'user_id': ew['user_id'],  # ty:ignore[invalid-argument-type]
+                    'series_id': ew['show_id'],  # ty:ignore[invalid-argument-type]
+                    'episode_number': ew['episode_number'],  # ty:ignore[invalid-argument-type]
+                    'watched_at': ew['watched_at'],  # ty:ignore[invalid-argument-type]
                 }
             )
 

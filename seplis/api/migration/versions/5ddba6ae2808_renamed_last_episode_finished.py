@@ -1,3 +1,4 @@
+# ruff: noqa
 """renamed_last_episode_finished
 
 Revision ID: 5ddba6ae2808

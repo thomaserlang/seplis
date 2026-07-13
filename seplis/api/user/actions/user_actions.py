@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 import sqlalchemy as sa
-from passlib.hash import pbkdf2_sha256
+from passlib.hash import pbkdf2_sha256  # ty: ignore[unresolved-import]
 from starlette.concurrency import run_in_threadpool
 
 from seplis.api import exceptions
@@ -12,7 +12,8 @@ from seplis.api.send_email import send_password_changed
 
 from ..models.token_model import MToken
 from ..models.user_model import MUser
-from ..schemas.user_schemas import User, UserCreate, UserUpdate
+from ..schemas.user_authentication_schemas import UserChangePassword
+from ..schemas.user_schemas import User, UserCreate, UserPublic, UserUpdate
 
 
 async def get_user(user_id: int, session: AsyncSession | None = None) -> User | None:
@@ -30,17 +31,31 @@ async def get_user(user_id: int, session: AsyncSession | None = None) -> User | 
         )
 
 
-async def _prepare_user_data(data: dict[str, Any]) -> dict[str, Any]:
-    _data = data.copy()
-    if 'password' in _data:
-        _data['password'] = await run_in_threadpool(pbkdf2_sha256.hash, _data['password'])
-
-    if 'scopes' in _data:
-        _data['scopes'] = ' '.join(_data['scopes'])
-    return _data
+def user_public_mapper(user: MUser) -> UserPublic:
+    return UserPublic(id=user.id, username=user.username)
 
 
-async def _ensure_unique_user_data(
+async def get_users_by_username(
+    username: str, session: AsyncSession | None = None
+) -> list[UserPublic]:
+    async with get_session(session) as session:
+        users = await session.scalars(sa.select(MUser).where(MUser.username == username))
+        return [user_public_mapper(user) for user in users]
+
+
+async def prepare_user_data(data: dict[str, Any]) -> dict[str, Any]:
+    prepared_data = data.copy()
+    if 'password' in prepared_data:
+        prepared_data['password'] = await run_in_threadpool(
+            pbkdf2_sha256.hash, prepared_data['password']
+        )
+
+    if 'scopes' in prepared_data:
+        prepared_data['scopes'] = ' '.join(prepared_data['scopes'])
+    return prepared_data
+
+
+async def ensure_unique_user_data(
     data: dict[str, Any], session: AsyncSession, user_id: int | None
 ) -> None:
     if 'email' in data and data['email'] is not None:
@@ -51,7 +66,7 @@ async def _ensure_unique_user_data(
             )
         )
         if e:
-            raise exceptions.User_email_duplicate()
+            raise exceptions.UserEmailDuplicate()
     if 'username' in data and data['username'] is not None:
         e = await session.scalar(
             sa.select(MUser).where(
@@ -60,7 +75,7 @@ async def _ensure_unique_user_data(
             )
         )
         if e:
-            raise exceptions.User_username_duplicate()
+            raise exceptions.UserUsernameDuplicate()
 
 
 async def create_user(
@@ -68,14 +83,17 @@ async def create_user(
     session: AsyncSession | None = None,
 ) -> User:
     async with get_session(session) as session:
-        _data = await _prepare_user_data(cast(dict[str, Any], data))
-        await _ensure_unique_user_data(_data, session, user_id=None)
+        prepared_data = await prepare_user_data(cast(dict[str, Any], data))
+        await ensure_unique_user_data(prepared_data, session, user_id=None)
 
-        r = cast(sa.Row[Any], await session.execute(sa.insert(MUser).values(_data)))
+        r = cast(
+            sa.Row[Any],
+            await session.execute(sa.insert(MUser.__table__).values(prepared_data)),  # type: ignore
+        )
         user_id = r.lastrowid
         user = await get_user(user_id=user_id, session=session)
         if not user:
-            raise exceptions.User_unknown()
+            raise exceptions.UserUnknown()
         return user
 
 
@@ -85,12 +103,14 @@ async def update_user(
     session: AsyncSession | None = None,
 ) -> User:
     async with get_session(session) as session:
-        _data = await _prepare_user_data(cast(dict[str, Any], data))
-        await _ensure_unique_user_data(_data, session, user_id=user_id)
-        await session.execute(sa.update(MUser).where(MUser.id == user_id).values(_data))
+        prepared_data = await prepare_user_data(cast(dict[str, Any], data))
+        await ensure_unique_user_data(prepared_data, session, user_id=user_id)
+        await session.execute(
+            sa.update(MUser.__table__).where(MUser.id == user_id).values(prepared_data)  # type: ignore
+        )
         user = await get_user(user_id=user_id, session=session)
         if not user:
-            raise exceptions.User_unknown()
+            raise exceptions.UserUnknown()
         return user
 
 
@@ -104,7 +124,7 @@ async def change_password(
     async with get_session(session) as session:
         password = await run_in_threadpool(pbkdf2_sha256.hash, new_password)
         await session.execute(
-            sa.update(MUser)
+            sa.update(MUser.__table__)  # type: ignore
             .where(MUser.id == user_id)
             .values(
                 password=password,
@@ -123,9 +143,34 @@ async def change_password(
             )
             for token in tokens:
                 await session.execute(
-                    sa.delete(MToken).where(MToken.token == token.token)
+                    sa.delete(MToken.__table__).where(MToken.token == token.token)  # type: ignore
                 )
                 await database.redis.delete(f'seplis:tokens:{token.token}:user')
         email = await session.scalar(sa.select(MUser.email).where(MUser.id == user_id))
         if email is not None:
             await send_password_changed(email)
+
+
+async def change_own_password(
+    user_id: int,
+    data: UserChangePassword,
+    current_token: str | None,
+    session: AsyncSession | None = None,
+) -> None:
+    async with get_session(session) as session:
+        password_hash = await session.scalar(
+            sa.select(MUser.password).where(MUser.id == user_id)
+        )
+        if not password_hash:
+            raise exceptions.UserUnknown()
+
+        matches = await run_in_threadpool(
+            pbkdf2_sha256.verify, data['current_password'], password_hash
+        )
+        if not matches:
+            raise exceptions.WrongPassword()
+        await change_password(
+            user_id=user_id,
+            new_password=data['new_password'],
+            current_token=current_token,
+        )

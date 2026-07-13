@@ -11,18 +11,15 @@ from seplis.logger_utils import set_logger
 from .. import config
 from . import exceptions
 from .database import database
-from .routes import (
-    genres,
-    health,
-    search,
-    token,
-)
-from .routes.movie.router import router as movie_router
-from .routes.person.router import router as person_router
-from .routes.play_server.router import router as play_server_router
-from .routes.series.router import router as series_router
-from .routes.user.router import router as user_router
-from .user.routes.auth_code_routes import router as auth_code_router
+from .genre.router import router as genre_router
+from .health.router import router as health_router
+from .movie.router import movie_router
+from .person.router import person_router
+from .play_server.router import play_server_router
+from .search.router import router as search_router
+from .series.router import series_router
+from .user.router import user_router
+from .user_watched.router import user_watched_router
 
 set_logger(f'api-{config.api.port}.log')
 
@@ -35,16 +32,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 
 app = FastAPI(title='SEPLIS API', version='2.0', lifespan=lifespan)
-app.include_router(token.router)
-app.include_router(search.router)
-app.include_router(series_router)
-app.include_router(movie_router)
-app.include_router(play_server_router)
-app.include_router(person_router)
-app.include_router(user_router)
-app.include_router(auth_code_router)
-app.include_router(genres.router)
-app.include_router(health.router)
+app.include_router(search_router, prefix='/2')
+app.include_router(series_router, prefix='/2')
+app.include_router(movie_router, prefix='/2')
+app.include_router(play_server_router, prefix='/2')
+app.include_router(person_router, prefix='/2')
+app.include_router(user_router, prefix='/2')
+app.include_router(user_watched_router, prefix='/2')
+app.include_router(genre_router, prefix='/2')
+app.include_router(health_router)
 
 
 app.add_middleware(
@@ -56,9 +52,9 @@ app.add_middleware(
 )
 
 
-@app.exception_handler(exceptions.API_exception)
+@app.exception_handler(exceptions.APIException)
 async def api_exception_handler(
-    request: Request, exc: exceptions.API_exception
+    request: Request, exc: exceptions.APIException
 ) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,

@@ -1,3 +1,5 @@
+from typing import Any
+
 from arq import Worker
 from arq.connections import RedisSettings
 
@@ -8,11 +10,11 @@ from .update_movie import update_movie
 from .update_series import update_series
 
 
-async def startup(ctx) -> None:
+async def startup(ctx: dict[str, Any]) -> None:
     await database.setup()
 
 
-async def shutdown(ctx) -> None:
+async def shutdown(ctx: dict[str, Any]) -> None:
     await database.close()
 
 

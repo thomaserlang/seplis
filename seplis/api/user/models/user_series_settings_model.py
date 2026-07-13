@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
-from seplis.api.models import Base
+from seplis.api.model_base import Base
 
 
 class MUserSeriesSettings(Base):

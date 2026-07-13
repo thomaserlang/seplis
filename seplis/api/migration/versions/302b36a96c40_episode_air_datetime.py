@@ -1,3 +1,4 @@
+# ruff: noqa
 """episode air_datetime
 
 Revision ID: 302b36a96c40

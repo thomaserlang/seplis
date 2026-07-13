@@ -1,3 +1,4 @@
+# ruff: noqa
 """remove unique from shows.title
 
 Revision ID: 54371f572a3

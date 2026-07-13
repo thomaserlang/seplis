@@ -1,33 +1,31 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import NotRequired, Self, TypedDict
+from typing import NotRequired, TypedDict
 
-from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
+from pydantic import EmailStr
 
 
-class UserBasic(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class UserBasic:
     id: int
     username: str
     created_at: datetime
-    scopes: list[str]
+    scopes: list[str] | str
 
-    model_config = ConfigDict(from_attributes=True)
-
-    @model_validator(mode='before')
-    def scopes_check_str(self) -> Self:
+    def __post_init__(self) -> None:
         if isinstance(self.scopes, str):
             self.scopes = self.scopes.split(' ')
-        return self
 
 
-class UserPublic(BaseModel):
+@dataclass(slots=True, kw_only=True)
+class UserPublic:
     id: int
     username: str
 
-    model_config = ConfigDict(from_attributes=True)
 
-
-@dataclass
+@dataclass(slots=True, kw_only=True)
 class User:
     id: int
     username: str

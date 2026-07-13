@@ -1,6 +1,5 @@
-import functools
 import os
-from collections.abc import Callable
+import sys
 from warnings import filterwarnings
 
 import redis.asyncio as redis
@@ -39,6 +38,10 @@ class Database:
             ),
             echo=False,
             pool_pre_ping=True,
+            skip_autocommit_rollback=True,
+            isolation_level='AUTOCOMMIT'
+            if 'pytest' not in sys.modules
+            else 'READ COMMITTED',
             json_serializer=lambda obj: utils.json_dumps(obj),
             json_deserializer=lambda s: utils.json_loads(s),
         )
@@ -150,17 +153,3 @@ class Database:
 
 
 database = Database()
-
-
-def auto_session[**P, R](method: Callable[P, R]) -> Callable[P, R]:
-    @functools.wraps(method)
-    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-        if kwargs.get('session'):
-            return await method(*args, **kwargs)  # type: ignore[return-value]
-        async with database.session() as session:
-            kwargs['session'] = session
-            result = await method(*args, **kwargs)  # type: ignore[misc]
-            await session.commit()
-            return result
-
-    return wrapper  # type: ignore[return-value]

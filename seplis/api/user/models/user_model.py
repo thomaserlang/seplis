@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
 from seplis import utils
-from seplis.api.models.base import Base
+from seplis.api.model_base import Base
 from seplis.utils.sqlalchemy import UtcDateTime
 
 

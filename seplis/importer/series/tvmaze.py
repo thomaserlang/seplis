@@ -1,11 +1,12 @@
 import requests
 
-from seplis.api import schemas
+from seplis.api.image import ImageImport
+from seplis.api.series import EpisodeUpdate, SeriesUpdate
 
-from .base import Series_importer_base, register_importer
+from .base import SeriesImporterBase, register_importer
 
 
-class Tvmaze(Series_importer_base):
+class Tvmaze(SeriesImporterBase):
     display_name = 'TVmaze'
     external_name = 'tvmaze'
     supported = (
@@ -18,18 +19,18 @@ class Tvmaze(Series_importer_base):
     _url_episodes = 'http://api.tvmaze.com/shows/{external_id}/episodes'
     _url_update = 'http://api.tvmaze.com/updates/shows'
 
-    async def info(self, external_id: str) -> schemas.Series_update:
+    async def info(self, external_id: str) -> SeriesUpdate | None:
         r = requests.get(self._url.format(external_id=external_id))
         if r.status_code != 200:
             return None
         series = r.json()
-        externals = {
+        externals: dict[str, str | None] = {
             key: str(series['externals'][key])
             for key in series['externals']
             if series['externals'][key]
         }
         externals[self.external_name] = str(series['id'])
-        return schemas.Series_update(
+        return SeriesUpdate(
             title=series['name'][:200],
             original_title=series['name'][:200],
             plot=series['summary'][:2000]
@@ -48,12 +49,12 @@ class Tvmaze(Series_importer_base):
         )
 
     @staticmethod
-    def parse_status(status_str) -> int:
+    def parse_status(status_str: str) -> int:
         if status_str.lower() == 'ended':
             return 2
         return 1
 
-    async def images(self, external_id: str) -> list[schemas.Image_import]:
+    async def images(self, external_id: str) -> list[ImageImport] | None:
         r = requests.get(self._url.format(external_id=external_id))
         if r.status_code != 200:
             return None
@@ -65,7 +66,7 @@ class Tvmaze(Series_importer_base):
         if not data['image']['original']:
             return None
         return [
-            schemas.Image_import(
+            ImageImport(
                 external_name='tvmaze',
                 external_id=str(data['id']),
                 source_url=data['image']['original'],
@@ -73,12 +74,12 @@ class Tvmaze(Series_importer_base):
             )
         ]
 
-    async def episodes(self, external_id) -> list[schemas.Episode_update]:
+    async def episodes(self, external_id: str) -> list[EpisodeUpdate] | None:
         r = requests.get(self._url_episodes.format(external_id=external_id))
         if r.status_code != 200:
             return None
         data = r.json()
-        episodes: list[schemas.Episode_update] = []
+        episodes: list[EpisodeUpdate] = []
         i = 0
         for episode in data:
             if episode['season'] == 0:
@@ -87,7 +88,7 @@ class Tvmaze(Series_importer_base):
                 continue
             i += 1
             episodes.append(
-                schemas.Episode_update(
+                EpisodeUpdate(
                     number=i,
                     title=episode['name'][:200],
                     original_title=episode['name'][:200],

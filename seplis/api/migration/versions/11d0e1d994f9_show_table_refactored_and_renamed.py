@@ -1,3 +1,4 @@
+# ruff: noqa
 """Show table refactored and renamed
 
 Revision ID: 11d0e1d994f9

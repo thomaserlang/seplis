@@ -1,3 +1,4 @@
+# ruff: noqa
 """Increase revenue int size
 
 Revision ID: 4159edc08eab

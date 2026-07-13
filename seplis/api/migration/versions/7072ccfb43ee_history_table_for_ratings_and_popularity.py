@@ -1,3 +1,4 @@
+# ruff: noqa
 """History table for ratings and popularity
 
 Revision ID: 7072ccfb43ee

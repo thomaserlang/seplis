@@ -1,3 +1,4 @@
+# ruff: noqa
 """Added created_at to table show_fans
 
 Revision ID: 834b7020a4

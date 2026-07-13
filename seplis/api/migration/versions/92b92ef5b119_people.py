@@ -1,3 +1,4 @@
+# ruff: noqa
 """people
 
 Revision ID: 92b92ef5b119

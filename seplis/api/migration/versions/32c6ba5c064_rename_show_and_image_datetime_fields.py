@@ -1,3 +1,4 @@
+# ruff: noqa
 """rename show and image datetime fields
 
 Revision ID: 32c6ba5c064

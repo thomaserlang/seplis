@@ -1,5 +1,15 @@
-class API_exception(Exception):
-    def __init__(self, status_code, code, message, errors=None, extra=None) -> None:
+from typing import Any
+
+
+class APIException(Exception):
+    def __init__(
+        self,
+        status_code: int,
+        code: int,
+        message: str,
+        errors: Any = None,
+        extra: Any = None,
+    ) -> None:
         """
         :param status_code: int
             HTTP status code e.g. 400
@@ -17,9 +27,9 @@ class API_exception(Exception):
         self.extra = extra
 
 
-class Not_found(API_exception):
-    def __init__(self, message=None) -> None:
-        API_exception.__init__(
+class NotFound(APIException):
+    def __init__(self, message: str | None = None) -> None:
+        APIException.__init__(
             self,
             status_code=404,
             code=500,
@@ -28,9 +38,9 @@ class Not_found(API_exception):
         )
 
 
-class Forbidden(API_exception):
-    def __init__(self, message=None) -> None:
-        API_exception.__init__(
+class Forbidden(APIException):
+    def __init__(self, message: str | None = None) -> None:
+        APIException.__init__(
             self,
             status_code=403,
             code=501,
@@ -39,9 +49,9 @@ class Forbidden(API_exception):
         )
 
 
-class Wrong_password(API_exception):
+class WrongPassword(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=999,
@@ -50,9 +60,9 @@ class Wrong_password(API_exception):
         )
 
 
-class Wrong_login_or_password(API_exception):
+class WrongLoginOrPassword(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=1000,
@@ -61,9 +71,9 @@ class Wrong_login_or_password(API_exception):
         )
 
 
-class Validation_exception(API_exception):
-    def __init__(self, errors) -> None:
-        API_exception.__init__(
+class ValidationException(APIException):
+    def __init__(self, errors: Any) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1001,
@@ -72,9 +82,9 @@ class Validation_exception(API_exception):
         )
 
 
-class Parameter_restricted(API_exception):
-    def __init__(self, message) -> None:
-        API_exception.__init__(
+class ParameterRestricted(APIException):
+    def __init__(self, message: str) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1002,
@@ -82,9 +92,9 @@ class Parameter_restricted(API_exception):
         )
 
 
-class Parameter_missing_exception(API_exception):
-    def __init__(self, message) -> None:
-        API_exception.__init__(
+class ParameterMissingException(APIException):
+    def __init__(self, message: str) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1003,
@@ -92,9 +102,9 @@ class Parameter_missing_exception(API_exception):
         )
 
 
-class OAuth_unsuported_grant_type_exception(API_exception):
-    def __init__(self, grant_type) -> None:
-        API_exception.__init__(
+class OauthUnsupportedGrantTypeException(APIException):
+    def __init__(self, grant_type: str) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1006,
@@ -105,9 +115,9 @@ class OAuth_unsuported_grant_type_exception(API_exception):
         )
 
 
-class OAuth_unknown_client_id_exception(API_exception):
+class OauthUnknownClientIdException(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=1007,
@@ -115,9 +125,9 @@ class OAuth_unknown_client_id_exception(API_exception):
         )
 
 
-class OAuth_unauthorized_grant_type_level_request_exception(API_exception):
-    def __init__(self, required_level, app_level) -> None:
-        API_exception.__init__(
+class OauthUnauthorizedGrantTypeLevelRequestException(APIException):
+    def __init__(self, required_level: int, app_level: int) -> None:
+        APIException.__init__(
             self,
             status_code=403,
             code=1008,
@@ -131,9 +141,9 @@ class OAuth_unauthorized_grant_type_level_request_exception(API_exception):
         )
 
 
-class Not_signed_in_exception(API_exception):
+class NotSignedInException(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=401,
             code=1009,
@@ -141,9 +151,9 @@ class Not_signed_in_exception(API_exception):
         )
 
 
-class Restricted_access_exception(API_exception):
-    def __init__(self, user_level, required_level) -> None:
-        API_exception.__init__(
+class RestrictedAccessException(APIException):
+    def __init__(self, user_level: int, required_level: int) -> None:
+        APIException.__init__(
             self,
             status_code=403,
             code=1010,
@@ -156,9 +166,9 @@ class Restricted_access_exception(API_exception):
         )
 
 
-class User_episode_not_watched(API_exception):
+class UserEpisodeNotWatched(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=1300,
@@ -166,9 +176,9 @@ class User_episode_not_watched(API_exception):
         )
 
 
-class Series_unknown(API_exception):
-    def __init__(self, series_id) -> None:
-        API_exception.__init__(
+class SeriesUnknown(APIException):
+    def __init__(self, series_id: int) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1400,
@@ -176,13 +186,16 @@ class Series_unknown(API_exception):
         )
 
 
-class Series_external_duplicated(API_exception):
-    def __init__(self, external_title, external_value, series) -> None:
-        API_exception.__init__(
+class SeriesExternalDuplicated(APIException):
+    def __init__(self, external_title: str, external_value: str, series: Any) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1403,
-            message=f'A series with external name: "{external_title}" and id: "{external_value}" does already exist',
+            message=(
+                f'A series with external name: "{external_title}" and id: '
+                f'"{external_value}" does already exist'
+            ),
             extra={
                 'series': series,
                 'external_title': external_title,
@@ -191,9 +204,9 @@ class Series_external_duplicated(API_exception):
         )
 
 
-class User_unknown(API_exception):
+class UserUnknown(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=1500,
@@ -201,9 +214,9 @@ class User_unknown(API_exception):
         )
 
 
-class User_email_duplicate(API_exception):
+class UserEmailDuplicate(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=1501,
@@ -211,9 +224,9 @@ class User_email_duplicate(API_exception):
         )
 
 
-class User_username_duplicate(API_exception):
+class UserUsernameDuplicate(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=1502,
@@ -221,9 +234,9 @@ class User_username_duplicate(API_exception):
         )
 
 
-class Episode_unknown(API_exception):
+class EpisodeUnknown(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=1600,
@@ -231,9 +244,11 @@ class Episode_unknown(API_exception):
         )
 
 
-class Elasticsearch_exception(API_exception):
-    def __init__(self, status_code=400, extra=None, message=None) -> None:
-        API_exception.__init__(
+class ElasticsearchException(APIException):
+    def __init__(
+        self, status_code: int = 400, extra: Any = None, message: str | None = None
+    ) -> None:
+        APIException.__init__(
             self,
             status_code=status_code,
             code=1700,
@@ -242,9 +257,9 @@ class Elasticsearch_exception(API_exception):
         )
 
 
-class Sort_not_allowed(API_exception):
-    def __init__(self, sort) -> None:
-        API_exception.__init__(
+class SortNotAllowed(APIException):
+    def __init__(self, sort: str) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1800,
@@ -253,9 +268,9 @@ class Sort_not_allowed(API_exception):
         )
 
 
-class Append_fields_not_allowed(API_exception):
-    def __init__(self, fields) -> None:
-        API_exception.__init__(
+class AppendFieldsNotAllowed(APIException):
+    def __init__(self, fields: list[str]) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=1900,
@@ -264,9 +279,9 @@ class Append_fields_not_allowed(API_exception):
         )
 
 
-class Image_external_duplicate(API_exception):
-    def __init__(self, message) -> None:
-        API_exception.__init__(
+class ImageExternalDuplicate(APIException):
+    def __init__(self, message: str) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=2000,
@@ -274,9 +289,9 @@ class Image_external_duplicate(API_exception):
         )
 
 
-class Image_unknown(API_exception):
+class ImageUnknown(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2001,
@@ -284,9 +299,9 @@ class Image_unknown(API_exception):
         )
 
 
-class Image_no_data(API_exception):
+class ImageNoData(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2003,
@@ -294,9 +309,9 @@ class Image_no_data(API_exception):
         )
 
 
-class Image_wrong_size(API_exception):
-    def __init__(self, aspect_ratio) -> None:
-        API_exception.__init__(
+class ImageWrongSize(APIException):
+    def __init__(self, aspect_ratio: str) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=2004,
@@ -304,9 +319,9 @@ class Image_wrong_size(API_exception):
         )
 
 
-class File_upload_no_files(API_exception):
+class FileUploadNoFiles(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2100,
@@ -314,9 +329,9 @@ class File_upload_no_files(API_exception):
         )
 
 
-class File_upload_unrecognized_image(API_exception):
+class FileUploadUnrecognizedImage(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2101,
@@ -324,9 +339,9 @@ class File_upload_unrecognized_image(API_exception):
         )
 
 
-class Play_server_unknown(API_exception):
+class PlayServerUnknown(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2200,
@@ -334,9 +349,9 @@ class Play_server_unknown(API_exception):
         )
 
 
-class Play_server_invite_invalid(API_exception):
+class PlayServerInviteInvalid(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2250,
@@ -344,9 +359,9 @@ class Play_server_invite_invalid(API_exception):
         )
 
 
-class Play_server_invite_already_has_access(API_exception):
+class PlayServerInviteAlreadyHasAccess(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2251,
@@ -354,9 +369,9 @@ class Play_server_invite_already_has_access(API_exception):
         )
 
 
-class Play_server_access_user_no_access(API_exception):
+class PlayServerAccessUserNoAccess(APIException):
     def __init__(self) -> None:
-        API_exception.__init__(
+        APIException.__init__(
             self,
             status_code=400,
             code=2260,
@@ -364,9 +379,9 @@ class Play_server_access_user_no_access(API_exception):
         )
 
 
-class Movie_unknown(API_exception):
-    def __init__(self, movie_id) -> None:
-        API_exception.__init__(
+class MovieUnknown(APIException):
+    def __init__(self, movie_id: int) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=2300,
@@ -374,13 +389,16 @@ class Movie_unknown(API_exception):
         )
 
 
-class Movie_external_duplicated(API_exception):
-    def __init__(self, external_title, external_value, movie) -> None:
-        API_exception.__init__(
+class MovieExternalDuplicated(APIException):
+    def __init__(self, external_title: str, external_value: str, movie: Any) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=2305,
-            message=f'A movie with external name: "{external_title}" and id: "{external_value}" does already exist',
+            message=(
+                f'A movie with external name: "{external_title}" and id: '
+                f'"{external_value}" does already exist'
+            ),
             extra={
                 'movie': movie,
                 'external_title': external_title,
@@ -389,13 +407,16 @@ class Movie_external_duplicated(API_exception):
         )
 
 
-class Person_external_duplicated(API_exception):
-    def __init__(self, external_title, external_value, person) -> None:
-        API_exception.__init__(
+class PersonExternalDuplicated(APIException):
+    def __init__(self, external_title: str, external_value: str, person: Any) -> None:
+        APIException.__init__(
             self,
             status_code=400,
             code=3005,
-            message=f'A person with external name: "{external_title}" and id: "{external_value}" does already exist',
+            message=(
+                f'A person with external name: "{external_title}" and id: '
+                f'"{external_value}" does already exist'
+            ),
             extra={
                 'person': person,
                 'external_title': external_title,
