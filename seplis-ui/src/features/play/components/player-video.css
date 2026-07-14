@@ -148,7 +148,6 @@
 }
 
 .media-default-skin .media-controls[data-visible] ~ .media-overlay,
-.media-default-skin .media-controls[data-pinned] ~ .media-overlay,
 .media-default-skin .media-error[data-open] ~ .media-overlay {
   opacity: 1;
 }
@@ -186,8 +185,7 @@
   pointer-events: none;
 }
 
-.media-default-skin .media-controls[data-visible] ~ .media-header,
-.media-default-skin .media-controls[data-pinned] ~ .media-header {
+.media-default-skin .media-controls[data-visible] ~ .media-header {
   opacity: 1;
   pointer-events: auto;
 }
@@ -870,14 +868,12 @@
   --media-caption-track-delay: 25ms;
   --media-caption-track-y: -0.5rem;
 
-  &:has(.media-controls[data-visible]),
-  &:has(.media-controls[data-pinned]) {
+  &:has(.media-controls[data-visible]) {
     --media-caption-track-y: calc(var(--media-icon-size) * -2);
   }
 
   @container media-root (width > 42rem) {
-    &:has(.media-controls[data-visible]) > *,
-    &:has(.media-controls[data-pinned]) > * {
+    &:has(.media-controls[data-visible]) > * {
       --media-caption-track-y: calc(var(--media-icon-size) * -2);
     }
   }
@@ -1015,7 +1011,7 @@
     --media-surface-outer-border-color: transparent;
   }
 
-  &:has(.media-controls:not([data-visible]):not([data-pinned])) {
+  &:has(.media-controls:not([data-visible])) {
     /* Slight delay to hide controls on non-touch devices after interaction */
     @media (pointer: fine) {
       --media-controls-transition-duration: 300ms;
@@ -1140,7 +1136,7 @@
     transition-property: scale, opacity;
   }
 
-  &:not([data-visible]):not([data-pinned]) {
+  &:not([data-visible]) {
     opacity: 0;
     pointer-events: none;
     scale: 0.9;
@@ -1192,9 +1188,7 @@
 }
 
 /* Hide cursor when controls are hidden */
-.media-default-skin--video:has(
-  .media-controls:not([data-visible]):not([data-pinned])
-) {
+.media-default-skin--video:has(.media-controls:not([data-visible])) {
   cursor: none;
 }
 

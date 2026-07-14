@@ -54,7 +54,6 @@ export function PlayerVideo({
     const media = useMedia() as VideoMedia | null
     const resumeTimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
-    const [settingsOpen, setSettingsOpen] = useState(false)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     const [subtitle, setCurrentSubtitle] = useState<
         PlaySourceStream | undefined
@@ -217,8 +216,6 @@ export function PlayerVideo({
                 secondaryTitle={secondaryTitle}
                 onPlayNext={onPlayNext}
                 timeSliderStyle={timeSliderStyle}
-                settingsOpen={settingsOpen}
-                onSettingsOpenChange={setSettingsOpen}
                 playRequestSource={playRequestSource}
                 playRequestsSources={playRequestsSources}
                 audio={audio}
