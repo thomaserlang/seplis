@@ -12,6 +12,7 @@ import {
     HDR_FORMAT_LABELS,
     HDR_FORMATS,
     STREAM_FORMATS,
+    TRANSCODE_AUDIO_CODECS,
     VIDEO_CODEC_LABELS,
     VIDEO_CODECS,
     VIDEO_CONTAINERS,
@@ -115,7 +116,10 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
                         supportedAudioCodecs: next,
                     }
                     if (next && !next.includes(settings.transcodeAudioCodec)) {
-                        changes.transcodeAudioCodec = next[0]
+                        changes.transcodeAudioCodec =
+                            TRANSCODE_AUDIO_CODECS.find((codec) =>
+                                next.includes(codec),
+                            ) ?? 'aac'
                     }
                     playSettings.update(changes)
                 }}
@@ -128,7 +132,7 @@ export function AdvancedPanel({ playSettings, back }: Props): ReactNode {
         return (
             <SingleSelectPanel
                 title="Transcode Audio Codec"
-                options={AUDIO_CODECS}
+                options={TRANSCODE_AUDIO_CODECS}
                 value={settings.transcodeAudioCodec}
                 onSelect={(v) =>
                     playSettings.update({ transcodeAudioCodec: v })

@@ -5,6 +5,10 @@ import type {
     TranscodeDecision,
 } from '../../../types/transcode-decision.types'
 import { bitratePretty } from '../../../utils/play-bitrate.utils'
+import {
+    audioCodecLabel,
+    videoCodecLabel,
+} from '../../../utils/play-codec.utils'
 import { effectivePlaybackMethod } from './transcode-decision-label'
 
 export function decisionSummary(
@@ -44,6 +48,8 @@ export function decisionSummary(
 }
 
 export function streamSummary(stream: StreamDecision): string {
+    const formatCodec =
+        stream.kind === 'video' ? videoCodecLabel : audioCodecLabel
     const sourceCodec = formatCodec(stream.source_codec)
     const targetCodec = formatCodec(stream.target_codec)
 
@@ -164,10 +170,6 @@ function formatReason(reason: string): string {
 
     if (!formatted) return reason
     return formatted.charAt(0).toUpperCase() + formatted.slice(1)
-}
-
-function formatCodec(value: string | null | undefined): string {
-    return value?.trim() || 'unknown'
 }
 
 function formatScope(blocker: DecisionBlocker): string {

@@ -1,6 +1,7 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
 import { useGetPlayServerMedia } from '@/features/play/api/play-server-request-media.api'
+import { TRANSCODE_AUDIO_CODECS } from '@/features/play/constants/media.constants'
 import {
     PREFERRED_AUDIO_LANGS,
     PREFERRED_SUBTITLE_LANGS,
@@ -142,7 +143,10 @@ function PlayerCastViewReady({
         supportedVideoCodecs: capabilities.supportedVideoCodecs,
         supportedAudioCodecs: capabilities.supportedAudioCodecs,
         transcodeVideoCodec: capabilities.supportedVideoCodecs[0] ?? 'h264',
-        transcodeAudioCodec: capabilities.supportedAudioCodecs[0] ?? 'aac',
+        transcodeAudioCodec:
+            TRANSCODE_AUDIO_CODECS.find((codec) =>
+                capabilities.supportedAudioCodecs.includes(codec),
+            ) ?? 'aac',
         supportedVideoContainers: capabilities.supportedVideoContainers,
         maxAudioChannels: capabilities.maxAudioChannels,
         supportedHdrFormats: capabilities.supportedHdrFormats,

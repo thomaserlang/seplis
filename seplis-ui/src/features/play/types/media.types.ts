@@ -3,6 +3,7 @@ import type {
     AUDIO_CODECS,
     HDR_FORMATS,
     STREAM_FORMATS,
+    TRANSCODE_AUDIO_CODECS,
     VIDEO_CODECS,
     VIDEO_CONTAINERS,
 } from '../constants/media.constants'
@@ -12,6 +13,8 @@ export type HDRType = (typeof HDR_FORMATS)[number]
 export type VideoCodec = (typeof VIDEO_CODECS)[number]
 
 export type AudioCodec = (typeof AUDIO_CODECS)[number]
+
+export type TranscodeAudioCodec = (typeof TRANSCODE_AUDIO_CODECS)[number]
 
 export type VideoContainer = (typeof VIDEO_CONTAINERS)[number]
 

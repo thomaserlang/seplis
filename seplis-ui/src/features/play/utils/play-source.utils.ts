@@ -5,6 +5,7 @@ import {
     PlaySourceStream,
 } from '../types/play-source.types'
 import { languageMatch } from './language-match'
+import { videoCodecLabel } from './play-codec.utils'
 import { canPlayMediaType } from './video.utils'
 
 export function iso6392ToDisplayName(iso6392: string): string | undefined {
@@ -38,7 +39,7 @@ export function getBrowserPreferredLangs(): string[] {
 }
 
 export function playSourceStr(source: PlaySource) {
-    let s = `${source.resolution} ${source.codec.toUpperCase()}`
+    let s = `${source.resolution} ${videoCodecLabel(source.codec)}`
     if (source.video_color_range == 'hdr')
         if (source.video_color_range_type == 'dovi') s += ' Dolby Vision'
         else s += ` HDR`
