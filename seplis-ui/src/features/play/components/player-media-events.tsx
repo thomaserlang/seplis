@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
+import type { Video as VideoMedia } from '@videojs/media'
 import { useMedia } from '@videojs/react'
-import type { Video as VideoMedia } from '@videojs/core'
+import { useEffect, useRef } from 'react'
 import type { PlayerVideoMediaProps } from './player-video.types'
 
 export function MediaEventHandler({

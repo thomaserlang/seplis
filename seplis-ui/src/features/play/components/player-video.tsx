@@ -1,4 +1,4 @@
-import type { Video as VideoMedia } from '@videojs/core'
+import type { Video as VideoMedia } from '@videojs/media'
 import { Container, createPlayer, useMedia } from '@videojs/react'
 import { Video, videoFeatures } from '@videojs/react/video'
 import Hls from 'hls.js'
@@ -24,7 +24,7 @@ import { PlayerVideoControls } from './player-video-controls'
 import './player-video.css'
 import type { PlayErrorType, VideoPlayerProps } from './player-video.types'
 
-export const Player = createPlayer({ features: videoFeatures })
+export const { Player } = createPlayer({ features: videoFeatures })
 export type { PlayErrorEvent } from './player-video.types'
 
 export function PlayerVideo({

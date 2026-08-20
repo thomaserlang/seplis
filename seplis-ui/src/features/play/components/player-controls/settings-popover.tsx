@@ -1,6 +1,8 @@
 import { Popover } from '@mantine/core'
 import { GearIcon } from '@phosphor-icons/react'
-import { ReactNode, useState } from 'react'
+import { selectControls } from '@videojs/core/dom'
+import { usePlayer } from '@videojs/react'
+import { ReactNode, useEffect, useState } from 'react'
 import { PlayerSettings, PlayerSettingsProps } from '../player-settings'
 import { Button } from './button'
 
@@ -8,6 +10,13 @@ export interface SettingsPopoverProps extends PlayerSettingsProps {}
 
 export function SettingsPopover(props: SettingsPopoverProps): ReactNode {
     const [open, setOpen] = useState(false)
+    const requestControlsLock = usePlayer(selectControls)?.requestControlsLock
+
+    useEffect(() => {
+        if (!open || !requestControlsLock) return
+
+        return requestControlsLock()
+    }, [open, requestControlsLock])
 
     return (
         <Popover

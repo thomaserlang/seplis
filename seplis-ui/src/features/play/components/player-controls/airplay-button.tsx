@@ -1,5 +1,5 @@
 import { AirplayIcon } from '@phosphor-icons/react'
-import type { Video as VideoMedia } from '@videojs/core'
+import type { Video as VideoMedia } from '@videojs/media'
 import { Tooltip, useMedia } from '@videojs/react'
 import { useEffect, useState, type ReactNode } from 'react'
 

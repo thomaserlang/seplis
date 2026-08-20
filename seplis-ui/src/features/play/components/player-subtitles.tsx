@@ -1,7 +1,7 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import type { Video as VideoMedia } from '@videojs/media'
 import { useMedia } from '@videojs/react'
-import type { Video as VideoMedia } from '@videojs/core'
 import JASSUB from 'jassub'
+import { useEffect, useRef, type ReactNode } from 'react'
 import type {
     PlayerVideoAssSubtitleProps,
     PlayerVideoSubtitleOffsetProps,
