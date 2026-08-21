@@ -1,11 +1,9 @@
-import type { Video as VideoMedia } from '@videojs/media'
-import { Container, createPlayer, useMedia } from '@videojs/react'
+import { Container, createPlayer } from '@videojs/react'
+import { HlsJsVideo } from '@videojs/react/media/hlsjs-video'
 import { Video, videoFeatures } from '@videojs/react/video'
-import Hls from 'hls.js'
 import {
     useEffect,
     useEffectEvent,
-    useLayoutEffect,
     useRef,
     useState,
     type ReactNode,
@@ -16,7 +14,6 @@ import { toLangKey } from '../utils/play-source.utils'
 import { canPlayMediaType } from '../utils/video.utils'
 import { PlayerVideoInteractions, PlayerVideoStatus } from './player-controls'
 import { PlayErrorHandler } from './player-error-handler'
-import { HlsJsPlayer, hasNativeHls } from './player-hlsjs'
 import { MediaEventHandler } from './player-media-events'
 import { PlayerNativeSubtitles } from './player-native-subtitles'
 import { AssSubtitle, SubtitleOffsetApplier } from './player-subtitles'
@@ -51,7 +48,6 @@ export function PlayerVideo({
     onTimeUpdate,
     playSettings,
 }: VideoPlayerProps): ReactNode {
-    const media = useMedia() as VideoMedia | null
     const resumeTimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
@@ -74,6 +70,8 @@ export function PlayerVideo({
             refetchOnWindowFocus: false,
             // 6 hours
             staleTime: 6 * 60 * 60 * 1000,
+            // The URLs belong to a session that is closed on unmount.
+            gcTime: 0,
         },
     })
 
@@ -82,28 +80,21 @@ export function PlayerVideo({
         playRequestSource.source.media_type != null &&
         canPlayMediaType(playRequestSource.source.media_type)
 
-    const needsHlsJs =
-        data != null && !canDirectPlay && !hasNativeHls && Hls.isSupported()
-
     const handleSubtitleChange = (source?: PlaySourceStream) => {
         setCurrentSubtitle(source)
         onSubtitleChange?.(source)
     }
+    const useHls = data != null && (!canDirectPlay || isSafari)
     const currentSrc = data
-        ? canDirectPlay && !isSafari
-            ? data.direct_play_url
-            : data.hls_url
+        ? useHls
+            ? data.hls_url
+            : data.direct_play_url
         : undefined
     const playbackTransport = data
         ? canDirectPlay && !isSafari
             ? 'direct_play'
             : 'hls'
         : undefined
-    const videoSrc = needsHlsJs
-        ? undefined
-        : currentSrc
-          ? `${currentSrc}#t=${resumeTimeRef.current}`
-          : undefined
     const isPlayerLoading = videoLoading || isLoading || isRefetching
 
     useEffect(() => {
@@ -132,15 +123,9 @@ export function PlayerVideo({
         }
     }, [data])
 
-    useLayoutEffect(() => {
-        if (media?.currentTime) {
-            resumeTimeRef.current = media.currentTime
-        }
-    }, [data])
-
     useEffect(() => {
         setVideoLoading(true)
-    }, [data])
+    }, [currentSrc])
 
     const canAdjustSubtitleOffset = !isSafari
 
@@ -167,19 +152,13 @@ export function PlayerVideo({
         playErrorCountsRef.current[type]++
         onPlayError?.({ type, count: playErrorCountsRef.current[type] })
     })
-
     const addTrackEnabled =
         !isSafari && subtitle && !isAssSubtitle && subtitleUrl
 
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
             {data && (
-                <Video
-                    src={videoSrc}
-                    crossOrigin="anonymous"
-                    playsInline
-                    autoPlay
-                >
+                <MediaVideo src={currentSrc!} useHls={useHls}>
                     {addTrackEnabled && (
                         <track
                             key={toLangKey(subtitle)}
@@ -196,13 +175,7 @@ export function PlayerVideo({
                             offset={subtitleOffset}
                         />
                     )}
-                    {needsHlsJs && (
-                        <HlsJsPlayer
-                            src={data.hls_url}
-                            startTimeRef={resumeTimeRef}
-                        />
-                    )}
-                </Video>
+                </MediaVideo>
             )}
 
             {canAdjustSubtitleOffset && subtitle && !isAssSubtitle && (
@@ -244,13 +217,14 @@ export function PlayerVideo({
             />
 
             <MediaEventHandler
-                onVideoReady={onVideoReady}
+                onVideoReady={() => {
+                    setVideoLoading(false)
+                    onVideoReady?.()
+                }}
                 onVideoError={onVideoError}
                 onTimeUpdate={(currentTime, duration) => {
+                    resumeTimeRef.current = currentTime
                     onTimeUpdate?.(currentTime, duration)
-                    if (videoLoading) {
-                        setVideoLoading(false)
-                    }
                 }}
                 startTime={resumeTimeRef.current}
             />
@@ -266,5 +240,31 @@ export function PlayerVideo({
 
             <PlayerVideoInteractions />
         </Container>
+    )
+}
+
+function MediaVideo({
+    src,
+    useHls,
+    children,
+}: {
+    src: string
+    useHls: boolean
+    children: ReactNode
+}) {
+    const props = {
+        crossOrigin: 'anonymous' as const,
+        playsInline: true,
+        autoPlay: true,
+    }
+
+    return useHls ? (
+        <HlsJsVideo {...props} source={{ src }}>
+            {children}
+        </HlsJsVideo>
+    ) : (
+        <Video {...props} src={src}>
+            {children}
+        </Video>
     )
 }

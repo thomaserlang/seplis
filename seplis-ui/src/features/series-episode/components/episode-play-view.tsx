@@ -9,10 +9,13 @@ import {
 } from '@/features/series'
 import { useQuery } from '@tanstack/react-query'
 import { isHTTPError } from 'ky'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { getEpisodePlayRequests } from '../api/episode-play-requests.api'
-import { updateEpisodeWatchedPosition } from '../api/episode-watched-position.api'
+import {
+    refetchEpisodeWatchedPositionSummaries,
+    updateEpisodeWatchedPosition,
+} from '../api/episode-watched-position.api'
 import {
     getEpisodeWatched,
     incrementEpisodeWatched,
@@ -27,6 +30,8 @@ interface Props {
 
 export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
     const [params, setParams] = useSearchParams()
+    const positionSavedRef = useRef(false)
+    const pendingPositionSavesRef = useRef(new Set<Promise<void>>())
     const [urlPosition] = useState(() => {
         const urlPositionParam = params.get('position')
         if (urlPositionParam === null) return undefined
@@ -47,6 +52,18 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             { replace: true },
         )
     }, [params, setParams])
+
+    useEffect(
+        () => () => {
+            if (!positionSavedRef.current) return
+
+            const pendingSaves = [...pendingPositionSavesRef.current]
+            void Promise.allSettled(pendingSaves).then(() =>
+                refetchEpisodeWatchedPositionSummaries(seriesId),
+            )
+        },
+        [seriesId],
+    )
 
     const data = useQuery({
         queryKey: ['episode-play-view', seriesId, episodeNumber],
@@ -152,15 +169,22 @@ export function EpisodePlayView({ seriesId, episodeNumber, onClose }: Props) {
             defaultStartTime={startPosition}
             defaultAudioKey={userSettings?.audio_lang ?? undefined}
             defaultSubtitleKey={userSettings?.subtitle_lang ?? undefined}
-            onSavePosition={(position) =>
-                updateEpisodeWatchedPosition({
+            onSavePosition={(position) => {
+                positionSavedRef.current = true
+                const request = updateEpisodeWatchedPosition({
                     seriesId,
                     episodeNumber,
                     data: {
                         position,
                     },
                 })
-            }
+                pendingPositionSavesRef.current.add(request)
+                void request.then(
+                    () => pendingPositionSavesRef.current.delete(request),
+                    () => pendingPositionSavesRef.current.delete(request),
+                )
+                return request
+            }}
             onFinished={() => {
                 incrementEpisodeWatched({ seriesId, episodeNumber })
             }}

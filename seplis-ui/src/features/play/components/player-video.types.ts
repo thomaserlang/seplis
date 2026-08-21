@@ -64,11 +64,6 @@ export interface PlayerVideoPlayErrorHandlerProps {
     onPlayError?: (type: PlayErrorType) => void
 }
 
-export interface PlayerVideoHlsProps {
-    src: string
-    startTimeRef: { current: number }
-}
-
 export interface PlayerVideoControlsProps {
     onClose?: () => void
     title?: string

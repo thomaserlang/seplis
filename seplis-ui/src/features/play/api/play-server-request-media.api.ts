@@ -35,6 +35,7 @@ export const {
         [
             'play-server-media',
             props.playRequestSource.request.play_id,
+            props.playRequestSource.source.index,
             props.startTime,
             props.audio,
             props.maxBitrate,
