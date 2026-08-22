@@ -63,7 +63,7 @@ export function PlayerVideo({
         ...(isSafari
             ? {
                   hlsIncludeAllSubtitles: true,
-                  hlsSubtitleLang: toLangKey(subtitle),
+                  hlsSubtitleLang: toLangKey(defaultSubtitle),
               }
             : {}),
         options: {
@@ -158,7 +158,7 @@ export function PlayerVideo({
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
             {data && (
-                <MediaVideo src={currentSrc!} useHls={useHls}>
+                <MediaVideo src={currentSrc!} useHlsJs={useHls && !isSafari}>
                     {addTrackEnabled && (
                         <track
                             key={toLangKey(subtitle)}
@@ -245,11 +245,11 @@ export function PlayerVideo({
 
 function MediaVideo({
     src,
-    useHls,
+    useHlsJs,
     children,
 }: {
     src: string
-    useHls: boolean
+    useHlsJs: boolean
     children: ReactNode
 }) {
     const props = {
@@ -258,7 +258,7 @@ function MediaVideo({
         autoPlay: true,
     }
 
-    return useHls ? (
+    return useHlsJs ? (
         <HlsJsVideo {...props} source={{ src }}>
             {children}
         </HlsJsVideo>
