@@ -35,7 +35,6 @@ export interface PlaySettings {
     maxBitrate: number
     maxWidth?: number
     supportedVideoCodecs: VideoCodec[]
-    supportedVideoColorBitDepth: number
     supportedAudioCodecs: AudioCodec[]
     transcodeVideoCodec: VideoCodec
     transcodeAudioCodec: TranscodeAudioCodec
@@ -114,10 +113,6 @@ export function usePlaySettings(
         maxBitrate: overrides.maxBitrate ?? defaults?.maxBitrate ?? MAX_BITRATE,
         maxWidth: overrides.maxWidth ?? defaults?.maxWidth,
         supportedVideoCodecs: videoCodecs,
-        supportedVideoColorBitDepth:
-            overrides.supportedVideoColorBitDepth ??
-            defaults?.supportedVideoColorBitDepth ??
-            8,
         supportedAudioCodecs: audioCodecs,
         transcodeVideoCodec:
             overrides.transcodeVideoCodec ??

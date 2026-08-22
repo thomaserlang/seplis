@@ -13,7 +13,6 @@ export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     forceTranscode?: boolean
     maxAudioChannels: number
     supportedVideoCodecs: string[]
-    supportedVideoColorBitDepth: number
     supportedAudioCodecs: string[]
     transcodeVideoCodec: string
     transcodeAudioCodec: string
@@ -44,7 +43,6 @@ export const {
             props.forceTranscode,
             props.maxAudioChannels,
             props.supportedVideoCodecs,
-            props.supportedVideoColorBitDepth,
             props.supportedAudioCodecs,
             props.transcodeVideoCodec,
             props.transcodeAudioCodec,
@@ -65,7 +63,6 @@ export const {
         forceTranscode = false,
         maxAudioChannels,
         supportedVideoCodecs,
-        supportedVideoColorBitDepth,
         supportedAudioCodecs,
         transcodeVideoCodec,
         transcodeAudioCodec,
@@ -93,8 +90,6 @@ export const {
                         audio_lang: audio,
                         max_video_bitrate: maxBitrate,
                         supported_video_codecs: String(supportedVideoCodecs),
-                        supported_video_color_bit_depth:
-                            supportedVideoColorBitDepth,
                         transcode_video_codec: transcodeVideoCodec,
                         supported_audio_codecs: String(supportedAudioCodecs),
                         transcode_audio_codec: transcodeAudioCodec,
