@@ -50,6 +50,9 @@ export function PlayerVideo({
 }: VideoPlayerProps): ReactNode {
     const resumeTimeRef = useRef<number>(defaultStartTime)
     const [videoLoading, setVideoLoading] = useState(true)
+    const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(
+        null,
+    )
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
     const [subtitle, setCurrentSubtitle] = useState<
         PlaySourceStream | undefined
@@ -158,7 +161,11 @@ export function PlayerVideo({
     return (
         <Container className={`media-default-skin media-default-skin--video`}>
             {data && (
-                <MediaVideo src={currentSrc!} useHlsJs={useHls && !isSafari}>
+                <MediaVideo
+                    src={currentSrc!}
+                    useHlsJs={useHls && !isSafari}
+                    videoRef={setVideoElement}
+                >
                     {addTrackEnabled && (
                         <track
                             key={toLangKey(subtitle)}
@@ -169,8 +176,9 @@ export function PlayerVideo({
                             default
                         />
                     )}
-                    {isAssSubtitle && subtitleUrl && (
+                    {isAssSubtitle && subtitleUrl && videoElement && (
                         <AssSubtitle
+                            video={videoElement}
                             subUrl={subtitleUrl}
                             offset={subtitleOffset}
                         />
@@ -247,10 +255,12 @@ function MediaVideo({
     src,
     useHlsJs,
     children,
+    videoRef,
 }: {
     src: string
     useHlsJs: boolean
     children: ReactNode
+    videoRef?: (element: HTMLVideoElement | null) => void
 }) {
     const props = {
         crossOrigin: 'anonymous' as const,
@@ -259,11 +269,11 @@ function MediaVideo({
     }
 
     return useHlsJs ? (
-        <HlsJsVideo {...props} source={{ src }}>
+        <HlsJsVideo {...props} ref={videoRef} source={{ src }}>
             {children}
         </HlsJsVideo>
     ) : (
-        <Video {...props} src={src}>
+        <Video {...props} ref={videoRef} src={src}>
             {children}
         </Video>
     )

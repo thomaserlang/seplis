@@ -50,6 +50,7 @@ export interface PlayerVideoMediaProps {
 }
 
 export interface PlayerVideoAssSubtitleProps {
+    video: HTMLVideoElement
     subUrl: string
     offset: number
 }
