@@ -38,6 +38,14 @@ export function PlayerNativeSubtitles({
         }
 
         applyNativeSubtitleSelection()
+        textTracks.addEventListener('addtrack', applyNativeSubtitleSelection)
+
+        return () => {
+            textTracks.removeEventListener(
+                'addtrack',
+                applyNativeSubtitleSelection,
+            )
+        }
     }, [subtitle, isSafari, media])
 
     return null

@@ -63,7 +63,7 @@ export function PlayerVideo({
         ...(isSafari
             ? {
                   hlsIncludeAllSubtitles: true,
-                  hlsSubtitleLang: toLangKey(defaultSubtitle),
+                  hlsSubtitleLang: toLangKey(subtitle),
               }
             : {}),
         options: {
