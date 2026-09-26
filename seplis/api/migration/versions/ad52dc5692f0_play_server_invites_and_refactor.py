@@ -13,7 +13,7 @@ down_revision = '2252ca418e56'
 
 import sqlalchemy as sa
 from alembic import op
-from uuid6 import uuid7
+from uuid import uuid7
 
 from seplis.utils.sqlalchemy import UUID
 

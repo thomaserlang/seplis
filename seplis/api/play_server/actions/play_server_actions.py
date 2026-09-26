@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
 from typing import cast
+from uuid import uuid7
 
 import sqlalchemy as sa
 from sqlalchemy.engine import RowMapping
-from uuid6 import uuid7
 
 from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
