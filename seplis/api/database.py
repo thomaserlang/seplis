@@ -3,11 +3,14 @@ import sys
 from warnings import filterwarnings
 
 import redis.asyncio as redis
+from alembic import command
+from alembic.config import Config
 from arq import ArqRedis, create_pool
 from arq.connections import RedisSettings
 from elasticsearch import AsyncElasticsearch
 from redis.asyncio.sentinel import Sentinel
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import url
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
@@ -103,8 +106,6 @@ class Database:
         config.api.redis.db = 15
         config.api.elasticsearch.index_prefix = 'seplis_test_'
         if not self._test_setup:
-            from sqlalchemy.engine import url
-
             u = url.make_url(config.api.database_test)
             db = u.database
             u = url.URL.create(
@@ -121,9 +122,6 @@ class Database:
                         f'CREATE SCHEMA IF NOT EXISTS {db} DEFAULT CHARACTER SET utf8mb4;'
                     )
                 )
-            from alembic import command
-            from alembic.config import Config
-
             cfg = Config(os.path.dirname(os.path.abspath(__file__)) + '/alembic.ini')
             cfg.set_main_option('script_location', 'seplis.api:migration')
             cfg.set_main_option('sqlalchemy.url', config.api.database_test)

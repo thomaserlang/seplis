@@ -1,6 +1,10 @@
 from typing import Any
 
 from seplis.api import exceptions
+from seplis.api.play_server.models.play_server_model import (
+    MPlayServerAccess,
+    MPlayServerEpisode,
+)
 
 from ..models.series_model import MSeries
 from ..types.series_filter_types import SeriesQueryFilter
@@ -23,11 +27,6 @@ def filter_user_can_watch(
 
 
 def filter_user_can_watch_query(query: Any, user_id: int, episode_number: Any) -> Any:
-    from seplis.api.play_server.models.play_server_model import (
-        MPlayServerAccess,
-        MPlayServerEpisode,
-    )
-
     return query.where(
         MPlayServerAccess.user_id == user_id,
         MPlayServerEpisode.play_server_id == MPlayServerAccess.play_server_id,

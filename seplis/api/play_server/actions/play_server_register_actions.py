@@ -7,6 +7,8 @@ from sqlalchemy.exc import IntegrityError
 
 from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
+from seplis.api.movie.models.movie_model import MMovie
+from seplis.api.series.models.series_model import MSeries
 
 from ..models.play_server_model import MPlayServer, MPlayServerEpisode, MPlayServerMovie
 from ..schemas.play_server_schemas import (
@@ -58,8 +60,6 @@ async def register_play_server_movies(
             try:
                 await session.execute(stmt)
             except IntegrityError as err:
-                from seplis.api.movie.models.movie_model import MMovie
-
                 for row in data:
                     movie = await session.scalar(
                         sa.select(MMovie.id).where(MMovie.id == row['movie_id'])
@@ -137,8 +137,6 @@ async def register_play_server_episodes(
             try:
                 await session.execute(stmt)
             except IntegrityError as err:
-                from seplis.api.series.models.series_model import MSeries
-
                 series_ids = []
                 for row in data:
                     if row['series_id'] in series_ids:

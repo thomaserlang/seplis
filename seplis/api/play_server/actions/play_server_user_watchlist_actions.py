@@ -6,8 +6,14 @@ from typing import Literal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from seplis.api.contexts import get_session
+from seplis.api.movie.actions.movie_mapping import select_movies
+from seplis.api.movie.models.movie_model import MMovie
+from seplis.api.movie.models.movie_watchlist_model import MMovieWatchlist
 from seplis.api.movie.types.movie_filter_types import MovieQueryFilter
 from seplis.api.page_cursor import PageCursor, PageCursorQuery
+from seplis.api.series.actions.series_mapping import select_series
+from seplis.api.series.models.series_model import MSeries
+from seplis.api.series.models.series_watchlist_model import MSeriesWatchlist
 from seplis.api.series.types.series_filter_types import SeriesQueryFilter
 
 from ..models.play_server_model import MPlayServerAccess
@@ -23,13 +29,11 @@ async def get_play_server_users_movie_watchlist(
     response_format: Literal['standard', 'radarr'],
     session: AsyncSession | None = None,
 ) -> PageCursor | list[RadarrResponse]:
+    # Deferred because the movie filters import the play-server package.
     from seplis.api.movie.actions.movie_filter_actions import (
         filter_movies,
         filter_movies_query,
     )
-    from seplis.api.movie.actions.movie_mapping import select_movies
-    from seplis.api.movie.models.movie_model import MMovie
-    from seplis.api.movie.models.movie_watchlist_model import MMovieWatchlist
 
     async with get_session(session) as session:
         query = (
@@ -78,13 +82,11 @@ async def get_play_server_users_series_watchlist(
     response_format: Literal['standard', 'sonarr'],
     session: AsyncSession | None = None,
 ) -> PageCursor | list[SonarrResponse]:
+    # Deferred because the series filters import the play-server package.
     from seplis.api.series.actions.series_filter_actions import (
         filter_series,
         filter_series_query,
     )
-    from seplis.api.series.actions.series_mapping import select_series
-    from seplis.api.series.models.series_model import MSeries
-    from seplis.api.series.models.series_watchlist_model import MSeriesWatchlist
 
     async with get_session(session) as session:
         query = (

@@ -2,6 +2,8 @@ from typing import Any
 
 import sqlalchemy as sa
 
+from seplis.api.play_server.models.play_server_model import MPlayServerMovie
+
 from ..models.movie_favorite_model import MMovieFavorite
 from ..models.movie_model import MMovie, MMovieGenre, MMovieWatched
 from ..models.movie_watchlist_model import MMovieWatchlist
@@ -28,9 +30,5 @@ def order_query(query: Any, filter_query: MovieQueryFilter) -> Any:
         elif sort.startswith('release_date'):
             order.append(direction(MMovie.release_date))
         elif sort.startswith('user_play_server_movie_added'):
-            from seplis.api.play_server.models.play_server_model import (
-                MPlayServerMovie,
-            )
-
             order.append(direction(MPlayServerMovie.created_at))
     return query.order_by(*order, sa.asc(MMovie.id))

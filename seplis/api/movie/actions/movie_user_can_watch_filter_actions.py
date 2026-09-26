@@ -1,6 +1,10 @@
 from typing import Any
 
 from seplis.api import exceptions
+from seplis.api.play_server.models.play_server_model import (
+    MPlayServerAccess,
+    MPlayServerMovie,
+)
 
 from ..models.movie_model import MMovie
 from ..types.movie_filter_types import MovieQueryFilter
@@ -15,10 +19,6 @@ def filter_can_watch(query: Any, filter_query: MovieQueryFilter) -> Any:
         return query
     if not filter_query.user:
         raise exceptions.NotSignedInException()
-    from seplis.api.play_server.models.play_server_model import (
-        MPlayServerAccess,
-        MPlayServerMovie,
-    )
 
     return query.where(
         MPlayServerAccess.user_id == filter_query.user.id,

@@ -4,6 +4,10 @@ import sqlalchemy as sa
 
 from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
+from seplis.api.play_server.models.play_server_model import (
+    MPlayServerAccess,
+    MPlayServerEpisode,
+)
 from seplis.api.user import UserAuthenticated
 
 from ..models.episode_model import MEpisodeWatched
@@ -74,11 +78,6 @@ async def expand_user_can_watch(
     episodes: list[Episode],
     session: AsyncSession | None = None,
 ) -> None:
-    from seplis.api.play_server.models.play_server_model import (
-        MPlayServerAccess,
-        MPlayServerEpisode,
-    )
-
     async with get_session(session) as session:
         episodes_by_number: dict[int, Episode] = {}
         for episode in episodes:

@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 import sqlalchemy as sa
+from elasticsearch import helpers
 from fastapi import HTTPException
 
 from seplis import config, utils
@@ -497,7 +498,5 @@ async def rebuild_series() -> None:
                         '_id': f'series-{item.id}',
                         **utils.json_loads(utils.json_dumps(document)),
                     }
-
-    from elasticsearch import helpers
 
     await helpers.async_bulk(database.es, documents())

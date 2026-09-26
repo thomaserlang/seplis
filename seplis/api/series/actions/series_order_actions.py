@@ -2,6 +2,8 @@ from typing import Any
 
 import sqlalchemy as sa
 
+from seplis.api.play_server.models.play_server_model import MPlayServerEpisode
+
 from ..models.episode_model import MEpisodeWatched
 from ..models.series_favorite_model import MSeriesFavorite
 from ..models.series_model import MSeries
@@ -11,8 +13,6 @@ from ..types.series_filter_types import SeriesQueryFilter
 
 
 def order_query(query: Any, filter_query: SeriesQueryFilter) -> Any:
-    from seplis.api.play_server.models.play_server_model import MPlayServerEpisode
-
     order = []
     for sort in filter_query.sort:
         direction = sa.asc if sort.endswith('_asc') else sa.desc

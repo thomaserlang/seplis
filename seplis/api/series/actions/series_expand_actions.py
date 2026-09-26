@@ -4,6 +4,10 @@ import sqlalchemy as sa
 
 from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
+from seplis.api.play_server.models.play_server_model import (
+    MPlayServerAccess,
+    MPlayServerEpisode,
+)
 from seplis.api.user import UserAuthenticated
 
 from ..models.episode_model import MEpisode, MEpisodeLastWatched
@@ -116,11 +120,6 @@ async def expand_user_favorite(
 async def expand_user_can_watch(
     user_id: int, series: list[Series], session: AsyncSession | None = None
 ) -> None:
-    from seplis.api.play_server.models.play_server_model import (
-        MPlayServerAccess,
-        MPlayServerEpisode,
-    )
-
     async with get_session(session) as session:
         series_by_id: dict[int, Series] = {}
         for series_item in series:

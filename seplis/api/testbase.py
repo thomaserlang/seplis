@@ -1,6 +1,8 @@
+import subprocess
 from typing import Any
 
 from httpx import AsyncClient
+from pydantic import TypeAdapter
 
 from seplis.api.user.actions.token_actions import create_token
 from seplis.api.user.actions.user_actions import create_user
@@ -22,13 +24,9 @@ async def user_signin(client: AsyncClient, scopes: list[str] | None = None) -> i
 
 
 def parse_obj_as(type: Any, data: Any) -> Any:
-    from pydantic import TypeAdapter
-
     adapter = TypeAdapter(type)
     return adapter.validate_python(data)
 
 
 def run_file(file_: Any) -> None:
-    import subprocess
-
     subprocess.call(['pytest', '--tb=short', str(file_)])

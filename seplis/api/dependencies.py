@@ -1,6 +1,8 @@
 from typing import Annotated
 
 from fastapi import Depends, Request
+from fastapi.openapi.models import SecurityBase as SecurityBaseModel
+from fastapi.openapi.models import SecuritySchemeType
 from fastapi.security import OAuth2PasswordBearer, SecurityScopes
 from fastapi.security.base import SecurityBase
 from fastapi.security.utils import get_authorization_scheme_param
@@ -51,9 +53,7 @@ async def get_expand(expand: str | None = None) -> list[str] | None:
 
 class PlayServerSecret(SecurityBase):
     def __init__(self) -> None:
-        from fastapi.openapi.models import SecurityBase, SecuritySchemeType
-
-        self.model = SecurityBase(
+        self.model = SecurityBaseModel(
             description='Add secret to authorization header',
             type=SecuritySchemeType.apiKey,
         )

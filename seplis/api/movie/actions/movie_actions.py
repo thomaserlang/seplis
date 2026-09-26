@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from typing import Any, cast
 
 import sqlalchemy as sa
+from elasticsearch import helpers
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -426,7 +427,5 @@ async def rebuild_movies() -> None:
                         '_id': f'movie-{movie.id}',
                         **utils.json_loads(utils.json_dumps(document)),
                     }
-
-    from elasticsearch import helpers
 
     await helpers.async_bulk(database.es, documents())

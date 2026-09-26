@@ -4,6 +4,7 @@ from pydantic import TypeAdapter
 
 from seplis import config
 from seplis.api import exceptions
+from seplis.api.database import database
 
 from ..schemas.search_schemas import SearchTitleDocument
 
@@ -33,8 +34,6 @@ async def search_titles(
                 },
             }
         }
-
-    from ...database import database
 
     result = await database.es.search(
         index=config.api.elasticsearch.index_prefix + 'titles', query=elastic_query

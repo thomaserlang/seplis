@@ -11,6 +11,7 @@ from sqlalchemy.engine import RowMapping
 from seplis import config, logger, utils
 from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
+from seplis.api.dependencies import httpx_client
 from seplis.utils import datetime_now
 
 from ..models.image_model import MImage
@@ -58,8 +59,6 @@ async def save_image(
     image_data: ImageImport,
     session: AsyncSession | None = None,
 ) -> Image:
-    from seplis.api.dependencies import httpx_client
-
     data = dict(image_data)
     async with get_session(session) as session:
         if data.get('external_name') or data.get('external_id'):
