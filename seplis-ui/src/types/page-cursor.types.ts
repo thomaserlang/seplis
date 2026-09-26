@@ -3,7 +3,7 @@ export type LookupData<T = any> = {
 }
 
 export interface PageCursor<T = any, L = LookupData> {
-    items: T[]
+    records: T[]
     total: number | null
     cursor: string | null
     lookup_data: L

@@ -244,8 +244,7 @@ export async function fetchAllPages<
         } as TGetListProps
 
         const res = await getList(p)
-        const items = res.items
-        all.push(...items)
+        all.push(...res.records)
 
         cursor = (res as unknown as { cursor?: string }).cursor
         if (!cursor) break
@@ -279,5 +278,5 @@ export function pageItemsFlatten<T = Record<string, unknown>, L = unknown>(
     data: InfiniteData<PageCursor<T, L>> | undefined,
 ): T[] {
     if (!data) return []
-    return data.pages.map((p) => p.items).flat()
+    return data.pages.flatMap((p) => p.records)
 }
