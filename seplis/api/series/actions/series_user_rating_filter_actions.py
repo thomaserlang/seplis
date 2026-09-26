@@ -22,7 +22,7 @@ def filter_user_rating(query: Any, filter_query: SeriesQueryFilter) -> Any:
 
 def filter_user_rating_query(query: Any, user_id: int) -> Any:
     return query.join(
-        MSeriesUserRating,
+        MSeriesUserRating.__table__,
         sa.and_(
             MSeriesUserRating.user_id == user_id,
             MSeries.id == MSeriesUserRating.series_id,

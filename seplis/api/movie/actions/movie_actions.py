@@ -11,18 +11,18 @@ from seplis.api import exceptions
 from seplis.api.contexts import get_session
 from seplis.api.database import database
 from seplis.api.genre import Genre, MGenre, genre_mapper, get_or_create_genres
-from seplis.api.image import MImage, image_mapper
+from seplis.api.image import MImage
 from seplis.api.page_cursor import PageCursor, PageCursorQuery
 from seplis.api.search import SearchTitleDocument, SearchTitleDocumentTitle
 from seplis.api.user import UserAuthenticated
 
 from ..models.movie_collection_model import MMovieCollection
-from ..models.movie_model import MMovie, MMovieExternal, MMovieGenre, movie_mapper
-from ..schemas.movie_collection_schemas import MovieCollection
+from ..models.movie_model import MMovie, MMovieExternal, MMovieGenre
 from ..schemas.movie_schemas import Movie, MovieCreate, MovieUpdate
 from ..types.movie_filter_types import MovieQueryFilter
 from .movie_expand_actions import expand_movies
 from .movie_filter_actions import filter_movies
+from .movie_mapping import movie_row_mapper, select_movies
 
 
 async def get_movies(
@@ -32,7 +32,7 @@ async def get_movies(
     session: AsyncSession | None = None,
 ) -> PageCursor[Movie]:
     return await filter_movies(
-        query=sa.select(MMovie),
+        query=select_movies(),
         session=session,
         filter_query=filter_query,
         page_query=page_cursor,
@@ -47,10 +47,14 @@ async def get_movie(
     session: AsyncSession | None = None,
 ) -> Movie:
     async with get_session(session) as session:
-        movie = await session.scalar(sa.select(MMovie).where(MMovie.id == movie_id))
+        movie = (
+            (await session.execute(select_movies().where(MMovie.id == movie_id)))
+            .mappings()
+            .first()
+        )
         if not movie:
             raise HTTPException(404, 'Unknown movie')
-        data = movie_mapper(movie)
+        data = movie_row_mapper(movie)
         await expand_movies(movies=[data], user=user, expand=expand)
         return data
 
@@ -71,9 +75,11 @@ async def patch_movie(*, movie_id: int, data: MovieUpdate) -> Movie:
 
 async def delete_movie(*, movie_id: int) -> None:
     async with get_session() as session:
-        await session.execute(sa.delete(MMovie.__table__).where(MMovie.id == movie_id))  # type: ignore
         await session.execute(
-            sa.delete(MImage.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MMovie.__table__)).where(MMovie.id == movie_id)
+        )
+        await session.execute(
+            sa.delete(cast(sa.Table, MImage.__table__)).where(
                 MImage.relation_type == 'movie',
                 MImage.relation_id == movie_id,
             )
@@ -100,7 +106,7 @@ async def save_movie(
         if not movie_id:
             result = cast(
                 Any,
-                await session.execute(sa.insert(MMovie.__table__)),  # type: ignore
+                await session.execute(sa.insert(cast(sa.Table, MMovie.__table__))),
             )
             movie_id = result.lastrowid
             values['created_at'] = datetime.now(tz=UTC)
@@ -147,13 +153,20 @@ async def save_movie(
             )
         if values:
             await session.execute(
-                sa.update(MMovie.__table__).where(MMovie.id == movie_id).values(**values)  # type: ignore
+                sa.update(cast(sa.Table, MMovie.__table__))
+                .where(MMovie.id == movie_id)
+                .values(**values)
             )
-        movie = await session.scalar(sa.select(MMovie).where(MMovie.id == movie_id))
+        movie = (
+            (await session.execute(select_movies().where(MMovie.id == movie_id)))
+            .mappings()
+            .first()
+        )
         if not movie:
             raise HTTPException(404, f'Unknown movie id: {movie_id}')
-        await save_movie_for_search(movie)
-        return movie_mapper(movie)
+        mapped_movie = movie_row_mapper(movie)
+        await save_movie_for_search(mapped_movie)
+        return mapped_movie
 
 
 async def get_movie_from_external(
@@ -162,15 +175,21 @@ async def get_movie_from_external(
     session: AsyncSession | None = None,
 ) -> Movie | None:
     async with get_session(session) as session:
-        movie = await session.scalar(
-            sa.select(MMovie).where(
-                MMovie.id == MMovieExternal.movie_id,
-                MMovieExternal.title == title,
-                MMovieExternal.value == value,
+        movie = (
+            (
+                await session.execute(
+                    select_movies().where(
+                        MMovie.id == MMovieExternal.movie_id,
+                        MMovieExternal.title == title,
+                        MMovieExternal.value == value,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if movie:
-            return movie_mapper(movie)
+            return movie_row_mapper(movie)
         return None
 
 
@@ -185,7 +204,7 @@ async def get_or_create_movie_collection(
         result = cast(
             Any,
             await session.execute(
-                sa.insert(MMovieCollection.__table__).values(name=name)  # type: ignore
+                sa.insert(cast(sa.Table, MMovieCollection.__table__)).values(name=name)
             ),
         )
         collection_id = result.lastrowid
@@ -201,39 +220,51 @@ async def save_movie_externals(
     current_externals = {}
     if not patch:
         await session.execute(
-            sa.delete(MMovieExternal.__table__).where(MMovieExternal.movie_id == movie_id)  # type: ignore
+            sa.delete(cast(sa.Table, MMovieExternal.__table__)).where(
+                MMovieExternal.movie_id == movie_id
+            )
         )
     else:
-        result = await session.scalars(
-            sa.select(MMovieExternal).where(MMovieExternal.movie_id == movie_id)
-        )
+        result = (
+            await session.execute(
+                sa.select(MMovieExternal.__table__).where(
+                    MMovieExternal.movie_id == movie_id
+                )
+            )
+        ).mappings()
         if result:
             for external in result:
-                current_externals[external.title] = external.value
+                current_externals[external['title']] = external['value']
 
     for key in externals:
         if externals[key]:
-            duplicate_movie = await session.scalar(
-                sa.select(MMovie).where(
-                    MMovieExternal.title == key,
-                    MMovieExternal.value == externals[key],
-                    MMovieExternal.movie_id != movie_id,
-                    MMovie.id == MMovieExternal.movie_id,
+            duplicate_movie = (
+                (
+                    await session.execute(
+                        select_movies().where(
+                            MMovieExternal.title == key,
+                            MMovieExternal.value == externals[key],
+                            MMovieExternal.movie_id != movie_id,
+                            MMovie.id == MMovieExternal.movie_id,
+                        )
+                    )
                 )
+                .mappings()
+                .first()
             )
             if duplicate_movie:
                 raise exceptions.MovieExternalDuplicated(
                     external_title=key,
                     external_value=externals[key],
                     movie=utils.json_loads(
-                        utils.json_dumps(movie_mapper(duplicate_movie))
+                        utils.json_dumps(movie_row_mapper(duplicate_movie))
                     ),
                 )
 
         if key not in current_externals:
             if externals[key]:
                 await session.execute(
-                    sa.insert(MMovieExternal.__table__).values(  # type: ignore
+                    sa.insert(cast(sa.Table, MMovieExternal.__table__)).values(
                         movie_id=movie_id,
                         title=key,
                         value=externals[key],
@@ -243,7 +274,7 @@ async def save_movie_externals(
         elif current_externals[key] != externals[key]:
             if externals[key]:
                 await session.execute(
-                    sa.update(MMovieExternal.__table__)  # type: ignore
+                    sa.update(cast(sa.Table, MMovieExternal.__table__))
                     .where(
                         MMovieExternal.movie_id == movie_id,
                         MMovieExternal.title == key,
@@ -253,7 +284,7 @@ async def save_movie_externals(
                 current_externals[key] = externals[key]
             else:
                 await session.execute(
-                    sa.delete(MMovieExternal.__table__).where(  # type: ignore
+                    sa.delete(cast(sa.Table, MMovieExternal.__table__)).where(
                         MMovieExternal.movie_id == movie_id,
                         MMovieExternal.title == key,
                     )
@@ -295,12 +326,14 @@ async def save_movie_genres(
         )
     else:
         await session.execute(
-            sa.delete(MMovieGenre.__table__).where(MMovieGenre.movie_id == movie_id)  # type: ignore
+            sa.delete(cast(sa.Table, MMovieGenre.__table__)).where(
+                MMovieGenre.movie_id == movie_id
+            )
         )
     new_genre_ids = genre_ids - current_genres
     if new_genre_ids:
         await session.execute(
-            sa.insert(MMovieGenre.__table__).prefix_with('IGNORE'),  # type: ignore
+            sa.insert(cast(sa.Table, MMovieGenre.__table__)).prefix_with('IGNORE'),
             [{'movie_id': movie_id, 'genre_id': genre_id} for genre_id in new_genre_ids],
         )
     if new_genre_ids != current_genres:
@@ -311,15 +344,20 @@ async def save_movie_genres(
                 'where type="movie"'
             )
         )
-    rows = await session.scalars(
-        sa.select(MGenre)
-        .where(MMovieGenre.movie_id == movie_id, MGenre.id == MMovieGenre.genre_id)
-        .order_by(MGenre.name)
-    )
+    rows = (
+        await session.execute(
+            sa.select(MGenre.__table__)
+            .where(
+                MMovieGenre.movie_id == movie_id,
+                MGenre.id == MMovieGenre.genre_id,
+            )
+            .order_by(MGenre.name)
+        )
+    ).mappings()
     return [genre_mapper(row) for row in rows]
 
 
-async def save_movie_for_search(movie: MMovie) -> None:
+async def save_movie_for_search(movie: Movie) -> None:
     document = movie_title_document_mapper(movie)
     if not document:
         return
@@ -330,7 +368,7 @@ async def save_movie_for_search(movie: MMovie) -> None:
     )
 
 
-def movie_title_document_mapper(movie: MMovie) -> SearchTitleDocument | None:
+def movie_title_document_mapper(movie: Movie) -> SearchTitleDocument | None:
     if not movie.title:
         return None
     titles = [movie.title, *(movie.alternative_titles or [])]
@@ -347,20 +385,13 @@ def movie_title_document_mapper(movie: MMovie) -> SearchTitleDocument | None:
         titles=[SearchTitleDocumentTitle(title=title) for title in titles],
         release_date=movie.release_date,
         imdb=(movie.externals or {}).get('imdb'),
-        poster_image=image_mapper(movie.poster_image) if movie.poster_image else None,
+        poster_image=movie.poster_image,
         popularity=float(movie.popularity or 0),
         genres=genres_from_values(movie.genres),
         rating=float(movie.rating) if movie.rating is not None else None,
         rating_votes=movie.rating_votes,
         runtime=movie.runtime,
         language=movie.language,
-    )
-
-
-def movie_collection_mapper(collection: MMovieCollection) -> MovieCollection:
-    return MovieCollection(
-        id=collection.id,
-        name=collection.name or '',
     )
 
 
@@ -383,9 +414,10 @@ def genres_from_values(values: list[Any] | None) -> list[Genre]:
 async def rebuild_movies() -> None:
     async def documents() -> AsyncIterator[dict[str, Any]]:
         async with database.session() as session:
-            result = await session.stream(sa.select(MMovie))
-            async for movies in result.yield_per(1000):
-                for movie in movies:
+            result = await session.stream(select_movies())
+            async for movies in result.mappings().partitions(1000):
+                for row in movies:
+                    movie = movie_row_mapper(row)
                     document = movie_title_document_mapper(movie)
                     if not document:
                         continue

@@ -19,23 +19,25 @@ async def get_episode_play_servers(
     session: AsyncSession | None = None,
 ) -> list[PlayRequest]:
     async with get_session(session) as session:
-        rows = await session.scalars(
-            sa.select(MPlayServer).where(
-                MPlayServerAccess.user_id == user_id,
-                MPlayServer.id == MPlayServerAccess.play_server_id,
-                MPlayServerEpisode.play_server_id == MPlayServer.id,
-                MPlayServerEpisode.series_id == series_id,
-                MPlayServerEpisode.episode_number == episode_number,
+        rows = (
+            await session.execute(
+                sa.select(MPlayServer.__table__).where(
+                    MPlayServerAccess.user_id == user_id,
+                    MPlayServer.id == MPlayServerAccess.play_server_id,
+                    MPlayServerEpisode.play_server_id == MPlayServer.id,
+                    MPlayServerEpisode.series_id == series_id,
+                    MPlayServerEpisode.episode_number == episode_number,
+                )
             )
-        )
+        ).mappings()
         return [
             PlayRequest(
                 play_id=jwt.encode(
                     asdict(PlayIdInfoEpisode(series_id=series_id, number=episode_number)),
-                    row.secret,
+                    row['secret'],
                     algorithm='HS256',
                 ),
-                play_url=row.url or '',
+                play_url=row['url'] or '',
             )
             for row in rows
         ]

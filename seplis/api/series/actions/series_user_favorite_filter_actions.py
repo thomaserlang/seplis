@@ -33,7 +33,7 @@ def filter_user_favorites_query(query: Any, user_favorites: bool, user_id: Any) 
         )
     elif not user_favorites:
         query = query.join(
-            MSeriesFavorite,
+            MSeriesFavorite.__table__,
             sa.and_(
                 MSeriesFavorite.user_id == user_id,
                 MSeriesFavorite.series_id == MSeries.id,

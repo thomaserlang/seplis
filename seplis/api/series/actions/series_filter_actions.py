@@ -4,12 +4,12 @@ from sqlalchemy.engine import RowMapping
 
 from seplis.api.page_cursor import PageCursor, PageCursorQuery, page_cursor
 
-from ..models.series_model import series_mapper
 from ..schemas.series_schemas import Series
 from ..types.series_filter_types import SeriesQueryFilter
 from .series_expand_actions import expand_series
 from .series_genre_filter_actions import filter_genres
 from .series_language_filter_actions import filter_language
+from .series_mapping import series_row_mapper
 from .series_order_actions import order_query
 from .series_premiered_filter_actions import filter_premiered
 from .series_rating_filter_actions import filter_rating
@@ -21,7 +21,7 @@ from .series_user_watchlist_filter_actions import filter_user_watchlist
 
 
 def series_filter_mapper(row: RowMapping) -> Series:
-    return series_mapper(row['MSeries'])
+    return series_row_mapper(row)
 
 
 async def filter_series(

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import cast
 
 import sqlalchemy as sa
 from sqlalchemy.engine import RowMapping
@@ -20,31 +21,31 @@ from ..schemas.play_server_schemas import (
 )
 
 
-def play_server_mapper(play_server: MPlayServer) -> PlayServer:
+def play_server_mapper(play_server: RowMapping) -> PlayServer:
     return PlayServer(
-        id=play_server.id,
-        name=play_server.name,
+        id=play_server['id'],
+        name=play_server['name'],
     )
 
 
 def play_server_row_mapper(row: RowMapping) -> PlayServer:
-    return play_server_mapper(row['MPlayServer'])
+    return play_server_mapper(row)
 
 
 def play_server_with_url_mapper(
-    play_server: MPlayServer | None,
+    play_server: RowMapping | None,
 ) -> PlayServerWithUrl:
     if not play_server:
         raise exceptions.PlayServerUnknown()
     return PlayServerWithUrl(
-        id=play_server.id,
-        name=play_server.name,
-        url=play_server.url or '',
+        id=play_server['id'],
+        name=play_server['name'],
+        url=play_server['url'] or '',
     )
 
 
 def play_server_with_url_row_mapper(row: RowMapping) -> PlayServerWithUrl:
-    return play_server_with_url_mapper(row['MPlayServer'])
+    return play_server_with_url_mapper(row)
 
 
 async def create_play_server(data: PlayServerCreate, user_id: int) -> PlayServerWithUrl:
@@ -71,7 +72,7 @@ async def save_play_server(
         if not play_server_id:
             play_server_id = str(uuid7())
             await session.execute(
-                sa.insert(MPlayServer.__table__).values(  # type: ignore
+                sa.insert(cast(sa.Table, MPlayServer.__table__)).values(
                     id=play_server_id,
                     created_at=datetime.now(tz=UTC),
                     user_id=user_id,
@@ -79,7 +80,7 @@ async def save_play_server(
                 )
             )
             await session.execute(
-                sa.insert(MPlayServerAccess.__table__).values(  # type: ignore
+                sa.insert(cast(sa.Table, MPlayServerAccess.__table__)).values(
                     play_server_id=play_server_id,
                     user_id=user_id,
                     created_at=datetime.now(tz=UTC),
@@ -87,12 +88,20 @@ async def save_play_server(
             )
         else:
             await session.execute(
-                sa.update(MPlayServer.__table__)  # type: ignore
+                sa.update(cast(sa.Table, MPlayServer.__table__))
                 .where(MPlayServer.id == play_server_id)
                 .values(updated_at=datetime.now(tz=UTC), **values)
             )
-        play_server = await session.scalar(
-            sa.select(MPlayServer).where(MPlayServer.id == play_server_id)
+        play_server = (
+            (
+                await session.execute(
+                    sa.select(MPlayServer.__table__).where(
+                        MPlayServer.id == play_server_id
+                    )
+                )
+            )
+            .mappings()
+            .first()
         )
         return play_server_with_url_mapper(play_server)
 
@@ -101,11 +110,17 @@ async def get_play_server(
     play_server_id: str, user_id: int, session: AsyncSession | None = None
 ) -> PlayServerWithUrl:
     async with get_session(session) as session:
-        play_server = await session.scalar(
-            sa.select(MPlayServer).where(
-                MPlayServer.user_id == user_id,
-                MPlayServer.id == play_server_id,
+        play_server = (
+            (
+                await session.execute(
+                    sa.select(MPlayServer.__table__).where(
+                        MPlayServer.user_id == user_id,
+                        MPlayServer.id == play_server_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if not play_server:
             raise exceptions.NotFound('Unknown play server')
@@ -123,12 +138,12 @@ async def delete_play_server(play_server_id: str, user_id: int) -> None:
         if not exists:
             raise exceptions.NotFound('Unknown play server')
         await session.execute(
-            sa.delete(MPlayServerAccess.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServerAccess.__table__)).where(
                 MPlayServerAccess.play_server_id == play_server_id,
             )
         )
         await session.execute(
-            sa.delete(MPlayServer.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServer.__table__)).where(
                 MPlayServer.id == play_server_id,
             )
         )
@@ -140,7 +155,7 @@ async def get_play_servers(
     session: AsyncSession | None = None,
 ) -> PageCursor[PlayServer]:
     query = (
-        sa.select(MPlayServer)
+        sa.select(MPlayServer.__table__)
         .where(MPlayServer.user_id == user_id)
         .order_by(sa.asc(MPlayServer.name))
     )
@@ -158,7 +173,7 @@ async def get_play_servers_with_access(
     session: AsyncSession | None = None,
 ) -> PageCursor[PlayServerWithUrl]:
     query = (
-        sa.select(MPlayServer)
+        sa.select(MPlayServer.__table__)
         .where(
             MPlayServerAccess.user_id == user_id,
             MPlayServerAccess.play_server_id == MPlayServer.id,

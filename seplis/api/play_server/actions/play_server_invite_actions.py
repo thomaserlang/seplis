@@ -1,6 +1,8 @@
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.engine import RowMapping
 from uuid6 import uuid7
 
@@ -23,11 +25,10 @@ from ..schemas.play_server_schemas import (
 
 
 def play_server_invite_mapper(row: RowMapping) -> PlayServerInvite:
-    user = row['MUserPublic']
     return PlayServerInvite(
         created_at=row['created_at'],
         expires_at=row['expires_at'],
-        user=UserPublic(id=user.id, username=user.username),
+        user=UserPublic(id=row['user_id'], username=row['username']),
     )
 
 
@@ -56,7 +57,7 @@ async def create_play_server_invite(
             raise exceptions.PlayServerInviteAlreadyHasAccess()
 
         invite_id = str(uuid7())
-        stmt = sa.dialects.mysql.insert(MPlayServerInvite.__table__).values(  # type: ignore
+        stmt = mysql_insert(cast(sa.Table, MPlayServerInvite.__table__)).values(
             play_server_id=play_server_id,
             invite_id=invite_id,
             created_at=datetime.now(tz=UTC),
@@ -82,7 +83,8 @@ async def get_play_server_invites(
         sa.select(
             MPlayServerInvite.created_at,
             MPlayServerInvite.expires_at,
-            MUserPublic,
+            MUserPublic.id.label('user_id'),
+            MUserPublic.username,
         )
         .where(
             MPlayServer.user_id == owner_user_id,
@@ -117,7 +119,7 @@ async def delete_play_server_invite(
         if not invite:
             raise exceptions.PlayServerInviteInvalid()
         await session.execute(
-            sa.delete(MPlayServerInvite.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServerInvite.__table__)).where(
                 MPlayServerInvite.play_server_id == play_server_id,
                 MPlayServerInvite.user_id == user_id,
             )
@@ -136,14 +138,14 @@ async def accept_play_server_invite(user_id: int, invite_id: str) -> None:
         if not play_server_id:
             raise exceptions.PlayServerInviteInvalid()
         await session.execute(
-            sa.insert(MPlayServerAccess.__table__).values(  # type: ignore
+            sa.insert(cast(sa.Table, MPlayServerAccess.__table__)).values(
                 play_server_id=play_server_id,
                 user_id=user_id,
                 created_at=datetime.now(tz=UTC),
             )
         )
         await session.execute(
-            sa.delete(MPlayServerInvite.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServerInvite.__table__)).where(
                 MPlayServerInvite.user_id == user_id,
                 MPlayServerInvite.invite_id == invite_id,
             )

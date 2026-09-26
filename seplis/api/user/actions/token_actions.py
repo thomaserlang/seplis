@@ -27,7 +27,7 @@ async def create_token(
     async with database.session() as session:
         token = utils.random_key(256)
         await session.execute(
-            sa.insert(MToken.__table__).values(  # type: ignore
+            sa.insert(cast(sa.Table, MToken.__table__)).values(
                 app_id=app_id,
                 user_id=user_id,
                 expires=datetime.now(tz=UTC) + timedelta(days=expires_days),
@@ -46,13 +46,19 @@ async def create_login_token(
     data: TokenCreate, session: AsyncSession | None = None
 ) -> Token:
     async with get_session(session) as session:
-        user = await session.scalar(
-            sa.select(MUser).where(
-                sa.or_(
-                    MUser.email == data['login'],
-                    MUser.username == data['login'],
+        user = (
+            (
+                await session.execute(
+                    sa.select(MUser.__table__).where(
+                        sa.or_(
+                            MUser.email == data['login'],
+                            MUser.username == data['login'],
+                        )
+                    )
                 )
             )
+            .mappings()
+            .first()
         )
 
         if not user:
@@ -60,14 +66,16 @@ async def create_login_token(
 
         try:
             matches = await run_in_threadpool(
-                pbkdf2_sha256.verify, data['password'], user.password if user else ''
+                pbkdf2_sha256.verify,
+                data['password'],
+                user['password'] if user else '',
             )
         except Exception:
             matches = False
         if not matches:
             raise exceptions.WrongLoginOrPassword()
 
-        token = await create_token(user_id=user.id, scopes=user.scopes)
+        token = await create_token(user_id=user['id'], scopes=user['scopes'])
         return Token(access_token=token)
 
 
@@ -92,7 +100,7 @@ async def get_authenticated_user(token: str) -> UserAuthenticated | None:
     return None
 
 
-def cache_token(pipe: Pipeline, token: str, user_id: int, scopes: list[str]) -> None:  # type: ignore[type-arg]
+def cache_token(pipe: Pipeline[Any], token: str, user_id: int, scopes: list[str]) -> None:
     pipe.hset(f'seplis:tokens:{token}:user', 'id', str(user_id))
     pipe.hset(f'seplis:tokens:{token}:user', 'scopes', ' '.join(scopes))
 
@@ -100,15 +108,15 @@ def cache_token(pipe: Pipeline, token: str, user_id: int, scopes: list[str]) -> 
 async def rebuild_tokens() -> None:
     async with database.session() as session:
         result = await session.stream(
-            sa.select(MToken).where(MToken.expires >= datetime.now(tz=UTC))
+            sa.select(MToken.__table__).where(MToken.expires >= datetime.now(tz=UTC))
         )
-        async for tokens in result.yield_per(10000):
+        async for tokens in result.mappings().partitions(10000):
             p = cast(Pipeline, database.redis.pipeline())
             for token in tokens:
                 cache_token(
                     pipe=p,
-                    token=token.token,
-                    user_id=token.user_id,
-                    scopes=token.scopes.split(' '),
+                    token=token['token'],
+                    user_id=token['user_id'],
+                    scopes=token['scopes'].split(' '),
                 )
             await p.execute()

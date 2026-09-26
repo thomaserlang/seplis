@@ -1,6 +1,7 @@
 from typing import Any, Literal, cast
 
 import sqlalchemy as sa
+from sqlalchemy.engine import RowMapping
 
 from seplis.api.contexts import AsyncSession, get_session
 
@@ -8,11 +9,17 @@ from ..models.genre_model import MGenre
 from ..schemas.genre_schemas import Genre
 
 
-def genre_mapper(genre: MGenre) -> Genre:
+def genre_mapper(genre: RowMapping | MGenre) -> Genre:
+    if isinstance(genre, MGenre):
+        return Genre(
+            id=genre.id,
+            name=genre.name or '',
+            number_of=genre.number_of or 0,
+        )
     return Genre(
-        id=genre.id,
-        name=genre.name or '',
-        number_of=genre.number_of or 0,
+        id=genre['id'],
+        name=genre['name'] or '',
+        number_of=genre['number_of'] or 0,
     )
 
 
@@ -20,14 +27,16 @@ async def get_genres(
     *, type: Literal['series', 'movie'], session: AsyncSession | None = None
 ) -> list[Genre]:
     async with get_session(session) as session:
-        rows = await session.scalars(
-            sa.select(MGenre)
-            .where(
-                MGenre.type == type,
-                MGenre.number_of > 0,
+        rows = (
+            await session.execute(
+                sa.select(MGenre.__table__)
+                .where(
+                    MGenre.type == type,
+                    MGenre.number_of > 0,
+                )
+                .order_by(MGenre.name)
             )
-            .order_by(MGenre.name)
-        )
+        ).mappings()
         return [genre_mapper(row) for row in rows]
 
 
@@ -47,7 +56,9 @@ async def get_or_create_genre(
             result = cast(
                 Any,
                 await session.execute(
-                    sa.insert(MGenre.__table__).values(name=genre, type=type_)  # type: ignore
+                    sa.insert(cast(sa.Table, MGenre.__table__)).values(
+                        name=genre, type=type_
+                    )
                 ),
             )
             genre_id = result.lastrowid

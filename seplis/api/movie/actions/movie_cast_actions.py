@@ -1,9 +1,15 @@
+from typing import cast
+
 import sqlalchemy as sa
+from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.engine import RowMapping
 
 from seplis.api.contexts import AsyncSession, get_session
+from seplis.api.image import image_columns
+from seplis.api.image.models.image_model import MImage
 from seplis.api.page_cursor import PageCursor, PageCursorQuery, page_cursor
 from seplis.api.person import person_mapper
+from seplis.api.person.models.person_model import MPerson
 
 from ..models.movie_cast_model import MMovieCast
 from ..schemas.movie_cast_schemas import MovieCastPerson, MovieCastPersonCreate
@@ -19,7 +25,12 @@ def movie_cast_person_model_mapper(cast: MMovieCast) -> MovieCastPerson:
 
 
 def movie_cast_person_mapper(row: RowMapping) -> MovieCastPerson:
-    return movie_cast_person_model_mapper(row['MMovieCast'])
+    return MovieCastPerson(
+        movie_id=row['movie_id'],
+        person=person_mapper(row),
+        character=row['character'],
+        order=row['order'],
+    )
 
 
 async def save_movie_cast(
@@ -28,7 +39,7 @@ async def save_movie_cast(
     async with get_session(session) as session:
         data_ = {**dict(data), 'movie_id': movie_id}
         await session.execute(
-            sa.dialects.mysql.insert(MMovieCast.__table__)  # type: ignore
+            mysql_insert(cast(sa.Table, MMovieCast.__table__))
             .values(data_)
             .on_duplicate_key_update(data_)
         )
@@ -39,7 +50,7 @@ async def delete_movie_cast(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.delete(MMovieCast.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MMovieCast.__table__)).where(
                 MMovieCast.movie_id == movie_id,
                 MMovieCast.person_id == person_id,
             )
@@ -55,7 +66,9 @@ async def get_movie_cast(
     order_ge: int | None = None,
 ) -> PageCursor[MovieCastPerson]:
     query = (
-        sa.select(MMovieCast)
+        sa.select(MMovieCast.__table__, MPerson.__table__, *image_columns())
+        .join(MPerson.__table__, MPerson.id == MMovieCast.person_id)
+        .outerjoin(MImage.__table__, MImage.id == MPerson.profile_image_id)
         .where(MMovieCast.movie_id == movie_id)
         .order_by(sa.asc(sa.func.coalesce(MMovieCast.order, 0)))
     )

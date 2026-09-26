@@ -1,7 +1,10 @@
 import asyncio
 from datetime import UTC, datetime
+from typing import cast
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.mysql import insert as mysql_insert
+from sqlalchemy.engine import RowMapping
 
 from seplis.api.contexts import AsyncSession, get_session
 from seplis.api.user import (
@@ -45,7 +48,7 @@ async def add_series_favorite(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.insert(MSeriesFavorite.__table__)  # type: ignore
+            sa.insert(cast(sa.Table, MSeriesFavorite.__table__))
             .values(
                 series_id=series_id,
                 user_id=user_id,
@@ -60,7 +63,7 @@ async def remove_series_favorite(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.delete(MSeriesFavorite.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MSeriesFavorite.__table__)).where(
                 MSeriesFavorite.series_id == series_id,
                 MSeriesFavorite.user_id == user_id,
             )
@@ -87,7 +90,7 @@ async def add_series_watchlist(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.insert(MSeriesWatchlist.__table__)  # type: ignore
+            sa.insert(cast(sa.Table, MSeriesWatchlist.__table__))
             .values(
                 series_id=series_id,
                 user_id=user_id,
@@ -102,7 +105,7 @@ async def remove_series_watchlist(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.delete(MSeriesWatchlist.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MSeriesWatchlist.__table__)).where(
                 MSeriesWatchlist.series_id == series_id,
                 MSeriesWatchlist.user_id == user_id,
             )
@@ -131,7 +134,7 @@ async def update_series_rating(
     session: AsyncSession | None = None,
 ) -> None:
     async with get_session(session) as session:
-        sql = sa.dialects.mysql.insert(MSeriesUserRating.__table__).values(  # type: ignore
+        sql = mysql_insert(cast(sa.Table, MSeriesUserRating.__table__)).values(
             user_id=user_id,
             series_id=series_id,
             rating=data['rating'],
@@ -151,7 +154,7 @@ async def delete_series_rating(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.delete(MSeriesUserRating.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MSeriesUserRating.__table__)).where(
                 MSeriesUserRating.user_id == user_id,
                 MSeriesUserRating.series_id == series_id,
             )
@@ -187,12 +190,12 @@ async def get_user_stats(
                 MSeries.id == MEpisodeWatched.series_id,
             )
         )
-        row = result.first()
+        row = result.mappings().first()
         if not row:
             return SeriesUserStats()
         return SeriesUserStats(
-            episodes_watched=int(row.episodes_watched or 0),
-            episodes_watched_minutes=int(row.episodes_watched_minutes or 0),
+            episodes_watched=int(row['episodes_watched'] or 0),
+            episodes_watched_minutes=int(row['episodes_watched_minutes'] or 0),
         )
 
 
@@ -254,12 +257,12 @@ async def episodes_watched_count(
                 MSeries.id == MEpisodeWatched.series_id,
             )
         )
-        row = result.first()
+        row = result.mappings().first()
         if not row:
             return {'episodes_watched': 0, 'episodes_watched_minutes': 0}
         return {
-            'episodes_watched': int(row.episodes_watched or 0),
-            'episodes_watched_minutes': int(row.episodes_watched_minutes or 0),
+            'episodes_watched': int(row['episodes_watched'] or 0),
+            'episodes_watched_minutes': int(row['episodes_watched_minutes'] or 0),
         }
 
 
@@ -279,13 +282,13 @@ async def series_finished_count(
 
 
 def user_series_settings_mapper(
-    settings: MUserSeriesSettings | None,
+    settings: RowMapping | None,
 ) -> UserSeriesSettings:
     if not settings:
         return UserSeriesSettings()
     return UserSeriesSettings(
-        subtitle_lang=settings.subtitle_lang,
-        audio_lang=settings.audio_lang,
+        subtitle_lang=settings['subtitle_lang'],
+        audio_lang=settings['audio_lang'],
     )
 
 
@@ -295,11 +298,17 @@ async def get_series_user_settings(
     session: AsyncSession | None = None,
 ) -> UserSeriesSettings:
     async with get_session(session) as session:
-        settings = await session.scalar(
-            sa.select(MUserSeriesSettings).where(
-                MUserSeriesSettings.user_id == user_id,
-                MUserSeriesSettings.series_id == series_id,
+        settings = (
+            (
+                await session.execute(
+                    sa.select(MUserSeriesSettings.__table__).where(
+                        MUserSeriesSettings.user_id == user_id,
+                        MUserSeriesSettings.series_id == series_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         return user_series_settings_mapper(settings)
 
@@ -311,16 +320,22 @@ async def set_series_user_settings(
     session: AsyncSession | None = None,
 ) -> UserSeriesSettings:
     async with get_session(session) as session:
-        settings = await session.scalar(
-            sa.select(MUserSeriesSettings).where(
-                MUserSeriesSettings.user_id == user_id,
-                MUserSeriesSettings.series_id == series_id,
+        settings = (
+            (
+                await session.execute(
+                    sa.select(MUserSeriesSettings.__table__).where(
+                        MUserSeriesSettings.user_id == user_id,
+                        MUserSeriesSettings.series_id == series_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         values = dict(data)
         if not settings:
             await session.execute(
-                sa.insert(MUserSeriesSettings.__table__).values(  # type: ignore
+                sa.insert(cast(sa.Table, MUserSeriesSettings.__table__)).values(
                     series_id=series_id,
                     user_id=user_id,
                     **values,
@@ -328,18 +343,24 @@ async def set_series_user_settings(
             )
         else:
             await session.execute(
-                sa.update(MUserSeriesSettings.__table__)  # type: ignore
+                sa.update(cast(sa.Table, MUserSeriesSettings.__table__))
                 .values(**values)
                 .where(
                     MUserSeriesSettings.user_id == user_id,
                     MUserSeriesSettings.series_id == series_id,
                 )
             )
-        settings = await session.scalar(
-            sa.select(MUserSeriesSettings).where(
-                MUserSeriesSettings.user_id == user_id,
-                MUserSeriesSettings.series_id == series_id,
+        settings = (
+            (
+                await session.execute(
+                    sa.select(MUserSeriesSettings.__table__).where(
+                        MUserSeriesSettings.user_id == user_id,
+                        MUserSeriesSettings.series_id == series_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         await session.commit()
         return user_series_settings_mapper(settings)

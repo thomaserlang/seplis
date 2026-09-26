@@ -3,6 +3,7 @@ from typing import Any, cast
 
 import sqlalchemy as sa
 from passlib.hash import pbkdf2_sha256  # ty: ignore[unresolved-import]
+from sqlalchemy.engine import RowMapping
 from starlette.concurrency import run_in_threadpool
 
 from seplis.api import exceptions
@@ -18,28 +19,36 @@ from ..schemas.user_schemas import User, UserCreate, UserPublic, UserUpdate
 
 async def get_user(user_id: int, session: AsyncSession | None = None) -> User | None:
     async with get_session(session) as session:
-        user = await session.scalar(sa.select(MUser).where(MUser.id == user_id))
+        user = (
+            (await session.execute(sa.select(MUser.__table__).where(MUser.id == user_id)))
+            .mappings()
+            .first()
+        )
         if not user:
             return None
         return User(
-            id=user.id,
-            username=user.username,
-            email=user.email,
-            scopes=user.scopes.split(' ')
-            if isinstance(user.scopes, str)
-            else user.scopes,
+            id=user['id'],
+            username=user['username'],
+            email=user['email'],
+            scopes=user['scopes'].split(' ')
+            if isinstance(user['scopes'], str)
+            else user['scopes'],
         )
 
 
-def user_public_mapper(user: MUser) -> UserPublic:
-    return UserPublic(id=user.id, username=user.username)
+def user_public_mapper(user: RowMapping) -> UserPublic:
+    return UserPublic(id=user['id'], username=user['username'])
 
 
 async def get_users_by_username(
     username: str, session: AsyncSession | None = None
 ) -> list[UserPublic]:
     async with get_session(session) as session:
-        users = await session.scalars(sa.select(MUser).where(MUser.username == username))
+        users = (
+            await session.execute(
+                sa.select(MUser.__table__).where(MUser.username == username)
+            )
+        ).mappings()
         return [user_public_mapper(user) for user in users]
 
 
@@ -60,7 +69,7 @@ async def ensure_unique_user_data(
 ) -> None:
     if 'email' in data and data['email'] is not None:
         e = await session.scalar(
-            sa.select(MUser).where(
+            sa.select(MUser.id).where(
                 MUser.email == data['email'],
                 MUser.id != user_id,
             )
@@ -69,7 +78,7 @@ async def ensure_unique_user_data(
             raise exceptions.UserEmailDuplicate()
     if 'username' in data and data['username'] is not None:
         e = await session.scalar(
-            sa.select(MUser).where(
+            sa.select(MUser.id).where(
                 MUser.username == data['username'],
                 MUser.id != user_id,
             )
@@ -88,7 +97,9 @@ async def create_user(
 
         r = cast(
             sa.Row[Any],
-            await session.execute(sa.insert(MUser.__table__).values(prepared_data)),  # type: ignore
+            await session.execute(
+                sa.insert(cast(sa.Table, MUser.__table__)).values(prepared_data)
+            ),
         )
         user_id = r.lastrowid
         user = await get_user(user_id=user_id, session=session)
@@ -106,7 +117,9 @@ async def update_user(
         prepared_data = await prepare_user_data(cast(dict[str, Any], data))
         await ensure_unique_user_data(prepared_data, session, user_id=user_id)
         await session.execute(
-            sa.update(MUser.__table__).where(MUser.id == user_id).values(prepared_data)  # type: ignore
+            sa.update(cast(sa.Table, MUser.__table__))
+            .where(MUser.id == user_id)
+            .values(prepared_data)
         )
         user = await get_user(user_id=user_id, session=session)
         if not user:
@@ -124,28 +137,32 @@ async def change_password(
     async with get_session(session) as session:
         password = await run_in_threadpool(pbkdf2_sha256.hash, new_password)
         await session.execute(
-            sa.update(MUser.__table__)  # type: ignore
+            sa.update(cast(sa.Table, MUser.__table__))
             .where(MUser.id == user_id)
             .values(
                 password=password,
             )
         )
         if expire_tokens:
-            tokens = await session.scalars(
-                sa.select(MToken).where(
-                    MToken.user_id == user_id,
-                    sa.or_(
-                        MToken.expires >= datetime.now(tz=UTC),
-                        MToken.expires.is_(None),
-                    ),
-                    MToken.token != current_token,
+            tokens = (
+                await session.execute(
+                    sa.select(MToken.__table__).where(
+                        MToken.user_id == user_id,
+                        sa.or_(
+                            MToken.expires >= datetime.now(tz=UTC),
+                            MToken.expires.is_(None),
+                        ),
+                        MToken.token != current_token,
+                    )
                 )
-            )
+            ).mappings()
             for token in tokens:
                 await session.execute(
-                    sa.delete(MToken.__table__).where(MToken.token == token.token)  # type: ignore
+                    sa.delete(cast(sa.Table, MToken.__table__)).where(
+                        MToken.token == token['token']
+                    )
                 )
-                await database.redis.delete(f'seplis:tokens:{token.token}:user')
+                await database.redis.delete(f'seplis:tokens:{token["token"]}:user')
         email = await session.scalar(sa.select(MUser.email).where(MUser.id == user_id))
         if email is not None:
             await send_password_changed(email)

@@ -1,6 +1,7 @@
 import secrets
 from collections.abc import Sequence
 from datetime import timedelta
+from typing import cast
 
 import sqlalchemy as sa
 
@@ -27,7 +28,7 @@ async def create_auth_code(
             if exists:
                 continue
             await session.execute(
-                sa.insert(MAuthCode.__table__).values(  # type: ignore
+                sa.insert(cast(sa.Table, MAuthCode.__table__)).values(
                     code=code,
                     user_id=action_by_user_id,
                     expires_at=expires_at,
@@ -44,7 +45,7 @@ async def delete_auth_codes(
     user_id: int | None = None, session: AsyncSession | None = None
 ) -> None:
     async with get_session(session) as session:
-        stmt = sa.delete(MAuthCode.__table__)  # type: ignore
+        stmt = sa.delete(cast(sa.Table, MAuthCode.__table__))
         if user_id is not None:
             stmt = stmt.where(MAuthCode.user_id == user_id)
         else:
@@ -57,18 +58,25 @@ async def redeem_auth_code(
 ) -> AuthCodeRedeemed | None:
     async with get_session(session) as session:
         auth_code = (
-            await session.execute(
-                sa.select(MAuthCode.__table__)
-                .where(MAuthCode.code == code, MAuthCode.expires_at >= datetime_now())
-                .with_for_update(nowait=True)
+            (
+                await session.execute(
+                    sa.select(MAuthCode.__table__)
+                    .where(
+                        MAuthCode.code == code,
+                        MAuthCode.expires_at >= datetime_now(),
+                    )
+                    .with_for_update(nowait=True)
+                )
             )
-        ).first()
+            .mappings()
+            .first()
+        )
 
         if not auth_code:
             return None
 
-        await delete_auth_codes(user_id=auth_code.user_id, session=session)
+        await delete_auth_codes(user_id=auth_code['user_id'], session=session)
 
         return AuthCodeRedeemed(
-            user_id=auth_code.user_id, scopes=auth_code.scopes.split(' ')
+            user_id=auth_code['user_id'], scopes=auth_code['scopes'].split(' ')
         )

@@ -7,7 +7,6 @@ import sqlalchemy as sa
 from pydantic import BaseModel
 from sqlakeyset.asyncio import select_page
 from sqlalchemy.engine import Row, RowMapping
-from sqlalchemy.orm import DeclarativeBase, noload
 
 from seplis.api.common.utils.validate_helper import validate_python
 from seplis.api.contexts import AsyncSession, get_session
@@ -80,7 +79,7 @@ async def page_cursor[TP: tuple[Any, ...]](
 
         total = None
         if count_total:
-            count_subquery = query.order_by(None).options(noload('*')).subquery()
+            count_subquery = query.order_by(None).subquery()
             total = await session.scalar(
                 sa.Select[TP](sa.func.count(sa.literal_column('*'))).select_from(
                     count_subquery
@@ -103,16 +102,12 @@ async def page_cursor[TP: tuple[Any, ...]](
 
 
 def validate_record(response_model: Any, row: Row[Any]) -> Any:
-    is_obj = len(row) == 1 and isinstance(row[0], DeclarativeBase)
     try:
         is_base_model = issubclass(response_model, BaseModel)
     except TypeError:
         is_base_model = False
 
     if is_base_model:
-        return response_model.model_validate(row[0] if is_obj else dict(row._mapping))
-
-    if is_obj:
-        raise ValueError('Must use .__table__ for non-BaseModel response_model')
+        return response_model.model_validate(dict(row._mapping))
 
     return validate_python(response_model, dict(row._mapping))

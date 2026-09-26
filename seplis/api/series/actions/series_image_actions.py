@@ -1,3 +1,5 @@
+from typing import cast
+
 import sqlalchemy as sa
 from fastapi import UploadFile
 from sqlalchemy.engine import RowMapping
@@ -17,7 +19,7 @@ from ..models.series_model import MSeries
 
 
 def series_image_mapper(row: RowMapping) -> Image:
-    return image_mapper(row['MImage'])
+    return image_mapper(row)
 
 
 async def create_series_image(
@@ -46,7 +48,7 @@ async def delete_series_image(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.update(MSeries.__table__)  # type: ignore
+            sa.update(cast(sa.Table, MSeries.__table__))
             .values(poster_image_id=None)
             .where(
                 MSeries.id == series_id,
@@ -54,7 +56,7 @@ async def delete_series_image(
             )
         )
         await session.execute(
-            sa.delete(MImage.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MImage.__table__)).where(
                 MImage.relation_type == 'series',
                 MImage.relation_id == series_id,
                 MImage.id == image_id,
@@ -69,7 +71,7 @@ async def get_series_images(
     page_query: PageCursorQuery,
     session: AsyncSession | None = None,
 ) -> PageCursor[Image]:
-    query = sa.select(MImage).where(
+    query = sa.select(MImage.__table__).where(
         MImage.relation_type == 'series',
         MImage.relation_id == series_id,
     )

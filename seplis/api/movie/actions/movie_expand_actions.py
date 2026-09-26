@@ -54,17 +54,17 @@ async def expand_user_watchlist(
         for movie in movies:
             movie.user_watchlist = MovieWatchlist()
             movies_by_id[movie.id] = movie
-        result = await session.scalars(
-            sa.select(
-                MMovieWatchlist,
-            ).where(
-                MMovieWatchlist.user_id == user_id,
-                MMovieWatchlist.movie_id.in_(set(movies_by_id.keys())),
+        result = (
+            await session.execute(
+                sa.select(MMovieWatchlist.__table__).where(
+                    MMovieWatchlist.user_id == user_id,
+                    MMovieWatchlist.movie_id.in_(set(movies_by_id.keys())),
+                )
             )
-        )
+        ).mappings()
         for movie_watchlist in result:
-            movies_by_id[movie_watchlist.movie_id].user_watchlist = MovieWatchlist(
-                created_at=movie_watchlist.created_at,
+            movies_by_id[movie_watchlist['movie_id']].user_watchlist = MovieWatchlist(
+                created_at=movie_watchlist['created_at'],
                 on_watchlist=True,
             )
 
@@ -77,17 +77,17 @@ async def expand_user_favorite(
         for movie in movies:
             movie.user_favorite = MovieFavorite()
             movies_by_id[movie.id] = movie
-        result = await session.scalars(
-            sa.select(
-                MMovieFavorite,
-            ).where(
-                MMovieFavorite.user_id == user_id,
-                MMovieFavorite.movie_id.in_(set(movies_by_id.keys())),
+        result = (
+            await session.execute(
+                sa.select(MMovieFavorite.__table__).where(
+                    MMovieFavorite.user_id == user_id,
+                    MMovieFavorite.movie_id.in_(set(movies_by_id.keys())),
+                )
             )
-        )
+        ).mappings()
         for movie_favorite in result:
-            movies_by_id[movie_favorite.movie_id].user_favorite = MovieFavorite(
-                created_at=movie_favorite.created_at,
+            movies_by_id[movie_favorite['movie_id']].user_favorite = MovieFavorite(
+                created_at=movie_favorite['created_at'],
                 favorite=True,
             )
 
@@ -100,15 +100,15 @@ async def expand_user_watched(
         for movie in movies:
             movie.user_watched = MovieWatched()
             movies_by_id[movie.id] = movie
-        result = await session.scalars(
-            sa.select(
-                MMovieWatched,
-            ).where(
-                MMovieWatched.user_id == user_id,
-                MMovieWatched.movie_id.in_(set(movies_by_id.keys())),
+        result = (
+            await session.execute(
+                sa.select(MMovieWatched.__table__).where(
+                    MMovieWatched.user_id == user_id,
+                    MMovieWatched.movie_id.in_(set(movies_by_id.keys())),
+                )
             )
-        )
+        ).mappings()
         for movie_watched in result:
-            movies_by_id[movie_watched.movie_id].user_watched = movie_watched_mapper(
+            movies_by_id[movie_watched['movie_id']].user_watched = movie_watched_mapper(
                 movie_watched
             )

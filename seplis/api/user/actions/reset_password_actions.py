@@ -1,5 +1,6 @@
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from urllib.parse import urljoin
 
 import sqlalchemy as sa
@@ -26,7 +27,7 @@ async def create_reset_link(user_id: int) -> str:
     key = str(uuid.uuid4())
     async with get_session() as session:
         await session.execute(
-            sa.insert(MResetPassword.__table__).values(  # type: ignore
+            sa.insert(cast(sa.Table, MResetPassword.__table__)).values(
                 user_id=user_id,
                 key=key,
                 expires=datetime.now(tz=UTC) + timedelta(minutes=30),

@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
+from typing import cast
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.exc import IntegrityError
 
 from seplis.api import exceptions
@@ -32,13 +34,13 @@ async def register_play_server_movies(
 
         if not patch:
             await session.execute(
-                sa.delete(MPlayServerMovie.__table__).where(  # type: ignore
+                sa.delete(cast(sa.Table, MPlayServerMovie.__table__)).where(
                     MPlayServerMovie.play_server_id == play_server_id,
                 )
             )
         if data:
             now = datetime.now(tz=UTC)
-            stmt = sa.dialects.mysql.insert(MPlayServerMovie.__table__).values(  # type: ignore
+            stmt = mysql_insert(cast(sa.Table, MPlayServerMovie.__table__)).values(
                 [
                     {
                         'play_server_id': play_server_id,
@@ -83,7 +85,7 @@ async def delete_movie_from_play_server(
         if not play_server:
             raise exceptions.PlayServerUnknown()
         await session.execute(
-            sa.delete(MPlayServerMovie.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServerMovie.__table__)).where(
                 MPlayServerMovie.play_server_id == play_server_id,
                 MPlayServerMovie.movie_id == movie_id,
             )
@@ -109,14 +111,14 @@ async def register_play_server_episodes(
 
         if not patch:
             await session.execute(
-                sa.delete(MPlayServerEpisode.__table__).where(  # type: ignore
+                sa.delete(cast(sa.Table, MPlayServerEpisode.__table__)).where(
                     MPlayServerEpisode.play_server_id == play_server_id,
                 )
             )
 
         if data:
             now = datetime.now(tz=UTC)
-            stmt = sa.dialects.mysql.insert(MPlayServerEpisode.__table__).values(  # type: ignore
+            stmt = mysql_insert(cast(sa.Table, MPlayServerEpisode.__table__)).values(
                 [
                     {
                         'play_server_id': play_server_id,
@@ -167,7 +169,7 @@ async def delete_episode_from_play_server(
         if not play_server:
             raise exceptions.PlayServerUnknown()
         await session.execute(
-            sa.delete(MPlayServerEpisode.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServerEpisode.__table__)).where(
                 MPlayServerEpisode.play_server_id == play_server_id,
                 MPlayServerEpisode.series_id == series_id,
                 MPlayServerEpisode.episode_number == episode_number,

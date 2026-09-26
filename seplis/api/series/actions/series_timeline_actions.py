@@ -6,18 +6,24 @@ from sqlalchemy.engine import RowMapping
 from seplis.api.contexts import AsyncSession, get_session
 from seplis.api.page_cursor import PageCursor, PageCursorQuery, page_cursor
 
-from ..models.episode_model import MEpisode, MEpisodeWatched, episode_mapper
-from ..models.series_model import MSeries, series_mapper
+from ..models.episode_model import MEpisode, MEpisodeWatched
+from ..models.series_model import MSeries
 from ..models.series_watchlist_model import MSeriesWatchlist
 from ..schemas.series_schemas import SeriesAndEpisode
 from ..types.series_filter_types import SeriesQueryFilter
 from .series_filter_actions import filter_series_query
+from .series_mapping import (
+    episode_columns,
+    episode_row_mapper,
+    select_series,
+    series_row_mapper,
+)
 
 
 def series_and_episode_mapper(row: RowMapping) -> SeriesAndEpisode:
     return SeriesAndEpisode(
-        series=series_mapper(row['MSeries']),
-        episode=episode_mapper(row['MEpisode']),
+        series=series_row_mapper(row),
+        episode=episode_row_mapper(row, 'episode_'),
     )
 
 
@@ -51,7 +57,8 @@ async def get_series_recently_aired(
         episodes_query = episodes_query.subquery()
 
         query = (
-            sa.select(MSeries, MEpisode)
+            select_series()
+            .add_columns(*episode_columns())
             .where(
                 MSeries.id == episodes_query.c.series_id,
                 MEpisode.series_id == MSeries.id,
@@ -92,7 +99,8 @@ async def get_series_countdown(
             .subquery()
         )
         query = (
-            sa.select(MSeries, MEpisode)
+            select_series()
+            .add_columns(*episode_columns())
             .where(
                 MSeries.id == episodes_query.c.series_id,
                 MEpisode.series_id == MSeries.id,
@@ -149,12 +157,16 @@ async def get_user_series_to_watch(
             .subquery()
         )
 
-        query = sa.select(MSeries, MEpisode).where(
-            MSeries.id == episodes_query.c.series_id,
-            MEpisode.series_id == MSeries.id,
-            MEpisode.number == episodes_query.c.episode_number + 1,
-            MEpisode.air_datetime <= datetime.now(tz=UTC),
-            latest_aired_episode.c.series_id == MSeries.id,
+        query = (
+            select_series()
+            .add_columns(*episode_columns())
+            .where(
+                MSeries.id == episodes_query.c.series_id,
+                MEpisode.series_id == MSeries.id,
+                MEpisode.number == episodes_query.c.episode_number + 1,
+                MEpisode.air_datetime <= datetime.now(tz=UTC),
+                latest_aired_episode.c.series_id == MSeries.id,
+            )
         )
 
         query = (

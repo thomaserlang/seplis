@@ -4,12 +4,13 @@ from sqlalchemy.engine import RowMapping
 
 from seplis.api.page_cursor import PageCursor, PageCursorQuery, page_cursor
 
-from ..models.movie_model import MMovie, movie_mapper
+from ..models.movie_model import MMovie
 from ..schemas.movie_schemas import Movie
 from ..types.movie_filter_types import MovieQueryFilter
 from .movie_expand_actions import expand_movies
 from .movie_genre_filter_actions import filter_genres
 from .movie_language_filter_actions import filter_language
+from .movie_mapping import movie_row_mapper
 from .movie_order_actions import order_query
 from .movie_rating_filter_actions import filter_rating
 from .movie_release_date_filter_actions import filter_release_date
@@ -20,7 +21,7 @@ from .movie_user_watchlist_filter_actions import filter_user_watchlist
 
 
 def movie_filter_mapper(row: RowMapping) -> Movie:
-    return movie_mapper(row['MMovie'])
+    return movie_row_mapper(row)
 
 
 async def filter_movies(

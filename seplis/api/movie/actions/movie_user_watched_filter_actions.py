@@ -25,7 +25,7 @@ def filter_user_has_watched(query: Any, filter_query: MovieQueryFilter) -> Any:
         )
     elif not filter_query.user_has_watched:
         query = query.join(
-            MMovieWatched,
+            MMovieWatched.__table__,
             sa.and_(
                 MMovieWatched.user_id == filter_query.user.id,
                 MMovieWatched.movie_id == MMovie.id,

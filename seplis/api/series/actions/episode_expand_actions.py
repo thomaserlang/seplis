@@ -6,8 +6,9 @@ from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
 from seplis.api.user import UserAuthenticated
 
-from ..models.episode_model import MEpisodeWatched, episode_watched_mapper
+from ..models.episode_model import MEpisodeWatched
 from ..schemas.episode_schemas import Episode, EpisodeWatched, UserCanWatch
+from .series_mapping import episode_watched_row_mapper
 
 
 async def expand_episodes(
@@ -52,19 +53,19 @@ async def expand_user_watched(
         for episode in episodes:
             episode.user_watched = EpisodeWatched(episode_number=episode.number)
             episodes_by_number[episode.number] = episode
-        result = await session.scalars(
-            sa.select(
-                MEpisodeWatched,
-            ).where(
-                MEpisodeWatched.user_id == user_id,
-                MEpisodeWatched.series_id == series_id,
-                MEpisodeWatched.episode_number.in_(set(episodes_by_number.keys())),
+        result = (
+            await session.execute(
+                sa.select(MEpisodeWatched.__table__).where(
+                    MEpisodeWatched.user_id == user_id,
+                    MEpisodeWatched.series_id == series_id,
+                    MEpisodeWatched.episode_number.in_(set(episodes_by_number.keys())),
+                )
             )
-        )
+        ).mappings()
         for episode_watched in result:
             episodes_by_number[
-                episode_watched.episode_number
-            ].user_watched = episode_watched_mapper(episode_watched)
+                episode_watched['episode_number']
+            ].user_watched = episode_watched_row_mapper(episode_watched)
 
 
 async def expand_user_can_watch(
@@ -83,19 +84,19 @@ async def expand_user_can_watch(
         for episode in episodes:
             episode.user_can_watch = UserCanWatch()
             episodes_by_number[episode.number] = episode
-        result = await session.scalars(
-            sa.select(
-                MPlayServerEpisode,
+        result = (
+            await session.execute(
+                sa.select(MPlayServerEpisode.__table__)
+                .where(
+                    MPlayServerAccess.user_id == user_id,
+                    MPlayServerEpisode.play_server_id == MPlayServerAccess.play_server_id,
+                    MPlayServerEpisode.series_id == series_id,
+                    MPlayServerEpisode.episode_number.in_(set(episodes_by_number.keys())),
+                )
+                .group_by(MPlayServerEpisode.episode_number)
             )
-            .where(
-                MPlayServerAccess.user_id == user_id,
-                MPlayServerEpisode.play_server_id == MPlayServerAccess.play_server_id,
-                MPlayServerEpisode.series_id == series_id,
-                MPlayServerEpisode.episode_number.in_(set(episodes_by_number.keys())),
-            )
-            .group_by(MPlayServerEpisode.episode_number)
-        )
+        ).mappings()
         for episode_play_server in result:
             episodes_by_number[
-                episode_play_server.episode_number
+                episode_play_server['episode_number']
             ].user_can_watch = UserCanWatch(on_play_server=True)

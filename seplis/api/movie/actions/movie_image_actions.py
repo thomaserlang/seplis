@@ -1,3 +1,5 @@
+from typing import cast
+
 import sqlalchemy as sa
 from fastapi import UploadFile
 from sqlalchemy.engine import RowMapping
@@ -17,7 +19,7 @@ from ..models.movie_model import MMovie
 
 
 def movie_image_mapper(row: RowMapping) -> Image:
-    return image_mapper(row['MImage'])
+    return image_mapper(row)
 
 
 async def create_movie_image(
@@ -46,7 +48,7 @@ async def delete_movie_image(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.update(MMovie.__table__)  # type: ignore
+            sa.update(cast(sa.Table, MMovie.__table__))
             .values(poster_image_id=None)
             .where(
                 MMovie.id == movie_id,
@@ -54,7 +56,7 @@ async def delete_movie_image(
             )
         )
         await session.execute(
-            sa.delete(MImage.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MImage.__table__)).where(
                 MImage.relation_type == 'movie',
                 MImage.relation_id == movie_id,
                 MImage.id == image_id,
@@ -70,7 +72,7 @@ async def get_movie_images(
     page_query: PageCursorQuery,
     session: AsyncSession | None = None,
 ) -> PageCursor[Image]:
-    query = sa.select(MImage).where(
+    query = sa.select(MImage.__table__).where(
         MImage.relation_type == 'movie',
         MImage.relation_id == movie_id,
     )

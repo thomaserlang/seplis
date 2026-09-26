@@ -1,6 +1,9 @@
 from datetime import UTC, datetime
+from typing import cast
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.mysql import insert as mysql_insert
+from sqlalchemy.engine import RowMapping
 
 from seplis.api.contexts import AsyncSession, get_session
 
@@ -15,11 +18,11 @@ from ..schemas.movie_schemas import (
 )
 
 
-def movie_watched_mapper(watched: MMovieWatched) -> MovieWatched:
+def movie_watched_mapper(watched: RowMapping) -> MovieWatched:
     return MovieWatched(
-        times=watched.times or 0,
-        position=watched.position or 0,
-        watched_at=watched.watched_at,
+        times=watched['times'] or 0,
+        position=watched['position'] or 0,
+        watched_at=watched['watched_at'],
     )
 
 
@@ -43,7 +46,7 @@ async def add_movie_favorite(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.insert(MMovieFavorite.__table__)  # type: ignore
+            sa.insert(cast(sa.Table, MMovieFavorite.__table__))
             .values(
                 movie_id=movie_id,
                 user_id=user_id,
@@ -58,7 +61,7 @@ async def remove_movie_favorite(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.delete(MMovieFavorite.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MMovieFavorite.__table__)).where(
                 MMovieFavorite.movie_id == movie_id,
                 MMovieFavorite.user_id == user_id,
             )
@@ -85,7 +88,7 @@ async def add_movie_watchlist(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.insert(MMovieWatchlist.__table__)  # type: ignore
+            sa.insert(cast(sa.Table, MMovieWatchlist.__table__))
             .values(
                 movie_id=movie_id,
                 user_id=user_id,
@@ -100,7 +103,7 @@ async def remove_movie_watchlist(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.delete(MMovieWatchlist.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MMovieWatchlist.__table__)).where(
                 MMovieWatchlist.movie_id == movie_id,
                 MMovieWatchlist.user_id == user_id,
             )
@@ -111,11 +114,17 @@ async def get_movie_watched(
     *, movie_id: int, user_id: int, session: AsyncSession | None = None
 ) -> MovieWatched:
     async with get_session(session) as session:
-        watched = await session.scalar(
-            sa.select(MMovieWatched).where(
-                MMovieWatched.user_id == user_id,
-                MMovieWatched.movie_id == movie_id,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MMovieWatched.__table__).where(
+                        MMovieWatched.user_id == user_id,
+                        MMovieWatched.movie_id == movie_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         return movie_watched_mapper(watched) if watched else MovieWatched()
 
@@ -129,7 +138,7 @@ async def increment_movie_watched(
 ) -> MovieWatched:
     async with get_session(session) as session:
         watched_at = data.get('watched_at') or datetime.now(tz=UTC)
-        watched_stmt = sa.dialects.mysql.insert(MMovieWatched.__table__).values(  # type: ignore
+        watched_stmt = mysql_insert(cast(sa.Table, MMovieWatched.__table__)).values(
             movie_id=movie_id,
             user_id=user_id,
             watched_at=watched_at.astimezone(UTC),
@@ -140,7 +149,9 @@ async def increment_movie_watched(
             times=MMovieWatched.times + 1,
             position=0,
         )
-        watched_history_stmt = sa.insert(MMovieWatchedHistory.__table__).values(  # type: ignore
+        watched_history_stmt = sa.insert(
+            cast(sa.Table, MMovieWatchedHistory.__table__)
+        ).values(
             movie_id=movie_id,
             user_id=user_id,
             watched_at=watched_at.astimezone(UTC),
@@ -149,16 +160,22 @@ async def increment_movie_watched(
         await session.execute(watched_stmt)
         await session.execute(watched_history_stmt)
         await session.execute(
-            sa.delete(MMovieWatchlist.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MMovieWatchlist.__table__)).where(
                 MMovieWatchlist.user_id == user_id,
                 MMovieWatchlist.movie_id == movie_id,
             )
         )
-        watched = await session.scalar(
-            sa.select(MMovieWatched).where(
-                MMovieWatched.movie_id == movie_id,
-                MMovieWatched.user_id == user_id,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MMovieWatched.__table__).where(
+                        MMovieWatched.movie_id == movie_id,
+                        MMovieWatched.user_id == user_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         return movie_watched_mapper(watched) if watched else MovieWatched()
 
@@ -170,31 +187,37 @@ async def decrement_movie_watched(
     session: AsyncSession | None = None,
 ) -> MovieWatched:
     async with get_session(session) as session:
-        watched = await session.scalar(
-            sa.select(MMovieWatched).where(
-                MMovieWatched.movie_id == movie_id,
-                MMovieWatched.user_id == user_id,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MMovieWatched.__table__).where(
+                        MMovieWatched.movie_id == movie_id,
+                        MMovieWatched.user_id == user_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if not watched:
             return MovieWatched()
 
-        if watched.times == 0 or (watched.times == 1 and watched.position == 0):
+        if watched['times'] == 0 or (watched['times'] == 1 and watched['position'] == 0):
             await session.execute(
-                sa.delete(MMovieWatched.__table__).where(  # type: ignore
+                sa.delete(cast(sa.Table, MMovieWatched.__table__)).where(
                     MMovieWatched.movie_id == movie_id,
                     MMovieWatched.user_id == user_id,
                 )
             )
             await session.execute(
-                sa.delete(MMovieWatchedHistory.__table__).where(  # type: ignore
+                sa.delete(cast(sa.Table, MMovieWatchedHistory.__table__)).where(
                     MMovieWatchedHistory.movie_id == movie_id,
                     MMovieWatchedHistory.user_id == user_id,
                 )
             )
             return MovieWatched()
 
-        if (watched.position or 0) > 0:
+        if (watched['position'] or 0) > 0:
             watched_at = await session.scalar(
                 sa.select(MMovieWatchedHistory.watched_at)
                 .where(
@@ -205,7 +228,7 @@ async def decrement_movie_watched(
                 .limit(1)
             )
             await session.execute(
-                sa.update(MMovieWatched.__table__)  # type: ignore
+                sa.update(cast(sa.Table, MMovieWatched.__table__))
                 .where(
                     MMovieWatched.movie_id == movie_id,
                     MMovieWatched.user_id == user_id,
@@ -228,12 +251,12 @@ async def decrement_movie_watched(
                 )
             ).all()
             await session.execute(
-                sa.delete(MMovieWatchedHistory.__table__).where(  # type: ignore
+                sa.delete(cast(sa.Table, MMovieWatchedHistory.__table__)).where(
                     MMovieWatchedHistory.id == history_rows[0].id,
                 )
             )
             await session.execute(
-                sa.update(MMovieWatched.__table__)  # type: ignore
+                sa.update(cast(sa.Table, MMovieWatched.__table__))
                 .where(
                     MMovieWatched.movie_id == movie_id,
                     MMovieWatched.user_id == user_id,
@@ -245,13 +268,17 @@ async def decrement_movie_watched(
                 )
             )
 
-        watched = await session.scalar(
-            sa.select(MMovieWatched)
-            .where(
-                MMovieWatched.movie_id == movie_id,
-                MMovieWatched.user_id == user_id,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MMovieWatched.__table__).where(
+                        MMovieWatched.movie_id == movie_id,
+                        MMovieWatched.user_id == user_id,
+                    )
+                )
             )
-            .execution_options(populate_existing=True)
+            .mappings()
+            .first()
         )
         return movie_watched_mapper(watched) if watched else MovieWatched()
 
@@ -260,11 +287,17 @@ async def get_movie_watched_position(
     *, movie_id: int, user_id: int, session: AsyncSession | None = None
 ) -> MovieWatched | None:
     async with get_session(session) as session:
-        watched = await session.scalar(
-            sa.select(MMovieWatched).where(
-                MMovieWatched.movie_id == movie_id,
-                MMovieWatched.user_id == user_id,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MMovieWatched.__table__).where(
+                        MMovieWatched.movie_id == movie_id,
+                        MMovieWatched.user_id == user_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         return movie_watched_mapper(watched) if watched else None
 
@@ -284,7 +317,7 @@ async def set_movie_watched_position(
                 session=session,
             )
             return
-        stmt = sa.dialects.mysql.insert(MMovieWatched.__table__).values(  # type: ignore
+        stmt = mysql_insert(cast(sa.Table, MMovieWatched.__table__)).values(
             movie_id=movie_id,
             user_id=user_id,
             watched_at=datetime.now(tz=UTC),
@@ -314,29 +347,35 @@ async def reset_movie_watched_position(
     movie_id: int,
     session: AsyncSession,
 ) -> None:
-    watched = await session.scalar(
-        sa.select(MMovieWatched).where(
-            MMovieWatched.movie_id == movie_id,
-            MMovieWatched.user_id == user_id,
+    watched = (
+        (
+            await session.execute(
+                sa.select(MMovieWatched.__table__).where(
+                    MMovieWatched.movie_id == movie_id,
+                    MMovieWatched.user_id == user_id,
+                )
+            )
         )
+        .mappings()
+        .first()
     )
     if not watched:
         return
-    if (watched.times or 0) < 1:
+    if (watched['times'] or 0) < 1:
         await session.execute(
-            sa.delete(MMovieWatched.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MMovieWatched.__table__)).where(
                 MMovieWatched.movie_id == movie_id,
                 MMovieWatched.user_id == user_id,
             )
         )
         await session.execute(
-            sa.delete(MMovieWatchedHistory.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MMovieWatchedHistory.__table__)).where(
                 MMovieWatchedHistory.movie_id == movie_id,
                 MMovieWatchedHistory.user_id == user_id,
             )
         )
         return
-    if (watched.position or 0) > 0:
+    if (watched['position'] or 0) > 0:
         watched_at = await session.scalar(
             sa.select(MMovieWatchedHistory.watched_at)
             .where(
@@ -347,7 +386,7 @@ async def reset_movie_watched_position(
             .limit(1)
         )
         await session.execute(
-            sa.update(MMovieWatched.__table__)  # type: ignore
+            sa.update(cast(sa.Table, MMovieWatched.__table__))
             .where(
                 MMovieWatched.movie_id == movie_id,
                 MMovieWatched.user_id == user_id,

@@ -101,7 +101,7 @@ def upgrade() -> None:
             name='seplis',
             email='bot@seplis.net',
             password='$pbkdf2-sha256$12000$s9aaE0KIEaIUIiTE2Psfww$/vSRES8nTifRcem5Un4T3CYvv8aaZpOHjvF7/v9yDhc',  # 123456,
-            created=datetime_now(),  # ty:ignore[unresolved-reference]
+            created=utils.datetime_now(),
             level=6,
         ),
     )

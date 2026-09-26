@@ -1,6 +1,8 @@
 from datetime import UTC, date, datetime
+from typing import cast
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.mysql import insert as mysql_insert
 from sqlalchemy.engine import RowMapping
 
 from seplis.api import exceptions
@@ -13,15 +15,14 @@ from ..models.episode_model import (
     MEpisodeLastWatched,
     MEpisodeWatched,
     MEpisodeWatchedHistory,
-    episode_mapper,
-    episode_watched_mapper,
 )
 from ..schemas.episode_schemas import Episode, EpisodeWatched, EpisodeWatchedIncrement
 from .episode_expand_actions import expand_episodes, expand_user_can_watch
+from .series_mapping import episode_row_mapper, episode_watched_row_mapper
 
 
 def episode_page_mapper(row: RowMapping) -> Episode:
-    return episode_mapper(row['MEpisode'])
+    return episode_row_mapper(row)
 
 
 async def get_episode(
@@ -32,15 +33,21 @@ async def get_episode(
     session: AsyncSession | None = None,
 ) -> Episode:
     async with get_session(session) as session:
-        episode = await session.scalar(
-            sa.select(MEpisode).where(
-                MEpisode.series_id == series_id,
-                MEpisode.number == number,
+        episode = (
+            (
+                await session.execute(
+                    sa.select(MEpisode.__table__).where(
+                        MEpisode.series_id == series_id,
+                        MEpisode.number == number,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if not episode:
             raise exceptions.NotFound('Unknown episode')
-        result = episode_mapper(episode)
+        result = episode_row_mapper(episode)
         await expand_episodes(
             episodes=[result], series_id=series_id, user=user, expand=expand
         )
@@ -52,7 +59,7 @@ async def delete_episode(
 ) -> None:
     async with get_session(session) as session:
         await session.execute(
-            sa.delete(MEpisode.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MEpisode.__table__)).where(
                 MEpisode.series_id == series_id,
                 MEpisode.number == number,
             )
@@ -73,7 +80,7 @@ async def get_episodes(
     session: AsyncSession | None = None,
 ) -> PageCursor[Episode]:
     query = (
-        sa.select(MEpisode)
+        sa.select(MEpisode.__table__)
         .where(MEpisode.series_id == series_id)
         .order_by(MEpisode.number)
     )
@@ -110,15 +117,21 @@ async def get_watched(
     session: AsyncSession | None = None,
 ) -> EpisodeWatched:
     async with get_session(session) as session:
-        watched = await session.scalar(
-            sa.select(MEpisodeWatched).where(
-                MEpisodeWatched.user_id == user_id,
-                MEpisodeWatched.series_id == series_id,
-                MEpisodeWatched.episode_number == episode_number,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MEpisodeWatched.__table__).where(
+                        MEpisodeWatched.user_id == user_id,
+                        MEpisodeWatched.series_id == series_id,
+                        MEpisodeWatched.episode_number == episode_number,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if watched:
-            return episode_watched_mapper(watched)
+            return episode_watched_row_mapper(watched)
         return EpisodeWatched(episode_number=episode_number)
 
 
@@ -137,17 +150,23 @@ async def increment_watched(
             episode_number=episode_number,
             data=data or {},
         )
-        watched = await session.scalar(
-            sa.select(MEpisodeWatched).where(
-                MEpisodeWatched.user_id == user_id,
-                MEpisodeWatched.series_id == series_id,
-                MEpisodeWatched.episode_number == episode_number,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MEpisodeWatched.__table__).where(
+                        MEpisodeWatched.user_id == user_id,
+                        MEpisodeWatched.series_id == series_id,
+                        MEpisodeWatched.episode_number == episode_number,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         await session.commit()
         if not watched:
             return EpisodeWatched(episode_number=episode_number)
-        return episode_watched_mapper(watched)
+        return episode_watched_row_mapper(watched)
 
 
 async def decrement_watched(
@@ -163,16 +182,22 @@ async def decrement_watched(
             series_id=series_id,
             episode_number=episode_number,
         )
-        watched = await session.scalar(
-            sa.select(MEpisodeWatched).where(
-                MEpisodeWatched.user_id == user_id,
-                MEpisodeWatched.series_id == series_id,
-                MEpisodeWatched.episode_number == episode_number,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MEpisodeWatched.__table__).where(
+                        MEpisodeWatched.user_id == user_id,
+                        MEpisodeWatched.series_id == series_id,
+                        MEpisodeWatched.episode_number == episode_number,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         await session.commit()
         if watched:
-            return episode_watched_mapper(watched)
+            return episode_watched_row_mapper(watched)
         return EpisodeWatched(episode_number=episode_number)
 
 
@@ -207,16 +232,22 @@ async def get_watched_position(
     session: AsyncSession | None = None,
 ) -> EpisodeWatched | None:
     async with get_session(session) as session:
-        watched = await session.scalar(
-            sa.select(MEpisodeWatched).where(
-                MEpisodeWatched.series_id == series_id,
-                MEpisodeWatched.episode_number == episode_number,
-                MEpisodeWatched.user_id == user_id,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(MEpisodeWatched.__table__).where(
+                        MEpisodeWatched.series_id == series_id,
+                        MEpisodeWatched.episode_number == episode_number,
+                        MEpisodeWatched.user_id == user_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if not watched:
             return None
-        return episode_watched_mapper(watched)
+        return episode_watched_row_mapper(watched)
 
 
 async def set_watched_position(
@@ -261,7 +292,7 @@ async def increment_episode_watched(
     session: AsyncSession,
 ) -> None:
     watched_at = data.get('watched_at') or datetime.now(tz=UTC)
-    episode_watched = sa.dialects.mysql.insert(MEpisodeWatched.__table__).values(  # type: ignore
+    episode_watched = mysql_insert(cast(sa.Table, MEpisodeWatched.__table__)).values(
         series_id=series_id,
         episode_number=episode_number,
         user_id=user_id,
@@ -274,7 +305,7 @@ async def increment_episode_watched(
         position=0,
     )
 
-    watched_history = sa.insert(MEpisodeWatchedHistory.__table__).values(  # type: ignore
+    watched_history = sa.insert(cast(sa.Table, MEpisodeWatchedHistory.__table__)).values(
         series_id=series_id,
         episode_number=episode_number,
         user_id=user_id,
@@ -282,7 +313,7 @@ async def increment_episode_watched(
     )
 
     episode_last_watched = (
-        sa.dialects.mysql.insert(MEpisodeLastWatched.__table__)  # type: ignore
+        mysql_insert(cast(sa.Table, MEpisodeLastWatched.__table__))
         .values(
             series_id=series_id,
             episode_number=episode_number,
@@ -304,31 +335,37 @@ async def decrement_episode_watched(
     episode_number: int,
     session: AsyncSession,
 ) -> None:
-    watched = await session.scalar(
-        sa.select(MEpisodeWatched).where(
-            MEpisodeWatched.series_id == series_id,
-            MEpisodeWatched.episode_number == episode_number,
-            MEpisodeWatched.user_id == user_id,
+    watched = (
+        (
+            await session.execute(
+                sa.select(MEpisodeWatched.__table__).where(
+                    MEpisodeWatched.series_id == series_id,
+                    MEpisodeWatched.episode_number == episode_number,
+                    MEpisodeWatched.user_id == user_id,
+                )
+            )
         )
+        .mappings()
+        .first()
     )
     if not watched:
         return
-    if watched.times == 0 or (watched.times == 1 and watched.position == 0):
+    if watched['times'] == 0 or (watched['times'] == 1 and watched['position'] == 0):
         await session.execute(
-            sa.delete(MEpisodeWatched.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MEpisodeWatched.__table__)).where(
                 MEpisodeWatched.series_id == series_id,
                 MEpisodeWatched.episode_number == episode_number,
                 MEpisodeWatched.user_id == user_id,
             )
         )
         await session.execute(
-            sa.delete(MEpisodeWatchedHistory.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MEpisodeWatchedHistory.__table__)).where(
                 MEpisodeWatchedHistory.series_id == series_id,
                 MEpisodeWatchedHistory.episode_number == episode_number,
                 MEpisodeWatchedHistory.user_id == user_id,
             )
         )
-    elif watched.position > 0:
+    elif watched['position'] > 0:
         watched_at = await session.scalar(
             sa.select(MEpisodeWatchedHistory.watched_at)
             .where(
@@ -340,7 +377,7 @@ async def decrement_episode_watched(
             .limit(1)
         )
         await session.execute(
-            sa.update(MEpisodeWatched.__table__)  # type: ignore
+            sa.update(cast(sa.Table, MEpisodeWatched.__table__))
             .where(
                 MEpisodeWatched.series_id == series_id,
                 MEpisodeWatched.episode_number == episode_number,
@@ -365,12 +402,12 @@ async def decrement_episode_watched(
             )
         ).all()
         await session.execute(
-            sa.delete(MEpisodeWatchedHistory.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MEpisodeWatchedHistory.__table__)).where(
                 MEpisodeWatchedHistory.id == history_rows[0].id,
             )
         )
         await session.execute(
-            sa.update(MEpisodeWatched.__table__)  # type: ignore
+            sa.update(cast(sa.Table, MEpisodeWatched.__table__))
             .where(
                 MEpisodeWatched.series_id == series_id,
                 MEpisodeWatched.episode_number == episode_number,
@@ -405,7 +442,7 @@ async def set_episode_watched_position(
             episode_number=episode_number,
         )
         return
-    stmt = sa.dialects.mysql.insert(MEpisodeWatched.__table__).values(  # type: ignore
+    stmt = mysql_insert(cast(sa.Table, MEpisodeWatched.__table__)).values(
         series_id=series_id,
         episode_number=episode_number,
         user_id=user_id,
@@ -419,7 +456,7 @@ async def set_episode_watched_position(
     await session.execute(stmt)
 
     last_watched_stmt = (
-        sa.dialects.mysql.insert(MEpisodeLastWatched.__table__)  # type: ignore
+        mysql_insert(cast(sa.Table, MEpisodeLastWatched.__table__))
         .values(
             series_id=series_id,
             episode_number=episode_number,
@@ -438,31 +475,37 @@ async def reset_episode_watched_position(
     episode_number: int,
     session: AsyncSession,
 ) -> None:
-    watched = await session.scalar(
-        sa.select(MEpisodeWatched).where(
-            MEpisodeWatched.series_id == series_id,
-            MEpisodeWatched.episode_number == episode_number,
-            MEpisodeWatched.user_id == user_id,
+    watched = (
+        (
+            await session.execute(
+                sa.select(MEpisodeWatched.__table__).where(
+                    MEpisodeWatched.series_id == series_id,
+                    MEpisodeWatched.episode_number == episode_number,
+                    MEpisodeWatched.user_id == user_id,
+                )
+            )
         )
+        .mappings()
+        .first()
     )
     if not watched:
         return
-    if watched.times < 1:
+    if watched['times'] < 1:
         await session.execute(
-            sa.delete(MEpisodeWatched.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MEpisodeWatched.__table__)).where(
                 MEpisodeWatched.series_id == series_id,
                 MEpisodeWatched.episode_number == episode_number,
                 MEpisodeWatched.user_id == user_id,
             )
         )
         await session.execute(
-            sa.delete(MEpisodeWatchedHistory.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MEpisodeWatchedHistory.__table__)).where(
                 MEpisodeWatchedHistory.series_id == series_id,
                 MEpisodeWatchedHistory.episode_number == episode_number,
                 MEpisodeWatchedHistory.user_id == user_id,
             )
         )
-    elif watched.position > 0:
+    elif watched['position'] > 0:
         watched_at = await session.scalar(
             sa.select(MEpisodeWatchedHistory.watched_at)
             .where(
@@ -474,7 +517,7 @@ async def reset_episode_watched_position(
             .limit(1)
         )
         await session.execute(
-            sa.update(MEpisodeWatched.__table__)  # type: ignore
+            sa.update(cast(sa.Table, MEpisodeWatched.__table__))
             .where(
                 MEpisodeWatched.series_id == series_id,
                 MEpisodeWatched.episode_number == episode_number,
@@ -501,37 +544,49 @@ async def set_previous_watched_episode(
     episode_number: int,
     session: AsyncSession,
 ) -> None:
-    last_episode_watched = await session.scalar(
-        sa.select(MEpisodeLastWatched).where(
-            MEpisodeLastWatched.series_id == series_id,
-            MEpisodeLastWatched.user_id == user_id,
+    last_episode_watched = (
+        (
+            await session.execute(
+                sa.select(MEpisodeLastWatched.__table__).where(
+                    MEpisodeLastWatched.series_id == series_id,
+                    MEpisodeLastWatched.user_id == user_id,
+                )
+            )
         )
+        .mappings()
+        .first()
     )
-    if last_episode_watched and last_episode_watched.episode_number == episode_number:
-        previous_episode = await session.scalar(
-            sa.select(MEpisodeWatchedHistory)
-            .where(
-                MEpisodeWatchedHistory.user_id == user_id,
-                MEpisodeWatchedHistory.series_id == series_id,
+    if last_episode_watched and last_episode_watched['episode_number'] == episode_number:
+        previous_episode = (
+            (
+                await session.execute(
+                    sa.select(MEpisodeWatchedHistory.__table__)
+                    .where(
+                        MEpisodeWatchedHistory.user_id == user_id,
+                        MEpisodeWatchedHistory.series_id == series_id,
+                    )
+                    .order_by(
+                        sa.desc(MEpisodeWatchedHistory.watched_at),
+                        sa.desc(MEpisodeWatchedHistory.episode_number),
+                    )
+                    .limit(1)
+                )
             )
-            .order_by(
-                sa.desc(MEpisodeWatchedHistory.watched_at),
-                sa.desc(MEpisodeWatchedHistory.episode_number),
-            )
-            .limit(1)
+            .mappings()
+            .first()
         )
         if not previous_episode:
             await session.execute(
-                sa.delete(MEpisodeLastWatched.__table__).where(  # type: ignore
+                sa.delete(cast(sa.Table, MEpisodeLastWatched.__table__)).where(
                     MEpisodeLastWatched.user_id == user_id,
                     MEpisodeLastWatched.series_id == series_id,
                 )
             )
         else:
             await session.execute(
-                sa.update(MEpisodeLastWatched.__table__)  # type: ignore
+                sa.update(cast(sa.Table, MEpisodeLastWatched.__table__))
                 .values(
-                    episode_number=previous_episode.episode_number,
+                    episode_number=previous_episode['episode_number'],
                 )
                 .where(
                     MEpisodeLastWatched.series_id == series_id,
@@ -546,37 +601,43 @@ async def get_episode_to_watch(
     session: AsyncSession | None = None,
 ) -> Episode | None:
     async with get_session(session) as session:
-        watched = await session.execute(
-            sa.select(
-                MEpisodeWatched.episode_number,
-                MEpisodeWatched.position,
-            ).where(
-                MEpisodeLastWatched.user_id == user_id,
-                MEpisodeLastWatched.series_id == series_id,
-                MEpisodeWatched.series_id == MEpisodeLastWatched.series_id,
-                MEpisodeWatched.user_id == MEpisodeLastWatched.user_id,
-                MEpisodeWatched.episode_number == MEpisodeLastWatched.episode_number,
+        watched = (
+            (
+                await session.execute(
+                    sa.select(
+                        MEpisodeWatched.episode_number,
+                        MEpisodeWatched.position,
+                    ).where(
+                        MEpisodeLastWatched.user_id == user_id,
+                        MEpisodeLastWatched.series_id == series_id,
+                        MEpisodeWatched.series_id == MEpisodeLastWatched.series_id,
+                        MEpisodeWatched.user_id == MEpisodeLastWatched.user_id,
+                        MEpisodeWatched.episode_number
+                        == MEpisodeLastWatched.episode_number,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
-        watched = watched.first()
 
         episode_number = 1
         if watched:
-            episode_number = watched.episode_number
-            if watched.position == 0:
+            episode_number = watched['episode_number']
+            if watched['position'] == 0:
                 episode_number += 1
 
         result = await session.execute(
             sa.select(
-                MEpisode,
-                MEpisodeWatched,
+                MEpisode.__table__,
+                MEpisodeWatched.__table__,
             )
             .where(
                 MEpisode.series_id == series_id,
                 MEpisode.number == episode_number,
             )
             .join(
-                MEpisodeWatched,
+                MEpisodeWatched.__table__,
                 sa.and_(
                     MEpisodeWatched.user_id == user_id,
                     MEpisodeWatched.series_id == MEpisode.series_id,
@@ -585,15 +646,15 @@ async def get_episode_to_watch(
                 isouter=True,
             )
         )
-        row = result.first()
+        row = result.mappings().first()
         if not row:
             return None
 
-        episode = episode_mapper(row.MEpisode)
+        episode = episode_row_mapper(row)
         episode.user_watched = (
-            episode_watched_mapper(row.MEpisodeWatched)
-            if row.MEpisodeWatched
-            else EpisodeWatched(episode_number=row.MEpisode.number)
+            episode_watched_row_mapper(row)
+            if row['episode_number'] is not None
+            else EpisodeWatched(episode_number=row['number'])
         )
         await expand_user_can_watch(
             series_id=series_id, user_id=user_id, episodes=[episode], session=session
@@ -609,8 +670,8 @@ async def get_last_watched_episode(
     async with get_session(session) as session:
         result = await session.execute(
             sa.select(
-                MEpisode,
-                MEpisodeWatched,
+                MEpisode.__table__,
+                MEpisodeWatched.__table__,
             )
             .where(
                 MEpisodeWatched.user_id == user_id,
@@ -624,20 +685,20 @@ async def get_last_watched_episode(
             )
             .limit(2)
         )
-        rows = result.all()
+        rows = result.mappings().all()
 
         if not rows:
             return None
 
         row = rows[0]
         if len(rows) == 1:
-            if rows[0].MEpisodeWatched.position > 0:
+            if rows[0]['position'] > 0:
                 return None
-        elif rows[0].MEpisodeWatched.position > 0:
+        elif rows[0]['position'] > 0:
             row = rows[1]
 
-        episode = episode_mapper(row.MEpisode)
-        episode.user_watched = episode_watched_mapper(row.MEpisodeWatched)
+        episode = episode_row_mapper(row)
+        episode.user_watched = episode_watched_row_mapper(row)
         await expand_user_can_watch(
             series_id=series_id, user_id=user_id, episodes=[episode], session=session
         )

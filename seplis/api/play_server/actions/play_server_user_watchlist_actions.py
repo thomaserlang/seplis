@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from seplis.api.contexts import get_session
@@ -28,12 +27,13 @@ async def get_play_server_users_movie_watchlist(
         filter_movies,
         filter_movies_query,
     )
+    from seplis.api.movie.actions.movie_mapping import select_movies
     from seplis.api.movie.models.movie_model import MMovie
     from seplis.api.movie.models.movie_watchlist_model import MMovieWatchlist
 
     async with get_session(session) as session:
         query = (
-            sa.select(MMovie)
+            select_movies()
             .where(
                 MPlayServerAccess.play_server_id == play_server_id,
                 MMovieWatchlist.user_id == MPlayServerAccess.user_id,
@@ -58,14 +58,14 @@ async def get_play_server_users_movie_watchlist(
             )
 
         query = filter_movies_query(query=query, filter_query=filter_query)
-        rows = await session.scalars(query)
+        rows = (await session.execute(query)).mappings()
         return [
             RadarrResponse(
-                tmdbid=int(row.externals['themoviedb']),
-                id=int(row.externals['themoviedb']),
+                tmdbid=int(row['externals']['themoviedb']),
+                id=int(row['externals']['themoviedb']),
             )
             for row in rows
-            if row.externals.get('themoviedb')
+            if row['externals'].get('themoviedb')
         ]
 
 
@@ -82,12 +82,13 @@ async def get_play_server_users_series_watchlist(
         filter_series,
         filter_series_query,
     )
+    from seplis.api.series.actions.series_mapping import select_series
     from seplis.api.series.models.series_model import MSeries
     from seplis.api.series.models.series_watchlist_model import MSeriesWatchlist
 
     async with get_session(session) as session:
         query = (
-            sa.select(MSeries)
+            select_series()
             .where(
                 MPlayServerAccess.play_server_id == play_server_id,
                 MSeriesWatchlist.user_id == MPlayServerAccess.user_id,
@@ -111,9 +112,9 @@ async def get_play_server_users_series_watchlist(
             )
 
         query = filter_series_query(query=query, filter_query=filter_query)
-        rows = await session.scalars(query)
+        rows = (await session.execute(query)).mappings()
         return [
-            SonarrResponse(TvdbId=int(row.externals['thetvdb']))
+            SonarrResponse(TvdbId=int(row['externals']['thetvdb']))
             for row in rows
-            if row.externals.get('thetvdb')
+            if row['externals'].get('thetvdb')
         ]

@@ -6,6 +6,7 @@ from typing import Any, cast
 
 import sqlalchemy as sa
 from fastapi import UploadFile
+from sqlalchemy.engine import RowMapping
 
 from seplis import config, logger, utils
 from seplis.api import exceptions
@@ -16,17 +17,38 @@ from ..models.image_model import MImage
 from ..schemas.image_schemas import IMAGE_TYPES, Image, ImageImport
 
 
-def image_mapper(image: MImage) -> Image:
+def image_columns(prefix: str = 'image_') -> tuple[Any, ...]:
+    return tuple(
+        column.label(f'{prefix}{column.name}') for column in MImage.__table__.columns
+    )
+
+
+def image_mapper(image: RowMapping | MImage, prefix: str = '') -> Image:
+    if isinstance(image, MImage):
+        file_id = image.file_id or ''
+        return Image(
+            id=image.id,
+            height=image.height or 0,
+            width=image.width or 0,
+            file_id=file_id,
+            type=cast(IMAGE_TYPES, image.type),
+            created_at=image.created_at or datetime_now(),
+            url=urllib.parse.urljoin(str(config.api.image_url), file_id),
+            external_name=image.external_name,
+            external_id=image.external_id,
+        )
+
+    file_id = image[f'{prefix}file_id'] or ''
     return Image(
-        id=image.id,
-        height=image.height or 0,
-        width=image.width or 0,
-        file_id=image.file_id or '',
-        type=cast(IMAGE_TYPES, image.type),
-        created_at=image.created_at or datetime_now(),
-        url=image.url,
-        external_name=image.external_name,
-        external_id=image.external_id,
+        id=image[f'{prefix}id'],
+        height=image[f'{prefix}height'] or 0,
+        width=image[f'{prefix}width'] or 0,
+        file_id=file_id,
+        type=cast(IMAGE_TYPES, image[f'{prefix}type']),
+        created_at=image[f'{prefix}created_at'] or datetime_now(),
+        url=urllib.parse.urljoin(str(config.api.image_url), file_id),
+        external_name=image[f'{prefix}external_name'],
+        external_id=image[f'{prefix}external_id'],
     )
 
 
@@ -41,11 +63,17 @@ async def save_image(
     data = dict(image_data)
     async with get_session(session) as session:
         if data.get('external_name') or data.get('external_id'):
-            existing = await session.scalar(
-                sa.select(MImage).where(
-                    MImage.external_name == data.get('external_name'),
-                    MImage.external_id == data.get('external_id'),
+            existing = (
+                (
+                    await session.execute(
+                        sa.select(MImage.__table__).where(
+                            MImage.external_name == data.get('external_name'),
+                            MImage.external_id == data.get('external_id'),
+                        )
+                    )
                 )
+                .mappings()
+                .first()
             )
             if existing:
                 logger.debug(
@@ -103,7 +131,7 @@ async def save_image(
         result = cast(
             Any,
             await session.execute(
-                sa.insert(MImage.__table__).values(  # type: ignore
+                sa.insert(cast(sa.Table, MImage.__table__)).values(
                     relation_type=relation_type,
                     relation_id=relation_id,
                     external_name=data.get('external_name'),
@@ -116,8 +144,14 @@ async def save_image(
                 )
             ),
         )
-        image = await session.scalar(
-            sa.select(MImage).where(MImage.id == result.lastrowid)
+        image = (
+            (
+                await session.execute(
+                    sa.select(MImage.__table__).where(MImage.id == result.lastrowid)
+                )
+            )
+            .mappings()
+            .first()
         )
         if not image:
             raise exceptions.ImageUnknown()

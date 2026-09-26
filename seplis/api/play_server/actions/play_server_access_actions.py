@@ -1,3 +1,5 @@
+from typing import cast
+
 import sqlalchemy as sa
 from sqlalchemy.engine import RowMapping
 
@@ -12,10 +14,9 @@ from ..schemas.play_server_schemas import PlayServerAccess
 
 
 def play_server_access_mapper(row: RowMapping) -> PlayServerAccess:
-    user = row['MUserPublic']
     return PlayServerAccess(
-        created_at=row['created_at'],
-        user=UserPublic(id=user.id, username=user.username),
+        created_at=row['access_created_at'],
+        user=UserPublic(id=row['user_id'], username=row['username']),
     )
 
 
@@ -26,7 +27,11 @@ async def get_users_with_access(
     session: AsyncSession | None = None,
 ) -> PageCursor[PlayServerAccess]:
     query = (
-        sa.select(MPlayServerAccess.created_at, MUserPublic)
+        sa.select(
+            MPlayServerAccess.created_at.label('access_created_at'),
+            MUserPublic.id.label('user_id'),
+            MUserPublic.username,
+        )
         .where(
             MPlayServer.user_id == owner_user_id,
             MPlayServer.id == play_server_id,
@@ -60,7 +65,7 @@ async def remove_user_access(
         if not has_access:
             raise exceptions.PlayServerAccessUserNoAccess()
         await session.execute(
-            sa.delete(MPlayServerAccess.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServerAccess.__table__)).where(
                 MPlayServerAccess.play_server_id == play_server_id,
                 MPlayServerAccess.user_id == user_id,
             )
@@ -69,14 +74,20 @@ async def remove_user_access(
 
 async def leave_play_server(play_server_id: str, user_id: int) -> None:
     async with get_session() as session:
-        play_server = await session.scalar(
-            sa.select(MPlayServer).where(
-                MPlayServer.id == play_server_id,
+        play_server = (
+            (
+                await session.execute(
+                    sa.select(MPlayServer.__table__).where(
+                        MPlayServer.id == play_server_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if not play_server:
             raise exceptions.PlayServerUnknown()
-        if play_server.user_id == user_id:
+        if play_server['user_id'] == user_id:
             raise exceptions.Forbidden(
                 'Owner cannot remove their own access from the play server'
             )
@@ -91,7 +102,7 @@ async def leave_play_server(play_server_id: str, user_id: int) -> None:
             raise exceptions.PlayServerAccessUserNoAccess()
 
         await session.execute(
-            sa.delete(MPlayServerAccess.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MPlayServerAccess.__table__)).where(
                 MPlayServerAccess.play_server_id == play_server_id,
                 MPlayServerAccess.user_id == user_id,
             )

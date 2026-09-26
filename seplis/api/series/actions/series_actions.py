@@ -10,7 +10,7 @@ from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
 from seplis.api.database import database
 from seplis.api.genre import Genre, MGenre, genre_mapper, get_or_create_genres
-from seplis.api.image import MImage, image_mapper
+from seplis.api.image import MImage
 from seplis.api.page_cursor import PageCursor, PageCursorQuery
 from seplis.api.search import SearchTitleDocument, SearchTitleDocumentTitle
 from seplis.api.user import UserAuthenticated
@@ -20,13 +20,13 @@ from ..models.series_model import (
     MSeries,
     MSeriesExternal,
     MSeriesGenre,
-    series_mapper,
 )
 from ..schemas.episode_schemas import EpisodeCreate, EpisodeUpdate
 from ..schemas.series_schemas import Series, SeriesCreate, SeriesSeason, SeriesUpdate
 from ..types.series_filter_types import SeriesQueryFilter
 from .series_expand_actions import expand_series
 from .series_filter_actions import filter_series
+from .series_mapping import select_series, series_row_mapper
 
 
 async def get_series(
@@ -35,7 +35,7 @@ async def get_series(
     session: AsyncSession | None = None,
 ) -> PageCursor[Series]:
     return await filter_series(
-        query=sa.select(MSeries),
+        query=select_series(),
         session=session,
         filter_query=filter_query,
         page_query=page_cursor,
@@ -49,10 +49,14 @@ async def get_series_one(
     session: AsyncSession | None = None,
 ) -> Series:
     async with get_session(session) as session:
-        series = await session.scalar(sa.select(MSeries).where(MSeries.id == series_id))
+        series = (
+            (await session.execute(select_series().where(MSeries.id == series_id)))
+            .mappings()
+            .first()
+        )
         if not series:
             raise exceptions.NotFound('Unknown series')
-        result = series_mapper(series)
+        result = series_row_mapper(series)
         await expand_series(series=[result], user=user, expand=expand)
         return result
 
@@ -63,16 +67,22 @@ async def get_series_by_external(
     session: AsyncSession | None = None,
 ) -> Series:
     async with get_session(session) as session:
-        series = await session.scalar(
-            sa.select(MSeries).where(
-                MSeriesExternal.title == external_name,
-                MSeriesExternal.value == external_id,
-                MSeries.id == MSeriesExternal.series_id,
+        series = (
+            (
+                await session.execute(
+                    select_series().where(
+                        MSeriesExternal.title == external_name,
+                        MSeriesExternal.value == external_id,
+                        MSeries.id == MSeriesExternal.series_id,
+                    )
+                )
             )
+            .mappings()
+            .first()
         )
         if not series:
             raise exceptions.NotFound('Unknown series')
-        return series_mapper(series)
+        return series_row_mapper(series)
 
 
 async def create_series(data: SeriesCreate) -> Series:
@@ -91,9 +101,11 @@ async def patch_series(series_id: int, data: SeriesUpdate) -> Series:
 
 async def delete_series(series_id: int) -> None:
     async with get_session() as session:
-        await session.execute(sa.delete(MSeries.__table__).where(MSeries.id == series_id))  # type: ignore
         await session.execute(
-            sa.delete(MImage.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MSeries.__table__)).where(MSeries.id == series_id)
+        )
+        await session.execute(
+            sa.delete(cast(sa.Table, MImage.__table__)).where(
                 MImage.relation_type == 'series',
                 MImage.relation_id == series_id,
             )
@@ -120,7 +132,7 @@ async def save_series(
         if not series_id:
             result = cast(
                 Any,
-                await session.execute(sa.insert(MSeries.__table__)),  # type: ignore
+                await session.execute(sa.insert(cast(sa.Table, MSeries.__table__))),
             )
             series_id = result.lastrowid
             values['created_at'] = datetime.now(tz=UTC)
@@ -172,15 +184,20 @@ async def save_series(
             )
         if values:
             await session.execute(
-                sa.update(MSeries.__table__)  # type: ignore
+                sa.update(cast(sa.Table, MSeries.__table__))
                 .where(MSeries.id == series_id)
                 .values(**values)
             )
-        series = await session.scalar(sa.select(MSeries).where(MSeries.id == series_id))
+        series = (
+            (await session.execute(select_series().where(MSeries.id == series_id)))
+            .mappings()
+            .first()
+        )
         if not series:
             raise HTTPException(404, f'Unknown series id: {series_id}')
-        await save_series_for_search(series)
-        return series_mapper(series)
+        mapped_series = series_row_mapper(series)
+        await save_series_for_search(mapped_series)
+        return mapped_series
 
 
 async def save_series_externals(
@@ -192,7 +209,7 @@ async def save_series_externals(
     current_externals = {}
     if not patch:
         await session.execute(
-            sa.delete(MSeriesExternal.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MSeriesExternal.__table__)).where(
                 MSeriesExternal.series_id == series_id
             )
         )
@@ -206,27 +223,33 @@ async def save_series_externals(
 
     for key in externals:
         if externals[key]:
-            duplicate_series = await session.scalar(
-                sa.select(MSeries).where(
-                    MSeriesExternal.title == key,
-                    MSeriesExternal.value == externals[key],
-                    MSeriesExternal.series_id != series_id,
-                    MSeries.id == MSeriesExternal.series_id,
+            duplicate_series = (
+                (
+                    await session.execute(
+                        select_series().where(
+                            MSeriesExternal.title == key,
+                            MSeriesExternal.value == externals[key],
+                            MSeriesExternal.series_id != series_id,
+                            MSeries.id == MSeriesExternal.series_id,
+                        )
+                    )
                 )
+                .mappings()
+                .first()
             )
             if duplicate_series:
                 raise exceptions.SeriesExternalDuplicated(
                     external_title=key,
                     external_value=externals[key] or '',
                     series=utils.json_loads(
-                        utils.json_dumps(series_mapper(duplicate_series))
+                        utils.json_dumps(series_row_mapper(duplicate_series))
                     ),
                 )
 
         if key not in current_externals:
             if externals[key]:
                 await session.execute(
-                    sa.insert(MSeriesExternal.__table__).values(  # type: ignore
+                    sa.insert(cast(sa.Table, MSeriesExternal.__table__)).values(
                         series_id=series_id,
                         title=key,
                         value=externals[key],
@@ -236,7 +259,7 @@ async def save_series_externals(
         elif current_externals[key] != externals[key]:
             if externals[key]:
                 await session.execute(
-                    sa.update(MSeriesExternal.__table__)  # type: ignore
+                    sa.update(cast(sa.Table, MSeriesExternal.__table__))
                     .where(
                         MSeriesExternal.series_id == series_id,
                         MSeriesExternal.title == key,
@@ -246,7 +269,7 @@ async def save_series_externals(
                 current_externals[key] = externals[key]
             else:
                 await session.execute(
-                    sa.delete(MSeriesExternal.__table__).where(  # type: ignore
+                    sa.delete(cast(sa.Table, MSeriesExternal.__table__)).where(
                         MSeriesExternal.series_id == series_id,
                         MSeriesExternal.title == key,
                     )
@@ -290,12 +313,14 @@ async def save_series_genres(
         )
     else:
         await session.execute(
-            sa.delete(MSeriesGenre.__table__).where(MSeriesGenre.series_id == series_id)  # type: ignore
+            sa.delete(cast(sa.Table, MSeriesGenre.__table__)).where(
+                MSeriesGenre.series_id == series_id
+            )
         )
     new_genre_ids = genre_ids - current_genres
     if new_genre_ids:
         await session.execute(
-            sa.insert(MSeriesGenre.__table__).prefix_with('IGNORE'),  # type: ignore
+            sa.insert(cast(sa.Table, MSeriesGenre.__table__)).prefix_with('IGNORE'),
             [
                 {'series_id': series_id, 'genre_id': genre_id}
                 for genre_id in new_genre_ids
@@ -309,11 +334,16 @@ async def save_series_genres(
                 'where type="series"'
             )
         )
-    rows = await session.scalars(
-        sa.select(MGenre)
-        .where(MSeriesGenre.series_id == series_id, MGenre.id == MSeriesGenre.genre_id)
-        .order_by(MGenre.name)
-    )
+    rows = (
+        await session.execute(
+            sa.select(MGenre.__table__)
+            .where(
+                MSeriesGenre.series_id == series_id,
+                MGenre.id == MSeriesGenre.genre_id,
+            )
+            .order_by(MGenre.name)
+        )
+    ).mappings()
     return [genre_mapper(row) for row in rows]
 
 
@@ -325,11 +355,13 @@ async def save_series_episodes(
 ) -> None:
     if not patch:
         await session.execute(
-            sa.delete(MEpisode.__table__).where(MEpisode.series_id == series_id)  # type: ignore
+            sa.delete(cast(sa.Table, MEpisode.__table__)).where(
+                MEpisode.series_id == series_id
+            )
         )
     else:
         await session.execute(
-            sa.delete(MEpisode.__table__).where(  # type: ignore
+            sa.delete(cast(sa.Table, MEpisode.__table__)).where(
                 MEpisode.series_id == series_id,
                 MEpisode.number.notin_(
                     [episode['number'] for episode in episodes if episode.get('number')]
@@ -349,41 +381,43 @@ async def save_series_episodes(
         rows.append({column: values.get(column) for column in episode_columns})
 
     await session.execute(
-        sa.insert(MEpisode.__table__).prefix_with('IGNORE'),  # type: ignore
+        sa.insert(cast(sa.Table, MEpisode.__table__)).prefix_with('IGNORE'),
         rows,
     )
     await update_series_seasons(session=session, series_id=series_id)
 
 
 async def update_series_seasons(session: AsyncSession, series_id: int) -> None:
-    rows = await session.execute(
-        sa.select(
-            MEpisode.season.label('season'),
-            sa.func.min(MEpisode.number).label('from_'),
-            sa.func.max(MEpisode.number).label('to'),
-            sa.func.count(MEpisode.number).label('total'),
+    rows = (
+        await session.execute(
+            sa.select(
+                MEpisode.season.label('season'),
+                sa.func.min(MEpisode.number).label('from_'),
+                sa.func.max(MEpisode.number).label('to'),
+                sa.func.count(MEpisode.number).label('total'),
+            )
+            .where(
+                MEpisode.series_id == series_id,
+            )
+            .group_by(MEpisode.season)
         )
-        .where(
-            MEpisode.series_id == series_id,
-        )
-        .group_by(MEpisode.season)
-    )
+    ).mappings()
     seasons: list[SeriesSeason] = []
     total_episodes = 0
     for row in rows:
-        total_episodes += row.total
-        if not row.season:
+        total_episodes += row['total']
+        if not row['season']:
             continue
         seasons.append(
             SeriesSeason(
-                season=row.season,
-                from_=row.from_,
-                to=row.to,
-                total=row.total,
+                season=row['season'],
+                from_=row['from_'],
+                to=row['to'],
+                total=row['total'],
             )
         )
     await session.execute(
-        sa.update(MSeries.__table__)  # type: ignore
+        sa.update(cast(sa.Table, MSeries.__table__))
         .where(MSeries.id == series_id)
         .values(
             seasons=seasons,
@@ -392,7 +426,7 @@ async def update_series_seasons(session: AsyncSession, series_id: int) -> None:
     )
 
 
-async def save_series_for_search(series: MSeries) -> None:
+async def save_series_for_search(series: Series) -> None:
     document = series_title_document_mapper(series)
     if not document:
         return
@@ -403,7 +437,7 @@ async def save_series_for_search(series: MSeries) -> None:
     )
 
 
-def series_title_document_mapper(series: MSeries) -> SearchTitleDocument | None:
+def series_title_document_mapper(series: Series) -> SearchTitleDocument | None:
     if not series.title:
         return None
     titles = [series.title, *(series.alternative_titles or [])]
@@ -420,7 +454,7 @@ def series_title_document_mapper(series: MSeries) -> SearchTitleDocument | None:
         titles=[SearchTitleDocumentTitle(title=title) for title in titles],
         release_date=series.premiered,
         imdb=(series.externals or {}).get('imdb'),
-        poster_image=image_mapper(series.poster_image) if series.poster_image else None,
+        poster_image=series.poster_image,
         popularity=float(series.popularity or 0),
         genres=genres_from_values(series.genres),
         rating=float(series.rating) if series.rating is not None else None,
@@ -451,9 +485,10 @@ def genres_from_values(values: list[Any] | None) -> list[Genre]:
 async def rebuild_series() -> None:
     async def documents() -> AsyncIterator[dict[str, Any]]:
         async with database.session() as session:
-            result = await session.stream(sa.select(MSeries))
-            async for series in result.yield_per(1000):
-                for item in series:
+            result = await session.stream(select_series())
+            async for series in result.mappings().partitions(1000):
+                for row in series:
+                    item = series_row_mapper(row)
                     document = series_title_document_mapper(item)
                     if not document:
                         continue
