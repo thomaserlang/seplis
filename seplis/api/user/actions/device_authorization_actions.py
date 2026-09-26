@@ -69,9 +69,9 @@ def validate_device_code(device_code: str) -> None:
 
 
 def get_device_authorization_secret() -> str:
-    secret = config.web.cookie_secret
+    secret = config.api.secret
     if not secret:
-        raise RuntimeError('web.cookie_secret must be configured')
+        raise RuntimeError('api.secret must be configured')
     return secret
 
 

@@ -39,6 +39,7 @@ class ConfigElasticsearch(BaseModel):
 
 
 class ConfigAPIModel(BaseModel):
+    secret: str | None = None
     database: str = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis'
     database_test: str = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
     database_read_timeout: int = 5
@@ -54,7 +55,6 @@ class ConfigAPIModel(BaseModel):
 
 class ConfigWebModel(BaseModel):
     url: AnyHttpUrl | None = None
-    cookie_secret: str | None = None
     port: int = 8001
     chromecast_appid: str = 'EA4A67C4'
 
