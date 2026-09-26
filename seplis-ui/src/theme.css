@@ -124,7 +124,7 @@ body {
 .mantine-Button-root[data-variant="subtle"] {
   color: var(--primary);
 }
-.mantine-Button-root:not([data-variant]) {
+.mantine-Button-root:not([data-variant], :disabled, [data-disabled]) {
   color: var(--secondary);
 }
 

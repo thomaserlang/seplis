@@ -4,9 +4,18 @@ from .actions.user_actions import create_user as create_user
 from .actions.user_actions import get_user as get_user
 from .actions.user_actions import update_user as update_user
 from .models.user_model import MUser as MUser
-from .schemas.auth_code_schemas import AuthCode as AuthCode
-from .schemas.auth_code_schemas import AuthCodeRedeem as AuthCodeRedeem
-from .schemas.auth_code_schemas import AuthCodeRedeemed as AuthCodeRedeemed
+from .schemas.device_authorization_schemas import (
+    DeviceAuthorization as DeviceAuthorization,
+)
+from .schemas.device_authorization_schemas import (
+    DeviceAuthorizationApprove as DeviceAuthorizationApprove,
+)
+from .schemas.device_authorization_schemas import (
+    DeviceAuthorizationToken as DeviceAuthorizationToken,
+)
+from .schemas.device_authorization_schemas import (
+    DeviceAuthorizationTokenRequest as DeviceAuthorizationTokenRequest,
+)
 from .schemas.user_authentication_schemas import Token as Token
 from .schemas.user_authentication_schemas import TokenCreate as TokenCreate
 from .schemas.user_authentication_schemas import UserAuthenticated as UserAuthenticated

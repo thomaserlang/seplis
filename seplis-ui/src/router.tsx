@@ -92,6 +92,11 @@ export const router = createBrowserRouter([
                             import('./features/play-server/play-server-accept-invite.page'),
                     },
                     {
+                        path: '/device',
+                        lazy: () =>
+                            import('./features/device-authorization/device-authorization.page'),
+                    },
+                    {
                         path: '/play-servers/:playServerId',
                         lazy: () =>
                             import('./features/play-server/play-server.page'),

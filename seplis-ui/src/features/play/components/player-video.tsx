@@ -269,7 +269,7 @@ function MediaVideo({
     }
 
     return useHlsJs ? (
-        <HlsJsVideo {...props} ref={videoRef} source={{ src }}>
+        <HlsJsVideo {...props} ref={videoRef} src={src}>
             {children}
         </HlsJsVideo>
     ) : (

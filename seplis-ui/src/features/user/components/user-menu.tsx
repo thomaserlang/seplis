@@ -1,6 +1,7 @@
 import { Avatar, Flex, Menu } from '@mantine/core'
 import {
     ArrowsClockwiseIcon,
+    DevicesIcon,
     HardDrivesIcon,
     PlusIcon,
     SignOutIcon,
@@ -77,6 +78,14 @@ export function UserMenu() {
                     Logout
                 </Menu.Item>
                 <Menu.Divider />
+                <Menu.Item
+                    leftSection={<DevicesIcon size={14} />}
+                    onClick={() => {
+                        navigate('/device')
+                    }}
+                >
+                    Authorize device
+                </Menu.Item>
                 <Menu.Item
                     leftSection={<HardDrivesIcon size={14} />}
                     onClick={() => {

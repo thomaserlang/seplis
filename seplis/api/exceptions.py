@@ -234,6 +234,36 @@ class UserUsernameDuplicate(APIException):
         )
 
 
+class DeviceAuthorizationUnknown(APIException):
+    def __init__(self) -> None:
+        APIException.__init__(
+            self,
+            status_code=404,
+            code=1510,
+            message='Unknown device authorization',
+        )
+
+
+class DeviceAuthorizationExpired(APIException):
+    def __init__(self) -> None:
+        APIException.__init__(
+            self,
+            status_code=410,
+            code=1511,
+            message='Device authorization has expired',
+        )
+
+
+class DeviceAuthorizationAlreadyApproved(APIException):
+    def __init__(self) -> None:
+        APIException.__init__(
+            self,
+            status_code=409,
+            code=1512,
+            message='Device authorization has already been approved',
+        )
+
+
 class EpisodeUnknown(APIException):
     def __init__(self) -> None:
         APIException.__init__(

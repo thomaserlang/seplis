@@ -33,33 +33,35 @@ export function PlayerVideoControls({
 }: PlayerVideoControlsProps) {
     return (
         <>
-            <Controls.Root
-                className="media-surface media-controls"
-                data-interactive=""
-            >
-                <Tooltip.Provider>
-                    <PlayerPrimaryControls onPlayNext={onPlayNext} />
-                    <PlayerTimeControls timeSliderStyle={timeSliderStyle} />
-                    <PlayerSecondaryControls
-                        playRequestSource={playRequestSource}
-                        playRequestsSources={playRequestsSources}
-                        audio={audio}
-                        forceTranscode={forceTranscode}
-                        subtitle={subtitle}
-                        subtitleOffset={subtitleOffset}
-                        canAdjustSubtitleOffset={canAdjustSubtitleOffset}
-                        onSourceChange={onSourceChange}
-                        onAudioChange={onAudioChange}
-                        onForceTranscodeChange={onForceTranscodeChange}
-                        onSubtitleChange={onSubtitleChange}
-                        onSubtitleOffsetChange={onSubtitleOffsetChange}
-                        preferredAudioLangs={preferredAudioLangs}
-                        preferredSubtitleLangs={preferredSubtitleLangs}
-                        playSettings={playSettings}
-                        transcodeDecision={transcodeDecision}
-                        playbackTransport={playbackTransport}
-                    />
-                </Tooltip.Provider>
+            <Controls.Root>
+                <Controls.Content
+                    className="media-surface media-controls"
+                    data-interactive=""
+                >
+                    <Tooltip.Provider>
+                        <PlayerPrimaryControls onPlayNext={onPlayNext} />
+                        <PlayerTimeControls timeSliderStyle={timeSliderStyle} />
+                        <PlayerSecondaryControls
+                            playRequestSource={playRequestSource}
+                            playRequestsSources={playRequestsSources}
+                            audio={audio}
+                            forceTranscode={forceTranscode}
+                            subtitle={subtitle}
+                            subtitleOffset={subtitleOffset}
+                            canAdjustSubtitleOffset={canAdjustSubtitleOffset}
+                            onSourceChange={onSourceChange}
+                            onAudioChange={onAudioChange}
+                            onForceTranscodeChange={onForceTranscodeChange}
+                            onSubtitleChange={onSubtitleChange}
+                            onSubtitleOffsetChange={onSubtitleOffsetChange}
+                            preferredAudioLangs={preferredAudioLangs}
+                            preferredSubtitleLangs={preferredSubtitleLangs}
+                            playSettings={playSettings}
+                            transcodeDecision={transcodeDecision}
+                            playbackTransport={playbackTransport}
+                        />
+                    </Tooltip.Provider>
+                </Controls.Content>
             </Controls.Root>
 
             <PlayerHeader
