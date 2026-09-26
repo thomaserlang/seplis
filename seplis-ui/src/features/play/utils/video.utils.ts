@@ -1,4 +1,4 @@
-import { AUDIO_CODEC_CHECK_TYPE } from '../constants/media.constants'
+import { AUDIO_CODEC_CHECK_TYPES } from '../constants/media.constants'
 import type {
     AudioCodec,
     HDRType,
@@ -114,15 +114,23 @@ export function getSupportedVideoContainers(): VideoContainer[] {
         .map(([, name]) => name)
 }
 
-export function getSupportedAudioCodecs(): AudioCodec[] {
-    const video = document.createElement('video')
+export function getSupportedAudioCodecs(
+    includeAppleMobileCodecs = false,
+): AudioCodec[] {
+    const audio = document.createElement('audio')
 
     const codecs: AudioCodec[] = []
-    for (const [codec, mimeType] of Object.entries(AUDIO_CODEC_CHECK_TYPE) as [
-        AudioCodec,
-        string,
-    ][]) {
-        if (video.canPlayType(mimeType)) codecs.push(codec)
+    for (const [codec, mimeTypes] of Object.entries(
+        AUDIO_CODEC_CHECK_TYPES,
+    ) as [AudioCodec, readonly string[]][]) {
+        if (mimeTypes.some((mimeType) => audio.canPlayType(mimeType))) {
+            codecs.push(codec)
+        }
     }
+
+    if (includeAppleMobileCodecs) {
+        codecs.push('aac', 'ac3', 'eac3')
+    }
+
     return [...new Set(codecs)]
 }

@@ -50,6 +50,7 @@ export interface PlayerVideoMediaProps {
 }
 
 export interface PlayerVideoAssSubtitleProps {
+    video: HTMLVideoElement
     subUrl: string
     offset: number
 }
@@ -64,19 +65,12 @@ export interface PlayerVideoPlayErrorHandlerProps {
     onPlayError?: (type: PlayErrorType) => void
 }
 
-export interface PlayerVideoHlsProps {
-    src: string
-    startTimeRef: { current: number }
-}
-
 export interface PlayerVideoControlsProps {
     onClose?: () => void
     title?: string
     secondaryTitle?: string
     onPlayNext?: () => void
     timeSliderStyle?: CSSProperties
-    settingsOpen: boolean
-    onSettingsOpenChange: (open: boolean) => void
     playRequestSource: PlayRequestSource
     playRequestsSources: PlayRequestSources[]
     audio?: PlaySourceStream

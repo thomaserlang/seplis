@@ -1,9 +1,15 @@
+import { useOs } from '@mantine/hooks'
 import { use, useMemo, useState } from 'react'
+import {
+    AUDIO_CODECS,
+    TRANSCODE_AUDIO_CODECS,
+} from '../constants/media.constants'
 import { MAX_BITRATE } from '../constants/play-bitrate.constants'
 import type {
     AudioCodec,
     HDRType,
     StreamFormat,
+    TranscodeAudioCodec,
     VideoCodec,
     VideoContainer,
 } from '../types/media.types'
@@ -31,7 +37,7 @@ export interface PlaySettings {
     supportedVideoCodecs: VideoCodec[]
     supportedAudioCodecs: AudioCodec[]
     transcodeVideoCodec: VideoCodec
-    transcodeAudioCodec: AudioCodec
+    transcodeAudioCodec: TranscodeAudioCodec
     supportedVideoContainers: VideoContainer[]
     maxAudioChannels: number
     supportedHdrFormats: HDRType[]
@@ -55,8 +61,13 @@ export function usePlaySettings(
     storageKey: string,
     defaults?: Partial<PlaySettings>,
 ): UsePlaySettings {
+    const os = useOs({ getValueInEffect: false })
+    const isAppleMobileDevice = os === 'ios'
     const browserVideoCodecs = use(loadVideoCodecs())
-    const browserAudioCodecs = useMemo(() => getSupportedAudioCodecs(), [])
+    const browserAudioCodecs = useMemo(
+        () => getSupportedAudioCodecs(isAppleMobileDevice),
+        [isAppleMobileDevice],
+    )
     const browserVideoContainers = useMemo(
         () => getSupportedVideoContainers(),
         [],
@@ -73,13 +84,25 @@ export function usePlaySettings(
 
     const defaultVideoCodecs =
         defaults?.supportedVideoCodecs ?? browserVideoCodecs
-    const defaultAudioCodecs =
-        defaults?.supportedAudioCodecs ?? browserAudioCodecs
+    const defaultAudioCodecs = normalizeAudioCodecs(
+        defaults?.supportedAudioCodecs ?? browserAudioCodecs,
+    )
     const defaultVideoContainers =
         defaults?.supportedVideoContainers ?? browserVideoContainers
 
     const videoCodecs = overrides.supportedVideoCodecs ?? defaultVideoCodecs
-    const audioCodecs = overrides.supportedAudioCodecs ?? defaultAudioCodecs
+    const audioCodecs = normalizeAudioCodecs(
+        overrides.supportedAudioCodecs ?? defaultAudioCodecs,
+    )
+    const requestedTranscodeAudioCodec =
+        overrides.transcodeAudioCodec ?? defaults?.transcodeAudioCodec
+    const transcodeAudioCodec = isTranscodeAudioCodec(
+        requestedTranscodeAudioCodec,
+    )
+        ? requestedTranscodeAudioCodec
+        : (TRANSCODE_AUDIO_CODECS.find((codec) =>
+              audioCodecs.includes(codec),
+          ) ?? 'aac')
 
     const defaultAudioKey =
         overrides.defaultAudioKey ?? defaults?.defaultAudioKey
@@ -96,15 +119,13 @@ export function usePlaySettings(
             defaults?.transcodeVideoCodec ??
             videoCodecs[0] ??
             'h264',
-        transcodeAudioCodec:
-            overrides.transcodeAudioCodec ??
-            defaults?.transcodeAudioCodec ??
-            audioCodecs[0] ??
-            'aac',
+        transcodeAudioCodec: transcodeAudioCodec,
         supportedVideoContainers:
             overrides.supportedVideoContainers ?? defaultVideoContainers,
         maxAudioChannels:
-            overrides.maxAudioChannels ?? defaults?.maxAudioChannels ?? 6,
+            overrides.maxAudioChannels ??
+            defaults?.maxAudioChannels ??
+            (isAppleMobileDevice ? 8 : 6),
         format: overrides.format ?? defaults?.format ?? 'hls',
         supportedHdrFormats:
             overrides.supportedHdrFormats ??
@@ -148,4 +169,20 @@ export function usePlaySettings(
         reset,
         isDefault,
     }
+}
+
+function normalizeAudioCodecs(codecs: unknown): AudioCodec[] {
+    if (!Array.isArray(codecs)) return []
+
+    const normalized = codecs.filter(
+        (codec): codec is AudioCodec =>
+            typeof codec === 'string' &&
+            AUDIO_CODECS.includes(codec as AudioCodec),
+    )
+
+    return [...new Set(normalized)]
+}
+
+function isTranscodeAudioCodec(codec: unknown): codec is TranscodeAudioCodec {
+    return TRANSCODE_AUDIO_CODECS.includes(codec as TranscodeAudioCodec)
 }

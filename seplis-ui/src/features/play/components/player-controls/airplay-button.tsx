@@ -1,108 +1,51 @@
-import { AirplayIcon } from '@phosphor-icons/react'
-import type { Video as VideoMedia } from '@videojs/core'
-import { Tooltip, useMedia } from '@videojs/react'
-import { useEffect, useState, type ReactNode } from 'react'
+import {
+    Tooltip,
+    AirPlayButton as VideoJsAirPlayButton,
+    useMedia,
+} from '@videojs/react'
+import { AirPlayEnterIcon, AirPlayExitIcon } from '@videojs/react/icons'
+import type { ReactNode } from 'react'
+import { Button } from './button'
 
-interface AirPlayButtonProps {}
-
-export function AirPlayButton({}: AirPlayButtonProps): ReactNode {
-    const media = useMedia() as VideoMedia | null
-    const [available, setAvailable] = useState(false)
-    const [active, setActive] = useState(false)
-
-    useEffect(() => {
-        if (!media || !('webkitShowPlaybackTargetPicker' in media)) {
-            setActive(false)
-            return
-        }
-
-        const airplayMedia = media as AirPlayMedia
-
-        const onAvailability = (event: WebKitAvailabilityEvent) => {
-            setAvailable(event.availability === 'available')
-        }
-        const onConnectionChanged = () => {
-            setActive(!!airplayMedia.webkitCurrentPlaybackTargetIsWireless)
-        }
-
-        onConnectionChanged()
-        airplayMedia.addEventListener(
-            'webkitplaybacktargetavailabilitychanged',
-            onAvailability,
-        )
-        airplayMedia.addEventListener(
-            'webkitcurrentplaybacktargetiswirelesschanged',
-            onConnectionChanged,
-        )
-        return () => {
-            airplayMedia.removeEventListener(
-                'webkitplaybacktargetavailabilitychanged',
-                onAvailability,
-            )
-            airplayMedia.removeEventListener(
-                'webkitcurrentplaybacktargetiswirelesschanged',
-                onConnectionChanged,
-            )
-        }
-    }, [media])
-
-    if (!available) return null
+export function AirPlayButton(): ReactNode {
+    const media = useMedia() as AirPlayMediaHost | null
 
     return (
         <Tooltip.Root side="top">
             <Tooltip.Trigger
                 render={
-                    <button
-                        type="button"
-                        aria-label="AirPlay"
-                        className={`media-button media-button--subtle media-button--icon${active ? ' media-button--airplay-active' : ''}`}
-                        onClick={() =>
-                            (
-                                media as AirPlayMedia | null
-                            )?.webkitShowPlaybackTargetPicker()
-                        }
+                    <VideoJsAirPlayButton
+                        className="media-button--airplay"
+                        render={(props) => (
+                            <Button
+                                {...props}
+                                onClick={(event) => {
+                                    const video = media?.target
+                                    if (video?.webkitShowPlaybackTargetPicker) {
+                                        video.webkitShowPlaybackTargetPicker()
+                                        return
+                                    }
+                                    props.onClick?.(event)
+                                }}
+                            />
+                        )}
                     >
-                        <AirplayIcon
-                            className="media-icon"
-                            weight={active ? 'fill' : 'regular'}
-                        />
-                    </button>
+                        <AirPlayEnterIcon className="media-icon media-icon--airplay-enter" />
+                        <AirPlayExitIcon className="media-icon media-icon--airplay-exit" />
+                    </VideoJsAirPlayButton>
                 }
             />
             <Tooltip.Popup className="media-surface media-tooltip">
-                {active ? 'Disconnect AirPlay' : 'AirPlay'}
+                <Tooltip.Label />
             </Tooltip.Popup>
         </Tooltip.Root>
     )
 }
 
-type AirPlayAvailability = 'available' | 'not-available'
-
-interface WebKitAvailabilityEvent extends Event {
-    availability?: AirPlayAvailability
+interface AirPlayMediaHost {
+    target: AirPlayVideoElement | null
 }
 
-interface AirPlayMedia extends VideoMedia {
-    webkitCurrentPlaybackTargetIsWireless?: boolean
-    webkitShowPlaybackTargetPicker: () => void
-    addEventListener(
-        type: 'webkitplaybacktargetavailabilitychanged',
-        listener: (event: WebKitAvailabilityEvent) => void,
-        options?: boolean | AddEventListenerOptions,
-    ): void
-    addEventListener(
-        type: 'webkitcurrentplaybacktargetiswirelesschanged',
-        listener: EventListener,
-        options?: boolean | AddEventListenerOptions,
-    ): void
-    removeEventListener(
-        type: 'webkitplaybacktargetavailabilitychanged',
-        listener: (event: WebKitAvailabilityEvent) => void,
-        options?: boolean | EventListenerOptions,
-    ): void
-    removeEventListener(
-        type: 'webkitcurrentplaybacktargetiswirelesschanged',
-        listener: EventListener,
-        options?: boolean | EventListenerOptions,
-    ): void
+interface AirPlayVideoElement extends HTMLVideoElement {
+    webkitShowPlaybackTargetPicker?: () => void
 }

@@ -96,9 +96,11 @@ export function invalidateEpisodeWatched({
     }
     queryClient.invalidateQueries({
         queryKey: episodeLastWatchedQueryKey({ seriesId }),
+        refetchType: 'all',
     })
     queryClient.invalidateQueries({
         queryKey: getEpisodeToWatchQueryKey({ seriesId }),
+        refetchType: 'all',
     })
     queryClient.invalidateQueries({
         queryKey: getUserWatchedQueryKey({}),

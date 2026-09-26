@@ -1,7 +1,7 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import type { Video as VideoMedia } from '@videojs/media'
 import { useMedia } from '@videojs/react'
-import type { Video as VideoMedia } from '@videojs/core'
 import JASSUB from 'jassub'
+import { useEffect, useRef, type ReactNode } from 'react'
 import type {
     PlayerVideoAssSubtitleProps,
     PlayerVideoSubtitleOffsetProps,
@@ -13,16 +13,15 @@ const robotoMediumItalicFontUrl =
     'https://fonts.gstatic.com/s/roboto/v51/KFOKCnqEu92Fr1Mu53ZEC9_Vu3r1gIhOszmOClHrs6ljXfMMLrPQiA8.ttf'
 
 export function AssSubtitle({
+    video,
     subUrl,
     offset,
 }: PlayerVideoAssSubtitleProps): ReactNode {
-    const media = useMedia() as VideoMedia | null
     const jassubRef = useRef<JASSUB | null>(null)
 
     useEffect(() => {
-        if (!media) return
         const jassub = new JASSUB({
-            video: media as unknown as HTMLVideoElement,
+            video,
             subUrl,
             fonts: [robotoMediumFontUrl, robotoMediumItalicFontUrl],
             availableFonts: {
@@ -39,7 +38,7 @@ export function AssSubtitle({
             jassub.destroy()
             jassubRef.current = null
         }
-    }, [media, subUrl])
+    }, [video, subUrl])
 
     useEffect(() => {
         if (jassubRef.current) jassubRef.current.timeOffset = offset

@@ -1,12 +1,4 @@
-import {
-    Gesture,
-    Hotkey,
-    createTapGesture,
-    useContainer,
-    usePlayer,
-    useTapGesture,
-} from '@videojs/react'
-import { useEffect } from 'react'
+import { Gesture, Hotkey } from '@videojs/react'
 
 export function PlayerVideoInteractions() {
     return (
@@ -49,7 +41,7 @@ export function PlayerVideoInteractions() {
                 pointer="mouse"
                 region="center"
             />
-            <TouchControlsGesture />
+            <Gesture type="tap" action="toggleControls" pointer="touch" />
             <Gesture
                 type="doubletap"
                 action="seekStep"
@@ -69,34 +61,4 @@ export function PlayerVideoInteractions() {
             />
         </>
     )
-}
-
-function TouchControlsGesture() {
-    const container = useContainer()
-    const store = usePlayer()
-
-    useEffect(() => {
-        if (!container) return
-
-        // Block the core touch fallback from hiding controls on pointerup.
-        return createTapGesture(container, () => {}, {
-            action: 'toggleControls',
-            disabled: true,
-            pointer: 'touch',
-        })
-    }, [container])
-
-    useTapGesture(
-        () => {
-            if (store.state.controlsVisible === true) return
-
-            const toggleControls = store.state.toggleControls
-            if (typeof toggleControls === 'function') {
-                toggleControls()
-            }
-        },
-        { pointer: 'touch' },
-    )
-
-    return null
 }

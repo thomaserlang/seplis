@@ -19,9 +19,8 @@ export const AUDIO_CODECS = [
     'ac4',
     'opus',
     'flac',
-    'dtsc',
-    'dtse',
-    'dtsx',
+    'dts',
+    'mp3',
 ] as const
 export const AUDIO_CODEC_LABELS = {
     aac: 'AAC',
@@ -30,22 +29,26 @@ export const AUDIO_CODEC_LABELS = {
     ac4: 'Dolby AC-4',
     opus: 'Opus',
     flac: 'FLAC',
-    dtsc: 'DTS Core',
-    dtse: 'DTS Express',
-    dtsx: 'DTS:X',
+    dts: 'DTS',
+    mp3: 'MP3',
 } satisfies Record<(typeof AUDIO_CODECS)[number], string>
 
-export const AUDIO_CODEC_CHECK_TYPE = {
-    aac: 'audio/aac',
-    eac3: 'audio/mp4; codecs="ec-3"',
-    ac3: 'audio/mp4; codecs="ac-3"',
-    ac4: 'audio/mp4; codecs="ac-4"',
-    opus: 'audio/mp4; codecs="opus"',
-    flac: 'audio/mp4; codecs="flac"',
-    dtsc: 'audio/mp4; codecs="dtsc"',
-    dtse: 'audio/mp4; codecs="dtse"',
-    dtsx: 'audio/mp4; codecs="dtsx"',
-} as const satisfies Record<(typeof AUDIO_CODECS)[number], string>
+export const TRANSCODE_AUDIO_CODECS = ['aac', 'opus', 'flac', 'mp3'] as const
+
+export const AUDIO_CODEC_CHECK_TYPES = {
+    aac: ['audio/mp4; codecs="mp4a.40.2"', 'audio/aac'],
+    eac3: ['audio/mp4; codecs="ec-3"', 'audio/eac3'],
+    ac3: ['audio/mp4; codecs="ac-3"', 'audio/ac3'],
+    ac4: ['audio/mp4; codecs="ac-4"'],
+    opus: ['audio/mp4; codecs="opus"'],
+    flac: ['audio/mp4; codecs="fLaC"', 'audio/flac'],
+    dts: [
+        'audio/mp4; codecs="dtsc"',
+        'audio/mp4; codecs="dtse"',
+        'audio/mp4; codecs="dtsx"',
+    ],
+    mp3: ['audio/mp4; codecs="mp4a.40.34"', 'audio/mpeg'],
+} as const satisfies Record<(typeof AUDIO_CODECS)[number], readonly string[]>
 
 export const VIDEO_CONTAINERS = ['mp4', 'webm'] as const
 

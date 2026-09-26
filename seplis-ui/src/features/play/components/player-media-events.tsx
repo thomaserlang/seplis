@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react'
+import type { Video as VideoMedia } from '@videojs/media'
 import { useMedia } from '@videojs/react'
-import type { Video as VideoMedia } from '@videojs/core'
+import { useEffect, useEffectEvent, useRef } from 'react'
 import type { PlayerVideoMediaProps } from './player-video.types'
 
 export function MediaEventHandler({
@@ -12,15 +12,21 @@ export function MediaEventHandler({
     const media = useMedia() as VideoMedia | null
     const resumeTimeRef = useRef<number>(startTime)
     resumeTimeRef.current = startTime
+    const emitVideoReady = useEffectEvent(() => onVideoReady?.())
+    const emitVideoError = useEffectEvent(() => onVideoError?.())
+    const emitTimeUpdate = useEffectEvent(
+        (currentTime: number, duration: number) =>
+            onTimeUpdate?.(currentTime, duration),
+    )
 
     useEffect(() => {
         if (!media) return
 
-        const handleCanPlay = () => onVideoReady?.()
-        const handleError = () => onVideoError?.()
+        const handleCanPlay = () => emitVideoReady()
+        const handleError = () => emitVideoError()
         const handleTimeUpdate = () => {
             if (!media.duration) return
-            onTimeUpdate?.(media.currentTime, media.duration)
+            emitTimeUpdate(media.currentTime, media.duration)
         }
         const handleVolumeChange = () => {
             localStorage.setItem(
@@ -29,10 +35,13 @@ export function MediaEventHandler({
             )
         }
         const handleMetadataLoaded = () => {
-            media.currentTime = resumeTimeRef.current
-        }
-        const handleSeeked = () => {
-            if (media.paused) media.play().catch(() => {})
+            const startTime = resumeTimeRef.current
+            if (
+                startTime > 0 &&
+                Math.abs(media.currentTime - startTime) > 0.5
+            ) {
+                media.currentTime = startTime
+            }
         }
 
         const savedVolume = localStorage.getItem('player-volume')
@@ -43,7 +52,13 @@ export function MediaEventHandler({
         media.addEventListener('timeupdate', handleTimeUpdate)
         media.addEventListener('volumechange', handleVolumeChange)
         media.addEventListener('loadedmetadata', handleMetadataLoaded)
-        media.addEventListener('seeked', handleSeeked)
+
+        if (media.readyState >= HTMLMediaElement.HAVE_METADATA) {
+            handleMetadataLoaded()
+        }
+        if (media.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+            handleCanPlay()
+        }
 
         return () => {
             media.removeEventListener('canplay', handleCanPlay)
@@ -51,9 +66,8 @@ export function MediaEventHandler({
             media.removeEventListener('timeupdate', handleTimeUpdate)
             media.removeEventListener('volumechange', handleVolumeChange)
             media.removeEventListener('loadedmetadata', handleMetadataLoaded)
-            media.removeEventListener('seeked', handleSeeked)
         }
-    }, [media, onTimeUpdate, onVideoError, onVideoReady])
+    }, [media])
 
     return null
 }

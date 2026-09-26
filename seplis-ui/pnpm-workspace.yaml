@@ -1,0 +1,9 @@
+allowBuilds:
+  lfa-ponyfill: false
+minimumReleaseAgeExclude:
+  - '@videojs/core@10.0.0-beta.29'
+  - '@videojs/media@10.0.0-beta.29'
+  - '@videojs/react@10.0.0-beta.29'
+  - '@videojs/spf@10.0.0-beta.29'
+  - '@videojs/store@10.0.0-beta.29'
+  - '@videojs/utils@10.0.0-beta.29'

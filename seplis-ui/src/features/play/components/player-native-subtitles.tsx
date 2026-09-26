@@ -1,4 +1,4 @@
-import type { Video as VideoMedia } from '@videojs/core'
+import type { Video as VideoMedia } from '@videojs/media'
 import { useMedia } from '@videojs/react'
 import { useEffect, type ReactNode } from 'react'
 import { PlaySourceStream } from '../types/play-source.types'

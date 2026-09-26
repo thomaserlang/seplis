@@ -37,11 +37,26 @@ export const {
             queryKey: episodeLastWatchedQueryKey({
                 seriesId: variables.seriesId,
             }),
+            refetchType: 'none',
         })
         queryClient.invalidateQueries({
             queryKey: getEpisodeToWatchQueryKey({
                 seriesId: variables.seriesId,
             }),
+            refetchType: 'none',
         })
     },
 })
+
+export function refetchEpisodeWatchedPositionSummaries(seriesId: number) {
+    return Promise.all([
+        queryClient.refetchQueries({
+            queryKey: episodeLastWatchedQueryKey({ seriesId }),
+            type: 'active',
+        }),
+        queryClient.refetchQueries({
+            queryKey: getEpisodeToWatchQueryKey({ seriesId }),
+            type: 'active',
+        }),
+    ])
+}

@@ -1,24 +1,29 @@
 import { Popover } from '@mantine/core'
 import { GearIcon } from '@phosphor-icons/react'
-import { ReactNode } from 'react'
+import { selectControls } from '@videojs/core/dom'
+import { usePlayer } from '@videojs/react'
+import { ReactNode, useEffect, useState } from 'react'
 import { PlayerSettings, PlayerSettingsProps } from '../player-settings'
 import { Button } from './button'
 
-export interface SettingsPopoverProps extends PlayerSettingsProps {
-    open: boolean
-    onOpenChange: (open: boolean) => void
-}
+export interface SettingsPopoverProps extends PlayerSettingsProps {}
 
-export function SettingsPopover({
-    open,
-    onOpenChange,
-    ...props
-}: SettingsPopoverProps): ReactNode {
+export function SettingsPopover(props: SettingsPopoverProps): ReactNode {
+    const [open, setOpen] = useState(false)
+    const requestControlsLock = usePlayer(selectControls)?.requestControlsLock
+
+    useEffect(() => {
+        if (!open || !requestControlsLock) return
+
+        return requestControlsLock()
+    }, [open, requestControlsLock])
+
     return (
         <Popover
             opened={open}
-            onChange={onOpenChange}
+            onChange={setOpen}
             position="top"
+            withinPortal={false}
             withArrow
             shadow="md"
             trapFocus
@@ -27,7 +32,7 @@ export function SettingsPopover({
                 <Button
                     aria-label="Settings"
                     aria-expanded={open}
-                    onClick={() => onOpenChange(!open)}
+                    onClick={() => setOpen((value) => !value)}
                 >
                     <GearIcon className="media-icon" weight="bold" />
                 </Button>
@@ -41,16 +46,13 @@ export function SettingsPopover({
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
-                    backgroundColor: 'oklch(0.3 0 0 / 0.5)',
+                    backgroundColor: 'oklch(0.18 0 0 / 0.88)',
                     backdropFilter: 'blur(16px) saturate(1.5)',
                     boxShadow:
                         '0 0 0 1px transparent, 0 1px 3px 0 oklch(0 0 0 / 0.3), 0 1px 2px -1px oklch(0 0 0 / 0.3)',
                 }}
             >
-                <PlayerSettings
-                    {...props}
-                    onClose={() => onOpenChange(false)}
-                />
+                <PlayerSettings {...props} onClose={() => setOpen(false)} />
             </Popover.Dropdown>
         </Popover>
     )

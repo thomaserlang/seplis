@@ -90,7 +90,7 @@ export function PlayerView({
     })
 
     return (
-        <Player.Provider>
+        <Player>
             <PlayerVideo
                 playRequestSource={source}
                 playRequestsSources={playRequestsSources}
@@ -124,6 +124,6 @@ export function PlayerView({
                 preferredSubtitleLangs={PREFERRED_SUBTITLE_LANGS}
                 playSettings={playSettings}
             />
-        </Player.Provider>
+        </Player>
     )
 }
