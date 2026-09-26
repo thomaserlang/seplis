@@ -69,8 +69,8 @@ async def update_person_info(person: Person) -> Person | None:
     )
     if not info:
         return None
-    old_info = person.to_request() if person.id else {}
-    data = compare(info, old_info, skip_keys=['also_known_as'])
+    old_info = person.to_request()
+    data = compare(info, old_info, skip_keys=['also_known_as']) if person.id else info
     missing_also_known_as = [
         x
         for x in info.get('also_known_as') or []

@@ -6,6 +6,7 @@ import sqlalchemy as sa
 
 from seplis import logger
 from seplis.api import exceptions
+from seplis.api.common import validate_python
 from seplis.api.database import database
 from seplis.api.image import (
     Image,
@@ -34,6 +35,7 @@ from seplis.api.series.schemas.series_cast_schemas import (
     SeriesCastPerson,
     SeriesCastPersonImport,
     SeriesCastPersonUpdate,
+    SeriesCastRole,
 )
 from seplis.api.series.schemas.series_schemas import Series, SeriesUpdate
 from seplis.importer.people.importer import create_person
@@ -330,8 +332,11 @@ async def update_series_cast(series: Series) -> None:
                     series_id=series.id,
                     person=person,
                 )
+            roles = [
+                validate_python(SeriesCastRole, role) for role in member.get('roles', [])
+            ]
             if (
-                not all([r in cast[key].roles for r in member.get('roles', [])])
+                not all(role in cast[key].roles for role in roles)
                 or cast[key].order != member.get('order')
                 or cast[key].total_episodes != member['total_episodes']
             ):

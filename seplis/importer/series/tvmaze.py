@@ -1,5 +1,6 @@
 import requests
 
+from seplis.api.common import validate_python
 from seplis.api.image import ImageImport
 from seplis.api.series import EpisodeUpdate, SeriesUpdate
 
@@ -30,7 +31,7 @@ class Tvmaze(SeriesImporterBase):
             if series['externals'][key]
         }
         externals[self.external_name] = str(series['id'])
-        return SeriesUpdate(
+        data = dict(
             title=series['name'][:200],
             original_title=series['name'][:200],
             plot=series['summary'][:2000]
@@ -44,9 +45,10 @@ class Tvmaze(SeriesImporterBase):
             status=self.parse_status(series['status']),
             runtime=series['runtime'],
             genre_names=series['genres'],
-            premiered=series['premiered'],
+            premiered=series['premiered'] or None,
             language=series['language'],
         )
+        return validate_python(SeriesUpdate, data)
 
     @staticmethod
     def parse_status(status_str: str) -> int:
@@ -105,7 +107,7 @@ class Tvmaze(SeriesImporterBase):
                     else None,
                 )
             )
-        return episodes
+        return validate_python(list[EpisodeUpdate], episodes)
 
     async def incremental_updates(self) -> list[str]:
         last_timestamp = self.last_update_timestamp()

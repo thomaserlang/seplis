@@ -6,6 +6,7 @@ import requests
 from dateutil import parser
 
 from seplis import config, logger
+from seplis.api.common import validate_python
 from seplis.api.image import ImageImport
 from seplis.api.series import EpisodeUpdate, SeriesUpdate
 
@@ -59,7 +60,7 @@ class Thetvdb(SeriesImporterBase):
             if data['imdbId']:
                 externals['imdb'] = data['imdbId']
 
-            return SeriesUpdate(
+            info = dict(
                 title=data['seriesName'][:200],
                 original_title=data['seriesName'][:200],
                 plot=data['summary'][:2000] if data.get('summary') else None,
@@ -69,6 +70,7 @@ class Thetvdb(SeriesImporterBase):
                 runtime=int(data['runtime']) if data['runtime'] else None,
                 genre_names=data['genre'],
             )
+            return validate_python(SeriesUpdate, info)
         return None
 
     async def episodes(self, external_id: int) -> list[EpisodeUpdate]:
@@ -158,7 +160,7 @@ class Thetvdb(SeriesImporterBase):
         return _episodes
 
     def parse_episode(self, episode: dict[str, Any]) -> EpisodeUpdate:
-        return EpisodeUpdate(
+        data = dict(
             title=episode['episodeName'],
             original_title=episode['episodeName'],
             plot=episode.get('overview'),
@@ -169,6 +171,7 @@ class Thetvdb(SeriesImporterBase):
             if episode['firstAired']
             else None,
         )
+        return validate_python(EpisodeUpdate, data)
 
     def parse_date(self, date_: str | None) -> date | None:
         if not date_:

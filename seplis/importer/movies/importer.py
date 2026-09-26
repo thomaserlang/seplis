@@ -7,6 +7,7 @@ import sqlalchemy as sa
 
 from ... import config, logger
 from ...api import exceptions
+from ...api.common import validate_python
 from ...api.database import database
 from ...api.image import ImageImport, MImage, image_mapper
 from ...api.image import save_image as save_image_action
@@ -240,7 +241,7 @@ async def get_movie_data(themoviedb: int | str) -> MovieUpdate | None:
     data['collection_name'] = (
         r['belongs_to_collection']['name'] if r['belongs_to_collection'] else None
     )
-    return data
+    return validate_python(MovieUpdate, data)
 
 
 async def update_images(movie: Movie) -> None:
@@ -382,27 +383,31 @@ async def update_cast(movie: Movie) -> None:
                     character=None,
                 )
 
+            person_id = cast[key].person.id
+            if person_id is None:
+                logger.error(
+                    f'[Movie: {movie.id}] Cast person is missing id: '
+                    f'{member["name"]} ({member["id"]})'
+                )
+                return
+            data = validate_python(
+                MovieCastPersonUpdate,
+                {
+                    'person_id': person_id,
+                    'order': member['order'],
+                    'character': member['character'][:200] or None,
+                },
+            )
             if (
-                cast[key].character != member['character'][:200]
-                or cast[key].order != member['order']
+                cast[key].character != data['character']
+                or cast[key].order != data['order']
             ):
-                person_id = cast[key].person.id
-                if person_id is None:
-                    logger.error(
-                        f'[Movie: {movie.id}] Cast person is missing id: '
-                        f'{member["name"]} ({member["id"]})'
-                    )
-                    return
                 logger.debug(
                     f'[Movie: {movie.id}] Saving cast: {member["name"]} ({member["id"]})'
                 )
                 await save_movie_cast(
                     movie_id=movie.id,
-                    data=MovieCastPersonUpdate(
-                        person_id=person_id,
-                        order=member['order'],
-                        character=member['character'][:200] or None,
-                    ),
+                    data=data,
                 )
         except KeyboardInterrupt, SystemExit:
             raise
