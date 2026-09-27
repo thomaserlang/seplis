@@ -1,0 +1,9 @@
+{
+  "id" : "bff3523b-9181-40e9-a900-bb3fc17ebce3",
+  "targets" : [
+    {
+      "id" : "c28be5ae-cb1e-4c31-aeb5-543ccf58545a",
+      "name" : "seplis-apple-tv"
+    }
+  ]
+}
