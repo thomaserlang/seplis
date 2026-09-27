@@ -24,9 +24,15 @@ export function DeviceAuthorizationForm({ initialCode, onAuthorized }: Props) {
         onSuccess: onAuthorized,
     })
 
+    const authorize = (value: string) => {
+        const userCode = normalizeCode(value)
+        if (!user || userCode.length !== 6 || approval.isPending) return
+        approval.mutate({ data: { user_code: userCode } })
+    }
+
     const submit = (event: FormEvent) => {
         event.preventDefault()
-        approval.mutate({ data: { user_code: code } })
+        authorize(code)
     }
 
     return (
@@ -39,6 +45,8 @@ export function DeviceAuthorizationForm({ initialCode, onAuthorized }: Props) {
                 size={isNarrow ? 'md' : 'lg'}
                 gap={isNarrow ? 'xs' : 'sm'}
                 value={code}
+                disabled={approval.isPending}
+                onComplete={authorize}
                 onChange={(value) => {
                     setCode(normalizeCode(value))
                     approval.reset()
