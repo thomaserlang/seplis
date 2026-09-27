@@ -15,6 +15,7 @@ async def search_titles(
     query: str | None,
     title: str | None,
     title_type: Literal['series', 'movie'] | None,
+    limit: int = 10,
 ) -> list[SearchTitleDocument]:
     if query:
         elastic_query = get_by_query(query)
@@ -36,7 +37,9 @@ async def search_titles(
         }
 
     result = await database.es.search(
-        index=config.api.elasticsearch.index_prefix + 'titles', query=elastic_query
+        index=config.api.elasticsearch.index_prefix + 'titles',
+        query=elastic_query,
+        size=limit,
     )
     return [
         _search_title_document_adapter.validate_python(hit['_source'])

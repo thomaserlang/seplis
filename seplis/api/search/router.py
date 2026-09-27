@@ -14,5 +14,8 @@ async def search_route(
     query: SearchText | None = None,
     title: SearchText | None = None,
     title_type: Annotated[Literal['series', 'movie'] | None, Query(alias='type')] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 10,
 ) -> list[SearchTitleDocument]:
-    return await search_titles(query=query, title=title, title_type=title_type)
+    return await search_titles(
+        query=query, title=title, title_type=title_type, limit=limit
+    )

@@ -1,0 +1,140 @@
+import XCTest
+
+nonisolated final class CatalogUITests: UITestCase {
+    @MainActor func testCatalogQuickFilters() {
+        let app = launchApp()
+        XCTAssertTrue(app.buttons["media-movie-1"].firstMatch.waitForExistence(timeout: 10))
+        XCUIRemote.shared.press(.up)
+        XCUIRemote.shared.press(.right)
+        XCTAssertTrue(app.buttons["series-filters"].waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.down)
+        XCTAssertTrue(app.buttons["series-filters"].hasFocus)
+        for name in ["available", "watchlist", "favorites", "unwatched"] {
+            XCUIRemote.shared.press(.right)
+            let toggle = app.descendants(matching: .any)["series-quick-\(name)"].firstMatch
+            XCTAssertTrue(toggle.hasFocus)
+            XCUIRemote.shared.press(.select)
+            XCTAssertTrue(toggle.hasFocus)
+            XCTAssertEqual(toggle.value as? String, "1")
+        }
+        attachScreenshot("Active quick filters")
+        XCUIRemote.shared.press(.select)
+        let unwatched = app.descendants(matching: .any)["series-quick-unwatched"].firstMatch
+        XCTAssertEqual(unwatched.value as? String, "0")
+        XCUIRemote.shared.press(.down)
+        XCTAssertTrue(app.buttons["grid-series-1"].hasFocus)
+    }
+
+    @MainActor func testSeriesFiltersAreReachableWithoutCrossingMovies() {
+        let app = launchApp()
+        XCTAssertTrue(app.buttons["media-movie-1"].firstMatch.waitForExistence(timeout: 10))
+        XCUIRemote.shared.press(.up)
+        XCUIRemote.shared.press(.right)
+        let filters = app.buttons["series-filters"]
+        XCTAssertTrue(filters.waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.down)
+        XCTAssertTrue(filters.hasFocus)
+        XCTAssertTrue(app.buttons["Series"].isSelected)
+        XCUIRemote.shared.press(.select)
+        XCTAssertTrue(app.buttons["Apply Filters"].waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(filters.waitForExistence(timeout: 5))
+        XCTAssertTrue(filters.hasFocus)
+        XCTAssertTrue(app.buttons["Series"].isSelected)
+        attachScreenshot("Series filter row")
+        XCUIRemote.shared.press(.down)
+        XCTAssertTrue(app.buttons["grid-series-1"].hasFocus)
+    }
+
+    @MainActor func testFiltersSelectApplyAndCancel() {
+        let app = launchApp()
+        XCTAssertTrue(app.buttons["Movies"].waitForExistence(timeout: 10))
+        select(app.buttons["Movies"], in: app)
+        select(app.buttons["movie-filters"], in: app)
+        XCTAssertTrue(app.buttons["Apply Filters"].waitForExistence(timeout: 5))
+        select(app.buttons["Newest"], in: app)
+        XCTAssertEqual(app.buttons["Newest"].value as? String, "Selected")
+        select(app.buttons["filter-category-Library"], in: app)
+        select(app.buttons["Watched: No"], in: app)
+        XCTAssertEqual(app.buttons["Watched: No"].value as? String, "Selected")
+        attachScreenshot("Library filter choices")
+        select(app.buttons["filter-category-Genres"], in: app)
+        select(app.buttons["Adventure: Include"], in: app)
+        XCTAssertEqual(app.buttons["Adventure: Include"].value as? String, "Selected")
+        attachScreenshot("Genre filter choices")
+        select(app.buttons["filter-category-Languages"], in: app)
+        let language = app.switches["Abkhazian"]
+        XCTAssertTrue(language.waitForExistence(timeout: 5))
+        select(language, in: app)
+        XCTAssertEqual(language.value as? String, "1")
+        XCUIRemote.shared.press(.down)
+        XCUIRemote.shared.press(.up)
+        attachScreenshot("Language filter choices")
+        select(app.buttons["filter-category-Year"], in: app)
+        let minimum = app.textFields["Year minimum"]
+        XCTAssertTrue(minimum.waitForExistence(timeout: 5))
+        select(minimum, in: app)
+        minimum.typeText("2020")
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(minimum.waitForExistence(timeout: 5))
+        XCTAssertEqual(minimum.value as? String, "2020")
+        attachScreenshot("Year filter range")
+        select(app.buttons["filter-category-IMDb Rating"], in: app)
+        XCTAssertTrue(app.textFields["IMDb rating maximum"].waitForExistence(timeout: 5))
+        select(app.buttons["filter-category-IMDb Votes"], in: app)
+        XCTAssertTrue(app.textFields["IMDb votes minimum"].waitForExistence(timeout: 5))
+        select(app.buttons["Apply Filters"], in: app)
+        XCTAssertTrue(app.buttons["grid-movie-1"].waitForExistence(timeout: 5))
+        select(app.buttons["movie-filters"], in: app)
+        XCTAssertTrue(app.buttons["Newest"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["Newest"].value as? String, "Selected")
+        select(app.buttons["filter-category-Languages"], in: app)
+        XCTAssertEqual(app.switches["Abkhazian"].value as? String, "1")
+        select(app.buttons["filter-category-Sort"], in: app)
+        select(app.buttons["Reset Filters"], in: app)
+        XCTAssertEqual(app.buttons["Popular"].value as? String, "Selected")
+        XCUIRemote.shared.press(.menu)
+        select(app.buttons["movie-filters"], in: app)
+        XCTAssertTrue(app.buttons["Newest"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["Newest"].value as? String, "Selected")
+    }
+
+    @MainActor func testSearchFindsMovieAndSeries() {
+        let app = launchApp()
+        XCTAssertTrue(app.buttons["Search"].waitForExistence(timeout: 10))
+        select(app.buttons["Search"], in: app)
+        let search = app.searchFields.firstMatch
+        XCTAssertTrue(search.waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.down)
+        search.typeText("treasure")
+        XCTAssertTrue(app.buttons["grid-movie-1"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["grid-series-1"].exists)
+        attachScreenshot("Search results")
+        XCUIRemote.shared.press(.down)
+        select(app.buttons["grid-movie-1"], in: app)
+        XCTAssertTrue(app.buttons["Play"].waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(app.buttons["grid-movie-1"].waitForExistence(timeout: 5))
+        XCTAssertEqual(search.value as? String, "treasure")
+        XCTAssertTrue(app.buttons["grid-movie-1"].hasFocus)
+    }
+
+    @MainActor func testCatalogFiltersAndProfileBack() {
+        let app = launchApp()
+        XCTAssertTrue(app.buttons["Movies"].waitForExistence(timeout: 10))
+        select(app.buttons["Movies"], in: app)
+        let poster = app.buttons["grid-movie-1"]
+        XCTAssertTrue(poster.waitForExistence(timeout: 10))
+        attachScreenshot("Movies grid")
+        select(app.buttons["movie-filters"], in: app)
+        XCTAssertTrue(app.buttons["Apply Filters"].waitForExistence(timeout: 5))
+        attachScreenshot("Catalog filters")
+        XCUIRemote.shared.press(.menu)
+        select(app.buttons["Series"], in: app)
+        XCTAssertTrue(app.buttons["grid-series-1"].waitForExistence(timeout: 10))
+        select(app.buttons["Profiles"], in: app)
+        XCTAssertTrue(app.buttons["Add Account"].waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(app.staticTexts["Watched"].waitForExistence(timeout: 10))
+    }
+}

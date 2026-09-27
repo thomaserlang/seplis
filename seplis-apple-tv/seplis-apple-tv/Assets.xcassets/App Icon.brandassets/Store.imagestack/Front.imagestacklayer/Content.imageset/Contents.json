@@ -1,0 +1,12 @@
+{
+  "images": [
+    {
+      "filename": "seplis-appletv.png",
+      "idiom": "tv"
+    }
+  ],
+  "info": {
+    "author": "xcode",
+    "version": 1
+  }
+}
