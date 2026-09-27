@@ -47,7 +47,7 @@ async def test_search_limit_defaults_and_validation() -> None:
         ) as client:
             response = await client.get('/search', params={'query': 'treasure'})
             assert response.status_code == 200
-            assert search.call_args.kwargs['limit'] == 10
+            assert search.call_args.kwargs['limit'] == 25
             response = await client.get(
                 '/search', params={'query': 'treasure', 'limit': 60}
             )

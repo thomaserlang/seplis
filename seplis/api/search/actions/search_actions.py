@@ -16,7 +16,7 @@ DOCUMENT = TypeAdapter(SearchTitleDocument)
 
 
 async def search(
-    params: dict[str, Any], filters: list[str], limit: int = 10
+    params: dict[str, Any], filters: list[str], limit: int = 25
 ) -> list[SearchTitleDocument]:
     response = await request(
         'GET',
@@ -36,7 +36,7 @@ async def search(
 
 
 async def exact_names(
-    title: str, filters: list[str], limit: int = 10
+    title: str, filters: list[str], limit: int = 25
 ) -> list[SearchTitleDocument]:
     keys = name_keys(title)
     if not keys:
@@ -49,7 +49,7 @@ async def exact_names(
 
 
 async def identify(
-    title: str, filters: list[str], limit: int = 10
+    title: str, filters: list[str], limit: int = 25
 ) -> list[SearchTitleDocument]:
     match = re.fullmatch(rf'(.+?)\s+\({YEAR}\)', title)
     if match:
@@ -65,7 +65,7 @@ async def identify(
 
 
 async def interactive(
-    query: str, filters: list[str], limit: int = 10
+    query: str, filters: list[str], limit: int = 25
 ) -> list[SearchTitleDocument]:
     params = {
         'query_by': 'title,aliases',
@@ -109,7 +109,7 @@ async def search_titles(
     query: str | None,
     title: str | None,
     title_type: TitleType | None,
-    limit: int = 10,
+    limit: int = 25,
 ) -> list[SearchTitleDocument]:
     value = (query or title or '').strip()
     if not query and not title:
