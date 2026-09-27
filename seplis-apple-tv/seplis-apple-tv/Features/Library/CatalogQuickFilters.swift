@@ -15,9 +15,9 @@ struct CatalogQuickFilters: View {
             quickToggle("Available", id: "available", choice: $filters.available)
             quickSort("New", id: "new", value: kind == .movie ? "release_date_desc" : "premiered_desc")
             quickSort("Popular", id: "popular", value: "popularity_desc")
+            quickToggle("Not Watched", id: "unwatched", choice: $filters.watched, active: .no)
             quickToggle("Watchlist", id: "watchlist", choice: $filters.watchlist)
             quickToggle("Favorites", id: "favorites", choice: $filters.favorite)
-            quickToggle("Unwatched", id: "unwatched", choice: $filters.watched, active: .no)
             Spacer(minLength: 0)
         }
         .font(.body)

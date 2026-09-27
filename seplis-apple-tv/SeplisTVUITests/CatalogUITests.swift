@@ -9,8 +9,8 @@ nonisolated final class CatalogUITests: UITestCase {
         XCTAssertTrue(app.buttons["series-filters"].waitForExistence(timeout: 5))
         XCUIRemote.shared.press(.down)
         XCTAssertTrue(app.buttons["series-filters"].hasFocus)
-        for name in ["available", "watchlist", "favorites", "unwatched"] {
-            if name == "watchlist" {
+        for name in ["available", "unwatched", "watchlist", "favorites"] {
+            if name == "unwatched" {
                 let new = app.buttons["series-quick-new"]
                 let popular = app.buttons["series-quick-popular"]
                 XCTAssertEqual(popular.value as? String, "Selected")
@@ -38,8 +38,11 @@ nonisolated final class CatalogUITests: UITestCase {
             XCTAssertEqual(toggle.value as? String, "1")
         }
         attachScreenshot("Active quick filters")
+        XCUIRemote.shared.press(.left)
+        XCUIRemote.shared.press(.left)
         XCUIRemote.shared.press(.select)
         let unwatched = app.descendants(matching: .any)["series-quick-unwatched"].firstMatch
+        XCTAssertEqual(unwatched.label, "Not Watched")
         XCTAssertEqual(unwatched.value as? String, "0")
         XCUIRemote.shared.press(.down)
         XCTAssertTrue(app.buttons["grid-series-1"].hasFocus)
