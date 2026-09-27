@@ -1,6 +1,43 @@
 import XCTest
 
 nonisolated final class NavigationTests: UITestCase {
+    @MainActor func testBackAndAutomaticProfileMenuPreserveCurrentPage() {
+        let app = launchApp()
+        let poster = app.buttons["media-movie-1"].firstMatch
+        XCTAssertTrue(poster.waitForExistence(timeout: 10))
+        attachScreenshot("Active tab while browsing posters")
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(app.buttons["Home"].hasFocus)
+        XCUIRemote.shared.press(.left)
+        XCTAssertTrue(app.buttons["Search"].hasFocus)
+        XCTAssertTrue(poster.exists)
+        XCTAssertFalse(app.searchFields.firstMatch.exists)
+        XCUIRemote.shared.press(.left)
+        let addAccount = app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Add Account")).firstMatch
+        XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Home"].isSelected)
+        attachScreenshot("Automatic profiles menu over Home")
+        XCUIRemote.shared.press(.menu)
+        XCTAssertFalse(addAccount.exists)
+        XCTAssertTrue(poster.exists)
+        let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: app.buttons["profiles-menu"])
+        XCTAssertEqual(XCTWaiter.wait(for: [restored], timeout: 5), .completed)
+        XCUIRemote.shared.press(.right)
+        XCTAssertTrue(app.buttons["Search"].hasFocus)
+        XCUIRemote.shared.press(.right)
+        XCTAssertTrue(app.buttons["Home"].hasFocus)
+        XCUIRemote.shared.press(.right)
+        XCTAssertTrue(app.buttons["Series"].hasFocus)
+        let series = app.buttons["grid-series-1"]
+        XCTAssertTrue(series.waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.down)
+        XCUIRemote.shared.press(.down)
+        XCTAssertTrue(series.hasFocus)
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(app.buttons["Series"].hasFocus)
+        XCTAssertTrue(series.exists)
+    }
+
     @MainActor func testVisitedTabsKeepLoadedCards() {
         let app = launchApp(["--fail-repeated-library-loads"])
         XCTAssertTrue(app.buttons["media-movie-1"].firstMatch.waitForExistence(timeout: 10))

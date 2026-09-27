@@ -7,6 +7,8 @@ struct AppTabsView: View {
     @State private var isInitialHome = true
     @State private var visited: Set<Section> = [.home]
     @FocusState private var focusedTab: Section?
+    @State private var isProfileFocused = false
+    @State private var isProfileMenuPresented = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Section: String, CaseIterable {
@@ -14,20 +16,18 @@ struct AppTabsView: View {
         case series = "Series"
         case movies = "Movies"
         case search = "Search"
-        case profiles = "Profiles"
     }
 
     var body: some View {
         VStack(spacing: 0) {
             ZStack {
                 HStack {
-                    Button("Profiles", systemImage: "person.crop.circle") { activate(.profiles) }
-                        .labelStyle(.iconOnly)
-                        .help("Profiles")
-                        .buttonStyle(NavigationButtonStyle(isSelected: focusedTab == nil && section == .profiles))
-                        .focusEffectDisabled()
-                        .focused($focusedTab, equals: .profiles)
-                        .onExitCommand { activate(.home) }
+                    ProfilesMenu(session: session,
+                                 focusChanged: { focused in
+                                     isProfileFocused = focused
+                                     if focused { focusedTab = nil }
+                                 },
+                                 presentationChanged: { isProfileMenuPresented = $0 })
                     Spacer()
                     Image("SeplisLogo")
                         .resizable()
@@ -43,10 +43,10 @@ struct AppTabsView: View {
                             if item == .search { Image(systemName: "magnifyingglass") } else { Text(item.rawValue) }
                         }
                         .accessibilityLabel(item.rawValue)
-                        .buttonStyle(NavigationButtonStyle(isSelected: focusedTab == nil && section == item))
+                        .buttonStyle(NavigationButtonStyle(isSelected: !isProfileFocused && !isProfileMenuPresented && focusedTab == nil && section == item))
                         .focusEffectDisabled()
                         .focused($focusedTab, equals: item)
-                        .accessibilityAddTraits(section == item ? .isSelected : [])
+                        .accessibilityAddTraits(!isProfileFocused && !isProfileMenuPresented && section == item ? .isSelected : [])
                     }
                 }
             }
@@ -67,10 +67,11 @@ struct AppTabsView: View {
                 }
             }
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: section)
+            .onExitCommand { focusedTab = section }
         }
         .ignoresSafeArea(.container, edges: [.top, .horizontal])
         .task(id: focusedTab) {
-            guard let tab = focusedTab, tab != .profiles, tab != section else { return }
+            guard let tab = focusedTab, tab != .search, tab != section else { return }
             do { try await Task.sleep(for: .milliseconds(120)) } catch { return }
             guard focusedTab == tab else { return }
             activate(tab)
@@ -82,23 +83,23 @@ struct AppTabsView: View {
         switch tab {
         case .home:
             HomeView(
-                api: api, enteringFromMenu: focusedTab != nil, autoFocusOnLoad: isInitialHome,
+                api: api, enteringFromMenu: isMenuFocused, autoFocusOnLoad: isInitialHome,
                 isActive: section == .home)
         case .series:
             CatalogView(
                 api: api, kind: .series,
-                enteringFromMenu: focusedTab != nil
+                enteringFromMenu: isMenuFocused
             ).id(Section.series)
         case .movies:
             CatalogView(
                 api: api, kind: .movie,
-                enteringFromMenu: focusedTab != nil
+                enteringFromMenu: isMenuFocused
             ).id(Section.movies)
         case .search: SearchView(api: api)
-        case .profiles:
-            ProfilesView(session: session).onExitCommand { activate(.home) }
         }
     }
+
+    private var isMenuFocused: Bool { focusedTab != nil || isProfileFocused }
 
     private func activate(_ tab: Section) {
         guard section != tab else { return }

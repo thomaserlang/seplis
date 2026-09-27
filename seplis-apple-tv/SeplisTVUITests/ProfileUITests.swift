@@ -26,27 +26,34 @@ nonisolated final class ProfileUITests: UITestCase {
         XCTAssertEqual(app.buttons["Favorite"].value as? String, "Off")
         attachScreenshot("Movie detail")
         XCUIRemote.shared.press(.menu)
-        let profiles = app.buttons["Profiles"]
+        let profiles = app.descendants(matching: .any)["profiles-menu"]
         XCTAssertTrue(profiles.waitForExistence(timeout: 5))
-        select(profiles, in: app)
-        XCTAssertTrue(app.buttons["Add Account"].waitForExistence(timeout: 5))
-        attachScreenshot("Profiles")
-        select(app.buttons["Add Account"], in: app)
+        openProfiles(in: app)
+        let addAccount = menuItem("Add Account", in: app)
+        XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
+        attachScreenshot("Profiles menu")
+        XCUIRemote.shared.press(.menu)
+        XCTAssertFalse(addAccount.exists)
+        let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: profiles)
+        XCTAssertEqual(XCTWaiter.wait(for: [restored], timeout: 5), .completed)
+        openProfiles(in: app)
+        select(addAccount, in: app)
         XCTAssertTrue(app.staticTexts["seplis.net/device"].waitForExistence(timeout: 10))
         attachScreenshot("Add account")
     }
 
     @MainActor func testSwitchProfileAndBrowseSeason() {
         let app = launchApp()
-        XCTAssertTrue(app.buttons["Profiles"].waitForExistence(timeout: 10))
-        select(app.buttons["Profiles"], in: app)
-        let sam = app.buttons["profile-2"]
+        let profiles = app.descendants(matching: .any)["profiles-menu"]
+        XCTAssertTrue(profiles.waitForExistence(timeout: 10))
+        openProfiles(in: app)
+        let sam = menuItem("Sam", in: app)
         XCTAssertTrue(sam.waitForExistence(timeout: 5))
         select(sam, in: app)
         XCTAssertTrue(app.staticTexts["Watched"].waitForExistence(timeout: 10))
-        select(app.buttons["Profiles"], in: app)
-        XCTAssertTrue(app.buttons["Sign Out of Sam"].waitForExistence(timeout: 5))
-        select(app.buttons["Home"], in: app)
+        openProfiles(in: app)
+        XCTAssertTrue(menuItem("Sign Out of Sam", in: app).waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.menu)
         let series = app.buttons["media-series-1"].firstMatch
         XCTAssertTrue(series.waitForExistence(timeout: 5))
         select(series, in: app)
@@ -61,5 +68,27 @@ nonisolated final class ProfileUITests: UITestCase {
         select(episode, in: app)
         XCTAssertTrue(app.staticTexts["No play server has this title available for your account."].waitForExistence(timeout: 10))
         attachScreenshot("Episode playback")
+    }
+
+    @MainActor private func menuItem(_ title: String, in app: XCUIApplication) -> XCUIElement {
+        app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
+    }
+
+    @MainActor private func openProfiles(in app: XCUIApplication) {
+        let profiles = app.buttons["profiles-menu"]
+        let addAccount = menuItem("Add Account", in: app)
+        if addAccount.exists { return }
+        if profiles.hasFocus {
+            XCUIRemote.shared.press(.select)
+        } else {
+            if !["Search", "Home", "Series", "Movies"].contains(where: { app.buttons[$0].hasFocus }) {
+                XCUIRemote.shared.press(.menu)
+            }
+            for _ in 0..<5 {
+                if addAccount.exists { break }
+                XCUIRemote.shared.press(.left)
+            }
+        }
+        XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
     }
 }
