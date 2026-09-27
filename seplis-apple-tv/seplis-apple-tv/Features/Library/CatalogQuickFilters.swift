@@ -13,6 +13,8 @@ struct CatalogQuickFilters: View {
                 .focused(focus, equals: "settings")
                 .accessibilityIdentifier("\(kind.rawValue)-filters")
             quickToggle("Available", id: "available", choice: $filters.available)
+            quickSort("New", id: "new", value: kind == .movie ? "release_date_desc" : "premiered_desc")
+            quickSort("Popular", id: "popular", value: "popularity_desc")
             quickToggle("Watchlist", id: "watchlist", choice: $filters.watchlist)
             quickToggle("Favorites", id: "favorites", choice: $filters.favorite)
             quickToggle("Unwatched", id: "unwatched", choice: $filters.watched, active: .no)
@@ -24,6 +26,14 @@ struct CatalogQuickFilters: View {
         .padding(.bottom, 4)
         .focusSection()
         .defaultFocus(focus, "settings", priority: .userInitiated)
+    }
+
+    private func quickSort(_ title: String, id: String, value: String) -> some View {
+        Button(title) { filters.sort = value }
+            .buttonStyle(FilterButtonStyle(isSelected: filters.sort == value))
+            .focused(focus, equals: id)
+            .accessibilityValue(filters.sort == value ? "Selected" : "Not selected")
+            .accessibilityIdentifier("\(kind.rawValue)-quick-\(id)")
     }
 
     private func quickToggle(

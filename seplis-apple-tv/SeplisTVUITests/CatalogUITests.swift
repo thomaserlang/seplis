@@ -10,6 +10,21 @@ nonisolated final class CatalogUITests: UITestCase {
         XCUIRemote.shared.press(.down)
         XCTAssertTrue(app.buttons["series-filters"].hasFocus)
         for name in ["available", "watchlist", "favorites", "unwatched"] {
+            if name == "watchlist" {
+                let new = app.buttons["series-quick-new"]
+                let popular = app.buttons["series-quick-popular"]
+                XCTAssertEqual(popular.value as? String, "Selected")
+                XCUIRemote.shared.press(.right)
+                XCTAssertTrue(new.hasFocus)
+                XCUIRemote.shared.press(.select)
+                XCTAssertEqual(new.value as? String, "Selected")
+                XCTAssertEqual(popular.value as? String, "Not selected")
+                XCUIRemote.shared.press(.right)
+                XCTAssertTrue(popular.hasFocus)
+                XCUIRemote.shared.press(.select)
+                XCTAssertEqual(popular.value as? String, "Selected")
+                XCTAssertEqual(new.value as? String, "Not selected")
+            }
             XCUIRemote.shared.press(.right)
             let toggle = app.descendants(matching: .any)["series-quick-\(name)"].firstMatch
             XCTAssertTrue(toggle.hasFocus)
