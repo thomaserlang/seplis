@@ -64,28 +64,42 @@ async def identify(
     return []
 
 
+async def query_names(
+    text: str, filters: list[str], limit: int
+) -> list[SearchTitleDocument]:
+    # A single word is an ambiguous completion; multiple words narrow the title.
+    sort = (
+        '_text_match:desc,popularity:desc'
+        if ' ' in text
+        else 'popularity:desc,_text_match:desc'
+    )
+    return await search(
+        {
+            'q': text,
+            'query_by': 'title,aliases',
+            'query_by_weights': '2,1',
+            'sort_by': sort,
+            'drop_tokens_threshold': 0,
+            'enable_typos_for_numerical_tokens': 'false',
+            'min_len_1typo': 3,
+            'max_candidates': 64,
+            'typo_tokens_threshold': 1,
+            'split_join_tokens': 'fallback',
+        },
+        filters,
+        limit,
+    )
+
+
 async def interactive(
     query: str, filters: list[str], limit: int = 25
 ) -> list[SearchTitleDocument]:
-    params = {
-        'query_by': 'title,aliases',
-        'query_by_weights': '2,1',
-        'sort_by': '_text_match:desc,popularity:desc',
-        'drop_tokens_threshold': 0,
-        'enable_typos_for_numerical_tokens': 'false',
-        'min_len_1typo': 3,
-        'max_candidates': 64,
-        'typo_tokens_threshold': 10,
-        'split_join_tokens': 'always',
-    }
     explicit = re.fullmatch(rf'(.+?)\s+\({YEAR}\)', query)
     if explicit:
         text = normalize_name(explicit[1])
         if not text:
             return []
-        return await search(
-            {**params, 'q': text}, [*filters, f'year:={explicit[2]}'], limit
-        )
+        return await query_names(text, [*filters, f'year:={explicit[2]}'], limit)
     text = normalize_name(query)
     if not text:
         return []
@@ -95,14 +109,14 @@ async def interactive(
             {}, [*filters, f'primary_keys:=[{",".join(name_keys(query))}]'], limit
         )
         if not literal:
-            result = await search(
-                {**params, 'q': normalize_name(match[1])},
+            result = await query_names(
+                normalize_name(match[1]),
                 [*filters, f'year:={match[2]}'],
                 limit,
             )
             if result:
                 return result
-    return await search({**params, 'q': text}, filters, limit)
+    return await query_names(text, filters, limit)
 
 
 async def search_titles(
