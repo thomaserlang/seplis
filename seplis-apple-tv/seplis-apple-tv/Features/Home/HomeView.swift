@@ -47,7 +47,7 @@ struct HomeView: View {
             }
         }
         .onChange(of: initialPosterID) { _, id in
-            guard !didSetInitialFocus, autoFocusOnLoad, let id else { return }
+            guard isActive, selectedMedia == nil, !didSetInitialFocus, autoFocusOnLoad, let id else { return }
             didSetInitialFocus = true
             focusedPoster = id
         }

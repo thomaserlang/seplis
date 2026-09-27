@@ -81,7 +81,10 @@ struct MediaDetailView: View {
             } else if let error = model.error {
                 FailureView(message: error) { Task { await model.load() } }
             } else {
-                ProgressView("Loading title").padding(64)
+                ProgressView("Loading title")
+                    .padding(64)
+                    .focusable()
+                    .accessibilityIdentifier("media-detail-loading")
             }
         }
         .background(LibraryStyle.background.ignoresSafeArea())

@@ -30,6 +30,8 @@ private nonisolated final class FixtureURLProtocol: URLProtocol, @unchecked Send
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
         if ProcessInfo.processInfo.arguments.contains("--loading-library") { return }
+        if ProcessInfo.processInfo.arguments.contains("--loading-media-details"),
+           request.url?.path == "/2/series/1" { return }
         if ProcessInfo.processInfo.arguments.contains("--fail-repeated-library-loads"),
            let url = request.url, ["/2/movies", "/2/series", "/2/users/me/watched"].contains(url.path),
            !Self.loadedURLs.withLock({ $0.insert(url).inserted }) {
