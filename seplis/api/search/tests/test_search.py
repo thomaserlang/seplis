@@ -147,6 +147,50 @@ async def test_popularity_does_not_force_fuzzy_matches(
     assert response.json()[0]['id'] == movie.id
 
 
+async def test_completion_match_quality_before_popularity(client: AsyncClient) -> None:
+    jag = await save_series(
+        SeriesCreate(
+            title='JAG', alternative_titles=['JAG: Justicia Militar'], popularity=175.3048
+        )
+    )
+    young_justice = await save_series(
+        SeriesCreate(title='Young Justice', popularity=100.2714)
+    )
+    justified = await save_series(SeriesCreate(title='Justified', popularity=54.7065))
+    just_shoot_me = await save_series(
+        SeriesCreate(title='Just Shoot Me!', popularity=42.4039)
+    )
+    for limit in (1, 25, 100):
+        response = await client.get('/2/search', params={'query': 'just', 'limit': limit})
+        assert response.status_code == 200
+        assert [d['id'] for d in response.json()] == [
+            justified.id,
+            just_shoot_me.id,
+            young_justice.id,
+            jag.id,
+        ][:limit]
+    response = await client.get('/2/search', params={'query': 'justicia militar'})
+    assert response.json()[0]['id'] == jag.id
+
+
+@pytest.mark.parametrize(
+    ('query', 'title', 'other'),
+    [
+        ('ment', 'The Mentalist', 'Mental'),
+        ('clock', 'A Clockwork Orange', 'Clock'),
+        ('amer', 'An American Werewolf in London', 'American'),
+    ],
+)
+async def test_completion_ignores_leading_articles(
+    client: AsyncClient, query: str, title: str, other: str
+) -> None:
+    movie = await save_movie(MovieCreate(title=title, popularity=100))
+    await save_movie(MovieCreate(title=other, popularity=1))
+    response = await client.get('/2/search', params={'query': query})
+    assert response.status_code == 200
+    assert response.json()[0]['id'] == movie.id
+
+
 async def test_completion_popularity_updates_and_identification(
     client: AsyncClient,
 ) -> None:

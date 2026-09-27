@@ -67,12 +67,16 @@ async def identify(
 async def query_names(
     text: str, filters: list[str], limit: int
 ) -> list[SearchTitleDocument]:
-    # A single word is an ambiguous completion; multiple words narrow the title.
-    sort = (
-        '_text_match:desc,popularity:desc'
-        if ' ' in text
-        else 'popularity:desc,_text_match:desc'
-    )
+    sort = '_text_match:desc,popularity:desc'
+    if ' ' not in text:
+        # Title starts (ignoring English articles), then title words, then aliases.
+        prefixes = ','.join(
+            f'`{article}{text}*`' for article in ('', 'the ', 'a ', 'an ')
+        )
+        sort = (
+            f'_eval([(title:=[{prefixes}]):2,(title:{text}*):1]):desc,'
+            'popularity:desc,_text_match:desc'
+        )
     return await search(
         {
             'q': text,
@@ -83,6 +87,7 @@ async def query_names(
             'enable_typos_for_numerical_tokens': 'false',
             'min_len_1typo': 3,
             'max_candidates': 64,
+            'max_filter_by_candidates': 64,
             'typo_tokens_threshold': 1,
             'split_join_tokens': 'fallback',
         },
