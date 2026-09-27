@@ -28,6 +28,11 @@ nonisolated final class CatalogUITests: UITestCase {
             XCUIRemote.shared.press(.right)
             let toggle = app.descendants(matching: .any)["series-quick-\(name)"].firstMatch
             XCTAssertTrue(toggle.hasFocus)
+            if name == "available" {
+                XCTAssertEqual(toggle.value as? String, "1")
+                XCUIRemote.shared.press(.select)
+                XCTAssertEqual(toggle.value as? String, "0")
+            }
             XCUIRemote.shared.press(.select)
             XCTAssertTrue(toggle.hasFocus)
             XCTAssertEqual(toggle.value as? String, "1")
