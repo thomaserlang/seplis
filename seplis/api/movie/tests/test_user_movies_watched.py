@@ -28,11 +28,26 @@ async def test_movie_watched(client: AsyncClient) -> None:
     data = parse_obj_as(PageCursor[Movie], r.json())
     assert len(data.records) == 0
 
+    r = await client.get('/2/movies?user_has_watched=false')
+    assert r.status_code == 200, r.content
+    data = parse_obj_as(PageCursor[Movie], r.json())
+    assert {movie.id for movie in data.records} == {movie1.id, movie2.id}
+
     r = await client.post(f'/2/movies/{movie1.id}/watched')
     assert r.status_code == 200, r.content
 
+    r = await client.get('/2/movies?user_has_watched=false')
+    assert r.status_code == 200, r.content
+    data = parse_obj_as(PageCursor[Movie], r.json())
+    assert [movie.id for movie in data.records] == [movie2.id]
+
     r = await client.post(f'/2/movies/{movie2.id}/watched')
     assert r.status_code == 200, r.content
+
+    r = await client.get('/2/movies?user_has_watched=false')
+    assert r.status_code == 200, r.content
+    data = parse_obj_as(PageCursor[Movie], r.json())
+    assert data.records == []
 
     r = await client.get('/2/movies?user_has_watched=true&expand=user_watched')
     assert r.status_code == 200, r.content
