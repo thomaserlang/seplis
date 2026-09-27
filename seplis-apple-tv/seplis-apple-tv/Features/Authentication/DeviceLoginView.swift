@@ -20,9 +20,6 @@ struct DeviceLoginView: View {
                 .clipShape(Circle())
                 .accessibilityLabel("SEPLIS")
 
-            Text("Sign in to SEPLIS")
-                .font(.title2.weight(.semibold))
-
             if let authorization = model.authorization, !model.expired {
                 VStack(spacing: 12) {
                     Text("Go to this address in your browser on your phone or computer")
