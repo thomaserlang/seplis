@@ -32,9 +32,10 @@ nonisolated final class ProfileUITests: UITestCase {
         let addAccount = menuItem("Add Account", in: app)
         XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
         attachScreenshot("Profiles menu")
+        let activeTab = app.buttons[app.searchFields.firstMatch.exists ? "Search" : "Home"]
         XCUIRemote.shared.press(.menu)
         XCTAssertFalse(addAccount.exists)
-        let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: profiles)
+        let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: activeTab)
         XCTAssertEqual(XCTWaiter.wait(for: [restored], timeout: 5), .completed)
         openProfiles(in: app)
         select(addAccount, in: app)
@@ -47,6 +48,11 @@ nonisolated final class ProfileUITests: UITestCase {
         let profiles = app.descendants(matching: .any)["profiles-menu"]
         XCTAssertTrue(profiles.waitForExistence(timeout: 10))
         openProfiles(in: app)
+        select(app.buttons["Remove Account"], in: app)
+        XCTAssertTrue(app.buttons["Back"].exists)
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(app.buttons["Add Account"].exists)
+        XCTAssertTrue(app.buttons["Remove Account"].hasFocus)
         let sam = menuItem("Sam", in: app)
         XCTAssertTrue(sam.waitForExistence(timeout: 5))
         select(sam, in: app)
@@ -71,7 +77,7 @@ nonisolated final class ProfileUITests: UITestCase {
     }
 
     @MainActor private func menuItem(_ title: String, in app: XCUIApplication) -> XCUIElement {
-        app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
+        app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", title)).firstMatch
     }
 
     @MainActor private func openProfiles(in app: XCUIApplication) {

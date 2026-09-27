@@ -1,6 +1,36 @@
 import XCTest
 
 nonisolated final class NavigationTests: UITestCase {
+    @MainActor func testPassingSearchToAccountsKeepsHome() {
+        let app = launchApp()
+        let poster = app.buttons["media-movie-1"].firstMatch
+        XCTAssertTrue(poster.waitForExistence(timeout: 10))
+        XCTAssertTrue(poster.hasFocus)
+        XCTAssertFalse(app.buttons["Add Account"].exists)
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(app.buttons["Home"].hasFocus)
+        XCUIRemote.shared.press(.left)
+        XCUIRemote.shared.press(.left)
+        let addAccount = app.buttons["Add Account"]
+        XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
+        XCTAssertTrue(poster.exists)
+        XCTAssertFalse(app.searchFields.firstMatch.exists)
+        attachScreenshot("Account panel covers trigger")
+        XCUIRemote.shared.press(.right)
+        XCTAssertFalse(addAccount.exists)
+        XCTAssertTrue(app.buttons["Home"].hasFocus)
+        XCUIRemote.shared.press(.left)
+        XCUIRemote.shared.press(.left)
+        XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
+        XCUIRemote.shared.press(.menu)
+        XCTAssertTrue(app.buttons["Home"].hasFocus)
+        XCTAssertTrue(poster.exists)
+        XCUIRemote.shared.press(.right)
+        XCTAssertTrue(app.buttons["Series"].hasFocus)
+        XCUIRemote.shared.press(.select)
+        XCTAssertTrue(app.buttons["grid-series-1"].waitForExistence(timeout: 5))
+    }
+
     @MainActor func testBackAndAutomaticProfileMenuPreserveCurrentPage() {
         let app = launchApp()
         let poster = app.buttons["media-movie-1"].firstMatch
@@ -10,19 +40,19 @@ nonisolated final class NavigationTests: UITestCase {
         XCTAssertTrue(app.buttons["Home"].hasFocus)
         XCUIRemote.shared.press(.left)
         XCTAssertTrue(app.buttons["Search"].hasFocus)
-        XCTAssertTrue(poster.exists)
-        XCTAssertFalse(app.searchFields.firstMatch.exists)
+        XCTAssertTrue(app.searchFields.firstMatch.waitForExistence(timeout: 5))
         XCUIRemote.shared.press(.left)
-        let addAccount = app.otherElements.matching(NSPredicate(format: "label BEGINSWITH %@", "Add Account")).firstMatch
+        let addAccount = app.buttons["Add Account"]
         XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["Home"].isSelected)
-        attachScreenshot("Automatic profiles menu over Home")
+        attachScreenshot("Automatic profiles menu over Search")
         XCUIRemote.shared.press(.menu)
         XCTAssertFalse(addAccount.exists)
-        XCTAssertTrue(poster.exists)
-        let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: app.buttons["profiles-menu"])
+        let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: app.buttons["Search"])
         XCTAssertEqual(XCTWaiter.wait(for: [restored], timeout: 5), .completed)
-        XCUIRemote.shared.press(.right)
+        let reopened = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == true"), object: addAccount)
+        reopened.isInverted = true
+        XCTAssertEqual(XCTWaiter.wait(for: [reopened], timeout: 2), .completed)
         XCTAssertTrue(app.buttons["Search"].hasFocus)
         XCUIRemote.shared.press(.right)
         XCTAssertTrue(app.buttons["Home"].hasFocus)

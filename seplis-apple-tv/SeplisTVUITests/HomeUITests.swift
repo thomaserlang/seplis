@@ -60,6 +60,7 @@ nonisolated final class HomeUITests: UITestCase {
         XCTAssertGreaterThan(second.frame.minY - first.frame.minY, 290)
         XCTAssertLessThan(second.frame.minY - first.frame.minY, 340)
         XCTAssertFalse(app.buttons["media-movie-1"].exists)
+        XCTAssertFalse(app.buttons["Add Account"].exists)
         attachScreenshot("Poster loading skeletons")
     }
 

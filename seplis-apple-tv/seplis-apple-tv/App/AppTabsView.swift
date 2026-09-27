@@ -9,6 +9,7 @@ struct AppTabsView: View {
     @FocusState private var focusedTab: Section?
     @State private var isProfileFocused = false
     @State private var isProfileMenuPresented = false
+    @State private var pendingTab: Section?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Section: String, CaseIterable {
@@ -22,12 +23,11 @@ struct AppTabsView: View {
         VStack(spacing: 0) {
             ZStack {
                 HStack {
-                    ProfilesMenu(session: session,
-                                 focusChanged: { focused in
-                                     isProfileFocused = focused
-                                     if focused { focusedTab = nil }
-                                 },
-                                 presentationChanged: { isProfileMenuPresented = $0 })
+                    AccountMenuTrigger(accountName: session.user?.username ?? "Profiles", focusChanged: {
+                        isProfileFocused = $0
+                    }, open: openProfiles)
+                    .frame(width: 260, height: 56)
+                    .opacity(isProfileMenuPresented ? 0 : 1)
                     Spacer()
                     Image("SeplisLogo")
                         .resizable()
@@ -38,12 +38,14 @@ struct AppTabsView: View {
                 HStack(spacing: 16) {
                     ForEach([Section.search, .home, .series, .movies], id: \.self) { item in
                         Button {
+                            pendingTab = nil
                             activate(item)
                         } label: {
                             if item == .search { Image(systemName: "magnifyingglass") } else { Text(item.rawValue) }
                         }
                         .accessibilityLabel(item.rawValue)
-                        .buttonStyle(NavigationButtonStyle(isSelected: !isProfileFocused && !isProfileMenuPresented && focusedTab == nil && section == item))
+                        .buttonStyle(NavigationButtonStyle(
+                            isSelected: !isProfileFocused && !isProfileMenuPresented && focusedTab == nil && section == item))
                         .focusEffectDisabled()
                         .focused($focusedTab, equals: item)
                         .accessibilityAddTraits(!isProfileFocused && !isProfileMenuPresented && section == item ? .isSelected : [])
@@ -67,13 +69,32 @@ struct AppTabsView: View {
                 }
             }
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: section)
-            .onExitCommand { focusedTab = section }
+            .onExitCommand(perform: restoreTabFocus)
         }
+        .disabled(isProfileMenuPresented)
+        .overlay(alignment: .topLeading) {
+            if isProfileMenuPresented {
+                GeometryReader { geometry in
+                    ProfilesPanel(session: session, maximumHeight: geometry.size.height - 48) {
+                        isProfileMenuPresented = false
+                        restoreTabFocus()
+                    }
+                    .padding(.leading, LibraryStyle.horizontalInset)
+                    .padding(.top, 16)
+                }
+                .disabled(false)
+                .transition(.asymmetric(insertion: .opacity, removal: .identity))
+            }
+        }
+        .animation(reduceMotion || !isProfileMenuPresented ? nil : .easeOut(duration: 0.12), value: isProfileMenuPresented)
         .ignoresSafeArea(.container, edges: [.top, .horizontal])
-        .task(id: focusedTab) {
-            guard let tab = focusedTab, tab != .search, tab != section else { return }
-            do { try await Task.sleep(for: .milliseconds(120)) } catch { return }
-            guard focusedTab == tab else { return }
+        .onChange(of: focusedTab) {
+            pendingTab = focusedTab == section ? nil : focusedTab
+        }
+        .task(id: pendingTab) {
+            guard let tab = pendingTab else { return }
+            do { try await Task.sleep(for: .milliseconds(300)) } catch { return }
+            guard pendingTab == tab, focusedTab == tab else { return }
             activate(tab)
         }
     }
@@ -100,6 +121,17 @@ struct AppTabsView: View {
     }
 
     private var isMenuFocused: Bool { focusedTab != nil || isProfileFocused }
+
+    private func restoreTabFocus() {
+        pendingTab = nil
+        focusedTab = section
+    }
+
+    private func openProfiles() {
+        pendingTab = nil
+        focusedTab = nil
+        isProfileMenuPresented = true
+    }
 
     private func activate(_ tab: Section) {
         guard section != tab else { return }
