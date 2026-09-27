@@ -107,6 +107,14 @@ async def wait_for_shutdown(delay_secs: int = 1) -> None:
 
 
 @cli.command()
+def rebuild_search() -> None:
+    set_logger('rebuild_search.log')
+    from seplis.api.search.actions.search_rebuild_actions import rebuild_search
+
+    asyncio.run(run_task(rebuild_search()))
+
+
+@cli.command()
 def rebuild_cache() -> None:
     set_logger('rebuild_cache.log')
     import seplis.api.rebuild_cache

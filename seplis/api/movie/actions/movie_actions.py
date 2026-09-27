@@ -1,20 +1,18 @@
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from typing import Any, cast
 
 import sqlalchemy as sa
-from elasticsearch import helpers
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from seplis import config, utils
+from seplis import utils
 from seplis.api import exceptions
 from seplis.api.contexts import get_session
 from seplis.api.database import database
 from seplis.api.genre import Genre, MGenre, genre_mapper, get_or_create_genres
 from seplis.api.image import MImage
 from seplis.api.page_cursor import PageCursor, PageCursorQuery
-from seplis.api.search import SearchTitleDocument, SearchTitleDocumentTitle
+from seplis.api.search.actions.search_index_actions import delete_document
 from seplis.api.user import UserAuthenticated
 
 from ..models.movie_collection_model import MMovieCollection
@@ -24,6 +22,7 @@ from ..types.movie_filter_types import MovieQueryFilter
 from .movie_expand_actions import expand_movies
 from .movie_filter_actions import filter_movies
 from .movie_mapping import movie_row_mapper, select_movies
+from .movie_search_actions import save_movie_for_search
 
 
 async def get_movies(
@@ -85,10 +84,7 @@ async def delete_movie(*, movie_id: int) -> None:
                 MImage.relation_id == movie_id,
             )
         )
-    await database.es.delete(
-        index=config.api.elasticsearch.index_prefix + 'titles',
-        id=f'movie-{movie_id}',
-    )
+    await delete_document(f'movie-{movie_id}')
 
 
 async def request_movie_update(*, movie_id: int) -> None:
@@ -356,76 +352,3 @@ async def save_movie_genres(
         )
     ).mappings()
     return [genre_mapper(row) for row in rows]
-
-
-async def save_movie_for_search(movie: Movie) -> None:
-    document = movie_title_document_mapper(movie)
-    if not document:
-        return
-    await database.es.index(
-        index=config.api.elasticsearch.index_prefix + 'titles',
-        id=f'movie-{movie.id}',
-        document=utils.json_loads(utils.json_dumps(document)),
-    )
-
-
-def movie_title_document_mapper(movie: Movie) -> SearchTitleDocument | None:
-    if not movie.title:
-        return None
-    titles = [movie.title, *(movie.alternative_titles or [])]
-    year = str(movie.release_date.year) if movie.release_date else ''
-    for title in titles[:]:
-        if title and year not in title:
-            title_with_year = f'{title} {year}'
-            if title_with_year not in titles:
-                titles.append(title_with_year)
-    return SearchTitleDocument(
-        type='movie',
-        id=movie.id,
-        title=movie.title,
-        titles=[SearchTitleDocumentTitle(title=title) for title in titles],
-        release_date=movie.release_date,
-        imdb=(movie.externals or {}).get('imdb'),
-        poster_image=movie.poster_image,
-        popularity=float(movie.popularity or 0),
-        genres=genres_from_values(movie.genres),
-        rating=float(movie.rating) if movie.rating is not None else None,
-        rating_votes=movie.rating_votes,
-        runtime=movie.runtime,
-        language=movie.language,
-    )
-
-
-def genre_from_value(value: Any) -> Genre:
-    if isinstance(value, Genre):
-        return value
-    if isinstance(value, dict):
-        return Genre(
-            id=int(value.get('id') or 0),
-            name=str(value.get('name') or ''),
-            number_of=int(value.get('number_of') or 0),
-        )
-    return genre_mapper(value)
-
-
-def genres_from_values(values: list[Any] | None) -> list[Genre]:
-    return [genre_from_value(value) for value in values or []]
-
-
-async def rebuild_movies() -> None:
-    async def documents() -> AsyncIterator[dict[str, Any]]:
-        async with database.session() as session:
-            result = await session.stream(select_movies())
-            async for movies in result.mappings().partitions(1000):
-                for row in movies:
-                    movie = movie_row_mapper(row)
-                    document = movie_title_document_mapper(movie)
-                    if not document:
-                        continue
-                    yield {
-                        '_index': config.api.elasticsearch.index_prefix + 'titles',
-                        '_id': f'movie-{movie.id}',
-                        **utils.json_loads(utils.json_dumps(document)),
-                    }
-
-    await helpers.async_bulk(database.es, documents())

@@ -2,21 +2,37 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import FastAPI
-from httpx import ASGITransport, AsyncClient
+from httpx import ASGITransport, AsyncClient, Response
 
 from seplis.api.search.actions.search_actions import search_titles
 from seplis.api.search.router import router
 
 
 @pytest.mark.asyncio
-async def test_search_passes_limit_to_elasticsearch() -> None:
+@pytest.mark.parametrize(
+    ('query', 'title'),
+    [
+        ('treasure', None),
+        ('treasure (2020)', None),
+        (None, 'treasure'),
+        (None, 'treasure (2020)'),
+        ('tt1234567', None),
+    ],
+)
+async def test_search_passes_limit_to_typesense(
+    query: str | None, title: str | None
+) -> None:
     with patch(
-        'seplis.api.search.actions.search_actions.database',
-    ) as database:
-        search = AsyncMock(return_value={'hits': {'hits': []}})
-        database.es.search = search
-        assert await search_titles('treasure', None, None, limit=60) == []
-        assert search.call_args.kwargs['size'] == 60
+        'seplis.api.search.actions.search_actions.request',
+        new_callable=AsyncMock,
+        return_value=Response(200, json={'hits': []}),
+    ) as request:
+        assert await search_titles(query, title, None, limit=60) == []
+        assert request.await_count > 0
+        assert all(
+            call.kwargs['params']['per_page'] == 60
+            for call in request.await_args_list
+        )
 
 
 @pytest.mark.asyncio
@@ -31,7 +47,7 @@ async def test_search_limit_defaults_and_validation() -> None:
         ) as client:
             response = await client.get('/search', params={'query': 'treasure'})
             assert response.status_code == 200
-            assert search.call_args.kwargs['limit'] == 10
+            assert search.call_args.kwargs['limit'] == 25
             response = await client.get(
                 '/search', params={'query': 'treasure', 'limit': 60}
             )

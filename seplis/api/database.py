@@ -2,12 +2,12 @@ import os
 import sys
 from warnings import filterwarnings
 
+import httpx
 import redis.asyncio as redis
 from alembic import command
 from alembic.config import Config
 from arq import ArqRedis, create_pool
 from arq.connections import RedisSettings
-from elasticsearch import AsyncElasticsearch
 from redis.asyncio.sentinel import Sentinel
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import url
@@ -30,7 +30,7 @@ class Database:
         self.session: async_sessionmaker[AsyncSession]
         self.redis: redis.Redis | redis.RedisCluster
         self.redis_queue: ArqRedis
-        self.es: AsyncElasticsearch
+        self.search: httpx.AsyncClient
         self._test_setup: bool = False
         self._conn: AsyncConnection
 
@@ -52,15 +52,10 @@ class Database:
             self.engine, expire_on_commit=False, class_=AsyncSession
         )
 
-        auth: tuple[str, str] | None = (
-            (config.api.elasticsearch.user, config.api.elasticsearch.password)
-            if config.api.elasticsearch.user and config.api.elasticsearch.password
-            else None
-        )
-        self.es = AsyncElasticsearch(
-            hosts=config.api.elasticsearch.host,
-            basic_auth=auth,
-            verify_certs=config.api.elasticsearch.verify_certs,
+        self.search = httpx.AsyncClient(
+            base_url=config.api.typesense.host,
+            headers={'X-TYPESENSE-API-KEY': config.api.typesense.api_key},
+            timeout=15,
         )
 
         if config.api.redis.sentinel:
@@ -101,10 +96,14 @@ class Database:
                 default_queue_name=config.api.redis.queue_name,
             )
 
+        from seplis.api.search.actions.search_index_actions import ensure_index
+
+        await ensure_index()
+
     async def setup_test(self) -> None:
         config.api.database = config.api.database_test
         config.api.redis.db = 15
-        config.api.elasticsearch.index_prefix = 'seplis_test_'
+        config.api.typesense.collection = 'seplis_test_titles'
         if not self._test_setup:
             u = url.make_url(config.api.database_test)
             db = u.database
@@ -137,12 +136,17 @@ class Database:
         self.trans = await self._conn.begin()
 
         await self.redis.flushdb()
+        response = await self.search.delete(
+            '/collections/seplis_test_titles/documents',
+            params={'filter_by': 'popularity:>=0'},
+        )
+        response.raise_for_status()
 
     async def close(self) -> None:
         await self.engine.dispose()
         await self.redis.close()
         await self.redis_queue.close()
-        await self.es.close()
+        await self.search.aclose()
 
     async def close_test(self) -> None:
         await self.trans.rollback()

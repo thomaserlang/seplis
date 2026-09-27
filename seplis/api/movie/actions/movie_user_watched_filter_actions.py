@@ -32,6 +32,6 @@ def filter_user_has_watched(query: Any, filter_query: MovieQueryFilter) -> Any:
             ),
             isouter=True,
         ).where(
-            MMovieWatched.movie_id is None,
+            MMovieWatched.movie_id.is_(None),
         )
     return query
