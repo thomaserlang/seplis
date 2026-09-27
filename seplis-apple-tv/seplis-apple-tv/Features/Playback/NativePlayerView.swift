@@ -20,7 +20,7 @@ struct NativePlayerView: UIViewControllerRepresentable {
         let sourceBitrate = model.candidates.indices.contains(model.selectedSource)
             ? model.candidates[model.selectedSource].source.bitrate : nil
         var menus: [UIMenuElement] = []
-        if model.candidates.count > 1 {
+        if model.candidates.indices.contains(model.selectedSource) {
             let sources = model.candidates.enumerated().map { index, candidate in
                 UIAction(title: "\(index + 1). \(candidate.label)",
                          state: index == model.selectedSource ? .on : .off) { _ in model.selectSource(index) }
