@@ -1,4 +1,5 @@
 from seplis import config
+from seplis.api.common import validate_python
 from seplis.api.image import ImageImport
 from seplis.api.person import PersonUpdate
 
@@ -30,7 +31,7 @@ class TheMovieDB(ImporterBase):
         if person.get('imdb_id'):
             externals['imdb'] = person['imdb_id']
 
-        return PersonUpdate(
+        data = dict(
             name=person['name'][:500],
             also_known_as=[aka[:500] for aka in person['also_known_as']]
             if person['also_known_as']
@@ -45,6 +46,7 @@ class TheMovieDB(ImporterBase):
             popularity=person['popularity'],
             externals=externals,
         )
+        return validate_python(PersonUpdate, data)
 
     async def images(self, external_id: str) -> list[ImageImport] | None:
         r = await client.get(

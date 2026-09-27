@@ -1,6 +1,5 @@
-from typing import Any
-
 from seplis import config
+from seplis.api.common import validate_python
 from seplis.api.image import ImageImport
 from seplis.api.series import (
     EpisodeUpdate,
@@ -56,7 +55,7 @@ class TheMovieDB(SeriesImporterBase):
             if keyword['name'].lower() == 'anime':
                 genres.append('Anime')
 
-        return SeriesUpdate(
+        data = dict(
             title=series['name'][:200],
             original_title=series['original_name'][:200]
             if series['original_name']
@@ -75,6 +74,7 @@ class TheMovieDB(SeriesImporterBase):
                 for a in series.get('alternative_titles', {}).get('results', [])
             ],
         )
+        return validate_python(SeriesUpdate, data)
 
     async def images(self, external_id: str) -> list[ImageImport] | None:
         r = await client.get(
@@ -163,7 +163,7 @@ class TheMovieDB(SeriesImporterBase):
                     plot=episode['overview'][:2000] if episode['overview'] else None,
                 )
             )
-        return episodes
+        return validate_python(list[EpisodeUpdate], episodes)
 
     async def cast(self, external_id: str) -> list[SeriesCastPersonImport] | None:
         r = await client.get(
@@ -176,7 +176,7 @@ class TheMovieDB(SeriesImporterBase):
         if r.status_code != 200:
             return None
         data = r.json()
-        return [
+        cast = [
             SeriesCastPersonImport(
                 external_name=self.external_name,
                 external_id=str(person['id']),
@@ -198,6 +198,7 @@ class TheMovieDB(SeriesImporterBase):
             )
             for person in data['cast']
         ]
+        return validate_python(list[SeriesCastPersonImport], cast)
 
     async def poster(self, external_id: str) -> ImageImport | None:
         r = await client.get(
@@ -240,7 +241,7 @@ class TheMovieDB(SeriesImporterBase):
             page += 1
         return ids
 
-    async def lookup_from_imdb(self, imdb: str) -> Any:
+    async def lookup_from_imdb(self, imdb: str) -> str | None:
         r = await client.get(
             f'https://api.themoviedb.org/3/find/{imdb}',
             params={
@@ -252,7 +253,7 @@ class TheMovieDB(SeriesImporterBase):
             data = r.json()
             if not data['tv_results']:
                 return None
-            return data['tv_results'][0]['id']
+            return str(data['tv_results'][0]['id'])
         return None
 
 

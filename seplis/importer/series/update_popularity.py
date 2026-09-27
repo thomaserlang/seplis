@@ -8,7 +8,6 @@ from ...api.database import database
 from ...api.series import (
     MSeries,
     MSeriesPopularityHistory,
-    SeriesImporters,
     SeriesUpdate,
     rebuild_series,
     save_series,
@@ -100,10 +99,10 @@ async def update_popularity(
                 )
             else:
                 logger.info(f'Creating TMDb id {id_}')
-                series_data['importers'] = SeriesImporters(
-                    info='themoviedb',
-                    episodes='themoviedb',
-                )
+                series_data['importers'] = {
+                    'info': 'themoviedb',
+                    'episodes': 'themoviedb',
+                }
                 s = await save_series(data=series_data, series_id=None)
                 await importer.update_series(series=s)
         except KeyboardInterrupt, SystemExit:

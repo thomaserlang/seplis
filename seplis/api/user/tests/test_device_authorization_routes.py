@@ -15,8 +15,8 @@ from seplis.utils import datetime_now
 @pytest.fixture(autouse=True)
 def device_authorization_secret(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        config.web,
-        'cookie_secret',
+        config.api,
+        'secret',
         'test-device-authorization-secret-value',
     )
 
