@@ -57,7 +57,7 @@ async def rebuild_series(collection: str | None = None) -> None:
                     select_series()
                     .where(MSeries.id > last_id)
                     .order_by(MSeries.id)
-                    .limit(100)
+                    .limit(1000 if collection else 100)
                 )
                 rows = result.mappings().all()
             if not rows:

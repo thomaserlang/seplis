@@ -55,7 +55,7 @@ async def rebuild_movies(collection: str | None = None) -> None:
                     select_movies()
                     .where(MMovie.id > last_id)
                     .order_by(MMovie.id)
-                    .limit(100)
+                    .limit(1000 if collection else 100)
                 )
                 rows = result.mappings().all()
             if not rows:
