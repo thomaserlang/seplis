@@ -30,12 +30,10 @@ class ConfigRedisModel(BaseModel):
         return v or info.data['ip']
 
 
-class ConfigElasticsearch(BaseModel):
-    host: str | list[str] = 'http://127.0.0.1:9200'
-    user: str | None = None
-    password: str | None = None
-    verify_certs: bool = True
-    index_prefix: str = 'seplis_'
+class ConfigTypesense(BaseModel):
+    host: str = 'http://127.0.0.1:8108'
+    api_key: str = 'seplis-dev-key'
+    collection: str = 'seplis_titles'
 
 
 class ConfigAPIModel(BaseModel):
@@ -44,7 +42,7 @@ class ConfigAPIModel(BaseModel):
     database_test: str = 'mariadb+pymysql://root:123456@127.0.0.1:3306/seplis_test'
     database_read_timeout: int = 5
     redis: ConfigRedisModel = ConfigRedisModel()
-    elasticsearch: ConfigElasticsearch = ConfigElasticsearch()
+    typesense: ConfigTypesense = ConfigTypesense()
     port: int = 8002
     max_workers: int = 5
     image_url: AnyHttpUrl = AnyHttpUrl('https://images.seplis.net')

@@ -1,19 +1,17 @@
-from collections.abc import AsyncIterator
 from datetime import UTC, datetime
 from typing import Any, cast
 
 import sqlalchemy as sa
-from elasticsearch import helpers
 from fastapi import HTTPException
 
-from seplis import config, utils
+from seplis import utils
 from seplis.api import exceptions
 from seplis.api.contexts import AsyncSession, get_session
 from seplis.api.database import database
 from seplis.api.genre import Genre, MGenre, genre_mapper, get_or_create_genres
 from seplis.api.image import MImage
 from seplis.api.page_cursor import PageCursor, PageCursorQuery
-from seplis.api.search import SearchTitleDocument, SearchTitleDocumentTitle
+from seplis.api.search.actions.search_index_actions import delete_document
 from seplis.api.user import UserAuthenticated
 
 from ..models.episode_model import MEpisode
@@ -28,6 +26,7 @@ from ..types.series_filter_types import SeriesQueryFilter
 from .series_expand_actions import expand_series
 from .series_filter_actions import filter_series
 from .series_mapping import select_series, series_row_mapper
+from .series_search_actions import save_series_for_search
 
 
 async def get_series(
@@ -111,10 +110,7 @@ async def delete_series(series_id: int) -> None:
                 MImage.relation_id == series_id,
             )
         )
-    await database.es.delete(
-        index=config.api.elasticsearch.index_prefix + 'titles',
-        id=f'series-{series_id}',
-    )
+    await delete_document(f'series-{series_id}')
 
 
 async def request_series_update(series_id: int) -> None:
@@ -425,78 +421,3 @@ async def update_series_seasons(session: AsyncSession, series_id: int) -> None:
             total_episodes=total_episodes,
         )
     )
-
-
-async def save_series_for_search(series: Series) -> None:
-    document = series_title_document_mapper(series)
-    if not document:
-        return
-    await database.es.index(
-        index=config.api.elasticsearch.index_prefix + 'titles',
-        id=f'series-{series.id}',
-        document=utils.json_loads(utils.json_dumps(document)),
-    )
-
-
-def series_title_document_mapper(series: Series) -> SearchTitleDocument | None:
-    if not series.title:
-        return None
-    titles = [series.title, *(series.alternative_titles or [])]
-    year = str(series.premiered.year) if series.premiered else ''
-    for title in titles[:]:
-        if title and year not in title:
-            title_with_year = f'{title} {year}'
-            if title_with_year not in titles:
-                titles.append(title_with_year)
-    return SearchTitleDocument(
-        type='series',
-        id=series.id,
-        title=series.title,
-        titles=[SearchTitleDocumentTitle(title=title) for title in titles],
-        release_date=series.premiered,
-        imdb=(series.externals or {}).get('imdb'),
-        poster_image=series.poster_image,
-        popularity=float(series.popularity or 0),
-        genres=genres_from_values(series.genres),
-        rating=float(series.rating) if series.rating is not None else None,
-        rating_votes=series.rating_votes,
-        episodes=series.total_episodes,
-        seasons=len(series.seasons or []),
-        runtime=series.runtime,
-        language=series.language,
-    )
-
-
-def genre_from_value(value: Any) -> Genre:
-    if isinstance(value, Genre):
-        return value
-    if isinstance(value, dict):
-        return Genre(
-            id=int(value.get('id') or 0),
-            name=str(value.get('name') or ''),
-            number_of=int(value.get('number_of') or 0),
-        )
-    return genre_mapper(value)
-
-
-def genres_from_values(values: list[Any] | None) -> list[Genre]:
-    return [genre_from_value(value) for value in values or []]
-
-
-async def rebuild_series() -> None:
-    async def documents() -> AsyncIterator[dict[str, Any]]:
-        async with database.session() as session:
-            result = await session.stream(select_series())
-            async for series in result.mappings().partitions(1000):
-                for row in series:
-                    item = series_row_mapper(row)
-                    document = series_title_document_mapper(item)
-                    if not document:
-                        continue
-                    yield {
-                        '_index': config.api.elasticsearch.index_prefix + 'titles',
-                        '_id': f'series-{item.id}',
-                        **utils.json_loads(utils.json_dumps(document)),
-                    }
-
-    await helpers.async_bulk(database.es, documents())

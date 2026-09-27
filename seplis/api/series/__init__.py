@@ -1,9 +1,9 @@
 from .actions.episode_expand_actions import expand_episodes as expand_episodes
-from .actions.series_actions import rebuild_series as rebuild_series
 from .actions.series_actions import save_series as save_series
 from .actions.series_expand_actions import expand_series as expand_series
 from .actions.series_filter_actions import filter_series as filter_series
 from .actions.series_filter_actions import filter_series_query as filter_series_query
+from .actions.series_search_actions import rebuild_series as rebuild_series
 from .actions.series_user_actions import add_series_favorite as add_series_favorite
 from .actions.series_user_actions import add_series_watchlist as add_series_watchlist
 from .actions.series_user_actions import remove_series_favorite as remove_series_favorite

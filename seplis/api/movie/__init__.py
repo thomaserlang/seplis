@@ -4,7 +4,6 @@ from .actions.movie_actions import get_movie as get_movie
 from .actions.movie_actions import get_movie_from_external as get_movie_from_external
 from .actions.movie_actions import get_movies as get_movies
 from .actions.movie_actions import patch_movie as patch_movie
-from .actions.movie_actions import rebuild_movies as rebuild_movies
 from .actions.movie_actions import request_movie_update as request_movie_update
 from .actions.movie_actions import save_movie as save_movie
 from .actions.movie_actions import update_movie as update_movie
@@ -14,6 +13,7 @@ from .actions.movie_cast_actions import (
 from .actions.movie_expand_actions import expand_movies as expand_movies
 from .actions.movie_filter_actions import filter_movies as filter_movies
 from .actions.movie_filter_actions import filter_movies_query as filter_movies_query
+from .actions.movie_search_actions import rebuild_movies as rebuild_movies
 from .actions.movie_user_actions import add_movie_favorite as add_movie_favorite
 from .actions.movie_user_actions import add_movie_watchlist as add_movie_watchlist
 from .actions.movie_user_actions import decrement_movie_watched as decrement_movie_watched

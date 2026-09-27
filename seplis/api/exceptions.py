@@ -274,7 +274,7 @@ class EpisodeUnknown(APIException):
         )
 
 
-class ElasticsearchException(APIException):
+class SearchException(APIException):
     def __init__(
         self, status_code: int = 400, extra: Any = None, message: str | None = None
     ) -> None:

@@ -1,11 +1,11 @@
 services:
-  elasticsearch:
-    image: "elasticsearch:8.2.2"
-    environment: 
-      - discovery.type=single-node
-      - xpack.security.enabled=false
+  typesense:
+    image: typesense/typesense:30.2
+    command: --data-dir=/data --api-key=seplis-dev-key
+    volumes:
+      - typesense:/data
     ports:
-      - "9200:9200"
+      - "127.0.0.1:8108:8108"
   redis:
     image: "redis:7"
     command: redis-server --appendonly yes
@@ -45,5 +45,6 @@ services:
       - "host.docker.internal:host-gateway"
 
 volumes:
+  typesense:
   seplisdb:
   storitch:

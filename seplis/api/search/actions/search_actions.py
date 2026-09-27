@@ -1,144 +1,110 @@
+import re
 from typing import Any, Literal
 
 from pydantic import TypeAdapter
 
 from seplis import config
-from seplis.api import exceptions
-from seplis.api.database import database
+from seplis.api.exceptions import SearchException
 
 from ..schemas.search_schemas import SearchTitleDocument
+from .search_index_actions import request
+from .search_mapping import name_keys, normalize_name
 
-_search_title_document_adapter = TypeAdapter(SearchTitleDocument)
+TitleType = Literal['series', 'movie']
+YEAR = r'(18\d{2}|19\d{2}|20\d{2})'
+DOCUMENT = TypeAdapter(SearchTitleDocument)
 
 
-async def search_titles(
-    query: str | None,
-    title: str | None,
-    title_type: Literal['series', 'movie'] | None,
-) -> list[SearchTitleDocument]:
-    if query:
-        elastic_query = get_by_query(query)
-    elif title:
-        elastic_query = get_by_title(title)
-    else:
-        raise exceptions.ElasticsearchException(message='No query')
-
-    if title_type:
-        elastic_query = {
-            'bool': {
-                'must': elastic_query,
-                'filter': {
-                    'term': {
-                        'type': title_type,
-                    }
-                },
-            }
-        }
-
-    result = await database.es.search(
-        index=config.api.elasticsearch.index_prefix + 'titles', query=elastic_query
+async def search(params: dict[str, Any], filters: list[str]) -> list[SearchTitleDocument]:
+    response = await request(
+        'GET',
+        f'/collections/{config.api.typesense.collection}/documents/search',
+        params={
+            'q': '*',
+            'per_page': 10,
+            'sort_by': 'popularity:desc',
+            'include_fields': 'payload',
+            **params,
+            'filter_by': ' && '.join(filters),
+        },
     )
     return [
-        _search_title_document_adapter.validate_python(hit['_source'])
-        for hit in result['hits']['hits']
+        DOCUMENT.validate_json(h['document']['payload']) for h in response.json()['hits']
     ]
 
 
-def get_by_query(title: str) -> dict[str, Any]:
-    return {
-        'function_score': {
-            'query': {
-                'dis_max': {
-                    'queries': [
-                        {
-                            'nested': {
-                                'path': 'titles',
-                                'score_mode': 'max',
-                                'query': {
-                                    'bool': {
-                                        'should': [
-                                            {
-                                                'multi_match': {
-                                                    'query': title,
-                                                    'type': 'bool_prefix',
-                                                    'operator': 'and',
-                                                    'fuzziness': 'auto',
-                                                    'fields': [
-                                                        'titles.title',
-                                                        'titles.title._2gram',
-                                                        'titles.title._3gram',
-                                                    ],
-                                                },
-                                            },
-                                            {
-                                                'term': {
-                                                    'titles.title.exact': {
-                                                        'value': title,
-                                                        'boost': 2,
-                                                    }
-                                                }
-                                            },
-                                        ]
-                                    }
-                                },
-                            }
-                        },
-                        {'term': {'imdb': title}},
-                    ]
-                }
-            },
-            'field_value_factor': {
-                'field': 'popularity',
-                'modifier': 'log1p',
-                'factor': 2,
-                'missing': 0,
-            },
-        }
-    }
+async def exact_names(title: str, filters: list[str]) -> list[SearchTitleDocument]:
+    keys = name_keys(title)
+    if not keys:
+        return []
+    for field in ('primary_keys', 'name_keys'):
+        result = await search({}, [*filters, f'{field}:=[{",".join(keys)}]'])
+        if result:
+            return result
+    return []
 
 
-def get_by_title(title: str) -> dict[str, Any]:
-    return {
-        'function_score': {
-            'query': {
-                'dis_max': {
-                    'queries': [
-                        {
-                            'nested': {
-                                'path': 'titles',
-                                'score_mode': 'max',
-                                'query': {
-                                    'bool': {
-                                        'should': [
-                                            {
-                                                'match_phrase': {
-                                                    'titles.title': {
-                                                        'query': title,
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                'term': {
-                                                    'titles.title.exact': {
-                                                        'value': title,
-                                                        'boost': 2,
-                                                    }
-                                                }
-                                            },
-                                        ]
-                                    }
-                                },
-                            }
-                        },
-                        {'term': {'imdb': title}},
-                    ]
-                }
-            },
-            'field_value_factor': {
-                'field': 'popularity',
-                'modifier': 'log1p',
-                'factor': 0.1,
-                'missing': 0,
-            },
-        }
+async def identify(title: str, filters: list[str]) -> list[SearchTitleDocument]:
+    match = re.fullmatch(rf'(.+?)\s+\({YEAR}\)', title)
+    if match:
+        return await exact_names(match[1], [*filters, f'year:={match[2]}'])
+    # A trailing number may be part of the actual title (Blade Runner 2049).
+    literal = await exact_names(title, filters)
+    if literal:
+        return literal
+    match = re.fullmatch(rf'(.+?)[\s._-]+{YEAR}', title)
+    if match:
+        return await exact_names(match[1], [*filters, f'year:={match[2]}'])
+    return []
+
+
+async def interactive(query: str, filters: list[str]) -> list[SearchTitleDocument]:
+    params = {
+        'query_by': 'title,aliases',
+        'query_by_weights': '2,1',
+        'sort_by': '_text_match:desc,popularity:desc',
+        'drop_tokens_threshold': 0,
+        'enable_typos_for_numerical_tokens': 'false',
+        'min_len_1typo': 3,
+        'max_candidates': 64,
+        'typo_tokens_threshold': 10,
+        'split_join_tokens': 'always',
     }
+    explicit = re.fullmatch(rf'(.+?)\s+\({YEAR}\)', query)
+    if explicit:
+        text = normalize_name(explicit[1])
+        if not text:
+            return []
+        return await search({**params, 'q': text}, [*filters, f'year:={explicit[2]}'])
+    text = normalize_name(query)
+    if not text:
+        return []
+    match = re.fullmatch(rf'(.+?)[\s._-]+{YEAR}', query)
+    if match and normalize_name(match[1]):
+        literal = await search(
+            {}, [*filters, f'primary_keys:=[{",".join(name_keys(query))}]']
+        )
+        if not literal:
+            result = await search(
+                {**params, 'q': normalize_name(match[1])},
+                [*filters, f'year:={match[2]}'],
+            )
+            if result:
+                return result
+    return await search({**params, 'q': text}, filters)
+
+
+async def search_titles(
+    query: str | None, title: str | None, title_type: TitleType | None
+) -> list[SearchTitleDocument]:
+    value = (query or title or '').strip()
+    if not query and not title:
+        raise SearchException(message='No query')
+    if not value:
+        return []
+    filters = [f'type:={title_type}'] if title_type else []
+    if re.fullmatch(r'tt\d+', value, re.IGNORECASE):
+        return await search({}, [*filters, f'imdb:={value.lower()}'])
+    if query:
+        return await interactive(value, filters)
+    return await identify(value, filters)

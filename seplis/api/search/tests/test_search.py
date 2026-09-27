@@ -1,289 +1,156 @@
 from datetime import date
 
 import pytest
+from httpx import AsyncClient
 
-from seplis import config
-from seplis.api import elasticcreate
-from seplis.api.database import database
-from seplis.api.movie import Movie, MovieCreate, save_movie
-from seplis.api.search import SearchTitleDocument
-from seplis.api.series import Series, SeriesCreate, save_series
-from seplis.api.testbase import AsyncClient, parse_obj_as, run_file
+from seplis.api.movie import MovieCreate, save_movie
+from seplis.api.search.actions.search_mapping import normalize_name
+from seplis.api.series import SeriesCreate, save_series
+
+pytestmark = pytest.mark.asyncio
 
 
-@pytest.mark.asyncio
-async def test_search(client: AsyncClient) -> None:
-    await elasticcreate.create_indices(database.es)
-
-    movie1: Movie = await save_movie(
+@pytest.mark.parametrize(
+    'query',
+    [
+        'National Treasure',
+        'national trea',
+        'Natioal Treasure',
+        'National Treasuer',
+        'Natioal 2004',
+        'Buyuk-hazine',
+        'Original name',
+        'tt0368891',
+    ],
+)
+async def test_query(client: AsyncClient, query: str) -> None:
+    movie = await save_movie(
         MovieCreate(
             title='National Treasure',
-            externals={
-                'imdb': 'tt0368891',
-            },
+            original_title='Original name',
+            alternative_titles=['Büyük hazine'],
             release_date=date(2004, 11, 19),
-            alternative_titles=[
-                'Nacionalno blago',
-                'Büyük hazine',
-            ],
-        ),
-        movie_id=None,
+            externals={'imdb': 'tt0368891'},
+        )
     )
+    response = await client.get('/2/search', params={'query': query})
+    assert response.status_code == 200
+    assert response.json()[0]['id'] == movie.id
 
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
 
-    r = await client.get('/2/search', params={'query': 'National Treasure'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == movie1.id
+@pytest.mark.parametrize(
+    ('title', 'expected_year'),
+    [
+        ('Dune', 2021),
+        ('Dune 1984', 1984),
+        ('Dune (2021)', 2021),
+        ('TT1160419', 2021),
+        ('Dune (2020)', None),
+        ('Duen (2021)', None),
+        ('Dune Part', None),
+        ('*** (2021)', None),
+        ('*', None),
+        (' ', None),
+    ],
+)
+async def test_title(client: AsyncClient, title: str, expected_year: int | None) -> None:
+    for year in (1984, 2021):
+        await save_movie(
+            MovieCreate(
+                title='Dune',
+                release_date=date(year, 1, 1),
+                popularity=year,
+                externals={'imdb': 'tt1160419'} if year == 2021 else {},
+            )
+        )
+    await save_movie(MovieCreate(title='Dune: Part Two', popularity=10000))
+    response = await client.get('/2/search', params={'title': title, 'type': 'movie'})
+    assert response.status_code == 200
+    data = response.json()
+    assert (int(data[0]['release_date'][:4]) if data else None) == expected_year
 
-    r = await client.get('/2/search', params={'title': 'National Treasure'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == movie1.id
 
-    r = await client.get(
-        '/2/search', params={'title': 'National Treasure', 'type': 'movie'}
-    )
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == movie1.id
-
-    r = await client.get(
-        '/2/search', params={'title': 'National Treasure', 'type': 'series'}
-    )
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 0
-
-    r = await client.get('/2/search', params={'query': 'Natioal Treasure'})
-    assert r.status_code == 200
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == movie1.id
-
-    r = await client.get('/2/search', params={'query': 'Natioal 2004'})
-    assert r.status_code == 200
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == movie1.id
-
-    r = await client.get('/2/search', params={'query': 'Buyuk-hazine'})
-    assert r.status_code == 200
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == movie1.id
-
-    r = await client.get('/2/search', params={'query': 'tt0368891'})
-    assert r.status_code == 200
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == movie1.id
-
-    await save_series(
-        SeriesCreate(
-            title='This is a test show',
-            alternative_titles=[
-                'kurt 1',
-            ],
-        ),
-        series_id=None,
-    )
-
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
-
-    # Test that lowercase does not matter
-    r = await client.get('/2/search', params={'query': 'this'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1
-
-    # Test that both title and alternative_titles is searched in
-    r = await client.get('/2/search', params={'query': 'kurt'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1
-
-    # Test ascii folding
-    r = await client.get('/2/search', params={'query': 'kùrt'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1
-
-    # Test apostrophe
-    series2: Series = await save_series(
-        SeriesCreate(
-            title="DC's legend of something",
-            alternative_titles=[
-                'DC’s kurt',
-            ],
-            popularity=1,
-        ),
-        series_id=None,
-    )
-
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
-
-    r = await client.get('/2/search', params={'query': "dc's"})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-    assert data[0].id == series2.id
-    r = await client.get('/2/search', params={'query': 'dc’s'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-    assert data[0].id == series2.id
-    r = await client.get('/2/search', params={'query': 'dcs'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-    r = await client.get('/2/search', params={'query': '"dcs kurt"'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-    assert data[0].id == series2.id
-    r = await client.get('/2/search', params={'query': '"dc’s kurt"'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert data[0].id == series2.id
-    r = await client.get('/2/search', params={'query': 'dc'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-
-    # Test score
-    # Searching for "dcs legend of something" should not return
-    # "Test DC's legend of something" as the first result
-
-    await save_series(
-        SeriesCreate(
-            title='Test DCs legend of something',
-        ),
-        series_id=None,
-    )
-
-    await save_series(
-        SeriesCreate(
-            title='legend',
-        ),
-        series_id=None,
-    )
-
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
-
-    r = await client.get('/2/search', params={'title': "dc's legend of something"})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 2, data
-    assert data[0].id == series2.id, data
-
-    # Test the walking dead
-    await save_series(
-        SeriesCreate(
-            title='The Walking Dead',
-            premiered=date(2010, 10, 31),
-        ),
-        series_id=None,
-    )
-
-    await save_series(
-        SeriesCreate(
-            title='Fear the Walking Dead',
-            premiered=date(2015, 8, 23),
-        ),
-        series_id=None,
-    )
-
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
-
-    r = await client.get('/2/search', params={'title': 'The Walking Dead'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 2, data
-    assert data[0].title == 'The Walking Dead'
-
-    # Test `&` and `and`
+@pytest.mark.parametrize('mode', ['query', 'title'])
+async def test_type_filter(client: AsyncClient, mode: str) -> None:
     await save_movie(
+        MovieCreate(title='National Treasure', externals={'imdb': 'tt0368891'})
+    )
+    for value in ('National Treasure', 'tt0368891'):
+        response = await client.get('/2/search', params={mode: value, 'type': 'series'})
+        assert response.status_code == 200
+        assert response.json() == []
+
+
+@pytest.mark.parametrize('mode', ['query', 'title'])
+@pytest.mark.parametrize(
+    ('stored', 'value'),
+    [
+        ("DC's Legends", 'dc’s legends'),
+        ('Euphoria U.S', 'Euphoria US'),
+        ('Test & Test', 'Test and Test'),
+    ],
+)
+async def test_punctuation(
+    client: AsyncClient, mode: str, stored: str, value: str
+) -> None:
+    series = await save_series(SeriesCreate(title=stored))
+    response = await client.get('/2/search', params={mode: value})
+    assert response.status_code == 200
+    assert response.json()[0]['id'] == series.id
+
+
+@pytest.mark.parametrize('mode', ['query', 'title'])
+async def test_exact_title_before_popularity(client: AsyncClient, mode: str) -> None:
+    series = await save_series(SeriesCreate(title='The Walking Dead'))
+    await save_series(SeriesCreate(title='Fear the Walking Dead', popularity=1000))
+    response = await client.get('/2/search', params={mode: 'The Walking Dead'})
+    assert response.status_code == 200
+    assert response.json()[0]['id'] == series.id
+    if mode == 'title':
+        assert len(response.json()) == 1
+
+
+@pytest.mark.parametrize(
+    ('mode', 'value'),
+    [
+        ('title', 'Blade Runner 2049'),
+        ('title', 'Blade.Runner.2049'),
+        ('title', 'Blade Runner 2049 (2017)'),
+        ('query', 'blade runner 2049'),
+        ('query', 'blade runer 2049'),
+        ('query', 'blade runner (2017)'),
+    ],
+)
+async def test_title_with_year_in_name(
+    client: AsyncClient, mode: str, value: str
+) -> None:
+    movie = await save_movie(
         MovieCreate(
-            title='Test & Test',
-            release_date=date(2010, 10, 31),
-        ),
-        movie_id=None,
+            title='Blade Runner 2049',
+            release_date=date(2017, 1, 1),
+        )
     )
-
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
-
-    r = await client.get('/2/search', params={'title': 'Test and Test'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-
-    await save_series(
-        SeriesCreate(
-            title="The Devil's Hour",
-            alternative_titles=[
-                'kurt 1',
-            ],
-            popularity=64.918,
-        ),
-        series_id=None,
-    )
-
-    await save_series(
-        SeriesCreate(
-            title='Devils',
-            popularity=14.16,
-        ),
-        series_id=None,
-    )
-
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
-
-    r = await client.get('/2/search', params={'title': "Devil's"})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 2, data
-    assert data[0].title == 'Devils'
-
-    r = await client.get('/2/search', params={'query': 'Devils'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 2, data
-    assert data[0].title == 'Devils'
-
-    await save_series(
-        SeriesCreate(
-            title='Euphoria U.S',
-        ),
-        series_id=None,
-    )
-    await database.es.indices.refresh(
-        index=config.api.elasticsearch.index_prefix + 'titles'
-    )
-
-    r = await client.get('/2/search', params={'title': 'Euphoria US'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-    assert data[0].title == 'Euphoria U.S'
-
-    r = await client.get('/2/search', params={'query': 'Euphoria US'})
-    assert r.status_code == 200, r.content
-    data = parse_obj_as(list[SearchTitleDocument], r.json())
-    assert len(data) == 1, data
-    assert data[0].title == 'Euphoria U.S'
+    response = await client.get('/2/search', params={mode: value})
+    assert response.status_code == 200
+    assert response.json()[0]['id'] == movie.id
 
 
-if __name__ == '__main__':
-    run_file(__file__)
+@pytest.mark.parametrize(
+    ('title', 'found'),
+    [
+        ('1917', True),
+        ('1917 (2019)', True),
+        ('1917 (1917)', False),
+    ],
+)
+async def test_numeric_title(client: AsyncClient, title: str, found: bool) -> None:
+    await save_movie(MovieCreate(title='1917', release_date=date(2019, 1, 1)))
+    response = await client.get('/2/search', params={'title': title})
+    assert response.status_code == 200
+    assert bool(response.json()) == found
+
+
+async def test_normalization() -> None:
+    assert normalize_name('Büyük & Hazine') == 'buyuk and hazine'
+    assert normalize_name('\u304c') != normalize_name('\u304b')
+    assert normalize_name('***') == ''
