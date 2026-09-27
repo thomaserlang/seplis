@@ -5,6 +5,8 @@ struct AppView: View {
     @State private var topShelf = TopShelfPublisher()
     @State private var pendingLink: TopShelfLink?
     @State private var presentedLink: TopShelfLink?
+    @State private var resumePolicy = AppResumePolicy()
+    @State private var browsingID = UUID()
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
@@ -21,6 +23,7 @@ struct AppView: View {
                 } else {
                     AppTabsView(session: session, api: active.api)
                         .id(active.id)
+                        .id(browsingID)
                 }
             case .choosingProfile:
                 ProfilesView(session: session)
@@ -46,18 +49,28 @@ struct AppView: View {
             openPendingLink()
         }
         .onChange(of: scenePhase) { _, phase in
+            resetBrowsingIfNeeded(for: phase)
             if phase == .active { topShelf.refresh() }
         }
         .onReceive(NotificationCenter.default.publisher(for: .watchHistoryDidChange)) { _ in
             topShelf.refresh()
         }
         .onOpenURL { url in
-            pendingLink = TopShelfLink(url: url)
+            guard let link = TopShelfLink(url: url) else { return }
+            // URL delivery may precede activation. Reset before opening the requested title.
+            resetBrowsingIfNeeded(for: .active)
+            pendingLink = link
             openPendingLink()
         }
         .alert("Seplis", isPresented: Binding(get: { session.error != nil }, set: { if !$0 { session.error = nil } })) {
             Button("OK") { session.error = nil }
         } message: { Text(session.error ?? "") }
+    }
+
+    private func resetBrowsingIfNeeded(for phase: ScenePhase) {
+        guard resumePolicy.shouldReset(for: phase) else { return }
+        presentedLink = nil
+        browsingID = UUID()
     }
 
     private func openPendingLink() {
