@@ -93,7 +93,7 @@ export function SeriesFilterbar({ filter, setFilter }: Props) {
                         })
                     }
                 >
-                    Unwatched
+                    Not watched
                 </FilterButton>
 
                 <Divider orientation="vertical" h={20} my="auto" />
