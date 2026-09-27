@@ -248,6 +248,7 @@ final class PlaybackModel {
         worker?.cancel()
         await worker?.value
         await progress?.flush()
+        NotificationCenter.default.post(name: .watchHistoryDidChange, object: nil)
         await preferences.flush()
         await closeMedia()
         player.replaceCurrentItem(with: nil)

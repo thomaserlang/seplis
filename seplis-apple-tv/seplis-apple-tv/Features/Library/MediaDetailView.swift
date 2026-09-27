@@ -2,14 +2,16 @@ import SwiftUI
 
 struct MediaDetailView: View {
     let api: APIClient
+    private let onClose: (() -> Void)?
     @State private var model: MediaDetailModel
     @State private var playback: PlaybackTarget?
     @Environment(\.dismiss) private var dismiss
     @Namespace private var focusNamespace
     @FocusState private var focusedEpisode: Int?
 
-    init(reference: MediaReference, api: APIClient) {
+    init(reference: MediaReference, api: APIClient, onClose: (() -> Void)? = nil) {
         self.api = api
+        self.onClose = onClose
         _model = State(initialValue: MediaDetailModel(reference: reference, api: api))
     }
 
@@ -87,7 +89,9 @@ struct MediaDetailView: View {
         .focusEffectDisabled()
         .focusScope(focusNamespace)
         .defaultFocus($focusedEpisode, preferredEpisodeNumber, priority: .userInitiated)
-        .onExitCommand { dismiss() }
+        .onExitCommand {
+            if let onClose { onClose() } else { dismiss() }
+        }
         .task { await model.load() }
         .fullScreenCover(item: $playback, onDismiss: { Task { await model.load() } }) { target in
             PlaybackView(target: target, api: api)

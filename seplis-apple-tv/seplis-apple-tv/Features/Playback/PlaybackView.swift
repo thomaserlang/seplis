@@ -2,13 +2,15 @@ import SwiftUI
 
 struct PlaybackView: View {
     let api: APIClient
+    private let onClose: (() -> Void)?
     @State private var model: PlaybackModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var isTransitioning = false
 
-    init(target: PlaybackTarget, api: APIClient) {
+    init(target: PlaybackTarget, api: APIClient, onClose: (() -> Void)? = nil) {
         self.api = api
+        self.onClose = onClose
         _model = State(initialValue: PlaybackModel(target: target, api: api))
     }
 
@@ -61,7 +63,7 @@ struct PlaybackView: View {
         isTransitioning = true
         Task {
             await model.stop()
-            dismiss()
+            if let onClose { onClose() } else { dismiss() }
         }
     }
 

@@ -17,6 +17,7 @@ final class EpisodesModel {
         do {
             try await api.perform("\(reference.path)/episodes/\(episode.number)/watched",
                                   method: increment ? "POST" : "DELETE")
+            NotificationCenter.default.post(name: .watchHistoryDidChange, object: nil)
             await load(reference: reference, season: season, api: api)
         } catch { updateError = error.localizedDescription }
     }

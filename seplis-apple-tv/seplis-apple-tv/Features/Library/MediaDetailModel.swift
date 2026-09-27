@@ -60,6 +60,9 @@ final class MediaDetailModel {
         defer { isUpdating = false }
         do {
             try await api.perform("\(reference.path)/\(path)", method: method)
+            if path.hasSuffix("watched") {
+                NotificationCenter.default.post(name: .watchHistoryDidChange, object: nil)
+            }
             await load()
         } catch { self.error = error.localizedDescription }
     }
