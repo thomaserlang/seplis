@@ -31,13 +31,6 @@ struct PlaybackView: View {
                 Color.black.ignoresSafeArea()
                 ProgressView().accessibilityLabel("Preparing video")
             }
-            if let error = model.progress?.error {
-                VStack {
-                    Text(error).font(.caption).padding().background(.regularMaterial)
-                    Spacer()
-                }
-                .padding(60)
-            }
         }
         .buttonStyle(LibraryButtonStyle())
         .focusEffectDisabled()
