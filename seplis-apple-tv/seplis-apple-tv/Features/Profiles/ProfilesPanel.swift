@@ -23,8 +23,7 @@ struct ProfilesPanel: View {
                 }
                 if isRemovingAccount { removalRows } else { accountRows }
             }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 14)
+            .padding(24)
         }
         .scrollBounceBehavior(.basedOnSize)
         .frame(width: 480, height: min(maximumHeight, panelHeight))
@@ -136,6 +135,8 @@ struct ProfilesPanel: View {
         let rows = isRemovingAccount ? otherProfiles.count + 1 :
             session.profiles.count + 1 + (session.hasPendingSignIn ? 1 : 0) +
             (session.user != nil ? 1 : 0) + (otherProfiles.isEmpty ? 0 : 1)
-        return (isRemovingAccount ? 84 : 32) + CGFloat(rows) * 72
+        if isRemovingAccount { return 104 + CGFloat(rows) * 72 }
+        if otherProfiles.isEmpty { return 52 + CGFloat(rows) * 72 }
+        return 20 + CGFloat(rows) * 72
     }
 }
