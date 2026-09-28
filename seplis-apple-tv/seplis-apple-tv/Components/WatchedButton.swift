@@ -38,15 +38,16 @@ struct WatchedButton: View {
                             .frame(maxHeight: .infinity, alignment: .bottom)
                     }
                 }
-                Rectangle().fill(Color.white.opacity(0.15)).frame(width: 1)
+                Rectangle().fill(Color.white.opacity(0.15)).frame(width: 1, height: 62)
                 Text("\(times)")
                     .monospacedDigit()
                     .frame(width: 52, height: 62)
                     .background(LibraryStyle.controlBackground)
             }
+            .frame(height: 62)
+            .fixedSize(horizontal: true, vertical: true)
             .font(.system(size: 24, weight: .medium))
             .foregroundStyle(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(WatchedButtonStyle())
         .focusEffectDisabled()
@@ -70,6 +71,7 @@ private struct WatchedButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
+            .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
                 RoundedRectangle(cornerRadius: 8)
                     .strokeBorder(isFocused ? .white : .clear, lineWidth: 3)
