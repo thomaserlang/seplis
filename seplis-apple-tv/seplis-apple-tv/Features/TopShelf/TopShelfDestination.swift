@@ -38,7 +38,7 @@ struct TopShelfDestination: View {
     private func load() async {
         error = nil
         do {
-            let media: Media = try await api.get(reference.path)
+            let media: MediaSummary = try await api.get(reference.path)
             let episode: Episode?
             if let number = link.episodeNumber, reference.kind == .series {
                 episode = try await api.get("\(reference.path)/episodes/\(number)")

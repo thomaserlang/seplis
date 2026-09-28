@@ -3,7 +3,7 @@ import Observation
 
 @MainActor @Observable
 final class MovieCollectionModel {
-    private(set) var movies: [Media] = []
+    private(set) var movies: [MediaSummary] = []
     private(set) var cursor: String?
     private(set) var isLoading = false
     private(set) var hasLoaded = false
@@ -21,7 +21,7 @@ final class MovieCollectionModel {
                 .init(name: "per_page", value: "24"),
             ]
             if more, let cursor { query.append(.init(name: "cursor", value: cursor)) }
-            let page: Page<Media> = try await api.get("movies", query: query)
+            let page: Page<MediaSummary> = try await api.get("movies", query: query)
             try Task.checkCancellation()
             var seen = Set<Int>()
             movies = ((more ? movies : []) + page.records).filter { seen.insert($0.id).inserted }

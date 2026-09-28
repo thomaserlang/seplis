@@ -55,8 +55,10 @@ private nonisolated enum FixtureResponses {
     static let movieWatchCount = Mutex(1)
     static let episodeWatchCounts = Mutex([1: 1, 2: 0])
     static var movie: [String: Any] {
-        ["id": 1, "title": "National Treasure", "plot": "A historian follows clues to a hidden treasure.",
-         "release_date": "2004-11-19", "runtime": 131, "genres": [["name": "Adventure"]],
+        ["id": 1, "title": "National Treasure", "tagline": "In order to break the code...",
+         "status": 1, "plot": "A historian follows clues to a hidden treasure.",
+         "release_date": "2004-11-19", "runtime": 131, "language": "en", "rating": 6.9,
+         "budget": 100_000_000, "revenue": 348_000_000, "genres": [["name": "Adventure"]],
          "poster_image": ["url": "https://images.seplis.net/2e32c887c4d6df85dd19100c82aac12b384bd640541f61ea3064fd30fe2ba7b7"],
          "user_watched": ["times": movieWatchCount.withLock { $0 }, "position": 0], "user_watchlist": ["on_watchlist": true],
          "user_favorite": ["favorite": false],
@@ -64,8 +66,10 @@ private nonisolated enum FixtureResponses {
             ? ["id": 7, "name": "National Treasure Collection"] : NSNull()]
     }
     static var series: [String: Any] {
-        ["id": 1, "title": "NCIS", "plot": "Special agents investigate crimes connected to the Navy.",
-         "premiered": "2003-09-23", "seasons": [["season": 1, "total": 2]],
+        ["id": 1, "title": "NCIS", "tagline": "The team is back.", "status": 1,
+         "plot": "Special agents investigate crimes connected to the Navy.",
+         "premiered": "2003-09-23", "runtime": 43, "language": "en", "rating": 7.8,
+         "total_episodes": 2, "seasons": [["season": 1, "total": 2]],
          "poster_image": ["url": "https://images.seplis.net/d30b15fd-4e0f-41cc-80cb-fb37079a2f5f"],
          "user_watchlist": ["on_watchlist": false], "user_favorite": ["favorite": true]]
     }

@@ -3,24 +3,30 @@ import Synchronization
 import XCTest
 @testable import seplis_apple_tv
 
-nonisolated final class MediaDetailTests: XCTestCase {
+nonisolated final class MovieDetailTests: XCTestCase {
+    @MainActor func testDetailFields() throws {
+        let movie = try APIClient.decoder().decode(Movie.self, from: Data(#"{"id":1,"title":"Treasure","release_date":"2004-11-19","runtime":131,"language":"en","rating":6.9,"budget":100000000,"revenue":348000000,"status":1}"#.utf8))
+        XCTAssertEqual(movie.detailFacts.map(\.value), ["2004", "2h 11m", "English", "★ 6.9", "$100M", "$348M"])
+        XCTAssertEqual(movie.statusLabel, "Released")
+    }
+
     @MainActor func testMovieRefreshKeepsPlayAvailableUntilResponseArrives() async {
         let transport = stubSession { request in
             let response = request.url?.path.hasSuffix("/play-servers") == true
                 ? #"[{"play_id":"test","play_url":"https://play.example.test"}]"# : #"{"id":1}"#
             return (200, Data(response.utf8))
         }
-        let model = MediaDetailModel(reference: .init(kind: .movie, id: 1), api: APIClient(session: transport))
+        let model = MovieDetailModel(reference: .init(kind: .movie, id: 1), api: APIClient(session: transport))
         await model.load()
-        XCTAssertTrue(model.canPlayMovie)
+        XCTAssertTrue(model.canPlay)
         let availabilityChanged = Mutex(false)
         withObservationTracking {
-            _ = model.canPlayMovie
+            _ = model.canPlay
         } onChange: {
             availabilityChanged.withLock { $0 = true }
         }
         await model.load()
-        XCTAssertTrue(model.canPlayMovie)
+        XCTAssertTrue(model.canPlay)
         XCTAssertFalse(availabilityChanged.withLock { $0 }, "Refreshing must not temporarily disable the focused Play button")
     }
 
@@ -37,10 +43,10 @@ nonisolated final class MediaDetailTests: XCTestCase {
                 XCTAssertFalse(expand?.contains("user_can_watch") == true)
                 return (200, Data(#"{"id":1}"#.utf8))
             }
-            let model = MediaDetailModel(reference: .init(kind: .movie, id: 1), api: APIClient(session: transport))
+            let model = MovieDetailModel(reference: .init(kind: .movie, id: 1), api: APIClient(session: transport))
             await model.load()
             XCTAssertNil(model.error)
-            XCTAssertEqual(model.canPlayMovie, available)
+            XCTAssertEqual(model.canPlay, available)
         }
     }
 
@@ -56,7 +62,7 @@ nonisolated final class MediaDetailTests: XCTestCase {
             }
             return (200, Data("{\"id\":1}".utf8))
         }
-        let model = MediaDetailModel(reference: .init(kind: .movie, id: 1), api: APIClient(session: transport))
+        let model = MovieDetailModel(reference: .init(kind: .movie, id: 1), api: APIClient(session: transport))
         await model.changeWatched(increment: true)
         await model.changeWatched(increment: false)
         XCTAssertEqual(methods.withLock { $0 }, ["POST /2/movies/1/watched", "DELETE /2/movies/1/watched"])

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct EpisodesView: View {
     let reference: MediaReference
-    let media: Media
+    let series: Series
     let season: Int?
     let api: APIClient
     @State private var model = EpisodesModel()
@@ -47,7 +47,7 @@ struct EpisodesView: View {
     private func episodeRow(_ episode: Episode) -> some View {
         HStack(spacing: 20) {
             Button {
-                playback = PlaybackTarget(reference: reference, title: media.displayTitle,
+                playback = PlaybackTarget(reference: reference, title: series.displayTitle,
                                           episode: episode, fromBeginning: true)
             } label: {
                 HStack {

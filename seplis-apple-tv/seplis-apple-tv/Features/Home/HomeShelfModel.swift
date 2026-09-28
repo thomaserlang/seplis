@@ -50,7 +50,7 @@ final class HomeShelfModel: Identifiable {
                 }
                 nextCursor = page.cursor
             default:
-                let page: Page<Media> = try await api.get(shelf.path, query: query)
+                let page: Page<MediaSummary> = try await api.get(shelf.path, query: query)
                 newItems = page.records.map {
                     HomeItem(reference: .init(kind: shelf.kind, id: $0.id), media: $0)
                 }

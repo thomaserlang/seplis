@@ -21,6 +21,9 @@ nonisolated final class ProfileUITests: UITestCase {
         XCTAssertLessThanOrEqual(movie.frame.minX, 40)
         select(movie, in: app)
         XCTAssertTrue(app.buttons["Play"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["2h 11m"].exists)
+        XCTAssertTrue(app.staticTexts["$100M"].exists)
+        XCTAssertTrue(app.staticTexts["$348M"].exists)
         XCTAssertFalse(app.buttons["Start Over"].exists)
         XCTAssertEqual(app.buttons["Watchlist"].value as? String, "On")
         XCTAssertEqual(app.buttons["Favorite"].value as? String, "Off")
@@ -63,6 +66,8 @@ nonisolated final class ProfileUITests: UITestCase {
         let series = app.buttons["media-series-1"].firstMatch
         XCTAssertTrue(series.waitForExistence(timeout: 5))
         select(series, in: app)
+        XCTAssertTrue(app.staticTexts["43 min"].exists)
+        XCTAssertTrue(app.staticTexts["2"].exists)
         let season = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Season 1")).firstMatch
         XCTAssertTrue(season.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["episode-watched-2"].exists)

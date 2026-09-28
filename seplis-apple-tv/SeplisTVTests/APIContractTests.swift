@@ -16,7 +16,7 @@ nonisolated final class APIContractTests: XCTestCase {
             XCTAssertEqual(query?.first?.value, "a+b/= token")
             return (200, Data("{\"records\":[],\"cursor\":null}".utf8))
         }
-        let _: Page<Media> = try await APIClient(token: "account-one", session: session)
+        let _: Page<MediaSummary> = try await APIClient(token: "account-one", session: session)
             .get("movies", query: [.init(name: "cursor", value: "a+b/= token")])
     }
 
