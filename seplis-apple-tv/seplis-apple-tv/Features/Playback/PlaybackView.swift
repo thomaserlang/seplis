@@ -1,3 +1,5 @@
+import AVFoundation
+import Combine
 import SwiftUI
 
 struct PlaybackView: View {
@@ -47,6 +49,14 @@ struct PlaybackView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { close() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AVPlayerItem.didPlayToEndTimeNotification)
+            .receive(on: DispatchQueue.main)) { notification in
+            guard let item = notification.object as? AVPlayerItem,
+                  let currentItem = model.player.currentItem,
+                  item === currentItem else { return }
+            model.finishPlayback()
+            close()
         }
         .onExitCommand { close() }
     }

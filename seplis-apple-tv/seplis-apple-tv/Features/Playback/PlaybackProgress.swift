@@ -22,6 +22,16 @@ final class PlaybackProgress {
         guard finished || abs(position - lastSaved) >= 10 else { return }
         lastSaved = position
         if finished { completed = true }
+        save(position: position, finished: finished)
+    }
+
+    func finish() {
+        guard !completed else { return }
+        completed = true
+        save(position: lastSaved, finished: true)
+    }
+
+    private func save(position: Double, finished: Bool) {
         let previous = pending
         pending = Task {
             // Serialize writes so an older position can never overwrite completion.
