@@ -15,26 +15,28 @@ struct MovieDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
+        Group {
             if let movie = model.media {
-                VStack(alignment: .leading, spacing: 32) {
-                    MediaDetailHeader(media: movie, actions: movieActions(movie))
-                    CastRow(reference: model.reference, api: api)
-                    if let collection = movie.collection {
-                        MovieCollectionView(collection: collection, currentMovieID: movie.id, api: api)
-                            .id(collection.id)
-                    }
-                    if let error = model.error {
-                        FailureView(message: error) { Task { await model.load() } }
+                MediaDetailLayout(poster: movie.posterImage) {
+                    VStack(alignment: .leading, spacing: 32) {
+                        MediaDetailHeader(media: movie, actions: movieActions(movie))
+                        CastRow(reference: model.reference, api: api)
+                        if let collection = movie.collection {
+                            MovieCollectionView(collection: collection, currentMovieID: movie.id, api: api)
+                                .id(collection.id)
+                        }
+                        if let error = model.error {
+                            FailureView(message: error) { Task { await model.load() } }
+                        }
                     }
                 }
-                .padding(.horizontal, LibraryStyle.horizontalInset)
-                .padding(.vertical, 32)
             } else if let error = model.error {
                 FailureView(message: error) { Task { await model.load() } }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ProgressView("Loading title").padding(64).focusable()
                     .accessibilityIdentifier("media-detail-loading")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .background(LibraryStyle.background.ignoresSafeArea())

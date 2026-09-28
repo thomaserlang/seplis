@@ -14,6 +14,7 @@ nonisolated struct MediaReference: Hashable {
 nonisolated struct Poster: Decodable {
     let url: String
     var imageURL: URL? { URL(string: "\(url)@SX320.webp") }
+    var originalURL: URL? { URL(string: url) }
 }
 
 nonisolated struct Genre: Decodable {

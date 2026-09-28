@@ -16,23 +16,25 @@ struct SeriesDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
+        Group {
             if let series = model.media {
-                VStack(alignment: .leading, spacing: 32) {
-                    MediaDetailHeader(media: series, actions: seriesActions(series))
-                    CastRow(reference: model.reference, api: api)
-                    seasons(series)
-                    if let error = model.error {
-                        FailureView(message: error) { Task { await model.load() } }
+                MediaDetailLayout(poster: series.posterImage) {
+                    VStack(alignment: .leading, spacing: 32) {
+                        MediaDetailHeader(media: series, actions: seriesActions(series))
+                        CastRow(reference: model.reference, api: api)
+                        seasons(series)
+                        if let error = model.error {
+                            FailureView(message: error) { Task { await model.load() } }
+                        }
                     }
                 }
-                .padding(.horizontal, LibraryStyle.horizontalInset)
-                .padding(.vertical, 32)
             } else if let error = model.error {
                 FailureView(message: error) { Task { await model.load() } }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ProgressView("Loading title").padding(64).focusable()
                     .accessibilityIdentifier("media-detail-loading")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
         .background(LibraryStyle.background.ignoresSafeArea())

@@ -24,7 +24,7 @@ struct CastPortrait: View {
             RoundedRectangle(cornerRadius: 8)
                 .strokeBorder(isFocused ? .white : .clear, lineWidth: 3)
         }
-        .scaleEffect(isFocused ? 1.05 : 1)
+        .scaleEffect(isFocused ? 1.05 : 1, anchor: .leading)
         .animation(.easeOut(duration: 0.15), value: isFocused)
     }
 }

@@ -8,7 +8,7 @@ struct CastRow: View {
     @Namespace private var focusNamespace
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 4) {
             if !model.members.isEmpty || model.isLoading || !model.hasLoaded || model.error != nil {
                 HStack(alignment: .firstTextBaseline, spacing: 18) {
                     Text("Top Cast").font(.system(size: 28, weight: .medium)).foregroundStyle(.secondary)
@@ -54,9 +54,16 @@ struct CastRow: View {
                             }
                         }
                     }
-                    .padding(8)
+                    .padding(.vertical, 8)
+                    .padding(.trailing, 120)
                 }
-                .scrollClipDisabled()
+                .mask {
+                    LinearGradient(stops: [
+                        .init(color: .black, location: 0),
+                        .init(color: .black, location: 0.88),
+                        .init(color: .clear, location: 1)
+                    ], startPoint: .leading, endPoint: .trailing)
+                }
             }
         }
         .focusSection()
