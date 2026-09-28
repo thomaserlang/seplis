@@ -19,6 +19,7 @@ struct MovieDetailView: View {
             if let movie = model.media {
                 VStack(alignment: .leading, spacing: 32) {
                     MediaDetailHeader(media: movie, actions: movieActions(movie))
+                    CastRow(reference: model.reference, api: api)
                     if let collection = movie.collection {
                         MovieCollectionView(collection: collection, currentMovieID: movie.id, api: api)
                             .id(collection.id)

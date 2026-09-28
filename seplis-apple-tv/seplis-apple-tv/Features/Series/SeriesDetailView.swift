@@ -20,6 +20,7 @@ struct SeriesDetailView: View {
             if let series = model.media {
                 VStack(alignment: .leading, spacing: 32) {
                     MediaDetailHeader(media: series, actions: seriesActions(series))
+                    CastRow(reference: model.reference, api: api)
                     seasons(series)
                     if let error = model.error {
                         FailureView(message: error) { Task { await model.load() } }

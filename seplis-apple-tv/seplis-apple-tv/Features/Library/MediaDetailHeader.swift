@@ -46,5 +46,6 @@ struct MediaDetailHeader<MediaType: MediaDetailInfo, Actions: View>: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .focusSection()
     }
 }

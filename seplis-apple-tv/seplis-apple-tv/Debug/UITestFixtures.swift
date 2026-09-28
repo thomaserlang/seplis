@@ -140,6 +140,17 @@ private nonisolated enum FixtureResponses {
             return ProcessInfo.processInfo.arguments.contains("--single-episode-action") ? NSNull() : episode(1)
         }
         if path.hasSuffix("/episodes") { return page([episode(1), episode(2)]) }
+        if path == "/2/movies/1/cast" {
+            return page(["Alex Actor", "Morgan Reed", "Taylor Vale"].enumerated().map { index, name in
+                ["person": ["id": index + 1, "name": name], "character": "Character \(index + 1)"]
+            })
+        }
+        if path == "/2/series/1/cast" {
+            return page(["Jordan Lee", "Riley Stone", "Sam Walker"].enumerated().map { index, name in
+                ["person": ["id": index + 11, "name": name],
+                 "roles": [["character": "Role \(index + 1)"], ["character": "Alias \(index + 1)"]]]
+            })
+        }
         if path.hasPrefix("/2/movies/"), path.hasSuffix("/play-servers"),
            !ProcessInfo.processInfo.arguments.contains("--unavailable-movie") {
             return [["play_id": "fixture", "play_url": "https://play.example.test"]]

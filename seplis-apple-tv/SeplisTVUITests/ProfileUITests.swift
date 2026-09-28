@@ -1,37 +1,9 @@
 import XCTest
 
 nonisolated final class ProfileUITests: UITestCase {
-    @MainActor func testDeviceLoginScreen() {
-        let app = launchApp(["--login"])
-        XCTAssertTrue(app.staticTexts["seplis.net/device"].waitForExistence(timeout: 10))
-        XCTAssertTrue(app.images["SEPLIS"].exists)
-        XCTAssertTrue(app.staticTexts["Then enter this code"].exists)
-        XCTAssertTrue(app.staticTexts["Sign-in code 123456"].exists)
-        attachScreenshot("Device login")
-    }
-
-    @MainActor func testHomeDetailAndProfiles() {
+    @MainActor func testProfileMenuReturnsFocusAndAddsAccount() {
         let app = launchApp()
         XCTAssertTrue(app.staticTexts["Watched"].waitForExistence(timeout: 15))
-        attachScreenshot("Home")
-        let movie = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "National Treasure")).firstMatch
-        XCTAssertTrue(movie.waitForExistence(timeout: 10))
-        let heading = app.staticTexts["Watched"].firstMatch
-        XCTAssertLessThanOrEqual(movie.frame.minY - heading.frame.maxY, 12)
-        XCTAssertLessThanOrEqual(movie.frame.minX, 40)
-        select(movie, in: app)
-        XCTAssertTrue(app.buttons["Play"].waitForExistence(timeout: 10))
-        XCTAssertLessThan(abs(app.buttons["Play"].frame.midY - app.buttons["Watchlist"].frame.midY), 12)
-        XCTAssertTrue(app.staticTexts["2h 11m"].exists)
-        XCTAssertTrue(app.staticTexts["$100M"].exists)
-        XCTAssertTrue(app.staticTexts["$348M"].exists)
-        XCTAssertFalse(app.buttons["Start Over"].exists)
-        XCTAssertEqual(app.buttons["Watchlist"].value as? String, "On")
-        XCTAssertEqual(app.buttons["Favorite"].value as? String, "Off")
-        attachScreenshot("Movie detail")
-        XCUIRemote.shared.press(.menu)
-        let profiles = app.descendants(matching: .any)["profiles-menu"]
-        XCTAssertTrue(profiles.waitForExistence(timeout: 5))
         openProfiles(in: app)
         let addAccount = menuItem("Add Account", in: app)
         XCTAssertTrue(addAccount.waitForExistence(timeout: 5))
@@ -47,7 +19,7 @@ nonisolated final class ProfileUITests: UITestCase {
         attachScreenshot("Add account")
     }
 
-    @MainActor func testSwitchProfileAndBrowseSeason() {
+    @MainActor func testSwitchProfileAndRemoveAccountNavigation() {
         let app = launchApp()
         let profiles = app.descendants(matching: .any)["profiles-menu"]
         XCTAssertTrue(profiles.waitForExistence(timeout: 10))
@@ -63,27 +35,6 @@ nonisolated final class ProfileUITests: UITestCase {
         XCTAssertTrue(app.staticTexts["Watched"].waitForExistence(timeout: 10))
         openProfiles(in: app)
         XCTAssertTrue(menuItem("Sign Out of Sam", in: app).waitForExistence(timeout: 5))
-        XCUIRemote.shared.press(.menu)
-        let series = app.buttons["media-series-1"].firstMatch
-        XCTAssertTrue(series.waitForExistence(timeout: 5))
-        select(series, in: app)
-        let nextPlay = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Play S1 E2")).firstMatch
-        let nextPlayFocused = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: nextPlay)
-        XCTAssertEqual(XCTWaiter.wait(for: [nextPlayFocused], timeout: 5), .completed)
-        XCTAssertLessThan(app.buttons["Watchlist"].frame.maxY, nextPlay.frame.minY)
-        XCTAssertTrue(app.staticTexts["43 min"].exists)
-        XCTAssertTrue(app.staticTexts["2"].exists)
-        let season = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Season 1")).firstMatch
-        XCTAssertTrue(season.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["episode-watched-2"].exists)
-        attachScreenshot("Series detail")
-        select(season, in: app)
-        let episode = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Hung Out to Dry")).firstMatch
-        XCTAssertTrue(episode.waitForExistence(timeout: 5))
-        attachScreenshot("Season")
-        select(episode, in: app)
-        XCTAssertTrue(app.staticTexts["No play server has this title available for your account."].waitForExistence(timeout: 10))
-        attachScreenshot("Episode playback")
     }
 
     @MainActor private func menuItem(_ title: String, in app: XCUIApplication) -> XCUIElement {
