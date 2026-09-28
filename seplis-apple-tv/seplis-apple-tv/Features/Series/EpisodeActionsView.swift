@@ -15,9 +15,9 @@ struct EpisodeActionsView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(heading).font(.system(size: 20, weight: .medium)).foregroundStyle(.secondary)
-            VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 14) {
                     Text(episode.numberLabel).font(.system(size: 22, weight: .semibold))
                         .foregroundStyle(Color(red: 0.55, green: 0.73, blue: 0.91))
@@ -37,7 +37,9 @@ struct EpisodeActionsView: View {
                         .accessibilityIdentifier("episode-watched-\(episode.number)")
                 }
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.top, 10)
+            .padding(.bottom, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .overlay {
                 RoundedRectangle(cornerRadius: 8).strokeBorder(Color(white: 0.14), lineWidth: 1)
