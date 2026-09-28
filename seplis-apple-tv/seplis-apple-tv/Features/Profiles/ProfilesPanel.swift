@@ -17,7 +17,7 @@ struct ProfilesPanel: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 if isRemovingAccount {
-                    Text("Remove Account")
+                    Text("Remove an Account")
                         .font(.system(size: 26, weight: .semibold))
                         .padding(.bottom, 8)
                 }
@@ -96,7 +96,7 @@ struct ProfilesPanel: View {
                 }
             }
             if !otherProfiles.isEmpty {
-                action("Remove Account", icon: "person.crop.circle.badge.minus", item: .remove) {
+                action("Remove an Account", icon: "person.crop.circle.badge.minus", item: .remove) {
                     isRemovingAccount = true
                     focusedItem = .back
                 }

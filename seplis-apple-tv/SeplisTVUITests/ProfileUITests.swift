@@ -48,11 +48,11 @@ nonisolated final class ProfileUITests: UITestCase {
         let profiles = app.descendants(matching: .any)["profiles-menu"]
         XCTAssertTrue(profiles.waitForExistence(timeout: 10))
         openProfiles(in: app)
-        select(app.buttons["Remove Account"], in: app)
+        select(app.buttons["Remove an Account"], in: app)
         XCTAssertTrue(app.buttons["Back"].exists)
         XCUIRemote.shared.press(.menu)
         XCTAssertTrue(app.buttons["Add Account"].exists)
-        XCTAssertTrue(app.buttons["Remove Account"].hasFocus)
+        XCTAssertTrue(app.buttons["Remove an Account"].hasFocus)
         let sam = menuItem("Sam", in: app)
         XCTAssertTrue(sam.waitForExistence(timeout: 5))
         select(sam, in: app)
