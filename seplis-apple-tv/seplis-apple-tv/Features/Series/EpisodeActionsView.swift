@@ -6,13 +6,12 @@ struct EpisodeActionsView: View {
     let rewatch: Bool
     let focusedEpisode: FocusState<Int?>.Binding
     let isUpdating: Bool
-    let play: () -> Void
+    let play: (Bool) -> Void
     let increment: () -> Void
     let decrement: () -> Void
 
-    private var playTitle: String {
-        if rewatch { return "Rewatch" }
-        return (episode.userWatched?.position ?? 0) > 0 ? "Resume" : "Play"
+    private var playAction: PlaybackAction {
+        rewatch ? .rewatch : PlaybackAction(watched: episode.userWatched, rewatchCompleted: true)
     }
 
     var body: some View {
@@ -28,10 +27,10 @@ struct EpisodeActionsView: View {
                 }
                 Text(episode.title ?? "").font(.system(size: 24, weight: .medium)).lineLimit(1)
                 HStack(spacing: 12) {
-                    Button(playTitle, systemImage: rewatch ? "arrow.counterclockwise" : "play.fill", action: play)
+                    Button(playAction.title, systemImage: playAction.systemImage) { play(playAction.fromBeginning) }
                         .disabled(!episode.canPlay)
                         .focused(focusedEpisode, equals: episode.number)
-                        .accessibilityLabel("\(playTitle) \(episode.numberLabel)")
+                        .accessibilityLabel("\(playAction.title) \(episode.numberLabel)")
                     WatchedButton(watched: episode.userWatched, durationMinutes: episode.runtime,
                                   increment: increment, decrement: decrement)
                         .disabled(isUpdating)

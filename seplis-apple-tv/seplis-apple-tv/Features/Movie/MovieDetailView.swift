@@ -56,11 +56,11 @@ struct MovieDetailView: View {
     }
 
     private func movieActions(_ movie: Movie) -> some View {
-        HStack(spacing: 24) {
-            Button((movie.userWatched?.position ?? 0) > 0 ? "Resume" : "Play",
-                   systemImage: model.canPlay ? "play.fill" : "play") {
+        let playAction = PlaybackAction(watched: movie.userWatched)
+        return HStack(spacing: 24) {
+            Button(playAction.title, systemImage: model.canPlay ? playAction.systemImage : "play") {
                 playback = PlaybackTarget(reference: model.reference, title: movie.displayTitle,
-                                          episode: nil, fromBeginning: false)
+                                          episode: nil, fromBeginning: playAction.fromBeginning)
             }
             .disabled(!model.canPlay)
             .prefersDefaultFocus(model.canPlay, in: focusNamespace)

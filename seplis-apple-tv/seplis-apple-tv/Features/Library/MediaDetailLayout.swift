@@ -2,11 +2,14 @@ import SwiftUI
 
 struct MediaDetailLayout<Header: View, Content: View>: View {
     let poster: Poster?
+    let headerSpacing: CGFloat
     let header: Header
     let content: Content
 
-    init(poster: Poster?, @ViewBuilder header: () -> Header, @ViewBuilder content: () -> Content) {
+    init(poster: Poster?, headerSpacing: CGFloat = 24,
+         @ViewBuilder header: () -> Header, @ViewBuilder content: () -> Content) {
         self.poster = poster
+        self.headerSpacing = headerSpacing
         self.header = header()
         self.content = content()
     }
@@ -18,7 +21,7 @@ struct MediaDetailLayout<Header: View, Content: View>: View {
                 VStack(alignment: .leading, spacing: 0) {
                     header
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.bottom, 24)
+                        .padding(.bottom, headerSpacing)
                     ScrollView {
                         content
                             .frame(maxWidth: .infinity, alignment: .leading)

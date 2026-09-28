@@ -19,6 +19,8 @@ nonisolated final class SeriesUITests: UITestCase {
         select(season, in: app)
         let episode = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Hung Out to Dry")).firstMatch
         XCTAssertTrue(episode.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["The team investigates a Marine's death during training."].exists)
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Rewatch S1 E1")).firstMatch.exists)
         attachScreenshot("Season")
         select(episode, in: app)
         XCTAssertTrue(app.staticTexts["No play server has this title available for your account."].waitForExistence(timeout: 10))

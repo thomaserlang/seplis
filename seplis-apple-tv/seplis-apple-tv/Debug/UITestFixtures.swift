@@ -76,6 +76,8 @@ private nonisolated enum FixtureResponses {
     static func episode(_ number: Int) -> [String: Any] {
         ["number": number, "season": 1, "episode": number, "title": number == 1 ? "Yankee White" : "Hung Out to Dry",
          "air_date": number == 1 ? "2003-09-23" : "2003-09-30",
+         "plot": number == 1 ? "A Navy commander dies aboard Air Force One." : "The team investigates a Marine's death during training.",
+         "runtime": 43,
          "user_watched": ["times": episodeWatchCounts.withLock { $0[number] ?? 0 }, "position": 0],
          "user_can_watch": ["on_play_server": number != 2 || !ProcessInfo.processInfo.arguments.contains("--unavailable-next-episode")]]
     }

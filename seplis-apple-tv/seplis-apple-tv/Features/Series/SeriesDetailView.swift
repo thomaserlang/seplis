@@ -74,9 +74,9 @@ struct SeriesDetailView: View {
     private func episodeActions(_ episode: Episode, series: Series, rewatch: Bool) -> some View {
         EpisodeActionsView(heading: rewatch ? "Last watched" : episode.watchHeading, episode: episode,
                            rewatch: rewatch, focusedEpisode: $focusedEpisode, isUpdating: model.isUpdating,
-                           play: {
+                           play: { fromBeginning in
                                playback = PlaybackTarget(reference: model.reference, title: series.displayTitle,
-                                                         episode: episode, fromBeginning: rewatch)
+                                                         episode: episode, fromBeginning: fromBeginning)
                            },
                            increment: { Task { await model.changeWatched(increment: true, episode: episode) } },
                            decrement: { Task { await model.changeWatched(increment: false, episode: episode) } })
