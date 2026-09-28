@@ -77,7 +77,6 @@ struct SeriesDetailView: View {
 
     private func seasons(_ series: Series) -> some View {
         VStack(alignment: .leading, spacing: 24) {
-            Text("Seasons").font(.system(size: 28, weight: .medium)).foregroundStyle(.secondary)
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 340), spacing: 24)], spacing: 24) {
                 ForEach(series.seasons ?? []) { season in
                     NavigationLink {
