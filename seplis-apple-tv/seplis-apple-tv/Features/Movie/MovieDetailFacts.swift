@@ -10,6 +10,7 @@ extension Movie: MediaDetailInfo {
     var detailFacts: [MediaDetailFact] {
         var facts: [MediaDetailFact] = []
         if let releaseDate { facts.append(.init(label: "Year", value: String(releaseDate.prefix(4)))) }
+        if let statusLabel { facts.append(.init(label: "Status", value: statusLabel)) }
         if let runtime, runtime > 0 {
             let hours = runtime / 60
             let minutes = runtime % 60

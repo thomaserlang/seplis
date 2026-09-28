@@ -6,7 +6,7 @@ import XCTest
 nonisolated final class MovieDetailTests: XCTestCase {
     @MainActor func testDetailFields() throws {
         let movie = try APIClient.decoder().decode(Movie.self, from: Data(#"{"id":1,"title":"Treasure","release_date":"2004-11-19","runtime":131,"language":"en","rating":6.9,"budget":100000000,"revenue":348000000,"status":1}"#.utf8))
-        XCTAssertEqual(movie.detailFacts.map(\.value), ["2004", "2h 11m", "English", "★ 6.9", "$100M", "$348M"])
+        XCTAssertEqual(movie.detailFacts.map(\.value), ["2004", "Released", "2h 11m", "English", "★ 6.9", "$100M", "$348M"])
         XCTAssertEqual(movie.statusLabel, "Released")
     }
 

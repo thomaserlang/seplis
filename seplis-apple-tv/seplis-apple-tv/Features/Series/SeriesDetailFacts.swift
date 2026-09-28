@@ -18,6 +18,7 @@ extension Series: MediaDetailInfo {
             }
             facts.append(.init(label: "Year", value: years))
         }
+        if let statusLabel { facts.append(.init(label: "Status", value: statusLabel)) }
         if let runtime, runtime > 0 {
             facts.append(.init(label: "Runtime", value: "\(runtime) min"))
         }

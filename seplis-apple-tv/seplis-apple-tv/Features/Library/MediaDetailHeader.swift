@@ -14,9 +14,6 @@ struct MediaDetailHeader<MediaType: MediaDetailInfo, Actions: View>: View {
                 if let tagline = media.tagline, !tagline.isEmpty {
                     Text(tagline).font(.system(size: 21)).italic().foregroundStyle(.secondary)
                 }
-                if let status = media.statusLabel {
-                    Text(status).font(.system(size: 19)).foregroundStyle(.secondary)
-                }
             }
             let facts = media.detailFacts
             if !facts.isEmpty {
