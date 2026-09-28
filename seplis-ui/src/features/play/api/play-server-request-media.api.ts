@@ -2,7 +2,7 @@ import { ApiHelperProps, useApiHelper } from '@/utils/api-crud'
 import ky from 'ky'
 import type { HDRType } from '../types/media.types'
 import { PlayRequestSource, PlayServerMedia } from '../types/play-source.types'
-import { recommendResolution } from '../utils/play-resolution.utils'
+import { recommendWidth } from '../utils/play-resolution.utils'
 
 export interface PlayServerMediaGetProps extends ApiHelperProps<{}> {
     playRequestSource: PlayRequestSource
@@ -102,7 +102,7 @@ export const {
                         max_width:
                             maxWidth ??
                             (maxBitrate
-                                ? recommendResolution(
+                                ? recommendWidth(
                                       maxBitrate,
                                       transcodeVideoCodec,
                                   )

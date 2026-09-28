@@ -18,6 +18,9 @@ nonisolated final class PlaybackQualityTests: XCTestCase {
         api.accountID = 1
         let preferences = PlaybackPreferences(api: api, seriesPath: nil, defaults: defaults)
         XCTAssertEqual(preferences.maxBitrate, PlaybackQuality.maximum)
+        XCTAssertEqual(preferences.maxBitrate, 200_000_000)
+        XCTAssertTrue(PlaybackCapabilities.current(maxBitrate: preferences.maxBitrate)
+            .query(forceTranscode: false).contains(.init(name: "max_width", value: "3840")))
         XCTAssertTrue(preferences.hdrEnabled)
         preferences.saveHDR(false)
         preferences.saveBitrate(3_000_000)

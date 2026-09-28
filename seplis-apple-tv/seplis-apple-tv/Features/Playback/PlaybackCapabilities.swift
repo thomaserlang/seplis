@@ -34,11 +34,12 @@ struct PlaybackCapabilities {
     }
 
     func query(forceTranscode: Bool, compatibilityFallback: Bool = false) -> [URLQueryItem] {
+        let transcodeCodec = !compatibilityFallback && videoCodecs.contains("hevc") ? "hevc" : "h264"
         var items: [URLQueryItem] = [
             .init(name: "supported_video_codecs", value: videoCodecs.joined(separator: ",")),
             .init(name: "supported_audio_codecs", value: audioCodecs.joined(separator: ",")),
             .init(name: "supported_video_containers", value: "mp4"),
-            .init(name: "transcode_video_codec", value: !compatibilityFallback && videoCodecs.contains("hevc") ? "hevc" : "h264"),
+            .init(name: "transcode_video_codec", value: transcodeCodec),
             .init(name: "transcode_audio_codec", value: "aac"),
             .init(name: "max_audio_channels", value: String(maxAudioChannels)),
             .init(name: "max_video_bitrate", value: String(maxBitrate)),
@@ -47,6 +48,10 @@ struct PlaybackCapabilities {
             .init(name: "start_time", value: "0"),
             .init(name: "hls_include_all_subtitles", value: "true"),
         ]
+        if maxBitrate != 0 {
+            items.append(.init(name: "max_width", value: String(
+                PlaybackResolution.recommendWidth(bitrate: maxBitrate, codec: transcodeCodec))))
+        }
         if !compatibilityFallback, !hdrFormats.isEmpty {
             items.append(.init(name: "supported_hdr_formats", value: hdrFormats.joined(separator: ",")))
         }
