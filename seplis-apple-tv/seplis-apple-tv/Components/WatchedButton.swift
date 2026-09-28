@@ -53,14 +53,10 @@ struct WatchedButton: View {
         .focusEffectDisabled()
         .accessibilityLabel("Watched")
         .accessibilityValue("\(times) times\(position > 0 ? ", in progress" : "")")
-        .confirmationDialog("Watched \(times) times", isPresented: $showsAdjustments, titleVisibility: .visible) {
+        .confirmationDialog("", isPresented: $showsAdjustments, titleVisibility: .hidden) {
             Button(incrementTitle, systemImage: position > 0 ? "checkmark" : "plus", action: increment)
             Button(decrementTitle, systemImage: position > 0 ? "arrow.counterclockwise" : "minus", action: decrement)
             Button("Cancel", role: .cancel) {}
-        } message: {
-            if position > 0 {
-                Text("Resetting clears the saved playback position without removing completed watches.")
-            }
         }
     }
 }

@@ -100,17 +100,12 @@ fun WatchedButton(watched: Watched, onIncrement: () -> Unit, onDecrement: () -> 
     if (open) Dialog(onDismissRequest = { open = false }) {
         Column(Modifier.width(220.dp).background(Palette.surface, shape).padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Watched ${watched.times} times", fontSize = 14.sp, modifier = Modifier.padding(8.dp))
             TvButton(if (watched.position > 0 || watched.times == 0) "Mark as watched" else "Add another watch",
                 { onIncrement(); open = false }, Modifier.fillMaxWidth(),
                 icon = if (watched.position > 0) Icons.Filled.Check else Icons.Filled.Add)
             TvButton(if (watched.position > 0) "Reset watched position" else "Remove last watch",
                 { onDecrement(); open = false }, Modifier.fillMaxWidth(),
                 icon = if (watched.position > 0) Icons.Filled.Replay else Icons.Filled.Remove)
-            if (watched.position > 0) {
-                Text("Resetting clears the saved playback position without removing completed watches.",
-                    color = Palette.muted, fontSize = 10.sp, modifier = Modifier.padding(horizontal = 8.dp))
-            }
             TvButton("Cancel", { open = false }, Modifier.fillMaxWidth())
         }
     }

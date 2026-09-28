@@ -61,7 +61,7 @@ nonisolated final class MovieUITests: UITestCase {
         attachScreenshot("Unavailable movie")
     }
 
-    @MainActor func testCollectionBackRestoresParentMovieAndCatalog() {
+    @MainActor func testCollectionNavigationClosesWithOneBack() {
         let app = launchApp(["--collections"])
         XCTAssertTrue(app.buttons["Movies"].waitForExistence(timeout: 10))
         select(app.buttons["Movies"], in: app)
@@ -72,10 +72,13 @@ nonisolated final class MovieUITests: UITestCase {
         XCTAssertTrue(sequel.waitForExistence(timeout: 5))
         attachScreenshot("Movie collection")
         select(sequel, in: app)
-        XCTAssertTrue(app.staticTexts["National Treasure: Book of Secrets"].waitForExistence(timeout: 5))
-        XCUIRemote.shared.press(.menu)
-        XCTAssertTrue(app.staticTexts["National Treasure"].waitForExistence(timeout: 5))
-        XCTAssertTrue(sequel.hasFocus)
+        XCTAssertTrue(app.staticTexts["2007"].waitForExistence(timeout: 5))
+        let original = app.buttons["collection-movie-1"]
+        XCTAssertTrue(original.waitForExistence(timeout: 5))
+        select(original, in: app)
+        XCTAssertTrue(app.staticTexts["2004"].waitForExistence(timeout: 5))
+        select(sequel, in: app)
+        XCTAssertTrue(app.staticTexts["2007"].waitForExistence(timeout: 5))
         XCUIRemote.shared.press(.menu)
         XCTAssertTrue(poster.waitForExistence(timeout: 5))
         XCTAssertTrue(poster.hasFocus)

@@ -14,6 +14,8 @@ class ProfileMenuUITests : UITestCase() {
         compose.onNodeWithText("Alex").performClick()
         compose.onNodeWithText("Add Account").performClick()
         compose.waitUntil(10_000) { compose.onAllNodesWithContentDescription("Sign-in code 123456").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("Go to").assertIsDisplayed()
+        compose.onNodeWithText("Enter code").assertIsDisplayed()
         key(KeyEvent.KEYCODE_BACK)
         compose.onNodeWithText("Add Account").assertIsFocused()
 

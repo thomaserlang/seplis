@@ -62,13 +62,15 @@ class MediaDetailUITests : UITestCase() {
         compose.onAllNodesWithContentDescription("NCIS").onFirst().assertIsFocused()
     }
 
-    @Test fun collectionNavigationDoesNotReopenCurrentMovie() {
+    @Test fun collectionNavigationClosesWithOneBack() {
         openFirstMovie()
         compose.onNodeWithContentDescription("National Treasure").assertIsNotEnabled()
         compose.onNodeWithContentDescription("National Treasure: Book of Secrets").performScrollTo().performClick()
         awaitText("2007")
-        key(KeyEvent.KEYCODE_BACK)
+        compose.onNodeWithContentDescription("National Treasure").performScrollTo().performClick()
         awaitText("2004")
+        compose.onNodeWithContentDescription("National Treasure: Book of Secrets").performScrollTo().performClick()
+        awaitText("2007")
         key(KeyEvent.KEYCODE_BACK)
         compose.onAllNodesWithContentDescription("National Treasure").onFirst().assertIsFocused()
     }

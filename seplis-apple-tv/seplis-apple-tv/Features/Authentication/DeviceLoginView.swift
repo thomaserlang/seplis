@@ -22,7 +22,7 @@ struct DeviceLoginView: View {
 
             if let authorization = model.authorization, !model.expired {
                 VStack(spacing: 12) {
-                    Text("Go to this address in your browser on your phone or computer")
+                    Text("Go to")
                         .font(.body)
                         .foregroundStyle(.secondary)
                     Text(authorization.verificationUri.formatted(.url.scheme(.never)))
@@ -30,7 +30,7 @@ struct DeviceLoginView: View {
                 }
 
                 VStack(spacing: 12) {
-                    Text("Then enter this code")
+                    Text("Enter code")
                         .font(.body)
                         .foregroundStyle(.secondary)
                     Text(authorization.userCode)
@@ -39,14 +39,6 @@ struct DeviceLoginView: View {
                         .accessibilityLabel("Sign-in code \(authorization.userCode)")
                 }
 
-                if model.error == nil {
-                    HStack(spacing: 16) {
-                        ProgressView()
-                        Text("Waiting for you to approve sign-in")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                    }
-                }
             } else if model.error == nil {
                 ProgressView("Getting a sign-in code")
             }

@@ -23,7 +23,7 @@ class DeviceAuthorizationClient(private val api: ApiClient = ApiClient()) {
 
     suspend fun awaitToken(authorization: DeviceAuthorization): String {
         while (Instant.now().isBefore(authorization.expiresAt)) {
-            delay(authorization.pollIntervalSeconds * 1_000)
+            delay(2_000)
             val response = api.send("device-authorization/token", "POST",
                 JSONObject().put("device_code", authorization.deviceCode))
             when (response.text("status")) {

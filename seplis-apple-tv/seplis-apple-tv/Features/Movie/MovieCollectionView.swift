@@ -4,6 +4,7 @@ struct MovieCollectionView: View {
     let collection: MovieCollection
     let currentMovieID: Int
     let api: APIClient
+    let onOpen: (MediaReference) -> Void
     @State private var model = MovieCollectionModel()
     @FocusState private var focusedMovie: Int?
 
@@ -13,7 +14,9 @@ struct MovieCollectionView: View {
             ScrollView(.horizontal) {
                 LazyHStack(spacing: 20) {
                     ForEach(model.movies) { movie in
-                        NavigationLink(value: MediaReference(kind: .movie, id: movie.id)) {
+                        Button {
+                            onOpen(MediaReference(kind: .movie, id: movie.id))
+                        } label: {
                             PosterView(poster: movie.posterImage, title: movie.displayTitle, width: LibraryStyle.posterWidth)
                         }
                         .buttonStyle(PosterButtonStyle())

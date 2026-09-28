@@ -66,21 +66,14 @@ fun DeviceLoginView(session: AppSession, onBack: (() -> Unit)? = null, onSignedI
             }
         }
         authorization?.takeUnless { model.expired }?.let { current ->
-            Text("Go to this address in your browser on your phone or computer", color = Palette.muted, fontSize = 15.sp)
+            Text("Go to", color = Palette.muted, fontSize = 15.sp)
             Spacer(Modifier.height(6.dp))
             Text(current.verificationUri.removePrefix("https://").removePrefix("http://"), fontSize = 20.sp)
             Spacer(Modifier.height(20.dp))
-            Text("Then enter this code", color = Palette.muted, fontSize = 15.sp)
+            Text("Enter code", color = Palette.muted, fontSize = 15.sp)
             Spacer(Modifier.height(6.dp))
             Text(current.userCode, fontSize = 38.sp, fontWeight = FontWeight.SemiBold, fontFamily = FontFamily.Monospace,
                 modifier = Modifier.clearAndSetSemantics { contentDescription = "Sign-in code ${current.userCode}" })
-            if (error == null) {
-                Spacer(Modifier.height(20.dp))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    CircularProgressIndicator(Modifier.size(16.dp), color = androidx.compose.ui.graphics.Color.White, strokeWidth = 2.dp)
-                    Text("Waiting for you to approve sign-in", color = Palette.muted, fontSize = 14.sp)
-                }
-            }
         }
         error?.let {
             Spacer(Modifier.height(22.dp))

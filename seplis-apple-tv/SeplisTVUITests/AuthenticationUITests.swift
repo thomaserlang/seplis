@@ -5,7 +5,8 @@ nonisolated final class AuthenticationUITests: UITestCase {
         let app = launchApp(["--login"])
         XCTAssertTrue(app.staticTexts["seplis.net/device"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.images["SEPLIS"].exists)
-        XCTAssertTrue(app.staticTexts["Then enter this code"].exists)
+        XCTAssertTrue(app.staticTexts["Go to"].exists)
+        XCTAssertTrue(app.staticTexts["Enter code"].exists)
         XCTAssertTrue(app.staticTexts["Sign-in code 123456"].exists)
         attachScreenshot("Device login")
     }

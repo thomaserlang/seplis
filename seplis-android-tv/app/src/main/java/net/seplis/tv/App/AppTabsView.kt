@@ -187,7 +187,10 @@ internal fun AppTabsView(session: AppSession, active: SessionState.Active,
                         is Screen.Detail -> MediaDetailView(top.reference, api,
                             onEpisodes = { series, season -> open(Screen.Episodes(top.reference, series, season)) },
                             onPlay = { open(Screen.Playback(it)) },
-                            onOpen = { open(Screen.Detail(it)) }, refresh = refresh)
+                            onOpen = {
+                                pageFocus.remove(index + 1)
+                                destinations[index] = Screen.Detail(it)
+                            }, refresh = refresh)
                         else -> Unit
                     }
                 }

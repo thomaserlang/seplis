@@ -27,8 +27,10 @@ struct MovieDetailView: View {
                         }
                         CastRow(reference: model.reference, api: api)
                         if let collection = movie.collection {
-                            MovieCollectionView(collection: collection, currentMovieID: movie.id, api: api)
-                                .id(collection.id)
+                            MovieCollectionView(collection: collection, currentMovieID: movie.id, api: api) { reference in
+                                model = MovieDetailModel(reference: reference, api: api)
+                            }
+                            .id(collection.id)
                         }
                         if let error = model.error {
                             FailureView(message: error) { Task { await model.load() } }
@@ -44,12 +46,13 @@ struct MovieDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .id(model.reference)
         .background(LibraryStyle.background.ignoresSafeArea())
         .buttonStyle(LibraryButtonStyle())
         .focusEffectDisabled()
         .focusScope(focusNamespace)
         .onExitCommand { if let onClose { onClose() } else { dismiss() } }
-        .task { await model.load() }
+        .task(id: model.reference) { await model.load() }
         .fullScreenCover(item: $playback, onDismiss: { Task { await model.load() } }) { target in
             PlaybackView(target: target, api: api)
         }
