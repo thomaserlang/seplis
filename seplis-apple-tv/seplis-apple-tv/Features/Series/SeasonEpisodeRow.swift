@@ -16,7 +16,7 @@ struct SeasonEpisodeRow: View {
                 Text(episode.numberLabel)
                     .font(.system(size: 22, weight: .semibold))
                     .foregroundStyle(Color(red: 0.55, green: 0.73, blue: 0.91))
-                if let airDate = episode.airDate {
+                if let airDate = episode.formattedAirDate() {
                     Text(airDate)
                         .font(.system(size: 19))
                         .foregroundStyle(.secondary)

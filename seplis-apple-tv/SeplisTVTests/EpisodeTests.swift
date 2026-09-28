@@ -9,6 +9,8 @@ nonisolated final class EpisodeTests: XCTestCase {
             {"number":2,"air_date":"2003-09-30","user_watched":{"times":0,"position":\(position)}}
             """.utf8))
             XCTAssertEqual(episode.airDate, "2003-09-30")
+            XCTAssertEqual(episode.formattedAirDate(locale: Locale(identifier: "en_US"),
+                                                    timeZone: TimeZone(secondsFromGMT: 0)!), "Sep 30, 2003")
             XCTAssertEqual(episode.watchHeading, position == 0 ? "Next to watch" : "Continue watching")
         }
         let episode = try APIClient.decoder().decode(Episode.self, from: Data(#"{"number":2}"#.utf8))

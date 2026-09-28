@@ -21,7 +21,7 @@ struct EpisodeActionsView: View {
                 HStack(spacing: 14) {
                     Text(episode.numberLabel).font(.system(size: 22, weight: .semibold))
                         .foregroundStyle(Color(red: 0.55, green: 0.73, blue: 0.91))
-                    if let date = episode.airDate {
+                    if let date = episode.formattedAirDate() {
                         Text(date).font(.system(size: 22)).foregroundStyle(.secondary)
                     }
                 }

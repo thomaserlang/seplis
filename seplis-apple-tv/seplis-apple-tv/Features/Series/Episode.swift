@@ -19,6 +19,21 @@ nonisolated struct Episode: Decodable, Identifiable {
     var id: Int { number }
     var canPlay: Bool { userCanWatch?.onPlayServer != false }
     var watchHeading: String { (userWatched?.position ?? 0) > 0 ? "Continue watching" : "Next to watch" }
+    func formattedAirDate(locale: Locale = .current, timeZone: TimeZone = .current) -> String? {
+        guard let airDate else { return nil }
+        let parser = DateFormatter()
+        parser.locale = Locale(identifier: "en_US_POSIX")
+        parser.timeZone = timeZone
+        parser.dateFormat = "yyyy-MM-dd"
+        parser.isLenient = false
+        guard let date = parser.date(from: airDate) else { return airDate }
+
+        let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.timeZone = timeZone
+        formatter.dateStyle = .medium
+        return formatter.string(from: date)
+    }
     var numberLabel: String {
         if let season, let episode { "S\(season) E\(episode)" } else { "Episode \(number)" }
     }
