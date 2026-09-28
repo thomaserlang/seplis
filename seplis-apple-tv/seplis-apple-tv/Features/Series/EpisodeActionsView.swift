@@ -32,7 +32,8 @@ struct EpisodeActionsView: View {
                         .disabled(!episode.canPlay)
                         .focused(focusedEpisode, equals: episode.number)
                         .accessibilityLabel("\(playTitle) \(episode.numberLabel)")
-                    WatchedButton(watched: episode.userWatched, increment: increment, decrement: decrement)
+                    WatchedButton(watched: episode.userWatched, durationMinutes: episode.runtime,
+                                  increment: increment, decrement: decrement)
                         .disabled(isUpdating)
                         .accessibilityIdentifier("episode-watched-\(episode.number)")
                 }

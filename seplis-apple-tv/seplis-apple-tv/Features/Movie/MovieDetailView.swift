@@ -59,7 +59,7 @@ struct MovieDetailView: View {
             }
             .disabled(!model.canPlay)
             .prefersDefaultFocus(model.canPlay, in: focusNamespace)
-            WatchedButton(watched: movie.userWatched,
+            WatchedButton(watched: movie.userWatched, durationMinutes: movie.runtime,
                           increment: { Task { await model.changeWatched(increment: true) } },
                           decrement: { Task { await model.changeWatched(increment: false) } })
                 .disabled(model.isUpdating)

@@ -65,7 +65,7 @@ struct EpisodesView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .disabled(!episode.canPlay)
-            WatchedButton(watched: episode.userWatched,
+            WatchedButton(watched: episode.userWatched, durationMinutes: episode.runtime,
                           increment: { changeWatched(episode, increment: true) },
                           decrement: { changeWatched(episode, increment: false) })
                 .disabled(model.isUpdating)
