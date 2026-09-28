@@ -30,7 +30,7 @@ import androidx.tv.material3.Text
 import kotlinx.coroutines.launch
 import net.seplis.tv.app.AppSession
 import net.seplis.tv.app.SessionState
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.TvButton
 import net.seplis.tv.core.security.Profile
 import net.seplis.tv.features.authentication.DeviceLoginView
@@ -43,7 +43,7 @@ fun ProfilesView(session: AppSession, onBack: () -> Unit) {
     val first = remember { FocusRequester() }
     val active = (session.state as? SessionState.Active)?.profile
     BackHandler { onBack() }
-    Column(Modifier.fillMaxSize().background(Palette.background).padding(16.dp),
+    Column(Modifier.fillMaxSize().background(LibraryStyle.background).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Text("Profiles", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
         LazyVerticalGrid(GridCells.Adaptive(120.dp), Modifier.weight(1f),
@@ -53,7 +53,7 @@ fun ProfilesView(session: AppSession, onBack: () -> Unit) {
                 var focused by remember { mutableStateOf(false) }
                 Column(Modifier.widthIn(max = 140.dp).height(105.dp)
                     .then(if (index == 0) Modifier.focusRequester(first) else Modifier)
-                    .background(Palette.surface, RoundedCornerShape(4.dp))
+                    .background(LibraryStyle.controlBackground, RoundedCornerShape(4.dp))
                     .border(1.5.dp, if (focused) Color.White else Color.Transparent, RoundedCornerShape(4.dp))
                     .onFocusChanged { focused = it.isFocused }
                     .combinedClickable(
@@ -64,7 +64,7 @@ fun ProfilesView(session: AppSession, onBack: () -> Unit) {
                     Spacer(Modifier.height(10.dp))
                     Text(profile.username, maxLines = 1, fontSize = 14.sp)
                     Text(if (session.needsSignIn(profile)) "Sign in again" else if (profile.id == active?.id) "Active" else " ",
-                        fontSize = 10.sp, color = Palette.muted)
+                        fontSize = 10.sp, color = LibraryStyle.muted)
                 }
             }
         }
@@ -77,13 +77,13 @@ fun ProfilesView(session: AppSession, onBack: () -> Unit) {
     }
     LaunchedEffect(session.profiles) { withFrameNanos { }; first.requestFocus() }
     if (adding) Dialog(onDismissRequest = { adding = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Box(Modifier.fillMaxSize().background(Palette.background)) {
+        Box(Modifier.fillMaxSize().background(LibraryStyle.background)) {
             DeviceLoginView(session, onBack = { adding = false }, onSignedIn = { adding = false })
         }
     }
     removing?.let { profile ->
         Dialog(onDismissRequest = { removing = null }) {
-            Column(Modifier.background(Palette.surface, RoundedCornerShape(4.dp)).padding(20.dp),
+            Column(Modifier.background(LibraryStyle.controlBackground, RoundedCornerShape(4.dp)).padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Remove ${profile.username} from this TV?")
                 TvButton("Remove Account", { session.remove(profile); removing = null })

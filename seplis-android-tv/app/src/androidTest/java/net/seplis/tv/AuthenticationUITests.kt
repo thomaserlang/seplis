@@ -10,7 +10,7 @@ import net.seplis.tv.core.security.*
 import org.junit.Rule
 import org.junit.Test
 
-class ProfilesUITests {
+class AuthenticationUITests {
     @get:Rule val compose = createComposeRule()
 
     @Test fun cancellingSignInReturnsToProfileChooser() {
@@ -19,7 +19,7 @@ class ProfilesUITests {
             override fun load() = snapshot
             override fun save(snapshot: ProfileSnapshot) { this.snapshot = snapshot }
         }
-        val session = AppSession(store) { token -> ApiClient(token, ApiTransport { path, _, _, _ -> when (path) {
+        val session = AppSession(store) { token -> APIClient(token, ApiTransport { path, _, _, _ -> when (path) {
             "device-authorization" -> """{"device_code":"fixture","user_code":"123456","verification_uri":"https://example.test","expires_at":"2099-01-01T00:00:00Z","poll_interval_seconds":3}"""
             "device-authorization/token" -> """{"status":"pending"}"""
             else -> error("Unexpected fixture request: $path")

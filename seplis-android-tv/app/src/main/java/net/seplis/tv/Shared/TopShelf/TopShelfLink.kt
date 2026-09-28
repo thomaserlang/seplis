@@ -1,4 +1,4 @@
-package net.seplis.tv.features.topshelf
+package net.seplis.tv.shared.topshelf
 
 import android.net.Uri
 import net.seplis.tv.features.library.MediaKind

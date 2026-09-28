@@ -25,8 +25,8 @@ fun MediaPosterGrid(items: List<MediaPosterItem>, isLoading: Boolean, state: Laz
     onFocus: (Int, MediaPosterItem) -> Unit, onUp: () -> Unit,
     onOpen: (MediaReference) -> Unit, footer: (@Composable () -> Unit)? = null,
     onApproachEnd: () -> Unit = {}) {
-    LazyVerticalGrid(GridCells.Adaptive(92.dp), Modifier.fillMaxSize().focusRestorer(), state = state,
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 5.dp),
+    LazyVerticalGrid(GridCells.Adaptive(LibraryStyle.posterWidth), Modifier.fillMaxSize().focusRestorer(), state = state,
+        contentPadding = PaddingValues(horizontal = LibraryStyle.horizontalInset, vertical = 5.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         itemsIndexed(items, key = { _, item -> item.key }) { index, item ->
             LaunchedEffect(item.key, items.size) {
@@ -39,7 +39,7 @@ fun MediaPosterGrid(items: List<MediaPosterItem>, isLoading: Boolean, state: Laz
                     focus.requestFocus()
                 }
             }
-            PosterTile(item.title, item.poster, { onOpen(item.reference) }, Modifier.focusRequester(focus),
+            PosterView(item.title, item.poster, { onOpen(item.reference) }, Modifier.focusRequester(focus),
                 onFocus = { onFocus(index, item) }, onUp = {
                     val firstRow = state.layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }?.row == 0
                     if (firstRow) onUp()

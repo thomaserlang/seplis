@@ -10,6 +10,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun PosterSkeleton(width: Dp = 92.dp) {
-    Box(Modifier.size(width, width * 1.5f).background(Palette.surface, RoundedCornerShape(4.dp)))
+fun PosterSkeleton(width: Dp = LibraryStyle.posterWidth) {
+    Box(Modifier.size(width, width * 1.5f).background(LibraryStyle.controlBackground, RoundedCornerShape(4.dp)))
 }

@@ -15,10 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.tv.material3.Text
 import kotlinx.coroutines.launch
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.features.library.MediaReference
 import net.seplis.tv.features.cast.CastRow
 import net.seplis.tv.features.library.MediaDetailDescription
@@ -26,12 +24,11 @@ import net.seplis.tv.features.library.MediaDetailLayout
 import net.seplis.tv.features.library.MediaDetailHeader
 import net.seplis.tv.features.library.MediaStateActions
 import net.seplis.tv.features.playback.PlaybackTarget
-import net.seplis.tv.components.MessagePanel
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.FailureView
 import net.seplis.tv.components.TvButton
 
 @Composable
-fun SeriesDetailView(ref: MediaReference, api: ApiClient, onEpisodes: (Series, Int?) -> Unit,
+fun SeriesDetailView(ref: MediaReference, api: APIClient, onEpisodes: (Series, Int?) -> Unit,
     onPlay: (PlaybackTarget) -> Unit, refresh: Int) {
     val model = remember(ref, api) { SeriesDetailModel(ref, api) }
     val scope = rememberCoroutineScope()
@@ -41,7 +38,7 @@ fun SeriesDetailView(ref: MediaReference, api: ApiClient, onEpisodes: (Series, I
     val current = model.series
     if (current == null) {
         if (model.error == null) net.seplis.tv.features.library.MediaDetailLoading()
-        else MessagePanel(model.error.orEmpty(), retry = { scope.launch { model.load() } })
+        else FailureView(model.error.orEmpty(), retry = { scope.launch { model.load() } })
         return
     }
     LaunchedEffect(current.id) { primaryFocus.requestFocus() }
@@ -97,7 +94,7 @@ fun SeriesDetailView(ref: MediaReference, api: ApiClient, onEpisodes: (Series, I
             }
             }
         }
-        model.error?.let { MessagePanel(it, retry = { scope.launch { model.load() } }) }
+        model.error?.let { FailureView(it, retry = { scope.launch { model.load() } }) }
         Spacer(Modifier.height(12.dp))
     }
 }

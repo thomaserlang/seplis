@@ -3,18 +3,13 @@ package net.seplis.tv.features.movie
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.features.library.MediaReference
-import net.seplis.tv.features.library.MediaSummary
-import net.seplis.tv.features.cast.CastMember
-import net.seplis.tv.features.cast.CastRepository
-import net.seplis.tv.features.library.MediaDetailRepository
+import net.seplis.tv.features.topshelf.WatchHistory
 
-class MovieDetailModel(private val ref: MediaReference, api: ApiClient) {
+class MovieDetailModel(val reference: MediaReference, private val api: APIClient) {
     var isUpdating by mutableStateOf(false)
         private set
-    val repository = MovieRepository(api)
-    val shared = MediaDetailRepository(api)
     var movie by mutableStateOf<Movie?>(null)
     var canPlay by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
@@ -25,8 +20,9 @@ class MovieDetailModel(private val ref: MediaReference, api: ApiClient) {
         isLoading = true
         error = null
         try {
-            val loaded = repository.movie(ref)
-            canPlay = repository.canPlay(ref)
+            val loaded = Movie.from(api.objectAt(reference.path,
+                mapOf("expand" to "user_watchlist,user_favorite,user_watched")))
+            canPlay = api.arrayAt("${reference.path}/play-servers").length() > 0
             movie = loaded
             error = null
         } catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
@@ -40,7 +36,11 @@ class MovieDetailModel(private val ref: MediaReference, api: ApiClient) {
     private suspend fun update(path: String, method: String) {
         if (isUpdating) return
         isUpdating = true
-        try { shared.update(ref, path, method); load() }
+        try {
+            api.perform("${reference.path}/$path", method)
+            if (path == "watched") WatchHistory.notifyChanged()
+            load()
+        }
         catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
         catch (failure: Exception) { error = failure.message ?: "Could not update movie" }
         finally { isUpdating = false }

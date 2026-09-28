@@ -14,46 +14,48 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import kotlinx.coroutines.launch
-import net.seplis.tv.features.library.MediaKind
-import net.seplis.tv.features.library.MediaReference
-import net.seplis.tv.components.MessagePanel
+import net.seplis.tv.components.FailureView
 import net.seplis.tv.components.MediaPosterGrid
 import net.seplis.tv.components.MediaPosterItem
 
 @Composable
 fun CatalogView(kind: MediaKind, store: CatalogModel, refresh: Int, contentEntry: Int,
-    onMenuFocus: () -> Unit, onOpen: (MediaReference) -> Unit) {
+    onMenuFocus: () -> Unit, onOpen: (MediaReference) -> Unit, isActive: Boolean = true) {
+    var filters by remember { mutableStateOf(CatalogFilters()) }
+    var focusedID by remember(filters) { mutableStateOf<Int?>(null) }
+    var restoreFocusPending by remember { mutableStateOf(false) }
+    LaunchedEffect(refresh) { if (isActive && refresh > 0) restoreFocusPending = true }
     val scope = rememberCoroutineScope()
     val firstFilter = remember { FocusRequester() }
-    val gridState = androidx.compose.runtime.key(store.filters) { rememberLazyGridState() }
+    val gridState = androidx.compose.runtime.key(filters) { rememberLazyGridState() }
     LaunchedEffect(contentEntry) {
         if (contentEntry > 0) { withFrameNanos { }; firstFilter.requestFocus() }
     }
     var filtersOpen by remember { mutableStateOf(false) }
-    LaunchedEffect(store.filters) { store.ensureLoaded(0) }
+    LaunchedEffect(filters) { store.load(filters) }
     fun loadMore() {
-        if (store.cursor != null && store.error == null) scope.launch { store.load(more = true) }
+        if (store.cursor != null && store.error == null) scope.launch { store.load(filters, more = true) }
     }
     Column(Modifier.fillMaxSize()) {
-        CatalogQuickFilters(kind, store.filters, firstFilter, { store.filters = it }, onMenuFocus) { filtersOpen = true }
+        CatalogQuickFilters(kind, filters, firstFilter, { filters = it }, onMenuFocus) { filtersOpen = true }
         if (store.error != null && store.items.isEmpty()) {
-            MessagePanel(store.error ?: "Could not load", { scope.launch { store.load() } })
+            FailureView(store.error ?: "Could not load", { scope.launch { store.load(filters) } })
         } else {
             val empty = store.hasLoaded && !store.loading && store.items.isEmpty() && store.error == null
             MediaPosterGrid(store.items.map { MediaPosterItem(MediaReference(kind, it.id), it.title, it.poster) },
                 isLoading = store.loading || !store.hasLoaded && store.error == null, state = gridState,
-                refresh = refresh, restoreKey = store.focusedID?.takeIf { store.restoreFocusPending }?.let { "$kind-$it" },
-                onRestored = { store.restoreFocusPending = false }, onFocus = { index, item ->
-                    store.focusedID = item.reference.id
+                refresh = refresh, restoreKey = focusedID?.takeIf { restoreFocusPending }?.let { "$kind-$it" },
+                onRestored = { restoreFocusPending = false }, onFocus = { index, item ->
+                    focusedID = item.reference.id
                     if (index >= store.items.size - 16) loadMore()
                 }, onUp = { firstFilter.requestFocus() }, onOpen = onOpen,
                 footer = if (empty || store.error != null) {{
-                    if (empty) MessagePanel("No titles found")
-                    else MessagePanel(store.error.orEmpty(), { scope.launch { store.load(more = store.items.isNotEmpty()) } })
+                    if (empty) FailureView("No titles found")
+                    else FailureView(store.error.orEmpty(), { scope.launch { store.load(filters, more = store.items.isNotEmpty()) } })
                 }} else null, onApproachEnd = ::loadMore)
         }
     }
-    if (filtersOpen) CatalogFilterView(kind, store.filters, store::genres,
-        onApply = { store.filters = it; filtersOpen = false },
+    if (filtersOpen) CatalogFilterView(kind, filters, store.api,
+        onApply = { filters = it; filtersOpen = false },
         onDismiss = { filtersOpen = false })
 }

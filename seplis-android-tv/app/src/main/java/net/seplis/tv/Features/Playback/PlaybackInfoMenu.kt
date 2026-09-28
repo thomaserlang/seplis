@@ -1,5 +1,19 @@
 package net.seplis.tv.features.playback
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.tv.material3.Text
+import net.seplis.tv.components.LibraryStyle
 import java.net.URI
 import java.text.DecimalFormat
 
@@ -33,5 +47,15 @@ object PlaybackInfoMenu {
             audio.channels?.let { add("Audio channels" to it.toString()) }
             add("Audio language" to audio.language)
         }
+    }
+}
+
+@Composable
+internal fun PlaybackInfoRow(label: String, value: String, modifier: Modifier = Modifier) {
+    var focused by remember { mutableStateOf(false) }
+    Column(modifier.fillMaxWidth().border(1.5.dp, if (focused) Color.White else Color.Transparent, RoundedCornerShape(4.dp))
+        .onFocusChanged { focused = it.isFocused }.focusable().padding(12.dp)) {
+        Text(label, color = LibraryStyle.muted, fontSize = 11.sp, lineHeight = 14.sp)
+        Text(value, fontSize = 13.sp, lineHeight = 17.sp)
     }
 }

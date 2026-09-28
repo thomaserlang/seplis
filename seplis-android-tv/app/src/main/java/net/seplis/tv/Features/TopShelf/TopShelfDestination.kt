@@ -1,17 +1,23 @@
 package net.seplis.tv.features.topshelf
 
+import net.seplis.tv.shared.topshelf.*
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.core.networking.text
 import net.seplis.tv.features.series.Episode
 import net.seplis.tv.features.playback.*
-import net.seplis.tv.components.MessagePanel
+import net.seplis.tv.components.FailureView
 
 @Composable
-fun TopShelfDestination(link: TopShelfLink, api: ApiClient, onClose: () -> Unit, onFinished: () -> Unit) {
+fun TopShelfDestination(link: TopShelfLink, api: APIClient, onClose: () -> Unit, onFinished: () -> Unit) {
+    if (!link.play) {
+        net.seplis.tv.features.library.MediaDetailPresentation(link.reference, api, link.accountID.toString(), onClose)
+        return
+    }
     var target by remember(link) { mutableStateOf<PlaybackTarget?>(null) }
     var error by remember(link) { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -29,5 +35,5 @@ fun TopShelfDestination(link: TopShelfLink, api: ApiClient, onClose: () -> Unit,
     BackHandler { onClose() }
     val current = target
     if (current != null) PlaybackView(current, api, link.accountID.toString(), onClose, onFinished, onNext = { target = it })
-    else MessagePanel(error ?: "Preparing video", retry = if (error == null) null else { { scope.launch { load() } } })
+    else FailureView(error ?: "Preparing video", retry = if (error == null) null else { { scope.launch { load() } } })
 }

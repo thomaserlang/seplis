@@ -4,12 +4,12 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import org.json.JSONObject
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-class PlaybackProgress(private val api: ApiClient, private val path: String,
+class PlaybackProgress(private val api: APIClient, private val path: String,
     private val scope: CoroutineScope, start: Long) {
     var completed = false
         private set

@@ -13,7 +13,7 @@ fun interface ApiTransport {
     suspend fun request(path: String, method: String, query: List<Pair<String, String>>, body: JSONObject?): String
 }
 
-class ApiClient(private val token: String? = null, private val transport: ApiTransport? = null) {
+class APIClient(private val token: String? = null, private val transport: ApiTransport? = null) {
     var onUnauthorized: (() -> Unit)? = null
     companion object { const val BASE = "https://api.seplis.net/2/" }
 
@@ -41,7 +41,7 @@ class ApiClient(private val token: String? = null, private val transport: ApiTra
     ): String = withContext(Dispatchers.IO) {
         transport?.let {
             try { return@withContext it.request(path, method, query, body) }
-            catch (failure: ApiException) {
+            catch (failure: APIError) {
                 if (failure.status == 401 && token != null) withContext(Dispatchers.Main) { onUnauthorized?.invoke() }
                 throw failure
             }
@@ -60,7 +60,7 @@ class ApiClient(private val token: String? = null, private val transport: ApiTra
         val response = HttpClient.request(request.build())
         if (response.status !in 200..299) {
             if (response.status == 401 && token != null) withContext(Dispatchers.Main) { onUnauthorized?.invoke() }
-            throw ApiException(response.status)
+            throw APIError(response.status)
         }
         response.body
     }

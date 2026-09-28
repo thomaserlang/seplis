@@ -1,5 +1,7 @@
 package net.seplis.tv.app
 
+import net.seplis.tv.shared.topshelf.*
+
 import android.os.Bundle
 import android.view.WindowInsets
 import android.view.WindowInsetsController
@@ -8,7 +10,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.LocalContentColor
@@ -19,7 +21,6 @@ import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import net.seplis.tv.features.topshelf.TopShelfLink
 
 class MainActivity : ComponentActivity() {
     private var pendingLink by mutableStateOf<TopShelfLink?>(null)
@@ -38,8 +39,8 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MaterialTheme(colorScheme = darkColorScheme(
-                background = Palette.background, onBackground = Color.White,
-                surface = Palette.surface, onSurface = Color.White,
+                background = LibraryStyle.background, onBackground = Color.White,
+                surface = LibraryStyle.controlBackground, onSurface = Color.White,
             )) {
                 CompositionLocalProvider(
                     LocalContentColor provides Color.White,

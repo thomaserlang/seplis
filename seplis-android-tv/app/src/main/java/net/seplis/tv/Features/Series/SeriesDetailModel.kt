@@ -3,20 +3,16 @@ package net.seplis.tv.features.series
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.features.series.Episode
 import net.seplis.tv.features.library.MediaReference
-import net.seplis.tv.features.cast.CastMember
-import net.seplis.tv.features.cast.CastRepository
-import net.seplis.tv.features.library.MediaDetailRepository
+import net.seplis.tv.features.topshelf.WatchHistory
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 
-class SeriesDetailModel(private val ref: MediaReference, api: ApiClient) {
+class SeriesDetailModel(val reference: MediaReference, private val api: APIClient) {
     var isUpdating by mutableStateOf(false)
         private set
-    val repository = SeriesRepository(api)
-    val shared = MediaDetailRepository(api)
     var series by mutableStateOf<Series?>(null)
     var next by mutableStateOf<Episode?>(null)
     var last by mutableStateOf<Episode?>(null)
@@ -28,10 +24,11 @@ class SeriesDetailModel(private val ref: MediaReference, api: ApiClient) {
         isLoading = true
         error = null
         try {
-            val loaded = repository.series(ref)
+            val loaded = Series.from(api.objectAt(reference.path,
+                mapOf("expand" to "user_watchlist,user_favorite")))
             val (nextEpisode, lastEpisode) = coroutineScope {
-                val next = async { repository.episodeToWatch(ref) }
-                val last = async { repository.lastWatched(ref) }
+                val next = async { api.optionalObject("${reference.path}/episode-to-watch")?.let(Episode::from) }
+                val last = async { api.optionalObject("${reference.path}/episode-last-watched")?.let(Episode::from) }
                 next.await() to last.await()
             }
             next = nextEpisode
@@ -50,7 +47,11 @@ class SeriesDetailModel(private val ref: MediaReference, api: ApiClient) {
     private suspend fun update(path: String, method: String) {
         if (isUpdating) return
         isUpdating = true
-        try { shared.update(ref, path, method); load() }
+        try {
+            api.perform("${reference.path}/$path", method)
+            if (path.endsWith("watched")) WatchHistory.notifyChanged()
+            load()
+        }
         catch (cancelled: kotlinx.coroutines.CancellationException) { throw cancelled }
         catch (failure: Exception) { error = failure.message ?: "Could not update series" }
         finally { isUpdating = false }

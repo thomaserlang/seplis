@@ -1,7 +1,6 @@
 package net.seplis.tv.features.playback
 
 import android.content.Context
-import java.util.Locale
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,11 +8,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.core.networking.text
 import org.json.JSONObject
 
-class PlaybackPreferences(context: Context, profileId: String, private val api: ApiClient,
+class PlaybackPreferences(context: Context, profileId: String, private val api: APIClient,
     private val seriesPath: String?, private val scope: CoroutineScope) {
     var error by mutableStateOf<String?>(null)
     private var seriesAudio: String? = null

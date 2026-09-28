@@ -1,7 +1,7 @@
 package net.seplis.tv.debug
 
 import net.seplis.tv.app.AppSession
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.core.networking.ApiTransport
 import net.seplis.tv.core.security.Profile
 import net.seplis.tv.core.security.ProfileSnapshot
@@ -18,7 +18,7 @@ object UITestFixtures {
             override fun load() = snapshot
             override fun save(snapshot: ProfileSnapshot) { this.snapshot = snapshot }
         }
-        return AppSession(store) { ApiClient(it, responses) }
+        return AppSession(store) { APIClient(it, responses) }
     }
 }
 

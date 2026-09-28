@@ -10,7 +10,7 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.StarBorder
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.MediaStateButton
 
 @Composable
@@ -19,8 +19,8 @@ fun MediaStateActions(watchlist: Boolean, favorite: Boolean,
     enabled: Boolean = true) {
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         MediaStateButton("Watchlist", if (watchlist) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-            watchlist, Palette.purple, onWatchlist, modifier = watchlistModifier, enabled = enabled)
+            watchlist, LibraryStyle.purple, onWatchlist, modifier = watchlistModifier, enabled = enabled)
         MediaStateButton("Favorite", if (favorite) Icons.Filled.Star else Icons.Outlined.StarBorder,
-            favorite, Palette.gold, onFavorite, enabled = enabled)
+            favorite, LibraryStyle.gold, onFavorite, enabled = enabled)
     }
 }

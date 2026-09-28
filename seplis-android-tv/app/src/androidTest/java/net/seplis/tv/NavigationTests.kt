@@ -6,7 +6,7 @@ import org.junit.Test
 import androidx.test.platform.app.InstrumentationRegistry
 import net.seplis.tv.app.MainActivity
 
-class NavigationUITests : UITestCase() {
+class NavigationTests : UITestCase() {
     @Test fun remoteTabsAndProfileDismissalRestoreMenuFocus() {
         compose.waitUntil(10_000) {
             compose.onAllNodesWithContentDescription("National Treasure").fetchSemanticsNodes().isNotEmpty()

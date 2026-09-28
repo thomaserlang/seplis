@@ -4,7 +4,7 @@ import android.view.KeyEvent
 import androidx.compose.ui.test.*
 import org.junit.Test
 
-class ProfileMenuUITests : UITestCase() {
+class ProfileUITests : UITestCase() {
     @Test fun cancellingAddAccountRestoresProfileMenuAndTab() {
         compose.waitUntil(10_000) {
             compose.onAllNodesWithContentDescription("National Treasure").fetchSemanticsNodes().isNotEmpty()

@@ -3,29 +3,21 @@ package net.seplis.tv.app
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import net.seplis.tv.core.networking.ApiClient
-import net.seplis.tv.core.networking.ApiException
+import net.seplis.tv.core.networking.APIClient
+import net.seplis.tv.core.networking.APIError
 import net.seplis.tv.core.networking.text
 import net.seplis.tv.core.security.Profile
 import net.seplis.tv.core.security.ProfileSnapshot
 import net.seplis.tv.core.security.ProfileStore
 
-sealed interface SessionState {
-    data object Loading : SessionState
-    data object SignedOut : SessionState
-    data object ChooseProfile : SessionState
-    data object RestoreFailed : SessionState
-    data class Active(val profile: Profile, val api: ApiClient) : SessionState
-}
-
-class AppSession(private val vault: ProfileStore, private val makeClient: (String?) -> ApiClient = { ApiClient(it) }) {
+class AppSession(private val vault: ProfileStore, private val makeClient: (String?) -> APIClient = { APIClient(it) }) {
     var state: SessionState by mutableStateOf(SessionState.Loading)
         private set
     var profiles: List<Profile> by mutableStateOf(emptyList())
         private set
     var error: String? by mutableStateOf(null)
     private var snapshot = ProfileSnapshot()
-    val authorizationAPI: ApiClient get() = makeClient(null)
+    val authorizationAPI: APIClient get() = makeClient(null)
     val hasPendingSignIn get() = snapshot.pendingToken != null
     fun needsSignIn(profile: Profile) = profile.token == null
 
@@ -81,7 +73,7 @@ class AppSession(private val vault: ProfileStore, private val makeClient: (Strin
     private suspend fun completeSignIn(token: String) {
         val user = try {
             makeClient(token).objectAt("users/me")
-        } catch (failure: ApiException) {
+        } catch (failure: APIError) {
             if (failure.status == 401) update(snapshot.copy(pendingToken = null))
             throw failure
         }

@@ -2,12 +2,14 @@ package net.seplis.tv.features.library
 
 import net.seplis.tv.features.library.MediaKind
 
-enum class FilterChoice(val queryValue: String?) { ANY(null), YES("true"), NO("false") }
+enum class CatalogChoice(val queryValue: String?) { ANY(null), YES("true"), NO("false") }
+
+data class CatalogGenre(val id: Int, val name: String)
 
 data class CatalogFilters(
-    val sort: String = "popularity_desc", val available: FilterChoice = FilterChoice.YES,
-    val watched: FilterChoice = FilterChoice.ANY, val watchlist: FilterChoice = FilterChoice.ANY,
-    val favorites: FilterChoice = FilterChoice.ANY, val genres: Map<Int, FilterChoice> = emptyMap(),
+    val sort: String = "popularity_desc", val available: CatalogChoice = CatalogChoice.YES,
+    val watched: CatalogChoice = CatalogChoice.ANY, val watchlist: CatalogChoice = CatalogChoice.ANY,
+    val favorites: CatalogChoice = CatalogChoice.ANY, val genres: Map<Int, CatalogChoice> = emptyMap(),
     val languages: Set<String> = emptySet(), val yearFrom: String = "", val yearTo: String = "",
     val ratingFrom: String = "", val ratingTo: String = "", val votesFrom: String = "", val votesTo: String = "",
 ) {
@@ -19,7 +21,7 @@ data class CatalogFilters(
             value.queryValue?.let { add(key to it) }
         }
         genres.toSortedMap().forEach { (id, choice) ->
-            if (choice != FilterChoice.ANY) add((if (choice == FilterChoice.YES) "genre_id" else "not_genre_id") to id.toString())
+            if (choice != CatalogChoice.ANY) add((if (choice == CatalogChoice.YES) "genre_id" else "not_genre_id") to id.toString())
         }
         languages.sorted().forEach { add("language" to it) }
         val date = if (kind == MediaKind.MOVIE) "release_date" else "premiered"

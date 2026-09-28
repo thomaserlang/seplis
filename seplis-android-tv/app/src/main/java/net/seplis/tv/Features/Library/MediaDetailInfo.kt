@@ -1,9 +1,6 @@
 package net.seplis.tv.features.library
 
 import java.text.NumberFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.util.Locale
 
 data class MediaDetailFact(val label: String, val value: String)
@@ -16,10 +13,6 @@ interface MediaDetailInfo {
     val genres: List<String>
     val detailFacts: List<MediaDetailFact>
 }
-
-fun localDate(value: String): String = runCatching {
-    LocalDate.parse(value).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(Locale.getDefault()))
-}.getOrDefault(value)
 
 object MediaFactFormat {
     fun money(value: Long): String = when {

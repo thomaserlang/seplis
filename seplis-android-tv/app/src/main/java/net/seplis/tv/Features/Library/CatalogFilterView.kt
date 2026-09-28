@@ -1,23 +1,16 @@
 package net.seplis.tv.features.library
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.key
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,7 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.CancellationException
-import net.seplis.tv.components.MessagePanel
+import net.seplis.tv.components.FailureView
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.material.icons.Icons
@@ -38,27 +31,22 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Text
 import net.seplis.tv.features.library.MediaKind
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.TvButton
-import java.util.Locale
 
 private enum class FilterPage(val label: String) {
     SORT("Sort"), LIBRARY("Library"), GENRES("Genres"), LANGUAGES("Languages"),
     YEAR("Year"), RATING("IMDb Rating"), VOTES("IMDb Votes")
 }
 
-private data class CatalogGenre(val id: Int, val name: String)
-
 @Composable
-fun CatalogFilterView(kind: MediaKind, current: CatalogFilters, loadGenres: suspend () -> List<Pair<Int, String>>,
+fun CatalogFilterView(kind: MediaKind, current: CatalogFilters, api: net.seplis.tv.core.networking.APIClient,
     onApply: (CatalogFilters) -> Unit,
     onDismiss: () -> Unit) {
     var draft by remember(current) { mutableStateOf(current) }
@@ -71,7 +59,11 @@ fun CatalogFilterView(kind: MediaKind, current: CatalogFilters, loadGenres: susp
         loadingGenres = true
         genreError = null
         try {
-            genres = loadGenres().map { CatalogGenre(it.first, it.second) }
+            val records = api.arrayAt("genres", mapOf("type" to kind.name.lowercase()))
+            genres = (0 until records.length()).map { index ->
+                val record = records.getJSONObject(index)
+                CatalogGenre(record.getInt("id"), record.getString("name"))
+            }
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (failure: Exception) { genreError = failure.message ?: "Could not load genres" }
         finally { loadingGenres = false }
@@ -80,7 +72,7 @@ fun CatalogFilterView(kind: MediaKind, current: CatalogFilters, loadGenres: susp
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(Modifier.fillMaxSize().background(Palette.background)
+        Column(Modifier.fillMaxSize().background(LibraryStyle.background)
             .padding(horizontal = 32.dp, vertical = 20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text("Filters", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
@@ -93,7 +85,7 @@ fun CatalogFilterView(kind: MediaKind, current: CatalogFilters, loadGenres: susp
                     verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     FilterPage.entries.forEach { item ->
                         TvButton(item.label, { page = item }, Modifier.fillMaxWidth(), selected = page == item,
-                            color = Palette.filterSelected, trailingIcon = Icons.Default.ChevronRight, alignStart = true)
+                            color = LibraryStyle.filterSelected, trailingIcon = Icons.Default.ChevronRight, alignStart = true)
                     }
                 }
                 key(page) {
@@ -103,7 +95,7 @@ fun CatalogFilterView(kind: MediaKind, current: CatalogFilters, loadGenres: susp
                     when (page) {
                         FilterPage.SORT -> CatalogFilters.sorts(kind).forEach { (label, value) ->
                             TvButton(label, { draft = draft.copy(sort = value) }, Modifier.fillMaxWidth(),
-                                selected = draft.sort == value, color = Palette.filterSelected, alignStart = true,
+                                selected = draft.sort == value, color = LibraryStyle.filterSelected, alignStart = true,
                                 trailingIcon = if (draft.sort == value) Icons.Default.Check else null)
                         }
                         FilterPage.LIBRARY -> {
@@ -113,10 +105,10 @@ fun CatalogFilterView(kind: MediaKind, current: CatalogFilters, loadGenres: susp
                             FilterChoiceRow("Watched", draft.watched) { draft = draft.copy(watched = it) }
                         }
                         FilterPage.GENRES -> {
-                            genreError?.let { MessagePanel(it, retry = { scope.launch { reloadGenres() } }) }
-                            if (loadingGenres) Text("Loading genres", color = Palette.muted)
+                            genreError?.let { FailureView(it, retry = { scope.launch { reloadGenres() } }) }
+                            if (loadingGenres) Text("Loading genres", color = LibraryStyle.muted)
                             genres.forEach { genre ->
-                                FilterChoiceRow(genre.name, draft.genres[genre.id] ?: FilterChoice.ANY,
+                                FilterChoiceRow(genre.name, draft.genres[genre.id] ?: CatalogChoice.ANY,
                                     inclusiveLabels = true) { choice ->
                                     draft = draft.copy(genres = draft.genres + (genre.id to choice))
                                 }

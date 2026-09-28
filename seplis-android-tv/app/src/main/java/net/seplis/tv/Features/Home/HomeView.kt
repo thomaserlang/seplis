@@ -1,32 +1,27 @@
 package net.seplis.tv.features.home
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import net.seplis.tv.core.networking.APIClient
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.tv.material3.Text
 import kotlinx.coroutines.launch
 import net.seplis.tv.features.library.MediaReference
-import net.seplis.tv.components.MessagePanel
-import net.seplis.tv.components.Palette
 
 @Composable
-fun HomeView(store: HomeStore, refresh: Int, contentEntry: Int,
+fun HomeView(store: HomeViewState, refresh: Int, contentEntry: Int,
     onMenuFocus: () -> Unit, onOpen: (MediaReference) -> Unit, isActive: Boolean = true,
     autoFocusOnLoad: Boolean = true) {
     val listState = rememberLazyListState()
@@ -51,22 +46,20 @@ fun HomeView(store: HomeStore, refresh: Int, contentEntry: Int,
         verticalArrangement = Arrangement.spacedBy(3.dp)) {
         items(HomeShelf.entries, key = HomeShelf::name) { shelf ->
             val state = store.shelf(shelf)
-            val scope = rememberCoroutineScope()
-            if (!state.loaded || state.items.isNotEmpty() || state.error != null) {
-                Column {
-                    Text(shelf.title, Modifier.padding(start = 16.dp),
-                        fontSize = 11.sp, color = Palette.muted)
-                    if (state.error != null && state.items.isEmpty()) {
-                        MessagePanel(state.error ?: "Could not load", retry = { scope.launch { state.load() } })
-                    } else {
-                        ShelfPosters(shelf, state, store, refresh,
-                            if (shelf == firstShelf) firstFocus else null,
-                            if (shelf == firstShelf) contentEntry else 0,
-                            onUp = if (shelf == firstShelf) onMenuFocus else null, onOpen,
-                            autoFocusOnLoad = autoFocusOnLoad && isActive)
-                    }
-                }
-            }
+            HomeShelfView(shelf, state, store, refresh,
+                if (shelf == firstShelf) firstFocus else null,
+                if (shelf == firstShelf) contentEntry else 0,
+                onUp = if (shelf == firstShelf) onMenuFocus else null, onOpen,
+                autoFocusOnLoad = autoFocusOnLoad && isActive)
         }
     }
+}
+
+class HomeViewState(api: APIClient) {
+    private val shelves = HomeShelf.entries.associateWith { HomeShelfModel(api, it) }
+    var focusClaimed by mutableStateOf(false)
+    var focusedKey: String? by mutableStateOf(null)
+    var focusedShelf: HomeShelf? by mutableStateOf(null)
+    var restoreFocusPending = false
+    fun shelf(value: HomeShelf): HomeShelfModel = shelves.getValue(value)
 }

@@ -3,8 +3,6 @@ package net.seplis.tv.features.profiles
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.height
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -54,7 +52,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.tv.material3.Text
 import net.seplis.tv.app.AppSession
 import net.seplis.tv.core.security.Profile
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.TvButton
 import net.seplis.tv.features.authentication.DeviceLoginView
 
@@ -82,12 +80,12 @@ fun ProfilesPanel(session: AppSession, onClose: () -> Unit) {
         SideEffect { window?.setDimAmount(0f) }
         BackHandler { back() }
         if (addingAccount) {
-            Box(Modifier.fillMaxSize().background(Palette.background)) {
+            Box(Modifier.fillMaxSize().background(LibraryStyle.background)) {
                 DeviceLoginView(session, onBack = { addingAccount = false }, onSignedIn = onClose)
             }
         } else Box(Modifier.fillMaxSize()) {
             Column(Modifier.align(Alignment.TopStart).padding(start = 16.dp, top = 8.dp, bottom = 16.dp)
-                .width(240.dp).testTag("profiles-panel").background(Palette.surface, RoundedCornerShape(4.dp))
+                .width(240.dp).testTag("profiles-panel").background(LibraryStyle.controlBackground, RoundedCornerShape(4.dp))
                 .border(0.5.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
                 .onPreviewKeyEvent {
                     if (it.key == Key.DirectionRight && it.type == KeyEventType.KeyDown) { onClose(); true } else false
@@ -142,7 +140,7 @@ fun ProfilesPanel(session: AppSession, onClose: () -> Unit) {
     }
     confirm?.let { profile ->
         androidx.compose.ui.window.Dialog(onDismissRequest = { confirm = null }) {
-            Column(Modifier.background(Palette.surface, RoundedCornerShape(8.dp)).padding(22.dp),
+            Column(Modifier.background(LibraryStyle.controlBackground, RoundedCornerShape(8.dp)).padding(22.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text("Remove ${profile.username} from this TV?")
                 TvButton("Remove Account", { session.remove(profile); confirm = null; returnToAddAccount = true; removing = false })

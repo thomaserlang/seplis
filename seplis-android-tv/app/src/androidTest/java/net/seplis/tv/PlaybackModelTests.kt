@@ -14,7 +14,7 @@ import org.junit.Test
 class PlaybackModelTests {
     private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
     private val fixture = PlaybackInfoFixture()
-    private val api = ApiClient("fixture", ApiTransport { path, _, _, _ -> when {
+    private val api = APIClient("fixture", ApiTransport { path, _, _, _ -> when {
         path.endsWith("/play-servers") -> """[{"play_id":"$path","play_url":"https://example.test"}]"""
         path.endsWith("/episodes/2") -> """{"number":2,"title":"Next"}"""
         else -> "{}"
@@ -91,7 +91,7 @@ class PlaybackModelTests {
     @Test fun closingDuringPreparationCancelsThePendingRequest() = runBlocking {
         withContext(Dispatchers.Main) {
             val started = CompletableDeferred<Unit>()
-            val pendingAPI = ApiClient("fixture", ApiTransport { _, _, _, _ ->
+            val pendingAPI = APIClient("fixture", ApiTransport { _, _, _, _ ->
                 started.complete(Unit)
                 awaitCancellation()
             })

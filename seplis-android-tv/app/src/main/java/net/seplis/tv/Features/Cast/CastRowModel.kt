@@ -2,11 +2,14 @@ package net.seplis.tv.features.cast
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.CancellationException
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
+import net.seplis.tv.core.networking.page
+import net.seplis.tv.features.library.MediaKind
 import net.seplis.tv.features.library.MediaReference
+import net.seplis.tv.features.movie.MovieCastCredit
+import net.seplis.tv.features.series.SeriesCastCredit
 
-class CastRowModel(private val reference: MediaReference, api: ApiClient) {
-    private val repository = CastRepository(api)
+class CastRowModel(private val reference: MediaReference, private val api: APIClient) {
     var hasLoaded by mutableStateOf(false)
         private set
     var members by mutableStateOf<List<CastMember>>(emptyList())
@@ -23,7 +26,16 @@ class CastRowModel(private val reference: MediaReference, api: ApiClient) {
         isLoading = true
         error = null
         try {
-            val page = repository.cast(reference, if (more) cursor else null)
+            val query = buildMap {
+                put("per_page", "25")
+                if (more) cursor?.let { put("cursor", it) }
+            }
+            val page = api.objectAt("${reference.path}/cast", query).page {
+                when (reference.kind) {
+                    MediaKind.MOVIE -> MovieCastCredit.from(it).member
+                    MediaKind.SERIES -> SeriesCastCredit.from(it).member
+                }
+            }
             members = ((if (more) members else emptyList()) + page.records).distinctBy { it.id }
             cursor = page.cursor
             hasLoaded = true

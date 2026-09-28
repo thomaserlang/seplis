@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -21,7 +21,7 @@ fun MediaDetailLayout(poster: Poster?, headerSpacing: Dp = 12.dp,
     header: @Composable () -> Unit, content: @Composable () -> Unit) {
     val scroll = rememberScrollState()
     val minimumScroll = remember { object : BringIntoViewSpec {} }
-    BoxWithConstraints(Modifier.fillMaxSize().background(Palette.background)) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(LibraryStyle.background)) {
         val artworkWidth = maxHeight * 2 / 3
         val contentWidth = maxWidth - artworkWidth
         val leadingInset = maxOf(32.dp, maxWidth * 0.04f)

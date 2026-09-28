@@ -9,7 +9,6 @@ import android.widget.TextView
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
@@ -35,7 +34,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.media3.ui.PlayerControlView
 import androidx.media3.ui.PlayerView
 import androidx.tv.material3.Text
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.TvButton
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
@@ -131,7 +130,7 @@ fun PlaybackSettings(model: PlaybackModel, initial: PlaybackMenu, onDismiss: () 
     Dialog(onDismissRequest = ::back, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         BackHandler { back() }
         Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.CenterEnd) {
-            Column(Modifier.width(360.dp).fillMaxHeight().background(Palette.surface, RoundedCornerShape(8.dp))
+            Column(Modifier.width(360.dp).fillMaxHeight().background(LibraryStyle.controlBackground, RoundedCornerShape(8.dp))
                 .padding(18.dp)) {
                 Text(page.title, fontSize = 20.sp, lineHeight = 24.sp, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(12.dp))
@@ -188,7 +187,7 @@ fun PlaybackSettings(model: PlaybackModel, initial: PlaybackMenu, onDismiss: () 
                                     PlaybackInfoMenu.decision(model.session?.decision, candidate?.request?.url)
                                 else source?.let { PlaybackInfoMenu.source(it, model.selectedAudio) }.orEmpty()
                                 rows.forEachIndexed { index, (label, value) ->
-                                    InfoRow(label, value, if (index == 0) Modifier.focusRequester(focus) else Modifier)
+                                    PlaybackInfoRow(label, value, if (index == 0) Modifier.focusRequester(focus) else Modifier)
                                 }
                             }
                         }
@@ -209,7 +208,7 @@ private fun MenuRow(label: String, value: String, modifier: Modifier = Modifier,
 
 @Composable
 private fun ChoiceRow(label: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
-    TvButton(label, onClick, modifier.fillMaxWidth(), selected = selected, color = Palette.surfaceRaised,
+    TvButton(label, onClick, modifier.fillMaxWidth(), selected = selected, color = LibraryStyle.surfaceRaised,
         icon = if (selected) Icons.Default.Check else null)
 }
 
@@ -222,15 +221,5 @@ private fun ToggleRow(label: String, checked: Boolean, enabled: Boolean, modifie
         .padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.weight(1f), fontSize = 13.sp, lineHeight = 16.sp)
         Switch(checked, onCheckedChange = null, enabled = enabled)
-    }
-}
-
-@Composable
-private fun InfoRow(label: String, value: String, modifier: Modifier = Modifier) {
-    var focused by remember { mutableStateOf(false) }
-    Column(modifier.fillMaxWidth().border(1.5.dp, if (focused) Color.White else Color.Transparent, RoundedCornerShape(4.dp))
-        .onFocusChanged { focused = it.isFocused }.focusable().padding(12.dp)) {
-        Text(label, color = Palette.muted, fontSize = 11.sp, lineHeight = 14.sp)
-        Text(value, fontSize = 13.sp, lineHeight = 17.sp)
     }
 }

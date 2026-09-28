@@ -2,12 +2,12 @@ package net.seplis.tv.features.series
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.CancellationException
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
+import net.seplis.tv.core.networking.page
+import net.seplis.tv.features.topshelf.WatchHistory
 import net.seplis.tv.features.library.*
 
-class EpisodesModel(private val reference: MediaReference, private val season: Int?, api: ApiClient) {
-    private val repository = SeriesRepository(api)
-    private val shared = MediaDetailRepository(api)
+class EpisodesModel(private val reference: MediaReference, private val season: Int?, private val api: APIClient) {
     var episodes by mutableStateOf<List<Episode>?>(null)
         private set
     var error by mutableStateOf<String?>(null)
@@ -22,7 +22,20 @@ class EpisodesModel(private val reference: MediaReference, private val season: I
         loading = true
         error = null
         try {
-            episodes = repository.episodes(reference, season)
+            val result = mutableListOf<Episode>()
+            var cursor: String? = null
+            do {
+                val query = buildMap {
+                    put("expand", "user_watched,user_can_watch")
+                    put("per_page", "100")
+                    season?.let { put("season", it.toString()) }
+                    cursor?.let { put("cursor", it) }
+                }
+                val page = api.objectAt("${reference.path}/episodes", query).page(Episode::from)
+                result += page.records
+                cursor = page.cursor
+            } while (cursor != null)
+            episodes = result
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (failure: Exception) { error = failure.message ?: "Could not load episodes" }
         finally { loading = false }
@@ -32,7 +45,8 @@ class EpisodesModel(private val reference: MediaReference, private val season: I
         if (isUpdating) return
         isUpdating = true
         try {
-            shared.update(reference, "episodes/${episode.number}/watched", if (increment) "POST" else "DELETE")
+            api.perform("${reference.path}/episodes/${episode.number}/watched", if (increment) "POST" else "DELETE")
+            WatchHistory.notifyChanged()
             load()
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (failure: Exception) { updateError = failure.message ?: "Could not update episode" }

@@ -54,7 +54,7 @@ internal fun Modifier.libraryButtonStyle(focused: Boolean, enabled: Boolean, pre
 @Composable
 fun TvButton(
     label: String, onClick: () -> Unit, modifier: Modifier = Modifier,
-    selected: Boolean? = null, enabled: Boolean = true, color: Color = Palette.blue,
+    selected: Boolean? = null, enabled: Boolean = true, color: Color = LibraryStyle.blue,
     flat: Boolean = false, icon: ImageVector? = null, iconOnly: Boolean = false,
     onFocusChange: ((Boolean) -> Unit)? = null,
     onDown: (() -> Unit)? = null,
@@ -70,8 +70,9 @@ fun TvButton(
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     Box(modifier
-        .libraryButtonStyle(focused && !flat, enabled, pressed,
-            if (focused && flat) Color.White else if (selected == true) color else if (flat) Color.Transparent else Palette.surface)
+        .then(if (flat) Modifier.navigationButtonStyle(focused, selected == true, enabled, pressed, color)
+            else Modifier.libraryButtonStyle(focused, enabled, pressed,
+                if (selected == true) color else LibraryStyle.controlBackground))
         .semantics {
             if (iconOnly || accessibilityLabel != null) contentDescription = accessibilityLabel ?: label
             selected?.let { this.selected = it }
@@ -96,13 +97,13 @@ fun TvButton(
         .height(if (subtitle != null) 49.dp else if (flat) 28.dp else 31.dp)
         .padding(horizontal = 12.dp),
         contentAlignment = if (subtitle == null && !alignStart) Alignment.Center else Alignment.CenterStart) {
-        val contentColor = if (focused && flat) Color.Black else Color.White
+        val contentColor = if (flat) navigationButtonContentColor(focused) else Color.White
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
             icon?.let { Icon(it, contentDescription = null, tint = contentColor, modifier = Modifier.size(14.dp)) }
             if (!iconOnly) Column(if (trailingIcon != null || trailingText != null) Modifier.weight(1f) else Modifier) {
                 Text(label, fontSize = 13.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium,
                     color = contentColor, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                subtitle?.let { Text(it, fontSize = 10.sp, lineHeight = 13.sp, color = Palette.muted, maxLines = 1) }
+                subtitle?.let { Text(it, fontSize = 10.sp, lineHeight = 13.sp, color = LibraryStyle.muted, maxLines = 1) }
             }
             trailingIcon?.let { Icon(it, null, tint = contentColor, modifier = Modifier.size(14.dp)) }
             trailingText?.let { Text(it, fontSize = 9.sp, color = contentColor, maxLines = 1) }

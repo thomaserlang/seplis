@@ -1,5 +1,9 @@
 package net.seplis.tv.features.series
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import java.util.Locale
 import org.json.JSONObject
 import net.seplis.tv.core.networking.flag
 import net.seplis.tv.core.networking.integer
@@ -15,6 +19,12 @@ data class Episode(
     val numberLabel: String get() = if (season != null && episode != null) "S$season E$episode" else "Episode $number"
     val label: String get() = title?.let { "$numberLabel - $it" } ?: numberLabel
     val watchHeading: String get() = if (watched.position > 0) "Continue watching" else "Next to watch"
+
+    fun formattedAirDate(locale: Locale = Locale.getDefault()): String? = airDate?.let { value ->
+        runCatching {
+            LocalDate.parse(value).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))
+        }.getOrDefault(value)
+    }
 
     companion object {
         fun from(json: JSONObject) = Episode(

@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.features.library.MediaKind
 import net.seplis.tv.features.library.MediaReference
 import net.seplis.tv.features.movie.MovieDetailView
@@ -17,11 +17,11 @@ import net.seplis.tv.features.series.SeriesDetailView
 import net.seplis.tv.features.playback.PlaybackTarget
 
 @Composable
-fun MediaDetailView(reference: MediaReference, api: ApiClient,
-    onEpisodes: (net.seplis.tv.features.series.Series, Int?) -> Unit, onPlay: (PlaybackTarget) -> Unit, onOpen: (MediaReference) -> Unit,
+fun MediaDetailView(reference: MediaReference, api: APIClient,
+    onEpisodes: (net.seplis.tv.features.series.Series, Int?) -> Unit, onPlay: (PlaybackTarget) -> Unit,
     refresh: Int) {
     when (reference.kind) {
-        MediaKind.MOVIE -> MovieDetailView(reference, api, onPlay, onOpen, refresh)
+        MediaKind.MOVIE -> MovieDetailView(reference, api, onPlay, refresh)
         MediaKind.SERIES -> SeriesDetailView(reference, api, onEpisodes, onPlay, refresh)
     }
 }

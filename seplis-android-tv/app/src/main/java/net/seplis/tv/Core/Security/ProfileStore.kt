@@ -22,7 +22,7 @@ interface ProfileStore {
     fun save(snapshot: ProfileSnapshot)
 }
 
-class ProfileVault(context: Context) : ProfileStore {
+class AndroidProfileStore(context: Context) : ProfileStore {
     private val preferences = context.getSharedPreferences("secure_profiles", Context.MODE_PRIVATE)
     private val alias = "seplis_profiles"
 

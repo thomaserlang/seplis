@@ -1,15 +1,15 @@
 package net.seplis.tv
 
 import net.seplis.tv.features.library.CatalogFilters
-import net.seplis.tv.features.library.FilterChoice
+import net.seplis.tv.features.library.CatalogChoice
 import net.seplis.tv.features.library.MediaKind
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 
-class CatalogFiltersTest {
+class CatalogTests {
     @Test fun repeatedGenreAndLanguageParametersArePreserved() {
-        val query = CatalogFilters(genres = mapOf(1 to FilterChoice.YES, 2 to FilterChoice.NO),
+        val query = CatalogFilters(genres = mapOf(1 to CatalogChoice.YES, 2 to CatalogChoice.NO),
             languages = setOf("en", "da")).query(MediaKind.SERIES)
         assertEquals(listOf("1"), query.filter { it.first == "genre_id" }.map { it.second })
         assertEquals(listOf("2"), query.filter { it.first == "not_genre_id" }.map { it.second })

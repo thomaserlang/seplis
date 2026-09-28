@@ -45,7 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.tv.material3.Text
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.TvButton
 
 @Composable
@@ -72,7 +72,7 @@ fun WatchedButton(watched: Watched, onIncrement: () -> Unit, onDecrement: () -> 
             indication = null) { if (watched.times == 0 && watched.position == 0) onIncrement() else open = true },
         verticalAlignment = Alignment.CenterVertically) {
         Box(Modifier.fillMaxHeight()
-            .background(if (watched.times > 0) Color(0xFF2E5C82) else Palette.surface)
+            .background(if (watched.times > 0) Color(0xFF2E5C82) else LibraryStyle.controlBackground)
             .drawWithContent {
                 drawContent()
                 if (progress > 0f) {
@@ -90,7 +90,7 @@ fun WatchedButton(watched: Watched, onIncrement: () -> Unit, onDecrement: () -> 
             }
         }
         Box(Modifier.width(0.5.dp).fillMaxHeight().background(Color.White.copy(alpha = 0.15f)))
-        Box(Modifier.width(26.dp).fillMaxHeight().background(Palette.surface),
+        Box(Modifier.width(26.dp).fillMaxHeight().background(LibraryStyle.controlBackground),
             contentAlignment = Alignment.Center) {
             Text(watched.times.toString(), color = Color.White, fontSize = 12.sp, lineHeight = 15.sp,
                 fontWeight = FontWeight.Medium)
@@ -98,7 +98,7 @@ fun WatchedButton(watched: Watched, onIncrement: () -> Unit, onDecrement: () -> 
     }
 
     if (open) Dialog(onDismissRequest = { open = false }) {
-        Column(Modifier.width(220.dp).background(Palette.surface, shape).padding(10.dp),
+        Column(Modifier.width(220.dp).background(LibraryStyle.controlBackground, shape).padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)) {
             TvButton(if (watched.position > 0 || watched.times == 0) "Mark as watched" else "Add another watch",
                 { onIncrement(); open = false }, Modifier.fillMaxWidth(),

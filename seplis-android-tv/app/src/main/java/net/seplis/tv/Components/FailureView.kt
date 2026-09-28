@@ -12,9 +12,9 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
 
 @Composable
-fun MessagePanel(message: String, retry: (() -> Unit)? = null, modifier: Modifier = Modifier) {
+fun FailureView(message: String, retry: (() -> Unit)? = null, modifier: Modifier = Modifier) {
     Column(modifier.padding(24.dp), horizontalAlignment = Alignment.Start) {
-        Text(message, fontSize = 14.sp, color = Palette.muted)
+        Text(message, fontSize = 14.sp, color = LibraryStyle.muted)
         if (retry != null) {
             Spacer(Modifier.height(14.dp))
             TvButton("Retry", retry)

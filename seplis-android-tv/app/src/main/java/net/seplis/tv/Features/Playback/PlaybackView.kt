@@ -20,11 +20,11 @@ import androidx.tv.material3.Text
 import kotlinx.coroutines.launch
 import net.seplis.tv.app.SessionFactory
 import net.seplis.tv.components.TvButton
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 
 @Composable
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
-fun PlaybackView(target: PlaybackTarget, api: ApiClient, profileId: String,
+fun PlaybackView(target: PlaybackTarget, api: APIClient, profileId: String,
     onClose: () -> Unit, onFinished: () -> Unit, onNext: (PlaybackTarget) -> Unit) {
     val context = LocalContext.current
     val finished by rememberUpdatedState(onFinished)

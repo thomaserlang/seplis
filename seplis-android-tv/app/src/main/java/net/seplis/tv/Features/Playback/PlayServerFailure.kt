@@ -5,10 +5,10 @@ import java.net.ConnectException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLException
-import net.seplis.tv.core.networking.ApiException
+import net.seplis.tv.core.networking.APIError
 import org.json.JSONException
 
-class PlayServerFailure(val statusCode: Int?, message: String = statusCode?.let(ApiException::messageFor)
+class PlayServerFailure(val statusCode: Int?, message: String = statusCode?.let(APIError::messageFor)
     ?: "The network request failed.", cause: Throwable? = null) : Exception(message, cause) {
     companion object {
         fun message(error: Throwable): String = when (error) {

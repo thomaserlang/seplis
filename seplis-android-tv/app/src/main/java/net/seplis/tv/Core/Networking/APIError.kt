@@ -1,6 +1,6 @@
 package net.seplis.tv.core.networking
 
-class ApiException(val status: Int, message: String = messageFor(status)) : Exception(message) {
+class APIError(val status: Int, message: String = messageFor(status)) : Exception(message) {
     companion object {
         fun messageFor(status: Int): String = when (status) {
             401 -> "Your session has expired. Sign in again."

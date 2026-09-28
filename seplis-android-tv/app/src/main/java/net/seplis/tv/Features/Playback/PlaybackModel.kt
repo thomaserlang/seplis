@@ -7,7 +7,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -24,14 +23,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.seplis.tv.core.networking.ApiClient
+import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.features.series.Episode
 import net.seplis.tv.features.library.Watched
-import net.seplis.tv.core.networking.text
-import org.json.JSONObject
 
 class PlaybackModel(private val context: Context, val target: PlaybackTarget,
-    private val api: ApiClient, profileId: String, private val onFinished: () -> Unit,
+    private val api: APIClient, profileId: String, private val onFinished: () -> Unit,
     private val server: PlayServer = PlayServerClient()) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     val preferences = PlaybackPreferences(context, profileId, api,
@@ -178,8 +175,7 @@ class PlaybackModel(private val context: Context, val target: PlaybackTarget,
             .setPreferredTextLanguage(candidate.source.subtitles.firstOrNull { it.key == selectedSubtitle }?.language)
             .build()
         val item = MediaItem.Builder().setUri(Uri.parse(active.hlsUrl))
-            .setMediaMetadata(MediaMetadata.Builder().setTitle(target.title)
-                .setSubtitle(target.episode?.label).build()).build()
+            .setMediaMetadata(PlayerMetadata.items(target.title, target.episode?.label)).build()
         replacement.setMediaItem(item)
         replacement.prepare()
         if (resume > 0) replacement.seekTo(resume)

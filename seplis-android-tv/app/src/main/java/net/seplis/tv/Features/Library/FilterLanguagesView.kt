@@ -7,7 +7,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,7 +27,7 @@ fun FilterLanguagesView(selection: Set<String>, onChange: (Set<String>) -> Unit)
     languages.forEach { (name, code) ->
         var focused by remember(code) { mutableStateOf(false) }
         Row(Modifier.fillMaxWidth().height(30.dp)
-            .background(if (code in selection) Palette.filterSelected else Palette.surface, RoundedCornerShape(4.dp))
+            .background(if (code in selection) LibraryStyle.filterSelected else LibraryStyle.controlBackground, RoundedCornerShape(4.dp))
             .border(1.5.dp, if (focused) Color.White else Color.Transparent, RoundedCornerShape(4.dp))
             .onFocusChanged { focused = it.isFocused }
             .toggleable(code in selection, role = Role.Checkbox) { selected ->
@@ -35,7 +35,7 @@ fun FilterLanguagesView(selection: Set<String>, onChange: (Set<String>) -> Unit)
             }.padding(horizontal = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(name, Modifier.weight(1f), fontSize = 13.sp)
             Checkbox(code in selection, onCheckedChange = null, modifier = Modifier.size(24.dp),
-                colors = CheckboxDefaults.colors(checkedColor = Color.White, uncheckedColor = Color.White, checkmarkColor = Palette.filterSelected))
+                colors = CheckboxDefaults.colors(checkedColor = Color.White, uncheckedColor = Color.White, checkmarkColor = LibraryStyle.filterSelected))
         }
     }
 }

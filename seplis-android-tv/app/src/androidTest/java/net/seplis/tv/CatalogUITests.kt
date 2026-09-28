@@ -13,7 +13,7 @@ class CatalogUITests {
     @get:Rule val compose = createComposeRule()
 
     @Test fun emptyCatalogShowsItsEmptyState() {
-        val model = CatalogModel(MediaKind.MOVIE, ApiClient("fixture", ApiTransport { _, _, _, _ ->
+        val model = CatalogModel(MediaKind.MOVIE, APIClient("fixture", ApiTransport { _, _, _, _ ->
             """{"records":[],"cursor":null}"""
         }))
         compose.setContent { CatalogView(MediaKind.MOVIE, model, 0, 0, {}, {}) }
@@ -23,9 +23,9 @@ class CatalogUITests {
 
     @Test fun paginationFailureIsVisibleAndRetryKeepsExistingTitles() {
         var offline = true
-        val model = CatalogModel(MediaKind.MOVIE, ApiClient("fixture", ApiTransport { _, _, query, _ ->
+        val model = CatalogModel(MediaKind.MOVIE, APIClient("fixture", ApiTransport { _, _, query, _ ->
             if (query.any { it.first == "cursor" }) {
-                if (offline) throw ApiException(503, "Fixture page unavailable")
+                if (offline) throw APIError(503, "Fixture page unavailable")
                 """{"records":[{"id":2,"title":"Second title"}],"cursor":null}"""
             } else """{"records":[{"id":1,"title":"First title"}],"cursor":"next"}"""
         }))
@@ -43,8 +43,8 @@ class CatalogUITests {
     }
 
     @Test fun failedFilterChangeDoesNotShowThePreviousResults() {
-        val model = CatalogModel(MediaKind.MOVIE, ApiClient("fixture", ApiTransport { _, _, query, _ ->
-            if (query.any { it == "sort" to "release_date_desc" }) throw ApiException(503, "Fixture catalog unavailable")
+        val model = CatalogModel(MediaKind.MOVIE, APIClient("fixture", ApiTransport { _, _, query, _ ->
+            if (query.any { it == "sort" to "release_date_desc" }) throw APIError(503, "Fixture catalog unavailable")
             """{"records":[{"id":1,"title":"Old results"}],"cursor":null}"""
         }))
         compose.setContent { CatalogView(MediaKind.MOVIE, model, 0, 0, {}, {}) }

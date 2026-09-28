@@ -19,25 +19,23 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
 import net.seplis.tv.features.series.Episode
 import net.seplis.tv.features.playback.PlaybackAction
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.TvButton
 
-
 import net.seplis.tv.components.WatchedButton
-import net.seplis.tv.features.library.localDate
 @Composable
 fun EpisodeActionsView(heading: String, episode: Episode, forceRewatch: Boolean = false,
     modifier: Modifier = Modifier, playFocusRequester: FocusRequester? = null, isUpdating: Boolean = false,
     onPlay: (Boolean) -> Unit, onWatched: (Boolean) -> Unit) {
     val action = if (forceRewatch) PlaybackAction.REWATCH else PlaybackAction.from(episode.watched, rewatchCompleted = true)
     Column(modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text(heading, color = Palette.muted, fontSize = 10.sp, lineHeight = 13.sp, fontWeight = FontWeight.Medium)
+        Text(heading, color = LibraryStyle.muted, fontSize = 10.sp, lineHeight = 13.sp, fontWeight = FontWeight.Medium)
         Column(Modifier.fillMaxWidth().border(0.5.dp, Color(0xFF242424), RoundedCornerShape(4.dp))
             .padding(start = 8.dp, end = 8.dp, top = 5.dp, bottom = 8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
                 Text(episode.numberLabel, color = Color(0xFF8CBAE8), fontSize = 11.sp, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold)
-                episode.airDate?.let { Text(localDate(it), color = Palette.muted, fontSize = 11.sp, lineHeight = 14.sp) }
+                episode.formattedAirDate()?.let { Text(it, color = LibraryStyle.muted, fontSize = 11.sp, lineHeight = 14.sp) }
             }
             Text(episode.title.orEmpty(), fontSize = 12.sp, lineHeight = 15.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Medium)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

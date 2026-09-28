@@ -1,5 +1,7 @@
 package net.seplis.tv
 
+import net.seplis.tv.shared.topshelf.*
+
 import android.net.Uri
 import kotlinx.coroutines.runBlocking
 import net.seplis.tv.core.networking.*
@@ -44,7 +46,7 @@ class TopShelfTests {
             override fun clearOtherAccounts(accountID: Int?) { cleared += accountID }
             override fun replace(entries: List<TopShelfEntry>) { published = entries }
         }
-        val api = ApiClient("fixture", ApiTransport { path, _, _, _ -> when (path) {
+        val api = APIClient("fixture", ApiTransport { path, _, _, _ -> when (path) {
             "users/me/watched" -> """{"records":[{"type":"movie","data":{"id":1,"title":"Completed","poster_image":{"url":"https://example.test/1"}}},{"type":"movie","data":{"id":2,"title":"Continue","runtime":100,"poster_image":{"url":"https://example.test/2"}}}]}"""
             "movies/1/watched" -> """{"position":0}"""
             "movies/2/watched" -> """{"position":40}"""

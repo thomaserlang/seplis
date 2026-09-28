@@ -1,5 +1,7 @@
 package net.seplis.tv.app
 
+import net.seplis.tv.shared.topshelf.*
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
@@ -10,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -21,7 +24,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.tv.material3.Text
 import net.seplis.tv.features.authentication.DeviceLoginView
 import net.seplis.tv.features.profiles.ProfilesView
-import net.seplis.tv.components.Palette
+import net.seplis.tv.components.LibraryStyle
 import net.seplis.tv.components.TvButton
 import net.seplis.tv.features.topshelf.*
 
@@ -65,27 +68,32 @@ private fun SessionContent(session: AppSession, pendingLink: TopShelfLink?, cons
     val scope = rememberCoroutineScope()
     val state = session.state
     val active = state as? SessionState.Active
+    var presentedLink by remember { mutableStateOf<TopShelfLink?>(null) }
     LaunchedEffect(pendingLink, state) {
-        if (pendingLink != null && state != SessionState.Loading && active == null) {
+        if (pendingLink != null && state != SessionState.Loading) {
             consumeLink()
-            session.error = "Switch to the profile that owns this Continue Watching item, then select it again."
+            if (active?.profile?.id == pendingLink.accountID) presentedLink = pendingLink
+            else session.error = "Switch to the profile that owns this Continue Watching item, then select it again."
         }
     }
-    Box(Modifier.fillMaxSize().background(Palette.background)) {
+    Box(Modifier.fillMaxSize().background(LibraryStyle.background)) {
         when (state) {
-            SessionState.Loading -> net.seplis.tv.components.MessagePanel("Loading profiles")
-            SessionState.RestoreFailed -> net.seplis.tv.components.MessagePanel(
+            SessionState.Loading -> net.seplis.tv.components.FailureView("Loading profiles")
+            SessionState.RestoreFailed -> net.seplis.tv.components.FailureView(
                 "Saved profiles could not be loaded.", retry = { scope.launch { session.restore() } })
             SessionState.SignedOut -> DeviceLoginView(session)
             SessionState.ChooseProfile -> ProfilesView(session, onBack = session::returnToProfile)
             is SessionState.Active -> if (active != null) {
-                AppTabsView(session, active, pendingLink, consumeLink)
+                val link = presentedLink
+                if (link != null) TopShelfDestination(link, active.api,
+                    onClose = { presentedLink = null }, onFinished = { presentedLink = null })
+                else AppTabsView(session, active)
             }
         }
     }
     session.error?.let { message ->
         Dialog(onDismissRequest = { session.error = null }) {
-            Column(Modifier.background(Palette.surface, RoundedCornerShape(8.dp)).padding(24.dp),
+            Column(Modifier.background(LibraryStyle.controlBackground, RoundedCornerShape(8.dp)).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)) {
                 Text(message)
                 TvButton("OK", { session.error = null })
