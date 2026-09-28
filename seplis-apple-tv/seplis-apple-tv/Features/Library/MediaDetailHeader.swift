@@ -1,8 +1,7 @@
 import SwiftUI
 
-struct MediaDetailHeader<MediaType: MediaDetailInfo, Actions: View>: View {
+struct MediaDetailHeader<MediaType: MediaDetailInfo>: View {
     let media: MediaType
-    let actions: Actions
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -30,6 +29,15 @@ struct MediaDetailHeader<MediaType: MediaDetailInfo, Actions: View>: View {
                     }
                 }
             }
+        }
+    }
+}
+
+struct MediaDetailDescription<MediaType: MediaDetailInfo>: View {
+    let media: MediaType
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
             if let genres = media.genres, !genres.isEmpty {
                 Text(genres.map(\.name).joined(separator: " · "))
                     .font(.system(size: 22)).foregroundStyle(.secondary)
@@ -37,8 +45,6 @@ struct MediaDetailHeader<MediaType: MediaDetailInfo, Actions: View>: View {
             if let plot = media.plot, !plot.isEmpty {
                 Text(plot).font(.system(size: 24)).foregroundStyle(.secondary).lineLimit(5)
             }
-            actions
         }
-        .focusSection()
     }
 }

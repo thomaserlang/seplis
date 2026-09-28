@@ -19,8 +19,13 @@ struct SeriesDetailView: View {
         Group {
             if let series = model.media {
                 MediaDetailLayout(poster: series.posterImage) {
+                    MediaDetailHeader(media: series)
+                } content: {
                     VStack(alignment: .leading, spacing: 32) {
-                        MediaDetailHeader(media: series, actions: seriesActions(series))
+                        VStack(alignment: .leading, spacing: 16) {
+                            MediaDetailDescription(media: series)
+                            seriesActions(series).focusSection()
+                        }
                         CastRow(reference: model.reference, api: api)
                         seasons(series)
                         if let error = model.error {

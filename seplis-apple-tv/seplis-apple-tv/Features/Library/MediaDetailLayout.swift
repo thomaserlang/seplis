@@ -1,11 +1,13 @@
 import SwiftUI
 
-struct MediaDetailLayout<Content: View>: View {
+struct MediaDetailLayout<Header: View, Content: View>: View {
     let poster: Poster?
+    let header: Header
     let content: Content
 
-    init(poster: Poster?, @ViewBuilder content: () -> Content) {
+    init(poster: Poster?, @ViewBuilder header: () -> Header, @ViewBuilder content: () -> Content) {
         self.poster = poster
+        self.header = header()
         self.content = content()
     }
 
@@ -13,14 +15,20 @@ struct MediaDetailLayout<Content: View>: View {
         GeometryReader { geometry in
             let artworkWidth = geometry.size.height * 2 / 3
             HStack(spacing: 0) {
-                ScrollView {
-                    content
+                VStack(alignment: .leading, spacing: 0) {
+                    header
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.leading, max(64, geometry.size.width * 0.04))
-                        .padding(.trailing, 48)
-                        .padding(.vertical, 56)
+                        .padding(.bottom, 24)
+                    ScrollView {
+                        content
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.bottom, 56)
+                    }
                 }
-                .frame(maxWidth: .infinity)
+                .padding(.leading, max(64, geometry.size.width * 0.04))
+                .padding(.trailing, 48)
+                .padding(.top, 56)
+                .frame(width: geometry.size.width - artworkWidth, height: geometry.size.height, alignment: .topLeading)
                 MediaDetailArtwork(poster: poster)
                     .frame(width: artworkWidth, height: geometry.size.height)
             }

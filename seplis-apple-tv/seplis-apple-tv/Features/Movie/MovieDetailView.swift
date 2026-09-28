@@ -18,8 +18,13 @@ struct MovieDetailView: View {
         Group {
             if let movie = model.media {
                 MediaDetailLayout(poster: movie.posterImage) {
+                    MediaDetailHeader(media: movie)
+                } content: {
                     VStack(alignment: .leading, spacing: 32) {
-                        MediaDetailHeader(media: movie, actions: movieActions(movie))
+                        VStack(alignment: .leading, spacing: 16) {
+                            MediaDetailDescription(media: movie)
+                            movieActions(movie).focusSection()
+                        }
                         CastRow(reference: model.reference, api: api)
                         if let collection = movie.collection {
                             MovieCollectionView(collection: collection, currentMovieID: movie.id, api: api)
