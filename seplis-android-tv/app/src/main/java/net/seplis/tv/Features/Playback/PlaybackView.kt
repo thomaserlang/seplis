@@ -55,7 +55,15 @@ fun PlaybackView(target: PlaybackTarget, api: APIClient, profileId: String,
         onDispose { lifecycle.removeObserver(observer) }
     }
     LaunchedEffect(model.error) { if (model.error != null) errorFocus.requestFocus() }
-    BackHandler { if (menu != null) menu = null else close() }
+    BackHandler {
+        val view = nativeView
+        when {
+            menu != null -> menu = null
+            model.error == null && !model.isLoading &&
+                view?.isControllerFullyVisible == true && model.player?.isPlaying == true -> view.hideController()
+            else -> close()
+        }
+    }
 
     fun openMenu(page: PlaybackMenu) {
         nativeView?.controllerShowTimeoutMs = 0

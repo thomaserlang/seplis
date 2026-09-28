@@ -9,6 +9,7 @@ struct PlaybackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var isTransitioning = false
+    @State private var isPlaying = false
 
     init(target: PlaybackTarget, api: APIClient, onClose: (() -> Void)? = nil) {
         self.api = api
@@ -50,6 +51,9 @@ struct PlaybackView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { close() }
         }
+        .onReceive(model.player.publisher(for: \.timeControlStatus)) { status in
+            isPlaying = status == .playing
+        }
         .onReceive(NotificationCenter.default.publisher(for: AVPlayerItem.didPlayToEndTimeNotification)
             .receive(on: DispatchQueue.main)) { notification in
             guard let item = notification.object as? AVPlayerItem,
@@ -58,7 +62,7 @@ struct PlaybackView: View {
             model.finishPlayback()
             close()
         }
-        .onExitCommand { close() }
+        .onExitCommand(perform: isPlaying && !model.isLoading && model.error == nil ? nil : { close() })
     }
 
     private func close() {

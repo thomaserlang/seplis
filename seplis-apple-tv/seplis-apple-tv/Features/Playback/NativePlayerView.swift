@@ -11,6 +11,11 @@ struct NativePlayerView: UIViewControllerRepresentable {
         controller.player = model.player
         controller.delegate = context.coordinator
         controller.showsPlaybackControls = true
+        context.coordinator.controller = controller
+        let back = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.hideControls))
+        back.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
+        back.delegate = context.coordinator
+        controller.view.addGestureRecognizer(back)
         return controller
     }
 
@@ -80,13 +85,32 @@ struct NativePlayerView: UIViewControllerRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(close: close) }
 
-    final class Coordinator: NSObject, AVPlayerViewControllerDelegate {
+    final class Coordinator: NSObject, AVPlayerViewControllerDelegate, UIGestureRecognizerDelegate {
         var close: () -> Void
+        weak var controller: AVPlayerViewController?
+        private var controlsVisible = false
         init(close: @escaping () -> Void) { self.close = close }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive press: UIPress) -> Bool {
+            controlsVisible && controller?.player?.timeControlStatus == .playing
+                && controller?.presentedViewController == nil
+        }
+
+        @objc func hideControls() {
+            // Hide the current controls while allowing AVKit to show them again on interaction.
+            controller?.showsPlaybackControls = false
+            controller?.showsPlaybackControls = true
+        }
 
         func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
             close()
             return false
+        }
+
+        func playerViewController(_ playerViewController: AVPlayerViewController,
+                                  willTransitionToVisibilityOfTransportBar visible: Bool,
+                                  with coordinator: any AVPlayerViewControllerAnimationCoordinator) {
+            controlsVisible = visible
         }
     }
 }
