@@ -88,8 +88,8 @@ private nonisolated enum FixtureResponses {
              "cursor": NSNull()]
         }
         if path == "/2/device-authorization" {
-            return ["device_code": "fixture-device-secret", "user_code": "123456", "verification_uri": "https://seplis.net/device",
-                    "verification_uri_complete": "https://seplis.net/device?code=123456",
+            return ["device_code": "fixture-device-secret", "user_code": "123456", "verification_uri": "https://seplis.net/tv",
+                    "verification_uri_complete": "https://seplis.net/tv?code=123456",
                     "expires_at": "2099-01-01T00:00:00Z", "poll_interval_seconds": 3] as [String: Any]
         }
         if path.hasSuffix("/device-authorization/token") { return ["status": "pending"] }

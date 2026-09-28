@@ -29,9 +29,9 @@ async def test_device_authorization(client: AsyncClient) -> None:
     assert len(authorization['user_code']) == 6
     assert authorization['user_code'].isdigit()
     assert len(authorization['device_code']) >= 32
-    assert authorization['verification_uri'].endswith('/device')
+    assert authorization['verification_uri'].endswith('/tv')
     assert authorization['verification_uri_complete'].endswith(
-        f'/device?code={authorization["user_code"]}'
+        f'/tv?code={authorization["user_code"]}'
     )
     assert authorization['poll_interval_seconds'] > 0
 

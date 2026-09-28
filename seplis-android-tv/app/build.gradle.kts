@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.media3.exoplayer)
     implementation(libs.media3.hls)
     implementation(libs.media3.ui)
+    implementation(libs.zxing.core)
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")

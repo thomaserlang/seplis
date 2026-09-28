@@ -9,6 +9,7 @@ media3 = "1.11.1"
 okhttp = "4.12.0"
 tvMaterial = "1.0.0"
 kotlin = "2.4.10"
+zxing = "3.5.4"
 
 [libraries]
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
@@ -26,6 +27,7 @@ media3-exoplayer = { group = "androidx.media3", name = "media3-exoplayer", versi
 media3-hls = { group = "androidx.media3", name = "media3-exoplayer-hls", version.ref = "media3" }
 media3-ui = { group = "androidx.media3", name = "media3-ui", version.ref = "media3" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

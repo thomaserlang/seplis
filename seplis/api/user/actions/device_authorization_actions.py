@@ -76,7 +76,7 @@ def get_device_authorization_secret() -> str:
 
 
 def verification_uri(user_code: str | None = None) -> str:
-    path = '/device'
+    path = '/tv'
     if user_code:
         path = f'{path}?{urllib.parse.urlencode({"code": user_code})}'
     if not config.web.url:

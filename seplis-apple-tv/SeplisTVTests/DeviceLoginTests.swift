@@ -5,8 +5,8 @@ import XCTest
 nonisolated final class DeviceLoginTests: XCTestCase {
     private static func authorization(expires: String = "2099-01-01T00:00:00Z") -> Data {
         Data("""
-        {"device_code":"fixture-code","user_code":"001234","verification_uri":"https://seplis.net/device",
-         "verification_uri_complete":"https://seplis.net/device?code=001234","expires_at":"\(expires)","poll_interval_seconds":1}
+        {"device_code":"fixture-code","user_code":"001234","verification_uri":"https://seplis.net/tv",
+         "verification_uri_complete":"https://seplis.net/tv?code=001234","expires_at":"\(expires)","poll_interval_seconds":1}
         """.utf8)
     }
 

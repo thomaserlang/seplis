@@ -28,7 +28,8 @@ struct AppView: View {
             case .choosingProfile:
                 ProfilesView(session: session)
             case .signedOut:
-                DeviceLoginView(session: session)
+                DeviceLoginView(session: session, showsLogo: true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
         }
         .background(LibraryStyle.background.ignoresSafeArea())

@@ -22,7 +22,7 @@ class DeviceLoginTests {
             val transport = ApiTransport { path, _, _, _ -> when (path) {
                 "device-authorization" -> {
                     codes++
-                    """{"device_code":"fixture","user_code":"123456","verification_uri":"https://example.test","expires_at":"2099-01-01T00:00:00Z","poll_interval_seconds":1}"""
+                    """{"device_code":"fixture","user_code":"123456","verification_uri":"https://seplis.net/tv","verification_uri_complete":"https://seplis.net/tv?code=123456","expires_at":"2099-01-01T00:00:00Z","poll_interval_seconds":1}"""
                 }
                 "device-authorization/token" -> """{"status":"authorized","access_token":"one-time"}"""
                 "users/me" -> { if (++users == 1) throw APIError(503, "Offline"); """{"id":1,"username":"Alex"}""" }

@@ -81,7 +81,7 @@ private fun SessionContent(session: AppSession, pendingLink: TopShelfLink?, cons
             SessionState.Loading -> net.seplis.tv.components.FailureView("Loading profiles")
             SessionState.RestoreFailed -> net.seplis.tv.components.FailureView(
                 "Saved profiles could not be loaded.", retry = { scope.launch { session.restore() } })
-            SessionState.SignedOut -> DeviceLoginView(session)
+            SessionState.SignedOut -> DeviceLoginView(session, showsLogo = true)
             SessionState.ChooseProfile -> ProfilesView(session, onBack = session::returnToProfile)
             is SessionState.Active -> if (active != null) {
                 val link = presentedLink

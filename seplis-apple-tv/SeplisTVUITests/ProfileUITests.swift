@@ -15,7 +15,7 @@ nonisolated final class ProfileUITests: UITestCase {
         XCTAssertEqual(XCTWaiter.wait(for: [restored], timeout: 5), .completed)
         openProfiles(in: app)
         select(addAccount, in: app)
-        XCTAssertTrue(app.staticTexts["seplis.net/device"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["seplis.net/tv"].waitForExistence(timeout: 10))
         attachScreenshot("Add account")
     }
 

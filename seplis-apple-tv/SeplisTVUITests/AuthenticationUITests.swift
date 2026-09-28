@@ -3,7 +3,7 @@ import XCTest
 nonisolated final class AuthenticationUITests: UITestCase {
     @MainActor func testDeviceLoginScreen() {
         let app = launchApp(["--login"])
-        XCTAssertTrue(app.staticTexts["seplis.net/device"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["seplis.net/tv"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.images["SEPLIS"].exists)
         XCTAssertTrue(app.staticTexts["Go to"].exists)
         XCTAssertTrue(app.staticTexts["Enter code"].exists)
