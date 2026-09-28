@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.SEPLIS" parent="android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#080808</item>
+        <item name="android:statusBarColor">#080808</item>
+        <item name="android:navigationBarColor">#080808</item>
+    </style>
+</resources>

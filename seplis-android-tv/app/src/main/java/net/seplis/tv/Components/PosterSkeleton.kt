@@ -1,0 +1,15 @@
+package net.seplis.tv.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun PosterSkeleton(width: Dp = 92.dp) {
+    Box(Modifier.size(width, width * 1.5f).background(Palette.surface, RoundedCornerShape(4.dp)))
+}
