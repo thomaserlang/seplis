@@ -21,6 +21,7 @@ nonisolated final class ProfileUITests: UITestCase {
         XCTAssertLessThanOrEqual(movie.frame.minX, 40)
         select(movie, in: app)
         XCTAssertTrue(app.buttons["Play"].waitForExistence(timeout: 10))
+        XCTAssertLessThan(abs(app.buttons["Play"].frame.midY - app.buttons["Watchlist"].frame.midY), 12)
         XCTAssertTrue(app.staticTexts["2h 11m"].exists)
         XCTAssertTrue(app.staticTexts["$100M"].exists)
         XCTAssertTrue(app.staticTexts["$348M"].exists)
@@ -66,6 +67,10 @@ nonisolated final class ProfileUITests: UITestCase {
         let series = app.buttons["media-series-1"].firstMatch
         XCTAssertTrue(series.waitForExistence(timeout: 5))
         select(series, in: app)
+        let nextPlay = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Play S1 E2")).firstMatch
+        let nextPlayFocused = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: nextPlay)
+        XCTAssertEqual(XCTWaiter.wait(for: [nextPlayFocused], timeout: 5), .completed)
+        XCTAssertLessThan(app.buttons["Watchlist"].frame.maxY, nextPlay.frame.minY)
         XCTAssertTrue(app.staticTexts["43 min"].exists)
         XCTAssertTrue(app.staticTexts["2"].exists)
         let season = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Season 1")).firstMatch

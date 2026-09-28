@@ -18,10 +18,7 @@ struct MovieDetailView: View {
         ScrollView {
             if let movie = model.media {
                 VStack(alignment: .leading, spacing: 32) {
-                    MediaDetailHeader(media: movie, isUpdating: model.isUpdating,
-                                      onWatchlist: { Task { await model.toggleWatchlist() } },
-                                      onFavorite: { Task { await model.toggleFavorite() } },
-                                      actions: movieActions(movie))
+                    MediaDetailHeader(media: movie, actions: movieActions(movie))
                     if let collection = movie.collection {
                         MovieCollectionView(collection: collection, currentMovieID: movie.id, api: api)
                             .id(collection.id)
@@ -63,6 +60,9 @@ struct MovieDetailView: View {
                           increment: { Task { await model.changeWatched(increment: true) } },
                           decrement: { Task { await model.changeWatched(increment: false) } })
                 .disabled(model.isUpdating)
+            MediaStateActions(media: movie, isUpdating: model.isUpdating,
+                              onWatchlist: { Task { await model.toggleWatchlist() } },
+                              onFavorite: { Task { await model.toggleFavorite() } })
         }
     }
 }

@@ -19,10 +19,7 @@ struct SeriesDetailView: View {
         ScrollView {
             if let series = model.media {
                 VStack(alignment: .leading, spacing: 32) {
-                    MediaDetailHeader(media: series, isUpdating: model.isUpdating,
-                                      onWatchlist: { Task { await model.toggleWatchlist() } },
-                                      onFavorite: { Task { await model.toggleFavorite() } },
-                                      actions: episodeActions(series))
+                    MediaDetailHeader(media: series, actions: seriesActions(series))
                     seasons(series)
                     if let error = model.error {
                         FailureView(message: error) { Task { await model.load() } }
@@ -46,6 +43,15 @@ struct SeriesDetailView: View {
         .task { await model.load() }
         .fullScreenCover(item: $playback, onDismiss: { Task { await model.load() } }) { target in
             PlaybackView(target: target, api: api)
+        }
+    }
+
+    private func seriesActions(_ series: Series) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            MediaStateActions(media: series, isUpdating: model.isUpdating,
+                              onWatchlist: { Task { await model.toggleWatchlist() } },
+                              onFavorite: { Task { await model.toggleFavorite() } })
+            episodeActions(series)
         }
     }
 
