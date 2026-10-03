@@ -116,8 +116,14 @@ private nonisolated enum FixtureResponses {
             if ProcessInfo.processInfo.arguments.contains("--paginated-library") {
                 let more = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems?
                     .contains { $0.name == "cursor" } == true
+                let refresh = watchedLoads.withLock { count in
+                    if !more { count += 1 }
+                    return count
+                }
                 let records = (more ? 25...48 : 1...24).map { id in
-                    ["type": "movie", "data": movie.merging(["id": id]) { _, value in value }] as [String: Any]
+                    ["type": "movie", "data": movie.merging([
+                        "id": id, "title": "Movie \(id) refresh \(refresh)"
+                    ]) { _, value in value }] as [String: Any]
                 }
                 return ["records": records, "cursor": more ? NSNull() : "next"] as [String: Any]
             }

@@ -13,6 +13,7 @@ final class HomeShelfModel: Identifiable {
     private(set) var error: String?
     private let api: APIClient
     private var generation = UUID()
+    private var loadedPageCount = 0
 
     init(shelf: HomeShelf, api: APIClient) {
         self.shelf = shelf
@@ -28,45 +29,64 @@ final class HomeShelfModel: Identifiable {
         generation = request
         error = nil
         defer {
-            if generation == request { isLoading = false; isLoadingMore = false }
+            if generation == request {
+                isLoading = false
+                isLoadingMore = false
+            }
         }
         do {
-            var query = shelf.query
-            if more, let cursor { query.append(.init(name: "cursor", value: cursor)) }
-            let newItems: [HomeItem]
-            let nextCursor: String?
-            switch shelf {
-            case .watched:
-                let page: Page<WatchedRecord> = try await api.get(shelf.path, query: query)
-                newItems = page.records.map {
-                    HomeItem(reference: .init(kind: $0.type, id: $0.data.id), media: $0.data)
-                }
+            var refreshedItems: [HomeItem] = []
+            var nextCursor = more ? cursor : nil
+            var fetchedPageCount = 0
+            // Refresh the loaded range atomically so later-page focus targets stay mounted.
+            for _ in 0..<(more ? 1 : max(1, loadedPageCount)) {
+                let page = try await fetchPage(cursor: nextCursor)
+                try Task.checkCancellation()
+                guard generation == request else { return }
+                refreshedItems.append(contentsOf: page.items)
                 nextCursor = page.cursor
-            case .toWatch, .recentlyAired:
-                let page: Page<SeriesEpisodeRecord> = try await api.get(shelf.path, query: query)
-                newItems = page.records.map {
-                    HomeItem(reference: .init(kind: .series, id: $0.series.id),
-                             media: $0.series, episode: $0.episode)
-                }
-                nextCursor = page.cursor
-            default:
-                let page: Page<MediaSummary> = try await api.get(shelf.path, query: query)
-                newItems = page.records.map {
-                    HomeItem(reference: .init(kind: shelf.kind, id: $0.id), media: $0)
-                }
-                nextCursor = page.cursor
+                fetchedPageCount += 1
+                if nextCursor == nil { break }
             }
-            try Task.checkCancellation()
-            guard generation == request else { return }
             var seen = Set<String>()
-            items = ((more ? items : []) + newItems).filter { seen.insert($0.id).inserted }
+            items = ((more ? items : []) + refreshedItems).filter { seen.insert($0.id).inserted }
             cursor = nextCursor
+            loadedPageCount = (more ? loadedPageCount : 0) + fetchedPageCount
             hasLoaded = true
         } catch is CancellationError {
         } catch let error as URLError where error.code == .cancelled {
         } catch {
             if generation == request { self.error = error.localizedDescription }
         }
+    }
+
+    private func fetchPage(cursor: String?) async throws -> (items: [HomeItem], cursor: String?) {
+        var query = shelf.query
+        if let cursor { query.append(.init(name: "cursor", value: cursor)) }
+        let newItems: [HomeItem]
+        let nextCursor: String?
+        switch shelf {
+        case .watched:
+            let page: Page<WatchedRecord> = try await api.get(shelf.path, query: query)
+            newItems = page.records.map {
+                HomeItem(reference: .init(kind: $0.type, id: $0.data.id), media: $0.data)
+            }
+            nextCursor = page.cursor
+        case .toWatch, .recentlyAired:
+            let page: Page<SeriesEpisodeRecord> = try await api.get(shelf.path, query: query)
+            newItems = page.records.map {
+                HomeItem(reference: .init(kind: .series, id: $0.series.id),
+                         media: $0.series, episode: $0.episode)
+            }
+            nextCursor = page.cursor
+        default:
+            let page: Page<MediaSummary> = try await api.get(shelf.path, query: query)
+            newItems = page.records.map {
+                HomeItem(reference: .init(kind: shelf.kind, id: $0.id), media: $0)
+            }
+            nextCursor = page.cursor
+        }
+        return (newItems, nextCursor)
     }
 
     func loadMoreIfNeeded(near itemID: String) async {

@@ -34,6 +34,9 @@ nonisolated final class HomeUITests: UITestCase {
         XCTAssertTrue(app.buttons["Play"].waitForExistence(timeout: 5))
         XCUIRemote.shared.press(.menu)
         XCTAssertTrue(nextPagePoster.waitForExistence(timeout: 5))
+        let refreshed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label == %@", "Movie 26 refresh 2"), object: nextPagePoster)
+        XCTAssertEqual(XCTWaiter.wait(for: [refreshed], timeout: 5), .completed)
         let restored = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hasFocus == true"), object: nextPagePoster)
         XCTAssertEqual(XCTWaiter.wait(for: [restored], timeout: 5), .completed)
         XCUIRemote.shared.press(.up)
