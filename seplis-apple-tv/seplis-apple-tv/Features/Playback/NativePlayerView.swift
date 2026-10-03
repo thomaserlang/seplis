@@ -25,6 +25,7 @@ struct NativePlayerView: UIViewControllerRepresentable {
         let sourceBitrate = model.candidates.indices.contains(model.selectedSource)
             ? model.candidates[model.selectedSource].source.bitrate : nil
         var menus: [UIMenuElement] = []
+        var mediaMenus: [UIMenuElement] = []
         if model.candidates.indices.contains(model.selectedSource) {
             let sources = model.candidates.enumerated().map { index, candidate in
                 UIAction(title: "\(index + 1). \(candidate.label)",
@@ -32,7 +33,7 @@ struct NativePlayerView: UIViewControllerRepresentable {
             }
             let sourceMenu = UIMenu(title: "Source", options: .singleSelection, children: sources)
             sourceMenu.subtitle = model.candidates[model.selectedSource].label
-            menus.append(sourceMenu)
+            mediaMenus.append(sourceMenu)
         }
         if model.candidates.indices.contains(model.selectedSource) {
             let streams = model.candidates[model.selectedSource].source.audio
@@ -57,7 +58,7 @@ struct NativePlayerView: UIViewControllerRepresentable {
         }
         let qualityMenu = UIMenu(title: "Quality", options: .singleSelection, children: quality)
         qualityMenu.subtitle = PlaybackQuality.label(model.preferences.maxBitrate, sourceBitrate: sourceBitrate)
-        menus.insert(qualityMenu, at: 0)
+        mediaMenus.append(qualityMenu)
         let hdr = UIAction(title: "HDR", attributes: model.isLoading ? .disabled : [],
                            state: model.preferences.hdrEnabled ? .on : .off) { _ in
             model.setHDR(!model.preferences.hdrEnabled)
@@ -72,13 +73,13 @@ struct NativePlayerView: UIViewControllerRepresentable {
         if !model.isLoading, model.error == nil, model.candidates.indices.contains(model.selectedSource) {
             let candidate = model.candidates[model.selectedSource]
             menus.insert(PlaybackInfoMenu.decision(model.playbackDecision, server: candidate.request.playUrl.host), at: 0)
-            menus.append(PlaybackInfoMenu.source(candidate.source, audioKey: model.audioKey))
+            mediaMenus.append(PlaybackInfoMenu.source(candidate.source, audioKey: model.audioKey))
         }
         var controls: [UIMenuElement] = []
         if model.nextEpisode != nil {
             controls.append(UIAction(title: "Next Episode", image: UIImage(systemName: "forward.end.fill")) { _ in playNext() })
         }
-        controls.append(UIMenu(title: "Settings", image: UIImage(systemName: "gearshape"), children: menus))
+        controls.append(UIMenu(title: "Settings", image: UIImage(systemName: "gearshape"), children: mediaMenus + menus))
         controller.transportBarCustomMenuItems = controls
         controller.contextualActions = []
     }
