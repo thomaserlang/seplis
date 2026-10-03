@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import net.seplis.tv.core.networking.APIClient
 import net.seplis.tv.core.networking.objectOrNull
 import net.seplis.tv.core.networking.page
@@ -27,6 +29,7 @@ class HomeShelfModel(private val api: APIClient, val shelf: HomeShelf) {
     var error: String? by mutableStateOf(null)
         private set
     private var generation = 0
+    private var loadedPageCount = 0
 
     suspend fun load(more: Boolean = false) {
         if (more && (loading || cursor == null)) return
@@ -35,11 +38,23 @@ class HomeShelfModel(private val api: APIClient, val shelf: HomeShelf) {
         isLoadingMore = more
         error = null
         try {
-            val (fetched, next) = loadPage(if (more) cursor else null)
-            if (request != generation) return
+            val fetched = mutableListOf<HomeItem>()
+            var next = if (more) cursor else null
+            var fetchedPageCount = 0
+            // Keep later-page focus targets until the entire loaded range is refreshed.
+            for (pageIndex in 0 until if (more) 1 else maxOf(1, loadedPageCount)) {
+                val (pageItems, pageCursor) = loadPage(next)
+                currentCoroutineContext().ensureActive()
+                if (request != generation) return
+                fetched.addAll(pageItems)
+                next = pageCursor
+                fetchedPageCount++
+                if (next == null) break
+            }
             val previous = if (more) items else emptyList()
             items = (previous + fetched).distinctBy(HomeItem::key)
             cursor = next
+            loadedPageCount = (if (more) loadedPageCount else 0) + fetchedPageCount
             loaded = true
         } catch (cancelled: CancellationException) { throw cancelled }
         catch (failure: Exception) {

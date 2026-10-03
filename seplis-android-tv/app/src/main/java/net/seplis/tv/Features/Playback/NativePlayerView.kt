@@ -139,18 +139,18 @@ fun PlaybackSettings(model: PlaybackModel, initial: PlaybackMenu, onDismiss: () 
                         verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         when (page) {
                             PlaybackMenu.SETTINGS -> {
-                                if (hasInfo) MenuRow("Playback Decision", PlaybackInfoMenu.method(model.session?.decision),
-                                    Modifier.focusRequester(focus)) { pages.add(PlaybackMenu.DECISION) }
-                                ToggleRow("HDR", model.preferences.hdrEnabled, !model.isLoading,
-                                    if (!hasInfo) Modifier.focusRequester(focus) else Modifier) { model.setHDR(it) }
-                                ToggleRow("Force Transcode", model.forceTranscode, !model.isLoading) { model.changeForceTranscode(it) }
-                                MenuRow("Quality", PlaybackQuality.label(model.preferences.maxBitrate, source?.bitrate)) {
+                                if (candidate != null) MenuRow("Source", candidate.label,
+                                    Modifier.focusRequester(focus)) { pages.add(PlaybackMenu.SOURCE) }
+                                MenuRow("Quality", PlaybackQuality.label(model.preferences.maxBitrate, source?.bitrate),
+                                    if (candidate == null) Modifier.focusRequester(focus) else Modifier) {
                                     pages.add(PlaybackMenu.QUALITY)
                                 }
-                                if (candidate != null) MenuRow("Source", candidate.label) { pages.add(PlaybackMenu.SOURCE) }
+                                if (hasInfo) MenuRow("Media Info", "") { pages.add(PlaybackMenu.MEDIA_INFO) }
+                                if (hasInfo) MenuRow("Playback Decision", PlaybackInfoMenu.method(model.session?.decision)) { pages.add(PlaybackMenu.DECISION) }
+                                ToggleRow("HDR", model.preferences.hdrEnabled, !model.isLoading) { model.setHDR(it) }
+                                ToggleRow("Force Transcode", model.forceTranscode, !model.isLoading) { model.changeForceTranscode(it) }
                                 if ((source?.audio?.size ?: 0) > 1) MenuRow("Audio",
                                     source?.audio?.firstOrNull { it.key == model.selectedAudio }?.title.orEmpty()) { pages.add(PlaybackMenu.AUDIO) }
-                                if (hasInfo) MenuRow("Media Info", "") { pages.add(PlaybackMenu.MEDIA_INFO) }
                             }
                             PlaybackMenu.SOURCE -> model.candidates.forEachIndexed { index, item ->
                                 ChoiceRow("${index + 1}. ${item.label}", index == model.selectedSource,
