@@ -136,10 +136,7 @@ export function SeriesMetaItems({
         const remaining = stats.episodes_remaining
         const percent = Math.floor(stats.progress_percent)
         const hours = Math.floor(stats.total_watch_minutes / 60)
-        const minutes = stats.total_watch_minutes % 60
-        const watchTime = hours
-            ? `${hours}h${minutes ? ` ${minutes}m` : ''}`
-            : `${minutes}m`
+        const watchTime = `${hours.toLocaleString()} ${hours === 1 ? 'hour' : 'hours'}`
 
         items.push({
             label: 'Watched',
