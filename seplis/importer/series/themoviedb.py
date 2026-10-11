@@ -156,6 +156,7 @@ class TheMovieDB(SeriesImporterBase):
                     original_title=episode['name'][:200],
                     season=episode['season_number'],
                     episode=episode['episode_number'],
+                    runtime=episode.get('runtime'),
                     air_date=episode['air_date'] if episode['air_date'] else None,
                     air_datetime=episode['air_date'] + 'T00:00:00Z'
                     if episode['air_date']

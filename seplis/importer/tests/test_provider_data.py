@@ -30,10 +30,12 @@ async def assert_episodes_saved(
     for actual, expected in zip(saved, episodes, strict=True):
         assert actual.air_date == expected['air_date']
         assert actual.air_datetime == expected['air_datetime']
+        if 'runtime' in expected:
+            assert actual.runtime == expected['runtime']
 
 
 @pytest.mark.asyncio
-async def test_tmdb_episode_dates(
+async def test_tmdb_episode_dates_and_runtime(
     client: httpx.AsyncClient, respx_mock: respx.MockRouter
 ) -> None:
     respx_mock.get('https://api.themoviedb.org/3/tv/1').respond(
@@ -49,8 +51,16 @@ async def test_tmdb_episode_dates(
                     'episode_number': number,
                     'air_date': air_date,
                     'overview': None,
+                    **runtime,
                 }
-                for number, air_date in enumerate(['1997-08-13', None, ''], 1)
+                for number, (air_date, runtime) in enumerate(
+                    [
+                        ('1997-08-13', {'runtime': 44}),
+                        (None, {'runtime': None}),
+                        ('', {}),
+                    ],
+                    1,
+                )
             ]
         },
     )
@@ -59,7 +69,9 @@ async def test_tmdb_episode_dates(
     assert episodes[0]['title'] == 'Episode'
     assert episodes[0]['air_date'] == date(1997, 8, 13)
     assert episodes[0]['air_datetime'] == datetime(1997, 8, 13, tzinfo=UTC)
+    assert episodes[0]['runtime'] == 44
     for episode in episodes[1:]:
+        assert episode['runtime'] is None
         assert episode['air_date'] is None
         assert episode['air_datetime'] is None
     await assert_episodes_saved(client, episodes)
