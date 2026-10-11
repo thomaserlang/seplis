@@ -220,7 +220,7 @@ async def get_user_stats(
         return SeriesUserStats(
             episode_watch_count=int(row['episode_watch_count'] or 0),
             total_watch_minutes=int(row['total_watch_minutes'] or 0),
-            total_episodes=int(progress['total'] or 0),
+            series_total_episodes=int(progress['total'] or 0),
             episodes_watched=int(progress['watched'] or 0),
         )
 

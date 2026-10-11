@@ -189,7 +189,7 @@ class Series:
 class SeriesUserStats:
     episode_watch_count: int = 0
     total_watch_minutes: int = 0
-    total_episodes: int = 0
+    series_total_episodes: int = 0
     episodes_watched: int = 0
 
 

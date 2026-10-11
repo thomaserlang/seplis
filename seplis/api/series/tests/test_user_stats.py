@@ -98,7 +98,7 @@ async def test_episode_progress_counts_all_episodes(client: AsyncClient) -> None
     url = f'/2/series/{series.id}/user-stats'
     response = await client.get(url)
     assert response.status_code == 200
-    assert response.json()['total_episodes'] == 5
+    assert response.json()['series_total_episodes'] == 5
     assert response.json()['episodes_watched'] == 0
 
     for number in [1, 1, 3, 4, 5]:
@@ -122,7 +122,7 @@ async def test_progress_without_episodes(client: AsyncClient) -> None:
     series = await save_series(SeriesCreate(title='Empty'), series_id=None)
     response = await client.get(f'/2/series/{series.id}/user-stats')
     assert response.status_code == 200
-    assert response.json()['total_episodes'] == 0
+    assert response.json()['series_total_episodes'] == 0
     assert response.json()['episodes_watched'] == 0
 
 
