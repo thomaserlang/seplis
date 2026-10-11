@@ -26,6 +26,7 @@ export interface Series {
     status: number
     seasons: SeriesSeason[]
     total_episodes: number
+    total_runtime_minutes: number
     poster_image: IImage | null
     popularity: number | null
     rating: number | null

@@ -132,6 +132,14 @@ export function SeriesMetaItems({
             : null,
     ].filter(Boolean) as MediaMetaItem[]
 
+    if (series.total_runtime_minutes > 0) {
+        const hours = Math.floor(series.total_runtime_minutes / 60)
+        items.push({
+            label: 'Total runtime',
+            value: `${hours.toLocaleString()} ${hours === 1 ? 'hour' : 'hours'}`,
+        })
+    }
+
     if (stats && stats.episode_watch_count > 0) {
         const remaining = stats.episodes_remaining
         const percent = Math.floor(stats.progress_percent)
@@ -139,15 +147,9 @@ export function SeriesMetaItems({
         const watchTime = `${hours.toLocaleString()} ${hours === 1 ? 'hour' : 'hours'}`
 
         items.push({
-            label: 'Watched',
-            value:
-                percent === 100 && series.status === 1
-                    ? 'Caught up'
-                    : `${percent}%`,
+            label: 'Eps left',
+            value: remaining > 0 ? `${remaining} (${percent}%)` : '0',
         })
-        if (remaining > 0) {
-            items.push({ label: 'Eps left', value: String(remaining) })
-        }
         items.push({ label: 'Watch time', value: watchTime })
     }
 
