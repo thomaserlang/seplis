@@ -1,3 +1,4 @@
+import { seriesUserStatsQueryKey } from '@/features/series/api/series-user-stats.api'
 import { getUserWatchedQueryKey } from '@/features/user'
 import { queryClient } from '@/queryclient'
 import {
@@ -104,5 +105,8 @@ export function invalidateEpisodeWatched({
     })
     queryClient.invalidateQueries({
         queryKey: getUserWatchedQueryKey({}),
+    })
+    queryClient.invalidateQueries({
+        queryKey: seriesUserStatsQueryKey({ seriesId }),
     })
 }

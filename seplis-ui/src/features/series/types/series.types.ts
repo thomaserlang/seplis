@@ -50,8 +50,12 @@ export interface SeriesUserRating {
 }
 
 export interface SeriesUserStats {
+    episode_watch_count: number
+    total_watch_minutes: number
+    series_total_episodes: number
     episodes_watched: number
-    episodes_watched_minutes: number
+    episodes_remaining: number
+    progress_percent: number
 }
 
 export interface SeriesWatchlist {

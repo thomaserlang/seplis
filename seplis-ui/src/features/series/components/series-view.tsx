@@ -1,4 +1,4 @@
-import { EpisodesModal } from '@/features/series-episode'
+import { EpisodesModal, RandomEpisodeButton } from '@/features/series-episode'
 import { Button, Flex, Text } from '@mantine/core'
 import { ListIcon } from '@phosphor-icons/react'
 import { useState } from 'react'
@@ -22,7 +22,7 @@ export function SeriesView({ series }: Props) {
                 <title>{series.title}</title>
                 <SeriesInfo series={series}>
                     <Flex gap="0.5rem" direction="column">
-                        <Flex gap="0.5rem">
+                        <Flex gap="0.5rem" wrap="wrap" align="center">
                             <Button
                                 variant="default"
                                 size="compact-md"
@@ -31,6 +31,10 @@ export function SeriesView({ series }: Props) {
                             >
                                 Episodes
                             </Button>
+                            <RandomEpisodeButton
+                                seriesId={series.id}
+                                totalEpisodes={series.total_episodes}
+                            />
                         </Flex>
 
                         <SeriesCastSlider

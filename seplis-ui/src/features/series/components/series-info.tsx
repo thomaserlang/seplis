@@ -4,9 +4,11 @@ import {
     EpisodeLastWatchedCard,
     EpisodeToWatchCard,
 } from '@/features/series-episode'
+import { useActiveUser } from '@/features/user'
 import { langCodeToLang } from '@/utils/language.utils'
 import { Box, Flex } from '@mantine/core'
-import { Series } from '../types/series.types'
+import { useGetSeriesUserStats } from '../api/series-user-stats.api'
+import { Series, SeriesUserStats } from '../types/series.types'
 import { SeriesFavoriteButton } from './series-favorite-button'
 import { SeriesWatchlistButton } from './series-watchlist-button'
 
@@ -25,6 +27,12 @@ const STATUS: Record<number, MediaStatus> = {
 }
 
 export function SeriesInfo({ series, children }: Props) {
+    const [user] = useActiveUser()
+    const { data: stats } = useGetSeriesUserStats({
+        seriesId: series.id,
+        options: { enabled: !!user },
+    })
+
     return (
         <MediaInfo
             posterUrl={
@@ -45,6 +53,7 @@ export function SeriesInfo({ series, children }: Props) {
                 showRating: true,
                 showSeasons: true,
                 showTotalEpisodes: true,
+                stats: user ? stats : undefined,
             })}
             genres={series.genres}
             plot={series.plot}
@@ -78,6 +87,7 @@ export function SeriesMetaItems({
     showRating,
     showSeasons,
     showTotalEpisodes,
+    stats,
 }: {
     series: Series
     showYearRange?: boolean
@@ -86,6 +96,7 @@ export function SeriesMetaItems({
     showRating?: boolean
     showSeasons?: boolean
     showTotalEpisodes?: boolean
+    stats?: SeriesUserStats
 }) {
     const startYear = series.premiered?.substring(0, 4)
     const endYear = series.ended?.substring(0, 4)
@@ -95,7 +106,7 @@ export function SeriesMetaItems({
             : startYear
         : null
 
-    return [
+    const items = [
         showYearRange && yearRange ? { label: 'Year', value: yearRange } : null,
         showRuntime && series.runtime
             ? { label: 'Runtime', value: `${series.runtime} min` }
@@ -120,4 +131,28 @@ export function SeriesMetaItems({
             ? { label: 'Episodes', value: String(series.total_episodes) }
             : null,
     ].filter(Boolean) as MediaMetaItem[]
+
+    if (stats && stats.episode_watch_count > 0) {
+        const remaining = stats.episodes_remaining
+        const percent = Math.floor(stats.progress_percent)
+        const hours = Math.floor(stats.total_watch_minutes / 60)
+        const minutes = stats.total_watch_minutes % 60
+        const watchTime = hours
+            ? `${hours}h${minutes ? ` ${minutes}m` : ''}`
+            : `${minutes}m`
+
+        items.push({
+            label: 'Watched',
+            value:
+                percent === 100 && series.status === 1
+                    ? 'Caught up'
+                    : `${percent}%`,
+        })
+        if (remaining > 0) {
+            items.push({ label: 'Eps left', value: String(remaining) })
+        }
+        items.push({ label: 'Watch time', value: watchTime })
+    }
+
+    return items
 }
