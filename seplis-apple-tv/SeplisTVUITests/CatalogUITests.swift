@@ -9,17 +9,40 @@ nonisolated final class CatalogUITests: UITestCase {
         XCTAssertTrue(app.buttons["series-filters"].waitForExistence(timeout: 5))
         XCUIRemote.shared.press(.down)
         XCTAssertTrue(app.buttons["series-filters"].hasFocus)
-        for name in ["available", "watchlist", "favorites", "unwatched"] {
+        for name in ["available", "unwatched", "watchlist", "favorites"] {
+            if name == "unwatched" {
+                let new = app.buttons["series-quick-new"]
+                let popular = app.buttons["series-quick-popular"]
+                XCTAssertEqual(popular.value as? String, "Selected")
+                XCUIRemote.shared.press(.right)
+                XCTAssertTrue(new.hasFocus)
+                XCUIRemote.shared.press(.select)
+                XCTAssertEqual(new.value as? String, "Selected")
+                XCTAssertEqual(popular.value as? String, "Not selected")
+                XCUIRemote.shared.press(.right)
+                XCTAssertTrue(popular.hasFocus)
+                XCUIRemote.shared.press(.select)
+                XCTAssertEqual(popular.value as? String, "Selected")
+                XCTAssertEqual(new.value as? String, "Not selected")
+            }
             XCUIRemote.shared.press(.right)
             let toggle = app.descendants(matching: .any)["series-quick-\(name)"].firstMatch
             XCTAssertTrue(toggle.hasFocus)
+            if name == "available" {
+                XCTAssertEqual(toggle.value as? String, "1")
+                XCUIRemote.shared.press(.select)
+                XCTAssertEqual(toggle.value as? String, "0")
+            }
             XCUIRemote.shared.press(.select)
             XCTAssertTrue(toggle.hasFocus)
             XCTAssertEqual(toggle.value as? String, "1")
         }
         attachScreenshot("Active quick filters")
+        XCUIRemote.shared.press(.left)
+        XCUIRemote.shared.press(.left)
         XCUIRemote.shared.press(.select)
         let unwatched = app.descendants(matching: .any)["series-quick-unwatched"].firstMatch
+        XCTAssertEqual(unwatched.label, "Not Watched")
         XCTAssertEqual(unwatched.value as? String, "0")
         XCUIRemote.shared.press(.down)
         XCTAssertTrue(app.buttons["grid-series-1"].hasFocus)

@@ -5,7 +5,7 @@ struct MediaDetailPresentation: ViewModifier {
     let api: APIClient
 
     func body(content: Content) -> some View {
-        content.fullScreenCover(isPresented: Binding(
+        content.disabled(reference != nil).fullScreenCover(isPresented: Binding(
             get: { reference != nil },
             set: { if !$0 { reference = nil } }
         )) {
@@ -20,6 +20,7 @@ struct MediaDetailPresentation: ViewModifier {
                 .buttonBorderShape(.roundedRectangle(radius: 8))
                 .buttonStyle(LibraryButtonStyle())
                 .focusEffectDisabled()
+                .disabled(false)
             }
         }
     }

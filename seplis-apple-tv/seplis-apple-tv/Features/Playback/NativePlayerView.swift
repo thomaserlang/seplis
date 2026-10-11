@@ -11,6 +11,11 @@ struct NativePlayerView: UIViewControllerRepresentable {
         controller.player = model.player
         controller.delegate = context.coordinator
         controller.showsPlaybackControls = true
+        context.coordinator.controller = controller
+        let back = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.hideControls))
+        back.allowedPressTypes = [NSNumber(value: UIPress.PressType.menu.rawValue)]
+        back.delegate = context.coordinator
+        controller.view.addGestureRecognizer(back)
         return controller
     }
 
@@ -20,14 +25,15 @@ struct NativePlayerView: UIViewControllerRepresentable {
         let sourceBitrate = model.candidates.indices.contains(model.selectedSource)
             ? model.candidates[model.selectedSource].source.bitrate : nil
         var menus: [UIMenuElement] = []
-        if model.candidates.count > 1 {
+        var mediaMenus: [UIMenuElement] = []
+        if model.candidates.indices.contains(model.selectedSource) {
             let sources = model.candidates.enumerated().map { index, candidate in
                 UIAction(title: "\(index + 1). \(candidate.label)",
                          state: index == model.selectedSource ? .on : .off) { _ in model.selectSource(index) }
             }
             let sourceMenu = UIMenu(title: "Source", options: .singleSelection, children: sources)
             sourceMenu.subtitle = model.candidates[model.selectedSource].label
-            menus.append(sourceMenu)
+            mediaMenus.append(sourceMenu)
         }
         if model.candidates.indices.contains(model.selectedSource) {
             let streams = model.candidates[model.selectedSource].source.audio
@@ -52,7 +58,7 @@ struct NativePlayerView: UIViewControllerRepresentable {
         }
         let qualityMenu = UIMenu(title: "Quality", options: .singleSelection, children: quality)
         qualityMenu.subtitle = PlaybackQuality.label(model.preferences.maxBitrate, sourceBitrate: sourceBitrate)
-        menus.insert(qualityMenu, at: 0)
+        mediaMenus.append(qualityMenu)
         let hdr = UIAction(title: "HDR", attributes: model.isLoading ? .disabled : [],
                            state: model.preferences.hdrEnabled ? .on : .off) { _ in
             model.setHDR(!model.preferences.hdrEnabled)
@@ -67,26 +73,45 @@ struct NativePlayerView: UIViewControllerRepresentable {
         if !model.isLoading, model.error == nil, model.candidates.indices.contains(model.selectedSource) {
             let candidate = model.candidates[model.selectedSource]
             menus.insert(PlaybackInfoMenu.decision(model.playbackDecision, server: candidate.request.playUrl.host), at: 0)
-            menus.append(PlaybackInfoMenu.source(candidate.source, audioKey: model.audioKey))
+            mediaMenus.append(PlaybackInfoMenu.source(candidate.source, audioKey: model.audioKey))
         }
         var controls: [UIMenuElement] = []
         if model.nextEpisode != nil {
             controls.append(UIAction(title: "Next Episode", image: UIImage(systemName: "forward.end.fill")) { _ in playNext() })
         }
-        controls.append(UIMenu(title: "Settings", image: UIImage(systemName: "gearshape"), children: menus))
+        controls.append(UIMenu(title: "Settings", image: UIImage(systemName: "gearshape"), children: mediaMenus + menus))
         controller.transportBarCustomMenuItems = controls
         controller.contextualActions = []
     }
 
     func makeCoordinator() -> Coordinator { Coordinator(close: close) }
 
-    final class Coordinator: NSObject, AVPlayerViewControllerDelegate {
+    final class Coordinator: NSObject, AVPlayerViewControllerDelegate, UIGestureRecognizerDelegate {
         var close: () -> Void
+        weak var controller: AVPlayerViewController?
+        private var controlsVisible = false
         init(close: @escaping () -> Void) { self.close = close }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive press: UIPress) -> Bool {
+            controlsVisible && controller?.player?.timeControlStatus == .playing
+                && controller?.presentedViewController == nil
+        }
+
+        @objc func hideControls() {
+            // Hide the current controls while allowing AVKit to show them again on interaction.
+            controller?.showsPlaybackControls = false
+            controller?.showsPlaybackControls = true
+        }
 
         func playerViewControllerShouldDismiss(_ playerViewController: AVPlayerViewController) -> Bool {
             close()
             return false
+        }
+
+        func playerViewController(_ playerViewController: AVPlayerViewController,
+                                  willTransitionToVisibilityOfTransportBar visible: Bool,
+                                  with coordinator: any AVPlayerViewControllerAnimationCoordinator) {
+            controlsVisible = visible
         }
     }
 }

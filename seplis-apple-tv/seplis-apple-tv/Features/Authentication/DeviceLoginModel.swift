@@ -24,7 +24,7 @@ final class DeviceLoginModel {
             }
             guard let authorization else { return }
             while Date() < authorization.expiresAt {
-                try await Task.sleep(for: .seconds(max(1, authorization.pollIntervalSeconds)))
+                try await Task.sleep(for: .seconds(2))
                 try Task.checkCancellation()
                 let response: DeviceTokenResponse = try await api.send(
                     "device-authorization/token", method: "POST",

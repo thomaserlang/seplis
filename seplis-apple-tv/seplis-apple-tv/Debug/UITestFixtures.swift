@@ -30,6 +30,8 @@ private nonisolated final class FixtureURLProtocol: URLProtocol, @unchecked Send
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
         if ProcessInfo.processInfo.arguments.contains("--loading-library") { return }
+        if ProcessInfo.processInfo.arguments.contains("--loading-media-details"),
+           request.url?.path == "/2/series/1" { return }
         if ProcessInfo.processInfo.arguments.contains("--fail-repeated-library-loads"),
            let url = request.url, ["/2/movies", "/2/series", "/2/users/me/watched"].contains(url.path),
            !Self.loadedURLs.withLock({ $0.insert(url).inserted }) {
@@ -53,8 +55,10 @@ private nonisolated enum FixtureResponses {
     static let movieWatchCount = Mutex(1)
     static let episodeWatchCounts = Mutex([1: 1, 2: 0])
     static var movie: [String: Any] {
-        ["id": 1, "title": "National Treasure", "plot": "A historian follows clues to a hidden treasure.",
-         "release_date": "2004-11-19", "runtime": 131, "genres": [["name": "Adventure"]],
+        ["id": 1, "title": "National Treasure", "tagline": "In order to break the code...",
+         "status": 1, "plot": "A historian follows clues to a hidden treasure.",
+         "release_date": "2004-11-19", "runtime": 131, "language": "en", "rating": 6.9,
+         "budget": 100_000_000, "revenue": 348_000_000, "genres": [["name": "Adventure"]],
          "poster_image": ["url": "https://images.seplis.net/2e32c887c4d6df85dd19100c82aac12b384bd640541f61ea3064fd30fe2ba7b7"],
          "user_watched": ["times": movieWatchCount.withLock { $0 }, "position": 0], "user_watchlist": ["on_watchlist": true],
          "user_favorite": ["favorite": false],
@@ -62,14 +66,18 @@ private nonisolated enum FixtureResponses {
             ? ["id": 7, "name": "National Treasure Collection"] : NSNull()]
     }
     static var series: [String: Any] {
-        ["id": 1, "title": "NCIS", "plot": "Special agents investigate crimes connected to the Navy.",
-         "premiered": "2003-09-23", "seasons": [["season": 1, "total": 2]],
+        ["id": 1, "title": "NCIS", "tagline": "The team is back.", "status": 1,
+         "plot": "Special agents investigate crimes connected to the Navy.",
+         "premiered": "2003-09-23", "runtime": 43, "language": "en", "rating": 7.8,
+         "total_episodes": 2, "seasons": [["season": 1, "total": 2]],
          "poster_image": ["url": "https://images.seplis.net/d30b15fd-4e0f-41cc-80cb-fb37079a2f5f"],
          "user_watchlist": ["on_watchlist": false], "user_favorite": ["favorite": true]]
     }
     static func episode(_ number: Int) -> [String: Any] {
         ["number": number, "season": 1, "episode": number, "title": number == 1 ? "Yankee White" : "Hung Out to Dry",
          "air_date": number == 1 ? "2003-09-23" : "2003-09-30",
+         "plot": number == 1 ? "A Navy commander dies aboard Air Force One." : "The team investigates a Marine's death during training.",
+         "runtime": 43,
          "user_watched": ["times": episodeWatchCounts.withLock { $0[number] ?? 0 }, "position": 0],
          "user_can_watch": ["on_play_server": number != 2 || !ProcessInfo.processInfo.arguments.contains("--unavailable-next-episode")]]
     }
@@ -80,8 +88,8 @@ private nonisolated enum FixtureResponses {
              "cursor": NSNull()]
         }
         if path == "/2/device-authorization" {
-            return ["device_code": "fixture-device-secret", "user_code": "123456", "verification_uri": "https://seplis.net/device",
-                    "verification_uri_complete": "https://seplis.net/device?code=123456",
+            return ["device_code": "fixture-device-secret", "user_code": "123456", "verification_uri": "https://seplis.net/tv",
+                    "verification_uri_complete": "https://seplis.net/tv?code=123456",
                     "expires_at": "2099-01-01T00:00:00Z", "poll_interval_seconds": 3] as [String: Any]
         }
         if path.hasSuffix("/device-authorization/token") { return ["status": "pending"] }
@@ -108,8 +116,14 @@ private nonisolated enum FixtureResponses {
             if ProcessInfo.processInfo.arguments.contains("--paginated-library") {
                 let more = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems?
                     .contains { $0.name == "cursor" } == true
+                let refresh = watchedLoads.withLock { count in
+                    if !more { count += 1 }
+                    return count
+                }
                 let records = (more ? 25...48 : 1...24).map { id in
-                    ["type": "movie", "data": movie.merging(["id": id]) { _, value in value }] as [String: Any]
+                    ["type": "movie", "data": movie.merging([
+                        "id": id, "title": "Movie \(id) refresh \(refresh)"
+                    ]) { _, value in value }] as [String: Any]
                 }
                 return ["records": records, "cursor": more ? NSNull() : "next"] as [String: Any]
             }
@@ -134,6 +148,17 @@ private nonisolated enum FixtureResponses {
             return ProcessInfo.processInfo.arguments.contains("--single-episode-action") ? NSNull() : episode(1)
         }
         if path.hasSuffix("/episodes") { return page([episode(1), episode(2)]) }
+        if path == "/2/movies/1/cast" {
+            return page(["Alex Actor", "Morgan Reed", "Taylor Vale"].enumerated().map { index, name in
+                ["person": ["id": index + 1, "name": name], "character": "Character \(index + 1)"]
+            })
+        }
+        if path == "/2/series/1/cast" {
+            return page(["Jordan Lee", "Riley Stone", "Sam Walker"].enumerated().map { index, name in
+                ["person": ["id": index + 11, "name": name],
+                 "roles": [["character": "Role \(index + 1)"], ["character": "Alias \(index + 1)"]]]
+            })
+        }
         if path.hasPrefix("/2/movies/"), path.hasSuffix("/play-servers"),
            !ProcessInfo.processInfo.arguments.contains("--unavailable-movie") {
             return [["play_id": "fixture", "play_url": "https://play.example.test"]]

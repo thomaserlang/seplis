@@ -56,6 +56,20 @@ nonisolated final class PlaybackProgressTests: XCTestCase {
         XCTAssertFalse(progress.completed)
     }
 
+    @MainActor func testNaturalEndMarksWatchedWithoutDuration() async {
+        let paths = Mutex<[String]>([])
+        let transport = stubSession { request in
+            paths.withLock { $0.append("\(request.httpMethod!) \(request.url!.path)") }
+            return (204, Data())
+        }
+        let progress = PlaybackProgress(api: APIClient(session: transport), path: "movies/42", start: 0)
+        progress.finish()
+        progress.finish()
+        await progress.flush()
+        XCTAssertTrue(progress.completed)
+        XCTAssertEqual(paths.withLock { $0 }, ["POST /2/movies/42/watched"])
+    }
+
     @MainActor func testAmbiguousCompletionFailureIsNotRetried() async {
         let count = Mutex(0)
         let transport = stubSession { _ in count.withLock { $0 += 1 }; return (500, Data()) }

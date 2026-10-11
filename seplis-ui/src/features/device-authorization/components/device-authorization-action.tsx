@@ -14,7 +14,7 @@ export function DeviceAuthorizationAction({
     isPending,
 }: Props) {
     if (!authenticated) {
-        const returnPath = `/device${code ? `?code=${code}` : ''}`
+        const returnPath = `/tv${code ? `?code=${code}` : ''}`
 
         return (
             <Button

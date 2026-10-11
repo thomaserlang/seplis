@@ -8,7 +8,7 @@ enum CatalogChoice: String, CaseIterable, Identifiable {
 
 struct CatalogFilters: Equatable {
     var sort = "popularity_desc"
-    var available: CatalogChoice = .any
+    var available: CatalogChoice = .yes
     var watchlist: CatalogChoice = .any
     var favorite: CatalogChoice = .any
     var watched: CatalogChoice = .any

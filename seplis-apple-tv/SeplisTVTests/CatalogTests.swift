@@ -2,6 +2,17 @@ import XCTest
 @testable import seplis_apple_tv
 
 nonisolated final class CatalogTests: XCTestCase {
+    @MainActor func testAvailableIsDefaultAndCanBeCleared() {
+        var filters = CatalogFilters()
+        for kind in [MediaKind.series, .movie] {
+            XCTAssertTrue(filters.query(kind: kind).contains(.init(name: "user_can_watch", value: "true")))
+        }
+        filters.available = .any
+        for kind in [MediaKind.series, .movie] {
+            XCTAssertFalse(filters.query(kind: kind).contains { $0.name == "user_can_watch" })
+        }
+    }
+
     @MainActor func testFilterQueryMatchesWebContract() {
         var filters = CatalogFilters()
         filters.available = .yes

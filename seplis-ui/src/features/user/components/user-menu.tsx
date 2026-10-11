@@ -81,7 +81,7 @@ export function UserMenu() {
                 <Menu.Item
                     leftSection={<DevicesIcon size={14} />}
                     onClick={() => {
-                        navigate('/device')
+                        navigate('/tv')
                     }}
                 >
                     Authorize device

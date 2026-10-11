@@ -194,6 +194,8 @@ final class PlaybackModel {
         return seconds.isFinite ? seconds : resumePosition
     }
 
+    func finishPlayback() { progress?.finish() }
+
     private func loadNextEpisode() async {
         guard let episode = target.episode else { return }
         // Next-up is optional; failure here must not prevent playing the selected episode.

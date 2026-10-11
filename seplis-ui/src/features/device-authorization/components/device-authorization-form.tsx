@@ -39,6 +39,7 @@ export function DeviceAuthorizationForm({ initialCode, onAuthorized }: Props) {
         <Stack component="form" onSubmit={submit} gap="lg">
             <Text c="dimmed">Enter the code shown on your device.</Text>
             <PinInput
+                data-autofocus="true"
                 length={6}
                 type="number"
                 oneTimeCode

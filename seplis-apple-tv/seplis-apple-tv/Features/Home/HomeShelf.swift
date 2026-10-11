@@ -63,17 +63,17 @@ nonisolated enum HomeShelf: Int, CaseIterable, Identifiable {
 
 nonisolated struct HomeItem: Identifiable {
     let reference: MediaReference
-    let media: Media
+    let media: MediaSummary
     var episode: Episode?
     var id: String { "\(reference.kind)-\(reference.id)-\(episode?.number ?? 0)" }
 }
 
 nonisolated struct WatchedRecord: Decodable {
     let type: MediaKind
-    let data: Media
+    let data: MediaSummary
 }
 
 nonisolated struct SeriesEpisodeRecord: Decodable {
-    let series: Media
+    let series: MediaSummary
     let episode: Episode
 }

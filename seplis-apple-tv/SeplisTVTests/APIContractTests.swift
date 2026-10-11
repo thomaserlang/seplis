@@ -16,15 +16,15 @@ nonisolated final class APIContractTests: XCTestCase {
             XCTAssertEqual(query?.first?.value, "a+b/= token")
             return (200, Data("{\"records\":[],\"cursor\":null}".utf8))
         }
-        let _: Page<Media> = try await APIClient(token: "account-one", session: session)
+        let _: Page<MediaSummary> = try await APIClient(token: "account-one", session: session)
             .get("movies", query: [.init(name: "cursor", value: "a+b/= token")])
     }
 
     @MainActor func testDeviceAuthorizationDatesAndSnakeCase() throws {
         for date in ["2026-09-26T20:00:00Z", "2026-09-26T20:00:00.123456Z"] {
             let data = Data("""
-            {"device_code":"secret","user_code":"001234","verification_uri":"https://seplis.net/device",
-             "verification_uri_complete":"https://seplis.net/device?code=001234","expires_at":"\(date)","poll_interval_seconds":3}
+            {"device_code":"secret","user_code":"001234","verification_uri":"https://seplis.net/tv",
+             "verification_uri_complete":"https://seplis.net/tv?code=001234","expires_at":"\(date)","poll_interval_seconds":3}
             """.utf8)
             let code = try APIClient.decoder().decode(DeviceAuthorization.self, from: data)
             XCTAssertEqual(code.userCode, "001234")

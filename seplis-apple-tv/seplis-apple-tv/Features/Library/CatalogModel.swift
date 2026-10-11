@@ -3,7 +3,7 @@ import Observation
 
 @MainActor @Observable
 final class CatalogModel {
-    private(set) var items: [Media] = []
+    private(set) var items: [MediaSummary] = []
     private(set) var cursor: String?
     private(set) var isLoading = false
     private(set) var error: String?
@@ -20,7 +20,7 @@ final class CatalogModel {
         else { items = []; cursor = nil }
         defer { if generation == request { isLoading = false } }
         do {
-            let page: Page<Media> = try await api.get(kind.path, query: query)
+            let page: Page<MediaSummary> = try await api.get(kind.path, query: query)
             try Task.checkCancellation()
             guard generation == request else { return }
             var seen = Set<Int>()

@@ -1,3 +1,5 @@
+import AVFoundation
+import Combine
 import SwiftUI
 
 struct PlaybackView: View {
@@ -7,6 +9,7 @@ struct PlaybackView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @State private var isTransitioning = false
+    @State private var isPlaying = false
 
     init(target: PlaybackTarget, api: APIClient, onClose: (() -> Void)? = nil) {
         self.api = api
@@ -31,13 +34,6 @@ struct PlaybackView: View {
                 Color.black.ignoresSafeArea()
                 ProgressView().accessibilityLabel("Preparing video")
             }
-            if let error = model.progress?.error {
-                VStack {
-                    Text(error).font(.caption).padding().background(.regularMaterial)
-                    Spacer()
-                }
-                .padding(60)
-            }
         }
         .buttonStyle(LibraryButtonStyle())
         .focusEffectDisabled()
@@ -55,7 +51,18 @@ struct PlaybackView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background { close() }
         }
-        .onExitCommand { close() }
+        .onReceive(model.player.publisher(for: \.timeControlStatus)) { status in
+            isPlaying = status == .playing
+        }
+        .onReceive(NotificationCenter.default.publisher(for: AVPlayerItem.didPlayToEndTimeNotification)
+            .receive(on: DispatchQueue.main)) { notification in
+            guard let item = notification.object as? AVPlayerItem,
+                  let currentItem = model.player.currentItem,
+                  item === currentItem else { return }
+            model.finishPlayback()
+            close()
+        }
+        .onExitCommand(perform: isPlaying && !model.isLoading && model.error == nil ? nil : { close() })
     }
 
     private func close() {
