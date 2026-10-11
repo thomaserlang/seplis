@@ -148,7 +148,7 @@ export function SeriesMetaItems({
 
         items.push({
             label: 'Eps left',
-            value: remaining > 0 ? `${remaining} (${percent}%)` : '0',
+            value: `${remaining} (${percent}%)`,
         })
         items.push({ label: 'Watch time', value: watchTime })
     }
