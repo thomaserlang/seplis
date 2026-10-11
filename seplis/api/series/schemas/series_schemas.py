@@ -191,6 +191,9 @@ class SeriesUserStats:
     total_watch_minutes: int = 0
     series_total_episodes: int = 0
     episodes_watched: int = 0
+    # Progress only includes episodes that have aired.
+    episodes_remaining: int = 0
+    progress_percent: float = 0
 
 
 SERIES_USER_SORT_TYPE = Literal[

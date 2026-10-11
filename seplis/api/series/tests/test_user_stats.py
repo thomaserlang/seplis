@@ -100,6 +100,8 @@ async def test_episode_progress_counts_all_episodes(client: AsyncClient) -> None
     assert response.status_code == 200
     assert response.json()['series_total_episodes'] == 5
     assert response.json()['episodes_watched'] == 0
+    assert response.json()['episodes_remaining'] == 2
+    assert response.json()['progress_percent'] == 0
 
     for number in [1, 1, 3, 4, 5]:
         response = await client.post(f'/2/series/{series.id}/episodes/{number}/watched')
@@ -107,13 +109,19 @@ async def test_episode_progress_counts_all_episodes(client: AsyncClient) -> None
     response = await client.get(url)
     assert response.json()['episodes_watched'] == 4
     assert response.json()['episode_watch_count'] == 5
+    assert response.json()['episodes_remaining'] == 1
+    assert response.json()['progress_percent'] == 50
 
     await client.post(f'/2/series/{series.id}/episodes/2/watched')
     response = await client.get(url)
     assert response.json()['episodes_watched'] == 5
+    assert response.json()['episodes_remaining'] == 0
+    assert response.json()['progress_percent'] == 100
     await client.delete(f'/2/series/{series.id}/episodes/2/watched')
     response = await client.get(url)
     assert response.json()['episodes_watched'] == 4
+    assert response.json()['episodes_remaining'] == 1
+    assert response.json()['progress_percent'] == 50
 
 
 @pytest.mark.asyncio
@@ -124,6 +132,8 @@ async def test_progress_without_episodes(client: AsyncClient) -> None:
     assert response.status_code == 200
     assert response.json()['series_total_episodes'] == 0
     assert response.json()['episodes_watched'] == 0
+    assert response.json()['episodes_remaining'] == 0
+    assert response.json()['progress_percent'] == 0
 
 
 if __name__ == '__main__':

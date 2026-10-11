@@ -167,6 +167,14 @@ async def get_user_stats(
     session: AsyncSession | None = None,
 ) -> SeriesUserStats:
     async with get_session(session) as session:
+        now = datetime.now(UTC)
+        has_aired = sa.or_(
+            MEpisode.air_datetime <= now,
+            sa.and_(
+                MEpisode.air_datetime.is_(None),
+                MEpisode.air_date <= now.date(),
+            ),
+        )
         progress = (
             (
                 await session.execute(
@@ -175,6 +183,13 @@ async def get_user_stats(
                         sa.func.sum(
                             sa.case((MEpisodeWatched.times > 0, 1), else_=0)
                         ).label('watched'),
+                        sa.func.sum(sa.case((has_aired, 1), else_=0)).label('aired'),
+                        sa.func.sum(
+                            sa.case(
+                                (sa.and_(has_aired, MEpisodeWatched.times > 0), 1),
+                                else_=0,
+                            )
+                        ).label('aired_watched'),
                     )
                     .select_from(MEpisode.__table__)
                     .outerjoin(
@@ -217,11 +232,15 @@ async def get_user_stats(
         row = result.mappings().first()
         if not row:
             return SeriesUserStats()
+        aired = int(progress['aired'] or 0)
+        aired_watched = int(progress['aired_watched'] or 0)
         return SeriesUserStats(
             episode_watch_count=int(row['episode_watch_count'] or 0),
             total_watch_minutes=int(row['total_watch_minutes'] or 0),
             series_total_episodes=int(progress['total'] or 0),
             episodes_watched=int(progress['watched'] or 0),
+            episodes_remaining=aired - aired_watched,
+            progress_percent=aired_watched / aired * 100 if aired else 0,
         )
 
 
