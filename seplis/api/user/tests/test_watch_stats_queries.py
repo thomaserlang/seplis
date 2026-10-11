@@ -134,20 +134,28 @@ async def test_monthly_activity_uses_history_and_utc_boundaries(
             {'movie_id': 1, 'user_id': 1, 'watched_at': datetime(2026, 1, 2, tzinfo=UTC)},
         ],
     )
-    months = await get_user_watch_activity(1, session)
+    months = await get_user_watch_activity(1, session, year=2025)
     assert len(months) == 12
-    assert months[0].month == '2025-02'
-    assert months[-1].month == '2026-01'
-    assert months[-2].episodes_watched == 2
-    assert months[-2].series_minutes == 60
-    assert months[-2].movies_watched == 1
-    assert months[-2].movie_minutes == 120
-    assert months[-1].episodes_watched == 1
-    assert months[-1].series_minutes == 45
+    assert months[0].date == '2025-01-01'
+    assert months[-1].date == '2025-12-01'
+    assert months[0].episodes_watched == 1
+    assert months[-1].episodes_watched == 2
+    assert months[-1].series_minutes == 60
     assert months[-1].movies_watched == 1
+    assert months[-1].movie_minutes == 120
     assert all(
-        month.episodes_watched == month.movies_watched == 0 for month in months[:-2]
+        month.episodes_watched == month.movies_watched == 0 for month in months[1:-1]
     )
-    empty = await get_user_watch_activity(3, session)
+    days = await get_user_watch_activity(1, session, year=2026, month=1)
+    assert len(days) == 31
+    assert days[0].date == '2026-01-01'
+    assert days[1].movie_minutes == 120
+    assert days[4].series_minutes == 45
+    assert sum(day.episodes_watched for day in days) == 1
+    assert sum(day.movies_watched for day in days) == 1
+    leap_days = await get_user_watch_activity(3, session, year=2024, month=2)
+    assert len(leap_days) == 29
+    assert leap_days[-1].date == '2024-02-29'
+    empty = await get_user_watch_activity(3, session, year=2026)
     assert len(empty) == 12
     assert all(month.episodes_watched == month.movies_watched == 0 for month in empty)
