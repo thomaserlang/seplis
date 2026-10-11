@@ -167,10 +167,34 @@ async def get_user_stats(
     session: AsyncSession | None = None,
 ) -> SeriesUserStats:
     async with get_session(session) as session:
+        progress = (
+            (
+                await session.execute(
+                    sa.select(
+                        sa.func.count(MEpisode.number).label('total'),
+                        sa.func.sum(
+                            sa.case((MEpisodeWatched.times > 0, 1), else_=0)
+                        ).label('watched'),
+                    )
+                    .select_from(MEpisode.__table__)
+                    .outerjoin(
+                        MEpisodeWatched.__table__,
+                        sa.and_(
+                            MEpisodeWatched.series_id == MEpisode.series_id,
+                            MEpisodeWatched.episode_number == MEpisode.number,
+                            MEpisodeWatched.user_id == user_id,
+                        ),
+                    )
+                    .where(MEpisode.series_id == series_id)
+                )
+            )
+            .mappings()
+            .one()
+        )
         result = await session.execute(
             sa.select(
                 sa.func.ifnull(sa.func.sum(MEpisodeWatched.times), 0).label(
-                    'episodes_watched'
+                    'episode_watch_count'
                 ),
                 sa.func.ifnull(
                     sa.func.sum(
@@ -181,7 +205,7 @@ async def get_user_stats(
                         )
                     ),
                     0,
-                ).label('episodes_watched_minutes'),
+                ).label('total_watch_minutes'),
             ).where(
                 MEpisodeWatched.user_id == user_id,
                 MEpisodeWatched.series_id == series_id,
@@ -194,8 +218,10 @@ async def get_user_stats(
         if not row:
             return SeriesUserStats()
         return SeriesUserStats(
-            episodes_watched=int(row['episodes_watched'] or 0),
-            episodes_watched_minutes=int(row['episodes_watched_minutes'] or 0),
+            episode_watch_count=int(row['episode_watch_count'] or 0),
+            total_watch_minutes=int(row['total_watch_minutes'] or 0),
+            total_episodes=int(progress['total'] or 0),
+            episodes_watched=int(progress['watched'] or 0),
         )
 
 
