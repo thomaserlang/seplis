@@ -36,6 +36,7 @@ export const {
     url: (props) => `2/movies/${props.movieId}/watchlist`,
     method: 'PUT',
     onSuccess: ({ variables }) => {
+        queryClient.invalidateQueries({ queryKey: ['user', 'movie-stats'] })
         queryClient.setQueryData(
             movieWatchlistQueryKey({
                 movieId: variables.movieId,
@@ -60,6 +61,7 @@ export const {
     url: (props) => `2/movies/${props.movieId}/watchlist`,
     method: 'DELETE',
     onSuccess: ({ variables }) => {
+        queryClient.invalidateQueries({ queryKey: ['user', 'movie-stats'] })
         queryClient.setQueryData(
             movieWatchlistQueryKey({
                 movieId: variables.movieId,

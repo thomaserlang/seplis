@@ -78,4 +78,6 @@ export function invalidateMovieWatched({
     queryClient.invalidateQueries({
         queryKey: getUserWatchedQueryKey({}),
     })
+    queryClient.invalidateQueries({ queryKey: ['user', 'movie-stats'] })
+    queryClient.invalidateQueries({ queryKey: ['user', 'watch-activity'] })
 }

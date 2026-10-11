@@ -109,4 +109,6 @@ export function invalidateEpisodeWatched({
     queryClient.invalidateQueries({
         queryKey: seriesUserStatsQueryKey({ seriesId }),
     })
+    queryClient.invalidateQueries({ queryKey: ['user', 'series-stats'] })
+    queryClient.invalidateQueries({ queryKey: ['user', 'watch-activity'] })
 }

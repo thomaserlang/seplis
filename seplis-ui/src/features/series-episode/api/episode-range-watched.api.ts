@@ -18,6 +18,8 @@ export const {
     method: 'POST',
     url: ({ seriesId }) => `2/series/${seriesId}/episodes/watched-range`,
     onSuccess: ({ variables }) => {
+        queryClient.invalidateQueries({ queryKey: ['user', 'series-stats'] })
+        queryClient.invalidateQueries({ queryKey: ['user', 'watch-activity'] })
         queryClient.invalidateQueries({
             queryKey: ['series', variables.seriesId],
         })

@@ -82,6 +82,10 @@ export const router = createBrowserRouter([
                         lazy: () => import('./features/movie/movies.page'),
                     },
                     {
+                        path: '/stats',
+                        lazy: () => import('./features/user/stats.page'),
+                    },
+                    {
                         path: '/play-servers',
                         lazy: () =>
                             import('./features/play-server/play-servers.page'),

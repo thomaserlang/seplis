@@ -1,6 +1,7 @@
 import { Avatar, Flex, Menu } from '@mantine/core'
 import {
     ArrowsClockwiseIcon,
+    ChartBarIcon,
     DevicesIcon,
     HardDrivesIcon,
     PlusIcon,
@@ -78,6 +79,12 @@ export function UserMenu() {
                     Logout
                 </Menu.Item>
                 <Menu.Divider />
+                <Menu.Item
+                    leftSection={<ChartBarIcon size={14} />}
+                    onClick={() => navigate('/stats')}
+                >
+                    Stats
+                </Menu.Item>
                 <Menu.Item
                     leftSection={<DevicesIcon size={14} />}
                     onClick={() => {

@@ -36,6 +36,7 @@ export const {
     url: (props) => `2/series/${props.seriesId}/watchlist`,
     method: 'PUT',
     onSuccess: ({ variables }) => {
+        queryClient.invalidateQueries({ queryKey: ['user', 'series-stats'] })
         queryClient.setQueryData(
             seriesWatchlistQueryKey({
                 seriesId: variables.seriesId,
@@ -60,6 +61,7 @@ export const {
     url: (props) => `2/series/${props.seriesId}/watchlist`,
     method: 'DELETE',
     onSuccess: ({ variables }) => {
+        queryClient.invalidateQueries({ queryKey: ['user', 'series-stats'] })
         queryClient.setQueryData(
             seriesWatchlistQueryKey({
                 seriesId: variables.seriesId,
