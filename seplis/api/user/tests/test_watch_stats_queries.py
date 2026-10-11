@@ -14,7 +14,12 @@ from seplis.api.movie.models.movie_model import (
     MMovieWatchedHistory,
 )
 from seplis.api.movie.models.movie_watchlist_model import MMovieWatchlist
-from seplis.api.series.models.episode_model import MEpisode, MEpisodeWatchedHistory
+from seplis.api.series.actions.series_mapping import total_runtime_minutes_column
+from seplis.api.series.models.episode_model import (
+    MEpisode,
+    MEpisodeWatched,
+    MEpisodeWatchedHistory,
+)
 from seplis.api.series.models.series_model import MSeries
 from seplis.api.user.actions.user_watch_activity_actions import get_user_watch_activity
 
@@ -29,7 +34,8 @@ async def stats_session() -> AsyncGenerator[tuple[AsyncSession, dict[str, sa.Tab
         (MMovieWatchlist, ['movie_id', 'user_id']),
         (MMovieWatchedHistory, ['movie_id', 'user_id', 'watched_at']),
         (MSeries, ['id', 'runtime']),
-        (MEpisode, ['series_id', 'number', 'runtime']),
+        (MEpisode, ['series_id', 'number', 'runtime', 'air_date', 'air_datetime']),
+        (MEpisodeWatched, ['series_id', 'episode_number', 'user_id', 'times']),
         (
             MEpisodeWatchedHistory,
             ['series_id', 'episode_number', 'user_id', 'watched_at'],
@@ -87,6 +93,47 @@ async def test_movie_stats_counts_rewatches_and_isolates_users(
     empty = await get_user_movie_stats(3, session)
     assert empty.movies_watched == empty.movie_watch_count == 0
     assert empty.total_watch_minutes == empty.movies_watchlist == 0
+
+
+@freeze_time('2026-01-15T12:00:00Z')
+@pytest.mark.asyncio
+async def test_series_length_counts_aired_runtime_once(
+    stats_session: tuple[AsyncSession, dict[str, sa.Table]],
+) -> None:
+    session, tables = stats_session
+    await session.execute(sa.insert(tables['series']), {'id': 1, 'runtime': 30})
+    await session.execute(
+        sa.insert(tables['episodes']),
+        [
+            {
+                'series_id': 1,
+                'number': number,
+                'runtime': runtime,
+                'air_date': datetime.fromisoformat(date).date() if date else None,
+                'air_datetime': datetime.fromisoformat(stamp) if stamp else None,
+            }
+            for number, runtime, date, stamp in [
+                (1, None, '2026-01-01', None),
+                (2, 45, None, '2026-01-02T12:00:00Z'),
+                (3, 100, '2026-02-01', None),
+                (4, 100, '2026-01-15', '2026-01-15T15:00:00Z'),
+                (5, 100, None, None),
+            ]
+        ],
+    )
+    query = (
+        sa.select(total_runtime_minutes_column())
+        .select_from(MSeries.__table__)
+        .where(MSeries.id == 1)
+    )
+    assert await session.scalar(query) == 75
+    await session.execute(
+        sa.insert(tables['episodes_watched']),
+        {'series_id': 1, 'episode_number': 1, 'user_id': 1, 'times': 3},
+    )
+    assert await session.scalar(query) == 75
+    await session.execute(sa.delete(tables['episodes']))
+    assert await session.scalar(query) == 0
 
 
 @freeze_time('2026-01-15T12:00:00Z')

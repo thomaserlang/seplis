@@ -152,6 +152,8 @@ class Series:
     status: int | None = None
     seasons: list[SeriesSeason] = field(default_factory=list)
     total_episodes: int = 0
+    # Runtime of aired episodes, counted once each.
+    total_runtime_minutes: int = 0
     poster_image: Image | None = None
     popularity: float | None = None
     rating: float | None = None

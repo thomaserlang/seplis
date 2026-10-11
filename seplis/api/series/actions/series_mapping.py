@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Any
 
 import sqlalchemy as sa
@@ -20,8 +21,30 @@ def episode_columns(prefix: str = 'episode_') -> tuple[Any, ...]:
 
 
 def select_series() -> sa.Select[Any]:
-    return sa.select(MSeries.__table__, *image_columns()).outerjoin(
-        MImage.__table__, MImage.id == MSeries.poster_image_id
+    return sa.select(
+        MSeries.__table__, total_runtime_minutes_column(), *image_columns()
+    ).outerjoin(MImage.__table__, MImage.id == MSeries.poster_image_id)
+
+
+def total_runtime_minutes_column() -> sa.Label[Any]:
+    now = datetime.now(UTC)
+    return (
+        sa.select(
+            sa.func.coalesce(
+                sa.func.sum(sa.func.coalesce(MEpisode.runtime, MSeries.runtime, 0)), 0
+            )
+        )
+        .select_from(MEpisode.__table__)
+        .where(
+            MEpisode.series_id == MSeries.id,
+            sa.or_(
+                MEpisode.air_datetime <= now,
+                sa.and_(MEpisode.air_datetime.is_(None), MEpisode.air_date <= now.date()),
+            ),
+        )
+        .correlate(MSeries.__table__)
+        .scalar_subquery()
+        .label('total_runtime_minutes')
     )
 
 
@@ -70,6 +93,7 @@ def series_row_mapper(series: RowMapping) -> Series:
             for value in series['seasons'] or []
         ],
         total_episodes=series['total_episodes'] or 0,
+        total_runtime_minutes=int(series['total_runtime_minutes'] or 0),
         poster_image=image_mapper(series, 'image_') if series['image_id'] else None,
         popularity=float(popularity) if popularity is not None else None,
         rating=float(rating) if rating is not None else None,
