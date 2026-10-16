@@ -93,11 +93,6 @@ function EpisodeCardContent({
                     >
                         {episode.title || 'Untitled'}
                     </Text>
-                    {episode.runtime && (
-                        <Text size="xs" c="dimmed" mt={2}>
-                            {episode.runtime} min
-                        </Text>
-                    )}
                 </Box>
 
                 <Flex gap="0.5rem" wrap="wrap">
