@@ -6,32 +6,71 @@ struct PlayServerClient {
     init(session: URLSession = .shared) { self.session = session }
 
     func sources(for requests: [PlayRequest]) async throws -> [PlayCandidate] {
+        try await Self.collectSources(for: requests) { request in
+            let data = try await fetch(request.playUrl.appending(path: "sources").addingQuery([
+                .init(name: "play_id", value: request.playId),
+            ]), timeout: 20)
+            return try APIClient.decoder().decode([PlaySource].self, from: data)
+        }
+    }
+
+    private struct SourceResponse: Sendable {
+        let index: Int
+        let candidates: [PlayCandidate]
+        let failure: String?
+    }
+
+    static func collectSources(
+        for requests: [PlayRequest],
+        loadSources: @escaping @MainActor @Sendable (PlayRequest) async throws -> [PlaySource]
+    ) async throws -> [PlayCandidate] {
+        try Task.checkCancellation()
         guard !requests.isEmpty else {
             throw APIError.message("No play server has this title available for your account.")
         }
-        var candidates: [PlayCandidate] = []
-        var failures: [String] = []
-        for request in requests.reversed() {
-            try Task.checkCancellation()
-            do {
-                let data = try await fetch(request.playUrl.appending(path: "sources").addingQuery([
-                    .init(name: "play_id", value: request.playId),
-                ]), timeout: 3)
-                let sources = try APIClient.decoder().decode([PlaySource].self, from: data)
-                if sources.isEmpty {
-                    failures.append("\(request.playUrl.host ?? "Play server"): no media files were returned.")
-                }
-                candidates += sources.map { PlayCandidate(request: request, source: $0) }
-            } catch is CancellationError { throw CancellationError() }
-            catch let error as URLError where error.code == .cancelled { throw CancellationError() }
-            catch {
-                failures.append("\(request.playUrl.host ?? "Play server"): \(PlayServerFailure.message(for: error))")
+        return try await withThrowingTaskGroup(of: SourceResponse?.self) { group in
+            defer { group.cancelAll() }
+            group.addTask {
+                try await Task.sleep(for: .seconds(2))
+                return nil
             }
+            for (index, request) in requests.reversed().enumerated() {
+                group.addTask { @MainActor in
+                    do {
+                        let sources = try await loadSources(request)
+                        let failure = sources.isEmpty
+                            ? "\(request.playUrl.host ?? "Play server"): no media files were returned." : nil
+                        return SourceResponse(index: index,
+                            candidates: sources.map { PlayCandidate(request: request, source: $0) }, failure: failure)
+                    } catch is CancellationError { throw CancellationError() }
+                    catch let error as URLError where error.code == .cancelled { throw CancellationError() }
+                    catch {
+                        return SourceResponse(index: index, candidates: [],
+                            failure: "\(request.playUrl.host ?? "Play server"): \(PlayServerFailure.message(for: error))")
+                    }
+                }
+            }
+            var responses: [SourceResponse] = []
+            var gracePeriodElapsed = false
+            for try await response in group {
+                try Task.checkCancellation()
+                if let response {
+                    responses.append(response)
+                } else {
+                    gracePeriodElapsed = true
+                }
+                if responses.count == requests.count ||
+                    (gracePeriodElapsed && responses.contains { !$0.candidates.isEmpty }) {
+                    break
+                }
+            }
+            responses.sort { $0.index < $1.index }
+            let candidates = responses.flatMap(\.candidates)
+            guard !candidates.isEmpty else {
+                throw APIError.message(responses.compactMap(\.failure).joined(separator: "\n"))
+            }
+            return candidates
         }
-        guard !candidates.isEmpty else {
-            throw APIError.message(failures.joined(separator: "\n"))
-        }
-        return candidates
     }
 
     func open(

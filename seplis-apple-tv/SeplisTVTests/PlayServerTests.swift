@@ -2,6 +2,95 @@ import XCTest
 @testable import seplis_apple_tv
 
 nonisolated final class PlayServerTests: XCTestCase {
+    @MainActor private final class DiscoveryProbe {
+        var started = Set<String>()
+        var cancelled = Set<String>()
+    }
+
+    @MainActor private func discoveryRequests() -> [PlayRequest] {
+        [PlayRequest(playId: "fast", playUrl: URL(string: "https://fast.example")!),
+         PlayRequest(playId: "slow", playUrl: URL(string: "https://slow.example")!)]
+    }
+
+    @MainActor private func discoverySource() -> PlaySource {
+        PlaySource(index: 0, duration: 120, bitrate: 2_000_000, codec: "h264",
+                   resolution: "1080p", audio: [], subtitles: [])
+    }
+
+    @MainActor func testAvailableSourcesSkipSlowServerAfterGracePeriod() async throws {
+        let probe = DiscoveryProbe()
+        let source = discoverySource()
+        let start = ContinuousClock.now
+        let candidates = try await PlayServerClient.collectSources(for: discoveryRequests()) { request in
+            probe.started.insert(request.playId)
+            if request.playId == "slow" {
+                do { try await Task.sleep(for: .seconds(30)) }
+                catch { probe.cancelled.insert(request.playId); throw error }
+            }
+            return [source]
+        }
+        XCTAssertEqual(candidates.map { $0.request.playId }, ["fast"])
+        XCTAssertEqual(probe.started, ["fast", "slow"])
+        XCTAssertEqual(probe.cancelled, ["slow"])
+        XCTAssertGreaterThanOrEqual(start.duration(to: .now), .milliseconds(1800))
+        XCTAssertLessThan(start.duration(to: .now), .seconds(5))
+    }
+
+    @MainActor func testFirstUsableResponseAfterGracePeriodSkipsPendingServer() async throws {
+        let source = discoverySource()
+        let probe = DiscoveryProbe()
+        let start = ContinuousClock.now
+        let candidates = try await PlayServerClient.collectSources(for: discoveryRequests()) { request in
+            do { try await Task.sleep(for: .milliseconds(request.playId == "fast" ? 2200 : 30_000)) }
+            catch { probe.cancelled.insert(request.playId); throw error }
+            return [source]
+        }
+        XCTAssertEqual(candidates.map { $0.request.playId }, ["fast"])
+        XCTAssertEqual(probe.cancelled, ["slow"])
+        XCTAssertLessThan(start.duration(to: .now), .seconds(5))
+    }
+
+    @MainActor func testEmptyResponseDoesNotEndDiscoveryAtGracePeriod() async throws {
+        let source = discoverySource()
+        let candidates = try await PlayServerClient.collectSources(for: discoveryRequests()) { request in
+            if request.playId == "fast" { return [] }
+            try await Task.sleep(for: .milliseconds(2200))
+            return [source]
+        }
+        XCTAssertEqual(candidates.map { $0.request.playId }, ["slow"])
+    }
+
+    @MainActor func testCompletedDiscoveryPreservesServerOrderWithoutWaitingForGracePeriod() async throws {
+        let source = discoverySource()
+        let start = ContinuousClock.now
+        let candidates = try await PlayServerClient.collectSources(for: discoveryRequests()) { request in
+            if request.playId == "slow" { try await Task.sleep(for: .milliseconds(50)) }
+            return [source]
+        }
+        XCTAssertEqual(candidates.map { $0.request.playId }, ["slow", "fast"])
+        XCTAssertLessThan(start.duration(to: .now), .seconds(1))
+    }
+
+    @MainActor func testCancellingDiscoveryCancelsEveryPendingRequest() async {
+        let probe = DiscoveryProbe()
+        let requests = discoveryRequests()
+        let task = Task {
+            try await PlayServerClient.collectSources(for: requests) { request in
+                probe.started.insert(request.playId)
+                do { try await Task.sleep(for: .seconds(30)) }
+                catch { probe.cancelled.insert(request.playId); throw error }
+                return []
+            }
+        }
+        while probe.started.count < requests.count { await Task.yield() }
+        task.cancel()
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation")
+        } catch { XCTAssertTrue(error is CancellationError) }
+        XCTAssertEqual(probe.cancelled, ["fast", "slow"])
+    }
+
     @MainActor func testServerDecimalDurationAndStreamDefaults() async throws {
         let transport = stubSession { _ in
             (200, Data("""

@@ -1,10 +1,7 @@
 import { ApiHelperProps, useApiHelper } from '@/utils/api-crud'
 import ky from 'ky'
 import { PlayRequest } from '../types/play-request.types'
-import {
-    PlayRequestSources,
-    PlaySource,
-} from '../types/play-source.types'
+import { PlayRequestSources, PlaySource } from '../types/play-source.types'
 
 interface PlayRequestSourcesGetProps extends ApiHelperProps<{}> {
     playRequests: PlayRequest[]
@@ -18,14 +15,45 @@ export const { get: getPlayRequestSources, useGet: useGetPlayRequestSources } =
             ...playRequests.map((pr) => pr.play_id),
         ],
         getFn: async ({ playRequests, signal }) => {
-            const data = await Promise.all(
-                playRequests.map((playRequest) =>
-                    getPlayServerSources(playRequest, signal),
-                ),
-            )
-            return data.filter(
-                (item): item is PlayRequestSources => item !== null,
-            )
+            signal?.throwIfAborted()
+            if (!playRequests.length) return []
+
+            const controller = new AbortController()
+            let timer: ReturnType<typeof setTimeout> | undefined
+            let onAbort: (() => void) | undefined
+            try {
+                return await new Promise<PlayRequestSources[]>(
+                    (resolve, reject) => {
+                        const results: PlayRequestSources[] = []
+                        let gracePeriodElapsed = false
+                        const finish = () => resolve(results.filter(Boolean))
+                        onAbort = () => reject(signal?.reason)
+                        signal?.addEventListener('abort', onAbort, {
+                            once: true,
+                        })
+                        timer = setTimeout(() => {
+                            gracePeriodElapsed = true
+                            if (results.length) finish()
+                        }, 2000)
+                        void Promise.all(
+                            playRequests.map(async (playRequest, index) => {
+                                const result = await getPlayServerSources(
+                                    playRequest,
+                                    controller.signal,
+                                )
+                                if (result?.sources.length) {
+                                    results[index] = result
+                                    if (gracePeriodElapsed) finish()
+                                }
+                            }),
+                        ).then(finish, reject)
+                    },
+                )
+            } finally {
+                clearTimeout(timer)
+                if (onAbort) signal?.removeEventListener('abort', onAbort)
+                controller.abort()
+            }
         },
     })
 
@@ -40,7 +68,7 @@ export async function getPlayServerSources(
                 searchParams: {
                     play_id: playRequest.play_id,
                 },
-                timeout: 2000,
+                timeout: 20000,
                 signal,
             },
         )
@@ -50,6 +78,7 @@ export async function getPlayServerSources(
         }
         return data
     } catch (e) {
+        if (signal?.aborted) return null
         if (e instanceof DOMException && e.name === 'AbortError') return null
         console.log(e)
         return null
