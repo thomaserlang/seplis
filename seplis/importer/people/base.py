@@ -27,7 +27,7 @@ def register_importer(obj: object) -> None:
 class ImporterBase:
     display_name: str
     external_name: str
-    supported: tuple[Literal['info', 'images']]
+    supported: tuple[Literal['info', 'images'], ...]
 
     async def info(self, external_id: Any) -> PersonUpdate | None:
         """Override this function and return a show.

@@ -24,7 +24,7 @@ def filter_user_watchlist(query: Any, filter_query: MovieQueryFilter) -> Any:
             MMovieWatchlist.user_id == filter_query.user.id,
             MMovieWatchlist.movie_id == MMovie.id,
         )
-    elif not filter_query.user_watchlist:
+    else:
         query = query.join(
             MMovieWatchlist.__table__,
             sa.and_(

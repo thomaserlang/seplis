@@ -27,10 +27,8 @@ def filter_has_watched(query: Any, filter_query: SeriesQueryFilter) -> Any:
             MEpisodeWatched.series_id == MEpisodeLastWatched.series_id,
             MEpisodeWatched.episode_number == MEpisodeLastWatched.episode_number,
         )
-    if not filter_query.user_has_watched:
-        e = sa.select(1).where(
-            MEpisodeLastWatched.user_id == filter_query.user.id,
-            MEpisodeLastWatched.series_id == MSeries.id,
-        )
-        return query.where(sa.not_(sa.exists(e)))
-    return query
+    watched_query = sa.select(1).where(
+        MEpisodeLastWatched.user_id == filter_query.user.id,
+        MEpisodeLastWatched.series_id == MSeries.id,
+    )
+    return query.where(sa.not_(sa.exists(watched_query)))

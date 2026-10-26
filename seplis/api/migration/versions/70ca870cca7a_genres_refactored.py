@@ -45,8 +45,8 @@ def upgrade() -> None:
         conn.execute(
             sa.text('update series_genres set genre_id=:genre_id where genre=:genre'),
             {
-                'genre_id': genre['id'],  # ty:ignore[invalid-argument-type]
-                'genre': genre['name'],  # ty:ignore[invalid-argument-type]
+                'genre_id': genre['id'],
+                'genre': genre['name'],
             },
         )
     op.create_primary_key('pk_series_genres', 'series_genres', ['series_id', 'genre_id'])

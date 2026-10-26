@@ -1,7 +1,7 @@
 import base64
 from collections.abc import Callable, Mapping
 from dataclasses import Field as DataclassField
-from typing import Any, ClassVar, Protocol, overload
+from typing import Any, ClassVar, Protocol, cast, overload
 
 import sqlalchemy as sa
 from pydantic import BaseModel
@@ -22,8 +22,8 @@ ValidTaskReturnType = BaseModel | Mapping[str, Any] | DataclassInstance
 
 
 @overload
-async def page_cursor[TP: tuple[Any, ...], R: ValidTaskReturnType](
-    query: sa.Select[TP],
+async def page_cursor[*TP, R: ValidTaskReturnType](
+    query: sa.Select[*TP],
     page_query: PageCursorQuery,
     response_model: type[R],
     session: AsyncSession | None = None,
@@ -33,8 +33,8 @@ async def page_cursor[TP: tuple[Any, ...], R: ValidTaskReturnType](
 
 
 @overload
-async def page_cursor[TP: tuple[Any, ...], R: ValidTaskReturnType](
-    query: sa.Select[TP],
+async def page_cursor[*TP, R: ValidTaskReturnType](
+    query: sa.Select[*TP],
     page_query: PageCursorQuery,
     response_model: None = None,
     session: AsyncSession | None = None,
@@ -44,18 +44,18 @@ async def page_cursor[TP: tuple[Any, ...], R: ValidTaskReturnType](
 
 
 @overload
-async def page_cursor[TP: tuple[Any, ...]](
-    query: sa.Select[TP],
+async def page_cursor[*TP](
+    query: sa.Select[*TP],
     page_query: PageCursorQuery,
     response_model: None = None,
     session: AsyncSession | None = None,
     count_total: bool = True,
     record_mapper: None = None,
-) -> PageCursor[Row[TP]]: ...
+) -> PageCursor[Row[*TP]]: ...
 
 
-async def page_cursor[TP: tuple[Any, ...]](
-    query: sa.Select[TP],
+async def page_cursor[*TP](
+    query: sa.Select[*TP],
     page_query: PageCursorQuery,
     response_model: Any | None = None,
     session: AsyncSession | None = None,
@@ -65,7 +65,7 @@ async def page_cursor[TP: tuple[Any, ...]](
     async with get_session(session) as session:
         page = await select_page(
             s=session,
-            selectable=query,
+            selectable=cast(Any, query),
             per_page=page_query.per_page,
             page=base64.urlsafe_b64decode(page_query.cursor).decode()
             if page_query.cursor
@@ -81,7 +81,7 @@ async def page_cursor[TP: tuple[Any, ...]](
         if count_total:
             count_subquery = query.order_by(None).subquery()
             total = await session.scalar(
-                sa.Select[TP](sa.func.count(sa.literal_column('*'))).select_from(
+                sa.select(sa.func.count(sa.literal_column('*'))).select_from(
                     count_subquery
                 )
             )

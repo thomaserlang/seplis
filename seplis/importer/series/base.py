@@ -27,7 +27,7 @@ def register_importer(obj: object) -> None:
 class SeriesImporterBase:
     display_name: str
     external_name: str
-    supported: tuple[Literal['info', 'episodes', 'images', 'cast']]
+    supported: tuple[Literal['info', 'episodes', 'images', 'cast', 'poster'], ...]
 
     async def info(self, external_id: Any) -> SeriesUpdate | None:
         """Override this function and return a show.

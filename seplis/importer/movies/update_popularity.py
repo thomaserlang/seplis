@@ -28,7 +28,7 @@ async def update_popularity(
         result = await session.stream(sa.select(MMovie).options(noload('*')))
         async for db_movies in result.yield_per(1000):
             for movie in db_movies:
-                if movie.externals.get('themoviedb'):
+                if movie.externals and movie.externals.get('themoviedb'):
                     movies[movie.externals['themoviedb']] = movie.id
 
         ids_to_create = []

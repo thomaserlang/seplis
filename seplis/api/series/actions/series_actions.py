@@ -124,7 +124,7 @@ async def save_series(
     overwrite_genres: bool = False,
     session: AsyncSession | None = None,
 ) -> Series:
-    values = dict(data or {})
+    values: dict[str, Any] = dict(data or {})
     async with get_session(session) as session:
         if not series_id:
             result = cast(

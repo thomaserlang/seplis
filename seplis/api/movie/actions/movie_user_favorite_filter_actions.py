@@ -24,7 +24,7 @@ def filter_user_favorites(query: Any, filter_query: MovieQueryFilter) -> Any:
             MMovieFavorite.user_id == filter_query.user.id,
             MMovieFavorite.movie_id == MMovie.id,
         )
-    elif not filter_query.user_favorites:
+    else:
         query = query.join(
             MMovieFavorite.__table__,
             sa.and_(

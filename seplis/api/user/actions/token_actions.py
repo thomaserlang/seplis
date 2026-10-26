@@ -100,7 +100,7 @@ async def get_authenticated_user(token: str) -> UserAuthenticated | None:
     return None
 
 
-def cache_token(pipe: Pipeline[Any], token: str, user_id: int, scopes: list[str]) -> None:
+def cache_token(pipe: Pipeline, token: str, user_id: int, scopes: list[str]) -> None:
     pipe.hset(f'seplis:tokens:{token}:user', 'id', str(user_id))
     pipe.hset(f'seplis:tokens:{token}:user', 'scopes', ' '.join(scopes))
 

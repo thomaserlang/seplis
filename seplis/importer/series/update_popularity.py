@@ -26,6 +26,8 @@ async def update_popularity(
         result = await session.stream(sa.select(MSeries).options(noload('*')))
         async for db_series in result.yield_per(1000):
             for r in db_series:
+                if not r.externals:
+                    continue
                 if r.externals.get('themoviedb'):
                     series[r.externals['themoviedb']] = r.id
                 if r.externals.get('imdb'):

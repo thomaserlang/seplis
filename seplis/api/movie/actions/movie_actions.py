@@ -98,7 +98,7 @@ async def save_movie(
     overwrite_genres: bool = False,
     session: AsyncSession | None = None,
 ) -> Movie:
-    values = dict(data or {})
+    values: dict[str, Any] = dict(data or {})
     async with get_session(session) as session:
         if not movie_id:
             result = cast(

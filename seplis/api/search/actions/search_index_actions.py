@@ -1,5 +1,5 @@
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Any, cast
 from uuid import uuid4
@@ -15,7 +15,7 @@ def redis_key(suffix: str) -> str:
 
 
 @asynccontextmanager
-async def index_lock() -> AsyncIterator[None]:
+async def index_lock() -> AsyncGenerator[None]:
     # Bound work to less than the lease; a crashed process cannot block writers.
     async with database.redis.lock(redis_key('write'), timeout=60, blocking_timeout=30):
         async with asyncio.timeout(20):
