@@ -15,31 +15,39 @@ async def get_user_watch_activity(
     user_id: int,
     session: AsyncSession | None = None,
     *,
-    year: int,
+    year: int | None = None,
     month: int | None = None,
 ) -> list[UserWatchActivityPeriod]:
+    if month is not None and year is None:
+        raise ValueError('A year is required when selecting a month')
     now = datetime.now(UTC)
     periods = (
         [
             UserWatchActivityPeriod(date=f'{year:04d}-{month:02d}-{day:02d}')
             for day in range(1, monthrange(year, month)[1] + 1)
         ]
-        if month
+        if month is not None and year is not None
         else [
             UserWatchActivityPeriod(date=f'{year:04d}-{index:02d}-01')
             for index in range(1, 13)
         ]
+        if year is not None
+        else []
     )
-    start = datetime(year, month or 1, 1, tzinfo=UTC)
+    start = datetime(year or 1, month or 1, 1, tzinfo=UTC)
     end = (
         datetime(year, month + 1, 1, tzinfo=UTC)
-        if month and month < 12
-        else datetime(year + 1, 1, 1, tzinfo=UTC)
+        if year is not None and month is not None and month < 12
+        else datetime((year or now.year) + 1, 1, 1, tzinfo=UTC)
     )
     by_period = {item.date: item for item in periods}
     async with get_session(session) as session:
         episode_year = sa.extract('year', MEpisodeWatchedHistory.watched_at)
-        episode_month = sa.extract('month', MEpisodeWatchedHistory.watched_at)
+        episode_month = (
+            sa.extract('month', MEpisodeWatchedHistory.watched_at)
+            if year is not None
+            else sa.literal(1)
+        )
         episode_day = (
             sa.extract('day', MEpisodeWatchedHistory.watched_at)
             if month
@@ -75,14 +83,17 @@ async def get_user_watch_activity(
             )
         ).mappings()
         for row in episode_rows:
-            item = by_period[
-                f'{int(row["year"]):04d}-{int(row["month"]):02d}-{int(row["day"]):02d}'
-            ]
+            key = f'{int(row["year"]):04d}-{int(row["month"]):02d}-{int(row["day"]):02d}'
+            item = by_period.setdefault(key, UserWatchActivityPeriod(date=key))
             item.episodes_watched = int(row['watched'])
             item.series_minutes = int(row['minutes'] or 0)
 
         movie_year = sa.extract('year', MMovieWatchedHistory.watched_at)
-        movie_month = sa.extract('month', MMovieWatchedHistory.watched_at)
+        movie_month = (
+            sa.extract('month', MMovieWatchedHistory.watched_at)
+            if year is not None
+            else sa.literal(1)
+        )
         movie_day = (
             sa.extract('day', MMovieWatchedHistory.watched_at) if month else sa.literal(1)
         )
@@ -107,9 +118,17 @@ async def get_user_watch_activity(
             )
         ).mappings()
         for row in movie_rows:
-            item = by_period[
-                f'{int(row["year"]):04d}-{int(row["month"]):02d}-{int(row["day"]):02d}'
-            ]
+            key = f'{int(row["year"]):04d}-{int(row["month"]):02d}-{int(row["day"]):02d}'
+            item = by_period.setdefault(key, UserWatchActivityPeriod(date=key))
             item.movies_watched = int(row['watched'])
             item.movie_minutes = int(row['minutes'] or 0)
+    if year is None:
+        first_year = min((int(key[:4]) for key in by_period), default=now.year)
+        return [
+            by_period.get(
+                f'{index:04d}-01-01',
+                UserWatchActivityPeriod(date=f'{index:04d}-01-01'),
+            )
+            for index in range(first_year, now.year + 1)
+        ]
     return periods

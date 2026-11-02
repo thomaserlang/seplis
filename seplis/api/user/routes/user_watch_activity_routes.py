@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Query, Security
+from fastapi import APIRouter, HTTPException, Query, Security
 
 from seplis.api.dependencies import authenticated
 
@@ -16,7 +16,9 @@ async def get_watch_activity_route(
     user: Annotated[
         UserAuthenticated, Security(authenticated, scopes=['user:view_stats'])
     ],
-    year: Annotated[int, Query(ge=1, le=9998)],
+    year: Annotated[int | None, Query(ge=1, le=9998)] = None,
     month: Annotated[int | None, Query(ge=1, le=12)] = None,
 ) -> list[UserWatchActivityPeriod]:
+    if month is not None and year is None:
+        raise HTTPException(status_code=422, detail='A year is required with month')
     return await get_user_watch_activity(user.id, year=year, month=month)

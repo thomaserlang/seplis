@@ -206,3 +206,69 @@ async def test_monthly_activity_uses_history_and_utc_boundaries(
     empty = await get_user_watch_activity(3, session, year=2026)
     assert len(empty) == 12
     assert all(month.episodes_watched == month.movies_watched == 0 for month in empty)
+
+
+@freeze_time('2026-01-15T12:00:00Z')
+@pytest.mark.asyncio
+async def test_yearly_activity_fills_gaps_and_excludes_other_users_and_future(
+    stats_session: tuple[AsyncSession, dict[str, sa.Table]],
+) -> None:
+    session, tables = stats_session
+    await session.execute(sa.insert(tables['movies']), {'id': 1, 'runtime': 120})
+    await session.execute(sa.insert(tables['series']), {'id': 1, 'runtime': 30})
+    await session.execute(
+        sa.insert(tables['episodes']),
+        {'series_id': 1, 'number': 1, 'runtime': None},
+    )
+    await session.execute(
+        sa.insert(tables['episodes_watched_history']),
+        [
+            {
+                'series_id': 1,
+                'episode_number': 1,
+                'user_id': user,
+                'watched_at': datetime.fromisoformat(stamp),
+            }
+            for user, stamp in [
+                (1, '2023-01-01T00:00:00Z'),
+                (1, '2023-12-31T23:59:59Z'),
+                (2, '2020-01-01T00:00:00Z'),
+                (1, '2026-01-20T00:00:00Z'),
+                (1, '2027-01-01T00:00:00Z'),
+            ]
+        ],
+    )
+    await session.execute(
+        sa.insert(tables['movies_watched_history']),
+        [
+            {
+                'movie_id': 1,
+                'user_id': 1,
+                'watched_at': datetime.fromisoformat(stamp),
+            }
+            for stamp in [
+                '2023-06-01T12:00:00Z',
+                '2026-01-01T00:30:00+02:00',
+                '2026-01-02T00:00:00Z',
+            ]
+        ],
+    )
+    years = await get_user_watch_activity(1, session)
+    assert [period.date for period in years] == [
+        '2023-01-01',
+        '2024-01-01',
+        '2025-01-01',
+        '2026-01-01',
+    ]
+    assert years[0].episodes_watched == 2
+    assert years[0].series_minutes == 60
+    assert years[0].movie_minutes == 120
+    assert years[1].series_minutes == years[1].movie_minutes == 0
+    assert years[2].movie_minutes == years[3].movie_minutes == 120
+    assert sum(period.episodes_watched for period in years) == 2
+    empty = await get_user_watch_activity(3, session)
+    assert len(empty) == 1
+    assert empty[0].date == '2026-01-01'
+    assert empty[0].episodes_watched == empty[0].movies_watched == 0
+    with pytest.raises(ValueError, match='year is required'):
+        await get_user_watch_activity(1, session, month=1)

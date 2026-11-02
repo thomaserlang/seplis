@@ -5,6 +5,7 @@ import '@mantine/charts/styles.css'
 import {
     ActionIcon,
     Box,
+    Divider,
     Group,
     Paper,
     SegmentedControl,
@@ -29,35 +30,40 @@ const controlStyles = {
 
 export function WatchActivityChart({ userId }: { userId: number }) {
     const now = new Date()
-    const [view, setView] = useState('month')
+    const [view, setView] = useState('day')
     const [media, setMedia] = useState('all')
     const [date, setDate] = useState(
         () => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)),
     )
     const year = date.getUTCFullYear()
     const month = date.getUTCMonth()
-    const isMonth = view === 'month'
+    const isDay = view === 'day'
+    const isYear = view === 'year'
     const currentYear = year === now.getUTCFullYear()
     const currentPeriod =
-        currentYear && (!isMonth || month === now.getUTCMonth())
+        isYear || (currentYear && (!isDay || month === now.getUTCMonth()))
     const { data, isLoading, error } = useGetUserWatchActivity({
         userId,
-        params: { year, month: isMonth ? month + 1 : undefined },
+        params: {
+            year: isYear ? undefined : year,
+            month: isDay ? month + 1 : undefined,
+        },
     })
-    const periodLabel = date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        ...(isMonth ? { month: 'long' as const } : {}),
-        timeZone: 'UTC',
-    })
+    const periodLabel = isYear
+        ? 'All years'
+        : date.toLocaleDateString(undefined, {
+              year: 'numeric',
+              ...(isDay ? { month: 'long' as const } : {}),
+              timeZone: 'UTC',
+          })
     const records = (data ?? [])
         .filter((item) => item.date <= now.toISOString().slice(0, 10))
         .map((item) => {
             const day = new Date(`${item.date}T00:00:00Z`)
             const partial =
-                currentPeriod &&
-                (isMonth
-                    ? day.getUTCDate() === now.getUTCDate()
-                    : day.getUTCMonth() === now.getUTCMonth())
+                day.getUTCFullYear() === now.getUTCFullYear() &&
+                (isYear || day.getUTCMonth() === now.getUTCMonth()) &&
+                (!isDay || day.getUTCDate() === now.getUTCDate())
             const minutes =
                 media === 'series'
                     ? item.series_minutes
@@ -66,20 +72,24 @@ export function WatchActivityChart({ userId }: { userId: number }) {
                       : item.series_minutes + item.movie_minutes
             return {
                 ...item,
-                label: isMonth
-                    ? String(day.getUTCDate())
-                    : day.toLocaleDateString(undefined, {
-                          month: 'short',
-                          timeZone: 'UTC',
-                      }),
+                label: isYear
+                    ? String(day.getUTCFullYear())
+                    : isDay
+                      ? String(day.getUTCDate())
+                      : day.toLocaleDateString(undefined, {
+                            month: 'short',
+                            timeZone: 'UTC',
+                        }),
                 fullLabel: day.toLocaleDateString(undefined, {
                     year: 'numeric',
-                    month: 'long',
-                    ...(isMonth ? { day: 'numeric' as const } : {}),
+                    ...(!isYear ? { month: 'long' as const } : {}),
+                    ...(isDay ? { day: 'numeric' as const } : {}),
                     timeZone: 'UTC',
                 }),
                 partial,
-                color: partial ? 'var(--muted-foreground)' : 'var(--foreground)',
+                color: partial
+                    ? 'var(--muted-foreground)'
+                    : 'var(--foreground)',
                 minutes,
                 hours: minutes / 60,
             }
@@ -89,8 +99,8 @@ export function WatchActivityChart({ userId }: { userId: number }) {
         setDate(
             new Date(
                 Date.UTC(
-                    year + (isMonth ? 0 : direction),
-                    month + (isMonth ? direction : 0),
+                    year + (isDay ? 0 : direction),
+                    month + (isDay ? direction : 0),
                     1,
                 ),
             ),
@@ -114,35 +124,40 @@ export function WatchActivityChart({ userId }: { userId: number }) {
                     ]}
                 />
             </Group>
+            <Divider />
             <Group justify="space-between">
                 <Group gap="xs" wrap="nowrap">
-                    <Tooltip
-                        label={isMonth ? 'Previous month' : 'Previous year'}
-                    >
-                        <ActionIcon
-                            variant="default"
-                            aria-label={
-                                isMonth ? 'Previous month' : 'Previous year'
-                            }
-                            onClick={() => navigate(-1)}
-                            disabled={year <= 1}
+                    {!isYear && (
+                        <Tooltip
+                            label={isDay ? 'Previous month' : 'Previous year'}
                         >
-                            <CaretLeftIcon />
-                        </ActionIcon>
-                    </Tooltip>
+                            <ActionIcon
+                                variant="default"
+                                aria-label={
+                                    isDay ? 'Previous month' : 'Previous year'
+                                }
+                                onClick={() => navigate(-1)}
+                                disabled={year <= 1}
+                            >
+                                <CaretLeftIcon />
+                            </ActionIcon>
+                        </Tooltip>
+                    )}
                     <Text fw={600} ta="center" w={150}>
                         {periodLabel}
                     </Text>
-                    <Tooltip label={isMonth ? 'Next month' : 'Next year'}>
-                        <ActionIcon
-                            variant="default"
-                            aria-label={isMonth ? 'Next month' : 'Next year'}
-                            onClick={() => navigate(1)}
-                            disabled={currentPeriod}
-                        >
-                            <CaretRightIcon />
-                        </ActionIcon>
-                    </Tooltip>
+                    {!isYear && (
+                        <Tooltip label={isDay ? 'Next month' : 'Next year'}>
+                            <ActionIcon
+                                variant="default"
+                                aria-label={isDay ? 'Next month' : 'Next year'}
+                                onClick={() => navigate(1)}
+                                disabled={currentPeriod}
+                            >
+                                <CaretRightIcon />
+                            </ActionIcon>
+                        </Tooltip>
+                    )}
                 </Group>
                 <SegmentedControl
                     aria-label="Chart period"
@@ -150,7 +165,7 @@ export function WatchActivityChart({ userId }: { userId: number }) {
                     onChange={(value) => {
                         setView(value)
                         if (
-                            value === 'month' &&
+                            value === 'day' &&
                             currentYear &&
                             month > now.getUTCMonth()
                         ) {
@@ -161,6 +176,7 @@ export function WatchActivityChart({ userId }: { userId: number }) {
                     }}
                     styles={controlStyles}
                     data={[
+                        { label: 'Day', value: 'day' },
                         { label: 'Month', value: 'month' },
                         { label: 'Year', value: 'year' },
                     ]}

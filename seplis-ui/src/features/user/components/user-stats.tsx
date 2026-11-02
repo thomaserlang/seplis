@@ -1,6 +1,6 @@
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
-import { Box, SimpleGrid, Stack, Title } from '@mantine/core'
+import { Paper, SimpleGrid, Stack, Title } from '@mantine/core'
 import {
     useGetUserMovieStats,
     useGetUserSeriesStats,
@@ -19,17 +19,29 @@ export function UserStats({ userId }: { userId: number }) {
 
     return (
         <Stack gap="xl">
-            <WatchActivityChart userId={userId} />
-            <Stack gap="lg">
+            <Paper
+                withBorder
+                p={{ base: 'md', sm: 'lg' }}
+                radius="md"
+                bg="var(--card)"
+            >
+                <WatchActivityChart userId={userId} />
+            </Paper>
+            <Stack gap="md">
                 <Title order={2} size="h3">
                     All time
                 </Title>
                 <SimpleGrid
                     cols={{ base: 1, sm: 2 }}
-                    spacing="xl"
-                    verticalSpacing="xl"
+                    spacing="md"
+                    verticalSpacing="md"
                 >
-                    <Box>
+                    <Paper
+                        withBorder
+                        p={{ base: 'md', sm: 'lg' }}
+                        radius="md"
+                        bg="var(--card)"
+                    >
                         {series.isLoading && <PageLoader />}
                         {series.error && <ErrorBox errorObj={series.error} />}
                         {series.data && (
@@ -65,8 +77,13 @@ export function UserStats({ userId }: { userId: number }) {
                                 ]}
                             />
                         )}
-                    </Box>
-                    <Box>
+                    </Paper>
+                    <Paper
+                        withBorder
+                        p={{ base: 'md', sm: 'lg' }}
+                        radius="md"
+                        bg="var(--card)"
+                    >
                         {movies.isLoading && <PageLoader />}
                         {movies.error && <ErrorBox errorObj={movies.error} />}
                         {movies.data && (
@@ -101,7 +118,7 @@ export function UserStats({ userId }: { userId: number }) {
                                 ]}
                             />
                         )}
-                    </Box>
+                    </Paper>
                 </SimpleGrid>
             </Stack>
         </Stack>

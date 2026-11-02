@@ -26,7 +26,7 @@ export const { useGet: useGetUserMovieStats } = useApiHelper<
 })
 
 interface ActivityProps extends ApiHelperProps<{
-    year: number
+    year?: number
     month?: number
 }> {
     userId: number
