@@ -2,7 +2,7 @@
   "name": "seplis",
   "version": "1.0.0",
   "type": "module",
-  "packageManager": "pnpm@11.5.1",
+  "packageManager": "pnpm@12.16.1",
   "repository": {
     "type": "git",
     "url": "git://github.com/thomaserlang/seplis.git"

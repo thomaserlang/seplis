@@ -1,12 +1,13 @@
 FROM --platform=$BUILDPLATFORM node:lts-alpine AS builder
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-RUN mkdir /app
+RUN npm install --global corepack && corepack enable
 WORKDIR /app
 COPY . .
-RUN corepack enable && pnpm install --frozen-lockfile && pnpm run build
+RUN pnpm install --frozen-lockfile \
+    && pnpm run build
 
-FROM nginxinc/nginx-unprivileged:alpine
+FROM nginx/nginx-unprivileged:alpine
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
