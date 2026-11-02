@@ -23,11 +23,6 @@ function hours(minutes: number) {
     return `${value.toLocaleString()} ${value === 1 ? 'hour' : 'hours'}`
 }
 
-const controlStyles = {
-    root: { background: 'var(--card)' },
-    indicator: { background: 'var(--secondary)' },
-}
-
 export function WatchActivityChart({ userId }: { userId: number }) {
     const now = new Date()
     const [view, setView] = useState('day')
@@ -116,7 +111,6 @@ export function WatchActivityChart({ userId }: { userId: number }) {
                     aria-label="Media type"
                     value={media}
                     onChange={setMedia}
-                    styles={controlStyles}
                     data={[
                         { label: 'All', value: 'all' },
                         { label: 'Series', value: 'series' },
@@ -174,7 +168,6 @@ export function WatchActivityChart({ userId }: { userId: number }) {
                             )
                         }
                     }}
-                    styles={controlStyles}
                     data={[
                         { label: 'Day', value: 'day' },
                         { label: 'Month', value: 'month' },
