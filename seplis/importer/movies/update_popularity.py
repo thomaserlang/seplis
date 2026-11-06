@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import cast
 
 import sqlalchemy as sa
-from sqlalchemy.orm import noload
 
 from seplis.api import exceptions
 from seplis.api.movie import (
@@ -14,6 +14,7 @@ from seplis.api.movie import (
 
 from ... import logger
 from ...api.database import database
+from ..popularity import popularity_update
 from ..themoviedb_export import get_ids
 from . import importer
 
@@ -25,11 +26,10 @@ async def update_popularity(
     movies: dict[str, int] = {}
     dt = datetime.now().date()
     async with database.session() as session:
-        result = await session.stream(sa.select(MMovie).options(noload('*')))
-        async for db_movies in result.yield_per(1000):
-            for movie in db_movies:
-                if movie.externals and movie.externals.get('themoviedb'):
-                    movies[movie.externals['themoviedb']] = movie.id
+        result = await session.stream(sa.select(MMovie.id, MMovie.externals))
+        async for movie in result.yield_per(1000):
+            if movie.externals and movie.externals.get('themoviedb'):
+                movies[movie.externals['themoviedb']] = movie.id
 
         ids_to_create = []
         insert_data = []
@@ -63,14 +63,11 @@ async def update_popularity(
                 .values(insert_data),
             )
         await session.execute(
-            sa.update(MMovie.__table__).values({MMovie.popularity: 0}),  # type: ignore
-        )
-        await session.execute(
-            sa.update(MMovie.__table__)  # type: ignore
-            .values({MMovie.popularity: MMoviePopularityHistory.popularity})
-            .where(
-                MMoviePopularityHistory.date == dt,
-                MMoviePopularityHistory.movie_id == MMovie.id,
+            popularity_update(
+                cast(sa.Table, MMovie.__table__),
+                cast(sa.Table, MMoviePopularityHistory.__table__),
+                'movie_id',
+                dt,
             ),
         )
         await session.commit()

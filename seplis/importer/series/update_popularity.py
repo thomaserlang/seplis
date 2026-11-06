@@ -1,7 +1,7 @@
 from datetime import datetime
+from typing import cast
 
 import sqlalchemy as sa
-from sqlalchemy.orm import noload
 
 from ... import logger
 from ...api.database import database
@@ -12,6 +12,7 @@ from ...api.series import (
     rebuild_series,
     save_series,
 )
+from ..popularity import popularity_update
 from ..themoviedb_export import get_ids
 from . import TheMovieDB, importer
 
@@ -23,15 +24,14 @@ async def update_popularity(
     series: dict[str, int] = {}
     dt = datetime.now().date()
     async with database.session() as session:
-        result = await session.stream(sa.select(MSeries).options(noload('*')))
-        async for db_series in result.yield_per(1000):
-            for r in db_series:
-                if not r.externals:
-                    continue
-                if r.externals.get('themoviedb'):
-                    series[r.externals['themoviedb']] = r.id
-                if r.externals.get('imdb'):
-                    series[r.externals['imdb']] = r.id
+        result = await session.stream(sa.select(MSeries.id, MSeries.externals))
+        async for r in result.yield_per(1000):
+            if not r.externals:
+                continue
+            if r.externals.get('themoviedb'):
+                series[r.externals['themoviedb']] = r.id
+            if r.externals.get('imdb'):
+                series[r.externals['imdb']] = r.id
 
         ids_to_create = []
         insert_data = []
@@ -66,14 +66,11 @@ async def update_popularity(
             )
 
         await session.execute(
-            sa.update(MSeries.__table__).values({MSeries.popularity: 0}),  # type: ignore
-        )
-        await session.execute(
-            sa.update(MSeries.__table__)  # type: ignore
-            .values({MSeries.popularity: MSeriesPopularityHistory.popularity})
-            .where(
-                MSeriesPopularityHistory.date == dt,
-                MSeriesPopularityHistory.series_id == MSeries.id,
+            popularity_update(
+                cast(sa.Table, MSeries.__table__),
+                cast(sa.Table, MSeriesPopularityHistory.__table__),
+                'series_id',
+                dt,
             ),
         )
         await session.commit()
