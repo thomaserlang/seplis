@@ -17,6 +17,7 @@ export function PlayerNativeSubtitles({
     useEffect(() => {
         if (!isSafari || !media) return
         const textTracks = media.textTracks
+        if (!textTracks) return
         const applyNativeSubtitleSelection = () => {
             const subtitleTracks = getSubtitleTracks(textTracks)
 

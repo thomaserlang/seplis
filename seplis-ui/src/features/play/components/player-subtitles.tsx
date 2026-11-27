@@ -55,6 +55,7 @@ export function SubtitleOffsetApplier({
     useEffect(() => {
         if (!media) return
         const tracks = media.textTracks
+        if (!tracks) return
         for (let i = 0; i < tracks.length; i++) {
             const track = tracks[i]
             if (track.kind !== 'subtitles' || !track.cues) continue
