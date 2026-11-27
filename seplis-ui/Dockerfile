@@ -7,7 +7,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile \
     && pnpm run build
 
-FROM nginx/nginx-unprivileged:alpine-slime
+FROM nginx/nginx-unprivileged:alpine-slim
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
